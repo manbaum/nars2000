@@ -3157,9 +3157,6 @@ BOOL AppendNewToken_EM
     // Save index in input line of this token
     lptkLocalVars->lpNext->tkCharIndex = iCharOffset + lptkLocalVars->lpwsz - lptkLocalVars->lpwszOrig;
 
-    // Save the ptr to the original token
-    lptkLocalVars->lpNext->lptkOrig = lptkLocalVars->lpNext;
-
     // Count in another token
     lptkLocalVars->t2.lpHeader->TokenCnt++;
 

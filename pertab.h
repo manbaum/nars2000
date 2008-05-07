@@ -137,15 +137,15 @@ typedef struct tagPERTABDATA
     HANDLE       hSemaDelay;        //120:  Delay semaphore (NULL if no delay active)
     EXIT_TYPES   ImmExecExitType;   //124:  ImmExec exit type (see EXIT_TYPES)
     PL_YYSTYPE   YYResExec;         //128:  Result from execute primitive
-                                    //      Size = 38h for DEBUG, 28h otherwise
-    LPPL_YYSTYPE lpStrand[STRAND_LEN];//160:  Ptrs to strand accumulators in parser (4 bytes each)
+                                    //      Size = 2Ch for DEBUG, 20h otherwise
+    LPPL_YYSTYPE lpStrand[STRAND_LEN];//154:  Ptrs to strand accumulators in parser (4 bytes each)
     LPLOADWSGLBVARCONV
-                 lpLoadWsGlbVarConv;//168:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
+                 lpLoadWsGlbVarConv;//15C:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
     LPLOADWSGLBVARPARM
-                 lpLoadWsGlbVarParm;//16C:  Ptr to extra parms for LoadWsGlbVarConv
-    APLCHAR      cQuadPR;           //170:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //172:  []SA (in its index form)
-                                    //173:  Length
+                 lpLoadWsGlbVarParm;//160:  Ptr to extra parms for LoadWsGlbVarConv
+    APLCHAR      cQuadPR;           //164:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //166:  []SA (in its index form)
+                                    //167:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

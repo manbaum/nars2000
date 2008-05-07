@@ -360,7 +360,6 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 ////////////////tkLftArg.tkFlags.NoDisplay = 0;     // Already zero from = {0}
                 tkLftArg.tkData.tkInteger  = uMaxRank;
 ////////////////tkLftArg.tkCharIndex       = 0;     // Already zero from = {0}
-////////////////tkLftArg.lptkOrig          = NULL;  // Already zero from = {0}
 #ifdef DEBUG
                 // Decrement the SI level of lpYYRes so YYResIsEmpty won't complain
                 lpYYRes->SILevel--;

@@ -53,6 +53,9 @@ in the lexical analyser (pl_yylex).
 #define   DIRECT    FALSE           // Flags for PushFcnSTrand
 #define INDIRECT    TRUE            // ...
 
+////#define YYLEX_DEBUG
+////#define YYFPRINTF_DEBUG
+
 #ifdef DEBUG
 ////#define YYERROR_VERBOSE
 #define YYDEBUG 1
@@ -803,6 +806,253 @@ FcnSpec:
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR;
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                         } // End IF
+                                        }
+    | MonOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func MonOp");
+
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR;
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp1, NAMETYPE_FN12, TRUE);
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->bRet =
+                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+                                             FreeResult (&$4.tkToken);               // Validation only
+
+                                             if (!lpplLocalVars->bRet)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR;
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                         } // End IF
+                                        }
+    | MonOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func MonOp");
+
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR;
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp1, NAMETYPE_FN12, TRUE);
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->bRet =
+                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+                                             FreeResult (&$4.tkToken);               // Validation only
+
+                                             if (!lpplLocalVars->bRet)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR;
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                         } // End IF
+                                        }
+    | AmbOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func AmbOp");
+
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Change the first token in the function strand
+                                             //   from ambiguous operator to a monadic operator
+                                             AmbOpToOp1 (&$1);
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR;
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp1, NAMETYPE_FN12, TRUE);
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->bRet =
+                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+                                             FreeResult (&$4.tkToken);               // Validation only
+
+                                             if (!lpplLocalVars->bRet)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR;
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                         } // End IF
+                                        }
+    | AmbOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func AmbOp");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Change the first token in the function strand
+                                             //   from ambiguous operator to a monadic operator
+                                             AmbOpToOp1 (&$1);
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR;
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp1, NAMETYPE_FN12, TRUE);
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->bRet =
+                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+                                             FreeResult (&$4.tkToken);               // Validation only
+
+                                             if (!lpplLocalVars->bRet)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR;
                                              } // End IF
@@ -5725,7 +5975,6 @@ int pl_yylex
 PL_YYLEX_START:
     // Because we're parsing the stmt from right to left
     lpplLocalVars->lptkNext--;
-////#define YYLEX_DEBUG
 #if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
     dprintfW (L"==pl_yylex:  TknType = %S, CharIndex = %d",
               GetTokenTypeName (lpplLocalVars->lptkNext->tkFlags.TknType),
@@ -5790,7 +6039,6 @@ PL_YYLEX_START:
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_VARNAMED; // Instead of TKT_FCNNAMED because it'll be executed right away
-                lpplLocalVars->lptkNext->tkData.tkSym->stFlags.FcnDir = (stFlags.ObjName EQ OBJNAME_SYS);
 
                 if (stFlags.ObjName EQ OBJNAME_SYS)
                     return SYSFN0;
@@ -5801,7 +6049,6 @@ PL_YYLEX_START:
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_FCNNAMED;
-                lpplLocalVars->lptkNext->tkData.tkSym->stFlags.FcnDir = (stFlags.ObjName EQ OBJNAME_SYS);
 
                 if (stFlags.ObjName EQ OBJNAME_SYS)
                     return SYSFN12;
@@ -6248,8 +6495,7 @@ void pl_yyfprintf
      ...)                   // Zero or more arguments
 
 {
-#if (defined (DEBUG)) && FALSE
-////#if (defined (DEBUG)) && TRUE
+#if (defined (DEBUG)) && (defined (YYFPRINTF_DEBUG))
     va_list vl;
     int     i1,
             i2,

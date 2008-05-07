@@ -1,9 +1,6 @@
 TO DO:  General:  Important (pre-alpha)
 ---------------------------------------
 * Move registry info into <nars2000.ini> file
-* Implement these system commands:
-* ...       )COPY
-* ...       )LOAD
 
 
 TO DO:  General:  Less Important (post-alpha)
@@ -116,12 +113,14 @@ DONE:  General
 * ...       (+{jot} 2 3 )4
 * ...       )CLEAR
 * ...       )CLOSE
+* ...       )COPY
 * ...       )DROP
 * ...       )EDIT
 * ...       )ERASE
 * ...       )EXIT
 * ...       )FNS
 * ...       )LIB
+* ...       )LOAD
 * ...       )NMS
 * ...       )OPS
 * ...       )RESET

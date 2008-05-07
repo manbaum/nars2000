@@ -376,6 +376,7 @@ BOOL SymTabAppendSysName_EM
             stFlags.stNameType = NAMETYPE_FN0;
         else
             stFlags.stNameType = NAMETYPE_FN12;
+        stFlags.FcnDir = TRUE;
     } // End IF/ELSE
 
     // Set the flags for what we're appending

@@ -145,35 +145,35 @@ BOOL AssignName_EM
                      || IsGlbTypeFcnDir (lptkSrc->tkData.tkSym->stData.stGlbData)
                      || IsGlbTypeDfnDir (lptkSrc->tkData.tkSym->stData.stGlbData));
 
+                // Get the source global memory handle
+                hGlbSrc = lptkSrc->tkData.tkSym->stData.stGlbData;
+
+                // Free the old value for this name
+                FreeResultName (lptkNam);
+
+                // Clear the immediate flag
+                lptkNam->tkData.tkSym->stFlags.Imm = FALSE;
+                lptkNam->tkData.tkSym->stFlags.ImmType = 0;
+
                 // Copy the "Accepts Axis Operator" flag
-////////////////lptkNam->lptkOrig->tkData.tkSym->stFlags.DfnAxis =
-                lptkNam->          tkData.tkSym->stFlags.DfnAxis =
-                lptkSrc->          tkData.tkSym->stFlags.DfnAxis;
+                lptkNam->tkData.tkSym->stFlags.DfnAxis =
+                lptkSrc->tkData.tkSym->stFlags.DfnAxis;
 
                 // Check for internal functions
                 if (lptkSrc->tkData.tkSym->stFlags.FcnDir)
                 {
-                    // Free the old value for this name
-                    FreeResultName (lptkNam);
-
                     // Copy the SYMENTRY's data
                     lptkNam->tkData.tkSym->stData =
                     lptkSrc->tkData.tkSym->stData;
 
                     // Copy the direct function flag
-////////////////////lptkNam->lptkOrig->tkData.tkSym->stFlags.FcnDir =
-                    lptkNam->          tkData.tkSym->stFlags.FcnDir =
-                    lptkSrc->          tkData.tkSym->stFlags.FcnDir;
+                    lptkNam->tkData.tkSym->stFlags.FcnDir =
+                    lptkSrc->tkData.tkSym->stFlags.FcnDir;
                 } else
                 {
                     // Copy the source global memory handle
-                    hGlbSrc = CopySymGlbDir (lptkSrc->tkData.tkSym->stData.stGlbData);
-
-                    // Free the old value for this name
-                    FreeResultName (lptkNam);
-
-                    // Save the new global memory ptr
-                    lptkNam->tkData.tkSym->stData.stGlbData = hGlbSrc;
+                    //   and save it as the new global memory ptr
+                    lptkNam->tkData.tkSym->stData.stGlbData = CopySymGlbDir (hGlbSrc);
 
                     // Transfer user-defined function/operator flag
                     lptkNam->tkData.tkSym->stFlags.UsrDfn =

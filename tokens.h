@@ -147,10 +147,9 @@ typedef union tagTOKEN_DATA
 typedef struct tagTOKEN
 {
     TKFLAGS          tkFlags;       // 00:  The flags part
-    TOKEN_DATA       tkData;        // 04:  The data part
+    TOKEN_DATA       tkData;        // 04:  The data part (8 bytes)
     int              tkCharIndex;   // 0C:  Index into the input line of this token
-    struct tagTOKEN *lptkOrig;      // 10:  Ptr to original token
-                                    // 14:  Length
+                                    // 10:  Length
 } TOKEN, *LPTOKEN;
 
 #define TOKEN_HEADER_SIGNATURE      'NKOT'

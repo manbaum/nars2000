@@ -27,8 +27,8 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
     //   we might need it to be an LPPL_YYSTYPE (for a function strand)
     //   or an LPTOKEN (single function).
     TOKEN   tkToken;                // 00:  Token info
-    UINT    TknCount;               // 14:  Token count
-    UINT    YYInuse:1,              // 18:  00000001:  This entry is in use
+    UINT    TknCount;               // 10:  Token count
+    UINT    YYInuse:1,              // 14:  00000001:  This entry is in use
             YYIndirect:1,           //      00000002:  Arg is indirect
 #ifdef DEBUG
             Avail:6,                //      000000FC:  Available bits
@@ -38,17 +38,17 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
             Avail:30;               //      FFFFFFFC:  Available bits
 #endif
     struct tagPL_YYSTYPE
-           *lpYYFcnBase,            // 1C:  Ptr to base function/operator
+           *lpYYFcnBase,            // 18:  Ptr to base function/operator
                                     //      Not valid outside the enclosing
                                     //        invocation of ParseLine
-           *lpYYStrandBase;         // 20:  Ptr to this token's strand base
+           *lpYYStrandBase;         // 1C:  Ptr to this token's strand base
 #ifdef DEBUG
-    UINT    SILevel;                // 24:  SI Level (needed for YYResIsEmpty)
-    LPCHAR  lpFileName;             // 28:  Ptr to filename where allocated
-    UINT    uLineNum;               // 2C:  Line # where allocated
-                                    // 30:  Length
+    UINT    SILevel;                // 20:  SI Level (needed for YYResIsEmpty)
+    LPCHAR  lpFileName;             // 24:  Ptr to filename where allocated
+    UINT    uLineNum;               // 28:  Line # where allocated
+                                    // 2C:  Length
 #else
-                                    // 24:  Length
+                                    // 20:  Length
 #endif
 } PL_YYSTYPE, *LPPL_YYSTYPE;        // Data type of yacc stack
 

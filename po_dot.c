@@ -352,8 +352,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     } // End IF/ELSE
 
     // Fill in common fields
-    tkItmLft.tkCharIndex           = lptkLftArg->tkCharIndex;
-    tkItmLft.lptkOrig              = NULL;
+    tkItmLft.tkCharIndex = lptkLftArg->tkCharIndex;
 
     if (hGlbRht)
     {
@@ -375,8 +374,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     } // End IF/ELSE
 
     // Fill in common fields
-    tkItmRht.tkCharIndex           = lptkRhtArg->tkCharIndex;
-    tkItmRht.lptkOrig              = NULL;
+    tkItmRht.tkCharIndex = lptkRhtArg->tkCharIndex;
 
     // Skip over the dimensions to the data
     lpMemRes = lpMemDimRes;

@@ -263,7 +263,7 @@ void DisplayGlbArr
             aplDimNCols = lpMemDim[aplRank - 1];
 
             // If there are no columns and the rank is > 1, ignore this
-            if (IsEmpty (aplDimNCols)
+            if (IsZeroDim (aplDimNCols)
              && IsMultiRank (aplRank))
                 goto NORMAL_EXIT;
 

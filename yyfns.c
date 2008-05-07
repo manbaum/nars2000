@@ -557,7 +557,6 @@ LPPL_YYSTYPE YYCopyFcn
                     YYFcn.tkToken.tkData.tkLongest  = 0;        // Keep the extraneous data clear
                     YYFcn.tkToken.tkData.tkChar     = lpToken->tkData.tkSym->stData.stChar;
                     YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
-////////////////////YYFcn.tkToken.lptkOrig          = NULL;     // ALready zero from = {0}
                     YYFcn.TknCount                  = TknCount;
 ////////////////////YYFcn.YYInuse                   = 0;        // (Factored out below)
 ////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
@@ -595,7 +594,6 @@ LPPL_YYSTYPE YYCopyFcn
 ////////////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
                                 YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;
                                 YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
-////////////////////////////////YYFcn.tkToken.lptkOrig          = NULL;     // ALready zero from = {0}
                                 YYFcn.TknCount                  = TknCount;
 ////////////////////////////////YYFcn.YYInuse                   = 0;        // (Factored out below)
 ////////////////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}

@@ -29,6 +29,7 @@
 #include "main.h"
 #include "resource.h"
 #include "resdebug.h"
+#include "sysvars.h"
 #include "termcode.h"
 #include "externs.h"
 #include "editctrl.h"
@@ -1064,6 +1065,42 @@ LRESULT WINAPI LclEditCtrlWndProc
             } else
                 return (LRESULT) NULL;
         } // End MYWM_IZITNAME
+
+#define fwSizeType  wParam
+#define nWidth      (LOWORD (lParam))
+#define nHeight     (HIWORD (lParam))
+        case WM_SIZE:               // fwSizeType = wParam;      // Resizing flag
+                                    // nWidth = LOWORD(lParam);  // Width of client area
+                                    // nHeight = HIWORD(lParam); // Height of client area
+            // If requested to do so, change []PW to track the new width
+            if (IzitSM (GetParent (hWnd)) && bAdjustPW)
+            {
+                APLUINT aplInteger;
+
+                // Calculate new width in chars
+                aplInteger = nWidth / cxAveCharSM;
+
+                // Validate the incoming value
+                if (ValidateIntegerTest (&aplInteger,       // Ptr to the integer to test
+                                          DEF_MIN_QUADPW,   // Low range value (inclusive)
+                                          DEF_MAX_QUADPW,   // High ...
+                                          bRangeLimit.PW))  // TRUE iff we're range limiting
+                {
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                    // Save as new []PW
+                    lpMemPTD->lpSymQuadPW->stData.stInteger = aplInteger;
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+                } // End IF
+            } // End IF
+
+            break;
+#undef  nHeight
+#undef  nWidth
+#undef  fwSizeType
 
 #define nVirtKey ((int) wParam)
         case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // Virtual-key code

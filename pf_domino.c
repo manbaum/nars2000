@@ -151,8 +151,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     APLDIM       uNumRows,
                  uNumCols,
                  uRow,
-                 uCol,
-                 uTmp;
+                 uCol;
     APLINT       apaOffRht,         // Right arg APA offset
                  apaMulRht;         // ...           multiplier
     APLFLOAT     aplFloatRht;       // Right arg temporary float
@@ -161,7 +160,8 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     gsl_matrix  *lpGslMatrixU = NULL,
                 *lpGslMatrixV = NULL;
     gsl_vector  *lpGslVectorS = NULL,
-                *lpGslVectorW = NULL;
+                *lpGslVectorW = NULL,
+                *lpGslVectorI = NULL;
     int          ErrCode;
 
     // Get the attributes (Type, NELM, and Rank)
@@ -243,7 +243,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_FLOAT;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -353,102 +353,60 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
     // Calculate the SVD (Singular Value Decomposition)
     //   with the result in U and S (S is the diagonal of the matrix)
-    ErrCode = gsl_linalg_SV_decomp (lpGslMatrixU,       // M x N
-                                    lpGslMatrixV,       // N x N
-                                    lpGslVectorS,       // N
-                                    lpGslVectorW);      // N
+    ErrCode =
+      gsl_linalg_SV_decomp (lpGslMatrixU,               // M x N
+                            lpGslMatrixV,               // N x N
+                            lpGslVectorS,               // N
+                            lpGslVectorW);              // N
     // Check the error code
     if (ErrCode NE GSL_SUCCESS)
         goto DOMAIN_EXIT;
 
-    // Free the GSL work vector
-    gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
+    // Solve the system Ax = b
+    //   where x is the result, and b is the MxM identity matrix
 
-//// #ifdef DEBUG
-////     // Display matrix U (M x N)
-////     dprintf ("=== Displaying Matrix U (M x N) = (%d, %d) ===", (UINT) uNumRows, (UINT) uNumCols);
-////     for (uRow = 0; uRow < uNumRows; uRow++)
-////     {
-////         char szTemp[128];
-////         char *p = szTemp;
-////
-////         p += sprintf (p, "Row %d = ", uRow);
-////
-////         for (uCol = 0; uCol < uNumCols; uCol++)
-////             p += sprintf (p, "%G, ", lpGslMatrixU->data[uRow * uNumCols + uCol]);
-////         p [-2] = '\0';
-////         DbgMsg (szTemp);
-////     } // End FOR
-////
-////     // Display matrix V (N x N)
-////     dprintf ("=== Displaying Matrix V (N x N) = (%d, %d) ===", (UINT) uNumCols, (UINT) uNumCols);
-////     for (uRow = 0; uRow < uNumCols; uRow++)
-////     {
-////         char szTemp[128];
-////         char *p = szTemp;
-////
-////         p += sprintf (p, "Row %d = ", uRow);
-////
-////         for (uCol = 0; uCol < uNumCols; uCol++)
-////             p += sprintf (p, "%G, ", lpGslMatrixV->data[uRow * uNumCols + uCol]);
-////         p [-2] = '\0';
-////         DbgMsg (szTemp);
-////     } // End FOR
-//// #endif
+    // Allocate and zero a working vector (for the identity matrix)
+    lpGslVectorI = gsl_vector_alloc  ((UINT) uNumRows); // M
+
+    // Check the return code for the above allocation
+    if (GSL_ENOMEM EQ (int) lpGslVectorI)
+        goto WSFULL_EXIT;
+
+    gsl_vector_set_zero (lpGslVectorI);
+
+    // The solution rows are now L[;I] +.x V +.x (1/S) +.x U*
+    //   where L is an identity matrix
+    for (uRow = 0; uRow < uNumRows; uRow++)             // 0 to M-1
+    {
+        // If we're not at the first row, clear the previous value
+        if (uRow NE 0)
+            lpGslVectorI->data[uRow - 1] = 0;
+
+        // Set the next value
+        lpGslVectorI->data[uRow] = 1;
+
+        // Call GSL function to solve for this column
+        ErrCode =
+          gsl_linalg_SV_solve (lpGslMatrixU,            // M x N
+                               lpGslMatrixV,            // N x N
+                               lpGslVectorS,            // N
+                               lpGslVectorI,            // M
+                               lpGslVectorW);           // N
+        // Check the error code
+        if (ErrCode NE GSL_SUCCESS)
+            goto DOMAIN_EXIT;
 
 #define lpMemData   ((LPAPLFLOAT) lpMemRes)
 
-    // The solution is now V +.x (1/S) +.x Transpose (U)
-
-    // Calculate U = (1/S) +.x U*
-    // Actually, we calculate U = (1/S) +.x U
-    //   S  is of size N (logically, N x N because it is really an N x N diagonal matrix)
-    //   U  is of size M x N
-    //   U* is of size N x M
-    // We reuse U but we don't transpose it so we can
-    //   multiply it by S in place.
-    for (uCol = 0; uCol < uNumCols; uCol++)     // 0 to N-1
-    {
-        APLFLOAT S = lpGslVectorS->data[uCol];
-
-        for (uRow = 0; uRow < uNumRows; uRow++) // 0 to M-1
-            lpGslMatrixU->data[uRow * uNumCols + uCol] /= S;
-    } // End FOR
-
-//// #ifdef DEBUG
-////     // Display matrix U (M x N)
-////     dprintf ("=== Displaying Matrix U (M x N) = (%d, %d) ===", (UINT) uNumRows, (UINT) uNumCols);
-////     for (uRow = 0; uRow < uNumRows; uRow++)
-////     {
-////         char szTemp[128];
-////         char *p = szTemp;
-////
-////         p += sprintf (p, "Row %d = ", uRow);
-////
-////         for (uCol = 0; uCol < uNumCols; uCol++)
-////             p += sprintf (p, "%G, ", lpGslMatrixU->data[uRow * uNumCols + uCol]);
-////         p [-2] = '\0';
-////         DbgMsg (szTemp);
-////     } // End FOR
-//// #endif
-
-    // Calculate V +.x U
-    // Actually, we calculate V +.x U*
-    //   because we didn't transpose U above
-    for (uRow = 0; uRow < uNumRows; uRow++)     // 0 to M-1
-    for (uCol = 0; uCol < uNumCols; uCol++)     // 0 to N-1
-    {
-        APLFLOAT S = 0;
-
-        for (uTmp = 0; uTmp < uNumCols; uTmp++) // 0 to N-1
-            S += lpGslMatrixV->data[uCol * uNumCols + uTmp] * lpGslMatrixU->data[uRow * uNumCols + uTmp];
-
-        lpMemData[uCol * uNumRows + uRow] = S;
-    } // End FOR
+        // Copy the values from W to the result
+        for (uCol = 0; uCol < uNumCols; uCol++)
+            lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
 
 #undef  lpMemData
+    } // End FOR
 
-    // Free the GSL vector
+    // Free the GSL vectors
+    gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
     gsl_vector_free (lpGslVectorS); lpGslVectorS = NULL;
 
     // Free the GSL matrices
@@ -461,7 +419,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -498,6 +456,12 @@ ERROR_EXIT:
 
         // We no longer need this storage
         FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+
+    if (lpGslVectorI)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_free (lpGslVectorI); lpGslVectorI = NULL;
     } // End IF
 
     if (lpGslVectorW)
@@ -598,7 +562,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     gsl_vector  *lpGslVectorS = NULL,
                 *lpGslVectorW = NULL,
                 *lpGslVectorX = NULL,
-               *lpGslVectorB = NULL;
+                *lpGslVectorB = NULL;
     int         ErrCode;
 
     // Get the attributes (Type, NELM, and Rank)
@@ -720,7 +684,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_FLOAT;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = aplRankRes;
@@ -837,10 +801,11 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
     // Calculate the SVD (Singular Value Decomposition)
     //   with the result in U and S (S is the diagonal of the matrix)
-    ErrCode = gsl_linalg_SV_decomp (lpGslMatrixU,       // M x N
-                                    lpGslMatrixV,       // N x N
-                                    lpGslVectorS,       // N
-                                    lpGslVectorW);      // N
+    ErrCode =
+      gsl_linalg_SV_decomp (lpGslMatrixU,               // M x N
+                            lpGslMatrixV,               // N x N
+                            lpGslVectorS,               // N
+                            lpGslVectorW);              // N
     // Check the error code
     if (ErrCode NE GSL_SUCCESS)
         goto DOMAIN_EXIT;
@@ -848,7 +813,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     // Free the GSL work vector
     gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
 
-    // The solution rows are now L[;I] +.x V +.x (1/S) +.x Transpose (U)
+    // The solution rows are now L[;I] +.x V +.x (1/S) +.x U*
     for (uCol = 0; uCol < uNumColsLft; uCol++)
     {
         // Copy the next column from L to B
@@ -907,11 +872,12 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         } // End SWITCH
 
         // Call GSL function to solve for this column
-        ErrCode = gsl_linalg_SV_solve (lpGslMatrixU,
-                                       lpGslMatrixV,
-                                       lpGslVectorS,
-                                       lpGslVectorB,
-                                       lpGslVectorX);
+        ErrCode =
+          gsl_linalg_SV_solve (lpGslMatrixU,            // M x N
+                               lpGslMatrixV,            // N x N
+                               lpGslVectorS,            // N
+                               lpGslVectorB,            // M
+                               lpGslVectorX);           // N
         // Check the error code
         if (ErrCode NE GSL_SUCCESS)
             goto DOMAIN_EXIT;
@@ -946,14 +912,14 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkFloat    = aplFloatRes;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE

@@ -21,11 +21,11 @@
 ***************************************************************************/
 
 // Default definitions
-#define DEF_TCFONTNAME      "Georgia"           // Or "SImPL"
-#define DEF_SMFONTNAME      "APL385 Unicode"
-#define DEF_FEFONTNAME      "APL385 Unicode"
-#define DEF_MEFONTNAME      "APL385 Unicode"
-#define DEF_VEFONTNAME      "APL385 Unicode"
+#define DEF_TCFONTNAME      "Georgia"
+#define DEF_SMFONTNAME      "SImPL"             // Or "APL385 Unicode"
+#define DEF_FEFONTNAME      "SImPL"             // Or "APL385 Unicode"
+#define DEF_MEFONTNAME      "SImPL"             // Or "APL385 Unicode"
+#define DEF_VEFONTNAME      "SImPL"             // Or "APL385 Unicode"
 
 #define DEF_TCLOGFONT       0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,DEF_TCFONTNAME
 #define DEF_SMLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_SMFONTNAME
@@ -227,6 +227,13 @@ RANGELIMIT bRangeLimit
 #ifdef DEFINE_VALUES
 //  CT    IC    IO    PP    PW    RL
 = {TRUE, TRUE, TRUE, TRUE, TRUE, TRUE}
+#endif
+;
+
+EXTERN
+BOOL bAdjustPW
+#ifdef DEFINE_VALUES
+= TRUE
 #endif
 ;
 

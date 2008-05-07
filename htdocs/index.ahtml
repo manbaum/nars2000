@@ -154,7 +154,7 @@
             <li>Axis operator values may be negative.
               That is, if the largest allowed value is <span class="APL">N</span>,
               then the allowable range for axis operator values is
-              <span class="APL">1 {neg}1[1]-N</span> to <span class="APL">N</span>, inclusive.</li>
+              <span class="APL">1 {neg}1[1]-N</span> to <span class="APL">N</span>, inclusive</li>
             <li>Strand left and right arguments and result to user-defined
               functions/operators along with optional left argument (e.g., <span class="APL">{del}
               Z{is}FOO (R<sub>1</sub> R<sub>2</sub> R<sub>3</sub> R<sub>4</sub>)</span> or, more fully, <span class="APL">{del}
@@ -168,15 +168,15 @@
               <span class="APL">{del} {Z<sub>1</sub> Z<sub>2</sub>}{is}FOO R</span> or
               <span class="APL">{del} ({Z<sub>1</sub> Z<sub>2</sub>}){is}FOO R</span> or
               <span class="APL">{del} {(Z<sub>1</sub> Z<sub>2</sub>)}{is}FOO R</span> may be used to mark
-              the result as non-displayable.</li>
+              the result as non-displayable</li>
             <li>User-defined function/operator prototype entry point
               (<span class="APL">{quad}PROTOTYPE:</span>)</li>
             <li>Monadic operator null (<span class="APL">{circlemiddledot}</span>) to aid in
               resolving ambiguities with slash/slope as function/operator
-              (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
-              instead of <span class="APL">//3 4</span>)</li>
+              (e.g., use <span class="APL">(/{circlemiddledot})/3 4</span>
+              instead of <span class="APL">(/)/3 4</span>)</li>
             <li>Monadic iota (<span class="APL">{iota}</span>) extended to negative values.  For example, in origin-0,
-              <span class="APL">{iota}{neg}3</span> returns <span class="APL">{neg}3 {neg}2 {neg}1</span>.</li>
+              <span class="APL">{iota}{neg}3</span> returns <span class="APL">{neg}3 {neg}2 {neg}1</span></li>
             <li>Monadic iota (<span class="APL">{iota}</span>) extended to length &gt; 1 vector right arguments
               returns an array of indices whose shape is that of the right argument
               (via an internal magic function)</li>
@@ -192,8 +192,9 @@
               For example,
               <span class="APL">A</span>,
               <span class="APL">A[{iota}{rho}A]</span>, and
-              <span class="APL">A[{iota}-{rho}A]</span> are all identical for any array
-              <span class="APL">A</span> in either origin.</li>
+              <span class="APL">A[{iota}-{rho}A]</span>, and even
+              <span class="APL">A[{iota}{neg}1 1[?({rho}{rho}A){rho}2]{times}{rho}A]</span>
+              are all identical for any array <span class="APL">A</span> in either origin</li>
             <li>± Infinity (e.g., <span class="APL">{infinity}</span> for infinity
               and <span class="APL">{overbar}{infinity}</span> for negative infinity)
               &mdash; considerable development work needs to be done to this
@@ -341,7 +342,7 @@
           nearest the ceiling of the given number.  For example, if
           <span class="APL">{quad}PP</span> is set to <span class="APL">23.7</span>,
           that value is rounded down to <span class="APL">17</span>, the largest value
-          that system variable may assume.</li>
+          that system variable may assume</li>
       </ul>
 
       <h3>Wish List of Miscellaneous Features</h3>

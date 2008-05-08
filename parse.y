@@ -79,6 +79,13 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 #define DbgMsgW2(a) if (gDbgLvl > 2) DbgMsgW(a)
 ////#define DbgMsgW2(a)                  DbgMsgW(a)
 ////#define DbgMsgW2(a) DbgMsgW(a); DbgBrk ()
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- pl_yyparse"
+#else
+#define APPEND_NAME
+#endif
+
 %}
 
 %pure-parser
@@ -1978,10 +1985,13 @@ StrandInst:
                                              YYERROR;
                                         }
     | CONSTANT   ':'                    {DbgMsgW2 (L"%%StrandInst:  :CONSTANT");
-                                            {
-                                             HGLOBAL      hGlbPTD,               // PerTabData global memory handle
-                                                          hGlbObj;               // Object global memory handle
-                                             LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             HGLOBAL            hGlbPTD,                 // PerTabData global memory handle
+                                                                hGlbObj;                 // Object global memory handle
+                                             LPPERTABDATA       lpMemPTD;                // Ptr to PerTabData global memory
+                                             LPLOADWSGLBVARCONV lpLoadWsGlbVarConv;      // Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
+                                             LPLOADWSGLBVARPARM lpLoadWsGlbVarParm;      // Extra parms for LoadWsGlbVarConv
 
                                              // Get the PerTabData global memory handle
                                              hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1989,21 +1999,35 @@ StrandInst:
                                              // Lock the memory to get a ptr to it
                                              lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                                             // Convert the constant to an HGLOBAL
-                                             hGlbObj =
-                                               (*lpMemPTD->lpLoadWsGlbVarConv) ((UINT) $1.tkToken.tkData.tkInteger,
-                                                                                lpMemPTD->lpLoadWsGlbVarParm);
+                                             // Get the LoadWsGlbVarXXX ptrs
+                                             lpLoadWsGlbVarConv = lpMemPTD->lpLoadWsGlbVarConv;
+                                             lpLoadWsGlbVarParm = lpMemPTD->lpLoadWsGlbVarParm;
+
                                              // We no longer need this ptr
                                              MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-                                             // Fill in the result token
-                                             $$ = $1;                               // Set common fields
-                                             $$.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                                             $$.tkToken.tkFlags.ImmType   = 0;
-                                             $$.tkToken.tkFlags.NoDisplay = FALSE;
-                                             $$.tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbObj);
-                                         ////$$.tkToken.tkCharIndex       =         // Set in $$ = $1 above
-                                            }
+                                             // If we're converting, ...
+                                             if (lpLoadWsGlbVarConv)
+                                             {
+                                                 // Convert the constant to an HGLOBAL
+                                                 hGlbObj =
+                                                   (*lpLoadWsGlbVarConv) ((UINT) $1.tkToken.tkData.tkInteger,
+                                                                          lpLoadWsGlbVarParm);
+                                                 // Fill in the result token
+                                                 $$ = $1;                               // Set common fields
+                                                 $$.tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                                                 $$.tkToken.tkFlags.ImmType   = 0;
+                                                 $$.tkToken.tkFlags.NoDisplay = FALSE;
+                                                 $$.tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbObj);
+                                             ////$$.tkToken.tkCharIndex       =         // Set in $$ = $1 above
+                                             } else
+                                             {
+                                                 // Signal an error
+                                                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                                                           &$2.tkToken);
+                                                 YYERROR;
+                                             } // End IF/ELSE
+                                         } // End IF
                                         }
     ;
 
@@ -5033,6 +5057,7 @@ SingTokn:
     ;
 
 %%
+#undef  APPEND_NAME
 
 //***************************************************************************
 //  Start of C program
@@ -5437,7 +5462,7 @@ ERROR_EXIT:
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
 ////     // Signal an error
-////     ErrorMessageDirect (ERRMSG_WS_FULL L"-- ParseLine", // Ptr to error message text
+////     ErrorMessageDirect (ERRMSG_WS_FULL APPEND_NAME,     // Ptr to error message text
 ////                         L"",                            // Ptr to the line which generated the error
 ////                         NEG1U,                          // Position of caret (origin-0)
 ////                         hWndSM);                        // Window handle to the Session Manager

@@ -161,6 +161,10 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+        goto LEFT_SYNTAX_EXIT;
+
     // Split cases depending on whether or not we're prototyping
     if (bPrototyping)
     {
@@ -184,6 +188,11 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
                                   lpYYFcnStrLft,    // Ptr to left operand function strand
                                   lptkRhtArg,       // Ptr to right arg token
                                   lptkAxis);        // Ptr to axis token (may be NULL)
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    return NULL;
+
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
@@ -243,11 +252,15 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+        goto LEFT_SYNTAX_EXIT;
 
     // Split cases depending on whether or not we're prototyping
     if (bPrototyping)
@@ -272,9 +285,14 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
                                   lpYYFcnStrLft,// Ptr to left operand function strand
                                   lptkLftArg,   // Ptr to right arg token
                                   lptkAxis);    // Ptr to axis token (may be NULL)
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
+    return NULL;
+
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
     return NULL;
 
 NONCE_EXIT:

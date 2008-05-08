@@ -302,19 +302,21 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
             return SysFnDR_Convert_EM_YY (ARRAY_FLOAT, lptkRhtArg, lptkFunc);
 
         case DR_APA:
+            return SysFnDR_Convert_EM_YY (ARRAY_APA,   lptkRhtArg, lptkFunc);
+
         case DR_HETERO32:
         case DR_HETERO64:
         case DR_NESTED32:
         case DR_NESTED64:
         case DR_LIST32:
         case DR_LIST64:
-        case DR_RATIONAL:
         default:
             return PrimFnDomainError_EM (lptkFunc);
 
         case DR_COMPLEX:
         case DR_QUATERNIONS:
         case DR_OCTONIONS:
+        case DR_RATIONAL:
             return PrimFnNonceError_EM (lptkFunc);
     } // End SWITCH
 
@@ -365,7 +367,10 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
                  aplRankRes;        // Result rank
     APLUINT      ByteRes,           // # bytes in the result
                  aplColsRht,        // Right arg # cols
-                 aplColsRes;        // Result    # cols
+                 aplColsRes,        // Result    # cols
+                 uCnt;              // Loop counter
+    APLINT       apaOffRes,         // Result APA offset
+                 apaMulRes;         // ...        multiplier
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLLONGEST   aplLongestRht;     // Right arg as immediate
 
@@ -376,6 +381,30 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
+
+    // Get right arg's global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Check on APA to APA
+    if (IsSimpleAPA (aplTypeRes) && IsSimpleAPA (aplTypeRht))
+    {
+        // Copy the right arg
+        hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
+
+        goto YYALLOC_EXIT;
+    } // End IF
+
+    // Check on result APA
+    if (IsSimpleAPA (aplTypeRes))
+    {
+        // Check on RIGHT RANK ERROR
+        if (!IsVector (aplRankRht))
+            goto RIGHT_RANK_EXIT;
+
+        // Check on RIGHT LENGTH ERROR
+        if ((aplNELMRht * SysFnDR_BPE (aplTypeRht)) < (3 * SysFnDR_BPE (aplTypeRes)))
+            goto RIGHT_LENGTH_EXIT;
+    } // End IF
 
     // Check for RIGHT DOMAIN ERROR
     if (!IsSimpleNH (aplTypeRht))
@@ -390,11 +419,56 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
     if (aplColsRes EQ NEG1U)
         goto ERROR_EXIT;
 
+    // Check on result APA
+    if (IsSimpleAPA (aplTypeRes))
+    {
+        APLUINT  uLim;
+        LPAPLINT lpMemDataRht;
+
+        // Skip over the header and dimensions to the data
+        lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+        // Get the APA offset
+        apaOffRes = ((LPAPLAPA) lpMemDataRht)->Off;
+
+        // Get the APA multiplier
+        apaMulRes = ((LPAPLAPA) lpMemDataRht)->Mul;
+
+        // Calculate # integers in the right arg to process
+        uLim = (aplNELMRht * SysFnDR_BPE (aplTypeRht)) / SysFnDR_BPE (aplTypeRes);
+
+        // Get the APA NELM
+        for (uCnt = 2, aplNELMRes = 1; uCnt < uLim; uCnt++)
+        {
+            APLINT iAccum;                  // Accumulator for result NELM
+            BOOL   bRet;                    // TRUE iff the result is valid
+
+            // Get the next value as an integer
+            iAccum = lpMemDataRht[uCnt];
+
+            // Check for RIGHT DOMAIN ERROR
+            if (iAccum < 0)
+                goto RIGHT_DOMAIN_EXIT;
+
+            // Save in NELM
+            aplNELMRes = imul64 (aplNELMRes, iAccum, &bRet);
+
+            // Check for overflow
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
+        } // End FOR
+
+        // Set the # result cols
+        aplColsRes = aplNELMRes;
+    } else
     // Check on right arg APA
     if (IsSimpleAPA (aplTypeRht))
     {
         // Get the # bits per element for the result
-        aplNELMRes = (2 * 64) / SysFnDR_BPE (aplTypeRes);
+        aplNELMRes = (2 * SysFnDR_BPE (aplTypeRht)) / SysFnDR_BPE (aplTypeRes);
+
+        // Count in the shape vector, too
+        aplNELMRes += (aplRankRht * SysFnDR_BPE (aplTypeRht)) / SysFnDR_BPE (aplTypeRes);;
 
         // Set the # result cols
         aplColsRes = aplNELMRes;
@@ -405,6 +479,9 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
         aplNELMRes = 0;
 
     // Calculate the result rank
+    if (IsSimpleAPA (aplTypeRes))
+        aplRankRes = ((aplNELMRht * SysFnDR_BPE (aplTypeRht)) / SysFnDR_BPE (aplTypeRes)) - 2;
+    else
     if (IsSimpleAPA (aplTypeRht))
         aplRankRes = 1;
     else
@@ -434,26 +511,49 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
     lpHeader->Rank       = aplRankRes;
 #undef  lpHeader
 
-    // Get right arg's global ptrs
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-
     // If the right arg is a global, ...
     if (hGlbRht)
     {
-        // Copy the right arg dimensions to the result unless APA
-        if (!IsSimpleAPA (aplTypeRht))
-            CopyMemory (VarArrayBaseToDim (lpMemRes),
-                        VarArrayBaseToDim (lpMemRht),
-                        (UINT) (aplRankRes - 1) * sizeof (APLDIM));
-        // Save the last dimension
-        (VarArrayBaseToDim (lpMemRes))[aplRankRes - 1] = aplColsRes;
+        LPAPLDIM lpMemDimRes;           // Ptr to result dimensions
+
+        // Get the result dimension ptr
+        lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
         // Skip over the header and dimensions to the data
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-        // Copy the right arg to the result
-        CopyMemory (lpMemRes, lpMemRht, (UINT) BytesIn (aplTypeRht, aplNELMRht));
+        // If the result is an APA, save the offset & multiplier
+        if (IsSimpleAPA (aplTypeRes))
+        {
+            ((LPAPLAPA) lpMemRes)->Off = apaOffRes;
+            ((LPAPLAPA) lpMemRes)->Mul = apaMulRes;
+
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+            // Save the result shape vector
+            CopyMemory (lpMemDimRes, &((LPAPLUINT) lpMemRht)[2], (UINT) BytesIn (ARRAY_INT, aplRankRes));
+        } else
+        {
+            // Copy the right arg dimensions to the result unless APA
+            if (!IsSimpleAPA (aplTypeRht))
+                CopyMemory (lpMemDimRes,
+                            VarArrayBaseToDim (lpMemRht),
+                            (UINT) BytesIn (ARRAY_INT, aplRankRes - 1));
+            // Save the last dimension
+            lpMemDimRes[aplRankRes - 1] = aplColsRes;
+
+            // If the right arg is an APA, save its shape in the result
+            if (IsSimpleAPA (aplTypeRht))
+                CopyMemory (&((LPAPLINT) lpMemRes)[2],
+                             VarArrayBaseToDim (lpMemRht),
+                             (UINT) BytesIn (ARRAY_INT, aplRankRht));
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+            // Copy the right arg data to the result
+            CopyMemory (lpMemRes, lpMemRht, (UINT) BytesIn (aplTypeRht, aplNELMRht));
+        } // End IF/ELSE
     } else
     {
         // Save the last dimension
@@ -465,7 +565,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
         // Copy the right arg to the result
         *((LPAPLLONGEST) lpMemRes) = aplLongestRht;
     } // End IF/ELSE
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -489,6 +589,16 @@ ERROR_EXIT:
     } // End IF
 
     return lpYYRes;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    return NULL;
+
+RIGHT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    return NULL;
 
 RIGHT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
@@ -517,45 +627,6 @@ UINT SysFnDR_BPE
 
     return uBPE[aplTypeRht];
 } // End SysFnDR_BPE
-
-
-//***************************************************************************
-//  $BytesIn
-//
-//  Return the # bytes in an array of a given type and NELM
-//***************************************************************************
-
-APLUINT BytesIn
-    (APLSTYPE aplTypeRht,               // Right arg storage type
-     APLNELM  aplNELMRht)               // Right arg NELM
-
-{
-    // Split cases based upon the right arg storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:                // 1 bit per element
-            return RoundUpBits8 (aplNELMRht);
-
-        case ARRAY_INT:                 // 8 bytes per element
-        case ARRAY_FLOAT:
-            return aplNELMRht * sizeof (APLINT);
-
-        case ARRAY_CHAR:                // 2 byte per element
-            return aplNELMRht * sizeof (APLCHAR);
-
-        case ARRAY_APA:                 // 2 8-byte elements
-            return sizeof (APLAPA);
-
-        case ARRAY_HETERO:              // 4 bytes per element
-            return aplNELMRht * sizeof (APLHETERO);
-
-        case ARRAY_NESTED:              // 4 bytes per element
-            return aplNELMRht * sizeof (APLNESTED);
-
-        defstop
-            return 0;
-    } // End SWITCH
-} // End BytesIn
 
 
 //***************************************************************************
@@ -724,7 +795,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the text to the result
-    CopyMemory (lpMemRes, wszTemp, (UINT) aplNELMRes * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, wszTemp, (UINT) BytesIn (ARRAY_CHAR, aplNELMRes));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

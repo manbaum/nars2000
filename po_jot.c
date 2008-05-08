@@ -107,8 +107,8 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                  lpYYRes,               // Ptr to the result
                  lpYYRes2,              // Ptr to secondary result
                  lpYYRes3;              // Ptr to tertiary result
-    UINT         uLftArg,               // Left arg loop counter
-                 uRhtArg;               // Right ...
+    BOOL         bLftArg,               // TRUE iff left arg is a function/operator
+                 bRhtArg;               //          right ...
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
     LPPRIMFNS    lpPrimProtoRht;        // Ptr to right ...
     LPTOKEN      lptkAxis,              // Ptr to axis token (may be NULL)
@@ -133,8 +133,12 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
     lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
+    // Test for fcn/opr vs. var
+    bLftArg = IsTknFcnOpr (&lpYYFcnStrLft->tkToken);
+    bRhtArg = IsTknFcnOpr (&lpYYFcnStrRht->tkToken);
+
     // Get a ptr to the prototype function for the left operand
-    if (bPrototyping && IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (bPrototyping && bLftArg)
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
@@ -144,7 +148,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         lpPrimProtoLft = NULL;
 
     // Get a ptr to the prototype function for the right operand
-    if (bPrototyping && IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
+    if (bPrototyping && bRhtArg)
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
@@ -156,11 +160,8 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     // Handle both monadic & dyadic derived functions together
 
     // Determine if the left & right arg tokens are functions/operators
-    uLftArg = IsTknFcnOpr (&lpYYFcnStrLft->tkToken);
-    uRhtArg = IsTknFcnOpr (&lpYYFcnStrRht->tkToken);
-
     // Check for axis operator in the left operand
-    if (uLftArg
+    if (bLftArg
      && lpYYFcnStrLft->TknCount > 1
      && (lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
       || lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
@@ -169,7 +170,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         lptkAxisLft = NULL;
 
     // Check for axis operator in the right operand
-    if (uRhtArg
+    if (bRhtArg
      && lpYYFcnStrRht->TknCount > 1
      && (lpYYFcnStrRht[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
       || lpYYFcnStrRht[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
@@ -179,7 +180,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
 
     // Split cases based upon the type (V or F) of
     //   the left and right operands
-    switch (uLftArg * 2 + uRhtArg * 1)
+    switch (bLftArg * 2 + bRhtArg * 1)
     {
         case 1 * 2 + 1 * 1:     // F1 Jot F2 -> F1 F2 R or (F2 L) F1 F2 R
             // Execute the right operand monadically

@@ -95,7 +95,8 @@ BOOL CmdSave_EM
                  wszSectName[15];       // ...           section name (e.g., [Vars.nnn])
     LPWCHAR      lpMemSaveWSID,         // Ptr to WSID to save to
                  lpMemName,             // Ptr to STE name
-                 lpaplChar;             // Ptr to output save area
+                 lpaplChar,             // Ptr to output save area
+                 lpw;                   // Temporary ptr
     APLNELM      aplNELMWSID;           // []WSID NELM
     APLRANK      aplRankWSID;           // ...    rank
     BOOL         bRet = FALSE;          // TRUE iff result is valid
@@ -113,6 +114,12 @@ BOOL CmdSave_EM
     STFLAGS      stFlags;               // STE flags
     SYSTEMTIME   systemTime;            // Current system (UTC) time
     FILETIME     ftCreation;            // Creation time
+
+    // Skip to the next blank
+    lpw = SkipToCharW (lpwszTail, L' ');
+
+    // Zap it in case there are trailing blanks
+    *lpw = L'\0';
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);

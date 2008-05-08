@@ -120,7 +120,8 @@ typedef enum tagARRAY_TYPES
 // Bites per element vector
 // N.B. the order of elements in this vector matches
 //   the order of elements in the above ARRAY_TYPES enum.
-#define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 0
+//                  B   I   F   C  H  N  L   A
+#define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 64
 
 // Define APA structure
 typedef struct tagAPLAPA    // Offset + Multiplier {times} {iota} Length (origin-0)

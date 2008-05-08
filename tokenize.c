@@ -1089,9 +1089,6 @@ BOOL fnIntAccum
     //   so, instead, we do the following:
     aplInt = imul64 (lpMemPTD->aplInteger, 10, &bRet);
     if (!bRet)
-////aplInt = lpMemPTD->aplInteger * 10;
-////if (lpMemPTD->aplInteger NE (aplInt / 10)
-//// || aplInt < 0)
     {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         DbgMsg ("Integer overflow!");

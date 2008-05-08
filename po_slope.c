@@ -181,6 +181,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+        goto LEFT_SYNTAX_EXIT;
+
     // Get a ptr to the prototype function for the first symbol (a function or operator)
     if (bPrototyping)
     {
@@ -644,6 +648,11 @@ YYALLOC_EXIT:
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
 
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,

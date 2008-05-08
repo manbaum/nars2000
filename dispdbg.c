@@ -389,6 +389,7 @@ void UpdateDBWindow
 //
 //  Display outstanding global memory objects
 //***************************************************************************
+
 void DisplayGlobals
     (UINT uDispGlb)     // 0 = Display non-permanent non-sysvars
                         // 1 = ...     non-sysvars
@@ -901,6 +902,7 @@ LPWCHAR DisplayFcnSub
     HGLOBAL hGlbData;           // Function array global memory handle
     LPVOID  lpMemData;          // Ptr to function array global memory
     UINT    TknCount;           // Token count
+    BOOL    bIsImmed;           // TRUE if the named var is an immediate
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1205,14 +1207,20 @@ LPWCHAR DisplayFcnSub
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYMem->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // Get the variable array global memory handle
-            hGlbData = lpYYMem->tkToken.tkData.tkSym->stData.stGlbData;
+            // Determine if the contents are an immediate
+            bIsImmed = lpYYMem->tkToken.tkData.tkSym->stFlags.Imm;
 
-            // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            if (!bIsImmed)
+            {
+                // Get the variable array global memory handle
+                hGlbData = lpYYMem->tkToken.tkData.tkSym->stData.stGlbData;
+
+                // tkData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbData));
+            } // End IF
 
             // If there's a callback function, use it
-            if (lpSavedWsGlbVarConv)
+            if (!bIsImmed && lpSavedWsGlbVarConv)
                 lpaplChar =
                   (*lpSavedWsGlbVarConv) (lpaplChar,                // Ptr to output save area
                                           hGlbData,                 // Object global memory handle

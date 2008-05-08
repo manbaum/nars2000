@@ -218,17 +218,21 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     //   the axis operator, so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        goto ERROR_EXIT;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the attributes (Type,NELM, and Rank)
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
     lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+        goto LEFT_SYNTAX_EXIT;
+
+    // Ensure the right operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
+        goto RIGHT_SYNTAX_EXIT;
 
     // Get a ptr to the left & right prototype function
     if (bPrototyping)
@@ -781,6 +785,21 @@ YYALLOC_EXIT:
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+RIGHT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
 
 LEFT_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,

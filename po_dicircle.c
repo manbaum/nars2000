@@ -147,6 +147,10 @@ LPPL_YYSTYPE PrimOpMonDieresisCircleCommon_EM_YY
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+        goto LEFT_SYNTAX_EXIT;
+
     return
       PrimOpDieresisJotCommon_EM_YY (NULL,              // Ptr to left arg token (may be NULL if monadic derived function)
                                      lpYYFcnStrLft,     // Ptr to left operand function strand
@@ -158,6 +162,11 @@ LPPL_YYSTYPE PrimOpMonDieresisCircleCommon_EM_YY
 AXIS_EXIT:
     ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
+    return NULL;
+
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
     return NULL;
 } // End PrimOpMonDieresisCircleCommon_EM_YY
 #undef  APPEND_NAME
@@ -213,6 +222,10 @@ LPPL_YYSTYPE PrimOpDydDieresisCircleCommon_EM_YY
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+        goto LEFT_SYNTAX_EXIT;
+
     return
       PrimOpDieresisJotCommon_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic derived function)
                                      lpYYFcnStrLft,     // Ptr to left operand function strand
@@ -224,6 +237,11 @@ LPPL_YYSTYPE PrimOpDydDieresisCircleCommon_EM_YY
 AXIS_EXIT:
     ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
+    return NULL;
+
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
     return NULL;
 } // End PrimOpDydDieresisCircle_EM_YY
 #undef  APPEND_NAME

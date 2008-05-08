@@ -216,11 +216,15 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to right operand,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+
+    // Ensure the right operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
+        goto RIGHT_SYNTAX_EXIT;
 
     // The result NELM is the product of the left & right NELMs
     aplNELMRes = imul64 (aplNELMLft, aplNELMRht, &bRet);
@@ -427,9 +431,14 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
 
     goto NORMAL_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
+    goto ERROR_EXIT;
+
+RIGHT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
 NONCE_EXIT:

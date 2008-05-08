@@ -913,7 +913,7 @@ BOOL TypePromoteGlb_EM
     lpMemRes = VarArrayBaseToDim (lpMemRes);
 
     // Copy the arg dimensions to the result
-    CopyMemory (lpMemRes, lpMemArg, (UINT) aplRankArg * sizeof (APLDIM));
+    CopyMemory (lpMemRes, lpMemArg, (UINT) BytesIn (ARRAY_INT, aplRankArg));
 
     // Skip over the dimensions to the data
     lpMemArg = VarArrayDimToData (lpMemArg, aplRankArg);

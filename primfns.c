@@ -2055,6 +2055,45 @@ APLINT RoundUpBitsInArray
 
 
 //***************************************************************************
+//  $BytesIn
+//
+//  Return the # bytes in an array of a given type and NELM
+//***************************************************************************
+
+APLUINT BytesIn
+    (APLSTYPE aplTypeRht,               // Right arg storage type
+     APLNELM  aplNELMRht)               // Right arg NELM
+
+{
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:                // 1 bit per element
+            return RoundUpBits8 (aplNELMRht);
+
+        case ARRAY_INT:                 // 8 bytes per element
+        case ARRAY_FLOAT:
+            return aplNELMRht * sizeof (APLINT);
+
+        case ARRAY_CHAR:                // 2 byte per element
+            return aplNELMRht * sizeof (APLCHAR);
+
+        case ARRAY_APA:                 // 2 8-byte elements
+            return sizeof (APLAPA);
+
+        case ARRAY_HETERO:              // 4 bytes per element
+            return aplNELMRht * sizeof (APLHETERO);
+
+        case ARRAY_NESTED:              // 4 bytes per element
+            return aplNELMRht * sizeof (APLNESTED);
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End BytesIn
+
+
+//***************************************************************************
 //  $abs64
 //
 //  Return the absolute value of a 64-bit integer
@@ -2085,14 +2124,20 @@ APLINT abs64
 //***************************************************************************
 
 APLINT iadd64
-    (APLINT aplLft,
-     APLINT aplRht,
-     LPBOOL lpbRet)     // Is the result valid?? (may be NULL)
+    (APLINT aplLft,             // Left arg
+     APLINT aplRht,             // Right ...
+     LPBOOL lpbRet)             // Is the result valid?? (may be NULL)
 
 {
-    APLINT aplRes;
+    APLINT aplRes;              // The result
+    BOOL   bRet;                // TRUE iff the result is valid
 
     _clear87 ();
+
+    // Set rounding precision to 53-bits
+    //   as per comments in top of <dtoa.c>
+    //   but we need 64 bits because of 64-bit ints
+    control87(PC_64, MCW_PC);
 
     _asm
     {
@@ -2103,15 +2148,16 @@ APLINT iadd64
     }
 
     // Check for overflow including unexpected change of sign
-    if (_SW_INVALID & _status87 ()
-     || ((SIGN_APLINT (aplLft) EQ SIGN_APLINT (aplRht))         // Lft & Rht signs the same
-      && (SIGN_APLINT (aplRes) NE SIGN_APLINT (aplLft))))       // and result sign not
-    {
-        if (lpbRet)
-            *lpbRet = FALSE;
-        else
-            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } // End IF
+    bRet = !(_SW_INVALID & _status87 ()
+          || (SIGN_APLINT (aplRes) EQ 0) NE (SIGN_APLINT (aplLft) EQ SIGN_APLINT (aplRht)));
+
+    // If the caller handles the overflow, tell 'em whether or not it did
+    if (lpbRet)
+        *lpbRet = bRet;
+    else
+    // Otherwise, if it overflowed, ...
+    if (!bRet)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     return aplRes;
 } // End iadd64
@@ -2124,14 +2170,21 @@ APLINT iadd64
 //***************************************************************************
 
 APLINT imul64
-    (APLINT aplLft,
-     APLINT aplRht,
-     LPBOOL lpbRet)     // Is the result valid?? (may be NULL)
+    (APLINT aplLft,             // Left arg
+     APLINT aplRht,             // Right ...
+     LPBOOL lpbRet)             // Is the result valid?? (may be NULL)
 
 {
-    APLINT aplRes;
+    APLINT aplRes;              // The result
+    BOOL   bRet;                // TRUE iff the result is valid
 
+#if TRUE
     _clear87 ();
+
+    // Set rounding precision to 53-bits
+    //   as per comments in top of <dtoa.c>
+    //   but we need 64 bits because of 64-bit ints
+    control87(PC_64, MCW_PC);
 
     _asm
     {
@@ -2142,15 +2195,34 @@ APLINT imul64
     }
 
     // Check for overflow including unexpected change of sign
-    if (_SW_INVALID & _status87 ()
-     || (SIGN_APLINT (aplRes) EQ 0) NE (SIGN_APLINT (aplLft) EQ SIGN_APLINT (aplRht)))
-    {
-        if (lpbRet)
-            *lpbRet = FALSE;
-        else
-            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } // End IF
+    bRet = !(_SW_INVALID & _status87 ()
+          || (SIGN_APLINT (aplRes) EQ 0) NE (SIGN_APLINT (aplLft) EQ SIGN_APLINT (aplRht)));
 
+    // If the caller handles the overflow, tell 'em whether or not it did
+    if (lpbRet)
+        *lpbRet = bRet;
+    else
+    // Otherwise, if it overflowed, ...
+    if (!bRet)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
+#else
+
+    // Start off with a straight multiply
+    aplRes = aplLft * aplRht;
+
+    // Check for valid result
+    bRet = (aplRes EQ 0
+         || abs64 (aplRes) >= max (abs64 (aplLft), abs64 (aplRht)));
+
+    // If the caller handles the overflow, tell 'em whether or not it did
+    if (lpbRet)
+        *lpbRet = bRet;
+    else
+    // Otherwise, if it overflowed, ...
+    if (!bRet)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+#endif
     return aplRes;
 } // End imul64
 

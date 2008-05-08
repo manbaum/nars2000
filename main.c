@@ -1938,7 +1938,8 @@ int PASCAL WinMain
 
     // Set rounding precision to 53-bits
     //   as per comments in top of <dtoa.c>
-    control87(PC_53, MCW_PC);
+    //   but we need 64 bits because of 64-bit ints
+    control87(PC_64, MCW_PC);
 
     // If there's a command line, parse it
     if (!ParseCommandLine (lpCmdLine))

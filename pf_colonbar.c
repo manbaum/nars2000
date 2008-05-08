@@ -179,6 +179,12 @@ APLFLOAT PrimFnMonColonBarFisF
     if (aplFloatRht EQ 0)
         return TranslateQuadICIndex (ICNDX_DIV0);
 
+    // If the arg is ± infinity, just return 0.
+    // If we don't, then the reciprocal of {neg}infinity
+    //   is {neg}0.
+    if (!_finite (aplFloatRht))
+        return 0;
+
     // The FPU handles overflow and underflow for us
     return (1 / aplFloatRht);
 } // End PrimFnMonColonBarFisF

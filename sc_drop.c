@@ -47,12 +47,19 @@
 #endif
 
 BOOL CmdDrop_EM
-    (LPWCHAR lpwszTail)             // Ptr to command line tail
+    (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
-    WCHAR wszTailDPFE[_MAX_PATH];   // Save area for canonical form of given ws name
-    BOOL  bRet = FALSE;             // TRUE iff result is valid
-    WCHAR wszTemp[DATETIME_LEN + 1];// Output save area ("+ 1" for terminating zero)
+    WCHAR   wszTailDPFE[_MAX_PATH];     // Save area for canonical form of given ws name
+    BOOL    bRet = FALSE;               // TRUE iff result is valid
+    WCHAR   wszTemp[DATETIME_LEN + 1];  // Output save area ("+ 1" for terminating zero)
+    LPWCHAR lpw;                        // Temporary ptr
+
+    // Skip to the next blank
+    lpw = SkipToCharW (lpwszTail, L' ');
+
+    // Zap it in case there are trailing blanks
+    *lpw = L'\0';
 
     // If there is a specified WS Name, ...
     if (*lpwszTail)

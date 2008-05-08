@@ -216,9 +216,30 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     if (!IsSimpleNum (aplTypeRht))
         goto DOMAIN_EXIT;
 
+    // If the right arg is a scalar, the result is an immediate
+    if (IsScalar (aplRankRht))
+    {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // If the right arg is zero, the result is zero
+        //   as per SVD
+        if (aplFloatRht NE 0)
+            aplFloatRht = 1.0 / aplFloatRht;
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkFloat    = aplFloatRht;
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
     // The rank of the result is the same as
-    //   max (rank of the right arg, 1)
-    aplRankRes = max (aplRankRht, 1);
+    //   that of the right arg
+    aplRankRes = aplRankRht;
 
     // Save the NELM of the result
     Assert (aplNELMRht EQ (uNumRows * uNumCols));

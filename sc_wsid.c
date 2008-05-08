@@ -59,6 +59,7 @@ BOOL CmdWsid_EM
     APLRANK      aplRankWSID;           // ...    rank
     LPAPLCHAR    lpMemWSID;             // Ptr to old []WSID global memory
     WCHAR        wszTailDPFE[_MAX_PATH];// Save area for canonical form of given ws name
+    LPWCHAR      lpw;                   // Temporary ptr
     APLUINT      ByteWSID;              // # bytes in the []WSID
     HGLOBAL      hGlbWSID;              // []WSID global memory handle
     UINT         uLen;                  // Length of given WSID
@@ -78,6 +79,12 @@ BOOL CmdWsid_EM
     aplNELMWSID = lpHeader->NELM;
     aplRankWSID = lpHeader->Rank;
 #undef  lpHeader
+
+    // Skip to the next blank
+    lpw = SkipToCharW (lpwszTail, L' ');
+
+    // Zap it in case there are trailing blanks
+    *lpw = L'\0';
 
     // If there's a given WSID, set the WSID
     if (*lpwszTail)

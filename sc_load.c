@@ -90,8 +90,15 @@ BOOL CmdLoadCom_EM
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     WCHAR        wszTailDPFE[_MAX_PATH];// Save area for canonical form of given ws name
+    LPWCHAR      lpw;                   // Temporary ptr
     int          iTabIndex;             // Tab index
     FILE        *fStream;               // Ptr to file stream for the plain text workspace file
+
+    // Skip to the next blank
+    lpw = SkipToCharW (lpwszTail, L' ');
+
+    // Zap it in case there are trailing blanks
+    *lpw = L'\0';
 
     // If there's no WSID, that's an error
     if (lpwszTail[0] EQ L'\0')
@@ -1412,6 +1419,16 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                TRUE,            // TRUE iff wait until finished
                                hWndEC);         // Edit Control window handle
                 Assert (exitType EQ EXITTYPE_NOVALUE);
+
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Save in PerTabData struc
+                lpMemPTD->lpLoadWsGlbVarParm = NULL;
+                lpMemPTD->lpLoadWsGlbVarConv = NULL;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             } // End IF/ELSE
 
             // Lookup the STE and get its HGLOBAL

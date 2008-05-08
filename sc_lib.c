@@ -40,7 +40,7 @@
 //***************************************************************************
 //  $CmdLib_EM
 //
-//  Execute the system command:  )LIB [first][-][last]
+//  Execute the system command:  )LIB [dir] [[first][-][last]]
 //***************************************************************************
 
 BOOL CmdLib_EM
@@ -50,6 +50,13 @@ BOOL CmdLib_EM
     HANDLE           hFind;     // Handle to FindData
     WIN32_FIND_DATAW FindData;  // FindFirstFile return data struc
     UINT             uExtLen;   // Length of workspace extension
+    LPWCHAR          lpw;       // Temporary ptr
+
+    // Skip to the next blank
+    lpw = SkipToCharW (lpwszTail, L' ');
+
+    // Zap it in case there are trailing blanks
+    *lpw = L'\0';
 
     // If there's a command line tail, use it
     if (lpwszTail[0] NE L'\0')

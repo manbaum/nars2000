@@ -220,11 +220,11 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
-        goto SYNTAX_EXIT;
+        goto LEFT_SYNTAX_EXIT;
 
     // Ensure the right operand is a variable
     if (IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
-        goto SYNTAX_EXIT;
+        goto RIGHT_SYNTAX_EXIT;
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -393,7 +393,12 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 
     return lpYYRes;
 
-SYNTAX_EXIT:
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    return NULL;
+
+RIGHT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     return NULL;

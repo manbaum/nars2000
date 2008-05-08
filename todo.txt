@@ -285,6 +285,9 @@ QUESTIONS
 * Should {leftrarrow} be interpreted as a (dyadic) function as Dyalog does, e.g. there
   is an example in their manual of {quad}{jot}{leftarrow}{jot}{quad}VR{each}R ?
 * Also, what category does {quad} belong to in the above line?
+* What is the shape of {domino}scalar?  APL+WIN says ,1 and APL2 says {zilde}
+  and the Extended APL Standard's Evaluation Sequence has a bug which
+  causes it to signal a LENGTH ERROR.
 *
 
 

@@ -210,6 +210,9 @@ typedef enum tagEXIT_TYPES
 #define WKSEXT          ".ws.nars"
 #define WS_WKSEXT       L".ws.nars"
 
+// From
+#define strchrW         wcschr
+
 
 //***************************************************************************
 //  End of File: main.h

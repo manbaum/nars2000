@@ -267,26 +267,6 @@ LPWCHAR SkipPastCharW
 } // End SkipPastCharW
 
 
-//***************************************************************************
-//  $strchrW
-//
-//  The wide form of <strchr>
-//***************************************************************************
-
-LPWCHAR strchrW
-    (LPWCHAR wp,
-     WCHAR   wch)
-
-{
-
-    for (; *wp; wp++)
-    if (wch EQ *wp)
-        return wp;
-
-    return NULL;
-} // End strchrW
-
-
 //************************************************************************
 //  $GetRegDword
 //

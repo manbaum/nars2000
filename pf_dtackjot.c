@@ -2247,14 +2247,15 @@ LPAPLCHAR FormatArrSimple
                 aplRealNRows,       // # real rows
                 aplRealRow;         // Loop counter
     UINT        uActLen,            // Actual length
-                uLead,              //
-                uCol,               //
+                uLead,              // # leading blanks
+                uLeadBefore,        // # leading blanks before test for []PW
+                uCol,               // Column #
                 uCmpWid,            // Compiled width
                 uColOff;            // Current row's col offset
-    LPWCHAR     lpwszOut,           //
-                lpwszOutStart;      //
+    LPWCHAR     lpwszOut,           // Ptr to local output string
+                lpwszOutStart;      // Ptr to starting output string
     LPFMTROWSTR lpFmtRowStr;        // Ptr to this item's FMTROWSTR
-    LPAPLCHAR   lpaplChar = lpaplChar2;
+    LPAPLCHAR   lpaplChar = lpaplChar2; // Ptr to moving output string
     APLUINT     uQuadPW;            // []PW
 
     // Get the current value of []PW
@@ -2342,7 +2343,8 @@ LPAPLCHAR FormatArrSimple
                         } // End IF/ELSE
 
                         // Plus leading blanks
-                        uLead += lpFmtColStr[aplDimCol].uLdBl;
+                        uLeadBefore = lpFmtColStr[aplDimCol].uLdBl;
+                        uLead += uLeadBefore;
 
                         // If this is raw output,
                         // break the line if it would exceed []PW
@@ -2350,7 +2352,7 @@ LPAPLCHAR FormatArrSimple
                         uCol = lpwszOut - lpwszOutStart;
                         if (bRawOutput
                          && DEF_INDENT < uCol
-                         && uQuadPW < (uLead + uCmpWid + uCol))
+                         && uQuadPW < (uLeadBefore + uCmpWid + uCol))
                         {
                             // Ensure properly terminated
                             *lpwszOut = L'\0';
@@ -2375,7 +2377,7 @@ LPAPLCHAR FormatArrSimple
                             // Shorten the width to act like this is the first col
                             //   (which doesn't have a leading blank)
                             uCmpWid = max (uCmpWid, uActLen + 1) - 1;
-                            uCol = uLead;
+                            uCol = uLeadBefore;
                         } else
                         {
                             // Include this row's col offset

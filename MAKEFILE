@@ -61,7 +61,7 @@ LIBS_WEXE = GDI32.LIB           \
 !if "$(DEBUG)" == "1"
             R:\LIB\QDEBUG32.LIB \
 !endif
-            libc.lib            \
+            libcmt.lib          \
             libgsl-double.a     \
             libgslcblas-double.a
 
@@ -1251,6 +1251,7 @@ $(OBJS)
 /MAP:$(O)$(MAPFILE)
 $(LIBS_WEXE) $(LIBS_EXT)
 /DEF:$(DEFFILE)
+/NODEFAULTLIB:libc
 <<KEEP
         @Set LIB=$(L98);$(L)
         @if exist $@ del $@

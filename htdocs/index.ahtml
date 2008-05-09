@@ -291,7 +291,8 @@
         <li>1-bit Booleans</li>
         <li>2-byte Characters (Unicode, that is, UTF-16)</li>
         <li>64-bit Integers</li>
-        <li>64-bit Floats</li>
+        <li>64-bit Floats (double precision)</li>
+        <li>Heterogeneous arrays</li>
         <li>Nested arrays</li>
         <li>APAs (Arithmetic Progression Arrays) (e.g.,
           <span class="APL">2 3 4{rho}{iota}24</span>)</li>

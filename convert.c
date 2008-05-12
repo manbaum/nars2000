@@ -179,27 +179,27 @@ APLBOOL _CompareCT
 
 
 //***************************************************************************
-//  $FloatToAplchar
+//  $IntFloatToAplchar
 //
-//  Convert a floating point number to APLCHARs
+//  Convert an integer/floating point number to APLCHARs
 //***************************************************************************
 
-void FloatToAplchar
-    (APLFLOAT  aplFloat,
-     LPAPLCHAR lpMem)
+void IntFloatToAplchar
+    (LPAPLCHAR    lpMemRes,         // Ptr to output save area
+     LPAPLLONGEST lpaplLongest)     // Ptr to value to convert
 
 {
     int i;
 
-#define fta     ((LPCHAR) &aplFloat)
+#define ifta        ((LPCHAR) lpaplLongest)
 
     for (i = 7; i >= 0; i--)
     {
-        *lpMem++ = L"0123456789ABCDEF"[(fta[i] & 0xF0) >> 4];
-        *lpMem++ = L"0123456789ABCDEF"[(fta[i] & 0x0F) >> 0];
+        *lpMemRes++ = L"0123456789ABCDEF"[(ifta[i] & 0xF0) >> 4];
+        *lpMemRes++ = L"0123456789ABCDEF"[(ifta[i] & 0x0F) >> 0];
     } // End FOR
-#undef  fta
-} // Enf FloatToAplchar
+#undef  ifta
+} // End IntFloatToAplchar
 
 
 //// //***************************************************************************

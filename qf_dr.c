@@ -33,6 +33,8 @@
 #include "compro.h"
 #endif
 
+typedef void (*LPCONVERTTOCHAR) (LPAPLCHAR, APLSTYPE, APLLONGEST, LPBOOL);
+
 
 //***************************************************************************
 //  $SysFnDR_EM_YY
@@ -108,9 +110,11 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 ////lpYYRes->tkToken.tkData.tkInteger  =   (filled in below)
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+#define DR_CHAR2INT        -2   // Convert a character representation of an integer to an integer
 #define DR_CHAR2FLOAT      -1   // Convert a character representation of a float to a float
 #define DR_SHOW             0   // Return a character vector representation
 #define DR_FLOAT2CHAR       1   // Convert a float to its 16-digit hexadecimal character representation
+#define DR_INT2CHAR         2   // Convert an integer to its 16-digit hexadecimal character representation
 #define DR_BOOL           100   //  1 bit  per value
 #define DR_CHAR          1601   // 16 bits ...
 #define DR_INT           6402   // 64 ...
@@ -251,43 +255,33 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     // Ensure the left arg is valid
     switch (aplIntegerLft)
     {
-        case DR_SHOW:
-            // Return a character representation
-            return SysFnDR_Show_EM_YY (lptkRhtArg, lptkFunc);
+        case DR_CHAR2INT:
+            // Convert a character representation of an integer to an integer
+            hGlbRes = SysFnDR_CharToInt_EM (lptkRhtArg, lptkFunc);
+
+            break;
 
         case DR_CHAR2FLOAT:
+            // Convert a character representation of a float to a float
             hGlbRes = SysFnDR_CharToFloat_EM (lptkRhtArg, lptkFunc);
-            if (hGlbRes EQ NULL)
-                return NULL;
 
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
+            break;
 
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-            return lpYYRes;
+        case DR_SHOW:
+            // Return a character vector representation
+            return SysFnDR_Show_EM_YY (lptkRhtArg, lptkFunc);
 
         case DR_FLOAT2CHAR:
+            // Convert a float to its 16-digit hexadecimal character representation
             hGlbRes = SysFnDR_FloatToChar_EM (lptkRhtArg, lptkFunc);
-            if (hGlbRes EQ NULL)
-                return NULL;
 
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
+            break;
 
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        case DR_INT2CHAR:
+            // Convert an integer to its 16-digit hexadecimal character representation
+            hGlbRes = SysFnDR_IntToChar_EM (lptkRhtArg, lptkFunc);
 
-            return lpYYRes;
+            break;
 
         case DR_BOOL:
             return SysFnDR_Convert_EM_YY (ARRAY_BOOL,  lptkRhtArg, lptkFunc);
@@ -319,6 +313,21 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_RATIONAL:
             return PrimFnNonceError_EM (lptkFunc);
     } // End SWITCH
+
+    if (hGlbRes EQ NULL)
+        return NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 
 LEFT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
@@ -826,28 +835,125 @@ WSFULL_EXIT:
 //  Convert a float to its 16-digit hexadecimal character representation
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_FloatToChar_EM"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL SysFnDR_FloatToChar_EM
     (LPTOKEN lptkRhtArg,
      LPTOKEN lptkFunc)
 
 {
-    APLSTYPE   aplTypeRht;          // Right arg storage type
-    APLNELM    aplNELMRht;          // Right arg NELM
-    APLRANK    aplRankRht;          // Right arg rank
-    APLUINT    ByteRes,             // # bytes in the result
-               uRes;                // Result loop counter
-    HGLOBAL    hGlbRht,             // Right arg global memory handle
-               hGlbRes;             // Result    ...
-    LPVOID     lpMemRht = NULL,     // Ptr to right arg global memory
-               lpMemRes = NULL;     // Ptr to result    ...
-    APLLONGEST aplLongestRht;       // Immediate value
-    APLFLOAT   aplFloatRht;         // Temporary float
+    return SysFnDR_IntFloatToChar_EM (lptkRhtArg,
+                                      lptkFunc,
+                                     &SysFnDR_ConvertFloatToChar);
+} // End SysFnDr_FloatToChar_EM
+
+
+//***************************************************************************
+//  $SysFnDR_ConvertFloatToChar
+//
+//  Convert a float to APLCHARs.
+//***************************************************************************
+
+void SysFnDR_ConvertFloatToChar
+    (LPAPLCHAR  lpMemRes,               // Ptr to result global memory
+     APLSTYPE   aplTypeRht,             // Right arg storage type
+     APLLONGEST aplLongestRht,          // Right arg immediate value
+     LPBOOL     lpbRet)                 // Ptr to TRUE iff the result is valid
+
+{
+    APLFLOAT aplFloatRht;               // Temporary float
+
+    if (IsSimpleFlt (aplTypeRht))
+        // Copy the float
+        aplFloatRht = *(LPAPLFLOAT) &aplLongestRht;
+    else
+        // If the value is integer, convert it to float
+        aplFloatRht = (APLFLOAT) (APLINT) aplLongestRht;
+
+    // Convert a floating point number to APLCHARs
+    IntFloatToAplchar (lpMemRes, (LPAPLLONGEST) &aplFloatRht);
+} // End SysFnDR_ConvertFloatToChar
+
+
+//***************************************************************************
+//  $SysFnDR_IntToChar_EM
+//
+//  Convert an integer its 16-digit hexadecimal character representation
+//***************************************************************************
+
+HGLOBAL SysFnDR_IntToChar_EM
+    (LPTOKEN lptkRhtArg,
+     LPTOKEN lptkFunc)
+
+{
+    return SysFnDR_IntFloatToChar_EM (lptkRhtArg,
+                                      lptkFunc,
+                                     &SysFnDR_ConvertIntToChar);
+} // End SysFnDr_IntToChar_EM
+
+
+//***************************************************************************
+//  $SysFnDR_ConvertIntToChar
+//
+//  Convert a float to APLCHARs.
+//***************************************************************************
+
+void SysFnDR_ConvertIntToChar
+    (LPAPLCHAR  lpMemRes,               // Ptr to result global memory
+     APLSTYPE   aplTypeRht,             // Right arg storage type
+     APLLONGEST aplLongestRht,          // Right arg immediate value
+     LPBOOL     lpbRet)                 // Ptr to TRUE iff the result is valid
+
+{
+    APLINT aplIntRht;                   // Temporary integer
+
+    if (IsSimpleFlt (aplTypeRht))
+    {
+        // If the value is float, convert it to integer
+        aplIntRht = (APLINT) *(LPAPLFLOAT) &aplLongestRht;
+
+        if (((APLFLOAT) aplIntRht) NE *(LPAPLFLOAT) &aplLongestRht)
+        {
+            *lpbRet = FALSE;
+
+            return;
+        } // End IF
+    } else
+        // Copy the integer
+        aplIntRht = aplLongestRht;
+
+    // Convert an integer to APLCHARs
+    IntFloatToAplchar (lpMemRes, &aplIntRht);
+} // End SysFnDR_ConvertIntToChar
+
+
+//***************************************************************************
+//  $SysFnDR_IntFloatToChar_EM
+//
+//  Convert an integer/float to its 16-digit hexadecimal character representation
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnDR_IntFloatToChar_EM"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL SysFnDR_IntFloatToChar_EM
+    (LPTOKEN         lptkRhtArg,        // Ptr to right argtoken
+     LPTOKEN         lptkFunc,          // Ptr to error function
+     LPCONVERTTOCHAR lpConvertToChar)   // Ptr to ConvertToChar function
+
+{
+    APLSTYPE   aplTypeRht;              // Right arg storage type
+    APLNELM    aplNELMRht;              // Right arg NELM
+    APLRANK    aplRankRht;              // Right arg rank
+    APLUINT    ByteRes,                 // # bytes in the result
+               uRes;                    // Result loop counter
+    HGLOBAL    hGlbRht,                 // Right arg global memory handle
+               hGlbRes = NULL;          // Result    ...
+    LPVOID     lpMemRht = NULL,         // Ptr to right arg global memory
+               lpMemRes = NULL;         // Ptr to result    ...
+    APLLONGEST aplLongestRht;           // Immediate value
+    BOOL       bRet = TRUE;             // TRUE iff the result is valid
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right args
@@ -910,7 +1016,7 @@ HGLOBAL SysFnDR_FloatToChar_EM
     if (lpMemRht)
     {
         // Loop through the right arg converting it to the result
-        for (uRes = 0; uRes < aplNELMRht; uRes++, ((LPAPLCHAR) lpMemRes += 16))
+        for (uRes = 0; bRet && uRes < aplNELMRht; uRes++, ((LPAPLCHAR) lpMemRes += 16))
         {
             // Get the next value from the right arg
             GetNextValueMem (lpMemRht,      // Ptr to item global memory data
@@ -919,31 +1025,44 @@ HGLOBAL SysFnDR_FloatToChar_EM
                              NULL,          // Ptr to result global memory handle (may be NULL)
                             &aplLongestRht, // Ptr to result immediate value (may be NULL)
                              NULL);         // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-            // If the value is not already float, convert it
-            if (!IsSimpleFlt (aplTypeRht))
-                aplFloatRht = (APLFLOAT) (APLINT) aplLongestRht;
-            else
-                aplFloatRht = *(LPAPLFLOAT) &aplLongestRht;
-
-            // Convert a floating point number to APLCHARs
-            FloatToAplchar (aplFloatRht, (LPAPLCHAR) lpMemRes);
+            // Convert to APLCHARs
+            (*lpConvertToChar) (lpMemRes, aplTypeRht, aplLongestRht, &bRet);
         } // End FOR
     } else
     // The right arg is an immediate
-    {
-        // If the immediate value is not already float, convert it
-        if (!IsSimpleFlt (aplTypeRht))
-            aplFloatRht = (APLFLOAT) (APLINT) aplLongestRht;
-        else
-            aplFloatRht = *(LPAPLFLOAT) &aplLongestRht;
-
-        // Convert a floating point number to APLCHARs
-        FloatToAplchar (aplFloatRht, (LPAPLCHAR) lpMemRes);
-    } // End IF/ELSE
+        // Convert to APLCHARs
+        (*lpConvertToChar) (lpMemRes, aplTypeRht, aplLongestRht, &bRet);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
+    // Check for error
+    if (bRet)
+        goto NORMAL_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
     // We no longer need this ptr
     if (lpMemRht)
     {
@@ -951,17 +1070,7 @@ HGLOBAL SysFnDR_FloatToChar_EM
     } // End IF
 
     return hGlbRes;
-
-RIGHT_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkFunc);
-    return NULL;
-
-WSFULL_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                               lptkFunc);
-    return NULL;
-} // End SysFnDR_FloatToChar_EM
+} // End SysFnDR_IntFloatToChar_EM
 #undef  APPEND_NAME
 
 
@@ -971,33 +1080,69 @@ WSFULL_EXIT:
 //  Convert a 16-digit hexadecimal character representation of a float to a float
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_CharToFloat_EM"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL SysFnDR_CharToFloat_EM
     (LPTOKEN lptkRhtArg,
      LPTOKEN lptkFunc)
 
 {
-    APLSTYPE   aplTypeRht;          // Right arg storage type
-    APLNELM    aplNELMRht,          // Right arg NELM
-               aplNELMRes,          // Result    ...
-               aplColsRht;          // Right arg # cols
-    APLRANK    aplRankRht,          // Right arg rank
-               aplRankRes;          // Result    ...
-    APLUINT    ByteRes,             // # bytes in the result
-               uRht,                // Loop counter
-               uRes;                // Loop counter
-    APLCHAR    aplChar;             // Temporary char
-    HGLOBAL    hGlbRht = NULL,      // Right arg global memory handle
-               hGlbRes = NULL;      // Result    ...
-    LPAPLCHAR  lpMemRht = NULL,     // Ptr to right arg global memory
-               lpMemDataRht;        // Ptr to right arg global memory
-    LPAPLFLOAT lpMemRes = NULL;     // Ptr to result    ...
-    APLLONGEST aplLongestRht;       // Right arg accumulator
+    return SysFnDR_CharToIntFloat_EM (lptkRhtArg,
+                                      lptkFunc,
+                                      ARRAY_FLOAT);
+} // End SysFnDR_CharToFloat_EM
+
+
+//***************************************************************************
+//  $SysFnDR_CharToInt_EM
+//
+//  Convert a 16-digit hexadecimal character representation of a float to a float
+//***************************************************************************
+
+HGLOBAL SysFnDR_CharToInt_EM
+    (LPTOKEN lptkRhtArg,
+     LPTOKEN lptkFunc)
+
+{
+    return SysFnDR_CharToIntFloat_EM (lptkRhtArg,
+                                      lptkFunc,
+                                      ARRAY_INT);
+} // End SysFnDR_CharToInt_EM
+
+
+//***************************************************************************
+//  $SysFnDR_CharToIntFloat_EM
+//
+//  Convert a 16-digit hexadecimal character representation of
+//    an integer/float to a integer/float
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnDR_CharToIntFloat_EM"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL SysFnDR_CharToIntFloat_EM
+    (LPTOKEN           lptkRhtArg,          // Ptr to right arg token
+     LPTOKEN           lptkFunc,            // Ptr to error function token
+     APLSTYPE          aplTypeRes)          // Result storage type
+
+{
+    APLSTYPE   aplTypeRht;                  // Right arg storage type
+    APLNELM    aplNELMRht,                  // Right arg NELM
+               aplNELMRes,                  // Result    ...
+               aplColsRht;                  // Right arg # cols
+    APLRANK    aplRankRht,                  // Right arg rank
+               aplRankRes;                  // Result    ...
+    APLUINT    ByteRes,                     // # bytes in the result
+               uRht,                        // Loop counter
+               uRes;                        // Loop counter
+    APLCHAR    aplChar;                     // Temporary char
+    HGLOBAL    hGlbRht = NULL,              // Right arg global memory handle
+               hGlbRes = NULL;              // Result    ...
+    LPAPLCHAR  lpMemRht = NULL,             // Ptr to right arg global memory
+               lpMemDataRht;                // Ptr to right arg global memory
+    LPVOID     lpMemRes = NULL;             // Ptr to result    ...
+    APLLONGEST aplLongestRht;               // Right arg accumulator
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right args
@@ -1054,7 +1199,7 @@ HGLOBAL SysFnDR_CharToFloat_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_FLOAT;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -1113,7 +1258,10 @@ HGLOBAL SysFnDR_CharToFloat_EM
         } // End FOR
 
         // Save in the result
-        *lpMemRes++ = *(LPAPLFLOAT) &aplLongestRht;
+        if (aplTypeRes EQ ARRAY_FLOAT)
+            *((LPAPLFLOAT) lpMemRes)++ = *(LPAPLFLOAT) &aplLongestRht;
+        else
+            *((LPAPLINT)   lpMemRes)++ =                aplLongestRht;
     } // End FOR
 
     goto NORMAL_EXIT;
@@ -1148,7 +1296,7 @@ NORMAL_EXIT:
     } // End IF
 
     return hGlbRes;
-} // End SysFnDR_CharToFloat_EM
+} // End SysFnDR_CharToIntFloat_EM
 #undef  APPEND_NAME
 
 

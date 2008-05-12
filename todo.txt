@@ -6,7 +6,7 @@ TO DO:  General:  Important (pre-alpha)
 TO DO:  General:  Less Important (post-alpha)
 ---------------------------------------------
 * Check for stack overflow (recursion depth in parser)
-* Finish filling in <startaddr.h>
+* Finish filling in <startaddr.h> or get it from the executable.
 * Check for bison stack overflow
 * Allocate bison stack from virtual memory
 * Implement Garbage Collection???
@@ -24,6 +24,7 @@ TO DO:  General:  Less Important (post-alpha)
 * Allow [first][-][last] as arg to )LIB/VARS/FNS/OPS/NMS
 * Check for overflow on integer addition/multiplication
 * Check for 64-bit compile
+* Check for updates from the web:  nars2000.org/CurrentRelease.php
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -78,11 +79,13 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       matrix editor       (requires someone to want it badly enough to code it)
 * ...       []IDENTITY:                 (Identity element entry point for user-defined function/operator)
 * ...       []INVERSE:          (requires power operator)
-* ...       []SINGLETON:        (requires definition of singleton reduction/scan for all functions)
+* ...       []SINGLETON:        (requires definition of singleton reduction/scan for all primitive functions)
 * ...       bracket indexed strand assignment  (B (A[L])){is}R
 * ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
 * ...       bracket list indexing        A[L1;...;Ln][M]
 * ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
+* ...       finish []SA
+* ...       )COPY :nnn [objs]   to copy objects from another tab
 * ...
 
 
@@ -151,7 +154,7 @@ DONE:  General
 * ...     L []NL R
 * ...     2 []CR R
 * ...     1 []CR R
-* ...     L []DR R
+* ...     L []DR R for L=¯2 ¯1 0 1 2
 * ...       []ERROR R
 * ...       []EM
 * ...       []ET

@@ -112,7 +112,7 @@ Downloads</h1>
             $Notes  = "Notes-$Rel.txt";
 
             // Get the corresponding release
-            $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Release #nnn "));
+            $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
 
             echo   "      <tr class=\"$Ext\">\n"
                .   "        <td>$Name</td>\n"

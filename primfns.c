@@ -2147,9 +2147,8 @@ APLINT iadd64
         fistp   aplRes;
     }
 
-    // Check for overflow including unexpected change of sign
-    bRet = !(_SW_INVALID & _status87 ()
-          || (SIGN_APLINT (aplRes) EQ 0) NE (SIGN_APLINT (aplLft) EQ SIGN_APLINT (aplRht)));
+    // Check for overflow
+    bRet = !(_SW_INVALID & _status87 ());
 
     // If the caller handles the overflow, tell 'em whether or not it did
     if (lpbRet)
@@ -2161,6 +2160,51 @@ APLINT iadd64
 
     return aplRes;
 } // End iadd64
+
+
+//***************************************************************************
+//  $isub64
+//
+//  Subtract two 64-bit integers retaining maximum precision
+//***************************************************************************
+
+APLINT isub64
+    (APLINT aplLft,             // Left arg
+     APLINT aplRht,             // Right ...
+     LPBOOL lpbRet)             // Is the result valid?? (may be NULL)
+
+{
+    APLINT aplRes;              // The result
+    BOOL   bRet;                // TRUE iff the result is valid
+
+    _clear87 ();
+
+    // Set rounding precision to 53-bits
+    //   as per comments in top of <dtoa.c>
+    //   but we need 64 bits because of 64-bit ints
+    control87(PC_64, MCW_PC);
+
+    _asm
+    {
+        fild    aplLft;
+        fild    aplRht;
+        fsubp   st(1),st(0);
+        fistp   aplRes;
+    }
+
+    // Check for overflow
+    bRet = !(_SW_INVALID & _status87 ());
+
+    // If the caller handles the overflow, tell 'em whether or not it did
+    if (lpbRet)
+        *lpbRet = bRet;
+    else
+    // Otherwise, if it overflowed, ...
+    if (!bRet)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
+    return aplRes;
+} // End isub64
 
 
 //***************************************************************************
@@ -2194,9 +2238,8 @@ APLINT imul64
         fistp   aplRes;
     }
 
-    // Check for overflow including unexpected change of sign
-    bRet = !(_SW_INVALID & _status87 ()
-          || (SIGN_APLINT (aplRes) EQ 0) NE (SIGN_APLINT (aplLft) EQ SIGN_APLINT (aplRht)));
+    // Check for overflow
+    bRet = !(_SW_INVALID & _status87 ());
 
     // If the caller handles the overflow, tell 'em whether or not it did
     if (lpbRet)

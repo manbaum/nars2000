@@ -829,7 +829,22 @@ LPAPLCHAR FormatAplintFC
     // Check the sign bit -- if set, save and make positive
     if (aplInt < 0)
     {
+        // Save the overbar
         *lpaplChar++ = aplCharOverbar;
+
+        // If it's the minimum integer, ...
+        if (aplInt EQ MIN_APLINT)
+        {
+            // Copy the constant (skipping over the sign WCHAR) to the result
+            lstrcpyW (lpaplChar, &MIN_APLINT_STR[1]);
+
+            // Skip over it
+            lpaplChar += lstrlenW (lpaplChar);
+
+            goto NORMAL_EXIT;
+        } // End IF
+
+        // Now it's safe to negate the integer
         aplInt = -aplInt;
     } // End IF
 
@@ -848,7 +863,7 @@ LPAPLCHAR FormatAplintFC
     // Copy the digits to the result
     for (i++; i < MAXLEN; i++)
         *lpaplChar++ = wszTemp[i];
-
+NORMAL_EXIT:
     // Include a separator
     *lpaplChar++ = L' ';
 

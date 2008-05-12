@@ -41,9 +41,13 @@ typedef UCHAR       APLSTYPE;           // Storage type (see ARRAY_TYPES)
 
 typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMTAB_DATA
 
-#define MAX_APLNELM 0xFFFFFFFFFFFFFFFF  // Largest APLNELM
-#define MAX_APLDIM  0xFFFFFFFFFFFFFFFF  // ...     APLDIM
-#define MAX_APLINT  0xFFFFFFFFFFFFFFFF  // ...     APLINT
+#define MAX_APLUINT     0xFFFFFFFFFFFFFFFF                      // Largest  APLINT
+#define MAX_APLNELM     MAX_APLUINT                             // ...      APLNELM
+#define MAX_APLRANK     MAX_APLUINT                             // ...      APLRANK
+#define MAX_APLDIM      MAX_APLUINT                             // ...      APLDIM
+#define MAX_APLINT      0x7FFFFFFFFFFFFFFF                      // ...      APLINT
+#define MIN_APLINT      0x8000000000000000                      // Smallest APLINT
+#define MIN_APLINT_STR  WS_UTF16_OVERBAR L"9223372036854775808" // ...      ...    as a string
 
 // # integers in an APLCHAR
 #define APLCHAR_SIZE    (BIT0 << (NBIB * sizeof (APLCHAR)))

@@ -284,9 +284,8 @@ APLINT PrimFnDydPlusIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow
-
-    return aplIntegerLft + aplIntegerRht;
+    // Add the two integers and signal overflow exception in <iadd64>
+    return iadd64 (aplIntegerLft, aplIntegerRht, NULL);
 } // End PrimFnDydPlusIisIvI
 
 
@@ -302,9 +301,8 @@ APLFLOAT PrimFnDydPlusFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow
-
-    return (APLFLOAT) (aplIntegerLft + aplIntegerRht);
+    return ((APLFLOAT) (APLINT) aplIntegerLft)
+         + ((APLFLOAT) (APLINT) aplIntegerRht);
 } // End PrimFnDydPlusFisIvI
 
 
@@ -320,8 +318,6 @@ APLFLOAT PrimFnDydPlusFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow
-
     return aplFloatLft + aplFloatRht;
 } // End PrimFnDydPlusFisFvF
 

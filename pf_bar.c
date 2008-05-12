@@ -154,6 +154,10 @@ APLINT PrimFnMonBarIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for overflow
+    if (aplIntegerRht EQ MIN_APLINT)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
     return -aplIntegerRht;
 } // End PrimFnMonBarIisI
 
@@ -303,7 +307,8 @@ APLINT PrimFnDydBarIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return aplIntegerLft - aplIntegerRht;
+    // Subtract the two integers and signal overflow execption in <isub64>
+    return isub64 (aplIntegerLft, aplIntegerRht, NULL);
 } // End PrimFnDydBarIisIvI
 
 
@@ -319,7 +324,8 @@ APLFLOAT PrimFnDydBarFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return (APLFLOAT) (aplIntegerLft - aplIntegerRht);
+    return ((APLFLOAT) (APLINT) aplIntegerLft)
+         - ((APLFLOAT) (APLINT) aplIntegerRht);
 } // End PrimFnDydBarFisIvI
 
 

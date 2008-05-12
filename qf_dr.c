@@ -214,6 +214,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     APLINT       aplIntegerLft;     // Left arg as integer
     APLFLOAT     aplFloatLft;       // Left arg as float
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    BOOL         bScalar = FALSE;   // TRUE if the result si a simple scalar
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg
@@ -257,13 +258,13 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     {
         case DR_CHAR2INT:
             // Convert a character representation of an integer to an integer
-            hGlbRes = SysFnDR_CharToInt_EM (lptkRhtArg, lptkFunc);
+            hGlbRes = SysFnDR_CharToInt_EM (lptkRhtArg, lptkFunc, &bScalar);
 
             break;
 
         case DR_CHAR2FLOAT:
             // Convert a character representation of a float to a float
-            hGlbRes = SysFnDR_CharToFloat_EM (lptkRhtArg, lptkFunc);
+            hGlbRes = SysFnDR_CharToFloat_EM (lptkRhtArg, lptkFunc, &bScalar);
 
             break;
 
@@ -320,12 +321,40 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    // If the result is a simple scalar, ...
+    if (bScalar)
+    {
+        IMM_TYPES  immTypeRes;
+        APLLONGEST aplLongestRes;
+
+        // Get the first value
+        GetFirstValueGlb (hGlbRes,                          // The global memory handle
+                          NULL,                             // Ptr to integer (or Boolean) (may be NULL)
+                          NULL,                             // ...    float (may be NULL)
+                          NULL,                             // ...    char (may be NULL)
+                         &aplLongestRes,                    // ...    longest (may be NULL)
+                          NULL,                             // ...    LPSYMENTRY or HGLOBAL (may be NULL)
+                         &immTypeRes,                       // ...    immediate type (see IMM_TYPES) (may be NULL)
+                          NULL,                             // ...    array type -- ARRAY_TYPES (may be NULL)
+                          FALSE);                           // TRUE iff we should expand LPSYMENTRY into immediate value
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkLongest  = aplLongestRes;
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } else
+    {
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    } // End IF/ELSE
 
     return lpYYRes;
 
@@ -1081,13 +1110,15 @@ NORMAL_EXIT:
 //***************************************************************************
 
 HGLOBAL SysFnDR_CharToFloat_EM
-    (LPTOKEN lptkRhtArg,
-     LPTOKEN lptkFunc)
+    (LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkFunc,              // Ptr to error function token
+     LPBOOL  lpbScalar)             // Ptr to TRUE iff result is a simple scalar
 
 {
     return SysFnDR_CharToIntFloat_EM (lptkRhtArg,
                                       lptkFunc,
-                                      ARRAY_FLOAT);
+                                      ARRAY_FLOAT,
+                                      lpbScalar);
 } // End SysFnDR_CharToFloat_EM
 
 
@@ -1098,13 +1129,15 @@ HGLOBAL SysFnDR_CharToFloat_EM
 //***************************************************************************
 
 HGLOBAL SysFnDR_CharToInt_EM
-    (LPTOKEN lptkRhtArg,
-     LPTOKEN lptkFunc)
+    (LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkFunc,              // Ptr to error function token
+     LPBOOL  lpbScalar)             // Ptr to TRUE iff result is a simple scalar
 
 {
     return SysFnDR_CharToIntFloat_EM (lptkRhtArg,
                                       lptkFunc,
-                                      ARRAY_INT);
+                                      ARRAY_INT,
+                                      lpbScalar);
 } // End SysFnDR_CharToInt_EM
 
 
@@ -1122,9 +1155,10 @@ HGLOBAL SysFnDR_CharToInt_EM
 #endif
 
 HGLOBAL SysFnDR_CharToIntFloat_EM
-    (LPTOKEN           lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN           lptkFunc,            // Ptr to error function token
-     APLSTYPE          aplTypeRes)          // Result storage type
+    (LPTOKEN  lptkRhtArg,                   // Ptr to right arg token
+     LPTOKEN  lptkFunc,                     // Ptr to error function token
+     APLSTYPE aplTypeRes,                   // Result storage type
+     LPBOOL   lpbScalar)                    // Ptr to TRUE iff result is a simple scalar
 
 {
     APLSTYPE   aplTypeRht;                  // Right arg storage type
@@ -1183,6 +1217,9 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
     aplNELMRes = aplNELMRht / 16;
     aplRankRes = aplRankRht - 1;
 
+    // Tell the caller is the result is a simple scalar
+    *lpbScalar = IsScalar (aplRankRes);
+
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_FLOAT, aplNELMRes, aplRankRes);
 
@@ -1223,7 +1260,7 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
     // Skip over the right arg last dimension
     Assert (16 EQ *(LPAPLDIM) lpMemRht); ((LPAPLDIM) lpMemRht)++;
 
-    // Convert the char representation of a float to a float
+    // Convert the char representation of an integer/float to an integer/float
 
     // Loop through the right arg converting it to the result
     for (uRes = 0; uRes < aplNELMRes; uRes++, lpMemRht += 16)

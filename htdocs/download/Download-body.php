@@ -81,11 +81,6 @@ Downloads</h1>
         echo "\n";
 
         $DirName = '/v/nars2000.org/htdocs/download/binaries/';
-        $PathToRepo = "/rul/repos/nars2000";
-        $Youngest   = "/rul/bin/svnlook youngest " . $PathToRepo;
-
-        // Get the current release #
-        $CurRel = 0 + exec ($Youngest);
 
         $dh = opendir ($DirName);
 
@@ -116,18 +111,19 @@ Downloads</h1>
             $Size   = number_format (filesize ($DirName . $File));
             $Notes  = "Notes-$Rel.txt";
 
+            // Get the corresponding release
+            $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Release #nnn "));
+
             echo   "      <tr class=\"$Ext\">\n"
                .   "        <td>$Name</td>\n"
                .   "        <td>$Rel</td>\n"
                .   "        <td>$Date</td>\n"
                .   "        <td>$Size</td>\n"
                .   "        <td>$Ext</td>\n"
-               . (($Ext == "zip") ? "        <td class=\"notes\"><a target=\"bodyFrame\"class=\"linkleft\" href=\"binaries/$Notes\">Release #$CurRel</a></td>\n"
+               . (($Ext == "zip") ? "        <td class=\"notes\"><a target=\"bodyFrame\"class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
                                   : "        <td class=\"notes\"></td>\n")
                .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
                .   "      </tr>\n";
-            if ($Ext == 'zip')
-                $CurRel--;
         } // End FOREACH
 
         closedir ($dh);

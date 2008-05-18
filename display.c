@@ -57,7 +57,22 @@ BOOL ArrayDisplay_EM
      LPBOOL  lpbCtrlBreak)          // Ptr to Ctrl-Break flag
 
 {
-    LPAPLCHAR lpaplChar;
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPAPLCHAR    lpaplChar;         // Ptr to output save area
+    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to formatting save area
+    lpwszFormat = lpMemPTD->lpwszFormat;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Split cases based upon the token type
     switch (lptkRes->tkFlags.TknType)
@@ -78,10 +93,11 @@ BOOL ArrayDisplay_EM
 
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
-                    DisplayGlbArr (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkSym->stData.stGlbData),
-                                   bEndingCR,       // TRUE iff last line has CR
-                                   lpbCtrlBreak);   // Ptr to Ctrl-Break flag
-                return TRUE;
+                    return
+                      DisplayGlbArr (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkSym->stData.stGlbData),
+                                     bEndingCR,         // TRUE iff last line has CR
+                                     lpbCtrlBreak,      // Ptr to Ctrl-Break flag
+                                     lptkRes);          // Ptr to function token
             } // End IF
 
             // Check for NoDisplay flag
@@ -129,10 +145,11 @@ BOOL ArrayDisplay_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    DisplayGlbArr (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkGlbData),
-                                   bEndingCR,       // TRUE iff last line has CR
-                                   lpbCtrlBreak);   // Ptr to Ctrl-Break flag
-                    return TRUE;
+                    return
+                      DisplayGlbArr (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkGlbData),
+                                     bEndingCR,         // TRUE iff last line has CR
+                                     lpbCtrlBreak,      // Ptr to Ctrl-Break flag
+                                     lptkRes);          // Ptr to function token
 
                 defstop
                     return FALSE;
@@ -177,13 +194,16 @@ SYNTAX_EXIT:
 #define APPEND_NAME
 #endif
 
-void DisplayGlbArr
+BOOL DisplayGlbArr
     (HGLOBAL hGlb,                  // Global memory handle to display
      BOOL    bEndingCR,             // TRUE iff last line has CR
-     LPBOOL  lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+     LPBOOL  lpbCtrlBreak,          // Ptr to Ctrl-Break flag
+     LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    LPVOID       lpMem;
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPVOID       lpMem = NULL;      // Ptr to incoming global memory
     LPAPLCHAR    lpaplCharIni = NULL,
                  lpaplChar,
                  lpaplCharStart,
@@ -198,35 +218,56 @@ void DisplayGlbArr
                  aplDimCol,         // Col loop counter
                  aplLastDim;        // Length of the last dimension in the result
     APLNELM      aplNELMRes;        // Result NELM
-    LPFMTHEADER  lpFmtHeader;       // Ptr to format header struc
+    LPFMTHEADER  lpFmtHeader,       // Ptr to format header struc
+                 lpFmtHeader2;      // ...
     LPFMTCOLSTR  lpFmtColStr;       // Ptr to format col struc
     APLUINT      uQuadPP,           // []PP
                  uQuadPW;           // []PW
     BOOL         bLineCont = FALSE, // TRUE iff this line is a continuation
-                 bRawOut;           // TRUE iff using raw output
+                 bRawOut,           // TRUE iff using raw output
+                 bRet = FALSE;      // TRUE iff the result is valid
     APLUINT      uOutLen;           // Output length for this line
-    MEMVIRTSTR   lclMemVirtStr[1];  // Room for one VirtualAlloc
+    MEMVIRTSTR   lclMemVirtStr[1] = {0};// Room for one GuardAlloc
+    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to formatting save area
+    lpwszFormat = lpMemPTD->lpwszFormat;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the current value of []PP & PW
     uQuadPP = GetQuadPP ();
     uQuadPW = GetQuadPW ();
 
     // Allocate space for the display
+#ifdef DEBUG
+    lclMemVirtStr[0].lpText   = "lpaplCharIni in <DisplayGlbArr>";
+#endif
     lclMemVirtStr[0].IncrSize = DEF_DISPLAY_INCRSIZE * sizeof (APLCHAR);
     lclMemVirtStr[0].MaxSize  = DEF_DISPLAY_MAXSIZE  * sizeof (APLCHAR);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     lpaplCharIni =
-      VirtualAlloc (NULL,           // Any address
-                    lclMemVirtStr[0].MaxSize,
-                    MEM_RESERVE,    // memVirtStr
-                    PAGE_READWRITE);
-    if (!lpaplCharIni)
+      GuardAlloc (NULL,             // Any address
+                  lclMemVirtStr[0].MaxSize,
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lclMemVirtStr[0].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("DisplayGlbArr:  VirtualAlloc for <lpaplCharIni> failed");
+        DbgMsg ("DisplayGlbArr:  GuardAlloc for <lpaplCharIni> failed");
 
-        return;             // Mark as failed
+        goto ERROR_EXIT;    // Mark as failed
     } // End IF
+
+    // Link this struc into the chain
+    LinkMVS (&lclMemVirtStr[0]);
 
 ////// Commit the intial size
 ////VirtualAlloc (lclMemVirtStr[0].IniAddr,
@@ -278,9 +319,10 @@ void DisplayGlbArr
         aplChrNCols = (IsSimpleChar (aplType)) ? 1 : aplDimNCols;
 
         // Create a new FMTHEADER
-        ZeroMemory ((LPFMTHEADER) lpaplCharIni, sizeof (FMTHEADER));
-////////((LPFMTHEADER) lpaplCharIni)->lpFmtHeadUp = NULL;  // Filled in by ZeroMemory
-        lpFmtHeader = (LPFMTHEADER) lpaplCharIni;
+        lpFmtHeader2 = (LPFMTHEADER) lpaplCharIni;
+        ZeroMemory (lpFmtHeader2, sizeof (FMTHEADER));
+////////lpFmtHeader2->lpFmtHeadUp = NULL;               // Filled in by ZeroMemory
+        lpFmtHeader = lpFmtHeader2;
 #ifdef DEBUG
         lpFmtHeader->Sig.nature  = FMTHEADER_SIGNATURE;
 #endif
@@ -425,176 +467,207 @@ void DisplayGlbArr
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                lclMemVirtStr,
-                                sizeof (lclMemVirtStr) / sizeof (lclMemVirtStr[0]),
-                                "DisplayGlbArr"))
-    {} // End __try/__except
 
-    // Check for Ctrl-Break
-    if (*lpbCtrlBreak)
-        goto ERROR_EXIT;
+        // Check for Ctrl-Break
+        if (*lpbCtrlBreak)
+            goto ERROR_EXIT;
 
-    // Propagate the row & col count up the line
-    PropagateRowColCount (lpFmtHeader);
+        // Propagate the row & col count up the line
+        PropagateRowColCount (lpFmtHeader);
 
-    // lpaplCharStart now contains the compiled version of the output
+        // lpaplCharStart now contains the compiled version of the output
 
-    // Add up the width of each column to get the
-    //   # cols in the result
-    for (aplLastDim = aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
-        aplLastDim += ExteriorColWidth (&lpFmtColStr[aplDimCol]);
-    Assert (aplLastDim EQ ExteriorHdrWidth (lpFmtHeader));
+        // Add up the width of each column to get the
+        //   # cols in the result
+        for (aplLastDim = aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
+            aplLastDim += ExteriorColWidth (&lpFmtColStr[aplDimCol]);
+        Assert (aplLastDim EQ ExteriorHdrWidth (lpFmtHeader));
 
-    // Calculate the NELM of the result
-    aplNELMRes = lpFmtHeader->uFmtRows * aplLastDim;
+        // Calculate the NELM of the result
+        aplNELMRes = lpFmtHeader->uFmtRows * aplLastDim;
 
-    lpaplChar = lpwszFormat;
+        // Get ptr to formatting save area
+        lpaplChar = lpwszFormat;
 
 #ifdef PREFILL
-    // Fill the output area with all zeros
-    // Ensure at least one value filled in case the char array is empty
-    if (IsSimpleChar (aplType))
-        ZeroMemory (lpaplChar, (UINT) max (aplNELMRes, 1) * sizeof (APLCHAR));
-    else
-    {
-        // Fill the output area with all blanks
-        Assert (aplNELMRes EQ (UINT) aplNELMRes);
-        FillMemoryW (lpaplChar, (UINT) aplNELMRes, L' ');
-    } // End IF/ELSE
-#endif
-    // Run through the array again processing the
-    //   output stream into lpaplChar
-
-    // Calc when to use raw output
-    bRawOut = ((!IsSimpleChar (aplType)) && (!IsNested (aplType)));
-
-    // Split cases based upon the array's storage type
-    switch (aplType)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_FLOAT:
-        case ARRAY_CHAR:
-        case ARRAY_APA:
-        case ARRAY_HETERO:
-////////////lpaplChar =
-              FormatArrSimple (lpFmtHeader,             // Ptr to FMTHEADER
-                               lpFmtColStr,             // Ptr to vector of <aplChrNCols> FMTCOLSTRs
-                               lpaplCharStart,          // Ptr to compiled input
-                              &lpaplChar,               // Ptr to output string
-                               lpFmtHeader->uActRows,   // # formatted rows in this array
-                               aplDimNCols,             // # formatted cols in this array
-                               aplLastDim,              // Length of last dim in result (NULL for !bRawOutput)
-                               aplRank,                 // Rank of this array
-                               lpMemDim,                // Ptr to this array's dimensions
-                               aplType,                 // Storage type of this array
-                               TRUE,                    // TRUE iff skip to next row after this item
-                               bRawOut,                 // TRUE iff raw (not {thorn}) output
-                               bEndingCR,               // TRUE iff last line has CR
-                               lpbCtrlBreak);           // Ptr to Ctrl-Break flag
-            break;
-
-        case ARRAY_NESTED:
-////////////lpaplChar =
-              FormatArrNested (lpFmtHeader,             // Ptr to FMTHEADER
-                               lpMem,                   // Ptr to raw input
-                               lpFmtColStr,             // Ptr to vector of <aplDimNCols> FMTCOLSTRs
-                               lpaplCharStart,          // Ptr to compiled input
-                              &lpaplChar,               // Ptr to ptr to output string
-                               lpFmtHeader->uActRows,   // # formatted rows in this array
-                               aplDimNCols,             // # formatted cols ...
-                               aplRank,                 // Rank of this array
-                               lpMemDim,                // Ptr to this array's dimensions
-                               aplLastDim,              // Length of last dim in result (NULL for !bRawOutput)
-                               bRawOut,                 // TRUE iff raw (not {thorn}) output
-                               bEndingCR,               // TRUE iff last line has CR
-                               lpbCtrlBreak);           // Ptr to Ctrl-Break flag
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // Check for Ctrl-Break
-    if (*lpbCtrlBreak)
-        goto ERROR_EXIT;
-
-    // If we didn't use raw output in the
-    //   FormatArrxxx routines, do it now
-    // The following code handles wrapping at []PW
-    if (!bRawOut)
-    {
-        UINT uFmtRow;               // Loop counter
-
-        uOutLen = uQuadPW;          // Initial output length
-
-        // Loop through the formatted rows
-        for (lpwsz = lpwszFormat,
-               uFmtRow = 0;
-             uFmtRow < lpFmtHeader->uFmtRows;
-             uFmtRow++,
-               lpwsz += aplLastDim)
+        // Fill the output area with all zeros
+        // Ensure at least one value filled in case the char array is empty
+        if (IsSimpleChar (aplType))
+            ZeroMemory (lpaplChar, (UINT) max (aplNELMRes, 1) * sizeof (APLCHAR));
+        else
         {
-            WCHAR   wch;                // The replaced WCHAR
-            APLDIM  aplDimTmp;          // Remaining line length to output
-            APLUINT uOffset;            // Offset in line to start of display
+            // Fill the output area with all blanks
+            Assert (aplNELMRes EQ (UINT) aplNELMRes);
+            FillMemoryW (lpaplChar, (UINT) aplNELMRes, L' ');
+        } // End IF/ELSE
+#endif
+        // Run through the array again processing the
+        //   output stream into lpaplChar
 
-            // ***FIXME*** -- this routine may split a number in half
-            //                because it doesn't know the difference
-            //                numbers and characters
+        // Calc when to use raw output
+        bRawOut = (!IsSimpleChar (aplType) && !IsNested (aplType));
 
-            if (bLineCont)
-                AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
+        // Split cases based upon the array's storage type
+        switch (aplType)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_CHAR:
+            case ARRAY_APA:
+            case ARRAY_HETERO:
+////////////////lpaplChar =
+                  FormatArrSimple (lpFmtHeader,             // Ptr to FMTHEADER
+                                   lpFmtColStr,             // Ptr to vector of <aplChrNCols> FMTCOLSTRs
+                                   lpaplCharStart,          // Ptr to compiled input
+                                  &lpaplChar,               // Ptr to output string
+                                   lpFmtHeader->uActRows,   // # formatted rows in this array
+                                   aplDimNCols,             // # formatted cols in this array
+                                   aplLastDim,              // Length of last dim in result (NULL for !bRawOutput)
+                                   aplRank,                 // Rank of this array
+                                   lpMemDim,                // Ptr to this array's dimensions
+                                   aplType,                 // Storage type of this array
+                                   TRUE,                    // TRUE iff skip to next row after this item
+                                   bRawOut,                 // TRUE iff raw (not {thorn}) output
+                                   bEndingCR,               // TRUE iff last line has CR
+                                   lpbCtrlBreak);           // Ptr to Ctrl-Break flag
+                break;
 
-            // For char lines with embedded []TCLFs, the actual line
-            //   length is smaller than the total length, so we need
-            //   to compare against that here
-            aplDimTmp = lstrlenW (lpwsz);   // Get line length
-            aplDimTmp = min (aplDimTmp, aplLastDim);// Use the smaller
-            uOffset = 0;                // Initialize the line offset
-            while (aplDimTmp > uQuadPW)
+            case ARRAY_NESTED:
+////////////////lpaplChar =
+                  FormatArrNested (lpFmtHeader,             // Ptr to FMTHEADER
+                                   lpMem,                   // Ptr to raw input
+                                   lpFmtColStr,             // Ptr to vector of <aplDimNCols> FMTCOLSTRs
+                                   lpaplCharStart,          // Ptr to compiled input
+                                  &lpaplChar,               // Ptr to ptr to output string
+                                   lpFmtHeader->uActRows,   // # formatted rows in this array
+                                   aplDimNCols,             // # formatted cols ...
+                                   aplRank,                 // Rank of this array
+                                   lpMemDim,                // Ptr to this array's dimensions
+                                   aplLastDim,              // Length of last dim in result (NULL for !bRawOutput)
+                                   bRawOut,                 // TRUE iff raw (not {thorn}) output
+                                   bEndingCR,               // TRUE iff last line has CR
+                                   lpbCtrlBreak);           // Ptr to Ctrl-Break flag
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Check for Ctrl-Break
+        if (*lpbCtrlBreak)
+            goto ERROR_EXIT;
+
+        // If we didn't use raw output in the
+        //   FormatArrxxx routines, do it now
+        // The following code handles wrapping at []PW
+        if (!bRawOut)
+        {
+            UINT uFmtRow;               // Loop counter
+
+            uOutLen = uQuadPW;          // Initial output length
+
+            // Loop through the formatted rows
+            for (lpwsz = lpwszFormat,
+                   uFmtRow = 0;
+                 uFmtRow < lpFmtHeader->uFmtRows;
+                 uFmtRow++,
+                   lpwsz += aplLastDim)
             {
+                WCHAR   wch;                // The replaced WCHAR
+                APLDIM  aplDimTmp;          // Remaining line length to output
+                APLUINT uOffset;            // Offset in line to start of display
+
+                // ***FIXME*** -- this routine may split a number in half
+                //                because it doesn't know the difference
+                //                between numbers and characters
+
+                if (bLineCont)
+                    AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
+
+                // For char lines with embedded []TCLFs, the actual line
+                //   length is smaller than the total length, so we need
+                //   to compare against that here
+                aplDimTmp = lstrlenW (lpwsz);   // Get line length
+                aplDimTmp = min (aplDimTmp, aplLastDim);// Use the smaller
+                uOffset = 0;                // Initialize the line offset
+                while (aplDimTmp > uQuadPW)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
+                    // Because AppendLine works on single zero-terminated lines,
+                    //   we need to create one
+                    wch = lpwsz[uOffset + uOutLen];     // Save the ending char
+                    lpwsz[uOffset + uOutLen] = L'\0';   // Terminate the line
+                    AppendLine (lpwsz + uOffset, bLineCont, TRUE);  // Display the line
+                    lpwsz[uOffset + uOutLen] = wch;     // Restore the ending char
+
+                    bLineCont = TRUE;                   // Lines from here on are continuations
+                    AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
+
+                    aplDimTmp -= uOutLen;               // Less how much we output
+                    uOffset += uOutLen;                 // Skip over what we just output
+                    uOutLen = uQuadPW - DEF_INDENT;     // Take into account the indent
+                } // End WHILE
+
+                // Check for Ctrl-Break
+                if (*lpbCtrlBreak)
+                    goto ERROR_EXIT;
+
+                // Output whatever remains
+
                 // Because AppendLine works on single zero-terminated lines,
                 //   we need to create one
-                wch = lpwsz[uOffset + uOutLen];     // Save the ending char
-                lpwsz[uOffset + uOutLen] = L'\0';   // Terminate the line
-                AppendLine (lpwsz + uOffset, bLineCont, TRUE);  // Display the line
-                lpwsz[uOffset + uOutLen] = wch;     // Restore the ending char
+                wch = lpwsz[uOffset + aplDimTmp];       // Save the ending char
+                lpwsz[uOffset + aplDimTmp] = L'\0';     // Terminate the line
+                AppendLine (lpwsz + uOffset, bLineCont, TRUE);// Display the line
+                lpwsz[uOffset + aplDimTmp] = wch;       // Restore the ending char
+            } // End FOR
+        } // End IF
 
-                bLineCont = TRUE;                   // Lines from here on are continuations
-                AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
-
-                aplDimTmp -= uOutLen;               // Less how much we output
-                uOffset += uOutLen;                 // Skip over what we just output
-                uOutLen = uQuadPW - DEF_INDENT;     // Take into account the indent
-            } // End WHILE
-
-            // Output whatever remains
-
-            // Because AppendLine works on single zero-terminated lines,
-            //   we need to create one
-            wch = lpwsz[uOffset + aplDimTmp];       // Save the ending char
-            lpwsz[uOffset + aplDimTmp] = L'\0';     // Terminate the line
-            AppendLine (lpwsz + uOffset, bLineCont, TRUE);// Display the line
-            lpwsz[uOffset + aplDimTmp] = wch;       // Restore the ending char
-        } // End FOR
-    } // End IF
-
-    // If this is an empty vector, make sure it skips a line
-    if (IsEmpty (lpFmtHeader->uFmtRows)
-     && IsVector (aplRank))
-        AppendLine (L"", FALSE, TRUE);// Display the empty line
-ERROR_EXIT:
-NORMAL_EXIT:
-    // Free the local storage
-    if (lpaplCharIni)
+        // If this is an empty vector, make sure it skips a line
+        if (IsEmpty (lpFmtHeader->uFmtRows)
+         && IsVector (aplRank))
+            AppendLine (L"", FALSE, TRUE);// Display the empty line
+    } __except (CheckVirtAlloc (GetExceptionInformation (),
+                                "DisplayGlbArr"))
     {
-        VirtualFree (lpaplCharIni, 0, MEM_RELEASE); lpaplCharIni = NULL;
+        // Split cases based upon the exception code
+        switch (MyGetExceptionCode ())
+        {
+            case EXCEPTION_LIMIT_ERROR:
+                ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                                           lptkFunc);
+                goto ERROR_EXIT;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End __try/__except
+NORMAL_EXIT:
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    // If we allocated virtual storage, ...
+    if (lclMemVirtStr[0].IniAddr)
+    {
+        // Free the virtual storage
+        MyVirtualFree (lclMemVirtStr[0].IniAddr, 0, MEM_RELEASE); lclMemVirtStr[0].IniAddr = NULL;
+        lpaplCharIni = NULL;
+
+        // Unlink this struc from the chain
+        UnlinkMVS (&lclMemVirtStr[0]);
     } // End IF
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlb); lpMem = NULL;
+    if (hGlb && lpMem)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlb); lpMem = NULL;
+    } // End IF
+
+    return bRet;
 } // End DisplayGlbArr
 #undef  APPEND_NAME
 
@@ -849,7 +922,7 @@ LPAPLCHAR FormatAplintFC
     } // End IF
 
     // Format the number one digit at a time
-    //   in reverse order into lpwszFormat
+    //   in reverse order into lpaplChar
     i = MAXLEN - 1;
 
     // Execute at least once so zero prints

@@ -240,10 +240,10 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
 
     // Allocate space for the immediate value
     lpwszCompLine =
-      VirtualAlloc (NULL,           // Any address
-                    (1 + 1) * sizeof (WCHAR),  // "+ 1" for the terminating zero
-                    MEM_COMMIT,
-                    PAGE_READWRITE);
+      MyVirtualAlloc (NULL,         // Any address (FIXED SIZE)
+                      (1 + 1) * sizeof (WCHAR), // "+ 1" for the terminating zero
+                      MEM_COMMIT | MEM_TOP_DOWN,
+                      PAGE_READWRITE);
     if (!lpwszCompLine)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -298,10 +298,10 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     // Allocate space for the global value
     Assert (aplNELMRht EQ (UINT) aplNELMRht);
     lpwszCompLine =
-      VirtualAlloc (NULL,           // Any address
-                    ((UINT) aplNELMRht + 1) * sizeof (APLCHAR),  // "+ 1" for the terminating zero
-                    MEM_COMMIT,
-                    PAGE_READWRITE);
+      MyVirtualAlloc (NULL,         // Any address (FIXED SIZE)
+                      ((UINT) aplNELMRht + 1) * sizeof (APLCHAR),   // "+ 1" for the terminating zero
+                      MEM_COMMIT | MEM_TOP_DOWN,
+                      PAGE_READWRITE);
     if (!lpwszCompLine)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -371,7 +371,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     // Free the virtual memory for the complete line
     if (bFreeCompLine)
     {
-        VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+        MyVirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
     } // End IF
 
     return lpYYRes;

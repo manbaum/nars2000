@@ -767,14 +767,29 @@ LPWCHAR ParseSavedWsVar_EM
      LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant error message text
 
 {
-    WCHAR      wcTmp;                   // Temporary char
-    LPWCHAR    lpwCharEnd,              // Temporary ptr
-               lpwDataEnd;              // ...
-    STFLAGS    stFlags = {0};           // SymTab flags
-    LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
-    APLINT     aplInteger;              // Temporary integer
-    APLSTYPE   aplTypeObj;              // Object storage type
-    HGLOBAL    hGlbObj;                 // Object global memory handle
+    WCHAR        wcTmp;                 // Temporary char
+    LPWCHAR      lpwCharEnd,            // Temporary ptr
+                 lpwDataEnd;            // ...
+    STFLAGS      stFlags = {0};         // SymTab flags
+    LPSYMENTRY   lpSymEntry;            // Ptr to STE for HGLOBAL
+    APLINT       aplInteger;            // Temporary integer
+    APLSTYPE     aplTypeObj;            // Object storage type
+    HGLOBAL      hGlbObj;               // Object global memory handle
+    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to formatting save area
+    lpwszFormat = lpMemPTD->lpwszFormat;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Tell 'em we're looking for )LOAD objects
     stFlags.Inuse   = TRUE;
@@ -994,27 +1009,42 @@ HGLOBAL LoadWorkspaceGlobal_EM
      LPWCHAR    *lplpwErrMsg)               // Ptr to ptr to (constant) error message text
 
 {
-    APLSTYPE         aplTypeObj;            // Object storage type
-    APLNELM          aplNELMObj;            // Object NELM
-    APLRANK          aplRankObj;            // Object rank
-    HGLOBAL          hGlbObj;               // Object global memory handle
-    APLUINT          ByteObj,               // # bytes needed for the object
-                     uObj;                  // Loop counter
-    STFLAGS          stFlags = {0};         // SymTab flags
-    LPSYMENTRY       lpSymEntry,            // Ptr to STE for HGLOBAL
-                     lpSymLink;             // Ptr to SYMENTRY temp for *lplpSymLink
-    WCHAR            wcTmp;                 // Temporary char
-    LPWCHAR          lpwFcnName,            // Ptr to function name
-                     lpwSectName,           // Ptr to section name
-                     lpwSrcStart,           // Ptr to starting point
-                     lpwCharEnd;            // Temporary ptr
-    UINT             uBitIndex,             // Bit index for looping through Boolean result
-                     uLineCnt;              // # lines in the current function
-    FILETIME         ftCreation,            // Function creation time
-                     ftLastMod;             // ...      last modification time
-    BOOL             bUserDefined;          // TRUE iff the durrent function is User-Defined
-    LPVOID           lpMemObj;              // Ptr to object global memory
-    APLINT           aplInteger;            // Temporary integer
+    APLSTYPE     aplTypeObj;                // Object storage type
+    APLNELM      aplNELMObj;                // Object NELM
+    APLRANK      aplRankObj;                // Object rank
+    HGLOBAL      hGlbObj;                   // Object global memory handle
+    APLUINT      ByteObj,                   // # bytes needed for the object
+                 uObj;                      // Loop counter
+    STFLAGS      stFlags = {0};             // SymTab flags
+    LPSYMENTRY   lpSymEntry,                // Ptr to STE for HGLOBAL
+                 lpSymLink;                 // Ptr to SYMENTRY temp for *lplpSymLink
+    WCHAR        wcTmp;                     // Temporary char
+    LPWCHAR      lpwFcnName,                // Ptr to function name
+                 lpwSectName,               // Ptr to section name
+                 lpwSrcStart,               // Ptr to starting point
+                 lpwCharEnd;                // Temporary ptr
+    UINT         uBitIndex,                 // Bit index for looping through Boolean result
+                 uLineCnt;                  // # lines in the current function
+    FILETIME     ftCreation,                // Function creation time
+                 ftLastMod;                 // ...      last modification time
+    BOOL         bUserDefined;              // TRUE iff the durrent function is User-Defined
+    LPVOID       lpMemObj;                  // Ptr to object global memory
+    APLINT       aplInteger;                // Temporary integer
+    HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
+    LPWCHAR      lpwszFormat;               // Ptr to formatting save area
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to formatting save area
+    lpwszFormat = lpMemPTD->lpwszFormat;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Read the corresponding string from [Globals]
     GetPrivateProfileStringW (SECTNAME_GLOBALS,     // Ptr to the section name

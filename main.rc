@@ -1,4 +1,6 @@
-//Microsoft Developer Studio generated resource script.
+//***************************************************************************
+//  NARS2000 -- Main Resource Scripts
+//***************************************************************************
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
@@ -109,21 +111,7 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo",                       IDM_UNDO
-        MENUITEM "&Redo",                       IDM_REDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t",                        IDM_CUT
-        MENUITEM "&Copy",                       IDM_COPY
-        MENUITEM "&Paste",                      IDM_PASTE
-        POPUP "Paste AP&L"
-        BEGIN
-            MENUITEM "Paste APL+&WIN",          IDM_PASTE_APLWIN
-            MENUITEM "Paste APL&2",             IDM_PASTE_APL2
-            MENUITEM "Paste &ISO",              IDM_PASTE_ISO
-        END
-        MENUITEM "&Delete",                     IDM_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "Select &All",                 IDM_SELECTALL
+#include "edit.rc"
     END
     POPUP "&Window"
     BEGIN
@@ -143,6 +131,7 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&Contents...",                IDM_HELP_CONTENTS, INACTIVE GRAYED // ***FIXME***
+        MENUITEM "Check for &Updates",          IDM_UPDATES
         MENUITEM "&About",                      IDM_ABOUT
     END
 END
@@ -155,21 +144,7 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo",                       IDM_UNDO
-        MENUITEM "&Redo",                       IDM_REDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t",                        IDM_CUT
-        MENUITEM "&Copy",                       IDM_COPY
-        POPUP "&Paste"
-        BEGIN
-            MENUITEM "&Normal",                 IDM_PASTE
-            MENUITEM "Paste APL+&WIN",          IDM_PASTE_APLWIN
-            MENUITEM "Paste APL&2",             IDM_PASTE_APL2
-            MENUITEM "Paste &ISO",              IDM_PASTE_ISO
-        END
-        MENUITEM "&Delete",                     IDM_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "Select &All",                 IDM_SELECTALL
+#include "edit.rc"
         MENUITEM SEPARATOR
         MENUITEM "&Localize",                   IDM_LOCALIZE
         MENUITEM "Unl&ocalize",                 IDM_UNLOCALIZE
@@ -225,6 +200,20 @@ BEGIN
     LTEXT           "http://www.nars2000.org/LICENSE",
                     IDC_LINK,10,75,170,9,SS_NOTIFY
 END
+
+IDD_UPDATES DIALOG DISCARDABLE  0, 0, 236, 154
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Check for Updates"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,121,131,50,14
+////PUSHBUTTON      "Cancel",IDCANCEL,178,131,50,14
+    LTEXT           "",IDC_FILEVER,  3,11,225, 8,SS_NOPREFIX
+    LTEXT           "",IDC_WEBVER,   3,25,225, 8,SS_NOPREFIX
+    LTEXT           "",IDC_VERACTION,3,39,225,27,SS_NOPREFIX
+    LTEXT           "As you can see, this is highly preliminary.",IDC_STATIC,3,72,225,8,SS_NOPREFIX
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -33,7 +33,7 @@
     lpMemPTD->ExceptionCode      = EXCEPTION_SUCCESS;
 
     // The following vars are already initialized to zero which is the default
-    //   value, so they do not need to be explicitly set.
+    //   value from GHND, so they do not need to be set explicitly.
 ////lpMemPTD->numYYRes           = 0;
 ////lpMemPTD->bTabTextState      = FALSE;
 ////lpMemPTD->bNegative          = FALSE;
@@ -44,6 +44,7 @@
 ////lpMemPTD->lpPLCur            = NULL;
 ////lpMemPTD->SILevel            = 0;
 ////lpmemPTD->hSemaDelay         = NULL;
+////lpmemPTD->lpLstMVS           = NULL;
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -143,9 +144,11 @@ typedef struct tagPERTABDATA
                  lpLoadWsGlbVarConv;//15C:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
     LPLOADWSGLBVARPARM
                  lpLoadWsGlbVarParm;//160:  Ptr to extra parms for LoadWsGlbVarConv
-    APLCHAR      cQuadPR;           //164:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //166:  []SA (in its index form)
-                                    //167:  Length
+    LPMEMVIRTSTR lpLstMVS;          //164:  Ptr to last MEMVIRTSTR (NULL = none)
+    LPWCHAR      lpwszFormat;       //168:  Ptr to formatting save area
+    APLCHAR      cQuadPR;           //16C:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //16E:  []SA (in its index form)
+                                    //16F:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

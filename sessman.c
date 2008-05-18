@@ -674,13 +674,14 @@ LRESULT APIENTRY SMWndProc
     HGLOBAL      hGlbPTD;               // Handle to this window's PerTabData
     LPPERTABDATA lpMemPTD;              // Ptr to ...
     LPWCHAR      lpwCurLine;            // Ptr to current line global memory
+    UINT         uCnt;                  // Loop counter
 ////RECT         rcFmtEC;               // Formatting rectangle for the Edit Control
-    LPUNDO_BUF   lpUndoBeg,             // Ptr to start of Undo Buffer
-                 lpUndoNxt;             // ...    next available slot in the Undo Buffer
+    LPUNDO_BUF   lpUndoBeg;             // Ptr to start of Undo Buffer
 ////HDC          hDC;
 ////HFONT        hFontOld;
 ////TEXTMETRIC   tm;
-    static BOOL  bLoadMsgDisp = FALSE; // TRUE iff )LOAD message has been displayed
+    static BOOL  bLoadMsgDisp = FALSE;  // TRUE iff )LOAD message has been displayed
+    LPMEMVIRTSTR lpLclMemVirtStr;       // Ptr to local MemVirtStr
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLongW (hWnd, GWLSF_HWNDEC);
@@ -695,8 +696,6 @@ LRESULT APIENTRY SMWndProc
         case WM_NCCREATE:               // 0 = (int) wParam
                                         // lpcs = (LPCREATESTRUCTW) lParam
         {
-            LPVOID p;                   // Temporary ptr
-
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -705,16 +704,41 @@ LRESULT APIENTRY SMWndProc
 
             INIT_PERTABVARS
 
+#define MVS_CNT     9
+
+            // Allocate room for MVS_CNT MemVirtStrs
+            //  (QUADERROR, UNDO_BUF, HSHTAB, SYMTAB, SIS, YYRES, STRAND_VAR, STRAND_FCN, WSZFORMAT)
+            lpLclMemVirtStr =
+              MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
+                              MVS_CNT * sizeof (MEMVIRTSTR),
+                              MEM_COMMIT | MEM_TOP_DOWN,
+                              PAGE_READWRITE);
+            if (!lpLclMemVirtStr)
+            {
+                // ***FIXME*** -- Display error msg
+
+                return -1;
+            } // End IF
+
+            // Save in window extra bytes
+            SetWindowLongW (hWnd, GWLSF_LPMVS, (long) lpLclMemVirtStr);
+
             // Allocate virtual memory for the []ERROR/[]ES buffer
-            p = lpMemPTD->lpwszQuadErrorMsg =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_QUADERROR_MAXSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
+#ifdef DEBUG
+            lpLclMemVirtStr[0].lpText   = "lpMemPTD->lpwszQuadErrorMsg in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[0].IncrSize = DEF_QUADERROR_INCRSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
+            lpLclMemVirtStr[0].MaxSize  = DEF_QUADERROR_MAXSIZE  * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
+            lpLclMemVirtStr[0].IniAddr  = (LPVOID)
+            lpMemPTD->lpwszQuadErrorMsg =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[0].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!p)
+            if (!lpLclMemVirtStr[0].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_NCCREATE:  VirtualAlloc for <lpwszQuadErrorMsg> failed");
@@ -722,18 +746,14 @@ LRESULT APIENTRY SMWndProc
                 goto WM_NCCREATE_FAIL;  // Mark as failed
             } // End IF
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[0]);
 
             // Commit the intial size
-            VirtualAlloc (lpMemPTD->lpwszQuadErrorMsg,
-                          DEF_QUADERROR_INITSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
+            MyVirtualAlloc (lpLclMemVirtStr[0].IniAddr,
+                            DEF_QUADERROR_INITSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
             break;                  // Continue with next handler
 WM_NCCREATE_FAIL:
             // Send a constant message to the previous tab
@@ -748,7 +768,6 @@ WM_NCCREATE_FAIL:
                                     // lpcs = (LPCREATESTRUCTW) lParam
         {
             int     i;                  // Loop counter
-            LPVOID  p;                  // Temporary ptr
             HGLOBAL hGlbTmp;            // Temporary hGlbNum/hGlbStr
 
             // Initialize # threads
@@ -772,13 +791,21 @@ WM_NCCREATE_FAIL:
             // _LST is the (dynamic) ptr to the last available entry.
             //    Redo entries are between _NXT and _LST[-1], inclusive.
 
+            (long) lpLclMemVirtStr = GetWindowLongW (hWnd, GWLSF_LPMVS);
+
             // Allocate virtual memory for the Undo Buffer
-            p = lpUndoBeg =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_UNDOBUF_MAXSIZE * sizeof (lpUndoBeg[0]),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
-            if (!p)
+#ifdef DEBUG
+            lpLclMemVirtStr[1].lpText   = "lpUndoBeg in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[1].IncrSize = DEF_UNDOBUF_INCRSIZE * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[1].MaxSize  = DEF_UNDOBUF_MAXSIZE  * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[1].IniAddr  = (LPVOID)
+            lpUndoBeg =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[1].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            if (!lpLclMemVirtStr[1].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
@@ -786,11 +813,14 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[1]);
+
             // Commit the intial size
-            VirtualAlloc (lpUndoBeg,
-                          DEF_UNDOBUF_INITSIZE * sizeof (lpUndoBeg[0]),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
+            MyVirtualAlloc (lpLclMemVirtStr[1].IniAddr,
+                            DEF_UNDOBUF_INITSIZE * sizeof (lpUndoBeg[0]),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
             // Save in window extra bytes
             SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
             SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
@@ -814,15 +844,15 @@ WM_NCCREATE_FAIL:
 ////////////lpMemPTD = MyGlobalLock (hGlbPTD);
 ////////////
 ////////////// Allocate virtual memory for the token stack used in parsing
-////////////p = lpMemPTD->lptkStackBase =
-////////////  VirtualAlloc (NULL,       // Any address
-////////////                DEF_TOKENSTACK_MAXSIZE * sizeof (TOKEN),
-////////////                MEM_RESERVE,
-////////////                PAGE_READWRITE);
+////////////lpMemPTD->lptkStackBase =
+////////////  GuardAlloc (NULL,         // Any address
+////////////              DEF_TOKENSTACK_MAXSIZE * sizeof (TOKEN),
+////////////              MEM_RESERVE,
+////////////              PAGE_READWRITE);
 ////////////// We no longer need this ptr
 ////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 ////////////
-////////////if (!p)
+////////////if (!???)
 ////////////{
 ////////////    // ***FIXME*** -- WS FULL before we got started???
 ////////////    DbgMsg ("WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
@@ -880,15 +910,21 @@ WM_NCCREATE_FAIL:
 ////////////lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the hash table
-            p = lpMemPTD->lpHshTab =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_HSHTAB_MAXSIZE * sizeof (lpMemPTD->lpHshTab[0]),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
+#ifdef DEBUG
+            lpLclMemVirtStr[2].lpText   = "lpMemPTD->lpHshTab in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[2].IncrSize = DEF_HSHTAB_INCRSIZE * sizeof (lpMemPTD->lpHshTab[0]);
+            lpLclMemVirtStr[2].MaxSize  = DEF_HSHTAB_MAXSIZE  * sizeof (lpMemPTD->lpHshTab[0]);
+            lpLclMemVirtStr[2].IniAddr  = (LPVOID)
+            lpMemPTD->lpHshTab =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[2].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!p)
+            if (!lpLclMemVirtStr[2].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpHshTab> failed");
@@ -896,11 +932,14 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[2]);
+
             // Commit the intial size
-            VirtualAlloc (p,
-                          DEF_HSHTAB_INITSIZE * sizeof (lpMemPTD->lpHshTab[0]),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
+            MyVirtualAlloc (lpLclMemVirtStr[2].IniAddr,
+                            DEF_HSHTAB_INITSIZE * sizeof (lpMemPTD->lpHshTab[0]),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -930,15 +969,21 @@ WM_NCCREATE_FAIL:
 ////////////lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the symbol table
-            p = lpMemPTD->lpSymTab =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_SYMTAB_MAXSIZE * sizeof (lpMemPTD->lpSymTab[0]),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
+#ifdef DEBUG
+            lpLclMemVirtStr[3].lpText   = "lpMemPTD->lpSymTab in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[3].IncrSize = DEF_SYMTAB_INCRSIZE * sizeof (lpMemPTD->lpSymTab[0]);
+            lpLclMemVirtStr[3].MaxSize  = DEF_SYMTAB_MAXSIZE  * sizeof (lpMemPTD->lpSymTab[0]);
+            lpLclMemVirtStr[3].IniAddr  = (LPVOID)
+            lpMemPTD->lpSymTab =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[3].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!p)
+            if (!lpLclMemVirtStr[3].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSymTab> failed");
@@ -946,11 +991,14 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[3]);
+
             // Commit the intial size
-            VirtualAlloc (p,
-                          DEF_SYMTAB_INITSIZE * sizeof (lpMemPTD->lpSymTab[0]),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
+            MyVirtualAlloc (lpLclMemVirtStr[3].IniAddr,
+                            DEF_SYMTAB_INITSIZE * sizeof (lpMemPTD->lpSymTab[0]),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -978,16 +1026,22 @@ WM_NCCREATE_FAIL:
 ////////////// Lock the memory to get a ptr to it
 ////////////lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Allocate virtual memory for the symbol table
-            p = lpMemPTD->lpSISBeg = lpMemPTD->lpSISNxt =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_SIS_MAXSIZE * sizeof (SYMENTRY),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
+            // Allocate virtual memory for the State Indicator Stack
+#ifdef DEBUG
+            lpLclMemVirtStr[4].lpText   = "lpMemPTD->lpSISBeg in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[4].IncrSize = DEF_SIS_INCRSIZE * sizeof (SYMENTRY);
+            lpLclMemVirtStr[4].MaxSize  = DEF_SIS_MAXSIZE  * sizeof (SYMENTRY);
+            lpLclMemVirtStr[4].IniAddr  = (LPVOID)
+            lpMemPTD->lpSISBeg = lpMemPTD->lpSISNxt =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[4].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!p)
+            if (!lpLclMemVirtStr[4].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpStateInd> failed");
@@ -995,26 +1049,35 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[4]);
+
             // Commit the intial size
-            VirtualAlloc (p,
-                          DEF_SIS_INITSIZE * sizeof (SYMENTRY),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
+            MyVirtualAlloc (lpLclMemVirtStr[4].IniAddr,
+                            DEF_SIS_INITSIZE * sizeof (SYMENTRY),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
 
             // *************** YYRes Buffer ****************************
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the YYRes buffer
-            p = lpMemPTD->lpYYRes =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_YYRES_MAXSIZE * sizeof (PL_YYSTYPE),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
+#ifdef DEBUG
+            lpLclMemVirtStr[5].lpText   = "lpMemPTD->lpYYRes in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[5].IncrSize = DEF_YYRES_INCRSIZE * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[5].MaxSize  = DEF_YYRES_MAXSIZE  * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[5].IniAddr  = (LPVOID)
+            lpMemPTD->lpYYRes =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[5].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!p)
+            if (!lpLclMemVirtStr[5].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpYYRes> failed");
@@ -1022,29 +1085,35 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[5]);
+
             // Commit the intial size
-            VirtualAlloc (p,
-                          DEF_YYRES_INITSIZE * sizeof (PL_YYSTYPE),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
+            MyVirtualAlloc (lpLclMemVirtStr[5].IniAddr,
+                            DEF_YYRES_INITSIZE * sizeof (PL_YYSTYPE),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
 
             // *************** Strand Accumulators *********************
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the VAR strand accumulator
-            memVirtStr[MEMVIRT_STRAND_VAR].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
-            memVirtStr[MEMVIRT_STRAND_VAR].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
-            memVirtStr[MEMVIRT_STRAND_VAR].IniAddr  =
-            p = lpMemPTD->lpStrand[STRAND_VAR] =
-              VirtualAlloc (NULL,       // Any address
-                            memVirtStr[MEMVIRT_STRAND_VAR].MaxSize,
-                            MEM_RESERVE,        // memVirtStr
-                            PAGE_READWRITE);
+#ifdef DEBUG
+            lpLclMemVirtStr[6].lpText   = "lpMemPTD->lpStrand[STRAND_VAR] in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[6].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[6].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[6].IniAddr  = (LPVOID)
+            lpMemPTD->lpStrand[STRAND_VAR] =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[6].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!p)
+            if (!lpLclMemVirtStr[6].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandVar> failed");
@@ -1052,27 +1121,33 @@ WM_NCCREATE_FAIL:
                 return FALSE;           // Mark as failed
             } // End IF
 
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[6]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[6].IniAddr,
+                            DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Commit the intial size
-            VirtualAlloc (lpMemPTD->lpStrand[STRAND_VAR],
-                          DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
             // Allocate virtual memory for the FCN strand accumulator
-            memVirtStr[MEMVIRT_STRAND_FCN].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
-            memVirtStr[MEMVIRT_STRAND_FCN].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
-            memVirtStr[MEMVIRT_STRAND_FCN].IniAddr  =
-            p = lpMemPTD->lpStrand[STRAND_FCN] =
-              VirtualAlloc (NULL,       // Any address
-                            memVirtStr[MEMVIRT_STRAND_FCN].MaxSize,
-                            MEM_RESERVE,        // memVirtStr
-                            PAGE_READWRITE);
+#ifdef DEBUG
+            lpLclMemVirtStr[7].lpText   = "lpMemPTD->lpStrand[STRAND_FCN] in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[7].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[7].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[7].IniAddr  = (LPVOID)
+            lpMemPTD->lpStrand[STRAND_FCN] =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[7].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!p)
+            if (!lpLclMemVirtStr[7].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandFcn> failed");
@@ -1080,16 +1155,50 @@ WM_NCCREATE_FAIL:
                 return FALSE;           // Mark as failed
             } // End IF
 
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[7]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[7].IniAddr,
+                            DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
+
+            // *************** lpwszFormat *****************************
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Commit the intial size
-            VirtualAlloc (lpMemPTD->lpStrand[STRAND_FCN],
-                          DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
-                          MEM_COMMIT,
+            // Allocate virtual memory for the WCHAR Formatting storage
+#ifdef DEBUG
+            lpLclMemVirtStr[8].lpText   = "lpMemPTD->lpwszFormat in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[8].IncrSize = DEF_WFORMAT_INCRSIZE * sizeof (WCHAR);
+            lpLclMemVirtStr[8].MaxSize  = DEF_WFORMAT_MAXSIZE  * sizeof (WCHAR);
+            lpLclMemVirtStr[8].IniAddr  = (LPVOID)
+            lpMemPTD->lpwszFormat =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[8].MaxSize,
+                          MEM_RESERVE,
                           PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!lpLclMemVirtStr[8].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("InitInstance:  GuardAlloc for <lpwszFormat> failed");
+
+                return FALSE;           // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[8]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[8].IniAddr,
+                            DEF_WFORMAT_INITSIZE * sizeof (WCHAR),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
 
 ////////////// *************** Fonts ***********************************
 ////////////
@@ -1857,23 +1966,8 @@ LOAD_WORKSPACE_FAIL:
             if (lpMemPTD->hWndDB)
                 SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) lpMemPTD->hWndDB, 0);
 #endif
-            // *************** Undo Buffer *****************************
-            // Get the ptr to the start of the Undo Buffer
-            (long) lpUndoBeg = GetWindowLongW (hWnd, GWLSF_UNDO_BEG);
-            if (lpUndoBeg)
-            {
-                // Free the virtual storage, first backing up to the start
-                VirtualFree (--lpUndoBeg, 0, MEM_RELEASE);
-                lpUndoBeg = lpUndoNxt = NULL;
-                SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
-                SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
-            } // End IF
-
-            // *************** lpSymTab ********************************
-            if (lpMemPTD->lpSymTab)
-            {
-                VirtualFree (lpMemPTD->lpSymTab, 0, MEM_RELEASE); lpMemPTD->lpSymTab = NULL;
-            } // End IF
+            // Get the MemVirtStr ptr
+            (long) lpLclMemVirtStr = GetWindowLongW (hWnd, GWLSF_LPMVS);
 
             // *************** hGlbStr *********************************
             if (lpMemPTD->hGlbStr)
@@ -1890,7 +1984,7 @@ LOAD_WORKSPACE_FAIL:
 ////////////// *************** lptkStackBase ***************************
 ////////////if (lpMemPTD->lptkStackBase)
 ////////////{
-////////////    VirtualFree (lpMemPTD->lptkStackBase, 0, MEM_RELEASE); lpMemPTD->lptkStackBase = NULL;
+////////////    MyVirtualFree (lpMemPTD->lptkStackBase, 0, MEM_RELEASE); lpMemPTD->lptkStackBase = NULL;
 ////////////} // End IF
 
             // *************** hGlbCurLine *****************************
@@ -1898,6 +1992,28 @@ LOAD_WORKSPACE_FAIL:
             {
                 MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
             } // End IF
+
+            // *************** []ERROR/[]ES ****************************
+            // *************** Undo Buffer *****************************
+            // *************** lpHshTab ********************************
+            // *************** lpSymTab ********************************
+            // *************** SIS *************************************
+            // *************** YYRES ***********************************
+            // *************** Strand Accumulator - VAR ****************
+            // *************** Strand Accumulator - FCN ****************
+            // *************** lpwszFormat *****************************
+            for (uCnt = 0; uCnt < MVS_CNT; uCnt++)
+            if (lpLclMemVirtStr[uCnt].IniAddr)
+            {
+                // Free the virtual storage
+                MyVirtualFree (lpLclMemVirtStr[uCnt].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[uCnt].IniAddr = NULL;
+
+                // Unlink this entry from the chain
+                UnlinkMVS (&lpLclMemVirtStr[uCnt]);
+            } // End IF
+
+            // Free the virtual storage
+            MyVirtualFree (lpLclMemVirtStr, 0,MEM_RELEASE); lpLclMemVirtStr = NULL;
 
             // Uninitialize window-specific resources
             SM_Delete (hWnd);

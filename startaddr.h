@@ -27,6 +27,9 @@ typedef struct tagSTART_ADDRESSES
 } START_ADDRESSES, *LPSTART_ADDRESSES;
 
 
+LRESULT WINAPI EditWndProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 #ifndef PROTO
   START_ADDRESSES StartAddresses[] =
   {
@@ -76,8 +79,13 @@ typedef struct tagSTART_ADDRESSES
     "DisplayHshTab"             , (LPUCHAR) &DisplayHshTab              ,
   #endif
     // display.c
+    "DisplayGlbArr"             , (LPUCHAR) &DisplayGlbArr              ,
 
     // dtoa.c
+
+    // editctrl.c
+    "EditWndProcW"              , (LPUCHAR) &EditWndProcW               ,
+    "EditWndProcA"              , (LPUCHAR) &EditWndProcA               ,
 
     // editfcn.c
     "CreateFcnWindow"           , (LPUCHAR) &CreateFcnWindow            ,

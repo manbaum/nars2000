@@ -142,10 +142,11 @@ void ImmExecLine
     uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     // Allocate virtual memory for the line (along with its continuations)
-    lpwszCompLine = VirtualAlloc (NULL,             // Any address
-                                  (uLineLen + 1) * sizeof (WCHAR),  // "+ 1" for the terminating zero
-                                  MEM_COMMIT,
-                                  PAGE_READWRITE);
+    lpwszCompLine =
+      MyVirtualAlloc (NULL,             // Any address (FIXED SIZE)
+                      (uLineLen + 1) * sizeof (WCHAR),  // "+ 1" for the terminating zero
+                      MEM_COMMIT | MEM_TOP_DOWN,
+                      PAGE_READWRITE);
     if (!lpwszCompLine)
     {
         // ***FIXME*** -- WS FULL before we got started???
@@ -259,7 +260,7 @@ void ImmExecLine
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Free the virtual memory for the complete line
-    VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+    MyVirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
 } // End ImmExecLine
 #undef  APPEND_NAME
 
@@ -660,7 +661,7 @@ ERROR_EXIT:
         // Free the virtual memory for the complete line
         if (bFreeLine)
         {
-            VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+            MyVirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
         } // End IF
 
         // Display the default prompt

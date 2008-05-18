@@ -58,6 +58,7 @@ LIBS_WEXE = GDI32.LIB           \
             SHELL32.LIB         \
             ADVAPI32.LIB        \
             COMCTL32.LIB        \
+            WININET.LIB         \
 !if "$(DEBUG)" == "1"
             R:\LIB\QDEBUG32.LIB \
 !endif

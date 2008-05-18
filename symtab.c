@@ -470,10 +470,11 @@ BOOL HshTabResize_EM
 #endif
     // We need more entries
     iHshTabNewSize = lpMemPTD->iHshTabTotalSize + iResize;
-    lpHshTabNew = VirtualAlloc (lpMemPTD->lpHshTab,
-                                iHshTabNewSize * sizeof (HSHENTRY),
-                                MEM_COMMIT,
-                                PAGE_READWRITE);
+    lpHshTabNew =
+      MyVirtualAlloc (lpMemPTD->lpHshTab,
+                      iHshTabNewSize * sizeof (HSHENTRY),
+                      MEM_COMMIT,
+                      PAGE_READWRITE);
     if (!lpHshTabNew)
     {
         ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
@@ -550,10 +551,11 @@ BOOL SymTabResize_EM
 
     // We need more entries
     iSymTabNewSize = lpMemPTD->iSymTabTotalSize + iResize;
-    lpSymTabNew = VirtualAlloc (lpMemPTD->lpSymTab,
-                                iSymTabNewSize * sizeof (SYMENTRY),
-                                MEM_COMMIT,
-                                PAGE_READWRITE);
+    lpSymTabNew =
+      MyVirtualAlloc (lpMemPTD->lpSymTab,
+                      iSymTabNewSize * sizeof (SYMENTRY),
+                      MEM_COMMIT,
+                      PAGE_READWRITE);
     if (!lpSymTabNew)
     {
         ErrorMessageIndirect (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME);
@@ -632,7 +634,7 @@ BOOL HshTabSplitNextEntry_EM
     // Ensure that &lpMemPTD->lpHshTabSplitNext[lpMemPTD->iHshTabBaseSize] has been allocated.
     // If not, allocate it now
     if (&lpMemPTD->lpHshTabSplitNext[lpMemPTD->iHshTabBaseSize] >= &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize]
-     && !HshTabResize_EM (DEF_HSHTAB_RESIZE))
+     && !HshTabResize_EM (DEF_HSHTAB_INCRSIZE))
     {
         bRet = FALSE;
 
@@ -899,7 +901,7 @@ LPHSHENTRY FindNextFreeUsingHash_SPLIT_EM
             goto NORMAL_EXIT;
 
         // As we didn't find a free entry, try to expand the hash table
-        if (!HshTabResize_EM (DEF_HSHTAB_RESIZE))
+        if (!HshTabResize_EM (DEF_HSHTAB_INCRSIZE))
             goto ERROR_EXIT;
 
         // Go around again unless we've done this before
@@ -1023,7 +1025,7 @@ LPHSHENTRY FindNextFreeUsingHTE_EM
             goto NORMAL_EXIT;
 
         // As we didn't find a free entry, try to expand the hash table
-        if (!HshTabResize_EM (DEF_HSHTAB_RESIZE))
+        if (!HshTabResize_EM (DEF_HSHTAB_INCRSIZE))
             goto ERROR_EXIT;
 
         // Go around again unless we've done this before
@@ -2025,7 +2027,7 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
 
         // Ensure there's enough room in the symbol table for one more entry
         if (((lpMemPTD->lpSymTabNext - lpMemPTD->lpSymTab) >= lpMemPTD->iSymTabTotalSize)
-         && (!SymTabResize_EM (DEF_SYMTAB_RESIZE)))
+         && (!SymTabResize_EM (DEF_SYMTAB_INCRSIZE)))
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
@@ -2153,7 +2155,7 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
 
         // Ensure there's enough room in the symbol table for one more entry
         if (((lpMemPTD->lpSymTabNext - lpMemPTD->lpSymTab) >=lpMemPTD-> iSymTabTotalSize)
-         && (!SymTabResize_EM (DEF_SYMTAB_RESIZE)))
+         && (!SymTabResize_EM (DEF_SYMTAB_INCRSIZE)))
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
@@ -2280,7 +2282,7 @@ LPSYMENTRY SymTabAppendCharCommon_EM
 
         // Ensure there's enough room in the symbol table for one more entry
         if (((lpMemPTD->lpSymTabNext - lpMemPTD->lpSymTab) >= lpMemPTD->iSymTabTotalSize)
-         && (!SymTabResize_EM (DEF_SYMTAB_RESIZE)))
+         && (!SymTabResize_EM (DEF_SYMTAB_INCRSIZE)))
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
@@ -2420,7 +2422,7 @@ LPSYMENTRY SymTabAppendNewName_EM
 
     // Ensure there's enough room in the symbol table for one more entry
     if (((lpMemPTD->lpSymTabNext - lpMemPTD->lpSymTab) >= lpMemPTD->iSymTabTotalSize)
-     && (!SymTabResize_EM (DEF_SYMTAB_RESIZE)))
+     && (!SymTabResize_EM (DEF_SYMTAB_INCRSIZE)))
         goto ERROR_EXIT;
 
     // Mark this hash table entry as in use

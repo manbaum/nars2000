@@ -35,6 +35,8 @@
 
 #define QWORD   ULONGLONG
 
+#define PAGESIZE        (4 * 1024)
+
 #define defstop \
 default:        \
     DbgStop();  \
@@ -72,12 +74,13 @@ default:        \
 #define GWLSF_VKSTATE   GWLSF_UNDO_GRP + 1 * sizeof (long)  // Virtal Key state (VKSTATE struc)
 #define GWLSF_LASTKEY   GWLSF_VKSTATE  + 1 * sizeof (long)  // Value of last WM_KEYDOWN key
 #define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)  // Boolean of whether or not the text has changed
+#define GWLSF_LPMVS     GWLSF_CHANGED  + 1 * sizeof (long)  // Ptr to LPMEMVIRTSTR
 
 // Define offsets in SMWNDCLASS window extra bytes
-#define GWLSM_EXTRA     GWLSF_CHANGED  + 1 * sizeof (long)  // Total # extra bytes
+#define GWLSM_EXTRA     GWLSF_LPMVS    + 1 * sizeof (long)  // Total # extra bytes
 
 // Define offsets in FEWNDCLASS window extra bytes
-#define GWLFE_EXTRA     GWLSF_CHANGED  + 1 * sizeof (long)  // Total # extra bytes
+#define GWLFE_EXTRA     GWLSF_LPMVS    + 1 * sizeof (long)  // Total # extra bytes
 
 // Define offsets in MEWNDCLASS window extra bytes
 #define GWLME_EXTRA     0                                   // Total # extra bytes
@@ -115,7 +118,8 @@ typedef enum tagEXCEPTION_CODES // Exception Codes
 ////EXCEPTION_RESULT_INT  ,     //      ...              Integer
     EXCEPTION_RESULT_FLOAT,     // 01:  ...              Float
     EXCEPTION_DOMAIN_ERROR,     // 02:  Signal a DOMAIN ERROR
-    EXCEPTION_CTRL_BREAK,       // 03:  Ctrl-Break pressed
+    EXCEPTION_LIMIT_ERROR,      // 03:  Signal a LIMIT ERROR
+    EXCEPTION_CTRL_BREAK,       // 04:  Ctrl-Break pressed
 } EXCEPTION_CODES;
 
 typedef struct tagGLBHIST

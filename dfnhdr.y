@@ -40,6 +40,9 @@
 #include "compro.h"
 #endif
 
+////#define YYLEX_DEBUG
+////#define YYFPRINTF_DEBUG
+
 #ifdef DEBUG
 #define YYERROR_VERBOSE
 #define YYDEBUG 1
@@ -542,8 +545,8 @@ BOOL ParseHeader
      BOOL          DisplayErr)      // TRUE iff want error messages displayed
 
 {
-    BOOL bRet = FALSE,          // TRUE iff result is valid
-         OldDisplayErr;         // Save area for old DisplayErr
+    BOOL bRet = FALSE,              // TRUE iff result is valid
+         OldDisplayErr;             // Save area for old DisplayErr
 
     // Save the window handle
     lpfhLocalVars->hWndEC = hWndEC;
@@ -577,26 +580,6 @@ BOOL ParseHeader
     // Start off with no error
     lpfhLocalVars->tkErrorCharIndex = NEG1U;
 
-    // Allocate virtual memory for the Header Strand accumulator
-    lpfhLocalVars->lpYYStrandStart =
-        VirtualAlloc (NULL,      // Any address
-                      DEF_STRAND_MAXSIZE * sizeof (FH_YYSTYPE),
-                      MEM_RESERVE,
-                      PAGE_READWRITE);
-    if (!lpfhLocalVars->lpYYStrandStart)
-    {
-        // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("ParseHeader:  VirtualAlloc for <lpfhLocalVars->lpYYStrandStart> failed");
-
-        goto ERROR_EXIT;    // Mark as failed
-    } // End IF
-
-    // Commit the intial size
-    VirtualAlloc (lpfhLocalVars->lpYYStrandStart,
-                  DEF_STRAND_INITSIZE * sizeof (FH_YYSTYPE),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
-
     // Use VirtualAlloc for the parser stack
     // ***FIXME***
 
@@ -620,15 +603,9 @@ BOOL ParseHeader
 
     // Parse the header, check for errors
     bRet = fh_yyparse (lpfhLocalVars) EQ 0;
-ERROR_EXIT:
+
     // Restore the error display flag
     lpfhLocalVars->DisplayErr = OldDisplayErr;
-
-    // Free the allocated memory
-    if (lpfhLocalVars->lpYYStrandStart)
-    {
-        VirtualFree (lpfhLocalVars->lpYYStrandStart, 0, MEM_RELEASE); lpfhLocalVars->lpYYStrandStart = NULL;
-    } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (lpfhLocalVars->hGlbTknHdr); lpfhLocalVars->t2.lpBase = NULL;
@@ -665,6 +642,13 @@ int fh_yylex
     // Check for stopping point
     if (lpfhLocalVars->lpStop EQ lpfhLocalVars->lpNext)
         return '\0';
+
+#if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
+    dprintfW (L"==fh_yylex:  TknType = %S, CharIndex = %d",
+              GetTokenTypeName (lpfhLocalVars->lptkNext->tkFlags.TknType),
+              lpfhLocalVars->lptkNext->tkCharIndex);
+    DbgBrk ();
+#endif
 
     // Return the current token
     lpYYLval->tkToken            = *lpfhLocalVars->lpNext;
@@ -839,10 +823,11 @@ void fh_yyfprintf
      ...)                   // Zero or more arguments
 
 {
-////#ifdef DEBUG
-#if FALSE
+#if (defined (DEBUG)) && (defined (YYFPRINTF_DEBUG))
     va_list vl;
-    int     i1, i2, i3;
+    int     i1,
+            i2,
+            i3;
     static char szTemp[256] = {'\0'};
 
     va_start (vl, lpszFmt);

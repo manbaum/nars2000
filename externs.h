@@ -57,7 +57,7 @@
 ////ine DEF_TOKENSTACK_INITSIZE (   4*1024)                 // Initial size of token stack
 ////ine DEF_TOKENSTACK_INCRSIZE (   4*1024)                 // Incremental ...
 ////ine DEF_TOKENSTACK_MAXSIZE  (  64*1024)                 // Maximum ...
-#define DEF_SIS_INITSIZE        (   0*1024)                 // Initial size for State Indicator Stack
+#define DEF_SIS_INITSIZE        (   1*1024)                 // Initial size for State Indicator Stack
 #define DEF_SIS_INCRSIZE        (   1*1024)                 // Incremental ..
 #define DEF_SIS_MAXSIZE         (   4*1024)                 // Maximum ...
 #define DEF_YYRES_INITSIZE      (   1*1024)                 // Initial size of YYRes buffer
@@ -72,9 +72,9 @@
 #define DEF_DEBUG_INITSIZE      (   1*1024)                 // Initial size of debug ...
 #define DEF_DEBUG_INCRSIZE      (   1*1024)                 // Incremental ...
 #define DEF_DEBUG_MAXSIZE       (  16*1024)                 // Maximum ...
-#define DEF_WFORMAT_INITSIZE    (  64*1024)                 // Initial size of WCHAR Formatting storage
-#define DEF_WFORMAT_INCRSIZE    (   1*1024)                 // Incremental ...
-#define DEF_WFORMAT_MAXSIZE     (  64*1024)                 // Maximum ...
+#define DEF_WFORMAT_INITSIZE    (   4*1024)                 // Initial size of WCHAR Formatting storage
+#define DEF_WFORMAT_INCRSIZE    (   4*1024)                 // Incremental ...
+#define DEF_WFORMAT_MAXSIZE     ( 256*1024)                 // Maximum ...
 #define DEF_UNDOBUF_INITSIZE    (   4*1024)                 // Initial size of Undo buffer
 #define DEF_UNDOBUF_INCRSIZE    (   4*1024)                 // Incremental ...
 #define DEF_UNDOBUF_MAXSIZE     (  64*1024)                 // Maximum ...
@@ -86,7 +86,7 @@
 #define DEF_STRAND_MAXSIZE      (   4*1024)                 // Maximum ...
 #define DEF_DISPLAY_INITSIZE    (   4*1024)                 // Initial size of WCHARs for Array Display
 #define DEF_DISPLAY_INCRSIZE    (   4*1024)                 // Incremental ...
-#define DEF_DISPLAY_MAXSIZE     (  64*1024)                 // Maximum ...
+#define DEF_DISPLAY_MAXSIZE     ( 256*1024)                 // Maximum ...
 
 
 // Global Options
@@ -323,8 +323,7 @@ EXTERN
 LPCHAR lpszTemp;                        // Used for temporary char storage
 
 EXTERN
-LPWCHAR lpwszTemp,                      // Used for temporary WCHAR storage
-        lpwszFormat;                    // Used for formatting
+LPWCHAR lpwszTemp;                      // Used for temporary WCHAR storage
 
 EXTERN
 UCHAR gDbgLvl                           // Debug level 0 = none
@@ -1065,21 +1064,25 @@ typedef enum tagMEMVIRTENUM
 {
     MEMVIRT_SZTEMP = 0,                 // 00:  lpszTemp
     MEMVIRT_WSZTEMP,                    // 01:  lpwszTemp
-    MEMVIRT_WSZFORMAT,                  // 02:  lpwszFormat
-    MEMVIRT_STRAND_VAR,                 // 03:  Var strand accumulator in parser
-    MEMVIRT_STRAND_FCN,                 // 04:  Fcn ...
 #ifdef DEBUG
-    MEMVIRT_SZDEBUG,                    // 05:  lpszDebug
-    MEMVIRT_WSZDEBUG,                   // 06:  lpwszDebug
+    MEMVIRT_SZDEBUG,                    // 02:  lpszDebug
+    MEMVIRT_WSZDEBUG,                   // 03:  lpwszDebug
 #endif
-    MEMVIRT_LENGTH                      // 07:  # entries
+    MEMVIRT_LENGTH                      // 04:  # entries
 } MEMVIRTENUM;
+
+#define MVS     struct tagMEMVIRTSTR
 
 typedef struct tagMEMVIRTSTR
 {
+    MVS     *lpPrvMVS,                  // Ptr to previous link (NULL = none)
+            *lpNxtMVS;                  // Ptr to next     ...
     LPUCHAR IniAddr;                    // Initial address
     UINT    IncrSize,                   // Incremental size in bytes
             MaxSize;                    // Maximum     ...
+#ifdef DEBUG
+    LPCHAR  lpText;                     // Ptr to (const) description of this item
+#endif
 } MEMVIRTSTR, *LPMEMVIRTSTR;
 
 EXTERN

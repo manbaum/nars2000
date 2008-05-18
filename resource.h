@@ -69,6 +69,7 @@
 
 
 #define IDD_ABOUT                       120
+#define IDD_UPDATES                     121
 
 #define IDM_EXIT                        102
 
@@ -80,6 +81,7 @@
 
 #define IDM_HELP_CONTENTS               400
 #define IDM_ABOUT                       401
+#define IDM_UPDATES                     402
 
 #define IDM_NEW_WS                      500
 #define IDM_DUP_WS                      501
@@ -121,6 +123,9 @@
 
 #define IDC_VERSION                     800
 #define IDC_LINK                        801
+#define IDC_WEBVER                      802
+#define IDC_VERACTION                   803
+#define IDC_FILEVER                     804
 
 #define IDC_STATIC                       -1
 

@@ -223,20 +223,21 @@ void FE_Delete
 #endif
 
 LRESULT APIENTRY FEWndProc
-    (HWND hWnd,                 // Window handle
-     UINT message,              // Type of message
-     UINT wParam,               // Additional information
-     LONG lParam)               // ...
+    (HWND hWnd,                     // Window handle
+     UINT message,                  // Type of message
+     UINT wParam,                   // Additional information
+     LONG lParam)                   // ...
 
 {
-    HWND         hWndEC;        // Handle of Edit Control window
-    int          iMaxLimit;     // Maximum # chars in edit control
-    VKSTATE      vkState;       // Virtual key state (Shift, Alt, Ctrl)
-    long         lvkState;      // Temporary var for vkState
-    LPUNDO_BUF   lpUndoBeg,     // Ptr to start of Undo Buffer
-                 lpUndoNxt;     // ...    next available slot in the Undo Buffer
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    HWND         hWndEC;            // Handle of Edit Control window
+    int          iMaxLimit;         // Maximum # chars in edit control
+    VKSTATE      vkState;           // Virtual key state (Shift, Alt, Ctrl)
+    long         lvkState;          // Temporary var for vkState
+    LPUNDO_BUF   lpUndoBeg,         // Ptr to start of Undo Buffer
+                 lpUndoNxt;         // ...    next available slot in the Undo Buffer
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPMEMVIRTSTR lpLclMemVirtStr;   // Ptr to local MemVirtStr
 
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -303,17 +304,49 @@ LRESULT APIENTRY FEWndProc
             // _LST is the (dynamic) ptr to the last available entry.
             //    Redo entries are between _NXT and _LST[-1], inclusive.
 
+            // Allocate room for one MemVirtStr
+            lpLclMemVirtStr =
+              MyVirtualAlloc (NULL,                     // Any address (FIXED SIZE)
+                              1 * sizeof (MEMVIRTSTR),
+                              MEM_COMMIT | MEM_TOP_DOWN,
+                              PAGE_READWRITE);
+            if (!lpLclMemVirtStr)
+            {
+                // ***FIXME*** -- Display error msg
+
+                return -1;
+            } // End IF
+
             // Allocate virtual memory for the Undo Buffer
+#ifdef DEBUG
+            lpLclMemVirtStr[0].lpText   = "lpUndoBeg in <FEWndProc>";
+#endif
+            lpLclMemVirtStr[0].IncrSize = DEF_UNDOBUF_INCRSIZE * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[0].MaxSize  = DEF_UNDOBUF_MAXSIZE  * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[0].IniAddr  = (LPUCHAR)
             lpUndoBeg =
-              VirtualAlloc (NULL,           // Any address
-                            DEF_UNDOBUF_MAXSIZE * sizeof (UNDO_BUF),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
-            // Commit the intial size
-            VirtualAlloc (lpUndoBeg,
-                          DEF_UNDOBUF_INITSIZE * sizeof (UNDO_BUF),
-                          MEM_COMMIT,
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[0].MaxSize,
+                          MEM_RESERVE,
                           PAGE_READWRITE);
+            if (!lpLclMemVirtStr[0].IniAddr)
+            {
+                // ***FIXME*** -- Display error msg
+
+                return -1;
+            } // End IF
+
+            // Save in window extra bytes
+            SetWindowLongW (hWnd, GWLSF_LPMVS, (long) lpLclMemVirtStr);
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[0]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[0].IniAddr,
+                            DEF_UNDOBUF_INITSIZE * sizeof (UNDO_BUF),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
             // Save in window extra bytes
             SetWindowLongW (hWnd, GWLSF_UNDO_INI, (long) lpUndoBeg);
 ////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
@@ -686,17 +719,24 @@ LRESULT APIENTRY FEWndProc
             // Remove all saved window properties
             EnumProps (hWnd, EnumCallbackRemoveProp);
 
-            // Free allocated storage
+            // Get the ptr to local MemVirtStr
+            (long) lpLclMemVirtStr = GetWindowLongW (hWnd, GWLSF_LPMVS);
 
-            // Get the ptr to the start of the Undo Buffer
-            (long) lpUndoBeg = GetWindowLongW (hWnd, GWLSF_UNDO_BEG);
-            if (lpUndoBeg)
+            // If we allocated virtual storage, ...
+            if (lpLclMemVirtStr)
             {
-                // Free the virtual storage, first backing up to the start
-                VirtualFree (--lpUndoBeg, 0, MEM_RELEASE);
-                lpUndoBeg = lpUndoNxt = NULL;
-                SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
-                SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
+                // If we allocated virtual storage, ...
+                if (lpLclMemVirtStr[0].IniAddr)
+                {
+                    // Free the virtual storage
+                    MyVirtualFree (lpLclMemVirtStr[0].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[0].IniAddr = NULL;
+
+                    // Unlink this entry from the chain
+                    UnlinkMVS (&lpLclMemVirtStr[0]);
+                } // End IF
+
+                // Free the virtual storage
+                MyVirtualFree (lpLclMemVirtStr, 0, MEM_RELEASE); lpLclMemVirtStr = NULL;
             } // End IF
 
             // Uninitialize window-specific resources
@@ -825,6 +865,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                  ksCtrl;        // ...      VK_SHIFT   ...
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
     WNDPROC      lpfnOldEditCtrlWndProc; // Ptr to preceding Edit Control window procedure
 
     // Get the thread's PerTabData global memory handle
@@ -936,6 +977,15 @@ LRESULT WINAPI LclEditCtrlWndProc
                     case NAMETYPE_OP3:
                         // Lock the memory to get a ptr to it
                         lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+                        // Lock the memory to get a ptr to it
+                        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                        // Get ptr to formatting save area
+                        lpwszFormat = lpMemPTD->lpwszFormat;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                         // Copy the name (and its trailing zero) to temporary storage
                         //   which won't go away when we unlock the name's global
@@ -2594,6 +2644,7 @@ LPSYMENTRY ParseFunctionName
     HGLOBAL     hGlbTknHdr = NULL;  // Tokenized header global memory handle
     FHLOCALVARS fhLocalVars = {0};  // Re-entrant vars
     LPSYMENTRY  lpSymName = NULL;   // Ptr to SYMENTRY for the function name
+    MEMVIRTSTR  lclMemVirtStr[1] = {0};// Room for one GuardAlloc
 
     Assert (IzitFE (hWndFE));
 
@@ -2607,15 +2658,21 @@ LPSYMENTRY ParseFunctionName
                    NULL,
                    NULL);
     if (!hGlbTknHdr)
-        return NULL;
+        goto ERROR_EXIT;
 
     // Allocate virtual memory for the Variable Strand accumulator
+#ifdef DEBUG
+    lclMemVirtStr[0].lpText   = "fhLocalvars.lpYYStrandStart in <ParseFunctionName>";
+#endif
+    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     fhLocalVars.lpYYStrandStart =
-      VirtualAlloc (NULL,       // Any address
-                    DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
-                    MEM_RESERVE,
-                    PAGE_READWRITE);
-    if (!fhLocalVars.lpYYStrandStart)
+      GuardAlloc (NULL,       // Any address
+                  lclMemVirtStr[0].MaxSize,
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lclMemVirtStr[0].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("ParseFunctionName:  VirtualAlloc for <fhLocalVars.lpYYStrandStart> failed");
@@ -2623,11 +2680,14 @@ LPSYMENTRY ParseFunctionName
         goto ERROR_EXIT;        // Mark as failed
     } // End IF
 
+    // Link this struc into the chain
+    LinkMVS (&lclMemVirtStr[0]);
+
     // Commit the intial size
-    VirtualAlloc (fhLocalVars.lpYYStrandStart,
-                  DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+    MyVirtualAlloc (lclMemVirtStr[0].IniAddr,
+                    DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
     // Parse the header
     if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, FALSE)
      && fhLocalVars.lpYYFcnName)
@@ -2637,10 +2697,15 @@ LPSYMENTRY ParseFunctionName
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    // Free the virtual memory we allocated above
-    if (fhLocalVars.lpYYStrandStart)
+    // If we allocated virtual storage, ...
+    if (lclMemVirtStr[0].IniAddr)
     {
-        VirtualFree (fhLocalVars.lpYYStrandStart, 0, MEM_RELEASE); fhLocalVars.lpYYStrandStart = NULL;
+        // Free the virtual storage
+        MyVirtualFree (lclMemVirtStr[0].IniAddr, 0, MEM_RELEASE); lclMemVirtStr[0].IniAddr = NULL;
+        fhLocalVars.lpYYStrandStart = NULL;
+
+        // Unlink this entry from the chain
+        UnlinkMVS (&lclMemVirtStr[0]);
     } // End IF
 
     if (hGlbTknHdr)

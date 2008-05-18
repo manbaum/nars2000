@@ -163,6 +163,7 @@ BOOL CmdFNOV_EM
 {
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
     LPAPLCHAR    lpMemName;         // Ptr to name global memory
     LPSYMENTRY  *lpSymSort;         // Ptr to LPSYMENTRYs for sorting
@@ -179,6 +180,9 @@ BOOL CmdFNOV_EM
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to formatting save area
+    lpwszFormat = lpMemPTD->lpwszFormat;
 
     // Initialize the LPSYMENTRY sort array
     lpSymSort = (LPSYMENTRY *) lpwszTemp;

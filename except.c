@@ -32,6 +32,7 @@
 #ifndef PROTO
 #include "compro.h"
 #endif
+
 #include "startaddr.h"
 
 typedef struct tagEXCEPT_NAMES
@@ -47,6 +48,7 @@ EXCEPT_NAMES ExceptNames[] =
  {"ACCESS_VIOLATION"  , EXCEPTION_ACCESS_VIOLATION  },
  {"SINGLE_STEP"       , EXCEPTION_SINGLE_STEP       },
  {"BREAKPOINT"        , EXCEPTION_BREAKPOINT        },
+ {"LIMIT ERROR"       , EXCEPTION_LIMIT_ERROR       },
 };
 
 #define EXCEPT_NAMES_LENGTH         (sizeof (ExceptNames) / sizeof (ExceptNames[0]))
@@ -252,43 +254,135 @@ void MySetInvalidAddr
 
 long CheckVirtAlloc
     (LPEXCEPTION_POINTERS lpExcept,
-     LPMEMVIRTSTR         lpMemVirtStr,
-     UINT                 uMemVirtCnt,
      LPCHAR               lpText)
 
 {
-    LPUCHAR lpInvalidAddr;      // Ptr to invalid address
-    UINT    uMem;               // Loop counter
-    LPUCHAR lpIniAddr;          // Ptr to invalid address
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPMEMVIRTSTR lpLstMVS;          // Ptr to last MEMVIRTSTR (NULL = none)
+    LPUCHAR      lpInvalidAddr;     // Ptr to invalid address
+    LPUCHAR      lpIniAddr;         // Ptr to invalid address
+    int          iRet;              // Return code
 
     // Handle access violations only
     if (lpExcept->ExceptionRecord->ExceptionCode EQ EXCEPTION_ACCESS_VIOLATION)
     {
+        // Get the PerTabData global memory handle
+        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Get the ptr to the last MVS
+        lpLstMVS = lpMemPTD->lpLstMVS;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
         // Get the invalid address
         lpInvalidAddr = (LPUCHAR) lpExcept->ExceptionRecord->ExceptionInformation[1];
 
         // Check for global VirtualAlloc memory that needs to be expanded
-        for (uMem = 0; uMem < uMemVirtCnt; uMem++)
+        while (lpLstMVS)
         {
             // Get the initial address
-            lpIniAddr = lpMemVirtStr[uMem].IniAddr;
+            lpIniAddr = lpLstMVS->IniAddr;
 
             // If it's within range for this VirtualAlloc address, ...
             if (lpIniAddr <= lpInvalidAddr
-             &&              lpInvalidAddr < (lpIniAddr + lpMemVirtStr[uMem].MaxSize))
+             &&              lpInvalidAddr < (lpIniAddr + lpLstMVS->MaxSize))
             {
                 // Allocate more memory
                 if (VirtualAlloc (lpInvalidAddr,
-                                  lpMemVirtStr[uMem].IncrSize,
+                                  lpLstMVS->IncrSize,
                                   MEM_COMMIT,
                                   PAGE_READWRITE) NE NULL)
                     return EXCEPTION_CONTINUE_EXECUTION;
-            } // End IF
+                else
+                // Can't allocate more memory??
+                {
+                    MessageBoxW (NULL,
+                                 L"Not enough memory for <VirtualAlloc> in <CheckVirtAlloc>",
+                                 lpwszAppName,
+                                 MB_OK | MB_ICONERROR);
+                    RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+                } // End IF/ELSE
+            } else
+            {
+                // Skip to the guard page address
+                lpIniAddr += lpLstMVS->MaxSize;
+
+                // Check for the guard page
+                if (lpIniAddr <= lpInvalidAddr
+                 &&              lpInvalidAddr <  (lpIniAddr + PAGESIZE))
+                {
+                    MySetExceptionCode (EXCEPTION_LIMIT_ERROR);
+#ifdef DEBUG
+                    MBC ("LIMIT ERROR encountered");
+                    DbgBrk ();
+#endif
+                    return EXCEPTION_EXECUTE_HANDLER;
+                } // End IF
+            } // End IF/ELSE
+
+            // Get the previous ptr in the chain
+            lpLstMVS = lpLstMVS->lpPrvMVS;
         } // End FOR
+
+        // Check on virtual allocs from <memVirtStr>
+        iRet = CheckMemVirtStr (lpInvalidAddr);
+        if (iRet)
+            return iRet;
     } // End IF
 
     return EXCEPTION_CONTINUE_SEARCH;
 } // End CheckVirtAlloc
+
+
+//***************************************************************************
+//  $CheckMemVirtStr
+//
+//  Check on virtual allocs from <memVirtStr>
+//***************************************************************************
+
+int CheckMemVirtStr
+    (LPUCHAR lpInvalidAddr)         // Ptr to invalid address
+
+{
+    UINT    uMem;                   // Loop counter
+    LPUCHAR lpIniAddr;              // Ptr to initial address
+
+    // Check for global VirtualAlloc memory that needs to be expanded
+    for (uMem = 0; uMem < uMemVirtCnt; uMem++)
+    {
+        // Get the initial address
+        lpIniAddr = memVirtStr[uMem].IniAddr;
+
+        // If it's within range for this VirtualAlloc address, ...
+        if (lpIniAddr <= lpInvalidAddr
+         &&              lpInvalidAddr < (lpIniAddr + memVirtStr[uMem].MaxSize))
+        {
+            // Allocate more memory
+            if (VirtualAlloc (lpInvalidAddr,
+                              memVirtStr[uMem].IncrSize,
+                              MEM_COMMIT,
+                              PAGE_READWRITE) NE NULL)
+                return EXCEPTION_CONTINUE_EXECUTION;
+            else
+            // Can't allocate more memory??
+            {
+                MessageBoxW (NULL,
+                             L"Not enough memory for <VirtualAlloc> in <CheckMemVirtStr>",
+                             lpwszAppName,
+                             MB_OK | MB_ICONERROR);
+                RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+            } // End IF/ELSE
+        } // End IF
+    } // End FOR
+
+    // Mark as no match
+    return 0;
+} // End CheckMemVirtStr
 
 
 //***************************************************************************
@@ -302,7 +396,7 @@ long CheckException
      LPCHAR               lpText)           // Ptr to text of exception handler
 
 {
-    UINT    uMem;               // Loop counter
+    int     iRet;               // Return code
     LPUCHAR lpInvalidAddr;      // Ptr to invalid address
 
     // Save the exception code, address, and text for later use
@@ -320,27 +414,10 @@ long CheckException
             // Save for later use
             MySetInvalidAddr (lpInvalidAddr);
 
-            // Check for global VirtualAlloc memory that needs to be expanded
-            for (uMem = 0; uMem < uMemVirtCnt; uMem++)
-            {
-                LPUCHAR lpIniAddr;
-
-                // Get the initial address
-                lpIniAddr = memVirtStr[uMem].IniAddr;
-
-                // If it's within range for this VirtualAlloc address, ...
-                if (lpIniAddr <= lpInvalidAddr
-                 &&              lpInvalidAddr < (lpIniAddr + memVirtStr[uMem].MaxSize))
-                {
-                    // Allocate more memory
-                    if (VirtualAlloc (lpInvalidAddr,
-                                      1,
-                                      MEM_COMMIT,
-                                      PAGE_READWRITE) NE NULL)
-                        return EXCEPTION_CONTINUE_EXECUTION;
-                } // End IF
-            } // End FOR
-
+            // Check on virtual allocs from <memVirtStr>
+            iRet = CheckMemVirtStr (lpInvalidAddr);
+            if (iRet)
+                return iRet;
 #if 0
             {
                 DWORD   regEBP;             // Stack trace ptr
@@ -368,6 +445,7 @@ long CheckException
 ////////case EXCEPTION_RESULT_INT:
         case EXCEPTION_RESULT_FLOAT:
         case EXCEPTION_DOMAIN_ERROR:
+        case EXCEPTION_LIMIT_ERROR:
         case EXCEPTION_FLT_DIVIDE_BY_ZERO:
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
         case EXCEPTION_SINGLE_STEP:
@@ -465,7 +543,7 @@ void DisplayException
               "WRITE THIS DOWN!! -- "
               "Exception code = %08X (%s) at %08X"
               " (%s + %08X)"
-              " from %s",
+              " from %s -- When you press OK, the program will terminate.",
               exceptCode,
               (exceptIndex EQ EXCEPT_NAMES_LENGTH)
                 ? "Exception Unknown"
@@ -528,6 +606,110 @@ UINT FindRoutineAddress
 
     return i;
 } // End FindRoutineAddress
+
+
+//***************************************************************************
+//  $GuardAlloc
+//
+//  VirtualAlloc with a guard page
+//***************************************************************************
+
+LPVOID GuardAlloc
+    (LPVOID lpvAddress,         // Address of region to reserve or commit
+     DWORD  cbSize,             // Size of region
+     DWORD  fdwAllocationType,  // Type of allocation
+     DWORD  fdwProtect)         // Type of access protection
+
+{
+    LPVOID lpRetAddr;           // Return address
+
+    // Round up the allocation size to a page boundary
+    cbSize = PAGESIZE * ((cbSize + PAGESIZE - 1) / PAGESIZE);
+
+    lpRetAddr =
+      MyVirtualAlloc (lpvAddress,
+                      cbSize + PAGESIZE,// Size of region with an extra guard page
+                      fdwAllocationType,
+                      fdwProtect);
+    return lpRetAddr;
+} // End GuardAlloc
+
+
+//***************************************************************************
+//  $LinkMVS
+//
+//  Link an entry into the MemVirtStr chain
+//***************************************************************************
+
+void LinkMVS
+    (LPMEMVIRTSTR lpCurMVS)         // Ptr to current MVS entry
+
+{
+    HGLOBAL         hGlbPTD;        // PerTabData global memory handle
+    LPPERTABDATA    lpMemPTD;       // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // There is no next entry for us
+    lpCurMVS->lpNxtMVS = NULL;
+
+    // Our previous entry is the last entry
+    lpCurMVS->lpPrvMVS = lpMemPTD->lpLstMVS;
+
+    // If there's a previous entry, ...
+    if (lpCurMVS->lpPrvMVS)
+        // Its next entry is us
+        lpCurMVS->lpPrvMVS->lpNxtMVS = lpCurMVS;
+
+    // We are the new last entry
+    lpMemPTD->lpLstMVS = lpCurMVS;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End LinkMVS
+
+
+//***************************************************************************
+//  $UnlinkMVS
+//
+//  Unlink an entry from the MemVirtStr chain
+//***************************************************************************
+
+void UnlinkMVS
+    (LPMEMVIRTSTR lpCurMVS)         // Ptr to current MVS entry
+
+{
+    HGLOBAL         hGlbPTD;        // PerTabData global memory handle
+    LPPERTABDATA    lpMemPTD;       // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // If there's a previous entry, ...
+    if (lpCurMVS->lpPrvMVS)
+        // Unlink us from it
+        lpCurMVS->lpPrvMVS->lpNxtMVS = lpCurMVS->lpNxtMVS;
+
+    // If there's a next entry, ...
+    if (lpCurMVS->lpNxtMVS)
+        // Unlink us from it
+        lpCurMVS->lpNxtMVS->lpPrvMVS = lpCurMVS->lpPrvMVS;
+
+    // If we're the last entry, ...
+    if (lpMemPTD->lpLstMVS EQ lpCurMVS)
+        // Set the new last entry as our previous entry
+        lpMemPTD->lpLstMVS = lpCurMVS->lpPrvMVS;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End UnlinkMVS
 
 
 //***************************************************************************

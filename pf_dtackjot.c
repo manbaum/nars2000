@@ -183,7 +183,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     APLINT        aplIntegerRht;        // Right arg temporary integer
     APLFLOAT      aplFloatRht;          // ...                 float
     APLCHAR       aplCharRht;           // ...                 char
-    LPFMTHEADER   lpFmtHeader;          // Ptr to format header struc
+    LPFMTHEADER   lpFmtHeader,          // Ptr to format header struc
+                  lpFmtHeader2;         // ...
     LPFMTCOLSTR   lpFmtColStr;          // Ptr to col struc
     LPAPLCHAR     lpaplChar,            // Ptr to output save area
                   lpaplCharStart;       // Ptr to start of output save area
@@ -193,6 +194,21 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     LPPL_YYSTYPE  lpYYRes;              // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPBOOL        lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    HGLOBAL       hGlbPTD;              // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+    LPWCHAR       lpwszFormat;          // Ptr to formatting save area
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to formatting save area
+    lpwszFormat = lpMemPTD->lpwszFormat;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -235,9 +251,10 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
 #endif
 
     // Create a new FMTHEADER
-    ZeroMemory ((LPFMTHEADER) lpwszFormat, sizeof (FMTHEADER));
-    ((LPFMTHEADER) lpwszFormat)->lpFmtHeadUp = NULL;
-    lpFmtHeader = (LPFMTHEADER) lpwszFormat;
+    lpFmtHeader2 = (LPFMTHEADER) lpwszFormat;
+    ZeroMemory (lpFmtHeader2, sizeof (FMTHEADER));
+    lpFmtHeader = lpFmtHeader2;
+    lpFmtHeader->lpFmtHeadUp = NULL;
 #ifdef DEBUG
     lpFmtHeader->Sig.nature  = FMTHEADER_SIGNATURE;
 #endif
@@ -1603,17 +1620,19 @@ LPAPLCHAR CompileArrNestedCon
      LPAPLCHAR   lpaplChar)     // Ptr to next available position
 
 {
-    IMM_TYPES immTypeCon;       // Constant immediate type
-    UINT      NotCharPlus;      // Current NOTCHAR+ var
+    LPFMTHEADER lpFmtHeader2;   // Ptr to format header struc
+    IMM_TYPES   immTypeCon;     // Constant immediate type
+    UINT        NotCharPlus;    // Current NOTCHAR+ var
 
 #define aplDimNRows     1
 #define aplDimNCols     1
 #define aplRank         0
 
     // Create a new FMTHEADER
-    ZeroMemory ((LPFMTHEADER) lpaplChar, sizeof (FMTHEADER));
-    ((LPFMTHEADER) lpaplChar)->lpFmtHeadUp = lpFmtHeader;
-    lpFmtHeader = (LPFMTHEADER) lpaplChar;
+    lpFmtHeader2 = (LPFMTHEADER) lpaplChar;
+    ZeroMemory (lpFmtHeader2, sizeof (FMTHEADER));
+    lpFmtHeader2->lpFmtHeadUp = lpFmtHeader;
+    lpFmtHeader = lpFmtHeader2;
 #ifdef DEBUG
     lpFmtHeader->Sig.nature  = FMTHEADER_SIGNATURE;
 #endif
@@ -1754,19 +1773,20 @@ LPAPLCHAR CompileArrNestedGlb
      BOOL        bLstCol)       // TRUE iff last (rightmost) col
 
 {
-    APLSTYPE aplType;           // Arg storage type
-    APLNELM  aplNELM;           // Arg NELM
-    APLRANK  aplRank;           // Arg rank
-    LPVOID   lpMem;
-    LPAPLDIM lpMemDim;          // Ptr to arg dimensions
-    APLDIM   aplDimNRows,       // # rows
-             aplDimNCols,       // # cols
-             aplChrNCols;       // # cols for char arrays
-    BOOL     bSimpleScalar;
-    APLINT   aplInteger;
-    APLFLOAT aplFloat;
-    APLCHAR  aplChar;
-    UINT     NotCharPlus;       // Current NOTCHAR+ var
+    LPFMTHEADER lpFmtHeader2;   // Ptr to format header struc
+    APLSTYPE    aplType;        // Arg storage type
+    APLNELM     aplNELM;        // Arg NELM
+    APLRANK     aplRank;        // Arg rank
+    LPVOID      lpMem;
+    LPAPLDIM    lpMemDim;       // Ptr to arg dimensions
+    APLDIM      aplDimNRows,    // # rows
+                aplDimNCols,    // # cols
+                aplChrNCols;    // # cols for char arrays
+    BOOL        bSimpleScalar;
+    APLINT      aplInteger;
+    APLFLOAT    aplFloat;
+    APLCHAR     aplChar;
+    UINT        NotCharPlus;    // Current NOTCHAR+ var
 
     // Get the attributes (Type, NELM, Rank) of the global
     AttrsOfGlb (hGlb, &aplType, &aplNELM, &aplRank, NULL);
@@ -1799,9 +1819,10 @@ LPAPLCHAR CompileArrNestedGlb
     aplChrNCols = (IsSimpleChar (aplType)) ? 1 : aplDimNCols;
 
     // Create a new FMTHEADER
-    ZeroMemory ((LPFMTHEADER) lpaplChar, sizeof (FMTHEADER));
-    ((LPFMTHEADER) lpaplChar)->lpFmtHeadUp = lpFmtHeader;
-    lpFmtHeader = (LPFMTHEADER) lpaplChar;
+    lpFmtHeader2 = (LPFMTHEADER) lpaplChar;
+    ZeroMemory (lpFmtHeader2, sizeof (FMTHEADER));
+    lpFmtHeader2->lpFmtHeadUp = lpFmtHeader;
+    lpFmtHeader = lpFmtHeader2;
 #ifdef DEBUG
     lpFmtHeader->Sig.nature  = FMTHEADER_SIGNATURE;
 #endif
@@ -2887,6 +2908,21 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     BOOL         bRet = TRUE,       // TRUE iff result is valid
                  Auto;              // TRUE iff the col is automatic width
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to formatting save area
+    lpwszFormat = lpMemPTD->lpwszFormat;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);

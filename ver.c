@@ -199,6 +199,12 @@ BOOL CALLBACK AboutDlgProc
                 MyDeleteObject (hFont); hFont = NULL;
             } // End IF
 
+            // Restore the old WndProc
+            (WNDPROC) SetWindowLong (hWndStatic,
+                                     GWL_WNDPROC,
+                                     (long) (WNDPROC) lpfnOldStaticWndProc);
+            lpfnOldStaticWndProc = NULL;
+
             EndDialog (hDlg, TRUE); // Quit this dialog
 
             return TRUE;            // We handled the msg

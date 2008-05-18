@@ -189,7 +189,7 @@ void MyDbgBrk
 int _SaveObj
     (DWORD   dwType,
      HGDIOBJ hObject,
-     UINT    uLine)
+     UINT    uLine)         // Line #
 
 {
     int *lpiCount;
@@ -813,7 +813,7 @@ BOOL _MyReleaseDC
 LPVOID _MyGlobalAlloc
     (UINT  uFlags,  // object allocation attributes
      DWORD dwBytes, // number of bytes to allocate
-     UINT  uLine)
+     UINT  uLine)   // Line #
 
 {
     LPVOID lpVoid;
@@ -925,7 +925,7 @@ LPVOID _MyGlobalLockSub
 
 BOOL _MyGlobalUnlock
     (HGLOBAL hMem,      // Address of the global memory object
-     UINT    uLine)
+     UINT    uLine)     // Line #
 
 {
     BOOL  bRet;
@@ -958,7 +958,7 @@ BOOL _MyGlobalUnlock
 
 DWORD _MyGlobalSize
     (HGLOBAL hMem,      // Address of the global memory object
-     UINT    uLine)
+     UINT    uLine)     // Line #
 
 {
     DWORD dwRet;
@@ -992,7 +992,7 @@ DWORD _MyGlobalSize
 
 DWORD _MyGlobalFlags
     (HGLOBAL hMem,      // Address of the global memory object
-     UINT    uLine)
+     UINT    uLine)     // Line #
 
 {
     DWORD dwRet;
@@ -1028,7 +1028,7 @@ HGLOBAL _MyGlobalReAlloc
     (HGLOBAL hMem,      // Address of the global memory object
      DWORD   dwBytes,   // New size of block
      UINT    uFlags,    // How to reallocate
-     UINT    uLine)
+     UINT    uLine)     // Line #
 
 {
     DWORD dwRet;
@@ -1106,7 +1106,85 @@ HGLOBAL _MyGlobalFree
         _DeleObj (OBJ_GLOBAL, hMem);
 
     return GlobalFree (hMem);
-} // MyGlobalFree
+} // _MyGlobalFree
+
+
+//***************************************************************************
+//  $MyVirtualAlloc
+//
+//  My VirtualAlloc function which checks for NULL results
+//***************************************************************************
+
+LPVOID _MyVirtualAlloc
+    (LPVOID lpAddress,          // Address of region to reserve or commit
+     DWORD  dwSize,             // Size of region
+     DWORD  flAllocationType,   // Type of allocation
+     DWORD  flProtect,          // Type of access protection
+     UINT   uLine)              // Line #
+
+{
+    LPVOID lpRet;               // Ptr to result
+
+    // Call the original function
+    lpRet =
+      VirtualAlloc (lpAddress,          // Address of region to reserve or commit
+                    dwSize,             // Size of region
+                    flAllocationType,   // Type of allocation
+                    flProtect);         // Type of access protection
+    if (lpRet EQ NULL)
+    {
+        char szTemp[1024];
+
+        MyDbgBrk ("MyVirtualAlloc");
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
+    } // End IF
+
+    return lpRet;
+} // End _MyVirtualAlloc
+
+
+//***************************************************************************
+//  $MyVirtualFree
+//
+//  My VirtualFree function which checks for FALSE results
+//***************************************************************************
+
+BOOL _MyVirtualFree
+    (LPVOID lpAddress,          // Address of region of committed pages
+     DWORD  dwSize,             // Size of region
+     DWORD  dwFreeType,         // Type of free operation
+     UINT   uLine)              // Line #
+
+{
+    BOOL bRet;                  // TRUE iff the result is valid
+
+    // Call the original function
+    bRet =
+      VirtualFree (lpAddress,   // Address of region of committed pages
+                   dwSize,      // Size of region
+                   dwFreeType); // Type of free operation
+    if (!bRet)
+    {
+        char szTemp[1024];
+
+        MyDbgBrk ("MyVirtualFree");
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
+    } // End IF
+
+    return bRet;
+} // End _MyVirtualFree
 
 
 //***************************************************************************
@@ -1118,7 +1196,7 @@ HGLOBAL _MyGlobalFree
 HANDLE _MyQueryObject
     (DWORD dwType,
      int   iCount,
-     UINT  uLine)
+     UINT  uLine)           // Line #
 
 {
     int *lpiCount;
@@ -1130,7 +1208,7 @@ HANDLE _MyQueryObject
         MyDbgBrk ("MyQueryObject");
 
     return &lpaah[dwType - 1][(*lpiCount) - 1];
-} // End MyQueryObject
+} // End _MyQueryObject
 
 
 #ifdef DEBUG

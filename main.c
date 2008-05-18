@@ -32,6 +32,7 @@
 #include <limits.h>
 #include <direct.h>
 #include <float.h>
+#include <wininet.h>
 
 #include "main.h"
 #include "resdebug.h"
@@ -72,6 +73,11 @@ typedef struct tagENUMPASSMSG
     LPARAM lParam;
 } ENUMPASSMSG, *LPENUMPASSMSG;
 
+typedef struct tagUPDATESDLGSTR
+{
+    LPWCHAR lpFileVer,          // Ptr to file version string
+            lpWebVer;           // Ptr to web  ...
+} UPDATESDLGSTR, *LPUPDATESDLGSTR;
 
 int nMinState,                          // Minimized state as per WinMain
     iScrollSize;                        // Width of a vertical scrollbar
@@ -1136,6 +1142,12 @@ LRESULT APIENTRY MFWndProc
                                &AboutDlgProc);
                     return FALSE;       // We handled the msg
 
+                case IDM_UPDATES:
+                    // See if we have the latest version
+                    CheckForUpdates ();
+
+                    return FALSE;       // We handled the msg
+
                 // The following messages come from the Tab Control.
                 // They are sent here because we need a window whose
                 //   WM_COMMAND we control so as not to interfere with
@@ -1503,6 +1515,319 @@ BOOL IzitDB
 
 
 //***************************************************************************
+//  $CheckForUpdates
+//
+//  See if we have the latest version
+//***************************************************************************
+
+void CheckForUpdates
+    (void)
+
+{
+    HINTERNET hNetOpen    = NULL,
+              hNetConnect = NULL,
+              hNetRequest = NULL;
+    char      szTemp[64];
+    WCHAR     wszFileVer[64],
+              wszTemp[64];
+    UINT      uNumBytes;
+
+    // Read in the application's File Version String
+    LclFileVersionStrW (wszAppDPFE, wszFileVer);
+
+    // Get the file "nars2000.ver" from http://www.NARS2000.ORG/download/binaries/
+
+    // Make the connection
+    hNetOpen =
+      InternetOpen ("NARS2000",                             // Ptr to User Agent
+                    PRE_CONFIG_INTERNET_ACCESS,             // Access type
+                    NULL,                                   // Ptr to proxy name (may be NULL)
+                    NULL,                                   // Ptr to proxy bypass (may be NULL)
+                    0);                                     // Flags
+    if (!hNetOpen)
+        goto ERROR_EXIT;
+
+    // Connect to the server
+    hNetConnect =
+      InternetConnect (hNetOpen,                            // Open handle
+                       "www.nars2000.org",                  // Ptr to server name
+                       INTERNET_DEFAULT_HTTP_PORT,          // Server port
+                       "guest",                             // Ptr to username
+                       "guest",                             // Ptr to password
+                       INTERNET_SERVICE_HTTP,               // Type of service access
+                       0,                                   // Optional flags
+                       0);                                  // Context value
+    if (!hNetConnect)       // ***FIXME** -- Display error message
+    {
+        wsprintfW (lpwszTemp,
+                   L"InternetConnect failed with error code %d (%08X)",
+                   GetLastError (),
+                   GetLastError ());
+        MessageBoxW (NULL, lpwszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Make a request
+    hNetRequest =
+      HttpOpenRequest (hNetConnect,
+                       NULL,                                // "GET"
+                       "/download/binaries/nars2000.ver",   // Ptr to /path/filename
+                       NULL,                                // HTTP 1.1
+                       NULL,                                // No referrer
+                       NULL,                                // No ACCEPT types
+                       0
+                     | INTERNET_FLAG_NO_CACHE_WRITE         // Does not add the returned entity to the cache
+                     | INTERNET_FLAG_PRAGMA_NOCACHE         // Forces the request to be resolved by the origin server,
+                                                            //   even if a cached copy exists on the proxy.
+                     | INTERNET_FLAG_RELOAD,                // Forces a download of the requested file, object, or directory
+                                                            //   listing from the origin server, not from the cache.
+                       0);                                  // Context value
+    if (!hNetRequest)
+    {
+        wsprintfW (lpwszTemp,
+                   L"HttpOpenRequest failed with error code %d (%08X)",
+                   GetLastError (),
+                   GetLastError ());
+        MessageBoxW (NULL, lpwszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Send the request
+    if (HttpSendRequest (hNetRequest,                       // Request handle
+                         NULL,                              // Ptr to additional headers (may be NULL)
+                         0,                                 // Size of additional headers
+                         NULL,                              // Ptr to optional data (may be NULL)
+                         0))                                // Size of optional data
+    {
+        // Read the file
+        if (InternetReadFile (hNetRequest,
+                              szTemp,
+                              sizeof (szTemp),
+                             &uNumBytes))
+        {
+            UPDATESDLGSTR updatesDlgStr;
+
+            // Ensure properly terminated
+            szTemp[uNumBytes] = L'\0';
+
+            // Convert the file contents to wide so we can compare it against the file version
+            A2W (wszTemp, szTemp, sizeof (szTemp) - uNumBytes);
+
+            // Save data in struc to pass to the dialog box
+            updatesDlgStr.lpFileVer = wszFileVer;
+            updatesDlgStr.lpWebVer  = wszTemp;
+
+            // Show the result in a dialog
+            DialogBoxParam (_hInstance,
+                            MAKEINTRESOURCE (IDD_UPDATES),
+                            hWndMF,
+                           &UpdatesDlgProc,
+                  (LPARAM) &updatesDlgStr);
+
+            goto NORMAL_EXIT;
+        } else
+        {
+            wsprintfW (lpwszTemp,
+                       L"InternetReadFile failed with error code %d (%08X)",
+                       GetLastError (),
+                       GetLastError ());
+            MessageBoxW (NULL, lpwszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+
+            goto ERROR_EXIT;
+        } // End IF/ELSE
+    } else
+    {
+        wsprintfW (lpwszTemp,
+                   L"HttpSendRequest failed with error code %d (%08X)",
+                   GetLastError (),
+                   GetLastError ());
+        MessageBoxW (NULL, lpwszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+
+        goto ERROR_EXIT;
+    } // End IF/ELSE
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (hNetRequest)
+    {
+        InternetCloseHandle (hNetRequest); hNetRequest = NULL;
+    } // End IF
+
+    if (hNetConnect)
+    {
+        InternetCloseHandle (hNetConnect); hNetConnect = NULL;
+    } // End IF
+
+    if (hNetOpen)
+    {
+        InternetCloseHandle (hNetOpen); hNetOpen = NULL;
+    } // End IF
+} // End CheckForUpdates
+
+
+//***************************************************************************
+//  $UpdatesDlgProc
+//
+//  Dialog box to handle "Check For Updates"
+//***************************************************************************
+
+BOOL CALLBACK UpdatesDlgProc
+    (HWND   hDlg,
+     UINT   message,
+     WPARAM wParam,
+     LPARAM lParam)
+
+{
+    static HFONT hFont = NULL;
+
+    // Split cases
+    switch (message)
+    {
+        case WM_INITDIALOG:
+        {
+            WCHAR wszTemp[512];
+
+#define lpUpdatesDlgStr     ((LPUPDATESDLGSTR) lParam)
+
+            // Compare the two strings
+            switch (lstrcmpW (lpUpdatesDlgStr->lpWebVer, lpUpdatesDlgStr->lpFileVer))
+            {
+                case -1:            // Actual version is later (must be running an unreleased version)
+                    // Format the text
+                    wsprintfW (wszTemp,
+                               L"The version you are running is newer than the most current version on the website and there is no need to update your version.",
+                               lpUpdatesDlgStr->lpFileVer,
+                               lpUpdatesDlgStr->lpWebVer);
+                    break;
+
+                case 0:             // Same version (nothing to do)
+                    wsprintfW (wszTemp,
+                               L"The version you are running is the same as the most current version on the website and there is no need to update your version.",
+                               lpUpdatesDlgStr->lpFileVer,
+                               lpUpdatesDlgStr->lpWebVer);
+                    break;
+
+                case 1:             // New version is available for download
+                    wsprintfW (wszTemp,
+                               L"The version you are running is the older than the most current version on the website -- please download the latest version from ...",
+                               lpUpdatesDlgStr->lpFileVer,
+                               lpUpdatesDlgStr->lpWebVer);
+
+                    DbgBrk ();
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Write out the file & web version strings
+            SetDlgItemTextW (hDlg, IDC_VERACTION, wszTemp                   );
+
+            wsprintfW (wszTemp,
+                       L"The version you are running is %s.",
+                       lpUpdatesDlgStr->lpFileVer);
+            SetDlgItemTextW (hDlg, IDC_FILEVER  , wszTemp);
+
+            wsprintfW (wszTemp,
+                       L"The latest released version is %s.",
+                       lpUpdatesDlgStr->lpWebVer);
+            SetDlgItemTextW (hDlg, IDC_WEBVER   , wszTemp);
+
+#undef  lpUpdatesDlgStr
+
+            CenterWindow (hDlg);    // Reposition the window to the center of the screen
+
+////        // Get the IDC_LINK window handle
+////        hWndStatic = GetDlgItem (hDlg, IDC_LINK);
+////
+////        // Subclass the IDC_LINK control
+////        //   so we can handle WM_LBUTTONDOWN
+////        lpfnOldStaticWndProc =
+////          (WNDPROC) SetWindowLong (hWndStatic,
+////                                   GWL_WNDPROC,
+////                                   (long) (WNDPROC) &LclStaticWndProc);
+////        // Set the cursor for the static control to a hand
+
+
+
+            return TRUE;            // Use the focus in wParam
+        } // End WM_INITDIALOG
+
+        case WM_CTLCOLORSTATIC:     // hdc = (HDC) wParam;   // Handle of display context
+                                    // hwnd = (HWND) lParam; // Handle of static control
+#define hDC     ((HDC)  wParam)
+#define hWnd    ((HWND) lParam)
+
+////        // We handle IDC_LINK static window only
+////        if (hWnd == hWndStatic)
+////        {
+////            LOGFONT lf;
+////
+////            // Set the text color
+////            SetTextColor (hDC, COLOR_BLUE);
+////
+////            // Set the background text color
+////            SetBkColor (hDC, GetSysColor (COLOR_BTNFACE));
+////
+////            // Get the font handle
+////            hFont = (HFONT) SendMessageW (hWnd, WM_GETFONT, 0, 0);
+////
+////            // Get the LOGFONT structure for the font
+////            GetObject (hFont, sizeof (lf), &lf);
+////
+////            // Change to an underlined font
+////            lf.lfUnderline = TRUE;
+////
+////            // Create a new font, now underlined
+////            hFont = MyCreateFontIndirect (&lf);
+////
+////            // Select it into the DC
+////            SelectObject (hDC, hFont);
+////
+////            // Return handle of brush for background
+////            return (int) CreateSolidBrush (GetSysColor (COLOR_BTNFACE));
+////        } else
+                break;
+#undef  hWnd
+#undef  hDC
+
+        case WM_CLOSE:
+            // If it's still around, delete the font we created
+            if (hFont)
+            {
+                MyDeleteObject (hFont); hFont = NULL;
+            } // End IF
+
+////        // Restore the old WndProc
+////        (WNDPROC) SetWindowLong (hWndStatic,
+////                                 GWL_WNDPROC,
+////                                 (long) (WNDPROC) lpfnOldStaticWndProc);
+////        lpfnOldStaticWndProc = NULL;
+
+            EndDialog (hDlg, TRUE); // Quit this dialog
+
+            return TRUE;            // We handled the msg
+
+        case WM_COMMAND:
+            // If the user pressed one of our buttons, ...
+            switch (GET_WM_COMMAND_ID (wParam, lParam))
+            {
+                case IDOK:
+                    PostMessageW (hDlg, WM_CLOSE, 0, 0);
+
+                    return TRUE;    // We handled the msg
+            } // End switch (wParam)
+
+            break;
+    } // End SWITCH
+
+    return FALSE;           // We didn't handle the msg
+} // End UpdatesDlgProc
+
+
+//***************************************************************************
 //  $InitApplication
 //
 //  Initializes window data and registers window class
@@ -1691,119 +2016,109 @@ BOOL InitInstance
     _hInstance = hInstance;
 
     // Allocate virtual memory for the char temporary storage
+#ifdef DEBUG
+    memVirtStr[MEMVIRT_SZTEMP].lpText   = "lpszTemp in <InitInstance>";
+#endif
     memVirtStr[MEMVIRT_SZTEMP].IncrSize = DEF_CTEMP_INCRSIZE * sizeof (char);
     memVirtStr[MEMVIRT_SZTEMP].MaxSize  = DEF_CTEMP_MAXSIZE  * sizeof (char);
     memVirtStr[MEMVIRT_SZTEMP].IniAddr  = (LPUCHAR)
     lpszTemp =
-      VirtualAlloc (NULL,       // Any address
-                    memVirtStr[MEMVIRT_SZTEMP].MaxSize,
-                    MEM_RESERVE,        // memVirtStr
-                    PAGE_READWRITE);
-    if (!lpszTemp)
+      GuardAlloc (NULL,             // Any address
+                  memVirtStr[MEMVIRT_SZTEMP].MaxSize,
+                  MEM_RESERVE,      // memVirtStr
+                  PAGE_READWRITE);
+    if (!memVirtStr[MEMVIRT_SZTEMP].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  VirtualAlloc for <lpszTemp> failed");
+        DbgMsg ("InitInstance:  GuardAlloc for <lpszTemp> failed");
 
         return FALSE;           // Mark as failed
     } // End IF
 
     // Commit the intial size
-    VirtualAlloc (lpszTemp,
-                  DEF_CTEMP_INITSIZE * sizeof (char),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+    MyVirtualAlloc (memVirtStr[MEMVIRT_SZTEMP].IniAddr,
+                    DEF_CTEMP_INITSIZE * sizeof (char),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
 
     // Allocate virtual memory for the WCHAR temporary storage
+#ifdef DEBUG
+    memVirtStr[MEMVIRT_WSZTEMP].lpText   = "lpwszTemp in <InitInstance>";
+#endif
     memVirtStr[MEMVIRT_WSZTEMP].IncrSize = DEF_WTEMP_INCRSIZE * sizeof (WCHAR);
     memVirtStr[MEMVIRT_WSZTEMP].MaxSize  = DEF_WTEMP_MAXSIZE  * sizeof (WCHAR);
     memVirtStr[MEMVIRT_WSZTEMP].IniAddr  = (LPUCHAR)
     lpwszTemp =
-      VirtualAlloc (NULL,       // Any address
-                    memVirtStr[MEMVIRT_WSZTEMP].MaxSize,
-                    MEM_RESERVE,        // memVirtStr
-                    PAGE_READWRITE);
-    if (!lpwszTemp)
+      GuardAlloc (NULL,             // Any address
+                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,
+                  MEM_RESERVE,      // memVirtStr
+                  PAGE_READWRITE);
+    if (!memVirtStr[MEMVIRT_WSZTEMP].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  VirtualAlloc for <lpwszTemp> failed");
+        DbgMsg ("InitInstance:  GuardAlloc for <lpwszTemp> failed");
 
         return FALSE;       // Mark as failed
     } // End IF
 
     // Commit the intial size
-    VirtualAlloc (lpwszTemp,
-                  DEF_WTEMP_INITSIZE * sizeof (WCHAR),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
-
-    // Allocate virtual memory for the WCHAR Formatting storage
-    memVirtStr[MEMVIRT_WSZFORMAT].IncrSize = DEF_WFORMAT_INCRSIZE * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZFORMAT].MaxSize  = DEF_WFORMAT_MAXSIZE  * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZFORMAT].IniAddr  = (LPUCHAR)
-    lpwszFormat =
-      VirtualAlloc (NULL,       // Any address
-                    memVirtStr[MEMVIRT_WSZFORMAT].MaxSize,
-                    MEM_RESERVE,        // memVirtStr
+    MyVirtualAlloc (memVirtStr[MEMVIRT_WSZTEMP].IniAddr,
+                    DEF_WTEMP_INITSIZE * sizeof (WCHAR),
+                    MEM_COMMIT,
                     PAGE_READWRITE);
-    if (!lpwszFormat)
-    {
-        // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  VirtualAlloc for <lpwszFormat> failed");
 
-        return FALSE;           // Mark as failed
-    } // End IF
-
-    // Commit the intial size
-    VirtualAlloc (lpwszFormat,
-                  DEF_WFORMAT_INITSIZE * sizeof (WCHAR),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
 #ifdef DEBUG
     // Allocate virtual memory for the char debug storage
+#ifdef DEBUG
+    memVirtStr[MEMVIRT_SZDEBUG].lpText   = "lpszDebug in <InitInstance>";
+#endif
     memVirtStr[MEMVIRT_SZDEBUG].IncrSize = DEF_DEBUG_INCRSIZE * sizeof (char);
     memVirtStr[MEMVIRT_SZDEBUG].MaxSize  = DEF_DEBUG_MAXSIZE  * sizeof (char);
     memVirtStr[MEMVIRT_SZDEBUG].IniAddr  = (LPUCHAR)
     lpszDebug =
-      VirtualAlloc (NULL,       // Any address
-                    memVirtStr[MEMVIRT_SZDEBUG].MaxSize,
-                    MEM_RESERVE,        // memVirtStr
-                    PAGE_READWRITE);
-    if (!lpszDebug)
+      GuardAlloc (NULL,             // Any address
+                  memVirtStr[MEMVIRT_SZDEBUG].MaxSize,
+                  MEM_RESERVE,      // memVirtStr
+                  PAGE_READWRITE);
+    if (!memVirtStr[MEMVIRT_SZDEBUG].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  VirtualAlloc for <lpszDebug> failed");
+        DbgMsg ("InitInstance:  GuardAlloc for <lpszDebug> failed");
 
         return FALSE;           // Mark as failed
     } // End IF
 
     // Commit the intial size
-    VirtualAlloc (lpszDebug,
-                  DEF_DEBUG_INITSIZE * sizeof (char),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+    MyVirtualAlloc (memVirtStr[MEMVIRT_SZDEBUG].IniAddr,
+                    DEF_DEBUG_INITSIZE * sizeof (char),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
 
     // Allocate virtual memory for the WCHAR debug storage
+#ifdef DEBUG
+    memVirtStr[MEMVIRT_WSZDEBUG].lpText   = "lpwszDebug in <InitInstance>";
+#endif
     memVirtStr[MEMVIRT_WSZDEBUG].IncrSize = DEF_DEBUG_INCRSIZE * sizeof (WCHAR);
     memVirtStr[MEMVIRT_WSZDEBUG].MaxSize  = DEF_DEBUG_MAXSIZE  * sizeof (WCHAR);
     memVirtStr[MEMVIRT_WSZDEBUG].IniAddr  = (LPUCHAR)
     lpwszDebug =
-      VirtualAlloc (NULL,       // Any address
-                    memVirtStr[MEMVIRT_WSZDEBUG].MaxSize,
-                    MEM_RESERVE,        // memVirtStr
-                    PAGE_READWRITE);
-    if (!lpwszDebug)
+      GuardAlloc (NULL,             // Any address
+                  memVirtStr[MEMVIRT_WSZDEBUG].MaxSize,
+                  MEM_RESERVE,      // memVirtStr
+                  PAGE_READWRITE);
+    if (!memVirtStr[MEMVIRT_WSZDEBUG].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  VirtualAlloc for <lpwszDebug> failed");
+        DbgMsg ("InitInstance:  GuardAlloc for <lpwszDebug> failed");
 
         return FALSE;           // Mark as failed
     } // End IF
 
     // Commit the intial size
-    VirtualAlloc (lpwszDebug,
-                  DEF_DEBUG_INITSIZE * sizeof (WCHAR),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+    MyVirtualAlloc (memVirtStr[MEMVIRT_WSZDEBUG].IniAddr,
+                    DEF_DEBUG_INITSIZE * sizeof (WCHAR),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
 #endif
     // Read in the icons
     hIconMF_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_LARGE));
@@ -1845,26 +2160,14 @@ void UninitInstance
     (HINSTANCE hInstance)
 
 {
+    UINT uCnt;              // Loop counter
+
     // *************** Temporary Storage ***********************
-#ifdef DEBUG
-    if (lpszDebug)
+    for (uCnt = 0; uCnt < MEMVIRT_LENGTH; uCnt++)
+    if (memVirtStr[uCnt].IniAddr)
     {
-        VirtualFree (lpszDebug, 0, MEM_RELEASE); lpszDebug = NULL;
-    } // End IF
-
-    if (lpwszDebug)
-    {
-        VirtualFree (lpwszDebug, 0, MEM_RELEASE); lpwszDebug = NULL;
-    } // End IF
-#endif
-    if (lpszTemp)
-    {
-        VirtualFree (lpszTemp, 0, MEM_RELEASE); lpszTemp = NULL;
-    } // End IF
-
-    if (lpwszTemp)
-    {
-        VirtualFree (lpwszTemp, 0, MEM_RELEASE); lpwszTemp = NULL;
+        // Free the virtual storage
+        MyVirtualFree (memVirtStr[uCnt].IniAddr, 0, MEM_RELEASE);
     } // End IF
 
     // No need to destroy either the cursors or icons

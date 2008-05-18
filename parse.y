@@ -5092,8 +5092,10 @@ EXIT_TYPES ParseLine
     UINT         oldTlsPlLocalVars, // Ptr to previous value of dwTlsPlLocalVars
                  oldTlsType,        // Previous value of dwTlsType
                  uError,            // Error code
-                 uRet;              // The result from pl_yyparse
-    MEMVIRTSTR   lclMemVirtStr[2];  // Room for two VirtualAllocs
+                 uRet,              // The result from pl_yyparse
+                 uCnt;              // Loop counter
+#define MVS_CNT     2
+    MEMVIRTSTR   lclMemVirtStr[MVS_CNT] = {0};// Room for MVS_CNT GuardAllocs
 
     // Save the previous value of dwTlsType
     (LPVOID) oldTlsType = TlsGetValue (dwTlsType);
@@ -5172,47 +5174,59 @@ EXIT_TYPES ParseLine
     plLocalVars.tkLACharIndex    = NEG1U;
 
     // Allocate virtual memory for the Variable Strand accumulator
+#ifdef DEBUG
+    lclMemVirtStr[0].lpText   = "plLocalvars.lpYYStrandStart[STRAND_VAR] in <ParseLine>";
+#endif
     lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     plLocalVars.lpYYStrandStart[STRAND_VAR] =
-      VirtualAlloc (NULL,           // Any address
-                    lclMemVirtStr[0].MaxSize,
-                    MEM_RESERVE,    // memVirtStr
-                    PAGE_READWRITE);
-    if (!plLocalVars.lpYYStrandStart[STRAND_VAR])
+      GuardAlloc (NULL,             // Any address
+                  lclMemVirtStr[0].MaxSize,
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lclMemVirtStr[0].IniAddr)
     {
-        DbgMsg ("ParseLine:  VirtualAlloc for <plLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
+        DbgMsg ("ParseLine:  GuardAlloc for <plLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
 
         goto ERROR_EXIT;
     } // End IF
 
+    // Link this struc into the chain
+    LinkMVS (&lclMemVirtStr[0]);
+
     // Commit the intial size
-    VirtualAlloc (lclMemVirtStr[0].IniAddr,
-                  DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+    MyVirtualAlloc (lclMemVirtStr[0].IniAddr,
+                    DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
     // Allocate virtual memory for the Function Strand accumulator
+#ifdef DEBUG
+    lclMemVirtStr[1].lpText   = "plLocalvars.lpYYStrandStart[STRAND_FCN] in <ParseLine>";
+#endif
     lclMemVirtStr[1].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
     lclMemVirtStr[1].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[1].IniAddr  = (LPUCHAR)
     plLocalVars.lpYYStrandStart[STRAND_FCN] =
-      VirtualAlloc (NULL,           // Any address
-                    lclMemVirtStr[1].MaxSize,
-                    MEM_RESERVE,    // memVirtStr
-                    PAGE_READWRITE);
-    if (!plLocalVars.lpYYStrandStart[STRAND_FCN])
+      GuardAlloc (NULL,             // Any address
+                  lclMemVirtStr[1].MaxSize,
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lclMemVirtStr[1].IniAddr)
     {
-        DbgMsg ("ParseLine:  VirtualAlloc for <pLocalVars.lpYYStrandStart[STRAND_FCN]> failed");
+        DbgMsg ("ParseLine:  GuardAlloc for <pLocalVars.lpYYStrandStart[STRAND_FCN]> failed");
 
         goto ERROR_EXIT;
     } // End IF
 
+    // Link this struc into the chain
+    LinkMVS (&lclMemVirtStr[1]);
+
     // Commit the intial size
-    VirtualAlloc (lclMemVirtStr[1].IniAddr,
-                  DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+    MyVirtualAlloc (lclMemVirtStr[1].IniAddr,
+                    DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
     // Initialize the base & next strand ptrs
     plLocalVars.lpYYStrandBase[STRAND_VAR] =
     plLocalVars.lpYYStrandNext[STRAND_VAR] = plLocalVars.lpYYStrandStart[STRAND_VAR];
@@ -5250,8 +5264,6 @@ EXIT_TYPES ParseLine
             //   2 = memory exhausted
             uRet = pl_yyparse (&plLocalVars);
         } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                    lclMemVirtStr,
-                                    sizeof (lclMemVirtStr) / sizeof (lclMemVirtStr[0]),
                                     "ParseLine"))
         {} // End __try/__Except
     } __except (CheckException (GetExceptionInformation (), "ParseLine"))
@@ -5478,14 +5490,14 @@ ERROR_EXIT:
 ////     // We no longer need this ptr
 ////     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 NORMAL_EXIT:
-    if (plLocalVars.lpYYStrandStart[STRAND_FCN])
+    for (uCnt = 0; uCnt < MVS_CNT; uCnt++)
+    if (lclMemVirtStr[uCnt].IniAddr)
     {
-        VirtualFree (plLocalVars.lpYYStrandStart[STRAND_FCN], 0, MEM_RELEASE); plLocalVars.lpYYStrandStart[STRAND_FCN] = NULL;
-    } // End IF
+        // Free the virtual storage
+        MyVirtualFree (lclMemVirtStr[uCnt].IniAddr, 0, MEM_RELEASE); lclMemVirtStr[uCnt].IniAddr = NULL;
 
-    if (plLocalVars.lpYYStrandStart[STRAND_VAR])
-    {
-        VirtualFree (plLocalVars.lpYYStrandStart[STRAND_VAR], 0, MEM_RELEASE); plLocalVars.lpYYStrandStart[STRAND_VAR] = NULL;
+        // Unlink this entry from the chain
+        UnlinkMVS (&lclMemVirtStr[uCnt]);
     } // End IF
 
     // We no longer need this ptr
@@ -6538,6 +6550,8 @@ void pl_yyfprintf
     i2 = va_arg (vl, int);
     i3 = va_arg (vl, int);
 
+    va_end (vl);
+
     wsprintf (lpszDebug,
               lpszFmt,
               i1, i2, i3);
@@ -6560,8 +6574,6 @@ void pl_yyfprintf
 
         szTemp[0] = '\0';       // Restart the buffer
     } // End IF/ELSE
-
-    va_end (vl);
 #endif
 } // End pl_yyfprintf
 

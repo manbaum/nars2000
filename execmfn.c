@@ -142,6 +142,7 @@ HGLOBAL Init1MagicFunction
     FHLOCALVARS    fhLocalVars = {0};   // Re-entrant vars
     STFLAGS        stFlags = {0};       // STE flags for the MF
     LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY for the MF
+    MEMVIRTSTR     lclMemVirtStr[1] = {0}; // Room for one GuardAlloc
 
     // Throughout this function, we use GlobalAlloc
     //   instead of MyGlobalAlloc because we never intend to
@@ -215,12 +216,18 @@ HGLOBAL Init1MagicFunction
     } // End IF
 
     // Allocate virtual memory for the Variable Strand accumulator
+#ifdef DEBUG
+    lclMemVirtStr[0].lpText   = "fhLocalVars.lpYYStrandStart in <Init1MagicFunction>";
+#endif
+    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     fhLocalVars.lpYYStrandStart =
-      VirtualAlloc (NULL,       // Any address
-                    DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
-                    MEM_RESERVE,
-                    PAGE_READWRITE);
-    if (!fhLocalVars.lpYYStrandStart)
+      GuardAlloc (NULL,             // Any address
+                  lclMemVirtStr[0].MaxSize,
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lclMemVirtStr[0].IniAddr)
     {
         MessageBox (hWndEC,
                     "Insufficient memory to save the function header strand stack!!",
@@ -229,11 +236,14 @@ HGLOBAL Init1MagicFunction
         goto ERROR_EXIT;    // Mark as failed
     } // End IF
 
+    // Link this struc into the chain
+    LinkMVS (&lclMemVirtStr[0]);
+
     // Commit the intial size
-    VirtualAlloc (fhLocalVars.lpYYStrandStart,
-                  DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+    MyVirtualAlloc (lclMemVirtStr[0].IniAddr,
+                    DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
     // Parse the header
     if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
     {
@@ -537,10 +547,14 @@ ERROR_EXIT:
         MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
     } // End IF
 NORMAL_EXIT:
-    // Free the virtual memory we allocated above
-    if (fhLocalVars.lpYYStrandStart)
+    // If we allocated virtual storage, ...
+    if (lclMemVirtStr[0].IniAddr)
     {
-        VirtualFree (fhLocalVars.lpYYStrandStart, 0, MEM_RELEASE); fhLocalVars.lpYYStrandStart = NULL;
+        // Free the virtual storage
+        MyVirtualFree (lclMemVirtStr[0].IniAddr, 0, MEM_RELEASE); lclMemVirtStr[0].IniAddr = NULL;
+
+        // Unlink this entry from the chain
+        UnlinkMVS (&lclMemVirtStr[0]);
     } // End IF
 
     return hGlbDfnHdr;

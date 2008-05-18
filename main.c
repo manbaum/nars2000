@@ -1713,9 +1713,6 @@ BOOL CALLBACK UpdatesDlgProc
                                L"The version you are running is the older than the most current version on the website -- please download the latest version from ...",
                                lpUpdatesDlgStr->lpFileVer,
                                lpUpdatesDlgStr->lpWebVer);
-
-                    DbgBrk ();
-
                     break;
 
                 defstop

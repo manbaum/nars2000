@@ -256,16 +256,17 @@ void MyChooseFont
 //***************************************************************************
 
 void CreateNewFontCom
-    (HFONT       *lphFont,
-     LPLOGFONT    lplf,
-     LPCHOOSEFONT lpcf,
-     LPTEXTMETRIC lptm,
-     long        *lpcxAveChar,
-     long        *lpcyAveChar)
+    (HFONT       *lphFont,              // Ptr to in HFONT to create
+     LPLOGFONT    lplf,                 // Ptr to in/out LOGFONT to set
+     LPCHOOSEFONT lpcf,                 // Ptr to in CHOOSEFONT with iPointSize
+     LPTEXTMETRIC lptm,                 // Ptr to in TEXTMETRICs
+     long        *lpcxAveChar,          // Ptr to out avg width (may be NULL)
+     long        *lpcyAveChar)          // Ptr to out avg height (may be NULL)
 
 {
     HDC   hDC;
     HFONT hFontOld;
+    long  cyAveChar;
 
     // Delete the previous handle (if any)
     if (*lphFont)
@@ -285,16 +286,20 @@ void CreateNewFontCom
     MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
 
     // New height
-    *lpcyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
+    cyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
 
     // New width from TextMetrics
     lplf->lfWidth = lptm->tmAveCharWidth;
 
     // New width (same aspect ratio as old)
-    *lpcxAveChar = MulDiv (lplf->lfWidth, *lpcyAveChar, -lplf->lfHeight);
+    if (lpcxAveChar)
+        *lpcxAveChar = MulDiv (lplf->lfWidth, cyAveChar, -lplf->lfHeight);
 
-    lplf->lfHeight = -*lpcyAveChar;
-    *lpcyAveChar = lptm->tmHeight;
+    // New height
+    lplf->lfHeight = -cyAveChar;
+
+    if (lpcyAveChar)
+        *lpcyAveChar = lptm->tmHeight;
 
     // Now that we've caclulated the correct height & width,
     //   delete the font and re-create it
@@ -341,6 +346,8 @@ void CreateNewFontSM
 
 {
     ENUMSETFONTW enumSetFontW;
+    LOGFONT      lfAlt;
+    TEXTMETRIC   tmAlt;
 
     // Call common routine to set various variables
     CreateNewFontCom (&hFontSM,
@@ -356,6 +363,20 @@ void CreateNewFontSM
     // Refont the SM windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
 
+    // Copy the SM LOGFONT & TEXTMETRICS
+    lfAlt = lfSM;
+    tmAlt = tmSM;
+
+    // Change the font name
+    lstrcpy (lfAlt.lfFaceName, DEF_ASFONTNAME);
+
+    // Re-specify the alternate SM font
+    CreateNewFontCom (&hFontAlt,
+                      &lfAlt,
+                      &cfSM,
+                      &tmAlt,
+                       NULL,
+                       NULL);
 #ifdef DEBUG
     // Initialize the struct
     enumSetFontW.lpwClassName = LDBWNDCLASS;
@@ -1720,7 +1741,7 @@ BOOL CALLBACK UpdatesDlgProc
             } // End SWITCH
 
             // Write out the file & web version strings
-            SetDlgItemTextW (hDlg, IDC_VERACTION, wszTemp                   );
+            SetDlgItemTextW (hDlg, IDC_VERACTION, wszTemp);
 
             wsprintfW (wszTemp,
                        L"The version you are running is %s.",

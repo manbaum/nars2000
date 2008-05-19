@@ -2439,7 +2439,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
 
         (long) lpPaintHook = GetWindowLongW (es->hwndSelf, GWLEC_PAINTHOOK);
         if (lpPaintHook)
-            ret = (INT)LOWORD((*lpPaintHook) (dc, x, y, es->text + li, col, count));
+            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, es->text + li, col, count));
         else
             ret = (INT)LOWORD(TabbedTextOutW(dc, x, y, es->text + li + col, count,
                         es->tabs_count, es->tabs, es->format_rect.left - es->x_offset));

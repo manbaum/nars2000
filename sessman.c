@@ -699,6 +699,15 @@ LRESULT APIENTRY SMWndProc
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
+            // Initialize the OLE libraries
+            CoInitialize (NULL);
+
+            // Get FontLink ptr
+            CoCreateInstance (&CLSID_CMultiLanguage,
+                               NULL,
+                               CLSCTX_ALL,
+                              &IID_IMLangFontLink,
+                               (void **) &lpMemPTD->lpFontLink);
             // Save the window handle
             lpMemPTD->hWndSM = hWnd;
 
@@ -1966,9 +1975,6 @@ LOAD_WORKSPACE_FAIL:
             if (lpMemPTD->hWndDB)
                 SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) lpMemPTD->hWndDB, 0);
 #endif
-            // Get the MemVirtStr ptr
-            (long) lpLclMemVirtStr = GetWindowLongW (hWnd, GWLSF_LPMVS);
-
             // *************** hGlbStr *********************************
             if (lpMemPTD->hGlbStr)
             {
@@ -2002,27 +2008,45 @@ LOAD_WORKSPACE_FAIL:
             // *************** Strand Accumulator - VAR ****************
             // *************** Strand Accumulator - FCN ****************
             // *************** lpwszFormat *****************************
-            for (uCnt = 0; uCnt < MVS_CNT; uCnt++)
-            if (lpLclMemVirtStr[uCnt].IniAddr)
+
+            // Get the MemVirtStr ptr
+            (long) lpLclMemVirtStr = GetWindowLongW (hWnd, GWLSF_LPMVS);
+            if (lpLclMemVirtStr)
             {
+                for (uCnt = 0; uCnt < MVS_CNT; uCnt++)
+                if (lpLclMemVirtStr[uCnt].IniAddr)
+                {
+                    // Free the virtual storage
+                    MyVirtualFree (lpLclMemVirtStr[uCnt].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[uCnt].IniAddr = NULL;
+
+                    // Unlink this entry from the chain
+                    UnlinkMVS (&lpLclMemVirtStr[uCnt]);
+                } // End FOR/IF
+
                 // Free the virtual storage
-                MyVirtualFree (lpLclMemVirtStr[uCnt].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[uCnt].IniAddr = NULL;
+                MyVirtualFree (lpLclMemVirtStr, 0,MEM_RELEASE); lpLclMemVirtStr = NULL;
 
-                // Unlink this entry from the chain
-                UnlinkMVS (&lpLclMemVirtStr[uCnt]);
+                // Zap the window extra in case we're called again???
+                SetWindowLongW (hWnd, GWLSF_LPMVS, 0);
             } // End IF
-
-            // Free the virtual storage
-            MyVirtualFree (lpLclMemVirtStr, 0,MEM_RELEASE); lpLclMemVirtStr = NULL;
 
             // Uninitialize window-specific resources
             SM_Delete (hWnd);
+
+            // Release the FontLink ptr
+            if (lpMemPTD->lpFontLink)
+            {
+                IMLangFontLink_Release (lpMemPTD->lpFontLink); lpMemPTD->lpFontLink = NULL;
+            } // End IF
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Tell the thread to quit, too
             PostQuitMessage (0);
+
+            // Uninitialize the OLE libraries
+            CoUninitialize ();
 
             break;
     } // End SWITCH

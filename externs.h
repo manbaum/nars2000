@@ -21,7 +21,8 @@
 ***************************************************************************/
 
 // Default definitions
-#define DEF_TCFONTNAME      "Georgia"
+#define DEF_TCFONTNAME      "Tahoma"            // Default TabCtrl font
+#define DEF_ASFONTNAME      "Arial Unicode MS"  // Default Alternate SM font
 #define DEF_SMFONTNAME      "SImPL"             // Or "APL385 Unicode"
 #define DEF_FEFONTNAME      "SImPL"             // Or "APL385 Unicode"
 #define DEF_MEFONTNAME      "SImPL"             // Or "APL385 Unicode"
@@ -33,7 +34,7 @@
 #define DEF_MELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_MEFONTNAME
 #define DEF_VELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_VEFONTNAME
 
-#define DEF_TCPTSIZE        8           // Point size for TC font
+#define DEF_TCPTSIZE       10           // Point size for TC font
 #define DEF_SMPTSIZE       13           // ...            SM ...
 #define DEF_FEPTSIZE       13           // ...            FE ...
 #define DEF_MEPTSIZE       13           // ...            ME ...
@@ -900,6 +901,7 @@ LOGFONT lfSM                            // LOGFONT for the SM
 
 EXTERN
 HFONT hFontTC,                          // Handle to font for the TC
+      hFontAlt,                         // ...                    Alternate SM
       hFontSM,                          // ...                    SM
       hFontFE,                          // ...                    FE
       hFontME,                          // ...                    ME

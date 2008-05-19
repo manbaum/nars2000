@@ -44,7 +44,7 @@
 <body><!--#config timefmt="%d %B %Y %H:%M:%S" -->
 
 <h1 class="header"
-    title="Last Changed <!--#echo var='LAST_MODIFIED' -->">
+    title="Last Changed <?php echo date ('d F Y H:i:s', filemtime (__FILE__));?>">
 Downloads</h1>
 
 <div class="section">
@@ -89,6 +89,7 @@ Downloads</h1>
         {
             if (!is_dir ($File)
              && strcmp  ($File, "linestat.txt") != 0
+             && strcmp  ($File, "nars2000.ver") != 0
              && strncmp ($File, "Notes-", 6) != 0)
             {
                 $Files[] = $File;

@@ -758,7 +758,8 @@ LRESULT APIENTRY FEWndProc
 //***************************************************************************
 
 int LclECPaintHook
-    (HDC     hDC,       // The Device Context
+    (HWND    hWndEC,    // Window handle of Edit Control
+     HDC     hDC,       // The Device Context
      int     x,         // The x-coordinate (Client Area)
      int     y,         // ... y- ...
      LPWCHAR lpwsz,     // Ptr to start of line
@@ -766,7 +767,17 @@ int LclECPaintHook
      UINT    uLen)      // Length of text to display
 
 {
-    RECT rc;
+    RECT             rc;                // Rect for actual width/height
+    HGLOBAL          hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
+    int              iRes;              // The result
+    long             cxAveChar;         // Width of average char in given screen
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Syntax Color the line
 
@@ -776,27 +787,191 @@ int LclECPaintHook
 
     rc.top    = y;
     rc.left   = x;
-    rc.right  = x + 0xFFFF;
-    rc.bottom = y + 0xFFFF;
+    rc.right  =
+    rc.bottom = 0;
+
+    // Skip to the starting col
+    lpwsz += uCol;
 
     // Calculate the width & height of the line
     DrawTextW (hDC,
-               lpwsz + uCol,
+               lpwsz,
                uLen,
               &rc,
                0
              | DT_CALCRECT
-             | DT_NOPREFIX);
-    // Draw the line for real
-    DrawTextW (hDC,
-               lpwsz + uCol,
-               uLen,
-              &rc,
-               0
-             | DT_SINGLELINE
-             | DT_NOPREFIX);
-    return MAKELONG (rc.right - rc.left, rc.bottom - rc.top);
+             | DT_NOPREFIX
+             | DT_NOCLIP);
+    // On some systems when the alternate font isn't the same
+    //   width as the SM font, the width calculated by DT_CALCRECT
+    //   is too small, so we recalculate it here
+    rc.right = rc.left + cxAveCharSM * uLen;
+
+    // Calculate the result
+    iRes = MAKELONG (rc.right - rc.left, rc.bottom - rc.top);
+
+    // Get the appropriate cxAveChar
+    cxAveChar = IzitSM (GetParent (hWndEC)) ? cxAveCharSM : cxAveCharFE;
+
+    if (!lpMemPTD->lpFontLink
+     || FAILED (DrawTextFL (lpMemPTD->lpFontLink, hDC, &rc, lpwsz, uLen, cxAveChar)))
+        OneDrawTextW (hDC, &rc, &lpwsz, uLen, cxAveChar);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return iRes;
 } // End LclECPaintHook
+
+
+//***************************************************************************
+//  $DrawTextFL
+//
+//  DrawText with font linking as seen in
+//  http://blogs.msdn.com/oldnewthing/archive/2004/07/16/185261.aspx
+//***************************************************************************
+
+int DrawTextFL
+    (IMLangFontLink *pfl,
+     HDC             hdc,
+     LPRECT          lprc,
+     LPCWSTR         lpsz,
+     long            cch,
+     long            cxAveChar)
+
+{
+    HRESULT hr;
+    HFONT   hfOrig = (HFONT) GetCurrentObject (hdc, OBJ_FONT);
+    DWORD   dwFontCodePages = 0;
+
+    hr = IMLangFontLink_GetFontCodePages (pfl, hdc, hfOrig, &dwFontCodePages);
+    if (SUCCEEDED (hr))
+    {
+        while (cch > 0)
+        if (FAILED (hr = DrawTextFLsub (pfl, hdc, dwFontCodePages, hfOrig, lprc, cxAveChar, &lpsz, &cch)))
+            break;
+
+        if (FAILED (hr))
+        {
+            //  We started outputting characters so we have to finish.
+            //  Do the rest without font linking since we have no choice.
+            OneDrawTextW (hdc, lprc, &lpsz, cch, cxAveChar);
+
+            hr = S_FALSE;
+        } // End IF
+    } // End IF
+
+    return hr;
+} // End DrawTextFL
+
+
+//***************************************************************************
+//  $DrawTextFLsub
+//
+//  Subroutine to DrawTextFL
+//***************************************************************************
+
+HRESULT DrawTextFLsub
+    (IMLangFontLink *pfl,
+     HDC             hdc,
+     DWORD           dwFontCodePages,
+     HFONT           hfOrig,
+     LPRECT          lprc,
+     long            cxAveChar,
+     LPCWSTR        *lplpsz,
+     int            *lpcch)
+
+{
+    HRESULT hr;
+    long    cchActual;
+    HFONT   hfLinked;
+    DWORD   dwActualCodePages;
+    int     cchCnt,
+            cch;
+
+    hr = IMLangFontLink_GetStrCodePages (pfl, *lplpsz, *lpcch, dwFontCodePages, &dwActualCodePages, &cchActual);
+    if (FAILED (hr))
+        return hr;
+
+    if (dwActualCodePages & dwFontCodePages)
+        OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
+    else
+    if (FAILED (hr = IMLangFontLink_MapFont (pfl, hdc, dwActualCodePages, 0, &hfLinked)))
+    {
+        // If the actual code pages are non-zero and cchActual > 1,
+        //   run through the chars one-by-one
+        if (dwActualCodePages && cchActual > 1)
+        {
+            for (cchCnt = 0; cchCnt < cchActual; cchCnt++, (*lpcch)--)
+            {
+                cch = 1;
+
+                if (FAILED (hr = DrawTextFLsub (pfl, hdc, dwFontCodePages, hfOrig, lprc, cxAveChar, lplpsz, &cch)))
+                    return hr;
+            } // End FOR
+
+            return S_OK;
+        } else
+        // If there are actual code pages, use the alternate font
+        if (dwActualCodePages)
+        {
+            SelectObject (hdc, hFontAlt);
+            OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
+            SelectObject (hdc, hfOrig);
+        } else
+            // Otherwise, use the main font
+            OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
+
+        // Set the return code to OK even though we failed to find a linked font
+        hr = S_OK;
+    } else
+    {
+        // Use the linked font
+        SelectObject (hdc, hfLinked);
+        OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
+        SelectObject (hdc, hfOrig);
+
+        // Release the linked font
+        IMLangFontLink_ReleaseFont (pfl, hfLinked);
+    } // End IF/ELSE
+
+    // Update the string count
+    (*lpcch) -= cchActual;
+
+    return hr;
+} // End DrawTextFLsub
+
+
+//***************************************************************************
+//  $OneDrawTextW
+//
+//  Output one chunk all with the same font
+//***************************************************************************
+
+void OneDrawTextW
+    (HDC      hdc,
+     LPRECT   lprc,
+     LPCWSTR *lplpsz,
+     long     cchActual,
+     long     cxAveChar)
+
+{
+    int  cch;
+
+    for (cch = 0; cch < cchActual; cch++)
+    {
+        DrawTextW (hdc,
+                  (*lplpsz)++,
+                   1,
+                   lprc,
+                   0
+                 | DT_SINGLELINE
+                 | DT_NOPREFIX
+                 | DT_NOCLIP);
+        // Update the horizontal position
+        lprc->left += cxAveChar;
+    } // End FOR
+} // End OneDrawTextW
 
 
 //***************************************************************************

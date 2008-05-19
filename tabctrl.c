@@ -1134,7 +1134,13 @@ void DrawTab
     HGLOBAL      hGlbPTD;           // Handle of PerTabData
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPAPLCHAR    lpMemWSID;         // Ptr to []WSID global memory
-    int          crIndex;           // Index into crTab for this tab
+    int          crIndex,           // Index into crTab for this tab
+                 tabNum;            // Tab # (origin-1)
+    HBRUSH       hBrushOrig;        // Original brush from the DC so we can restore it
+    HPEN         hPenOrig,          // ...      pen   ...
+                 hPenEllipse;       // Actual pen for the ellipse boundary
+    WCHAR        wszTabNum[3 + 1];  // Format area for tab # (including terminating zero)
+    RECT         rcTabNum;          // Rectangle for tab #
     COLORREF     crfg,              // Foreground color
                  crbk;              // Background color
 #if 0
@@ -1191,15 +1197,98 @@ void DrawTab
     lpRect->left  += TABMARGIN_LEFT;
     lpRect->right += TABMARGIN_LEFT;
 
+    // Get the tab # (origin-1)
+    tabNum = 1 + lpMemWSID[0] - TABNUMBER_START;
+
+    // Format the tab # as text
+    wsprintfW (wszTabNum,
+               L"%d",
+               tabNum);
+    // Create the bounding rectangle for the tab #
+    rcTabNum.top    = lpRect->top + 1;
+    rcTabNum.left   = lpRect->left;
+    rcTabNum.right  =
+    rcTabNum.bottom = 0;
+
+    // Calculate the size of the bounding rectangle
+    DrawTextW (hDCMem,
+               wszTabNum,
+               lstrlenW (wszTabNum),
+              &rcTabNum,
+               0
+             | DT_SINGLELINE
+             | DT_CENTER
+             | DT_VCENTER
+             | DT_NOPREFIX
+             | DT_NOCLIP
+             | DT_CALCRECT
+              );
+    // Set the bottom to the actual bottom
+    rcTabNum.bottom = lpRect->bottom - 1;
+
+#define PEN_WIDTH   2
+
+    // Account for the pen width when drawing the ellipse
+    rcTabNum.left   -= PEN_WIDTH;
+    rcTabNum.top    -= PEN_WIDTH;
+    rcTabNum.right  += PEN_WIDTH;
+////rcTabNum.bottom += PEN_WIDTH;       // Already set
+
+    // Save the existing brush so we can replace it with a white brush
+    //   to provide a contrasting background
+    hBrushOrig = GetCurrentObject (hDC, OBJ_BRUSH);
+    SelectObject (hDC, GetStockObject (WHITE_BRUSH));
+
+    // Save the existing pen so we can set one with the proper attributes
+    hPenOrig = GetCurrentObject (hDC, OBJ_PEN);
+    hPenEllipse = CreatePen (PS_INSIDEFRAME, PEN_WIDTH, COLOR_BLACK);
+    SelectObject (hDC, hPenEllipse);
+
+    // Draw the ellipse
+    Ellipse (hDCMem,
+             rcTabNum.left,
+             rcTabNum.top,
+             rcTabNum.right,
+             rcTabNum.bottom);
+    // Restore the original brush & pen
+    SelectObject (hDC, hBrushOrig);
+    SelectObject (hDC, hPenOrig);
+
+    // Delete the resources
+    DeleteObject (hPenEllipse); hPenEllipse = NULL;
+
+    // Account for the pen width when drawing the tab #
+    rcTabNum.left   += PEN_WIDTH;
+    rcTabNum.top    += PEN_WIDTH;
+    rcTabNum.right  -= PEN_WIDTH;
+////rcTabNum.bottom -= PEN_WIDTH;       // Already set
+#undef  PEN_WIDTH
+
+    // Draw the tab # inside the ellipse
+    DrawTextW (hDCMem,
+               wszTabNum,
+               lstrlenW (wszTabNum),
+              &rcTabNum,
+               0
+             | DT_SINGLELINE
+             | DT_CENTER
+             | DT_VCENTER
+             | DT_NOPREFIX
+             | DT_NOCLIP
+              );
+    // Move the bounding rectangle over past the ellipse
+    lpRect->left += rcTabNum.right - rcTabNum.left;
+
     // Draw the text
     DrawTextW (hDCMem,
-               lpMemWSID,
-               lstrlenW (lpMemWSID),
+              &lpMemWSID[1],
+               lstrlenW (&lpMemWSID[1]),
                lpRect,
                0
              | DT_SINGLELINE
              | DT_VCENTER
              | DT_NOPREFIX
+             | DT_NOCLIP
               );
     // Restore the original values
     lpRect->right -= TABMARGIN_LEFT;

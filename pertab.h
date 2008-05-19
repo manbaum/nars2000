@@ -20,6 +20,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#define COBJMACROS
+#include <mlang.h>
 #include "workspace.h"
 
 #define INIT_PERTABVARS                                     \
@@ -45,6 +47,7 @@
 ////lpMemPTD->SILevel            = 0;
 ////lpmemPTD->hSemaDelay         = NULL;
 ////lpmemPTD->lpLstMVS           = NULL;
+////lpmemPTD->lpFontLink         = NULL;
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -146,9 +149,11 @@ typedef struct tagPERTABDATA
                  lpLoadWsGlbVarParm;//160:  Ptr to extra parms for LoadWsGlbVarConv
     LPMEMVIRTSTR lpLstMVS;          //164:  Ptr to last MEMVIRTSTR (NULL = none)
     LPWCHAR      lpwszFormat;       //168:  Ptr to formatting save area
-    APLCHAR      cQuadPR;           //16C:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //16E:  []SA (in its index form)
-                                    //16F:  Length
+    IMLangFontLink
+                *lpFontLink;        //16C:  Ptr to FontLink struc
+    APLCHAR      cQuadPR;           //170:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //172:  []SA (in its index form)
+                                    //173:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

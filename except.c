@@ -570,9 +570,9 @@ void DisplayException
 
 UINT FindRoutineAddress
     (LPUCHAR exceptAddr,            // Exception address
-     LPUINT lpNearAddress,          // Ptr to offset from closest address
-     LPUINT lpNearIndex,            // Ptr to index into StartAddresses
-     BOOL   bDebugger)              // TRUE iff test for running under debugger
+     LPUINT  lpNearAddress,         // Ptr to offset from closest address
+     LPUINT  lpNearIndex,           // Ptr to index into StartAddresses
+     BOOL    bDebugger)             // TRUE iff test for running under debugger
 
 {
     UINT    i;                      // Loop counter

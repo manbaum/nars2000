@@ -912,15 +912,16 @@ HRESULT DrawTextFLsub
 
             return S_OK;
         } else
-        // If there are actual code pages, use the alternate font
-        if (dwActualCodePages)
-        {
+        // If the char is {infinity}, ...
+        if (**lplpsz EQ UTF16_INFINITY)
+            // Use the alternate font
             SelectObject (hdc, hFontAlt);
-            OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
-            SelectObject (hdc, hfOrig);
-        } else
-            // Otherwise, use the main font
-            OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
+
+        // Output the char
+        OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
+
+        // Restore the original font (even if we didn't change it out)
+        SelectObject (hdc, hfOrig);
 
         // Set the return code to OK even though we failed to find a linked font
         hr = S_OK;

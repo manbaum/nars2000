@@ -64,6 +64,7 @@ WCHAR uniTrans[][UNITRANS_LENGTH] =
     {  NA  , 0x00DA,   NA  ,   NA  ,   NA  , L'x'                    }, // X underbar
     {  NA  , 0x00DB,   NA  ,   NA  ,   NA  , L'y'                    }, // Y underbar
     {  NA  , 0x00DC,   NA  ,   NA  ,   NA  , L'z'                    }, // Z underbar
+ // APL+WIN    ISO     APL2  Dyalog  Normal  NARS
     {0x2018, 0x2018, 0x2018, 0x2018, 0x2018, UTF16_SINGLEQUOTE       }, // Left single quotation mark
     {0x2019, 0x2019, 0x2019, 0x2019, 0x2019, UTF16_SINGLEQUOTE       }, // Right ...
 ////{0x00A7,   NA  ,   NA  ,   NA  ,   NA  , UTF16_PARA              }, // Section
@@ -91,6 +92,7 @@ WCHAR uniTrans[][UNITRANS_LENGTH] =
     {0x00A4, 0x00BD,   NA  ,   NA  ,   NA  , UTF16_RIGHTTACK         }, // Right tack
     {0x201C, 0x00E6,   NA  ,   NA  ,   NA  , UTF16_DELTASTILE        }, // Delta stile
     {0x201D, 0x00E7,   NA  ,   NA  ,   NA  , UTF16_DELSTILE          }, // Del stile
+ // APL+WIN    ISO     APL2  Dyalog  Normal  NARS
 //  {0x00A6,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // broken stile
 //  {0x00C7,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // C cedilla
 //  {0x00FC,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // u umlaut
@@ -129,6 +131,7 @@ WCHAR uniTrans[][UNITRANS_LENGTH] =
 //  {0x00FA,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // i right
 //  {0x00F1,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // n tilde
 //  {0x00D1,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // N tilde
+ // APL+WIN    ISO     APL2  Dyalog  Normal  NARS
     {0x00A9, 0x00DD,   NA  ,   NA  ,   NA  , UTF16_LAMP              }, // Lamp
     {0x2122, 0x00F1,   NA  ,   NA  ,   NA  , UTF16_SLOPEBAR          }, // slope-bar
 //  {0x00BF,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // upside down query
@@ -167,6 +170,7 @@ WCHAR uniTrans[][UNITRANS_LENGTH] =
 //  {0x00DB,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // U circumflex
 //  {0x00DC,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // U umlaut
 //  {0x00DD,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // Y right
+ // APL+WIN    ISO     APL2  Dyalog  Normal  NARS
 //  {0x00FF,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // y umlaut
     {0x00B8, 0x00A9,   NA  ,   NA  ,   NA  , UTF16_ALPHA             }, // Alpha
 //  {0x00DF,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // Beta

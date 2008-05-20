@@ -282,7 +282,7 @@ QUESTIONS
   (e.g. 5 0{thorn}'abc')?
 * In format-by-specification, does automatic width apply across planes
   or is it different within each plane?
-* Is there any reason to lmiit []AV to 256 elements?
+* Is there any reason to limit []AV to 256 elements?
 * What should be the result of {del} z {is} z foo z ?
 * How does Dyalog decide whether or not the result from a primitive function is shy?
 * Should {leftrarrow} be interpreted as a (dyadic) function as Dyalog does, e.g. there
@@ -291,6 +291,7 @@ QUESTIONS
 * What is the shape of {domino}scalar?  APL+WIN says ,1 and APL2 says {zilde}
   and the Extended APL Standard's Evaluation Sequence has a bug which
   causes it to signal a LENGTH ERROR.
+* What letters of Unicode should be allowed in var/fcn names?
 *
 
 
@@ -321,16 +322,6 @@ Anomalous Results
 * Similarly, =\3 0{rho}'' returns its argument with a prototype
   which isn't in the range of the derived function.
 * ...
-
-
-MISSING On Laptop
------------------
-* Qualitas.h (SVN)
-* Fix Filezilla access to BOB
-* VCCORE
-* MSDN
-*
-
 
 
 ToDo

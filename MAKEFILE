@@ -21,7 +21,6 @@
 .SUFFIXES: .DEP .DEV .PRO .Y
 
 NAME = NARS2000                 # Directory name
-ZIPNAME = NARS-SRC              # Zip file name
 ENAME = NARS2000                # Executable name
 PROJPATH = .\                   # Project path
 BIN = $(PROJPATH)binaries\      # Binaries directory
@@ -32,8 +31,6 @@ WS=WineHQ\                      # Wine source
 OLDPATH = $(PATH)               # Save the current path
 CYGWIN=C:\cygwin\               # Dir for cygwin
 GSLINC=$(CYGWIN)usr\include\    # Directory of GSL includes
-##GSLINC=$(CYGWIN)usr\src\gsl-1.9-1\src\gsl-1.9\ # Directory of GSL includes
-##GSLLIB=$(CYGWIN)usr\src\gsl-1.9-1\src\gsl-1.9\ # Directory of GSL libs
 GSLLIB=gsl\                     # Directory of GSL libs
 
 MV=makever
@@ -83,6 +80,7 @@ RCDEFINES = /D $(WDEF)
 
 ASM=masm
 AFLAGS=/Mu /DDEBUG=$(DEBUG)
+
 !if "$(VS)" == "1"
 O=DEBUG\                        # define output directory for intermediate files
 B=$(BIN)D\                      # ...                         binaries
@@ -95,31 +93,27 @@ O=RET\ND\                       # define output directory for intermediate files
 B=$(BIN)ND\                     # ...                         binaries
 !endif
 !endif
+
 HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
 P=R:\$(NAME)\                   # Full path to . dir for HCRTF
-I=$(SRCROOT)INC\                # .INC directory
-H=$(SRCROOT)INCLUDE\            # .INCLUDE directory
-L=$(SRCROOT)LIB\                # .LIB directory
 
-M98=N:\                         # Win98 build
-###M98=L:\VC98\                    # Win98 build
-I98=$(PROJPATH);$(M98)INCLUDE;$(MSVC)INCLUDE;$(GSLINC)
-L98=$(M98)LIB;$(MSVC)LIB;$(CYGWIN)lib;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\
+MSVC=N:\                        # MSVC build
+I98=$(PROJPATH);$(MSVC)INCLUDE;$(GSLINC)
+L98=$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\
 
-LD=$(M98)BIN\link
-CC=$(M98)BIN\cl
-RC=$(M98)BIN\rc
+LD=$(MSVC)BIN\link
+CC=$(MSVC)BIN\cl
+RC=$(MSVC)BIN\rc
 
 
 ALL:    DIR                 \
         PRO                 \
         DEP                 \
         $(O)$(ENAME).EXE    \
-        $(L)$(ENAME).EXE    \
+        $(B)$(ENAME).EXE    \
         $(BC)$(ENAME).HLP   \
-        $(L)$(ENAME).HLP    \
         $(O)$(MV).exe       \
-        $(L)$(MV).exe       \
+        $(BC)$(MV).exe      \
         $(ENAME).ver
 
 CLEAN:
@@ -134,22 +128,22 @@ DIR:
         @Set PATH=$(OLDPATH)
 
 {}.rc{$(O)}.res:
-        @Set INCLUDE=$(I98);$(H);$(O)
+        @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
         @$(RC) $(RCFLAGS) $(RCDEFINES) -r -fo$@ %s
 
 {}.y{$(O)}.c:
-        @Set INCLUDE=$(I98);$(H);$(O)
+        @Set INCLUDE=$(I98);$(O)
         bison -o$(O)$(@B).c -v -r all -l %s
 ########bison -o$(O)$(@B).c           -l %s
 
 {}.c{$(O)}.obj:
-        @Set INCLUDE=$(I98);$(H);$(O)
+        @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
         @$(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
 
 {$(O)}.c{$(O)}.obj:
-        @Set INCLUDE=$(I98);$(H);$(O)
+        @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
         @$(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
 
@@ -305,30 +299,26 @@ $(O)version.DEV         \
 $(O)yyfns.DEP
 
 {$(O)}.C{$(O)}.DEP:
-    @Set INCLUDE=$(I98);$(H);$(O)
+    @Set INCLUDE=$(I98);$(O)
     @Set PATH=$(BC)
-####@echo depscan -q -s$(PROJPATH)$(O)=$$(O) %s
     @     depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
     @Set PATH=$(OLDPATH)
 
 {$(WS)}.C{$(O)}.DEP:
     @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
     @Set PATH=$(BC)
-####@echo depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s
     @     depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s > $@
     @Set PATH=$(OLDPATH)
 
 {}.C{$(O)}.DEP:
-    @Set INCLUDE=$(I98);$(H);$(O)
+    @Set INCLUDE=$(I98);$(O)
     @Set PATH=$(BC)
-####@echo depscan -q -s$(PROJPATH)$(O)=$$(O) %s
     @     depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
     @Set PATH=$(OLDPATH)
 
 {}.RC{$(O)}.DEV:
-    @Set INCLUDE=$(I98);$(H);$(O)
+    @Set INCLUDE=$(I98);$(O)
     @Set PATH=$(BC)
-####@echo depscan -q -s$(PROJPATH)$(O)=$$(O) %s
     @     depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
     @Set PATH=$(OLDPATH)
 
@@ -900,11 +890,11 @@ $(O)ver.PRO             \
 $(O)yyfns.PRO
 
 {}.C{$(O)}.PRO:
-        @Set INCLUDE=$(I98);$(H);$(O)
+        @Set INCLUDE=$(I98);$(O)
         @$(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
 
 {$(O)}.C{$(O)}.PRO:
-        @Set INCLUDE=$(I98);$(H);$(O)
+        @Set INCLUDE=$(I98);$(O)
         @$(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
 
 {$(WS)}.C{$(O)}.PRO:
@@ -915,7 +905,7 @@ $(O)yyfns.PRO
 
 $(O)DBGBRK.OBJ:         DBGBRK.ASM
         @if exist $@ del $@
-        ml /I$(I) /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
+        ml /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
 
 
 ############################# MAIN APP ROUTINES ######################
@@ -1087,15 +1077,12 @@ main.RC:                                $(MAIN_RCDEP)   $(ICONS)
 ver.RC:                                 $(VER_RCDEP)
 
 $(O)main.RES:           $(@B).RC        $(MAIN_RCDEP)
-        @Set INCLUDE=$(I98);$(H);$(O)
+        @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
         @$(RC) $(RCFLAGS) $(RCDEFINES) -r -fo$@ %s
 
 $(BC)$(ENAME).HLP:      $(ENAME).RTF
         $(HLP) -o $@ -xr %s
-
-$(L)$(ENAME).HLP:       $(BC)$(ENAME).HLP
-        copy /y %s $@
 
 $(WS)local.h:           editctrl.h   resource.h
 
@@ -1255,23 +1242,20 @@ $(LIBS_WEXE) $(LIBS_EXT)
 /DEF:$(DEFFILE)
 /NODEFAULTLIB:libc
 <<KEEP
-        @Set LIB=$(L98);$(L)
+        @Set LIB=$(L98)
         @if exist $@ del $@
         @$(LD) $(LFLAGS_WEXE) @$(O)main.CRF
-####    @strip -s $@
         @del $(O)$(@B).exp
         @del $(O)$(@B).lib
         @pkzip $(B)$(ENAME) $@ LICENSE >NUL
         @copy $(O)$(MAPFILE) $(B)$(@B).MAP >NUL
 
-$(L)$(ENAME).EXE:       $(O)$(ENAME).EXE
+$(B)$(ENAME).EXE:       $(O)$(ENAME).EXE
         @xc/r    %s      $@ >NUL
-####    @ff $(B)$(ENAME)
         @dir /ON $(B)$(ENAME).*|grep "$(ENAME)\."
 
-zip:
-        pkzip $(ZIPNAME) @nars2000.inp
 
+############################# MAKEVER EXECUTABLE #####################
 
 $(O)$(MV).obj:          $(@B).c
 
@@ -1280,16 +1264,16 @@ $(O)$(MV).exe:          $(O)$(MV).obj
 $(O)$(MV).obj
 /OUT:$(O)$(MV).exe
 /MAP:$(O)$(MV).map
-$(LIBS_WEXE) $(LIBS_EXT)
+kernel32.lib user32.lib version.lib libc.lib
 /DEF:$(MV).def
 <<KEEP
-        @Set LIB=$(L98);$(L)
+        @Set LIB=$(L98)
         @if exist $@ del $@
         @$(LD) $(LFLAGS_WEXE) @$(O)$(MV).crf
         @del $(O)$(@B).exp
         @del $(O)$(@B).lib
 
-$(L)$(MV).exe:          $(O)$(MV).exe
+$(BC)$(MV).exe:         $(O)$(MV).exe
         @xc/r    %s     $@ >NUL
 
 $(ENAME).ver:           $(O)$(ENAME).exe

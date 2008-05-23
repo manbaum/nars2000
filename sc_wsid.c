@@ -93,7 +93,7 @@ BOOL CmdWsid_EM
         MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
 
         // Convert the given workspace name into a canonical form
-        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszWorkDir);
+        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
         // Calculate space needed for the WSID
         uLen = lstrlenW (wszTailDPFE);
@@ -120,7 +120,7 @@ BOOL CmdWsid_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uLen;
         lpHeader->Rank       = 1;

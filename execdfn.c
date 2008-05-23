@@ -83,7 +83,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
      LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
-     LPTOKEN      lptkAxis,         // Prt to axis token (may be NULL -- used only if function strand is NULL)
+     LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL -- used only if function strand is NULL)
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token
      LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
 
@@ -119,7 +119,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
                            lpYYFcnStrLft,   // Ptr to left operand function strand (may be NULL if not an operator and no axis)
                            lpYYFcnStr,      // Ptr to function strand (may be NULL if not an operator and no axis)
                            lpYYFcnStrRht,   // Ptr to right operand function strand (may be NULL if not an operator and no axis)
-                           lptkAxis,        // Prt to axis token (may be NULL -- used only if function strand is NULL)
+                           lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                            lptkRhtArg,      // Ptr to right arg token
                            startLineNum);   // Starting line # (see LINE_NUMS)
 } // End ExecDfnGlb_EM_YY
@@ -144,7 +144,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
      LPPL_YYSTYPE lpYYFcnStrLft,    // Ptr to left operand function strand (may be NULL if not an operator and no axis)
      LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
      LPPL_YYSTYPE lpYYFcnStrRht,    // Ptr to right operand function strand (may be NULL if not an operator and no axis)
-     LPTOKEN      lptkAxis,         // Prt to axis token (may be NULL -- used only if function strand is NULL)
+     LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL -- used only if function strand is NULL)
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token
      LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
 
@@ -863,7 +863,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_NESTED;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = numResultSTE;
             lpHeader->Rank       = 1;

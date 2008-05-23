@@ -2370,12 +2370,6 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
     } else
         x += EDIT_PaintText(es, dc, x, y, line, 0, ll, FALSE);
 
-#ifdef DEBUG
-    // ***DEBUG***
-    if (gDbgLvl EQ 9)
-        DbgBrk ();
-#endif
-
     // Get the background brush
     hBrush = EDIT_NotifyCtlColor(es, dc);
 

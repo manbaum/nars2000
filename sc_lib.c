@@ -71,7 +71,7 @@ BOOL CmdLib_EM
             lpwszTemp[uExtLen + 1] = L'\0';
         } // End IF
     } else
-        lstrcpyW (lpwszTemp, wszWorkDir);
+        lstrcpyW (lpwszTemp, lpwszWorkDir);
 
     // Create the wildcard string to search for workspaces
     lstrcatW (lpwszTemp, L"*");

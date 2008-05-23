@@ -470,7 +470,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -3304,12 +3304,12 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
                                 // Format the number
                                 lpaplChar =
-                                  FormatFloatFC (lpaplChar,
-                                                 (APLFLOAT) (APLINT) aplLongestRht,
-                                                 -iPrc,
-                                                 aplCharDecimal,
-                                                 aplCharOverbar,
-                                                 2);
+                                  FormatFloatFC (lpaplChar,                         // Ptr to output save area
+                                                 (APLFLOAT) (APLINT) aplLongestRht, // The value to format
+                                                 -iPrc,                             // Precision to use
+                                                 aplCharDecimal,                    // Char to use as decimal separator
+                                                 aplCharOverbar,                    // Char to use as overbar
+                                                 2);                                // DTOA mode
                             } // End IF/ELSE
 
                             break;
@@ -3321,12 +3321,12 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
                             // Format the number
                             lpaplChar =
-                              FormatFloatFC (lpaplChar,
-                                            *(LPAPLFLOAT) &aplLongestRht,
-                                             abs64 (iPrc),
-                                             aplCharDecimal,
-                                             aplCharOverbar,
-                                             2);
+                              FormatFloatFC (lpaplChar,                             // Ptr to output save area
+                                            *(LPAPLFLOAT) &aplLongestRht,           // The value to format
+                                             abs64 (iPrc),                          // Precision to use
+                                             aplCharDecimal,                        // Char to use as decimal separator
+                                             aplCharOverbar,                        // Char to use as overbar
+                                             2);                                    // DTOA mode
                             // If iPrc is positive, ensure there are at least that many
                             //   digits to the right of the decimal point -- pad with zeros
                             //   if not.
@@ -3406,7 +3406,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;

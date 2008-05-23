@@ -137,7 +137,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
     HGLOBAL      hGlbPTD,           // PerTabData global memory handle
                  hGlbMF;            // Magic function global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYRes = NULL;    // Prt to result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
 
     Assert (lptkAxis EQ NULL);
 

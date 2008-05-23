@@ -39,7 +39,7 @@
 #endif
 
 WCHAR wszVarFileInfo[] = L"\\VarFileInfo\\Translation",
-      lpwszVersion[]   = L"NARS2000\nVersion %s";
+      lpwszVersion[]   = WS_APPNAME L"\nVersion %s";
 
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure

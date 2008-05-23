@@ -99,8 +99,8 @@ HICON hIconMF_Large, hIconMF_Small,     // Icon handles
 #define  MFWNDCLASS          "MFClass"                                      // Master Frame Window class
 #define LMFWNDCLASS         L"MFClass"                                      // Master Frame Window class
 
-WCHAR wszMFTitle[]          = L"NARS2000" LAPPEND_DEBUG,                    // Master frame window title
-      wszTCTitle[]          = L"NARS2000 Tab Control Window" LAPPEND_DEBUG, // Tab Control ... (for debugging purposes only)
+WCHAR wszMFTitle[]          = WS_APPNAME WS_APPEND_DEBUG,                   // Master frame window title
+      wszTCTitle[]          = WS_APPNAME L" Tab Control Window" WS_APPEND_DEBUG,// Tab Control ... (for debugging purposes only)
       wszMFClass[]          = LMFWNDCLASS;                                  // Master Frame Window class
 
 char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.",
@@ -689,8 +689,8 @@ LRESULT APIENTRY MFWndProc
             if (CreateChildWindows (hWnd) EQ FALSE)
                 return -1;          // Stop the whole process
 
-            // Read in window-specific registry entries
-            ReadRegWnd (hWnd);
+            // Read in window-specific .ini file entries
+            ReadIniFileWnd (hWnd);
 
             // *************** Bitmaps *********************************
             hBitMapLineCont = MyLoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
@@ -903,7 +903,7 @@ LRESULT APIENTRY MFWndProc
                     lstrcpyW (TooltipText, lpMemWSID);
 #else
                     // Get the PerTabData global memory handle
-                    hGlbPTD = GetPerTabHandle (lpttt->hdr.idFrom);
+                    hGlbPTD = GetPerTabHandle (lpttt->hdr.idFrom); Assert (hGlbPTD NE NULL);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -952,7 +952,7 @@ LRESULT APIENTRY MFWndProc
                     gCurTabID = TranslateTabIndexToID (iCurTabIndex);
 
                     // Hide the child windows of the outgoing tab
-                    if (iLstTabIndex NE -1)
+                    if (iLstTabIndex NE -1 && iLstTabIndex NE iCurTabIndex)
                         ShowHideChildWindows (GetWndMC (iLstTabIndex), FALSE);
                     // Show the child windows of the incoming tab
                     if (iCurTabIndex NE -1)
@@ -1218,7 +1218,7 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_SAVE_WS:
                     // Get the per tab global memory handle
-                    hGlbPTD = GetPerTabHandle (gOverTabIndex);
+                    hGlbPTD = GetPerTabHandle (gOverTabIndex); Assert (hGlbPTD NE NULL);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1310,8 +1310,8 @@ LRESULT APIENTRY MFWndProc
                 fHelp = FALSE;
             } // End IF
 
-            // Save environment variables
-            SaveEnvironment ();
+            // Save .ini file variables
+            SaveIniFile ();
 
             // Ask the child windows if it's OK to close
             if (EnumChildWindows (hWnd, EnumCallbackQueryClose, 0))
@@ -2030,10 +2030,14 @@ BOOL InitInstance
     (HANDLE hInstance)
 
 {
+    int i;                          // Loop counter
+
     // Save in global variable
     _hInstance = hInstance;
 
+    //***************************************************************
     // Allocate virtual memory for the char temporary storage
+    //***************************************************************
 #ifdef DEBUG
     memVirtStr[MEMVIRT_SZTEMP].lpText   = "lpszTemp in <InitInstance>";
 #endif
@@ -2059,7 +2063,9 @@ BOOL InitInstance
                     MEM_COMMIT,
                     PAGE_READWRITE);
 
+    //***************************************************************
     // Allocate virtual memory for the WCHAR temporary storage
+    //***************************************************************
 #ifdef DEBUG
     memVirtStr[MEMVIRT_WSZTEMP].lpText   = "lpwszTemp in <InitInstance>";
 #endif
@@ -2085,8 +2091,60 @@ BOOL InitInstance
                     MEM_COMMIT,
                     PAGE_READWRITE);
 
+    //***************************************************************
+    // Allocate virtual memory for the HshTab for {symbol} names & values
+    //***************************************************************
 #ifdef DEBUG
+    memVirtStr[MEMVIRT_GLBHSHTAB].lpText   = "htsGLB.lpHshTab in <InitInstance>";
+#endif
+    memVirtStr[MEMVIRT_GLBHSHTAB].IncrSize = DEF_GLBHSHTAB_INCRSIZE * sizeof (htsGLB.lpHshTab[0]);
+    memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize  = DEF_GLBHSHTAB_MAXSIZE  * sizeof (htsGLB.lpHshTab[0]);
+    memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr  = (LPUCHAR)
+    htsGLB.lpHshTab =
+      GuardAlloc (NULL,             // Any address
+                  memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize,
+                  MEM_RESERVE,      // memVirtStr
+                  PAGE_READWRITE);
+    if (!memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr)
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsg ("InitInstance:  GuardAlloc for <lpGlbHshTab> failed");
+
+        return FALSE;       // Mark as failed
+    } // End IF
+
+    // Commit the intial size
+    MyVirtualAlloc (memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr,
+                    DEF_GLBHSHTAB_INITSIZE * sizeof (htsGLB.lpHshTab[0]),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
+
+    // Initialize the principal hash entry (1st one in each block).
+    // This entry is never overwritten with an entry with a
+    //   different hash value.
+    for (i = 0; i < DEF_GLBHSHTAB_INITSIZE; i += DEF_GLBHSHTAB_EPB)
+        htsGLB.lpHshTab[i].htFlags.PrinHash = TRUE;
+
+    // Initialize the next & prev same HTE values
+    for (i = 0; i < DEF_GLBHSHTAB_INITSIZE; i++)
+    {
+        htsGLB.lpHshTab[i].NextSameHash =
+        htsGLB.lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
+    } // End FOR
+
+    // Initialize the global HshTab values
+    htsGLB.lpHshTabSplitNext = htsGLB.lpHshTab;
+    htsGLB.iHshTabTotalSize  = DEF_GLBHSHTAB_INITSIZE;
+    htsGLB.iHshTabBaseSize   = DEF_GLBHSHTAB_INITSIZE;
+    htsGLB.iHshTabIncr       = DEF_GLBHSHTAB_INCR;
+    htsGLB.iHshTabEPB        = DEF_GLBHSHTAB_EPB;
+    htsGLB.iHshTabIncrSize   = DEF_GLBHSHTAB_INCRSIZE;
+    htsGLB.uHashMask         = DEF_GLBHSHTAB_HASHMASK;
+
+#ifdef DEBUG
+    //***************************************************************
     // Allocate virtual memory for the char debug storage
+    //***************************************************************
 #ifdef DEBUG
     memVirtStr[MEMVIRT_SZDEBUG].lpText   = "lpszDebug in <InitInstance>";
 #endif
@@ -2112,7 +2170,9 @@ BOOL InitInstance
                     MEM_COMMIT,
                     PAGE_READWRITE);
 
+    //***************************************************************
     // Allocate virtual memory for the WCHAR debug storage
+    //***************************************************************
 #ifdef DEBUG
     memVirtStr[MEMVIRT_WSZDEBUG].lpText   = "lpwszDebug in <InitInstance>";
 #endif
@@ -2241,8 +2301,13 @@ int PASCAL WinMain
     // Ensure that the common control DLL is loaded.
     InitCommonControls ();
 
-    // Get the DPFE for our files
-    GetFileNames (hInstance);
+    // Construct file name(s) based upon where the module is on disk
+    GetModuleFileNames (hInstance);
+
+    // Ensure the Application Data and workspaces
+    //   directories are present
+    if (!CreateAppDataDirs ())
+        goto EXIT1;
 
     // Save initial state
     nMinState = nCmdShow;
@@ -2264,7 +2329,7 @@ int PASCAL WinMain
 
     // If there's a command line, parse it
     if (!ParseCommandLine (lpCmdLine))
-        return -1;                  // Exit
+        goto EXIT1;
 
     // Perform initializations that apply to a specific instance
     if (!InitInstance (hInstance))
@@ -2284,8 +2349,12 @@ int PASCAL WinMain
     // Create various permanent variables
     MakePermVars ();
 
-    // Read in global registry values
-    ReadRegGlb ();
+    // Initialize all {symbol} names & values
+    if (!InitSymbolNamesValues ())
+        goto EXIT4;
+
+    // Read in global .ini file values
+    ReadIniFileGlb ();
 
     // Initialize ChooseFont argument here
     //   so its settings will be present
@@ -2363,7 +2432,7 @@ EXIT3:
     UninitApplication (hInstance);
 EXIT2:
     UninitInstance (hInstance);
-
+EXIT1:
     return 0;
 } // End WinMain
 

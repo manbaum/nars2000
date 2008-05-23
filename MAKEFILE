@@ -57,6 +57,7 @@ LIBS_WEXE = GDI32.LIB           \
             COMCTL32.LIB        \
             WININET.LIB         \
             OLE32.LIB           \
+            USERENV.LIB         \
 !if "$(DEBUG)" == "1"
             R:\LIB\QDEBUG32.LIB \
 !endif
@@ -182,6 +183,7 @@ $(O)g_fmt.DEP           \
 $(O)getfns.DEP          \
 $(O)goto.DEP            \
 $(O)immexec.DEP         \
+$(O)inifile.DEP         \
 $(O)initdata.DEP        \
 $(O)main.DEP            \
 $(O)parse.DEP           \
@@ -268,7 +270,6 @@ $(O)qf_ts.DEP           \
 $(O)qf_type.DEP         \
 $(O)qf_ucs.DEP          \
 $(O)refcnt.DEP          \
-$(O)reg.DEP             \
 $(O)resdebug.DEP        \
 $(O)savefcn.DEP         \
 $(O)sc_copy.DEP         \
@@ -399,6 +400,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)immexec.DEP)
 !       include $(O)immexec.DEP
+!endif
+!if exist ($(O)inifile.DEP)
+!       include $(O)inifile.DEP
 !endif
 !if exist ($(O)initdata.DEP)
 !       include $(O)initdata.DEP
@@ -658,9 +662,6 @@ $(O)yyfns.DEP
 !if exist ($(O)refcnt.DEP)
 !       include $(O)refcnt.DEP
 !endif
-!if exist ($(O)reg.DEP)
-!       include $(O)reg.DEP
-!endif
 !if exist ($(O)resdebug.DEP)
 !       include $(O)resdebug.DEP
 !endif
@@ -776,6 +777,7 @@ $(O)getreent.PRO        \
 $(O)getfns.PRO          \
 $(O)goto.PRO            \
 $(O)immexec.PRO         \
+$(O)inifile.PRO         \
 $(O)initdata.PRO        \
 $(O)main.PRO            \
 $(O)parse.PRO           \
@@ -862,7 +864,6 @@ $(O)qf_ts.PRO           \
 $(O)qf_type.PRO         \
 $(O)qf_ucs.PRO          \
 $(O)refcnt.PRO          \
-$(O)reg.PRO             \
 $(O)resdebug.PRO        \
 $(O)savefcn.PRO         \
 $(O)sc_copy.PRO         \
@@ -958,6 +959,7 @@ $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)getfns.OBJ:         $(@B).C         $(GETFNS_DEP)
 $(O)goto.OBJ:           $(@B).C         $(GOTO_DEP)
 $(O)immexec.OBJ:        $(@B).C         $(IMMEXEC_DEP)
+$(O)inifile.OBJ:        $(@B).C         $(INIFILE_DEP)
 $(O)initdata.OBJ:       $(@B).C         $(INITDATA_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
 $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
@@ -1043,7 +1045,6 @@ $(O)qf_ts.OBJ:          $(@B).C         $(QF_TS_DEP)
 $(O)qf_type.OBJ:        $(@B).C         $(QF_TYPE_DEP)
 $(O)qf_ucs.OBJ:         $(@B).C         $(QF_UCS_DEP)
 $(O)refcnt.OBJ:         $(@B).C         $(REFCNT_DEP)
-$(O)reg.OBJ:            $(@B).C         $(REG_DEP)
 !if "$(RESDEBUG)" == "1"
 $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
 !endif
@@ -1114,6 +1115,7 @@ OBJS=                       \
      $(O)getfns.obj         \
      $(O)goto.obj           \
      $(O)immexec.OBJ        \
+     $(O)inifile.OBJ            \
      $(O)initdata.OBJ       \
      $(O)main.OBJ           \
      $(O)parse.OBJ          \
@@ -1200,7 +1202,6 @@ OBJS=                       \
      $(O)qf_type.OBJ        \
      $(O)qf_ucs.OBJ         \
      $(O)refcnt.OBJ         \
-     $(O)reg.OBJ            \
 !if "$(RESDEBUG)" == "1"
      $(O)resdebug.OBJ       \
 !endif

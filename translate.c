@@ -626,6 +626,10 @@ int TranslateTabIndexToID
     // Get the matching PerTabHandle
     hGlbPTD = GetPerTabHandle (iTabIndex);
 
+    // If the incoming index is invalid or there's no hGlbPTD, ...
+    if (iTabIndex EQ -1 || hGlbPTD EQ NULL)
+        return -1;
+
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 

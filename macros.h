@@ -21,16 +21,16 @@
 ***************************************************************************/
 
 
-#define MB(a)                   MessageBox  (NULL, a,  "NARS2000", MB_OK)
-#define MBW(a)                  MessageBoxW (NULL, a, L"NARS2000", MB_OK)
-#define MBC(a)              if (MessageBox  (NULL, a,  "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define MBWC(a)             if (MessageBoxW (NULL, a, L"NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define IsGlbTypeVarDir(a)  (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeVarInd(a)  (IsGlobalTypeArray (*(LPVOID *) a, VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnDir(a)  (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnInd(a)  (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeDfnDir(a)  (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
-#define IsGlbTypeNamDir(a)  (IsGlobalTypeArray (            a, VARNAMED_HEADER_SIGNATURE))
+#define MB(a)                   MessageBox  (NULL, (a),    APPNAME, MB_OK)
+#define MBW(a)                  MessageBoxW (NULL, (a), WS_APPNAME, MB_OK)
+#define MBC(a)              if (MessageBox  (NULL, (a),    APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define MBWC(a)             if (MessageBoxW (NULL, (a), WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define IsGlbTypeVarDir(a)  (IsGlobalTypeArray (            (a), VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeVarInd(a)  (IsGlobalTypeArray (*(LPVOID *) (a), VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnDir(a)  (IsGlobalTypeArray (            (a), FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnInd(a)  (IsGlobalTypeArray (*(LPVOID *) (a), FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeDfnDir(a)  (IsGlobalTypeArray (            (a), DFN_HEADER_SIGNATURE))
+#define IsGlbTypeNamDir(a)  (IsGlobalTypeArray (            (a), VARNAMED_HEADER_SIGNATURE))
 #define IsSymNoValue(a)     ((a)->stHshEntry EQ NULL                \
                           && (a)->stFlags.Perm                      \
                           && (a)->stFlags.Value EQ 0                \
@@ -43,8 +43,8 @@
 
 #define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
 
-#define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
-#define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
+#define AplModI(m,a) PrimFnDydStileIisIvI ((m), (a), NULL)
+#define AplModF(m,a) PrimFnDydStileFisFvF ((m), (a), NULL)
 
 #define LODWORD(x)          ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
 #define HIDWORD(x)          ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
@@ -59,68 +59,68 @@
 
   #ifdef DEBUG_ALLOCFREE
     #define DbgGlobalAlloc(uFlags,ByteRes) \
-    DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
+    DbgGlobalAllocSub ((uFlags), (ByteRes), L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
 
     #define DbgGlobalFree(hGlbToken) \
-    dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
-    MyGlobalFree (hGlbToken);
+    dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", (hGlbToken), FNLN); \
+    MyGlobalFree (hGlbToken)
   #else
     #define DbgGlobalAlloc(uFlags,ByteRes) \
-    MyGlobalAlloc (uFlags, ByteRes)
+    MyGlobalAlloc ((uFlags), (ByteRes))
 
     #define DbgGlobalFree(hGlbToken) \
-    MyGlobalFree (hGlbToken);
+    MyGlobalFree (hGlbToken)
   #endif
 
   #ifdef DEBUG_REFCNT
     #define DbgIncrRefCntDir(hGlbData) \
     dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    IncrRefCntDir (hGlbData);
+    IncrRefCntDir (hGlbData)
 
     #define DbgIncrRefCntInd(hGlbData) \
     dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    IncrRefCntInd (hGlbData);
+    IncrRefCntInd (hGlbData)
 
     #define DbgDecrRefCntDir(hGlbData) \
     dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    DecrRefCntDir (hGlbData);
+    DecrRefCntDir (hGlbData)
 
     #define DbgDecrRefCntInd(hGlbData) \
     dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    DecrRefCntInd (hGlbData);
+    DecrRefCntInd (hGlbData)
   #else
     #define DbgIncrRefCntDir(hGlbData) \
-    IncrRefCntDir (hGlbData);
+    IncrRefCntDir (hGlbData)
 
     #define DbgIncrRefCntInd(hGlbData) \
-    IncrRefCntInd (hGlbData);
+    IncrRefCntInd (hGlbData)
 
     #define DbgDecrRefCntDir(hGlbData) \
-    DecrRefCntDir (hGlbData);
+    DecrRefCntDir (hGlbData)
 
     #define DbgDecrRefCntInd(hGlbData) \
-    DecrRefCntInd (hGlbData);
+    DecrRefCntInd (hGlbData)
   #endif
 
   #define CheckMemStat()      _CheckMemStat ()
 
-  #define Assert(a)     ((a) || (DbgBrk (), 0))
+  #define Assert(a)     ((a) || (DbgBrk (), DbgBrk (), 0))
 #else
   #define YYAlloc()     _YYAlloc()
 
   #define IsGlbPtr(a) ((a) NE NULL && GlobalFlags (a) NE GMEM_INVALID_HANDLE)
 
-  #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc (uFlags, ByteRes);
+  #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc ((uFlags), (ByteRes))
 
-  #define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken);
+  #define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken)
 
-  #define DbgIncrRefCntDir(hGlbData)      IncrRefCntDir (hGlbData);
+  #define DbgIncrRefCntDir(hGlbData)      IncrRefCntDir (hGlbData)
 
-  #define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData);
+  #define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData)
 
-  #define DbgDecrRefCntDir(hGlbData)      DecrRefCntDir (hGlbData);
+  #define DbgDecrRefCntDir(hGlbData)      DecrRefCntDir (hGlbData)
 
-  #define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData);
+  #define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData)
 
   #define DbgMsg(a)
   #define DbgMsgW(a)
@@ -135,7 +135,7 @@
 #define SIGN_APLNELM(a)     ((a) >> 63)     // Sign bit of an APLNELM
 #define SIGN_APLRANK(a)     ((a) >> 63)     // ...            APLRANK
 #define SIGN_APLDIM(a)      ((a) >> 63)     // ...            APLDIM
-#define SIGN_APLINT(a)      (((APLUINT) a) >> 63) // ...      APLINT
+#define SIGN_APLINT(a)      (((APLUINT) (a)) >> 63) // ...      APLINT
 #define SIGN_APLUINT(a)     ((a) >> 63)     // ...            APLUINT
 #define SIGN_APLLONGEST(a)  ((a) >> 63)     // ...            APLLONGEST
 
@@ -219,37 +219,37 @@
 #define IsTknParList(Tkn)               ((Tkn)->tkFlags.TknType EQ TKT_LISTPAR)
 
 // Macros to skip from the variable array base to either the dimensions or the data
-#define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER)                            )
-#define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * aplRank)
-#define VarArrayDimToData(lpMem,aplRank)  (LPVOID)   (((LPCHAR) lpMem)                            + sizeof (APLDIM) * aplRank)
+#define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER)                              )
+#define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplRank))
+#define VarArrayDimToData(lpMem,aplRank)  (LPVOID)   (((LPCHAR) (lpMem))                            + sizeof (APLDIM) * (aplRank))
 
 // Macro to skip from the function array base to the data
-#define FcnArrayBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (FCNARRAY_HEADER))
+#define FcnArrayBaseToData(lpMem) (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (FCNARRAY_HEADER))
 
 // Macro to skip from the named array base to the data
-#define VarNamedBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARNAMED_HEADER))
+#define VarNamedBaseToData(lpMem) (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (VARNAMED_HEADER))
 
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)                       ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirAsFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeInd(lpMem)                       ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
-#define ClrPtrTypeIndAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
-#define ClrPtrTypeIndAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+#define ClrPtrTypeDir(lpMem)                       ((~PTRTYPE_MASK) &  ( UINT)     (lpMem))
+#define ClrPtrTypeDirAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  ( UINT)     (lpMem))
+#define ClrPtrTypeDirAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  ( UINT)     (lpMem))
+#define ClrPtrTypeDirAsFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  ( UINT)     (lpMem))
+#define ClrPtrTypeInd(lpMem)                       ((~PTRTYPE_MASK) & *(PUINT_PTR) (lpMem))
+#define ClrPtrTypeIndAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(PUINT_PTR) (lpMem))
+#define ClrPtrTypeIndAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(PUINT_PTR) (lpMem))
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.
-#define GetPtrTypeInd(lpMem)    (  PTRTYPE_MASK  & *(PUINT_PTR) lpMem)
-#define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  ( UINT)     lpMem)
+#define GetPtrTypeInd(lpMem)    (  PTRTYPE_MASK  & *(PUINT_PTR) (lpMem))
+#define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  ( UINT)     (lpMem))
 
 // Macro to create a masked LPSYMENTRY
-#define MakePtrTypeSym(lpMem)        ((LPSYMENTRY) (PTRTYPE_STCONST | (UINT) lpMem))
+#define MakePtrTypeSym(lpMem)        ((LPSYMENTRY) (PTRTYPE_STCONST | (UINT) (lpMem)))
 
 // Macro to create a masked HGLOBAL
-#define MakePtrTypeGlb(lpMem)        ((HGLOBAL)    (PTRTYPE_HGLOBAL | (UINT) lpMem))
+#define MakePtrTypeGlb(lpMem)        ((HGLOBAL)    (PTRTYPE_HGLOBAL | (UINT) (lpMem)))
 
 // Note that the following macros depend upon
 //   the ordering of the enum IMM_TYPES in <symtab.h>
@@ -265,8 +265,6 @@
 #define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
 #define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
 #define IsNameTypeName(a)   (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_OP3)
-
-
 
 
 //***************************************************************************

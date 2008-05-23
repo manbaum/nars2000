@@ -150,7 +150,7 @@ BOOL CmdSave_EM
 ////wszTempDPFE[aplNELMWSID] = L'\0';   // Already done via "+ 1" in lstrcpynW
 
     // Convert the []WSID workspace name into a canonical form (without WKSEXT)
-    MakeWorkspaceNameCanonical (wszWsidDPFE, wszTempDPFE, wszWorkDir);
+    MakeWorkspaceNameCanonical (wszWsidDPFE, wszTempDPFE, lpwszWorkDir);
 
     // If there is a specified WS Name,
     //   and the current []WSID is different from the specified WS Name,
@@ -160,7 +160,7 @@ BOOL CmdSave_EM
     if (*lpwszTail)
     {
         // Convert the given workspace name into a canonical form (without WKSEXT)
-        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszWorkDir);
+        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
         // Compare the workspace names (without their extensions)
         iCmp = lstrcmpiW (wszWsidDPFE, wszTailDPFE);
@@ -372,13 +372,13 @@ BOOL CmdSave_EM
                         {
                             // Format the value
                             lpaplChar =
-                              FormatImmedFC (lpaplChar,
-                                             stFlags.ImmType,
-                                            &lpSymEntry->stData.stLongest,
-                                             DEF_MAX_QUADPP,
-                                             UTF16_DOT,
-                                             UTF16_BAR,
-                                             2);
+                              FormatImmedFC (lpaplChar,                         // Ptr to input string
+                                             stFlags.ImmType,                   // Immediate type
+                                            &lpSymEntry->stData.stLongest,      // Ptr to value to format
+                                             DEF_MAX_QUADPP,                    // Precision to use
+                                             UTF16_DOT,                         // Char to use as decimal separator
+                                             UTF16_BAR,                         // Char to use as overbar
+                                             2);                                // DTOA mode
                             // Delete the last blank in case it matters,
                             //   and ensure properly terminated
                             if (lpaplChar[-1] EQ L' ')
@@ -874,7 +874,7 @@ LPAPLCHAR SavedWsFormGlbFcn
 
                         default:
                             // Copy to string
-                            if (!(lpUndoChar = CharToName (lpMemUndo->Char)))
+                            if (!(lpUndoChar = CharToSymbolName (lpMemUndo->Char)))
                             {
                                 // Save as one-char string
                                 wcTmp[0] = lpMemUndo->Char;
@@ -1167,12 +1167,12 @@ LPAPLCHAR SavedWsFormGlbVar
             for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLFLOAT) lpMemObj)++)
                 // Format the value
                 lpaplChar =
-                  FormatFloatFC (lpaplChar,
-                                 *(LPAPLFLOAT) lpMemObj,
-                                 DEF_MAX_QUADPP,
-                                 UTF16_DOT,
-                                 UTF16_BAR,
-                                 2);
+                  FormatFloatFC (lpaplChar,                                     // Ptr to output save area
+                                 *(LPAPLFLOAT) lpMemObj,                        // The value to format
+                                 DEF_MAX_QUADPP,                                // Precision to use
+                                 UTF16_DOT,                                     // Char to use as decimal separator
+                                 UTF16_BAR,                                     // Char to use as overbar
+                                 2);                                            // DTOA mode
             break;
 
         case ARRAY_CHAR:
@@ -1255,12 +1255,12 @@ LPAPLCHAR SavedWsFormGlbVar
                 case IMMTYPE_FLOAT:
                     // Format the value
                     lpaplChar =
-                      FormatFloatFC (lpaplChar,
-                                     (*(LPAPLHETERO) lpMemObj)->stData.stFloat,
-                                     DEF_MAX_QUADPP,
-                                     UTF16_DOT,
-                                     UTF16_BAR,
-                                     2);
+                      FormatFloatFC (lpaplChar,                                 // Ptr to output save area
+                                     (*(LPAPLHETERO) lpMemObj)->stData.stFloat, // The value to format
+                                     DEF_MAX_QUADPP,                            // Precision to use
+                                     UTF16_DOT,                                 // Char to use as decimal separator
+                                     UTF16_BAR,                                 // Char to use as overbar
+                                     2);                                        // DTOA mode
                     break;
 
                 defstop
@@ -1298,13 +1298,13 @@ LPAPLCHAR SavedWsFormGlbVar
                                          NULL);                             // Ptr to object dimensions
                     // Format the value
                     lpaplChar =
-                      FormatImmedFC (lpaplChar,
-                                     stFlags.ImmType,
-                                    &lpSymEntry->stData.stLongest,
-                                     DEF_MAX_QUADPP,
-                                     UTF16_DOT,
-                                     UTF16_BAR,
-                                     2);
+                      FormatImmedFC (lpaplChar,                             // Ptr to input string
+                                     stFlags.ImmType,                       // Immediate type
+                                    &lpSymEntry->stData.stLongest,          // Ptr to value to format
+                                     DEF_MAX_QUADPP,                        // Precision to use
+                                     UTF16_DOT,                             // Char to use as decimal separator
+                                     UTF16_BAR,                             // Char to use as overbar
+                                     2);                                    // DTOA mode
 #undef  lpSymEntry
                     // Restore user's precision
                     lpMemPTD->lpSymQuadPP->stData.stInteger = uQuadPP;
@@ -1512,7 +1512,7 @@ BOOL SaveNewWsid_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = iLen2;
         lpHeader->Rank       = 1;

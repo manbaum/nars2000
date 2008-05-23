@@ -193,7 +193,7 @@ void MakePermVars
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
     lpHeader->PermNdx    = PERMNDX_ZILDE;   // So we don't free it
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
 ////lpHeader->RefCnt     = 0;               // Ignore as this is perm
 ////lpHeader->NELM       = 0;               // Already zero from GHND
     lpHeader->Rank       = 1;
@@ -220,7 +220,7 @@ void MakePermVars
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
     lpHeader->PermNdx    = PERMNDX_QUADEM;  // So we don't free it
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
 ////lpHeader->RefCnt     = 0;               // Ignore as this is perm
 ////lpHeader->NELM       = 0;               // Already zero from GHND
     lpHeader->Rank       = 2;
@@ -329,7 +329,7 @@ HGLOBAL MakePermVectorCom
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeCom;
     lpHeader->PermNdx    = permNdx; // So we don't free it
-////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->SysVar     = FALSE;   // Already zero from GHND
 ////lpHeader->RefCnt     = 0;       // Ignore as this is perm
     lpHeader->NELM       = uLen;
     lpHeader->Rank       = 1;
@@ -443,7 +443,7 @@ BOOL InitSystemNames_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    Assert (HshTabFrisk ());
+    Assert (HshTabFrisk (FALSE));
 
     // Append all system names
     for (i = 0; bRet && i < ASYSTEMNAMES_NROWS; i++)
@@ -454,7 +454,7 @@ BOOL InitSystemNames_EM
         break;
     } // End FOR/IF
 
-    Assert (HshTabFrisk ());
+    Assert (HshTabFrisk (FALSE));
 
     return bRet;
 } // End InitSystemNames_EM
@@ -1389,7 +1389,7 @@ BOOL ValidateCharVector_EM
             lpwszTemp[aplNELMRht] = L'\0';
 
             // Convert the []WSID workspace name into a canonical form
-            MakeWorkspaceNameCanonical (lpwszTemp, lpwszTemp, wszWorkDir);
+            MakeWorkspaceNameCanonical (lpwszTemp, lpwszTemp, lpwszWorkDir);
 
             // Get length of the name as the NELM
             aplNELMRes = lstrlenW (lpwszTemp);
@@ -1428,7 +1428,7 @@ MAKE_VECTOR:
         wsz[1] = L'\0';
 
         // Convert the []WSID workspace name into a canonical form
-        MakeWorkspaceNameCanonical (lpwszTemp, wsz, wszWorkDir);
+        MakeWorkspaceNameCanonical (lpwszTemp, wsz, lpwszWorkDir);
 
         // Get length of the name as the NELM
         aplNELMRes = lstrlenW (lpwszTemp);
@@ -1450,7 +1450,7 @@ ALLOC_VECTOR:
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = 1;
@@ -1848,7 +1848,7 @@ BOOL ValidateIntegerVector_EM
                 lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                 lpHeader->ArrType    = ARRAY_INT;
 ////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
                 lpHeader->RefCnt     = 1;
                 lpHeader->NELM       = aplNELMRht;
                 lpHeader->Rank       = 1;
@@ -1937,7 +1937,7 @@ MAKE_VECTOR:
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = 1;
@@ -2051,7 +2051,7 @@ BOOL ValidSetCT_EM
     return ValidateFloat_EM (lptkNamArg,            // Ptr to name arg token
                              lptkRhtArg,            // Ptr to right arg token
                              DEF_MIN_QUADCT,        // Minimum value
-                             DEF_QUADCT_CWS,        // Default ...
+              bSysOrIni.CT ? DEF_QUADCT_CWS : fQuadCT_CWS, // Default ...
                              DEF_MAX_QUADCT,        // Maximum ...
                              bRangeLimit.CT);       // TRUE iff range limiting
 } // End ValidSetCT_EM
@@ -2152,7 +2152,7 @@ BOOL ValidSetFC_EM
         FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbQuadFC_SYS);
+        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (bSysOrIni.FC ? hGlbQuadFC_SYS : hGlbQuadFC_CWS);
         lptkNamArg->tkFlags.NoDisplay = TRUE;
 
         return TRUE;
@@ -2196,7 +2196,7 @@ BOOL ValidSetIC_EM
         FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbQuadIC_SYS);
+        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (bSysOrIni.IC ? hGlbQuadIC_SYS : hGlbQuadIC_CWS);
         lptkNamArg->tkFlags.NoDisplay = TRUE;
 
         return TRUE;
@@ -2282,7 +2282,7 @@ BOOL ValidSetIO_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADIO,      // Minimum value
-                               DEF_QUADIO_CWS,      // Default ...
+                bSysOrIni.IO ? DEF_QUADIO_CWS : bQuadIO_CWS, // Default ...
                                DEF_MAX_QUADIO,      // Maximum ...
                                bRangeLimit.IO);     // TRUE iff range limiting
 } // End ValidSetIO_EM
@@ -2375,7 +2375,7 @@ BOOL ValidSetPP_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADPP,      // Minimum value
-                               DEF_QUADPP_CWS,      // Default ...
+                bSysOrIni.PP ? DEF_QUADPP_CWS : (UINT) uQuadPP_CWS, // Default ...
                                DEF_MAX_QUADPP,      // Maximum ...
                                bRangeLimit.PP);     // TRUE iff range limiting
 } // End ValidSetPP_EM
@@ -2634,7 +2634,7 @@ BOOL ValidSetPW_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADPW,      // Minimum value
-                               DEF_QUADPW_CWS,      // Default ...
+                bSysOrIni.PW ? DEF_QUADPW_CWS : (UINT) uQuadPW_CWS, // Default ...
                                DEF_MAX_QUADPW,      // Maximum ...
                                bRangeLimit.PW);     // TRUE iff range limiting
 } // End ValidSetPW_EM
@@ -2709,7 +2709,7 @@ BOOL ValidSetRL_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADRL,      // Minimum value
-                               DEF_QUADRL_CWS,      // Default ...
+                bSysOrIni.RL ? DEF_QUADRL_CWS : (UINT) uQuadRL_CWS, // Default ...
                                DEF_MAX_QUADRL,      // Maximum ...
                                bRangeLimit.RL);     // TRUE iff range limiting
 } // End ValidSetRL_EM
@@ -2880,7 +2880,7 @@ BOOL ValidSetSA_EM
             {
                 case 0:     // ""
                     hGlbRes = hGlbSAEmpty;
-                    lpMemPTD->bQuadxSA = SAVAL_Empty;
+                    lpMemPTD->cQuadxSA = SAVAL_Empty;
 
                     break;
 
@@ -2888,7 +2888,7 @@ BOOL ValidSetSA_EM
                     if (memcmp (lpMemRht, SAOff  , sizeof (SAOff)   - sizeof (APLCHAR)) EQ 0)
                     {
                         hGlbRes = hGlbSAOff;
-                        lpMemPTD->bQuadxSA = SAVAL_Off;
+                        lpMemPTD->cQuadxSA = SAVAL_Off;
                     } else
                         bRet = FALSE;
                     break;
@@ -2897,7 +2897,7 @@ BOOL ValidSetSA_EM
                     if (memcmp (lpMemRht, SAExit , sizeof (SAExit)  - sizeof (APLCHAR)) EQ 0)
                     {
                         hGlbRes = hGlbSAExit;
-                        lpMemPTD->bQuadxSA = SAVAL_Exit;
+                        lpMemPTD->cQuadxSA = SAVAL_Exit;
                     } else
                         bRet = FALSE;
                     break;
@@ -2906,12 +2906,12 @@ BOOL ValidSetSA_EM
                     if (memcmp (lpMemRht, SAClear, sizeof (SAClear) - sizeof (APLCHAR)) EQ 0)
                     {
                         hGlbRes = hGlbSAClear;
-                        lpMemPTD->bQuadxSA = SAVAL_Clear;
+                        lpMemPTD->cQuadxSA = SAVAL_Clear;
                     } else
                     if (memcmp (lpMemRht, SAError, sizeof (SAError) - sizeof (APLCHAR)) EQ 0)
                     {
                         hGlbRes = hGlbSAError;
-                        lpMemPTD->bQuadxSA = SAVAL_Error;
+                        lpMemPTD->cQuadxSA = SAVAL_Error;
                     } else
                         bRet = FALSE;
                     break;
@@ -3059,7 +3059,7 @@ BOOL InitSystemVars
     if (!AssignGlobalCWS     (hGlbQuadWSID_CWS  , SYSVAR_WSID, lpMemPTD->lpSymQuadWSID     )) return FALSE;   // Workspace Identifier
 
     // Save the index value
-    lpMemPTD->bQuadxSA = bQuadxSA_CWS;
+    lpMemPTD->cQuadxSA = cQuadxSA_CWS;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

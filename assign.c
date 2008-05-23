@@ -353,7 +353,7 @@ BOOL AssignName_EM
     // Mark as not displayable
     lptkNam->tkFlags.NoDisplay = TRUE;
 
-    Assert (HshTabFrisk ());
+    Assert (HshTabFrisk (FALSE));
 
 #ifdef DEBUG
     if (bFcnOpr)

@@ -88,6 +88,13 @@
 #define DEF_DISPLAY_INITSIZE    (   4*1024)                 // Initial size of WCHARs for Array Display
 #define DEF_DISPLAY_INCRSIZE    (   4*1024)                 // Incremental ...
 #define DEF_DISPLAY_MAXSIZE     ( 256*1024)                 // Maximum ...
+#define DEF_GLBHSHTAB_NBLKS            128                  // Starting # blocks
+#define DEF_GLBHSHTAB_EPB                2                  // # entries in each block
+#define DEF_GLBHSHTAB_INITSIZE  (DEF_GLBHSHTAB_NBLKS * DEF_GLBHSHTAB_EPB)   // Initial size of global HshTab for {symbol} names & values
+#define DEF_GLBHSHTAB_INCRSIZE  (DEF_GLBHSHTAB_INITSIZE)    // Incremental ...
+#define DEF_GLBHSHTAB_MAXSIZE   (1024 * DEF_GLBHSHTAB_EPB)  // Maximum ...
+#define DEF_GLBHSHTAB_HASHMASK  (DEF_GLBHSHTAB_NBLKS - 1)   // Starting hash mask
+#define DEF_GLBHSHTAB_INCR      (DEF_HSHTAB_PRIME % DEF_GLBHSHTAB_INITSIZE)
 
 
 // Global Options
@@ -202,8 +209,7 @@ EXTERN
 APLFLOAT fQuadCT_CWS        ;           // []CT
 
 EXTERN
-APLBOOL  bQuadIO_CWS        ,           // []IO
-         bQuadxSA_CWS       ;           // []SA (in its index form)
+APLBOOL  bQuadIO_CWS        ;           // []IO
 
 EXTERN
 APLUINT  uQuadPP_CWS        ,           // []PP
@@ -211,8 +217,10 @@ APLUINT  uQuadPP_CWS        ,           // []PP
          uQuadRL_CWS        ;           // []RL
 
 EXTERN
-APLCHAR  cQuadPR_CWS        ;           // []PR     (L' ') (When a char scalar)
+APLCHAR  cQuadPR_CWS        ,           // []PR     (L' ') (When a char scalar)
+         cQuadxSA_CWS       ;           // []SA     (0)    (in its index form as an integer)
 
+// Struct for whether or a System var is range limited
 typedef struct tagRANGELIMIT
 {
     BOOL CT:1,
@@ -228,6 +236,29 @@ RANGELIMIT bRangeLimit
 #ifdef DEFINE_VALUES
 //  CT    IC    IO    PP    PW    RL
 = {TRUE, TRUE, TRUE, TRUE, TRUE, TRUE}
+#endif
+;
+
+// Struct for whether or not the value given to a System Var
+//   when an empty vector is assigned to it is the system default
+//   constant such as DEF_QUADxx_CWS (TRUE) or the value saved
+//   in the .ini file (FALSE)
+typedef struct tagSYS_OR_INI
+{
+    BOOL CT:1,
+         FC:1,
+         IC:1,
+         IO:1,
+         PP:1,
+         PW:1,
+         RL:1;
+} SYS_OR_INI;
+
+EXTERN
+SYS_OR_INI bSysOrIni
+#ifdef DEFINE_VALUES
+//  CT     IC     IO     PP     PW     RL
+= {FALSE, FALSE, FALSE, FALSE, FALSE, FALSE}
 #endif
 ;
 
@@ -260,38 +291,41 @@ HMENU hMenuSM,                          // Handle for Session Manager menu
       hMenuVEWindow;                    // ...        ...             hMenuVE
 
 #ifdef DEBUG
-  #define  APPEND_DEBUG  " (DEBUG)"
-  #define LAPPEND_DEBUG L" (DEBUG)"
+  #define    APPEND_DEBUG  " (DEBUG)"
+  #define WS_APPEND_DEBUG L" (DEBUG)"
 #else
-  #define  APPEND_DEBUG
-  #define LAPPEND_DEBUG
+  #define    APPEND_DEBUG
+  #define WS_APPEND_DEBUG
 #endif
+
+#define    APPNAME      "NARS2000"
+#define WS_APPNAME     L"NARS2000"
 
 EXTERN
 WCHAR lpwszAppName[]                    // Application name for MessageBox
 #ifdef DEFINE_VALUES
- = L"NARS2000" LAPPEND_DEBUG
+ = WS_APPNAME WS_APPEND_DEBUG
 #endif
 ;
 
 EXTERN
 char lpszAppName[]                      // Application name for MessageBox
 #ifdef DEFINE_VALUES
- = "NARS2000" APPEND_DEBUG
+ = APPNAME APPEND_DEBUG
 #endif
 ;
 
 EXTERN
 WCHAR wszAppDPFE  [_MAX_PATH],          // .EXE drive, path, filename.ext
-//////wszInitDir  [_MAX_PATH],          // Initial directory for File Open & Save
       wszHlpDPFE  [_MAX_PATH];          // .HLP ...
 EXTERN
 char szOpenFile [_MAX_PATH];            // Save area for multiple files to open
 
-EXTERN
-WCHAR wszWorkDir[_MAX_PATH];            // Load/Save workspaces directory
-
 #define WS_WKSNAME  L"workspaces"       // Name of Workspaces subdirectory under main dir
+
+EXTERN
+LPWCHAR lpwszIniFile,                   // Ptr to "APPNAME.ini" file
+        lpwszWorkDir;                   // Ptr to WS_WKSNAME dir
 
 EXTERN
 CRITICAL_SECTION CSO0,                  // Critical Section Object #0
@@ -1014,34 +1048,34 @@ char pszNoInsertTCTab[]
 EXTERN
 WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purposes only)
 #ifdef DEFINE_VALUES
- = L"NARS2000 MDI Client Window" LAPPEND_DEBUG
+ = WS_APPNAME L" MDI Client Window" WS_APPEND_DEBUG
 #endif
 ,
       wszSMTitle[]                      // Session Manager ...
 #ifdef DEFINE_VALUES
- = L"NARS2000 Session Manager" LAPPEND_DEBUG
+ = WS_APPNAME L" Session Manager" WS_APPEND_DEBUG
 #endif
 #ifdef DEBUG
   ,
       wszDBTitle[]                      // Debugger ...
   #ifdef DEFINE_VALUES
-   = L"NARS2000 Debugger Window" LAPPEND_DEBUG
+   = WS_APPNAME L" Debugger Window" WS_APPEND_DEBUG
   #endif
 #endif
 ,
       wszFETitle[]                      // Function Editor ...
 #ifdef DEFINE_VALUES
- = L"NARS2000 Function Editor" LAPPEND_DEBUG
+ = WS_APPNAME L" Function Editor" WS_APPEND_DEBUG
 #endif
 ,
       wszMETitle[]                      // Matrix Editor ...
 #ifdef DEFINE_VALUES
- = L"NARS2000 Matrix Editor" LAPPEND_DEBUG
+ = WS_APPNAME L" Matrix Editor" WS_APPEND_DEBUG
 #endif
 ,
       wszVETitle[]                      // Vector Editor ...
 #ifdef DEFINE_VALUES
- = L"NARS2000 Vector Editor" LAPPEND_DEBUG
+ = WS_APPNAME L" Vector Editor" WS_APPEND_DEBUG
 #endif
 ;
 
@@ -1066,11 +1100,14 @@ typedef enum tagMEMVIRTENUM
 {
     MEMVIRT_SZTEMP = 0,                 // 00:  lpszTemp
     MEMVIRT_WSZTEMP,                    // 01:  lpwszTemp
+    MEMVIRT_GLBHSHTAB,                  // 02:  Global HshTab for {symbol} names & values
 #ifdef DEBUG
-    MEMVIRT_SZDEBUG,                    // 02:  lpszDebug
-    MEMVIRT_WSZDEBUG,                   // 03:  lpwszDebug
+    MEMVIRT_SZDEBUG,                    // 03:  lpszDebug
+    MEMVIRT_WSZDEBUG,                   // 04:  lpwszDebug
+    MEMVIRT_LENGTH                      // 05:  # entries
+#else
+    MEMVIRT_LENGTH                      // 03:  # entries
 #endif
-    MEMVIRT_LENGTH                      // 04:  # entries
 } MEMVIRTENUM;
 
 #define MVS     struct tagMEMVIRTSTR
@@ -1096,6 +1133,21 @@ UINT uMemVirtCnt
  = MEMVIRT_LENGTH
 #endif
 ;
+
+typedef struct tagHSHTABSTR
+{
+    LPHSHENTRY lpHshTab,                // 00:  Ptr to start of HshTab
+               lpHshTabSplitNext;       // 04:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
+    int        iHshTabBaseSize,         // 08:  Base size of hash table
+               iHshTabTotalSize,        // 0C:  # HTEs, currently, including EPBs
+               iHshTabIncr,             // 10:  Increment when looping through HshTab
+               iHshTabIncrSize,         // 14:  Incremental size
+               iHshTabEPB;              // 18:  # entries per block
+    UINT       uHashMask;               // 1C:  Mask for all HshTab lookups
+} HSHTABSTR, *LPHSHTABSTR;              // 20:  Length
+
+EXTERN
+HSHTABSTR htsGLB;                       // Global HshTab struc
 
 EXTERN
 HIMAGELIST hImageList;                  // Handle to the common image list

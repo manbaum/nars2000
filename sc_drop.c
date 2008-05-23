@@ -65,7 +65,7 @@ BOOL CmdDrop_EM
     if (*lpwszTail)
     {
         // Convert the given workspace name into a canonical form (without WKSEXT)
-        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszWorkDir);
+        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
         // Append the common workspace extension
         lstrcatW (wszTailDPFE, WS_WKSEXT);

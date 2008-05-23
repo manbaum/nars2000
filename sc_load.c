@@ -109,7 +109,7 @@ BOOL CmdLoadCom_EM
     } // End IF
 
     // Convert the given workspace name into a canonical form (without WKSEXT)
-    MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszWorkDir);
+    MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
     // Append the common workspace extension
     lstrcatW (wszTailDPFE, WS_WKSEXT);
@@ -710,7 +710,7 @@ BOOL ParseSavedWsFcn_EM
         if (L'{' EQ  *lpwSrc)
         {
             // Get the next char
-            wcTmp = NameToChar (lpwSrc);
+            wcTmp = SymbolNameToChar (lpwSrc);
 
             // Skip to the next field
             lpwSrc = SkipPastCharW (lpwSrc, L'}');
@@ -923,7 +923,7 @@ LPWCHAR ParseSavedWsVar_EM
                 if (L'{' EQ  *lpwSrc)
                 {
                     // Get the next char
-                    wcTmp = NameToChar (lpwSrc);
+                    wcTmp = SymbolNameToChar (lpwSrc);
 
                     // Skip to the next field
                     lpwSrc = SkipPastCharW (lpwSrc, L'}');
@@ -1124,7 +1124,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeObj;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND ***FIXME*** -- Set correct PERMNDX_xxx
-////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMObj;
             lpHeader->Rank       = aplRankObj;
@@ -1226,7 +1226,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         if (L'{' EQ  *lpwSrc)
                         {
                             // Get the next char
-                            wcTmp = NameToChar (lpwSrc);
+                            wcTmp = SymbolNameToChar (lpwSrc);
 
                             // Skip to the next field
                             lpwSrc = SkipPastCharW (lpwSrc, L'}');

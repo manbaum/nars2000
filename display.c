@@ -750,7 +750,7 @@ LPAPLCHAR FormatImmed
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatFloat (lpaplChar,                 // Prt to output save area
+              FormatFloat (lpaplChar,                 // Ptr to output save area
                            *(LPAPLFLOAT) lpaplLongest,// The value to format
                            0);                        // Use default precision
             break;
@@ -770,7 +770,7 @@ LPAPLCHAR FormatImmed
 //***************************************************************************
 
 LPAPLCHAR FormatImmedFC
-    (LPWCHAR      lpaplChar,        // Input string
+    (LPWCHAR      lpaplChar,        // Ptr to input string
      UINT         ImmType,          // Immediate type
      LPAPLLONGEST lpaplLongest,     // Ptr to value to format
      UINT         uPrecision,       // Precision to use
@@ -847,7 +847,7 @@ LPAPLCHAR FormatImmedFC
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatFloatFC (lpaplChar,                 // Prt to output save area
+              FormatFloatFC (lpaplChar,                 // Ptr to output save area
                              *(LPAPLFLOAT) lpaplLongest,// The value to format
                              uPrecision,                // Precision to use
                              aplCharDecimal,            // Char to use as decimal separator

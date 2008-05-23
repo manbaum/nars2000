@@ -129,12 +129,12 @@ void ShowHideChildWindows
     if (!hWndMC)
         return;
 
+    // If we're showing, ...
     if (bShow)
     {
         HWND hWndAct;
 
-        // Put the MDI Client window at the top (SHOW) or bottom (HIDE)
-        //   of the Z-order
+        // Put the MDI Client window at the top of the Z-order
         SetWindowPos (hWndMC,
                       HWND_TOP,
                       0, 0, 0, 0,
@@ -154,6 +154,7 @@ void ShowHideChildWindows
         else
             DbgStop ();
     } else
+    // We're hiding, ...
     {
         // Loop through the child windows
         EnumChildWindows (hWndMC,
@@ -298,7 +299,7 @@ BOOL WINAPI CreateNewTabInThread
     if (gCurTabID NE -1)
     {
         // Get the per tab global memory handle
-        hGlbPTD = GetPerTabHandle (TranslateTabIDToIndex (gCurTabID));
+        hGlbPTD = GetPerTabHandle (TranslateTabIDToIndex (gCurTabID)); Assert (hGlbPTD NE NULL);
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -853,20 +854,31 @@ LRESULT WINAPI LclTabCtrlWndProc
                                message,
                                wParam,
                                lParam); // Pass on down the line
-            // Save as new tab ID
-            gCurTabID = TranslateTabIndexToID (TabCtrl_GetCurSel (hWndTC));
+            // If it's valid, ...
+            if (iNewTabIndex NE -1)
+            {
+                static NMHDR nmHdr;
 
-            // The Tab Control returns -1 when no tab is selected (huh?)
-            // I've seen this, but am not sure how to duplicate it
-            // In any case, if that happens, use the last (rightmost) tab.
-            if (gCurTabID EQ -1)
-                gCurTabID = TranslateTabIndexToID (TabCtrl_GetItemCount (hWndTC) - 1);
+                // Fill in the NMHDR fields
+                nmHdr.hwndFrom = NULL;
+                nmHdr.idFrom   = 0;
+                nmHdr.code     = TCN_SELCHANGE;
+
+                // Select it
+                TabCtrl_SetCurSel (hWndTC, iNewTabIndex);
+
+                // Tell the Master Frame to select the new tab
+                PostMessage (hWndMF, WM_NOTIFY, 0, (LPARAM) &nmHdr);
+            } // End IF
+
+            // Save as new tab ID
+            gCurTabID = TranslateTabIndexToID (iNewTabIndex);
 
             // Continue only if the tab ID is valid
             if (gCurTabID NE -1)
             {
                 // Get the outgoing per tab global memory handle
-                hGlbPTD = GetPerTabHandle (TranslateTabIDToIndex (gCurTabID));
+                hGlbPTD = GetPerTabHandle (TranslateTabIDToIndex (gCurTabID)); Assert (hGlbPTD NE NULL);
 
                 // Lock the memory to get a ptr to it
                 lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -964,7 +976,7 @@ void SetTabTextState
     LPPERTABDATA lpMemPTD;
 
     // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iCurTab);
+    hGlbPTD = GetPerTabHandle (iCurTab); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1065,7 +1077,7 @@ int GetTabColorIndex
     int          crIndex;
 
     // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iTab);
+    hGlbPTD = GetPerTabHandle (iTab); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1150,7 +1162,7 @@ void DrawTab
 #endif
 
     // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iCurTab);
+    hGlbPTD = GetPerTabHandle (iCurTab); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

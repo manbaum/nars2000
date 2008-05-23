@@ -1299,7 +1299,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // nWidth = LOWORD(lParam);  // Width of client area
                                     // nHeight = HIWORD(lParam); // Height of client area
             // If requested to do so, change []PW to track the new width
-            if (IzitSM (GetParent (hWnd)) && bAdjustPW)
+            if (IzitSM (GetParent (hWnd))   // If Edit Control for SM,
+             && bAdjustPW                   // and requested to do so,
+             && nWidth NE 0)                // and width is non-zero
             {
                 APLUINT aplInteger;
 

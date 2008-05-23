@@ -1,6 +1,6 @@
 TO DO:  General:  Important (pre-alpha)
 ---------------------------------------
-* Move registry info into <nars2000.ini> file
+* Document MAKEFILE so others may build the product
 
 
 TO DO:  General:  Less Important (post-alpha)
@@ -214,6 +214,7 @@ DONE:  General
 * Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
 * Allow negative indices to the axis operator (except for where fractional values are allowed).
+* Move registry info into <nars2000.ini> file
 
 
 DONE:  Session Manager

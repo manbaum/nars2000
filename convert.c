@@ -302,7 +302,7 @@ UINT ConvertWideToNameLength
         else
         // Check for name in hash table
         if (wc NE L'\0'
-         && (lpwCharName = CharToName (wc)) NE NULL)
+         && (lpwCharName = CharToSymbolName (wc)) NE NULL)
             lpwsz += wsprintfW (lpwsz,
                                 L"%s",
                                 lpwCharName);
@@ -365,7 +365,7 @@ LPWCHAR ConvertNameInPlace
     if (*lpwSrc EQ L'{')
     {
         // Get the next char
-        *lpwDst++ = NameToChar (lpwSrc);
+        *lpwDst++ = SymbolNameToChar (lpwSrc);
 
         // Find the matching L'}'
         lpwSrc = SkipPastCharW (lpwSrc, L'}');

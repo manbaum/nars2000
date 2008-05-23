@@ -73,8 +73,8 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
         return NULL;
     } // End IF
 
-#define SYSID   L"NARS2000"
-#define SYSID_NELM    (sizeof (SYSID) / sizeof (APLCHAR) - 1)
+#define SYSID           WS_APPNAME
+#define SYSID_NELM      (sizeof (SYSID) / sizeof (APLCHAR) - 1)
 
     // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSID_NELM, 1);
@@ -96,7 +96,7 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = SYSID_NELM;
     lpHeader->Rank       = 1;

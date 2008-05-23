@@ -52,13 +52,14 @@ extern UINT auLinNumGLOBAL[MAXOBJ];
 //***************************************************************************
 
 void DisplayHshTab
-    (void)
+    (BOOL bUseGlbHsh)
 
 {
-    LPHSHENTRY   lpHshEntry;
-    int          i, j;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPHSHENTRY   lpHshEntry;        // Ptr to current HshTab entry
+    int          i, j;              // Loop counters
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPHSHTABSTR  lpHTS;             // Ptr to hshTab struc
 
     typedef struct tagHT_FLAGNAMES
     {
@@ -78,24 +79,34 @@ void DisplayHshTab
 // The # rows in the above table
 #define HT_FLAGNAMES_NROWS  (sizeof (ahtFlagNames) / sizeof (ahtFlagNames[0]))
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    if (bUseGlbHsh)
+    {
+        // Get global values
+        lpHTS = &htsGLB;
+    } else
+    {
+        // Get the thread's PerTabData global memory handle
+        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Get PerTabData values
+        lpHTS = &lpMemPTD->htsPTD;
+    } // End IF/ELSE
 
     DbgMsg ("********** Hash Table **********************************");
 
     wsprintf (lpszDebug,
               "lpHshTab = %08X, SplitNext = %08X, Last = %08X",
-              lpMemPTD->lpHshTab,
-              lpMemPTD->lpHshTabSplitNext,
-             &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize]);
+              lpHTS->lpHshTab,
+              lpHTS->lpHshTabSplitNext,
+             &lpHTS->lpHshTab[lpHTS->iHshTabTotalSize]);
     DbgMsg (lpszDebug);
 
     // Display the hash table
-    for (lpHshEntry = lpMemPTD->lpHshTab, i = 0;
-         i < lpMemPTD->iHshTabTotalSize;
+    for (lpHshEntry = lpHTS->lpHshTab, i = 0;
+         i < lpHTS->iHshTabTotalSize;
          lpHshEntry++, i++)
     {
         WCHAR wszFlags[128] = {L'\0'};
@@ -168,8 +179,11 @@ void DisplayHshTab
 
     UpdateDBWindow ();
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    if (!bUseGlbHsh)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } // End IF
 } // End DisplayHshTab
 #endif
 

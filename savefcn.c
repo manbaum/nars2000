@@ -510,7 +510,7 @@ UINT SF_NumLinesLW
 
 void SF_CreationTimeCom
     (LPLW_PARAMS lpLW_Params,       // Ptr to common struc
-     SYSTEMTIME *lpSystemTime,      // Prt to current system (UTC) time
+     SYSTEMTIME *lpSystemTime,      // Ptr to current system (UTC) time
      FILETIME   *lpftCreation)      // Ptr to output save area
 
 {
@@ -528,7 +528,7 @@ void SF_CreationTimeCom
 
 void SF_CreationTimeLW
     (LPLW_PARAMS lpLW_Params,       // Ptr to common struc
-     SYSTEMTIME *lpSystemTime,      // Prt to current system (UTC) time
+     SYSTEMTIME *lpSystemTime,      // Ptr to current system (UTC) time
      FILETIME   *lpftCreation)      // Ptr to output save area
 
 {
@@ -549,7 +549,7 @@ void SF_CreationTimeLW
 
 void SF_LastModTimeCom
     (LPLW_PARAMS lpLW_Params,       // Ptr to common struc
-     SYSTEMTIME *lpSystemTime,      // Prt to current system (UTC) time
+     SYSTEMTIME *lpSystemTime,      // Ptr to current system (UTC) time
      FILETIME   *lpftLastMod)       // Ptr to output save area
 
 {
@@ -567,7 +567,7 @@ void SF_LastModTimeCom
 
 void SF_LastModTimeLW
     (LPLW_PARAMS lpLW_Params,       // Ptr to common struc
-     SYSTEMTIME *lpSystemTime,      // Prt to current system (UTC) time
+     SYSTEMTIME *lpSystemTime,      // Ptr to current system (UTC) time
      FILETIME   *lpftLastMod)       // Ptr to output save area
 
 {
@@ -776,7 +776,7 @@ HGLOBAL SF_UndoBufferLW
                     lpMemUndoTxt = SkipToCharW (lpMemUndoTxt, L'{');
 
                     // Parse the {name}
-                    lpMemUndoBin->Char = NameToChar (lpMemUndoTxt);
+                    lpMemUndoBin->Char = SymbolNameToChar (lpMemUndoTxt);
                 } else
                 if (lpMemUndoBin->Char EQ L'\\')
                 {

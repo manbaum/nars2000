@@ -848,7 +848,6 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     lpMemRes = VarArrayDimToData (lpMemRes, aplRankLst);
 ////lpMemLst = VarArrayDimToData (lpMemRes, aplRankLst);
 
-
     // If the result is a HETERO/NESTED result, fill all items with PTR_REUSED
     //   in case we fail later on
     if (!IsSimple (aplTypeRes))
@@ -889,7 +888,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
     } else
     // Loop through the list arg elements
-    for (uLst = 0; uLst < aplNELMLst; uLst++)
+    for (uLst = uBitIndex = 0; uLst < aplNELMLst; uLst++)
     {
         APLLONGEST aplLongestNam,           // Name arg immediate value
                    aplLongestLst;           // List ...

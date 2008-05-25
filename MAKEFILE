@@ -29,11 +29,20 @@ A=$(PROJPATH)Images\            # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
 OLDPATH = $(PATH)               # Save the current path
-CYGWIN=C:\cygwin\               # Dir for cygwin
-GSLINC=$(CYGWIN)usr\include\    # Directory of GSL includes
+GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
+SDK=K:\                         # Directory of SDK
+
+MSVC=L:\VC98\                   # MSVC build
+I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC)
+L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\
+
+LD=$(MSVC)BIN\link.exe
+CC=$(MSVC)BIN\cl.exe
+RC=$(MSVC)BIN\rc.exe
 
 MV=makever
+MP=makepro
 
 WIN=32
 WDEF=_WIN$(WIN)
@@ -57,7 +66,6 @@ LIBS_WEXE = GDI32.LIB           \
             COMCTL32.LIB        \
             WININET.LIB         \
             OLE32.LIB           \
-            USERENV.LIB         \
 !if "$(DEBUG)" == "1"
             R:\LIB\QDEBUG32.LIB \
 !endif
@@ -94,17 +102,10 @@ O=RET\ND\                       # define output directory for intermediate files
 B=$(BIN)ND\                     # ...                         binaries
 !endif
 !endif
+OC=RET\COM\                     # Define output directory for common intermediate files
 
 HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
 P=R:\$(NAME)\                   # Full path to . dir for HCRTF
-
-MSVC=N:\                        # MSVC build
-I98=$(PROJPATH);$(MSVC)INCLUDE;$(GSLINC)
-L98=$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\
-
-LD=$(MSVC)BIN\link
-CC=$(MSVC)BIN\cl
-RC=$(MSVC)BIN\rc
 
 
 ALL:    DIR                 \
@@ -113,9 +114,17 @@ ALL:    DIR                 \
         $(O)$(ENAME).EXE    \
         $(B)$(ENAME).EXE    \
         $(BC)$(ENAME).HLP   \
-        $(O)$(MV).exe       \
+        MAKEVER             \
+        MAKEPRO
+
+MAKEVER:                    \
+        $(OC)$(MV).exe      \
         $(BC)$(MV).exe      \
         $(ENAME).ver
+
+MAKEPRO:                    \
+        $(OC)$(MP).exe      \
+        $(BC)$(MP).exe
 
 CLEAN:
         @del /Q $(O)*.*
@@ -125,7 +134,7 @@ DEL:
 
 DIR:
         @Set PATH=$(BC)
-        @vdir -q -c $(O) $(B) $(BC) >NUL
+        @vdir -q -c $(O) $(OC) $(B) $(BC) >NUL
         @Set PATH=$(OLDPATH)
 
 {}.rc{$(O)}.res:
@@ -139,6 +148,11 @@ DIR:
 ########bison -o$(O)$(@B).c           -l %s
 
 {}.c{$(O)}.obj:
+        @Set INCLUDE=$(I98);$(O)
+        @if exist $@ del $@
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+
+{}.c{$(OC)}.obj:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
         @$(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
@@ -892,19 +906,26 @@ $(O)yyfns.PRO
 
 {}.C{$(O)}.PRO:
         @Set INCLUDE=$(I98);$(O)
-        @$(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
+        @echo %s
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /c /Zg /DPROTO %s} {$@}
 
 {$(O)}.C{$(O)}.PRO:
         @Set INCLUDE=$(I98);$(O)
-        @$(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
+        @echo %s
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /c /Zg /DPROTO %s} {$@}
 
 {$(WS)}.C{$(O)}.PRO:
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
-        @$(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO /D "UNICODE" %s > $@
+        @echo %s
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /c /Zg /DPROTO /DUNICODE %s} {$@}
 
 ########################## UTILITY ROUTINES ##########################
 
 $(O)DBGBRK.OBJ:         DBGBRK.ASM
+        @if exist $@ del $@
+        ml /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
+
+$(OC)DBGBRK.OBJ:        DBGBRK.ASM
         @if exist $@ del $@
         ml /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
 
@@ -1258,24 +1279,47 @@ $(B)$(ENAME).EXE:       $(O)$(ENAME).EXE
 
 ############################# MAKEVER EXECUTABLE #####################
 
-$(O)$(MV).obj:          $(@B).c
+$(OC)$(MV).obj:         $(@B).c
 
-$(O)$(MV).exe:          $(O)$(MV).obj
-        @echo >NUL @<<$(O)$(MV).crf
-$(O)$(MV).obj
-/OUT:$(O)$(MV).exe
-/MAP:$(O)$(MV).map
+$(OC)$(MV).exe:         $(OC)$(MV).obj
+        @echo >NUL @<<$(OC)$(MV).crf
+$(OC)$(MV).obj
+/OUT:$(OC)$(MV).exe
+/MAP:$(OC)$(MV).map
 kernel32.lib user32.lib version.lib libc.lib
 /DEF:$(MV).def
 <<KEEP
         @Set LIB=$(L98)
         @if exist $@ del $@
-        @$(LD) $(LFLAGS_WEXE) @$(O)$(MV).crf
-        @del $(O)$(@B).exp
-        @del $(O)$(@B).lib
+        @$(LD) $(LFLAGS_WEXE) @$(OC)$(MV).crf
+        @del $(OC)$(@B).exp
+        @del $(OC)$(@B).lib
 
-$(BC)$(MV).exe:         $(O)$(MV).exe
+$(BC)$(MV).exe:         $(OC)$(MV).exe
         @xc/r    %s     $@ >NUL
 
 $(ENAME).ver:           $(O)$(ENAME).exe
-        @$(O)$(MV).exe $(O)$(ENAME).exe
+        @$(OC)$(MV).exe $(O)$(ENAME).exe
+
+
+############################# MAKEPRO EXECUTABLE #####################
+
+$(OC)$(MP).obj:         $(@B).c
+
+$(OC)$(MP).exe:         $(OC)$(MP).obj   $(OC)DbgBrk.obj
+        @echo >NUL @<<$(OC)$(MP).crf
+$(OC)$(MP).obj $(O)DBGBRK.OBJ
+/OUT:$(OC)$(MP).exe
+/MAP:$(OC)$(MP).map
+kernel32.lib libc.lib
+/DEF:$(MP).def
+<<KEEP
+        @Set LIB=$(L98)
+        @if exist $@ del $@
+        @$(LD) $(LFLAGS_WEXE) @$(OC)$(MP).crf
+        @del $(OC)$(@B).exp
+        @del $(OC)$(@B).lib
+
+$(BC)$(MP).exe:         $(OC)$(MP).exe
+        @xc/r    %s     $@ >NUL
+

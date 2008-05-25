@@ -23,7 +23,6 @@
 #define STRICT
 #include <windows.h>
 #include <stdio.h>
-#include <userenv.h>
 
 #include "main.h"
 #include "resdebug.h"
@@ -85,50 +84,22 @@ BOOL CreateAppDataDirs
 
 {
     static WCHAR wszAppData[2 * MAX_PATH];
-    LPWCHAR      lpEnvBlk;
     DWORD        cchSize;
     WCHAR        wszTemp[1024];
     UINT         uNxt;
 
 #define TEMPBUFLEN      (sizeof (wszTemp) / sizeof (wszTemp[0]))
-
-    // Get the system variables in the current user's environment
-    //   where we expect to find L"APPDATA=" pointing to the user's
-    //   "...\\Application Data" directory
-    CreateEnvironmentBlock (&lpEnvBlk, NULL, TRUE);
-
-#define WS_APPDATAEQ        L"APPDATA="
-#define WS_APPDATAEQ_LEN    ((sizeof (WS_APPDATAEQ) / sizeof (WS_APPDATAEQ[0])) - 1)
-
-    // Troll for L"APPDATA="
-    while (*lpEnvBlk)
-    {
-        // Check for our keyword
-        if (wcsncmp (lpEnvBlk, WS_APPDATAEQ, WS_APPDATAEQ_LEN) EQ 0)
-            break;
-
-        // Skip to next string
-        // The "+ 1" is to skip over the terminating zero
-        lpEnvBlk += lstrlenW (lpEnvBlk) + 1;
-    } // End WHILE
+#define WS_APPDATA          L"APPDATA"
 
     // If we didn't find it, ...
-    if (*lpEnvBlk EQ L'\0')
+    if (0 EQ GetEnvironmentVariableW (WS_APPDATA, wszAppData, TEMPBUFLEN))
     {
-        MBW (L"Unable to find " WS_APPDATAEQ L" in the environment.");
+        MBW (L"Unable to find " WS_APPDATA L" in the environment.");
 
         return FALSE;
     } // End IF
 
-#undef  WS_APPDATAEQ_LEN
-#undef  WS_APPDATAEQ
-
-    // Copy the string to local storage
-    // The "+ 1" is to skip over the L'=' separator
-    lstrcpyW (wszAppData, strchrW (lpEnvBlk, L'=') + 1);
-
-    // We no longer need this storage
-    DestroyEnvironmentBlock (lpEnvBlk); lpEnvBlk = NULL;
+#undef  WS_APPDATA
 
     // Append the "\\NARS2000" part
     lstrcatW (wszAppData, L"\\" WS_APPNAME);
@@ -191,6 +162,7 @@ BOOL CreateAppDataDirs
                        &wszTemp[uNxt],              // Pointer to message buffer
                         TEMPBUFLEN - uNxt,          // Maximum size of message buffer
                         NULL);                      // Address of array of message inserts
+#undef  TEMPBUFLEN
 #ifdef DEBUG
         DbgBrk ();
 #endif

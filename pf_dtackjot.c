@@ -235,7 +235,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
 
         // Get the # rows (across all planes)
         if (IsVector (aplRankRht)
-         || !IsZeroDim (aplDimNCols))
+         || IsZeroDim (aplDimNCols))
             aplDimNRows = 1;
         else
             aplDimNRows = aplNELMRht / aplDimNCols;

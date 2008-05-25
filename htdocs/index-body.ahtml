@@ -331,8 +331,8 @@ Welcome to NARS2000</h1>
   <h2 id="Platforms">Platforms</h2>
 
     <p>At the moment, NARS2000 is designed to run on Windows only,
-      versions 2000 and XP (not tested on Vista as yet).  However,
-      it is free software, so you are invited to help extend its reach.
+      versions 2000, XP, and Vista.  However, it is free software,
+      so you are invited to help extend its reach.
     </p>
 </div>
 
@@ -400,7 +400,7 @@ Welcome to NARS2000</h1>
             This is one means by which developers may checkout and commit changes to
             the code.
             Using a version control program, the source code may be viewed using
-            the URL <a class="linkleft" href="svn://svn.nars2000.org">svn://svn.nars2000.org</a>
+            the URL <a class="linkleft" href="svn://svn.nars2000.org/nars2000">svn://svn.nars2000.org/nars2000</a>
             (valid only if you have a version control program on your system).
           </li>
 

@@ -505,7 +505,7 @@ BOOL HshTabResize_EM
     Assert (HshTabFrisk (bUseGlbHsh));
 #ifdef DEBUG
     if (TlsGetValue (dwTlsPerTabData))
-        dprintfW (L"||| Resizing the hash table from %08X to %08X (%S#%d)",
+        dprintfW (L"||| Resizing the hash table from %u to %u (%S#%d)",
                   lpHTS->iHshTabTotalSize,
                   lpHTS->iHshTabTotalSize + iResize,
                   FNLN);
@@ -684,7 +684,7 @@ BOOL HshTabSplitNextEntry_EM
     Assert (HshTabFrisk (bUseGlbHsh));
 #ifdef DEBUG
     if (TlsGetValue (dwTlsPerTabData))
-        dprintfW (L"||| Splitting Hash Table entry %08X to %08X (%S#%d)",
+        dprintfW (L"||| Splitting Hash Table entry %u to %u (%S#%d)",
                   lpHTS->lpHshTabSplitNext,
                  &lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseSize],
                   FNLN);
@@ -758,7 +758,7 @@ BOOL HshTabSplitNextEntry_EM
 ////        if (lp EQ lpHshEntrySrc)
 ////        {
 ////            wsprintf (lpszDebug,
-////                      "HshTabSplitNextEntry:  Entry %08X <-- %08X (%04X) (%04X)",
+////                      "HshTabSplitNextEntry:  Entry %p <-- %p (%04X) (%04X)",
 ////                      lpHshEntryDest,
 ////                      lpHshEntrySrc,
 ////                      lpHshEntrySrc->uHashAndMask,

@@ -258,6 +258,7 @@ LPWCHAR SkipPastCharW
 
     // If it's not found (EOL instead), ...
     if (lpw EQ NULL)
+        // Point to the trailing zero
         lpw = &lpwChar[lstrlenW (lpwChar)];
     else
         // Skip over the trailing char

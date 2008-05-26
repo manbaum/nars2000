@@ -39,7 +39,8 @@
 #define FMTCHR_LEAD             L':'
 #define FMTSTR_LEAD             L":"
 #define FMTSTR_GLBCNT           FMTSTR_LEAD L"%u"
-#define FMTSTR_GLBOBJ           FMTSTR_LEAD L"%08X"
+#define FMTSTR_GLBOBJ           FMTSTR_LEAD L"%p"
+#define FMTSTR_DATETIME         L"%08X%08X"
 
 
 typedef struct tagSAVEDWSGLBVARPARM

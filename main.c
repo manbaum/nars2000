@@ -910,7 +910,7 @@ LRESULT APIENTRY MFWndProc
 
                     // Return a ptr to the stored tooltip text
                     wsprintfW (TooltipText,
-                               L"hWndMC=%08X: %s",
+                               L"hWndMC=%p: %s",
                                lpMemPTD->hWndMC,
                                lpMemWSID);
                     // We no longer need this ptr

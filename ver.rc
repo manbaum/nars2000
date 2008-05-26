@@ -25,7 +25,6 @@
 // Version
 //
 
-#include <ver.h>                    // Version resource definitions from DDK
 #include "VERSION.RC"
 
 #define VER_MAJOR                   0   // 0.x.x.x

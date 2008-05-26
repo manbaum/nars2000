@@ -59,10 +59,10 @@
 
   #ifdef DEBUG_ALLOCFREE
     #define DbgGlobalAlloc(uFlags,ByteRes) \
-    DbgGlobalAllocSub ((uFlags), (ByteRes), L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
+    DbgGlobalAllocSub ((uFlags), (ByteRes), L"##GlobalAlloc in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
     #define DbgGlobalFree(hGlbToken) \
-    dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", (hGlbToken), FNLN); \
+    dprintfW (L"**GlobalFree  in " APPEND_NAME L": %p (%S#%d)", (hGlbToken), FNLN); \
     MyGlobalFree (hGlbToken)
   #else
     #define DbgGlobalAlloc(uFlags,ByteRes) \
@@ -74,19 +74,19 @@
 
   #ifdef DEBUG_REFCNT
     #define DbgIncrRefCntDir(hGlbData) \
-    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     IncrRefCntDir (hGlbData)
 
     #define DbgIncrRefCntInd(hGlbData) \
-    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     IncrRefCntInd (hGlbData)
 
     #define DbgDecrRefCntDir(hGlbData) \
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntDir (hGlbData)
 
     #define DbgDecrRefCntInd(hGlbData) \
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntInd (hGlbData)
   #else
     #define DbgIncrRefCntDir(hGlbData) \
@@ -232,24 +232,24 @@
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)                       ((~PTRTYPE_MASK) &  ( UINT)     (lpMem))
-#define ClrPtrTypeDirAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  ( UINT)     (lpMem))
-#define ClrPtrTypeDirAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  ( UINT)     (lpMem))
-#define ClrPtrTypeDirAsFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  ( UINT)     (lpMem))
-#define ClrPtrTypeInd(lpMem)                       ((~PTRTYPE_MASK) & *(PUINT_PTR) (lpMem))
-#define ClrPtrTypeIndAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(PUINT_PTR) (lpMem))
-#define ClrPtrTypeIndAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(PUINT_PTR) (lpMem))
+#define ClrPtrTypeDir(lpMem)                       ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeDirAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeDirAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeDirAsFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeInd(lpMem)                       ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
+#define ClrPtrTypeIndAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
+#define ClrPtrTypeIndAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.
-#define GetPtrTypeInd(lpMem)    (  PTRTYPE_MASK  & *(PUINT_PTR) (lpMem))
-#define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  ( UINT)     (lpMem))
+#define GetPtrTypeDir(lpMem)          (BYTE)       (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem))
+#define GetPtrTypeInd(lpMem)          (BYTE)       (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem))
 
 // Macro to create a masked LPSYMENTRY
-#define MakePtrTypeSym(lpMem)        ((LPSYMENTRY) (PTRTYPE_STCONST | (UINT) (lpMem)))
+#define MakePtrTypeSym(lpMem)         (LPSYMENTRY) (PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to create a masked HGLOBAL
-#define MakePtrTypeGlb(lpMem)        ((HGLOBAL)    (PTRTYPE_HGLOBAL | (UINT) (lpMem)))
+#define MakePtrTypeGlb(lpMem)         (HGLOBAL)    (PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
 
 // Note that the following macros depend upon
 //   the ordering of the enum IMM_TYPES in <symtab.h>

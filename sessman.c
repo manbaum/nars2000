@@ -624,7 +624,7 @@ void FormatQQuadInput
     if (lpMemPTD->lpSISCur->hSemaphore)
     {
 #ifdef DEBUG
-        dprintfW (L"~~Releasing semaphore:  %08X (%S#%d)", lpMemPTD->lpSISCur->hSemaphore, FNLN);
+        dprintfW (L"~~Releasing semaphore:  %p (%S#%d)", lpMemPTD->lpSISCur->hSemaphore, FNLN);
 #endif
         // Signal WaitForInput that we have a result
         ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);

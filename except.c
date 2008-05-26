@@ -541,8 +541,8 @@ void DisplayException
 
     wsprintf (szTemp,
               "WRITE THIS DOWN!! -- "
-              "Exception code = %08X (%s) at %08X"
-              " (%s + %08X)"
+              "Exception code = %08X (%s) at %p"
+              " (%s + %p)"
               " from %s -- When you press OK, the program will terminate.",
               exceptCode,
               (exceptIndex EQ EXCEPT_NAMES_LENGTH)

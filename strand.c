@@ -263,7 +263,7 @@ void FreeStrand
                     if (FreeResultGlobalVar (lpYYToken->tkToken.tkData.tkGlbData))
                     {
 #ifdef DEBUG_ZAP
-                        dprintfW (L"**Zapping in FreeStrand: %08X (%S#%d)",
+                        dprintfW (L"**Zapping in FreeStrand: %p (%S#%d)",
                                   ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
                                   FNLN);
 #endif
@@ -283,7 +283,7 @@ void FreeStrand
                     if (FreeResultGlobalFcn (lpYYToken->tkToken.tkData.tkGlbData))
                     {
 #ifdef DEBUG_ZAP
-                        dprintfW (L"**Zapping in FreeStrand: %08X (%S#%d)",
+                        dprintfW (L"**Zapping in FreeStrand: %p (%S#%d)",
                                   ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
                                   FNLN);
 #endif

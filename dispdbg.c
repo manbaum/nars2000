@@ -98,7 +98,7 @@ void DisplayHshTab
     DbgMsg ("********** Hash Table **********************************");
 
     wsprintf (lpszDebug,
-              "lpHshTab = %08X, SplitNext = %08X, Last = %08X",
+              "lpHshTab = %p, SplitNext = %p, Last = %p",
               lpHTS->lpHshTab,
               lpHTS->lpHshTabSplitNext,
              &lpHTS->lpHshTab[lpHTS->iHshTabTotalSize]);
@@ -135,13 +135,12 @@ void DisplayHshTab
             lpSymEntry = lpHshEntry->htSymEntry;
             if (lpSymEntry->stFlags.Imm)
                 wsprintfW (lpwszDebug,
-                           L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%08X%08X, Sym=%08X",
+                           L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p",
                            i,
                            lpHshEntry->uHash,
                            lpHshEntry->uHashAndMask,
                           &wszFlags[1],
-                           HIDWORD (lpSymEntry->stData.stInteger),
-                           LODWORD (lpSymEntry->stData.stInteger),
+                           lpSymEntry->stData.stInteger,
                            lpSymEntry);
             else
             if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
@@ -152,7 +151,7 @@ void DisplayHshTab
                 lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
 
                 wsprintfW (lpwszDebug,
-                           L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%08X, %08X-%08X",
+                           L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
                            i,
                            lpHshEntry->uHash,
                            lpHshEntry->uHashAndMask,
@@ -166,7 +165,7 @@ void DisplayHshTab
             } // End IF/ELSE/IF
         } else
             wsprintfW (lpwszDebug,
-                       L"HT:%3d (EMPTY) <%s>, Sym=%08X, <%08X-%08X>",
+                       L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>",
                        i,
                       &wszFlags[1],
                        lpHshEntry->htSymEntry,
@@ -246,7 +245,7 @@ void DisplaySymTab
         DbgMsg ("********** Symbol Table Referenced Non-SysNames ********");
 
     wsprintf (lpszDebug,
-              "lpSymTab = %08X, Last = %08X",
+              "lpSymTab = %p, Last = %p",
               lpMemPTD->lpSymTab,
               &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize]);
     DbgMsg (lpszDebug);
@@ -321,12 +320,11 @@ void DisplaySymTab
             if (lpSymEntry->stFlags.Imm)
             {
                 wsprintfW (lpwszDebug,
-                           L"ST:%08X <%s> <%s>, ull=%08X%08X, Hsh=%08X",
+                           L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p",
                            lpSymEntry,
                            wszName,
                           &wszFlags[1],
-                           HIDWORD (lpSymEntry->stData.stInteger),
-                           LODWORD (lpSymEntry->stData.stInteger),
+                           lpSymEntry->stData.stInteger,
                            lpSymEntry->stHshEntry);
             } else
             if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
@@ -338,7 +336,7 @@ void DisplaySymTab
                 if (lpHshEntry)
                 {
                     wsprintfW (lpwszDebug,
-                               L"ST:%08X <%s>, <%s>, Data=%08X, Hsh=%08X",
+                               L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p",
                                lpSymEntry,
                                wszName,
                               &wszFlags[1],
@@ -346,13 +344,13 @@ void DisplaySymTab
                                lpHshEntry);
                 } else
                     wsprintfW (lpwszDebug,
-                               L"ST:%08X <******>, <%s>, Hsh=0",
+                               L"ST:%p <******>, <%s>, Hsh=0",
                                lpSymEntry,
                               &wszFlags[1]);
             } // End IF/ELSE/IF
         } else
             wsprintfW (lpwszDebug,
-                       L"ST:%08X (EMPTY) <%s>, Hsh=%08X",
+                       L"ST:%p (EMPTY) <%s>, Hsh=%p",
                        lpSymEntry,
                       &wszFlags[1],
                        lpSymEntry->stHshEntry);
@@ -441,7 +439,7 @@ void DisplayGlobals
         if (!lpMem)
         {
             wsprintf (lpszDebug,
-                      "hGlb=%08X *** INVALID ***",
+                      "hGlb=%p *** INVALID ***",
                       hGlb);
             DbgMsg (lpszDebug);
 
@@ -514,7 +512,7 @@ void DisplayGlobals
                  || lpHeader->PermNdx EQ PERMNDX_NONE)
                 {
                     wsprintfW (lpwszDebug,
-                               L"hGlb=%08X, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Lock=%d, Line#=%4d, (%s)",
+                               L"hGlb=%p, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Lock=%d, Line#=%4d, (%s)",
                                hGlb,
                                ArrayTypeAsChar[lpHeader->ArrType],
                                L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
@@ -537,7 +535,7 @@ void DisplayGlobals
             Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlb)));
 
             wsprintf (lpszDebug,
-                      "hGlb=%08X, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
+                      "hGlb=%p, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
                       hGlb,
                       lpNameTypeStr[lpHeader->fnNameType],
                       lpHeader->tknNELM,
@@ -550,7 +548,7 @@ void DisplayGlobals
         if (uDispGlb EQ 2)
         {
             wsprintf (lpszDebug,
-                      "hGlb=%08X -- No NARS/FCNS Signature",
+                      "hGlb=%p -- No NARS/FCNS Signature",
                       hGlb);
             DbgMsg (lpszDebug);
         } // End IF/ELSE
@@ -608,7 +606,7 @@ void DisplayTokens
 
 #define lpHeader    ((LPTOKEN_HEADER) lpToken)
     wsprintf (lpszDebug,
-              "lpToken = %08X, Version # = %d, TokenCnt = %d, PrevGroup = %d",
+              "lpToken = %p, Version # = %d, TokenCnt = %d, PrevGroup = %d",
               lpToken,
               lpHeader->Version,
               lpHeader->TokenCnt,
@@ -623,10 +621,9 @@ void DisplayTokens
     for (i = 0; i < iLen; i++, lpToken++)
     {
         wsprintf (lpszDebug,
-                  "(%2d) Data=%08X%08X, CharIndex=%2d, Type=%s",
+                  "(%2d) Data=%I64X, CharIndex=%2d, Type=%s",
                   i,
-                  HIDWORD (*(LPAPLINT) &lpToken->tkData.tkFloat),
-                  LODWORD (*(LPAPLINT) &lpToken->tkData.tkFloat),
+                  *(LPAPLINT) &lpToken->tkData.tkFloat,
                   lpToken->tkCharIndex,
                   GetTokenTypeName (lpToken->tkFlags.TknType));
         DbgMsg (lpszDebug);
@@ -1334,7 +1331,7 @@ void DisplayStrand
     } // End SWITCH
 
     wsprintf (lpszDebug,
-              "Start=%08X Base=%08X Next=%08X",
+              "Start=%p Base=%p Next=%p",
               lpplLocalVars->lpYYStrandStart[strType],
               lpplLocalVars->lpYYStrandBase[strType],
               lpplLocalVars->lpYYStrandNext[strType]);
@@ -1351,10 +1348,10 @@ void DisplayStrand
         } // End IF
 
         wsprintf (lpszDebug,
-                  "Strand (%08X): %-9.9s D=%08X CI=%2d TC=%1d IN=%1d F=%08X B=%08X",
+                  "Strand (%p): %-9.9s D=%I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
                   lp,
                   GetTokenTypeName (lp->tkToken.tkFlags.TknType),
-                  LODWORD (lp->tkToken.tkData.tkInteger),
+                  lp->tkToken.tkData.tkInteger,
                   lp->tkToken.tkCharIndex,
                   lp->TknCount,
                   lp->YYIndirect,
@@ -1421,7 +1418,7 @@ void DisplayUndo
     (long) hGlbEC = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
 
     // Display it
-    dprintfW (L"Caret position = %d, # lines = %d, hGlbEC = %08X (%S#%d)",
+    dprintfW (L"Caret position = %d, # lines = %d, hGlbEC = %p (%S#%d)",
               uCharPos,
               uLineCount,
               hGlbEC,

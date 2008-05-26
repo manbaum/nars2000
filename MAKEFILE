@@ -31,11 +31,11 @@ WS=WineHQ\                      # Wine source
 OLDPATH=$(PATH)                 # Save the current path
 GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
-SDK=K:\                         # Directory of SDK
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
+SDK=K:\                         # Directory of SDK
 
 MSVC=L:\VC98\                   # MSVC build
-I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC)
+I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
 L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG)
 
 LD=$(MSVC)BIN\link.exe
@@ -56,7 +56,7 @@ RESDEBUG=0
 CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
 !endif
 
-CFLAGS_WEXE = /nologo /Gs /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF)
+CFLAGS_WEXE = /nologo /Gs /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
 LFLAGS_WEXE = /NOLOGO /MAP
 LIBS_WEXE = GDI32.LIB           \
             KERNEL32.LIB        \
@@ -151,22 +151,22 @@ DIR:
 {}.c{$(O)}.obj:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ %s
 
 {}.c{$(OC)}.obj:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ %s
 
 {$(O)}.c{$(O)}.obj:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ %s
 
 {$(WS)}.c{$(O)}.obj:
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.;$(O)
         @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ /c /D "UNICODE" %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D "UNICODE" %s
 
 ####################### DEPENDENCY GENERATION #################
 
@@ -908,17 +908,17 @@ $(O)yyfns.PRO
 {}.C{$(O)}.PRO:
         @Set INCLUDE=$(I98);$(O)
         @echo %s
-        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /c /Zg /DPROTO %s} {$@}
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO %s} {$@}
 
 {$(O)}.C{$(O)}.PRO:
         @Set INCLUDE=$(I98);$(O)
         @echo %s
-        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /c /Zg /DPROTO %s} {$@}
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO %s} {$@}
 
 {$(WS)}.C{$(O)}.PRO:
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
         @echo %s
-        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /c /Zg /DPROTO /DUNICODE %s} {$@}
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO /DUNICODE %s} {$@}
 
 ########################## UTILITY ROUTINES ##########################
 
@@ -1284,10 +1284,10 @@ $(OC)$(MV).obj:         $(@B).c
 
 $(OC)$(MV).exe:         $(OC)$(MV).obj
         @echo >NUL @<<$(OC)$(MV).crf
-$(OC)$(MV).obj
+$**
 /OUT:$(OC)$(MV).exe
 /MAP:$(OC)$(MV).map
-kernel32.lib user32.lib version.lib libc.lib
+kernel32.lib user32.lib version.lib libcmt.lib
 /DEF:$(MV).def
 /NODEFAULTLIB
 <<KEEP
@@ -1310,10 +1310,10 @@ $(OC)$(MP).obj:         $(@B).c
 
 $(OC)$(MP).exe:         $(OC)$(MP).obj   $(OC)DbgBrk.obj
         @echo >NUL @<<$(OC)$(MP).crf
-$(OC)$(MP).obj $(O)DBGBRK.OBJ
+$**
 /OUT:$(OC)$(MP).exe
 /MAP:$(OC)$(MP).map
-kernel32.lib libc.lib
+kernel32.lib libcmt.lib
 /NODEFAULTLIB
 /DEF:$(MP).def
 <<KEEP

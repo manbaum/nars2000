@@ -1101,9 +1101,8 @@ BOOL fnIntAccum
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         { // ***DEBUG***
             wsprintf (lpszDebug,
-                      "aplInteger = %08X%08X",
-                      HIDWORD (lpMemPTD->aplInteger),
-                      LODWORD (lpMemPTD->aplInteger));
+                      "aplInteger = %I64X",
+                      lpMemPTD->aplInteger);
             DbgMsg (lpszDebug);
         } // ***DEBUG*** END
 #endif
@@ -2694,7 +2693,7 @@ HGLOBAL Tokenize_EM
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         wsprintfW (lpwszDebug,
-                   L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %08X, Act2 = %08X",
+                   L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
                    wchOrig ? wchOrig : 8230,
                    wchOrig,
                    GetColName (wchColNum),
@@ -2963,7 +2962,7 @@ void Untokenize
                 if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in Untokenize: %08X (%d) (%S#%d)",
+                    dprintfW (L"**Zapping in Untokenize: %p (%d) (%S#%d)",
                               ClrPtrTypeDir (lpToken->tkData.tkGlbData),
                               FNLN);
 #endif
@@ -3027,7 +3026,7 @@ void Untokenize
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
         wsprintf (lpszDebug,
-                  "Untokenize:  hGlobToken (%08X) is invalid.",
+                  "Untokenize:  hGlobToken (%p) is invalid.",
                   hGlbToken);
         DbgMsg (lpszDebug);
 

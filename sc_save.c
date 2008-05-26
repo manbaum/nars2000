@@ -568,7 +568,7 @@ BOOL CmdSave_EM
 
     // Format the creation time
     wsprintfW (wszTimeStamp,
-               L"%08X%08X",
+               FMTSTR_DATETIME,
                ftCreation.dwHighDateTime,
                ftCreation.dwLowDateTime);
 
@@ -936,7 +936,7 @@ LPAPLCHAR SavedWsFormGlbFcn
 
     // Save the ftCreation time
     wsprintfW (lpaplChar,
-               L"%08X%08X",
+               FMTSTR_DATETIME,
                ftCreation.dwHighDateTime,
                ftCreation.dwLowDateTime);
     WritePrivateProfileStringW (lpwszSectName,          // Ptr to the section name
@@ -945,7 +945,7 @@ LPAPLCHAR SavedWsFormGlbFcn
                                 lpMemSaveWSID);         // Ptr to the file name
     // Save the ftLastMod time
     wsprintfW (lpaplChar,
-               L"%08X%08X",
+               FMTSTR_DATETIME,
                ftLastMod.dwHighDateTime,
                ftLastMod.dwLowDateTime);
     WritePrivateProfileStringW (lpwszSectName,          // Ptr to the section name

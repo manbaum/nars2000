@@ -73,7 +73,7 @@ int ChangeRefCntDir
                     if (lpHeader->PermNdx NE PERMNDX_NONE)
                     {
 #ifdef DEBUG
-////////////////////////dprintfW (L"  RefCntNC in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
+////////////////////////dprintfW (L"  RefCntNC in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
 #endif
                         RefCnt = NEG1U;
 
@@ -82,7 +82,7 @@ int ChangeRefCntDir
 
                     // Change the reference count
 #ifdef DEBUG
-////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;
@@ -94,7 +94,7 @@ int ChangeRefCntDir
 #define lpHeader        ((LPFCNARRAY_HEADER) lpSig)
                     // Change the reference count
 #ifdef DEBUG
-////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;
@@ -109,14 +109,14 @@ int ChangeRefCntDir
                     if (lpHeader->PermFn)
                     {
 #ifdef DEBUG
-////////////////////////dprintfW (L"  RefCntNC in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
+////////////////////////dprintfW (L"  RefCntNC in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
 #endif
                         RefCnt = NEG1U;
 
                         break;
                     } // End IF
 #ifdef DEBUG
-////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;

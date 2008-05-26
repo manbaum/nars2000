@@ -537,7 +537,7 @@ ERROR_EXIT:
     if (hSigaphore)
     {
 #ifdef DEBUG
-        dprintfW (L"~~Releasing semaphore:  %08X (%S#%d)", hSigaphore, FNLN);
+        dprintfW (L"~~Releasing semaphore:  %p (%S#%d)", hSigaphore, FNLN);
 #endif
         ReleaseSemaphore (hSigaphore, 1, NULL);
 

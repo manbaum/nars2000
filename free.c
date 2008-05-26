@@ -140,7 +140,7 @@ void FreeResultSub
                     if (FreeResultGlobalDfn (hGlbData))
                     {
 #ifdef DEBUG_ZAP
-                        dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
+                        dprintfW (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
                                   lptkRes,
                                   ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
                                   FNLN);
@@ -153,7 +153,7 @@ void FreeResultSub
                     if (FreeResultGlobalFcn (hGlbData))
                     {
 #ifdef DEBUG_ZAP
-                        dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
+                        dprintfW (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
                                   lptkRes,
                                   ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
                                   FNLN);
@@ -200,7 +200,7 @@ void FreeResultSub
                     if (bTmp)
                     {
 #ifdef DEBUG_ZAP
-                        dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
+                        dprintfW (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
                                   lptkRes,
                                   ClrPtrTypeDir (hGlbData),
                                   FNLN);
@@ -252,7 +252,7 @@ void FreeResultSub
                 if (bTmp)
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
+                    dprintfW (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
                               lptkRes,
                               ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
                               FNLN);
@@ -372,7 +372,7 @@ BOOL FreeResultGlobalVar
         RefCnt = --lpHeader->RefCnt;
 
 #ifdef DEBUG_REFCNT
-        dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X(res=%d) (%S#%d)",
+        dprintfW (L"##RefCnt-- in " APPEND_NAME L": %p(res=%d) (%S#%d)",
                   ClrPtrTypeDir (hGlbData),
                   RefCnt,
                   FNLN);
@@ -415,7 +415,7 @@ BOOL FreeResultGlobalVar
                             if (FreeResultGlobalVar (ClrPtrTypeIndAsGlb (lpMem)))
                             {
 #ifdef DEBUG_ZAP
-                                dprintfW (L"**Zapping in FreeResultGlobalVar: Global=%08X, Value=%08X (%S#%d)",
+                                dprintfW (L"**Zapping in FreeResultGlobalVar: Global=%p, Value=%p (%S#%d)",
                                           hGlbData,
                                           ClrPtrTypeInd (lpMem),
                                           FNLN);
@@ -506,7 +506,7 @@ BOOL FreeResultGlobalFcn
 #undef  lpHeader
 
 #ifdef DEBUG_REFCNT
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X(res=%d) (%S#%d)",
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %p(res=%d) (%S#%d)",
               ClrPtrTypeDir (hGlbData),
               RefCnt,
               FNLN);
@@ -565,7 +565,7 @@ BOOL FreeResultGlobalFcn
                 if (FreeResultGlobalDFV (hGlbLcl))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
+                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
                               hGlbData,
                               hGlbLcl,
                               FNLN);
@@ -590,7 +590,7 @@ BOOL FreeResultGlobalFcn
                 if (FreeResultGlobalVar (hGlbLcl))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
+                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
                               hGlbData,
                               hGlbLcl,
                               FNLN);
@@ -620,7 +620,7 @@ BOOL FreeResultGlobalFcn
                     if (FreeResultGlobalVar (hGlbLcl))
                     {
 #ifdef DEBUG_ZAP
-                        dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
+                        dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
                                   hGlbData,
                                   hGlbLcl,
                                   FNLN);

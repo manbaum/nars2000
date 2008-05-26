@@ -5356,7 +5356,7 @@ static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
     // Ask the parent how wide the caret should be
     SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) &nmEC);
 #ifdef DEBUG
-////dprintfW (L">>CreateCaret (%08X, %08X, %d, %d)", hWnd, hBitMap, nWidth, nHeight);
+////dprintfW (L">>CreateCaret (%p, %p, %d, %d)", hWnd, hBitMap, nWidth, nHeight);
 #endif DEBUG
     return CreateCaret (hWnd, hBitMap, nWidth, nHeight);
 } // End MyCreateCaret

@@ -944,7 +944,7 @@ LPFH_YYSTYPE MakeHdrStrand_YY
 
     // Save the # elements in the strand
     lpYYArg->lpYYStrandBase->uStrandLen =
-      lpfhLocalVars->lpYYStrandNext - lpYYArg->lpYYStrandBase;
+      (UINT) (lpfhLocalVars->lpYYStrandNext - lpYYArg->lpYYStrandBase);
 
     // Save the next position as the new base
     lpfhLocalVars->lpYYStrandBase = lpfhLocalVars->lpYYStrandNext;

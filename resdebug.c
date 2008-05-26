@@ -298,7 +298,7 @@ void _LastLock
         DbgBrk ();
     else
         wsprintf (szTemp,
-                  "The global (%08X) was last locked in (%s#%d).",
+                  "The global (%p) was last locked in (%s#%d).",
                   hMem,
                   lpaaFileName[dwType - 1][i],
                   lpaauLinNum[dwType - 1][i]);

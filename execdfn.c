@@ -296,7 +296,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
         lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
 ////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
 #ifdef DEBUG
-        dprintfW (L"~~Localize:    %08X (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
+        dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
 #endif
     } __except (CheckException (GetExceptionInformation (), "ExecDfnGlb_EM_YY"))
     {
@@ -1159,7 +1159,7 @@ BOOL Unlocalize
     {
         Assert (lpMemPTD->lpSISCur NE NULL);
 #ifdef DEBUG
-        dprintfW (L"~~Unlocalize:  %08X to %08X", lpMemPTD->lpSISCur, lpMemPTD->lpSISCur->lpSISPrv);
+        dprintfW (L"~~Unlocalize:  %p to %p", lpMemPTD->lpSISCur, lpMemPTD->lpSISCur->lpSISPrv);
 #endif
         // Save the reset flag
         resetFlag = lpMemPTD->lpSISCur->ResetFlag;

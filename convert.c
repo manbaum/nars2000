@@ -315,7 +315,7 @@ UINT ConvertWideToNameLength
     // Ensure properly terminated
     *lpwsz = L'\0';
 
-    return (lpwsz - lpwszOut);
+    return (UINT) (lpwsz - lpwszOut);
 } // End ConvertWideToNameLength
 
 

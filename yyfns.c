@@ -123,7 +123,7 @@ RESTART_EXCEPTION_YYALLOC:
     } __except (CheckException (GetExceptionInformation (), "YYAlloc"))
     {
 #ifdef DEBUG
-        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %08X (%S#%d)", MyGetExceptionCode (), FNLN);
+        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %p (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
@@ -293,7 +293,7 @@ BOOL YYResIsEmpty
         char szTemp[1024];
 
         wsprintf (szTemp,
-                  "The YYRes at %08X TknType %s index %04X SI(%d) was allocated at %s#%d",
+                  "The YYRes at %p TknType %s index %04X SI(%d) was allocated at %s#%d",
                  &lpMemPTD->lpYYRes[u],
                   GetTokenTypeName (lpMemPTD->lpYYRes[u].tkToken.tkFlags.TknType),
                   lpMemPTD->lpYYRes[u].YYIndex,

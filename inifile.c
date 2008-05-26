@@ -623,34 +623,29 @@ APLNELM ScanNELM
 
 {
     APLNELM aplNELMRes;             // Result NELM
-    UINT    uTmp;                   // Temporary value
     APLINT  aplIntTemp;             // Temporary integer for swscanf
+
+    // Initialize the result NELM
+    aplNELMRes = 0;
 
     // Split cases based upon the result storage type
     switch (aplTypeRes)
     {
         case ARRAY_INT:
-            // Initialize the result NELM
-            aplNELMRes = 0;
-
             // Loop through the arg counting one integer at a time
-            while (TRUE)
+            while (*wszTemp)
             {
-                uTmp =
-                  swscanf (wszTemp,
-                           L"%I64d",
-                          &aplIntTemp);
-                if (uTmp EQ 0)
-                    return aplNELMRes;
-
-                aplNELMRes += uTmp;
+                if (EOF EQ swscanf (wszTemp,
+                                    L"%I64d",
+                                   &aplIntTemp))
+                    break;
+                aplNELMRes++;
                 wszTemp = SkipPastCharW (wszTemp, L' ');
             } // End WHILE
 
-        case ARRAY_CHAR:
-            // Initialize the result NELM
-            aplNELMRes = 0;
+            return aplNELMRes;
 
+        case ARRAY_CHAR:
             // Loop through the arg counting {name} as one char
             while (*wszTemp)
             {

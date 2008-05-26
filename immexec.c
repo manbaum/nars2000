@@ -77,10 +77,10 @@ VOID CALLBACK WaitForImmExecStmt
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (lpMemWFSO->hGlbPTD);
 #ifdef DEBUG
-    dprintfW (L"~~WaitForImmExecStmt (%08X)", lpMemWFSO->hThread);
+    dprintfW (L"~~WaitForImmExecStmt (%p)", lpMemWFSO->hThread);
 #endif
     // Get the thread's exit code
-    GetExitCodeThread (lpMemWFSO->hThread, &exitType);
+    GetExitCodeThread (lpMemWFSO->hThread, (LPDWORD) &exitType);
 
     // Save in global memory
     lpMemPTD->ImmExecExitType = exitType;
@@ -327,20 +327,20 @@ EXIT_TYPES ImmExecStmt
         // Start 'er up
         ResumeThread (hThread);
 #ifdef DEBUG
-        dprintfW (L"~~WaitForSingleObject (ENTRY):  %08X -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
+        dprintfW (L"~~WaitForSingleObject (ENTRY):  %p -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
 #endif
         // Wait until this thread terminates
         WaitForSingleObject (hThread,              // Handle to wait on
                              INFINITE);            // Wait time in milliseconds
 #ifdef DEBUG
-        dprintfW (L"~~WaitForSingleObject (EXIT):   %08X -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
+        dprintfW (L"~~WaitForSingleObject (EXIT):   %p -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
 #endif
         // Get the exit code
-        GetExitCodeThread (hThread, &exitType);
+        GetExitCodeThread (hThread, (LPDWORD) &exitType);
     } else
     {
 #ifdef DEBUG
-        dprintfW (L"~~RegisterWaitForSingleObject (%08X) (%S#%d)", hThread, FNLN);
+        dprintfW (L"~~RegisterWaitForSingleObject (%p) (%S#%d)", hThread, FNLN);
 #endif
         // Lock the memory to get a ptr to it
         lpMemWFSO = MyGlobalLock (hGlbWFSO);
@@ -670,7 +670,7 @@ ERROR_EXIT:
 //////////   the exit type isn't error, and
         //   there's no semaphore to signal
 #ifdef DEBUG
-        dprintfW (L"--Before DisplayPrompt (3):  resetFlag = %d, bWaitUntilFini = %d, exitType = %d, hSigaphore = %08X",
+        dprintfW (L"--Before DisplayPrompt (3):  resetFlag = %d, bWaitUntilFini = %d, exitType = %d, hSigaphore = %p",
                   resetFlag,
                   bWaitUntilFini,
                   exitType,

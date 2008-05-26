@@ -1555,7 +1555,7 @@ HGLOBAL CopyArray_EM
 
         // Set the reference count in case it was a TKT_VARNAMED
 #ifdef DEBUG_REFCNT
-        dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %08X (%S#%d)", lpMemDst, FNLN);
+        dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %p (%S#%d)", lpMemDst, FNLN);
 #endif
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
         // Clear the PermNdx flags
@@ -2475,7 +2475,7 @@ RESTART_EXCEPTION_FILLSISNXT:
         lpMemPTD->lpSISNxt->lpSISNxt      = (LPSIS_HEADER) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
 ////////lpMemPTD->lpSISNxt->lptkFunc      = NULL;           // Already zero from ZeroMemory
 #ifdef DEBUG
-        dprintfW (L"~~Localize:    %08X (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
+        dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
 #endif
         // Link this SIS into the chain, if requested
         if (LinkIntoChain)

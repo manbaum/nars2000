@@ -768,6 +768,7 @@ int LclECPaintHook
 
 {
     RECT             rc;                // Rect for actual width/height
+#ifndef UNISCRIBE
     HGLOBAL          hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
     int              iRes;              // The result
@@ -778,7 +779,7 @@ int LclECPaintHook
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
-
+#endif
     // Syntax Color the line
 
     // To do this, we use a FSA to parse the line from the start
@@ -802,6 +803,7 @@ int LclECPaintHook
              | DT_CALCRECT
              | DT_NOPREFIX
              | DT_NOCLIP);
+#ifndef UNISCRIBE
     // On some systems when the alternate font isn't the same
     //   width as the SM font, the width calculated by DT_CALCRECT
     //   is too small, so we recalculate it here
@@ -821,9 +823,22 @@ int LclECPaintHook
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return iRes;
+#else
+    // Draw the line for real
+    DrawTextW (hDC,
+               lpwsz,
+               uLen,
+              &rc,
+               0
+             | DT_SINGLELINE
+             | DT_NOPREFIX
+             | DT_NOCLIP);
+    return MAKELONG (rc.right - rc.left, rc.bottom - rc.top);
+#endif
 } // End LclECPaintHook
 
 
+#ifndef UNISCRIBE
 //***************************************************************************
 //  $DrawTextFL
 //
@@ -863,8 +878,10 @@ int DrawTextFL
 
     return hr;
 } // End DrawTextFL
+#endif
 
 
+#ifndef UNISCRIBE
 //***************************************************************************
 //  $DrawTextFLsub
 //
@@ -941,8 +958,10 @@ HRESULT DrawTextFLsub
 
     return hr;
 } // End DrawTextFLsub
+#endif
 
 
+#ifndef UNISCRIBE
 //***************************************************************************
 //  $OneDrawTextW
 //
@@ -973,6 +992,7 @@ void OneDrawTextW
         lprc->left += cxAveChar;
     } // End FOR
 } // End OneDrawTextW
+#endif
 
 
 //***************************************************************************

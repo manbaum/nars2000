@@ -712,7 +712,7 @@ LRESULT APIENTRY SMWndProc
         {
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
-
+#ifndef UNISCRIBE
             // Initialize the OLE libraries
             CoInitialize (NULL);
 
@@ -722,6 +722,7 @@ LRESULT APIENTRY SMWndProc
                                CLSCTX_ALL,
                               &IID_IMLangFontLink,
                                (void **) &lpMemPTD->lpFontLink);
+#endif
             // Save the window handle
             lpMemPTD->hWndSM = hWnd;
 
@@ -2036,21 +2037,23 @@ LOAD_WORKSPACE_FAIL:
             // Uninitialize window-specific resources
             SM_Delete (hWnd);
 
+#ifndef UNISCRIBE
             // Release the FontLink ptr
             if (lpMemPTD->lpFontLink)
             {
                 IMLangFontLink_Release (lpMemPTD->lpFontLink); lpMemPTD->lpFontLink = NULL;
             } // End IF
-
+#endif
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Tell the thread to quit, too
             PostQuitMessage (0);
 
+#ifndef UNISCRIBE
             // Uninitialize the OLE libraries
             CoUninitialize ();
-
+#endif
             break;
     } // End SWITCH
 

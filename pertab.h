@@ -20,8 +20,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-#define COBJMACROS
-#include <mlang.h>
+// Use Uniscribe to implement font fallback so
+//   (say) the infinity char display correctly
+//   even though it's not in the SImPL or
+//   "APL385 Unicode" fonts.
+#define UNISCRIBE
+
+#ifndef UNISCRIBE
+  #define COBJMACROS
+  #include <mlang.h>
+#endif
 #include "workspace.h"
 
 #define INIT_PERTABVARS                                         \
@@ -49,7 +57,9 @@
 ////lpMemPTD->SILevel            = 0;
 ////lpmemPTD->hSemaDelay         = NULL;
 ////lpmemPTD->lpLstMVS           = NULL;
+#ifndef UNISCRIBE
 ////lpmemPTD->lpFontLink         = NULL;
+#endif
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -146,8 +156,10 @@ typedef struct tagPERTABDATA
                  lpLoadWsGlbVarParm;//158:  Ptr to extra parms for LoadWsGlbVarConv
     LPMEMVIRTSTR lpLstMVS;          //164:  Ptr to last MEMVIRTSTR (NULL = none)
     LPWCHAR      lpwszFormat;       //168:  Ptr to formatting save area
+#ifndef UNISCRIBE
     IMLangFontLink
                 *lpFontLink;        //16C:  Ptr to FontLink struc
+#endif
     APLCHAR      cQuadPR,           //170:  []PR     (' ') (When a char scalar)
                  cQuadxSA;          //172:  []SA     (0)   (in its index form as an integer)
                                     //174:  Length

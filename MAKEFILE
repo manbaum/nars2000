@@ -20,22 +20,23 @@
 
 .SUFFIXES: .DEP .DEV .PRO .Y
 
-NAME = NARS2000                 # Directory name
-ENAME = NARS2000                # Executable name
-PROJPATH = .\                   # Project path
-BIN = $(PROJPATH)binaries\      # Binaries directory
+NAME=NARS2000                   # Directory name
+ENAME=NARS2000                  # Executable name
+PROJPATH=.\                     # Project path
+BIN=$(PROJPATH)binaries\        # Binaries directory
 DEBUG=0
 A=$(PROJPATH)Images\            # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
-OLDPATH = $(PATH)               # Save the current path
+OLDPATH=$(PATH)                 # Save the current path
 GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
 SDK=K:\                         # Directory of SDK
+QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 
 MSVC=L:\VC98\                   # MSVC build
 I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC)
-L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\
+L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG)
 
 LD=$(MSVC)BIN\link.exe
 CC=$(MSVC)BIN\cl.exe
@@ -58,16 +59,16 @@ CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
 CFLAGS_WEXE = /nologo /Gs /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF)
 LFLAGS_WEXE = /NOLOGO /MAP
 LIBS_WEXE = GDI32.LIB           \
+            KERNEL32.LIB        \
             USER32.LIB          \
             VERSION.LIB         \
             COMDLG32.LIB        \
             SHELL32.LIB         \
-            ADVAPI32.LIB        \
             COMCTL32.LIB        \
             WININET.LIB         \
-            OLE32.LIB           \
+            OLDNAMES.LIB        \
 !if "$(DEBUG)" == "1"
-            R:\LIB\QDEBUG32.LIB \
+            QDEBUG32.LIB        \
 !endif
             libcmt.lib          \
             libgsl-double.a     \
@@ -1262,7 +1263,7 @@ $(OBJS)
 /MAP:$(O)$(MAPFILE)
 $(LIBS_WEXE) $(LIBS_EXT)
 /DEF:$(DEFFILE)
-/NODEFAULTLIB:libc
+/NODEFAULTLIB
 <<KEEP
         @Set LIB=$(L98)
         @if exist $@ del $@
@@ -1288,6 +1289,7 @@ $(OC)$(MV).obj
 /MAP:$(OC)$(MV).map
 kernel32.lib user32.lib version.lib libc.lib
 /DEF:$(MV).def
+/NODEFAULTLIB
 <<KEEP
         @Set LIB=$(L98)
         @if exist $@ del $@
@@ -1312,6 +1314,7 @@ $(OC)$(MP).obj $(O)DBGBRK.OBJ
 /OUT:$(OC)$(MP).exe
 /MAP:$(OC)$(MP).map
 kernel32.lib libc.lib
+/NODEFAULTLIB
 /DEF:$(MP).def
 <<KEEP
         @Set LIB=$(L98)

@@ -50,13 +50,15 @@ Downloads</h1>
 <div class="section">
   <h2 id="Latest_File_Releases">Latest File Releases</h2>
 
-  <p>There are three types of files available for downloading:
-    <b>NARS2000.zip</b>, <b>NARS2000.map</b>, and <b>Release Notes</b>.
-    The <b>zip</b> files contain everything you
+  <p>There are several types of files available for downloading:
+    <b>NARS2000.zip</b>, <b>NARS2000.map</b>, <b>Release Notes</b>, and
+    <b>Special Files</b>.  The <b>zip</b> files contain everything you
     need to run the program and are the recommended downloads for end
     users.  The <b>map</b> files contain debugging information and are used
     by developers.  The <b>Release Notes</b> contain information about the
-    corresponding release and are, generally, of most use to developers.</p>
+    corresponding release and are, generally, of most use to developers.  The
+    <b>Special Files</b> such as <b>qdebug.zip</b> and <b>gsldir.zip</b>
+    contain support files needed by developers.</p>
 
   <form id="DisplayForm" action="">&nbsp;
     <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="DisplayTab ();" />
@@ -97,17 +99,31 @@ Downloads</h1>
         } // End WHILE
 
         // Sort files descendingly by version #
+        //   (which also sorts "gsldir.zip" & "qdebug.zip" to the front)
         natsort ($Files);
         $Files = array_reverse ($Files);
 
         foreach ($Files as $File)
         {
-            $Pos    = strpos ($File, '-');
-            $Name   = substr ($File, 0, $Pos);
-            $Rel    = substr ($File, $Pos + 1);
-            $ExtPos = strpos (strrev ($File), '.');
-            $Ext    = substr ($File, -$ExtPos);    // Extract the extension
-            $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
+            if (strcmp ($File, "gsldir.zip") == 0
+             || strcmp ($File, "qdebug.zip") == 0)
+            {
+                $Name   = substr ($File, 0, strpos ($File, '.'));
+                $Rel    = "";
+                $ExtPos = strpos (strrev ($File), '.');
+                $Ext    = substr ($File, -$ExtPos);    // Extract the extension
+                $Class  = "map";
+            } else
+            {
+                $Pos    = strpos ($File, '-');
+                $Name   = substr ($File, 0, $Pos);
+                $Rel    = substr ($File, $Pos + 1);
+                $ExtPos = strpos (strrev ($File), '.');
+                $Ext    = substr ($File, -$ExtPos);    // Extract the extension
+                $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
+                $Class  = $Ext;
+            } // End IF/ELSE
+
             $Date   = gmdate ("Y F d H:i:s", filemtime ($DirName . $File));
             $Size   = number_format (filesize ($DirName . $File));
             $Notes  = "Notes-$Rel.txt";
@@ -115,14 +131,15 @@ Downloads</h1>
             // Get the corresponding release
             $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
 
-            echo   "      <tr class=\"$Ext\">\n"
+            echo   "      <tr class=\"$Class\">\n"
                .   "        <td>$Name</td>\n"
                .   "        <td>$Rel</td>\n"
                .   "        <td>$Date</td>\n"
-               .   "        <td>$Size</td>\n"
+               .   "        <td align=\"right\">$Size</td>\n"
                .   "        <td>$Ext</td>\n"
-               . (($Ext == "zip") ? "        <td class=\"notes\"><a target=\"bodyFrame\"class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
-                                  : "        <td class=\"notes\"></td>\n")
+               . (($Class == 'zip')
+               ?   "        <td class=\"notes\"><a target=\"bodyFrame\"class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
+               :   "        <td class=\"notes\"></td>\n")
                .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
                .   "      </tr>\n";
         } // End FOREACH
@@ -131,7 +148,7 @@ Downloads</h1>
         ?>
         </table>
       </td>
-      <td valign="top"><br /><b>&nbsp;&larr;&nbsp;Recommended</b></td>
+      <td class="recommended" valign="top"><br /><b>&nbsp;&larr;&nbsp;Recommended</b></td>
     </tr>
   </table>
 
@@ -166,13 +183,21 @@ Downloads</h1>
     function ToggleClassNotes (rows)
     {
     var i;
+    var DispNotes = gAllFiles ? gTableCell : 'none';
+    var DispRecom = gAllFiles ? 'none' : gTableCell;
 
         for (i = 0; i < rows.length; i++)
         {
         var td = rows[i];
         var attr = td.attributes['class'];
-            if (attr && attr.value == 'notes')
-                td.style.display = gAllFiles ? gTableCell : 'none';
+            if (attr)
+            {
+                if (attr.value == 'notes')
+                    td.style.display = DispNotes;
+                else
+                if (attr.value == 'recommended')
+                    td.style.display = DispRecom;
+            } // End IF
         } // End FOR
     } // End ToggleClassNotes
 

@@ -20,12 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-// Use Uniscribe to implement font fallback so
-//   (say) the infinity char display correctly
-//   even though it's not in the SImPL or
-//   "APL385 Unicode" fonts.
-#define UNISCRIBE
-
 #ifndef UNISCRIBE
   #define COBJMACROS
   #include <mlang.h>

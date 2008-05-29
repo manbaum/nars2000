@@ -332,7 +332,7 @@ void FormatCurDateTime
     SYSTEMTIME SystemTime;
 
     // Get the current date & time
-    if (bUseLocalTime)
+    if (OptionFlags.bUseLocalTime)
         GetLocalTime  (&SystemTime);
     else
         GetSystemTime (&SystemTime);

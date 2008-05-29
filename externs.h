@@ -98,8 +98,11 @@
 
 
 // Global Options
-#define DEF_NEWTABONCLEAR   TRUE
-#define DEF_NEWTABONLOAD    TRUE
+#define DEF_ADJUSTPW                TRUE
+#define DEF_UNDERBARTOLOWERCASE     FALSE
+#define DEF_NEWTABONCLEAR           TRUE
+#define DEF_NEWTABONLOAD            TRUE
+#define DEF_USELOCALTIME            TRUE
 
 
 // Date/time formats
@@ -262,13 +265,6 @@ SYS_OR_INI bSysOrIni
 #endif
 ;
 
-EXTERN
-BOOL bAdjustPW
-#ifdef DEFINE_VALUES
-= TRUE
-#endif
-;
-
 
 //***************************************************************************
 //  Application values
@@ -411,15 +407,15 @@ LPPRIMSPEC PrimSpecTab[256];            // The table of corresponding LPPRIMSPEC
                                         //   for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
-    WORD Index:4,                       // 000F:  Function index (see FBFN_INDS)
+    WORD Index    :4,                   // 000F:  Function index (see FBFN_INDS)
          Available:5,                   // 01F0:  Available flag bits
          IdentElem:1,                   // 0200:  TRUE iff this function has an identity element
          DydScalar:1,                   // 0400:  ...                    is scalar dyadic
          MonScalar:1,                   // 0800:  ...                       ...    monadic
-         Alter:1,                       // 1000:  ...                       alternating
+         Alter    :1,                   // 1000:  ...                       alternating
          AssocBool:1,                   // 2000:  ...                       associative on Booleans only
          AssocNumb:1,                   // 4000:  ...                       associative on all numbers
-         FastBool:1;                    // 8000:  Boolean function w/reduction & scan can be sped up
+         FastBool :1;                   // 8000:  Boolean function w/reduction & scan can be sped up
                                         // 0000:  No available bits
 } PRIMFLAGS, *LPPRIMFLAGS;
 
@@ -474,7 +470,7 @@ typedef struct tagFASTBOOLFNS
     LPFASTBOOLFCN lpScan;               // 04:  ...                 scan      ...
     UINT          NotMarker:1,          // 08:  00000001:  Complement of Marker
                   IdentElem:1,          //      00000002:  Identity element (if it exists)
-                  Suffix:1;             //      00000004:  Suffix equivalence value
+                  Suffix   :1;          //      00000004:  Suffix equivalence value
                                         //      FFFFFFF8:  Available bits
                                         // 0C:  Length
 } FASTBOOLFNS, *LPFASTBOOLFNS;
@@ -935,7 +931,9 @@ LOGFONT lfSM                            // LOGFONT for the SM
 
 EXTERN
 HFONT hFontTC,                          // Handle to font for the TC
+#ifndef UNISCRIBE
       hFontAlt,                         // ...                    Alternate SM
+#endif
       hFontSM,                          // ...                    SM
       hFontFE,                          // ...                    FE
       hFontME,                          // ...                    ME
@@ -973,21 +971,26 @@ WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedu
   HANDLE DebugHandle;
 #endif
 
-// Define global options
+// Define global option flags
+typedef struct tagOPTIONFLAGS
+{
+    UINT bAdjustPW           :1,    // TRUE iff WM_SIZE changes []PW
+         bUnderbarToLowercase:1,    // ...      Paste of underbar letters translates to lowercase
+         bNewTabOnClear      :1,    // ...      )CLEAR creates a new tab
+         bNewTabOnLoad       :1,    // ...      )LOAD  ...
+         bUseLocalTime       :1,    // ...      LocalTime is used instead of SystemTime (GMT)
+         uDefaultPaste       :4;    // Index of default Paste translation (see UNI_TRANS)
+} OPTIONFLAGS, *LPOPTIONFLAGS;
+
 EXTERN
-BOOL bNewTabOnClear
+OPTIONFLAGS OptionFlags
 #ifdef DEFINE_VALUES
- = DEF_NEWTABONCLEAR
-#endif
-,
-     bNewTabOnLoad
-#ifdef DEFINE_VALUES
- = DEF_NEWTABONLOAD
-#endif
-,
-     bUseLocalTime
-#ifdef DEFINE_VALUES
- = TRUE;
+= {DEF_ADJUSTPW,
+   DEF_UNDERBARTOLOWERCASE,
+   DEF_NEWTABONCLEAR,
+   DEF_NEWTABONLOAD,
+   DEF_USELOCALTIME,
+   UNITRANS_NORMAL}
 #endif
 ;
 
@@ -1185,7 +1188,7 @@ typedef struct
 } CHARCODE;
 
 // If you are looking for places on the keyboard to put a new symbol,
-//   there are fifteen free Alt-Shift- combinations:
+//   there are several free Alt-Shift- combinations:
 //     Alt-'A'
 //     Alt-'B'
 //     Alt-'C'

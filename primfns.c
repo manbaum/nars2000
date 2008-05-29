@@ -510,7 +510,7 @@ BOOL PrimScalarFnDydAllocate_EM
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = *lpaplRankRes;
@@ -688,7 +688,7 @@ HGLOBAL MakeMonPrototype_EM
                     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                     lpHeader->ArrType    = ARRAY_BOOL;
 ////////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
                     lpHeader->RefCnt     = 1;
                     lpHeader->NELM       = aplNELM;
                     lpHeader->Rank       = aplRank;
@@ -1056,7 +1056,7 @@ HGLOBAL MakeDydPrototype_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = aplRankRes;
@@ -1525,7 +1525,7 @@ HGLOBAL CopyArray_EM
      LPTOKEN lptkFunc)      // Ptr to function token
 
 {
-    DWORD       dwSize;
+    SIZE_T      dwSize;
     LPVOID      lpMemSrc, lpMemSrcBase,
                 lpMemDst, lpMemDstBase;
     HGLOBAL     hGlbDst,
@@ -1708,7 +1708,7 @@ HGLOBAL CopyGlbAsType
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMArg;
     lpHeader->Rank       = aplRankArg;

@@ -50,7 +50,7 @@ WDEF=_WIN$(WIN)
 
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
-CFLAGS_DEBUG=/Zd /D "DEBUG" /D "RESDEBUG=$(RESDEBUG)"
+CFLAGS_DEBUG=/Zi /D "DEBUG" /D "RESDEBUG=$(RESDEBUG)"
 !else
 RESDEBUG=0
 CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
@@ -67,6 +67,8 @@ LIBS_WEXE = GDI32.LIB           \
             COMCTL32.LIB        \
             WININET.LIB         \
             OLDNAMES.LIB        \
+            OLE32.LIB           \
+            UUID.LIB            \
 !if "$(DEBUG)" == "1"
             QDEBUG32.LIB        \
 !endif
@@ -93,14 +95,14 @@ AFLAGS=/Mu /DDEBUG=$(DEBUG)
 
 !if "$(VS)" == "1"
 O=DEBUG\                        # define output directory for intermediate files
-B=$(BIN)D\                      # ...                         binaries
+B=$(BIN)D32\                    # ...                         binaries
 !else
 !if "$(DEBUG)" == "1"
-O=RET\D\                        # define output directory for intermediate files
-B=$(BIN)D\                      # ...                         binaries
+O=RET\D32\                      # define output directory for intermediate files
+B=$(BIN)D32\                    # ...                         binaries
 !else
-O=RET\ND\                       # define output directory for intermediate files
-B=$(BIN)ND\                     # ...                         binaries
+O=RET\ND32\                     # define output directory for intermediate files
+B=$(BIN)ND32\                   # ...                         binaries
 !endif
 !endif
 OC=RET\COM\                     # Define output directory for common intermediate files
@@ -112,11 +114,14 @@ P=R:\$(NAME)\                   # Full path to . dir for HCRTF
 ALL:    DIR                 \
         PRO                 \
         DEP                 \
-        $(O)$(ENAME).EXE    \
-        $(B)$(ENAME).EXE    \
-        $(BC)$(ENAME).HLP   \
+        EXE                 \
         MAKEVER             \
         MAKEPRO
+
+EXE:                        \
+        $(O)$(ENAME).EXE    \
+        $(B)$(ENAME).EXE    \
+        $(BC)$(ENAME).HLP
 
 MAKEVER:                    \
         $(OC)$(MV).exe      \
@@ -922,10 +927,6 @@ $(O)yyfns.PRO
 
 ########################## UTILITY ROUTINES ##########################
 
-$(O)DBGBRK.OBJ:         DBGBRK.ASM
-        @if exist $@ del $@
-        ml /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
-
 $(OC)DBGBRK.OBJ:        DBGBRK.ASM
         @if exist $@ del $@
         ml /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
@@ -1251,12 +1252,12 @@ OBJS=                       \
      $(O)typemote.OBJ       \
      $(O)ver.OBJ            \
      $(O)yyfns.OBJ          \
-     $(O)DBGBRK.OBJ         \
+     $(OC)DBGBRK.OBJ        \
      $(O)main.RES
 
 $(O)$(ENAME).EXE:       $(OBJS)         \
                         $(DEFFILE)      \
-                        MAKEFILE
+                        makefile.w32
         @echo >NUL @<<$(O)main.CRF
 $(OBJS)
 /OUT:$(O)$(ENAME).EXE

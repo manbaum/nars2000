@@ -55,9 +55,9 @@ SIZE ClientToWindowSize
 
     // Adjust the rectangle from client to window
     AdjustWindowRectEx (&rc,
-                        GetWindowLongW (hWnd, GWL_STYLE),
-                        GetClassLongW  (hWnd, GCL_MENUNAME),
-                        GetWindowLongW (hWnd, GWL_EXSTYLE)
+                        GetWindowLongW   (hWnd, GWL_STYLE),
+                        GetClassLongPtrW (hWnd, GCL_MENUNAME),
+                        GetWindowLongW   (hWnd, GWL_EXSTYLE)
                        );
     Size.cx = rc.right  - rc.left;
     Size.cy = rc.bottom - rc.top;

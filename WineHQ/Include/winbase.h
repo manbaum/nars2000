@@ -26,8 +26,8 @@ extern "C" {
 #endif
 
   /* Windows Exit Procedure flag values */
-#define	WEP_FREE_DLL        0
-#define	WEP_SYSTEM_EXIT     1
+#define WEP_FREE_DLL        0
+#define WEP_SYSTEM_EXIT     1
 
 typedef DWORD (CALLBACK *LPTHREAD_START_ROUTINE)(LPVOID);
 
@@ -185,7 +185,7 @@ typedef struct _OFSTRUCT
 #define CALLBACK_STREAM_SWITCH  1
 
 /* GetTempFileName() Flags */
-#define TF_FORCEDRIVE	        0x80
+#define TF_FORCEDRIVE           0x80
 
 #define DRIVE_UNKNOWN              0
 #define DRIVE_NO_ROOT_DIR          1
@@ -256,16 +256,16 @@ DECL_WINELIB_TYPE_AW(LPWIN32_FIND_DATA)
 
 typedef enum _FINDEX_INFO_LEVELS
 {
-	FindExInfoStandard,
-	FindExInfoMaxInfoLevel
+    FindExInfoStandard,
+    FindExInfoMaxInfoLevel
 } FINDEX_INFO_LEVELS;
 
 typedef enum _FINDEX_SEARCH_OPS
 {
-	FindExSearchNameMatch,
-	FindExSearchLimitToDirectories,
-	FindExSearchLimitToDevices,
-	FindExSearchMaxSearchOp
+    FindExSearchNameMatch,
+    FindExSearchLimitToDirectories,
+    FindExSearchLimitToDevices,
+    FindExSearchMaxSearchOp
 } FINDEX_SEARCH_OPS;
 
 typedef struct _PROCESS_HEAP_ENTRY
@@ -309,57 +309,57 @@ typedef struct _PROCESS_HEAP_ENTRY
 
 /* comm */
 
-#define CBR_110	0xFF10
-#define CBR_300	0xFF11
-#define CBR_600	0xFF12
-#define CBR_1200	0xFF13
-#define CBR_2400	0xFF14
-#define CBR_4800	0xFF15
-#define CBR_9600	0xFF16
-#define CBR_14400	0xFF17
-#define CBR_19200	0xFF18
-#define CBR_38400	0xFF1B
-#define CBR_56000	0xFF1F
+#define CBR_110 0xFF10
+#define CBR_300 0xFF11
+#define CBR_600 0xFF12
+#define CBR_1200    0xFF13
+#define CBR_2400    0xFF14
+#define CBR_4800    0xFF15
+#define CBR_9600    0xFF16
+#define CBR_14400   0xFF17
+#define CBR_19200   0xFF18
+#define CBR_38400   0xFF1B
+#define CBR_56000   0xFF1F
 #define CBR_57600       0xFF20
 #define CBR_115200      0xFF21
-#define CBR_128000	0xFF23
-#define CBR_256000	0xFF27
+#define CBR_128000  0xFF23
+#define CBR_256000  0xFF27
 
-#define NOPARITY	0
-#define ODDPARITY	1
-#define EVENPARITY	2
-#define MARKPARITY	3
-#define SPACEPARITY	4
-#define ONESTOPBIT	0
-#define ONE5STOPBITS	1
-#define TWOSTOPBITS	2
+#define NOPARITY    0
+#define ODDPARITY   1
+#define EVENPARITY  2
+#define MARKPARITY  3
+#define SPACEPARITY 4
+#define ONESTOPBIT  0
+#define ONE5STOPBITS    1
+#define TWOSTOPBITS 2
 
-#define IGNORE		0
+#define IGNORE      0
 #define INFINITE      0xFFFFFFFF
 
-#define CE_RXOVER	0x0001
-#define CE_OVERRUN	0x0002
-#define CE_RXPARITY	0x0004
-#define CE_FRAME	0x0008
-#define CE_BREAK	0x0010
-#define CE_CTSTO	0x0020
-#define CE_DSRTO	0x0040
-#define CE_RLSDTO	0x0080
-#define CE_TXFULL	0x0100
-#define CE_PTO		0x0200
-#define CE_IOE		0x0400
-#define CE_DNS		0x0800
-#define CE_OOP		0x1000
-#define CE_MODE	0x8000
+#define CE_RXOVER   0x0001
+#define CE_OVERRUN  0x0002
+#define CE_RXPARITY 0x0004
+#define CE_FRAME    0x0008
+#define CE_BREAK    0x0010
+#define CE_CTSTO    0x0020
+#define CE_DSRTO    0x0040
+#define CE_RLSDTO   0x0080
+#define CE_TXFULL   0x0100
+#define CE_PTO      0x0200
+#define CE_IOE      0x0400
+#define CE_DNS      0x0800
+#define CE_OOP      0x1000
+#define CE_MODE 0x8000
 
-#define IE_BADID	-1
-#define IE_OPEN	-2
-#define IE_NOPEN	-3
-#define IE_MEMORY	-4
-#define IE_DEFAULT	-5
-#define IE_HARDWARE	-10
-#define IE_BYTESIZE	-11
-#define IE_BAUDRATE	-12
+#define IE_BADID    -1
+#define IE_OPEN -2
+#define IE_NOPEN    -3
+#define IE_MEMORY   -4
+#define IE_DEFAULT  -5
+#define IE_HARDWARE -10
+#define IE_BYTESIZE -11
+#define IE_BAUDRATE -12
 
 #define EV_RXCHAR    0x0001
 #define EV_RXFLAG    0x0002
@@ -375,21 +375,21 @@ typedef struct _PROCESS_HEAP_ENTRY
 #define EV_EVENT1    0x0800
 #define EV_EVENT2    0x1000
 
-#define SETXOFF	1
-#define SETXON		2
-#define SETRTS		3
-#define CLRRTS		4
-#define SETDTR		5
-#define CLRDTR		6
-#define RESETDEV	7
-#define SETBREAK	8
-#define CLRBREAK	9
+#define SETXOFF 1
+#define SETXON      2
+#define SETRTS      3
+#define CLRRTS      4
+#define SETDTR      5
+#define CLRDTR      6
+#define RESETDEV    7
+#define SETBREAK    8
+#define CLRBREAK    9
 
 /* Purge functions for Comm Port */
 #define PURGE_TXABORT       0x0001  /* Kill the pending/current writes to the
-				       comm port */
+                       comm port */
 #define PURGE_RXABORT       0x0002  /*Kill the pending/current reads to
-				     the comm port */
+                     the comm port */
 #define PURGE_TXCLEAR       0x0004  /* Kill the transmit queue if there*/
 #define PURGE_RXCLEAR       0x0008  /* Kill the typeahead buffer if there*/
 
@@ -400,14 +400,14 @@ typedef struct _PROCESS_HEAP_ENTRY
 #define MS_RING_ON          ((DWORD)0x0040)
 #define MS_RLSD_ON          ((DWORD)0x0080)
 
-#define	RTS_CONTROL_DISABLE	0
-#define	RTS_CONTROL_ENABLE	1
-#define	RTS_CONTROL_HANDSHAKE	2
-#define	RTS_CONTROL_TOGGLE	3
+#define RTS_CONTROL_DISABLE 0
+#define RTS_CONTROL_ENABLE  1
+#define RTS_CONTROL_HANDSHAKE   2
+#define RTS_CONTROL_TOGGLE  3
 
-#define	DTR_CONTROL_DISABLE	0
-#define	DTR_CONTROL_ENABLE	1
-#define	DTR_CONTROL_HANDSHAKE	2
+#define DTR_CONTROL_DISABLE 0
+#define DTR_CONTROL_ENABLE  1
+#define DTR_CONTROL_HANDSHAKE   2
 
 
 #define LMEM_FIXED          0
@@ -530,36 +530,36 @@ typedef VOID (CALLBACK *LPOVERLAPPED_COMPLETION_ROUTINE)(DWORD,DWORD,LPOVERLAPPE
  */
 
 /* STARTUPINFO.dwFlags */
-#define	STARTF_USESHOWWINDOW	0x00000001
-#define	STARTF_USESIZE		0x00000002
-#define	STARTF_USEPOSITION	0x00000004
-#define	STARTF_USECOUNTCHARS	0x00000008
-#define	STARTF_USEFILLATTRIBUTE	0x00000010
-#define	STARTF_RUNFULLSCREEN	0x00000020
-#define	STARTF_FORCEONFEEDBACK	0x00000040
-#define	STARTF_FORCEOFFFEEDBACK	0x00000080
-#define	STARTF_USESTDHANDLES	0x00000100
-#define	STARTF_USEHOTKEY	0x00000200
+#define STARTF_USESHOWWINDOW    0x00000001
+#define STARTF_USESIZE      0x00000002
+#define STARTF_USEPOSITION  0x00000004
+#define STARTF_USECOUNTCHARS    0x00000008
+#define STARTF_USEFILLATTRIBUTE 0x00000010
+#define STARTF_RUNFULLSCREEN    0x00000020
+#define STARTF_FORCEONFEEDBACK  0x00000040
+#define STARTF_FORCEOFFFEEDBACK 0x00000080
+#define STARTF_USESTDHANDLES    0x00000100
+#define STARTF_USEHOTKEY    0x00000200
 
 typedef struct _STARTUPINFOA{
-        DWORD cb;		/* 00: size of struct */
-        LPSTR lpReserved;	/* 04: */
-        LPSTR lpDesktop;	/* 08: */
-        LPSTR lpTitle;		/* 0c: */
-        DWORD dwX;		/* 10: */
-        DWORD dwY;		/* 14: */
-        DWORD dwXSize;		/* 18: */
-        DWORD dwYSize;		/* 1c: */
-        DWORD dwXCountChars;	/* 20: */
-        DWORD dwYCountChars;	/* 24: */
-        DWORD dwFillAttribute;	/* 28: */
-        DWORD dwFlags;		/* 2c: */
-        WORD wShowWindow;	/* 30: */
-        WORD cbReserved2;	/* 32: */
-        BYTE *lpReserved2;	/* 34: */
-        HANDLE hStdInput;	/* 38: */
-        HANDLE hStdOutput;	/* 3c: */
-        HANDLE hStdError;	/* 40: */
+        DWORD cb;       /* 00: size of struct */
+        LPSTR lpReserved;   /* 04: */
+        LPSTR lpDesktop;    /* 08: */
+        LPSTR lpTitle;      /* 0c: */
+        DWORD dwX;      /* 10: */
+        DWORD dwY;      /* 14: */
+        DWORD dwXSize;      /* 18: */
+        DWORD dwYSize;      /* 1c: */
+        DWORD dwXCountChars;    /* 20: */
+        DWORD dwYCountChars;    /* 24: */
+        DWORD dwFillAttribute;  /* 28: */
+        DWORD dwFlags;      /* 2c: */
+        WORD wShowWindow;   /* 30: */
+        WORD cbReserved2;   /* 32: */
+        BYTE *lpReserved2;  /* 34: */
+        HANDLE hStdInput;   /* 38: */
+        HANDLE hStdOutput;  /* 3c: */
+        HANDLE hStdError;   /* 40: */
 } STARTUPINFOA, *LPSTARTUPINFOA;
 
 typedef struct _STARTUPINFOW{
@@ -587,10 +587,10 @@ DECL_WINELIB_TYPE_AW(STARTUPINFO)
 DECL_WINELIB_TYPE_AW(LPSTARTUPINFO)
 
 typedef struct _PROCESS_INFORMATION{
-	HANDLE	hProcess;
-	HANDLE	hThread;
-	DWORD		dwProcessId;
-	DWORD		dwThreadId;
+    HANDLE  hProcess;
+    HANDLE  hThread;
+    DWORD       dwProcessId;
+    DWORD       dwThreadId;
 } PROCESS_INFORMATION, *PPROCESS_INFORMATION, *LPPROCESS_INFORMATION;
 
 typedef struct _TIME_ZONE_INFORMATION{
@@ -603,7 +603,7 @@ typedef struct _TIME_ZONE_INFORMATION{
         LONG DaylightBias;
 } TIME_ZONE_INFORMATION, *PTIME_ZONE_INFORMATION, *LPTIME_ZONE_INFORMATION;
 
-#define TIME_ZONE_ID_INVALID	((DWORD)0xFFFFFFFF)
+#define TIME_ZONE_ID_INVALID    ((DWORD)0xFFFFFFFF)
 #define TIME_ZONE_ID_UNKNOWN    0
 #define TIME_ZONE_ID_STANDARD   1
 #define TIME_ZONE_ID_DAYLIGHT   2
@@ -657,7 +657,7 @@ typedef struct _TIME_ZONE_INFORMATION{
 /* File creation flags
  */
 #define FILE_FLAG_WRITE_THROUGH    0x80000000UL
-#define FILE_FLAG_OVERLAPPED 	   0x40000000L
+#define FILE_FLAG_OVERLAPPED       0x40000000L
 #define FILE_FLAG_NO_BUFFERING     0x20000000L
 #define FILE_FLAG_RANDOM_ACCESS    0x10000000L
 #define FILE_FLAG_SEQUENTIAL_SCAN  0x08000000L
@@ -706,9 +706,9 @@ typedef struct _BY_HANDLE_FILE_INFORMATION
 
 #define PIPE_UNLIMITED_INSTANCES 255
 
-#define NMPWAIT_WAIT_FOREVER		0xffffffff
-#define NMPWAIT_NOWAIT			0x00000001
-#define NMPWAIT_USE_DEFAULT_WAIT	0x00000000
+#define NMPWAIT_WAIT_FOREVER        0xffffffff
+#define NMPWAIT_NOWAIT          0x00000001
+#define NMPWAIT_USE_DEFAULT_WAIT    0x00000000
 
 /* Security flags for dwFlagsAndAttributes of CreateFile */
 #define SECURITY_ANONYMOUS          (SecurityAnonymous << 16)
@@ -736,21 +736,21 @@ typedef struct _SYSTEM_POWER_STATUS
 typedef struct _SYSTEM_INFO
 {
     union {
-	DWORD	dwOemId; /* Obsolete field - do not use */
-	struct {
-		WORD wProcessorArchitecture;
-		WORD wReserved;
-	} DUMMYSTRUCTNAME;
+    DWORD   dwOemId; /* Obsolete field - do not use */
+    struct {
+        WORD wProcessorArchitecture;
+        WORD wReserved;
+    } DUMMYSTRUCTNAME;
     } DUMMYUNIONNAME;
-    DWORD	dwPageSize;
-    LPVOID	lpMinimumApplicationAddress;
-    LPVOID	lpMaximumApplicationAddress;
-    DWORD	dwActiveProcessorMask;
-    DWORD	dwNumberOfProcessors;
-    DWORD	dwProcessorType;
-    DWORD	dwAllocationGranularity;
-    WORD	wProcessorLevel;
-    WORD	wProcessorRevision;
+    DWORD   dwPageSize;
+    LPVOID  lpMinimumApplicationAddress;
+    LPVOID  lpMaximumApplicationAddress;
+    DWORD   dwActiveProcessorMask;
+    DWORD   dwNumberOfProcessors;
+    DWORD   dwProcessorType;
+    DWORD   dwAllocationGranularity;
+    WORD    wProcessorLevel;
+    WORD    wProcessorRevision;
 } SYSTEM_INFO, *LPSYSTEM_INFO;
 
 typedef BOOL (CALLBACK *ENUMRESTYPEPROCA)(HMODULE,LPSTR,LONG_PTR);
@@ -765,9 +765,9 @@ DECL_WINELIB_TYPE_AW(ENUMRESNAMEPROC)
 DECL_WINELIB_TYPE_AW(ENUMRESLANGPROC)
 
 /* flags that can be passed to LoadLibraryEx */
-#define	DONT_RESOLVE_DLL_REFERENCES	0x00000001
-#define	LOAD_LIBRARY_AS_DATAFILE	0x00000002
-#define	LOAD_WITH_ALTERED_SEARCH_PATH	0x00000008
+#define DONT_RESOLVE_DLL_REFERENCES 0x00000001
+#define LOAD_LIBRARY_AS_DATAFILE    0x00000002
+#define LOAD_WITH_ALTERED_SEARCH_PATH   0x00000008
 
 #define GET_MODULE_HANDLE_EX_FLAG_PIN                 1
 #define GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT  2
@@ -797,12 +797,12 @@ typedef DWORD (CALLBACK *LPPROGRESS_ROUTINE)(LARGE_INTEGER, LARGE_INTEGER, LARGE
                                            HANDLE, LPVOID);
 
 
-#define WAIT_FAILED		0xffffffff
-#define WAIT_OBJECT_0		0
-#define WAIT_ABANDONED		STATUS_ABANDONED_WAIT_0
-#define WAIT_ABANDONED_0	STATUS_ABANDONED_WAIT_0
-#define WAIT_IO_COMPLETION	STATUS_USER_APC
-#define WAIT_TIMEOUT		STATUS_TIMEOUT
+#define WAIT_FAILED     0xffffffff
+#define WAIT_OBJECT_0       0
+#define WAIT_ABANDONED      STATUS_ABANDONED_WAIT_0
+#define WAIT_ABANDONED_0    STATUS_ABANDONED_WAIT_0
+#define WAIT_IO_COMPLETION  STATUS_USER_APC
+#define WAIT_TIMEOUT        STATUS_TIMEOUT
 #define STILL_ACTIVE            STATUS_PENDING
 
 #define FILE_BEGIN              0
@@ -868,13 +868,13 @@ typedef DWORD (CALLBACK *LPPROGRESS_ROUTINE)(LARGE_INTEGER, LARGE_INTEGER, LARGE
 #define THREAD_PRIORITY_IDLE            THREAD_BASE_PRIORITY_IDLE
 
 /* flags to FormatMessage */
-#define	FORMAT_MESSAGE_ALLOCATE_BUFFER	0x00000100
-#define	FORMAT_MESSAGE_IGNORE_INSERTS	0x00000200
-#define	FORMAT_MESSAGE_FROM_STRING	0x00000400
-#define	FORMAT_MESSAGE_FROM_HMODULE	0x00000800
-#define	FORMAT_MESSAGE_FROM_SYSTEM	0x00001000
-#define	FORMAT_MESSAGE_ARGUMENT_ARRAY	0x00002000
-#define	FORMAT_MESSAGE_MAX_WIDTH_MASK	0x000000FF
+#define FORMAT_MESSAGE_ALLOCATE_BUFFER  0x00000100
+#define FORMAT_MESSAGE_IGNORE_INSERTS   0x00000200
+#define FORMAT_MESSAGE_FROM_STRING  0x00000400
+#define FORMAT_MESSAGE_FROM_HMODULE 0x00000800
+#define FORMAT_MESSAGE_FROM_SYSTEM  0x00001000
+#define FORMAT_MESSAGE_ARGUMENT_ARRAY   0x00002000
+#define FORMAT_MESSAGE_MAX_WIDTH_MASK   0x000000FF
 
 /* flags to ACTCTX[AW] */
 #define ACTCTX_FLAG_PROCESSOR_ARCHITECTURE_VALID  (0x00000001)
@@ -1026,35 +1026,35 @@ typedef struct tagDCB
 } DCB, *LPDCB;
 
 typedef struct tagCOMMCONFIG {
-	DWORD dwSize;
-	WORD  wVersion;
-	WORD  wReserved;
-	DCB   dcb;
-	DWORD dwProviderSubType;
-	DWORD dwProviderOffset;
-	DWORD dwProviderSize;
-	DWORD wcProviderData[1];
+    DWORD dwSize;
+    WORD  wVersion;
+    WORD  wReserved;
+    DCB   dcb;
+    DWORD dwProviderSubType;
+    DWORD dwProviderOffset;
+    DWORD dwProviderSize;
+    DWORD wcProviderData[1];
 } COMMCONFIG, *LPCOMMCONFIG;
 
 typedef struct tagCOMMPROP {
-	WORD  wPacketLength;
-	WORD  wPacketVersion;
-	DWORD dwServiceMask;
-	DWORD dwReserved1;
-	DWORD dwMaxTxQueue;
-	DWORD dwMaxRxQueue;
-	DWORD dwMaxBaud;
-	DWORD dwProvSubType;
-	DWORD dwProvCapabilities;
-	DWORD dwSettableParams;
-	DWORD dwSettableBaud;
-	WORD  wSettableData;
-	WORD  wSettableStopParity;
-	DWORD dwCurrentTxQueue;
-	DWORD dwCurrentRxQueue;
-	DWORD dwProvSpec1;
-	DWORD dwProvSpec2;
-	WCHAR wcProvChar[1];
+    WORD  wPacketLength;
+    WORD  wPacketVersion;
+    DWORD dwServiceMask;
+    DWORD dwReserved1;
+    DWORD dwMaxTxQueue;
+    DWORD dwMaxRxQueue;
+    DWORD dwMaxBaud;
+    DWORD dwProvSubType;
+    DWORD dwProvCapabilities;
+    DWORD dwSettableParams;
+    DWORD dwSettableBaud;
+    WORD  wSettableData;
+    WORD  wSettableStopParity;
+    DWORD dwCurrentTxQueue;
+    DWORD dwCurrentRxQueue;
+    DWORD dwProvSpec1;
+    DWORD dwProvSpec2;
+    WCHAR wcProvChar[1];
 } COMMPROP, *LPCOMMPROP;
 
 #define SP_SERIALCOMM ((DWORD)1)
@@ -1131,11 +1131,11 @@ typedef struct tagCOMMPROP {
 #define PARITY_SPACE ((DWORD)0x1000)
 
 typedef struct tagCOMMTIMEOUTS {
-	DWORD	ReadIntervalTimeout;
-	DWORD	ReadTotalTimeoutMultiplier;
-	DWORD	ReadTotalTimeoutConstant;
-	DWORD	WriteTotalTimeoutMultiplier;
-	DWORD	WriteTotalTimeoutConstant;
+    DWORD   ReadIntervalTimeout;
+    DWORD   ReadTotalTimeoutMultiplier;
+    DWORD   ReadTotalTimeoutConstant;
+    DWORD   WriteTotalTimeoutMultiplier;
+    DWORD   WriteTotalTimeoutConstant;
 } COMMTIMEOUTS,*LPCOMMTIMEOUTS;
 
 #define GET_TAPE_MEDIA_INFORMATION 0
@@ -1148,25 +1148,25 @@ typedef void (CALLBACK *PTIMERAPCROUTINE)(LPVOID,DWORD,DWORD);
 
 typedef enum _COMPUTER_NAME_FORMAT
 {
-	ComputerNameNetBIOS,
-	ComputerNameDnsHostname,
-	ComputerNameDnsDomain,
-	ComputerNameDnsFullyQualified,
-	ComputerNamePhysicalNetBIOS,
-	ComputerNamePhysicalDnsHostname,
-	ComputerNamePhysicalDnsDomain,
-	ComputerNamePhysicalDnsFullyQualified,
-	ComputerNameMax
+    ComputerNameNetBIOS,
+    ComputerNameDnsHostname,
+    ComputerNameDnsDomain,
+    ComputerNameDnsFullyQualified,
+    ComputerNamePhysicalNetBIOS,
+    ComputerNamePhysicalDnsHostname,
+    ComputerNamePhysicalDnsDomain,
+    ComputerNamePhysicalDnsFullyQualified,
+    ComputerNameMax
 } COMPUTER_NAME_FORMAT;
 
-#define HW_PROFILE_GUIDLEN	39
-#define MAX_PROFILE_LEN		80
+#define HW_PROFILE_GUIDLEN  39
+#define MAX_PROFILE_LEN     80
 
-#define DOCKINFO_UNDOCKED	0x1
-#define DOCKINFO_DOCKED		0x2
-#define DOCKINFO_USER_SUPPLIED	0x4
-#define DOCKINFO_USER_UNDOCKED	(DOCKINFO_USER_SUPPLIED | DOCKINFO_UNDOCKED)
-#define DOCKINFO_USER_DOCKED	(DOCKINFO_USER_SUPPLIED | DOCKINFO_DOCKED)
+#define DOCKINFO_UNDOCKED   0x1
+#define DOCKINFO_DOCKED     0x2
+#define DOCKINFO_USER_SUPPLIED  0x4
+#define DOCKINFO_USER_UNDOCKED  (DOCKINFO_USER_SUPPLIED | DOCKINFO_UNDOCKED)
+#define DOCKINFO_USER_DOCKED    (DOCKINFO_USER_SUPPLIED | DOCKINFO_DOCKED)
 
 typedef struct tagHW_PROFILE_INFOA {
     DWORD dwDockInfo;
@@ -1205,11 +1205,11 @@ DECL_WINELIB_TYPE_AW(LPHW_PROFILE_INFO)
 
 #include <pshpack8.h>
 typedef struct _WIN32_STREAM_ID {
-	DWORD   dwStreamId;
-	DWORD   dwStreamAttributes;
-	LARGE_INTEGER DECLSPEC_ALIGN(8) Size;
-	DWORD   dwStreamNameSize;
-	WCHAR   cStreamName[ANYSIZE_ARRAY];
+    DWORD   dwStreamId;
+    DWORD   dwStreamAttributes;
+    LARGE_INTEGER DECLSPEC_ALIGN(8) Size;
+    DWORD   dwStreamNameSize;
+    WCHAR   cStreamName[ANYSIZE_ARRAY];
 } WIN32_STREAM_ID, *LPWIN32_STREAM_ID;
 #include <poppack.h>
 
@@ -2351,7 +2351,7 @@ static inline PVOID WINAPI InterlockedCompareExchangePointer( PVOID volatile *de
                           : "=a" (ret) : "r" (dest), "r" (xchg), "0" (compare) : "memory" );
     return ret;
 #else
-    return (PVOID)InterlockedCompareExchange( (LONG volatile*)dest, (LONG)xchg, (LONG)compare );
+    return (PVOID)(HANDLE_PTR)InterlockedCompareExchange( (LONG volatile*)dest, (__int3264) (HANDLE_PTR) xchg, (__int3264) (HANDLE_PTR) compare );
 #endif
 }
 
@@ -2363,7 +2363,7 @@ static inline PVOID WINAPI InterlockedExchangePointer( PVOID volatile *dest, PVO
                           : "=r" (ret) :"r" (dest), "0" (val) : "memory" );
     return ret;
 #else
-    return (PVOID)InterlockedExchange( (LONG volatile*)dest, (LONG)val );
+    return (PVOID)(HANDLE_PTR)InterlockedExchange( (LONG volatile*)dest, *(LONG *)&val );
 #endif
 }
 

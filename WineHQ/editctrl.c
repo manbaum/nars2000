@@ -178,8 +178,8 @@ typedef struct tagEDITSTATE
     { /* Notify parent which has created this edit control */ \
      /* TRACE("notification " #wNotifyCode " sent to hwnd=%p\n", es->hwndParent); */ \
         SendMessageW(es->hwndParent, WM_COMMAND, \
-             MAKEWPARAM(GetWindowLongPtrW((es->hwndSelf),GWLP_ID), wNotifyCode), \
-             (LPARAM)(es->hwndSelf)); \
+             MAKEWPARAM(GetWindowLongW((es->hwndSelf),GWLP_ID), wNotifyCode), \
+             *(LPARAM *)(&es->hwndSelf)); \
     } while(0)
 
 /*********************************************************************
@@ -282,7 +282,7 @@ static void EDIT_WM_Copy(EDITSTATE *es);
 static LRESULT  EDIT_WM_Create(EDITSTATE *es, LPCWSTR name);
 static LRESULT  EDIT_WM_Destroy(EDITSTATE *es);
 static LRESULT  EDIT_WM_EraseBkGnd(EDITSTATE *es, HDC dc);
-static INT  EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode);
+static size_t  EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode);
 static LRESULT  EDIT_WM_HScroll(EDITSTATE *es, INT action, INT pos);
 static LRESULT  EDIT_WM_KeyDown(EDITSTATE *es, INT key);
 static LRESULT  EDIT_WM_KillFocus(EDITSTATE *es);
@@ -440,9 +440,9 @@ static HBRUSH EDIT_NotifyCtlColor(EDITSTATE *es, HDC hdc)
         msg = WM_CTLCOLOREDIT;
 
     /* why do we notify to es->hwndParent, and we send this one to GetParent()? */
-        hbrush = (HBRUSH)SendMessageW(GetParent(es->hwndSelf), msg, (WPARAM)hdc, (LPARAM)es->hwndSelf);
+        hbrush = (HBRUSH)(HANDLE_PTR)SendMessageW(GetParent(es->hwndSelf), msg, *(WPARAM *)&hdc, *(LPARAM *)&es->hwndSelf);
         if (!hbrush)
-            hbrush = (HBRUSH)DefWindowProcW(GetParent(es->hwndSelf), msg, (WPARAM)hdc, (LPARAM)es->hwndSelf);
+            hbrush = (HBRUSH)(HANDLE_PTR)DefWindowProcW(GetParent(es->hwndSelf), msg, *(WPARAM *)&hdc, *(LPARAM *)&es->hwndSelf);
         return hbrush;
 } // End EDIT_NotifyCtlColor
 
@@ -472,7 +472,7 @@ static inline LRESULT DefWindowProcT(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
                                           WPARAM wParam, LPARAM lParam, BOOL unicode )
 {
-    EDITSTATE *es = (EDITSTATE *)GetWindowLongPtrW( hwnd, GWLEC_ES );
+    EDITSTATE *es = (EDITSTATE *)(HANDLE_PTR)GetWindowLongPtrW( hwnd, GWLEC_ES );
     LRESULT result = 0;
 
 //      TRACE("hwnd=%p msg=%x (%s) wparam=%x lparam=%lx\n", hwnd, msg, SPY_GetMsgName(msg, hwnd), wParam, lParam);
@@ -490,7 +490,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         /* fall through */
 #endif
     case EM_GETSEL:
-        result = EDIT_EM_GetSel(es, (PUINT)wParam, (PUINT)lParam);
+        result = EDIT_EM_GetSel(es, *(PUINT *)&wParam, *(PUINT *)&lParam);
         break;
 
 #ifdef _WIN16
@@ -525,7 +525,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
 #endif
     case EM_GETRECT:
         if (lParam)
-            CopyRect((LPRECT)lParam, &es->format_rect);
+            CopyRect(*(LPRECT *)&lParam, &es->format_rect);
         break;
 
 #ifdef _WIN16
@@ -544,7 +544,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
 #endif
     case EM_SETRECT:
         if ((es->style & ES_MULTILINE) && lParam) {
-            EDIT_SetRectNP(es, (LPRECT)lParam);
+            EDIT_SetRectNP(es, *(LPRECT *)&lParam);
             EDIT_UpdateText(es, NULL, TRUE);
         }
         break;
@@ -564,7 +564,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
 #endif
     case EM_SETRECTNP:
         if ((es->style & ES_MULTILINE) && lParam)
-            EDIT_SetRectNP(es, (LPRECT)lParam);
+            EDIT_SetRectNP(es, *(LPRECT *)&lParam);
         break;
 
 #ifdef _WIN16
@@ -632,7 +632,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 #endif
     case EM_SETHANDLE:
-        EDIT_EM_SetHandle(es, (HLOCAL)wParam);
+        EDIT_EM_SetHandle(es, *(HLOCAL *)&wParam);
         break;
 
 #ifdef _WIN16
@@ -641,7 +641,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 #endif
     case EM_GETHANDLE:
-        result = (LRESULT)EDIT_EM_GetHandle(es);
+        result = (LRESULT)(HANDLE_PTR)EDIT_EM_GetHandle(es);
         break;
 
     case EM_GETTHUMB16:
@@ -650,7 +650,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case EM_SETPAINTHOOK:
-        result = GetWindowLongW (hwnd, GWLEC_PAINTHOOK);
+        result = GetWindowLongPtrW (hwnd, GWLEC_PAINTHOOK);
         SetWindowLongW (hwnd, GWLEC_PAINTHOOK, (long) lParam);
         break;
 
@@ -685,10 +685,10 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         LPWSTR textW;
 
         if(unicode)
-            textW = (LPWSTR)lParam;
+            textW = *(LPWSTR *)&lParam;
         else
         {
-            LPSTR textA = (LPSTR)lParam;
+            LPSTR textA = *(LPSTR *)&lParam;
             INT countW = MultiByteToWideChar(CP_ACP, 0, textA, -1, NULL, 0);
             if((textW = HeapAlloc(GetProcessHeap(), 0, countW * sizeof(WCHAR))))
             MultiByteToWideChar(CP_ACP, 0, textA, -1, textW, countW);
@@ -709,7 +709,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         /* fall through */
 #endif
     case EM_GETLINE:
-        result = (LRESULT)EDIT_EM_GetLine(es, (INT)wParam, (LPWSTR)lParam, unicode);
+        result = (LRESULT)EDIT_EM_GetLine(es, (INT)wParam, *(LPWSTR *)&lParam, unicode);
         break;
 
 #ifdef _WIN16
@@ -759,7 +759,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 #endif
     case EM_SETTABSTOPS:
-        result = (LRESULT)EDIT_EM_SetTabStops(es, (INT)wParam, (LPINT)lParam);
+        result = (LRESULT)EDIT_EM_SetTabStops(es, (INT)wParam, *(LPINT *)&lParam);
         break;
 
 #ifdef _WIN16
@@ -821,7 +821,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 #endif
     case EM_SETWORDBREAKPROC:
-        EDIT_EM_SetWordBreakProc(es, (void *)lParam);
+        EDIT_EM_SetWordBreakProc(es, *(void **)&lParam);
         break;
 
 #ifdef _WIN16
@@ -830,7 +830,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 #endif
     case EM_GETWORDBREAKPROC:
-        result = (LRESULT)es->word_break_proc;
+        result = *(LRESULT *)&es->word_break_proc;
         break;
 
 #ifdef _WIN16
@@ -880,7 +880,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
          */
 
     case WM_NCCREATE:
-        result = EDIT_WM_NCCreate(hwnd, (LPCREATESTRUCTW)lParam, unicode);
+        result = EDIT_WM_NCCreate(hwnd, *(LPCREATESTRUCTW *)&lParam, unicode);
         break;
 
     case WM_DESTROY:
@@ -897,9 +897,9 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
            break;
         }
 
-        if (lParam && (((LPMSG)lParam)->message == WM_KEYDOWN))
+        if (lParam && ((*(LPMSG *)&lParam)->message == WM_KEYDOWN))
         {
-           int vk = (int)((LPMSG)lParam)->wParam;
+           int vk = (int)(*(LPMSG *)&lParam)->wParam;
 
            if (es->hwndListBox && (vk == VK_RETURN || vk == VK_ESCAPE))
            {
@@ -952,7 +952,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case WM_COMMAND:
-        EDIT_WM_Command(es, HIWORD(wParam), LOWORD(wParam), (HWND)lParam);
+        EDIT_WM_Command(es, HIWORD(wParam), LOWORD(wParam), *(HWND *)&lParam);
         break;
 
     case WM_CONTEXTMENU:
@@ -965,10 +965,10 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
 
     case WM_CREATE:
         if(unicode)
-            result = EDIT_WM_Create(es, ((LPCREATESTRUCTW)lParam)->lpszName);
+            result = EDIT_WM_Create(es, (*(LPCREATESTRUCTW *)&lParam)->lpszName);
         else
         {
-            LPCSTR nameA = ((LPCREATESTRUCTA)lParam)->lpszName;
+            LPCSTR nameA = (*(LPCREATESTRUCTA *)&lParam)->lpszName;
             LPWSTR nameW = NULL;
             if(nameA)
             {
@@ -991,15 +991,15 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case WM_ERASEBKGND:
-        result = EDIT_WM_EraseBkGnd(es, (HDC)wParam);
+        result = EDIT_WM_EraseBkGnd(es, *(HDC *)&wParam);
         break;
 
     case WM_GETFONT:
-        result = (LRESULT)es->font;
+        result = *(LRESULT *)&es->font;
         break;
 
     case WM_GETTEXT:
-        result = (LRESULT)EDIT_WM_GetText(es, (INT)wParam, (LPWSTR)lParam, unicode);
+        result = (LRESULT)EDIT_WM_GetText(es, (INT)wParam, *(LPWSTR *)&lParam, unicode);
         break;
 
     case WM_GETTEXTLENGTH:
@@ -1042,7 +1042,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
 
     case WM_PRINTCLIENT:
     case WM_PAINT:
-            EDIT_WM_Paint(es, (HDC)wParam);
+            EDIT_WM_Paint(es, *(HDC *)&wParam);
         break;
 
     case WM_PASTE:
@@ -1054,7 +1054,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case WM_SETFONT:
-        EDIT_WM_SetFont(es, (HFONT)wParam, LOWORD(lParam) != 0);
+        EDIT_WM_SetFont(es, *(HFONT *)&wParam, LOWORD(lParam) != 0);
         break;
 
     case WM_SETREDRAW:
@@ -1062,7 +1062,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case WM_SETTEXT:
-        EDIT_WM_SetText(es, (LPCWSTR)lParam, unicode);
+        EDIT_WM_SetText(es, *(LPCWSTR *)&lParam, unicode);
         result = TRUE;
         break;
 
@@ -1071,7 +1071,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
         case WM_STYLECHANGED:
-                result = EDIT_WM_StyleChanged(es, wParam, (const STYLESTRUCT *)lParam);
+                result = EDIT_WM_StyleChanged(es, wParam, *(const STYLESTRUCT **)&lParam);
                 break;
 
         case WM_STYLECHANGING:
@@ -1300,7 +1300,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
             }
         }
 
-        current_line->index = current_position - es->text;
+        current_line->index = (UINT) (current_position - es->text);
         orig_net_length = current_line->net_length;
 
         /* Find end of line */
@@ -1318,13 +1318,13 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
             current_line->net_length = strlenW(current_position);
         } else if ((cp > current_position) && (*(cp - 1) == '\r')) {
             current_line->ending = END_SOFT;
-            current_line->net_length = cp - current_position - 1;
+            current_line->net_length = (UINT) (cp - current_position - 1);
         } else if (*cp == '\n') {
             current_line->ending = END_RICH;
-            current_line->net_length = cp - current_position;
+            current_line->net_length = (UINT) (cp - current_position);
         } else {
             current_line->ending = END_HARD;
-            current_line->net_length = cp - current_position;
+            current_line->net_length = (UINT) (cp - current_position);
         }
 
         /* Calculate line width */
@@ -1339,7 +1339,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
             INT prev;
             do {
                 prev = next;
-                next = EDIT_CallWordBreakProc(es, current_position - es->text,
+                next = EDIT_CallWordBreakProc(es, (UINT) (current_position - es->text),
                         prev + 1, current_line->net_length, WB_RIGHT);
                 current_line->width = (INT)LOWORD(GetTabbedTextExtentW(dc,
                             current_position, next, es->tabs_count, es->tabs));
@@ -1821,7 +1821,7 @@ static void EDIT_LockBuffer(EDITSTATE *es)
         {
 //          TRACE("Synchronizing with 32-bit ANSI buffer\n");
             textA = LocalLock(es->hloc32A);
-            countA = strlen(textA) + 1;
+            countA = (UINT) strlen(textA) + 1;
         }
 #ifdef _WIN16
         else if(es->hloc16)
@@ -2431,7 +2431,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
     if (es->style & ES_MULTILINE) {
         LPPAINTHOOK lpPaintHook;
 
-        (long) lpPaintHook = GetWindowLongW (es->hwndSelf, GWLEC_PAINTHOOK);
+        (HANDLE_PTR) lpPaintHook = GetWindowLongPtrW (es->hwndSelf, GWLEC_PAINTHOOK);
         if (lpPaintHook)
             ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, es->text + li, col, count));
         else
@@ -2545,7 +2545,7 @@ static void EDIT_SetRectNP(EDITSTATE *es, LPRECT rc)
 {
     LONG_PTR ExStyle;
     INT bw, bh;
-    ExStyle = GetWindowLongPtrW(es->hwndSelf, GWL_EXSTYLE);
+    ExStyle = GetWindowLongW(es->hwndSelf, GWL_EXSTYLE);
 
     CopyRect(&es->format_rect, rc);
 
@@ -3365,7 +3365,16 @@ static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replac
     /* Issue the EN_MAXTEXT notification and continue with replacing text
      * such that buffer limit is honored. */
     if ((honor_limit) && (size > es->buffer_limit)) {
-        EDIT_NOTIFY_PARENT(es, EN_MAXTEXT);
+        while (size > es->buffer_limit)
+        {
+            UINT limit = es->buffer_limit;
+            EDIT_NOTIFY_PARENT(es, EN_MAXTEXT);
+            // If the new limit is no bigger than the old one, don't
+            //   try again
+            if (limit >= es->buffer_limit)
+                break;
+        } // End WHILE
+
         /* Buffer limit can be smaller than the actual length of text in combobox */
         if (es->buffer_limit < (tl - (e-s)))
             strl2 = 0;
@@ -4323,6 +4332,8 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     EnableMenuItem(popup, IDM_PASTE_APL2  , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste ISO */
     EnableMenuItem(popup, IDM_PASTE_ISO   , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    /* paste PC/3270 */
+    EnableMenuItem(popup, IDM_PASTE_PC3270, (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* delete */
     EnableMenuItem(popup, IDM_DELETE      , ((end - start) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* select all */
@@ -4496,7 +4507,7 @@ static LRESULT EDIT_WM_EraseBkGnd(EDITSTATE *es, HDC dc)
  *  WM_GETTEXT
  *
  */
-static INT EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode)
+static size_t EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode)
 {
     if(!count) return 0;
 
@@ -4829,7 +4840,7 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         {
             SendMessageW( hwndParent, WM_COMMAND,
                   MAKEWPARAM( LOWORD(dw), BN_CLICKED ),
-                  (LPARAM)GetDlgItem( hwndParent, LOWORD(dw) ) );
+                  (LPARAM)(__int3264)(HANDLE_PTR)GetDlgItem( hwndParent, LOWORD(dw) ) );
         }
         }
         break;
@@ -4987,7 +4998,7 @@ static LRESULT EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode)
 
     if (!(es = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*es))))
         return FALSE;
-        SetWindowLongPtrW( hwnd, GWLEC_ES, (LONG_PTR)es );
+        SetWindowLongPtrW( hwnd, GWLEC_ES, (__int3264) (HANDLE_PTR) es );
 
        /*
         *      Note: since the EDITSTATE has not been fully initialized yet,
@@ -5095,7 +5106,7 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     GetClientRect (es->hwndSelf, &rcClient);
 
     // Get the background brush
-    hBrush = (HBRUSH) GetClassLongW (es->hwndSelf, GCL_HBRBACKGROUND);
+    hBrush = (HBRUSH) (HANDLE_PTR) GetClassLongPtrW (es->hwndSelf, GCL_HBRBACKGROUND);
 
     // Create a compatible DC and bitmap
     hDCMem = CreateCompatibleDC (hDCInc);
@@ -5354,7 +5365,7 @@ static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
     nmEC.lpCaretWidth   = &nWidth;
 
     // Ask the parent how wide the caret should be
-    SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) &nmEC);
+    SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) (HANDLE_PTR) &nmEC);
 #ifdef DEBUG
 ////dprintfW (L">>CreateCaret (%p, %p, %d, %d)", hWnd, hBitMap, nWidth, nHeight);
 #endif DEBUG

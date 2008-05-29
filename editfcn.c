@@ -24,6 +24,7 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#include "uniscribe.h"
 #include "aplerrors.h"
 #include "colors.h"
 #include "main.h"
@@ -33,7 +34,8 @@
 #include "termcode.h"
 #include "externs.h"
 #include "editctrl.h"
-#include "Unitrans.h"
+#include "unitranshdr.h"
+#include "unitranstab.h"
 #include "dfnhdr.h"
 #include "pertab.h"
 #include "sis.h"
@@ -60,9 +62,6 @@
    * Unmatched Grouping Symbols
  * Redo
  * Toolbar
- * Load
- * Save
- * Parse header
  * Line #s optional
  * Move Undo Code into EDITCTRL.C
  * Allow external editor
@@ -230,7 +229,6 @@ LRESULT APIENTRY FEWndProc
 
 {
     HWND         hWndEC;            // Handle of Edit Control window
-    int          iMaxLimit;         // Maximum # chars in edit control
     VKSTATE      vkState;           // Virtual key state (Shift, Alt, Ctrl)
     long         lvkState;          // Temporary var for vkState
     LPUNDO_BUF   lpUndoBeg,         // Ptr to start of Undo Buffer
@@ -249,11 +247,11 @@ LRESULT APIENTRY FEWndProc
 ////LCLODSAPI ("FE: ", hWnd, message, wParam, lParam);
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLongW (hWnd, GWLSF_HWNDEC);
+    (HANDLE_PTR) hWndEC = (GetWindowLongPtrW (hWnd, GWLSF_HWNDEC));
 
     switch (message)
     {
-#define lpMDIcs     ((LPMDICREATESTRUCTW) (((LPCREATESTRUCTW) lParam)->lpCreateParams))
+#define lpMDIcs     ((LPMDICREATESTRUCTW) ((*(LPCREATESTRUCTW *) &lParam)->lpCreateParams))
         case WM_CREATE:             // lpcs = (LPCREATESTRUCTW) lParam; // Structure with creation data
         {
             LPSYMENTRY   lpSymName;         // Ptr to function name STE
@@ -269,7 +267,7 @@ LRESULT APIENTRY FEWndProc
             SetWindowLongW (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
 
             // See if there is an existing function
-            lpSymName = ParseFunctionName (hWnd, ((LPFE_CREATESTRUCTW) (lpMDIcs->lParam))->lpwszLine);
+            lpSymName = ParseFunctionName (hWnd, (*(LPFE_CREATESTRUCTW *) &lpMDIcs->lParam)->lpwszLine);
             if (lpSymName)
             {
                 // If it's a function/operator but not a user-defined function/operator, ...
@@ -337,7 +335,7 @@ LRESULT APIENTRY FEWndProc
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_LPMVS, (long) lpLclMemVirtStr);
+            SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (__int3264) (LONG_PTR) lpLclMemVirtStr);
 
             // Link this struc into the chain
             LinkMVS (&lpLclMemVirtStr[0]);
@@ -348,12 +346,12 @@ LRESULT APIENTRY FEWndProc
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // Save in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_UNDO_INI, (long) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_INI, (__int3264) (LONG_PTR) lpUndoBeg);
 ////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
             // Save in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
-            SetWindowLongW (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (__int3264) (LONG_PTR) lpUndoBeg);
 
             // Start with an initial action of nothing
             AppendUndo (hWnd,                       // FE Window handle
@@ -369,7 +367,7 @@ LRESULT APIENTRY FEWndProc
              && lpMemDfnHdr->hGlbUndoBuff)
             {
                 LPUNDO_BUF lpMemUndo;       // Ptr to Undo Buffer global memory
-                UINT       uUndoSize;       // Size of Undo Buffer in bytes
+                SIZE_T     uUndoSize;       // Size of Undo Buffer in bytes
 
                 // Get the size in bytes
                 uUndoSize = MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff);
@@ -387,12 +385,12 @@ LRESULT APIENTRY FEWndProc
                 lpUndoNxt = (LPUNDO_BUF) ByteAddr (&lpUndoBeg[1], uUndoSize);
 
                 // Save in window extra bytes
-                SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
-                SetWindowLongW (hWnd, GWLSF_UNDO_LST, (long) lpUndoNxt);
+                SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoNxt);
+                SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (__int3264) (LONG_PTR) lpUndoNxt);
             } // End IF
 
             // Save incremented starting ptr in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) ++lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (__int3264) (LONG_PTR) ++lpUndoBeg);
 
             // Create an edit control within which we can edit
             hWndEC =
@@ -427,16 +425,16 @@ LRESULT APIENTRY FEWndProc
             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Save in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_HWNDEC, (long) hWndEC);
+            SetWindowLongPtrW (hWnd, GWLSF_HWNDEC, (__int3264) (LONG_PTR) hWndEC);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Subclass the Edit Control so we can handle some of its messages
-            lpMemPTD->lpfnOldEditCtrlWndProc = (WNDPROC)
-              SetWindowLongW (hWndEC,
-                              GWL_WNDPROC,
-                              (long) (WNDPROC) &LclEditCtrlWndProc);
+            (HANDLE_PTR) lpMemPTD->lpfnOldEditCtrlWndProc =
+              SetWindowLongPtrW (hWndEC,
+                                 GWL_WNDPROC,
+                                 (__int3264) (LONG_PTR) (WNDPROC) &LclEditCtrlWndProc);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -564,7 +562,7 @@ LRESULT APIENTRY FEWndProc
 
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
-#define lpnmEC  ((LPNMEDITCTRL) lParam)
+#define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
 
             // Check for from Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
@@ -638,9 +636,7 @@ LRESULT APIENTRY FEWndProc
         case WM_COPY:
         case WM_CUT:
         case WM_PASTE:
-        case MYWM_PASTE_APLWIN:
-        case MYWM_PASTE_APL2:
-        case MYWM_PASTE_ISO:
+        case MYWM_PASTE_APL:
         case WM_CLEAR:
         case MYWM_SELECTALL:
             // Pass on to the edit control
@@ -650,7 +646,7 @@ LRESULT APIENTRY FEWndProc
 
 #define wNotifyCode     (HIWORD (wParam))
 #define wID             (LOWORD (wParam))
-#define hWndCtrl        ((HWND) lParam)
+#define hWndCtrl        (*(HWND *) &lParam)
         case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // Notification code
                                     // wID = LOWORD (wParam);         // Item, control, or accelerator identifier
                                     // hwndCtrl = (HWND) lParam;      // Handle of control
@@ -686,9 +682,9 @@ LRESULT APIENTRY FEWndProc
                     // The edit control has exceed its maximum # chars
 
                     // The default maximum is 32K, so we increase it by that amount
-                    iMaxLimit = SendMessageW (hWndEC, EM_GETLIMITTEXT, 0, 0);
-                    SendMessageW (hWndEC, EM_SETLIMITTEXT, iMaxLimit + 32*1024, 0);
-
+                    SendMessageW (hWndEC,
+                                  EM_SETLIMITTEXT,
+                                  SendMessageW (hWndEC, EM_GETLIMITTEXT, 0, 0) + 32*1024, 0);
                     break;
 
 ////            case EN_SETFOCUS:   // 0x0100
@@ -720,7 +716,7 @@ LRESULT APIENTRY FEWndProc
             EnumProps (hWnd, EnumCallbackRemoveProp);
 
             // Get the ptr to local MemVirtStr
-            (long) lpLclMemVirtStr = GetWindowLongW (hWnd, GWLSF_LPMVS);
+            (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
 
             // If we allocated virtual storage, ...
             if (lpLclMemVirtStr)
@@ -737,6 +733,9 @@ LRESULT APIENTRY FEWndProc
 
                 // Free the virtual storage
                 MyVirtualFree (lpLclMemVirtStr, 0, MEM_RELEASE); lpLclMemVirtStr = NULL;
+
+                // Zap it in case we come through again
+                SetWindowLongPtrW (hWnd, GWLSF_LPMVS, 0);
             } // End IF
 
             // Uninitialize window-specific resources
@@ -929,8 +928,10 @@ HRESULT DrawTextFLsub
 
             return S_OK;
         } else
-        // If the char is {infinity}, ...
-        if (**lplpsz EQ UTF16_INFINITY)
+        // If the char is {infinity} or A-Z underbar, ...
+        if (**lplpsz EQ UTF16_INFINITY
+         || (UTF16_A_ <= **lplpsz
+          &&             **lplpsz <= UTF16_Z_))
             // Use the alternate font
             SelectObject (hdc, hFontAlt);
 
@@ -1145,7 +1146,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Handle a right double click
 
             // Get the lParam from the original WM_CONTEXTMENU message
-            yPos = (LPARAM) GetPropW (hWnd, L"TIMER.LPARAM");
+            yPos = HandleToULong (GetPropW (hWnd, L"TIMER.LPARAM"));
 
             xPos = (short) LOWORD (yPos);
             yPos = (short) HIWORD (yPos);
@@ -1208,7 +1209,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // In case we get a WM_RBUTTONUP message shortly after this one,
             //   we need a way to recognize it and discard it so W doesn't
             //   think to generate another WM_CONTEXTMENU message.
-            SetPropW (hWnd, L"DBLCLK.TICKCOUNT", (LPVOID) GetTickCount ());
+            SetPropW (hWnd, L"DBLCLK.TICKCOUNT", ULongToHandle (GetTickCount ()));
 
             break;
         } // End WM_RBUTTONDBLCLK
@@ -1217,7 +1218,7 @@ LRESULT WINAPI LclEditCtrlWndProc
         case WM_RBUTTONUP:
             // If this message occurs closely on the heels of a WM_RBUTTONDBLCLK,
             //  discard it so W doesn't generate another WM_CONTEXTMENU message.
-            if (GetDoubleClickTime () > (GetTickCount () - (DWORD) GetPropW (hWnd, L"DBLCLK.TICKCOUNT")))
+            if (GetDoubleClickTime () > (GetTickCount () - HandleToULong (GetPropW (hWnd, L"DBLCLK.TICKCOUNT"))))
                 return FALSE;           // Discard this message
             break;
 
@@ -1241,7 +1242,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             // Translate the xPos & yPos client coordinates into
             //   char positions in the text
-            uCharPos = SendMessageW (hWnd, EM_CHARFROMPOS, 0, MAKELPARAM (pt.x, pt.y));
+            uCharPos = (UINT) SendMessageW (hWnd, EM_CHARFROMPOS, 0, MAKELPARAM (pt.x, pt.y));
 
             // Split out the number of the line with this char
             //   and the char position
@@ -1249,10 +1250,10 @@ LRESULT WINAPI LclEditCtrlWndProc
             uCharPos = LOWORD (uCharPos);
 
             // Get the length of the line with this char
-            uLineLen = SendMessageW (hWnd, EM_LINELENGTH, uCharPos, 0);
+            uLineLen = (UINT) SendMessageW (hWnd, EM_LINELENGTH, uCharPos, 0);
 
             // Get the index of the first character in the line
-            uLinePos = SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
+            uLinePos = (UINT) SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
 
             // Convert uCharPos from origin-0 to origin-Line
             uCharPos -= uLinePos;
@@ -1320,7 +1321,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // nHeight = HIWORD(lParam); // Height of client area
             // If requested to do so, change []PW to track the new width
             if (IzitSM (GetParent (hWnd))   // If Edit Control for SM,
-             && bAdjustPW                   // and requested to do so,
+             && OptionFlags.bAdjustPW       // and requested to do so,
              && nWidth NE 0)                // and width is non-zero
             {
                 APLUINT aplInteger;
@@ -1400,7 +1401,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     if (IzitSM (hWndParent))
                     {
                         // Get the current line #
-                        uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+                        uLineNum = (UINT) SendMessageW (hWnd, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
                         PostMessageW (hWndParent, MYWM_KEYDOWN, wParam, uLineNum);
                     } // End IF
@@ -1471,7 +1472,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     if (IzitSM (hWndParent))
                     {
                         // Get the current line #
-                        uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+                        uLineNum = (UINT) SendMessageW (hWnd, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
                         PostMessageW (hWndParent, MYWM_KEYDOWN, wParam, uLineNum);
 
@@ -1501,10 +1502,10 @@ LRESULT WINAPI LclEditCtrlWndProc
                     rcPaint.left = rcFmtEC.left;
 
                     // Get the line # of this char
-                    uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPos, 0);
+                    uLineNum = (UINT) SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPos, 0);
 
                     // Less the # of the topmost visible line
-                    uLineNum -= SendMessageW (hWnd, EM_GETFIRSTVISIBLELINE, 0, 0);
+                    uLineNum -= (UINT) SendMessageW (hWnd, EM_GETFIRSTVISIBLELINE, 0, 0);
 
                     rcPaint.top = uLineNum * cyAveCharFE;
                     rcPaint.bottom = rcPaint.top + cyAveCharFE;
@@ -1522,10 +1523,10 @@ LRESULT WINAPI LclEditCtrlWndProc
                     SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
                     // Get the line # of this char
-                    uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
+                    uLineNum = (UINT) SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
 
                     // Get the char position of the start of the current line
-                    uLinePos = SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
+                    uLinePos = (UINT) SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
 
                     // Get the # spaces to insert
                     uCharPos = uCharPosBeg - uLinePos;
@@ -1723,7 +1724,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             hWndParent = GetParent (hWnd);
 
             // Get the ptr to our Undo Buffer
-            (long) lpUndoNxt = GetWindowLongW (hWndParent, GWLSF_UNDO_NXT);
+            (HANDLE_PTR) lpUndoNxt = GetWindowLongPtrW (hWndParent, GWLSF_UNDO_NXT);
 
             do
             {
@@ -1809,7 +1810,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                   && lpUndoNxt->Group EQ lpUndoNxt[-1].Group);
 
             // Save the new Undo Next ptr
-            SetWindowLongW (hWndParent, GWLSF_UNDO_NXT, (long) lpUndoNxt);
+            SetWindowLongPtrW (hWndParent, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoNxt);
 
             // Draw the line #s
             DrawLineNumsFE (hWnd);
@@ -1819,8 +1820,8 @@ LRESULT WINAPI LclEditCtrlWndProc
         case EM_CANUNDO:
 
             // Get the ptrs to the next available slot in our Undo Buffer
-            (long) lpUndoNxt = GetWindowLongW (hWnd, GWLSF_UNDO_NXT);
-            (long) lpUndoBeg = GetWindowLongW (hWnd, GWLSF_UNDO_BEG);
+            (HANDLE_PTR) lpUndoNxt = GetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT);
+            (HANDLE_PTR) lpUndoBeg = GetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG);
 
             return (lpUndoBeg NE lpUndoNxt);
 
@@ -1888,10 +1889,15 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
 
-        case WM_PASTE:              // 0 = wParam
+        case WM_PASTE:              // bPasteAPL = (BOOL) wParam
                                     // 0 = lParam
-            // Insert text from the clipboard, deleting selected text (if any)
-            PasteAPLChars (hWnd, UNITRANS_NORMAL);
+            // If we've not already laundered the input, do so now
+            if (wParam)
+                // Run through the "Normal" processing
+                PasteAPLChars (hWnd, UNITRANS_NORMAL);
+            else
+                // Insert text from the clipboard, deleting selected text (if any)
+                PasteAPLChars (hWnd, OptionFlags.uDefaultPaste);
 
             // Undo deletes the inserted (pasted) chars
             //   and insert the deleted chars (if any)
@@ -1968,21 +1974,9 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
 
-        case MYWM_PASTE_APLWIN:
-            PasteAPLChars (hWnd, UNITRANS_APLWIN);
-            PostMessageW (hWnd, WM_PASTE, 0, 0);
-
-            return FALSE;           // We handled the msg
-
-        case MYWM_PASTE_APL2:
-            PasteAPLChars (hWnd, UNITRANS_APL2);
-            PostMessageW (hWnd, WM_PASTE, 0, 0);
-
-            return FALSE;           // We handled the msg
-
-        case MYWM_PASTE_ISO:
-            PasteAPLChars (hWnd, UNITRANS_ISO);
-            PostMessageW (hWnd, WM_PASTE, 0, 0);
+        case MYWM_PASTE_APL:
+            PasteAPLChars (hWnd, (UINT) wParam);
+            PostMessageW (hWnd, WM_PASTE, TRUE, 0);
 
             return FALSE;           // We handled the msg
 
@@ -1993,7 +1987,6 @@ LRESULT WINAPI LclEditCtrlWndProc
             PostMessageW (GetParent (hWnd), message, wParam, lParam);
 
             return FALSE;           // We handled the msg
-
 
 #define wNotifyCode     (HIWORD (wParam))
 #define wID             (LOWORD (wParam))
@@ -2025,22 +2018,27 @@ LRESULT WINAPI LclEditCtrlWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_PASTE:
-                    SendMessageW (hWnd, WM_PASTE, 0, 0);
+                    SendMessageW (hWnd, WM_PASTE, FALSE, 0);
 
                     return FALSE;   // We handled the msg
 
                 case IDM_PASTE_APLWIN:
-                    SendMessageW (hWnd, MYWM_PASTE_APLWIN, 0, 0);
+                    SendMessageW (hWnd, MYWM_PASTE_APL, UNITRANS_APLWIN, 0);
 
                     return FALSE;   // We handled the msg
 
                 case IDM_PASTE_APL2:
-                    SendMessageW (hWnd, MYWM_PASTE_APL2, 0, 0);
+                    SendMessageW (hWnd, MYWM_PASTE_APL, UNITRANS_APL2, 0);
 
                     return FALSE;   // We handled the msg
 
                 case IDM_PASTE_ISO:
-                    SendMessageW (hWnd, MYWM_PASTE_ISO, 0, 0);
+                    SendMessageW (hWnd, MYWM_PASTE_APL, UNITRANS_ISO, 0);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_PASTE_PC3270:
+                    SendMessageW (hWnd, MYWM_PASTE_APL, UNITRANS_PC3270, 0);
 
                     return FALSE;   // We handled the msg
 
@@ -2110,7 +2108,7 @@ HGLOBAL CopyGlbMemory
 
 {
     HGLOBAL hGlbDst;        // The result global memory handle
-    DWORD   dwSize;         // The size of the source
+    SIZE_T  dwSize;         // The size of the source
     LPVOID  lpMemSrc,       // Ptr to source global memory
             lpMemDst;       // Ptr to result ...
 
@@ -2158,7 +2156,7 @@ void PasteAPLChars
      UNI_TRANS uIndex)              // UNI_TRANS index
 
 {
-    DWORD      dwSize;
+    SIZE_T     dwSize;
     HGLOBAL    hGlbFmts = NULL,     // Clipboard formats global memory handle
                hGlbClip = NULL,
                hGlbText = NULL;
@@ -2258,9 +2256,22 @@ void PasteAPLChars
             if (*lpMemText)
             {
                 for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
-                if (*lpMemText EQ uniTrans[uTran][uIndex])
+                if (*lpMemText EQ uniTransTab[uTran][uIndex])
                 {
-                    *lpMemText  = uniTrans[uTran][UNITRANS_NARS];
+                    WCHAR wcTmp;
+
+                    // Translate the external char to NARS
+                    wcTmp = uniTransTab[uTran][UNITRANS_NARS];
+
+                    // If the translation is not from NARS and
+                    //   the char is UTF16_A_ through UTF16_Z_,
+                    //   optionally translate it to 'a-z'
+                    if (OptionFlags.bUnderbarToLowercase
+                     && uTran NE UNITRANS_NORMAL
+                     && UTF16_A_ <= wcTmp
+                     &&             wcTmp <= UTF16_Z_)
+                        wcTmp = L'a' + (wcTmp - UTF16_A_);
+                    *lpMemText = wcTmp;
 
                     break;      // out of the innermost loop
                 } // End FOR/IF/...
@@ -2368,13 +2379,13 @@ BOOL IzitEOB
     uCharPos = GetCurCharPos (hWnd);
 
     // Get the # lines in the text
-    uLineCnt = SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
+    uLineCnt = (UINT) SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
 
     // Get the initial char pos of the last line
-    uLinePos = SendMessageW (hWnd, EM_LINEINDEX, uLineCnt - 1, 0);
+    uLinePos = (UINT) SendMessageW (hWnd, EM_LINEINDEX, uLineCnt - 1, 0);
 
     // Get the length of the last line
-    uLineLen = SendMessageW (hWnd, EM_LINELENGTH, uLinePos, 0);
+    uLineLen = (UINT) SendMessageW (hWnd, EM_LINELENGTH, uLinePos, 0);
 
     return (uCharPos >= (uLinePos + uLineLen));
 } // End IzitEOB
@@ -2424,18 +2435,18 @@ WCHAR GetCharValue
 
         // Get the position of the char under the caret
         //   and the line #
-        uCharPos = SendMessageW (hWndEC, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y));
+        uCharPos = (UINT) SendMessageW (hWndEC, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y));
         uLineNum = HIWORD (uCharPos);
         uCharPos = LOWORD (uCharPos);
     } else
         // Get the line # of the char position
-        uLineNum = SendMessageW (hWndEC, EM_LINEFROMCHAR, uCharPos, 0);
+        uLineNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, uCharPos, 0);
 
     // Get the char position of the start of the current line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
 
     // Get the length of the line
-    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+    uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     // If the char position is at the end of the line, return '\r';
     //   if it's beyond the end of the line, return '\n'
@@ -2475,7 +2486,7 @@ void AppendUndo
     LPUNDO_BUF lpUndoNxt;   // Ptr to next available slot in the Undo Buffer
 
     // Get the ptr to the next available slot in our Undo Buffer
-    (long) lpUndoNxt = GetWindowLongW (hWnd, GWLxx_UNDO_NXT);
+    (HANDLE_PTR) lpUndoNxt = GetWindowLongPtrW (hWnd, GWLxx_UNDO_NXT);
 
     // Save the undo entry
     lpUndoNxt->Action     = Action;
@@ -2488,8 +2499,8 @@ void AppendUndo
     lpUndoNxt++;
 
     // Save the incremented ptr in window extra bytes
-    SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
-    SetWindowLongW (hWnd, GWLSF_UNDO_LST, (long) lpUndoNxt);
+    SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoNxt);
+    SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (__int3264) (LONG_PTR) lpUndoNxt);
 } // End AppendUndo
 
 
@@ -2501,7 +2512,7 @@ void AppendUndo
 
 void InsRepCharStr
     (HWND    hWnd,          // EC window handle
-     UINT    uGWL,          // The GetWindowLongW offset
+     UINT    uGWL,          // The GetWindowLongPtrW offset
      LPWCHAR lpwch)         // The incoming char string
 
 {
@@ -2538,10 +2549,10 @@ void InsRepCharStr
     if (!bSelection && !vkState.Ins)
     {
         // Get the length of the line with the given char position
-        uLineLen = SendMessageW (hWnd, EM_LINELENGTH, uCharPosBeg, 0);
+        uLineLen = (UINT) SendMessageW (hWnd, EM_LINELENGTH, uCharPosBeg, 0);
 
         // Get the char position of the start of the current line
-        uLinePos = SendMessageW (hWnd, EM_LINEINDEX, (WPARAM) -1, 0);
+        uLinePos = (UINT) SendMessageW (hWnd, EM_LINEINDEX, (WPARAM) -1, 0);
 
         // Get the next group index, and save it back
         uGroupIndex = 1 + GetWindowLongW (hWndParent, GWLSF_UNDO_GRP);
@@ -2694,10 +2705,10 @@ void DrawLineNumsFE
     SetAttrs (hDC, hFontFE, crLineNum, COLOR_WHITE);
 
     // Get the # lines in the text
-    uLineCnt = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+    uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
     // Get the # of the topmost visible line
-    uLineTop = SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+    uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
     // Less the top index
     uLineCnt -= uLineTop;
@@ -2751,7 +2762,7 @@ void DrawLineNumsFE
     rcClient.top = rcPaint.top + cyAveCharFE;
 
     // Pour on the white out
-    FillRect (hDC, &rcClient, (HBRUSH) GetClassLongW (hWndEC, GCL_HBRBACKGROUND));
+    FillRect (hDC, &rcClient, (HBRUSH) (HANDLE_PTR) GetClassLongPtrW (hWndEC, GCL_HBRBACKGROUND));
 
     // We no longer need this DC
     MyReleaseDC (hWndEC, hDC); hDC = NULL;
@@ -2847,7 +2858,7 @@ LPSYMENTRY ParseFunctionName
     Assert (IzitFE (hWndFE));
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLongW (hWndFE, GWLSF_HWNDEC);
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
 
     // Tokenize the line
     hGlbTknHdr =

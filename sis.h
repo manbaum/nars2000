@@ -29,7 +29,7 @@ typedef enum tagRESET_FLAGS
     RESETFLAG_QUADERROR_INIT,       // 04:  Reset one level  -- []ERROR/[]ES (initialization)
     RESETFLAG_QUADERROR_EXEC,       // 05:  Reset one level  -- []ERROR/[]ES (execute []ELX)
     RESETFLAG_STOP,                 // 06:  Reset to next suspended or immexec level
-                                    // 07-07:  Available (3 bits)
+                                    // 07-07:  Available entries (3 bits)
 } RESET_FLAGS;
 
 // User-defined function/operator header signature

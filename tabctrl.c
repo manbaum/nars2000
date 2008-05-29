@@ -109,7 +109,7 @@ BOOL CALLBACK EnumCallbackShowHide
         return TRUE;                    // skip it, and continue enumerating
 
     // Show or hide the window
-    ShowWindow (hWnd, lParam);
+    ShowWindow (hWnd, *(LPUINT) &lParam);
 
     return TRUE;                        // Continue enumerating
 } // End EnumCallbackShowHide
@@ -328,7 +328,7 @@ BOOL WINAPI CreateNewTabInThread
 
     // Insert a new tab
     // The new tab is inserted to the left of the index value (iTab)
-    iCurTabIndex = SendMessageW (hWndTC, TCM_INSERTITEMW, iTabIndex, (LPARAM) &tcItem);
+    iCurTabIndex = (UINT) SendMessageW (hWndTC, TCM_INSERTITEMW, iTabIndex, (LPARAM) &tcItem);
     if (iCurTabIndex EQ -1)
     {
         MB (pszNoInsertTCTab);
@@ -444,7 +444,7 @@ BOOL WINAPI CreateNewTabInThread
     lpMemPTD->hWndSM = hWndTmp;
 
     // Get # current threads under the SM
-    nThreads = 1 + (int) GetPropW (lpMemPTD->hWndSM, L"NTHREADS");
+    nThreads = 1 + HandleToULong (GetPropW (lpMemPTD->hWndSM, L"NTHREADS"));
 
     // Format the next property name
     wsprintfW (wszTemp, L"Thread%d", hThread);
@@ -456,7 +456,7 @@ BOOL WINAPI CreateNewTabInThread
     lpMemPTD->hWndActive = lpMemPTD->hWndSM;
 
     // Save the handle
-    SetWindowLongW (lpMemPTD->hWndSM, GWLSF_PERTAB, (long) hGlbPTD);
+    SetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_PERTAB, (__int3264) (LONG_PTR) hGlbPTD);
 
     // Show the child windows of the incoming tab
     ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
@@ -521,9 +521,9 @@ NORMAL_EXIT:
 
     if (lpMemPTD->hWndSM)
         // Unhook the LclEditCtrlWndProc
-        SetWindowLongW ((HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC),
-                        GWL_WNDPROC,
-                        (long) lpMemPTD->lpfnOldEditCtrlWndProc);
+        SetWindowLongPtrW ((HWND) (HANDLE_PTR) GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC),
+                           GWL_WNDPROC,
+                           (__int3264) (LONG_PTR) lpMemPTD->lpfnOldEditCtrlWndProc);
     // Destroy any windows we might have created
     if (lpMemPTD && lpMemPTD->hWndMC)
     {
@@ -833,12 +833,12 @@ LRESULT WINAPI LclTabCtrlWndProc
             if (lpMemPTD->hWndSM)
             {
                 // Get the Edit Ctrl window handle
-                hWndEC = (HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
+                (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 
                 // Unhook the LclEditCtrlWndProc
-                SetWindowLongW (hWndEC,
-                                GWL_WNDPROC,
-                                (long) lpMemPTD->lpfnOldEditCtrlWndProc);
+                SetWindowLongPtrW (hWndEC,
+                                   GWL_WNDPROC,
+                                   (__int3264) (LONG_PTR) lpMemPTD->lpfnOldEditCtrlWndProc);
             } // End IF
 
             // We no longer need this ptr
@@ -1146,13 +1146,15 @@ void DrawTab
     HGLOBAL      hGlbPTD;           // Handle of PerTabData
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPAPLCHAR    lpMemWSID;         // Ptr to []WSID global memory
-    int          crIndex,           // Index into crTab for this tab
-                 tabNum;            // Tab # (origin-1)
+    int          crIndex;           // Index into crTab for this tab
+#ifdef DRAWTABNUM
+    int          tabNum;            // Tab # (origin-1)
     HBRUSH       hBrushOrig;        // Original brush from the DC so we can restore it
     HPEN         hPenOrig,          // ...      pen   ...
                  hPenEllipse;       // Actual pen for the ellipse boundary
     WCHAR        wszTabNum[3 + 1];  // Format area for tab # (including terminating zero)
     RECT         rcTabNum;          // Rectangle for tab #
+#endif
     COLORREF     crfg,              // Foreground color
                  crbk;              // Background color
 #if 0
@@ -1208,6 +1210,19 @@ void DrawTab
     // Account for the tab left margin
     lpRect->left  += TABMARGIN_LEFT;
     lpRect->right += TABMARGIN_LEFT;
+
+#ifdef DRAWTABNUM
+    // The following code draws tab #s inside an appropriately
+    //   sized ellipse.  It superseded the code that relied
+    //   upon Font Fallback (although I didn't know it at the
+    //   time) using the TABNUMER_START characters from 1 to 20
+    //   within an ellipse.  When I tried the program on a system
+    //   without Font Fallback (Uniscribe) installed, I then
+    //   realized the dependency, but didn't know how to enable
+    //   Font Fallback on each machine.  I then coded all this
+    //   stuff and got it working.  Then I found out how to
+    //   enable Font Fallback (which I prefer), so I commented
+    //   out all this code.
 
     // Get the tab # (origin-1)
     tabNum = 1 + lpMemWSID[0] - TABNUMBER_START;
@@ -1290,11 +1305,16 @@ void DrawTab
               );
     // Move the bounding rectangle over past the ellipse
     lpRect->left += rcTabNum.right - rcTabNum.left;
-
+#endif
     // Draw the text
     DrawTextW (hDCMem,
+#ifdef DRAWTABNUM
               &lpMemWSID[1],
                lstrlenW (&lpMemWSID[1]),
+#else
+              &lpMemWSID[0],
+               lstrlenW (&lpMemWSID[0]),
+#endif
                lpRect,
                0
              | DT_SINGLELINE
@@ -1412,7 +1432,7 @@ LPAPLCHAR PointToWsName
                     q = p + 1;
 
                 // Copy to temporary storage
-                lstrcpynW (&lpwszTemp[2], q, (lpMemWSID + aplNELMWSID + 1) - q);
+                lstrcpynW (&lpwszTemp[2], q, (UINT) ((lpMemWSID + aplNELMWSID + 1) - q));
 
                 // Copy the ptr
                 lpwTemp = lpwszTemp;

@@ -112,6 +112,7 @@
 #define IDM_PASTE_APLWIN                711
 #define IDM_PASTE_APL2                  712
 #define IDM_PASTE_ISO                   713
+#define IDM_PASTE_PC3270                714
 
 #define IDM_LOCALIZE                    720
 #define IDM_UNLOCALIZE                  721

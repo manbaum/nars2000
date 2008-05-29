@@ -76,9 +76,9 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 #define yy_reduce_print         pl_yy_reduce_print
 #define yydestruct              pl_yydestruct
 
-#define DbgMsgW2(a) if (gDbgLvl > 2) DbgMsgW(a)
-////#define DbgMsgW2(a)                  DbgMsgW(a)
-////#define DbgMsgW2(a) DbgMsgW(a); DbgBrk ()
+////#define DbgMsgW2(a) if (gDbgLvl > 2) DbgMsgW(a)
+////#define DbgMsgW2(a)                  DbgMsgW(a); DbgBrk ()
+    #define DbgMsgW2(a)                  DbgMsgW(a)
 
 #ifdef DEBUG
 #define APPEND_NAME     L" -- pl_yyparse"
@@ -5098,13 +5098,13 @@ EXIT_TYPES ParseLine
     MEMVIRTSTR   lclMemVirtStr[MVS_CNT] = {0};// Room for MVS_CNT GuardAllocs
 
     // Save the previous value of dwTlsType
-    (LPVOID) oldTlsType = TlsGetValue (dwTlsType);
+    oldTlsType = PtrToUlong (TlsGetValue (dwTlsType));
 
     // Save the thread type ('PL')
     TlsSetValue (dwTlsType, (LPVOID) 'PL');
 
     // Save the previous value of dwTlsPlLocalVars
-    (LPVOID) oldTlsPlLocalVars = TlsGetValue (dwTlsPlLocalVars);
+    oldTlsPlLocalVars = PtrToUlong (TlsGetValue (dwTlsPlLocalVars));
 
     // Save the thread's ptr to local vars
     TlsSetValue (dwTlsPlLocalVars, (LPVOID) &plLocalVars);
@@ -5521,10 +5521,10 @@ NORMAL_EXIT:
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Restore the previous value of dwTlsPlLocalVars
-    TlsSetValue (dwTlsPlLocalVars, (LPVOID) oldTlsPlLocalVars);
+    TlsSetValue (dwTlsPlLocalVars, ULongToPtr (oldTlsPlLocalVars));
 
     // Restore the previous value of dwTlsType
-    TlsSetValue (dwTlsType, (LPVOID) oldTlsType);
+    TlsSetValue (dwTlsType, ULongToPtr (oldTlsType));
 
     // If there's an error to be signalled, ...
     if (uError NE ERRORCODE_NONE)
@@ -5564,7 +5564,7 @@ NORMAL_EXIT:
           ImmExecStmt (lpwszLine,   // Ptr to line to execute
                        FALSE,       // TRUE iff free the lpwszLine on completion
                        TRUE,        // TRUE iff wait until finished
-                       (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
         // Split cases based upon the exit type
         switch (exitType)
         {
@@ -6668,13 +6668,13 @@ LPPL_YYSTYPE WaitForInput
     lpMemPTD->lpSISCur->lptkFunc = lptkFunc;
 
     // Get the Edit Control window handle
-    hWndEC = (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC);
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
     // Get the char position of the caret
     uCharPos = GetCurCharPos (hWndEC);
 
     // Get the position of the start of the line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, NEG1U, 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, NEG1U, 0);
 
     // Save the Quote-Quad input prompt length
     lpMemPTD->lpSISCur->QQPromptLen = uCharPos - uLinePos;

@@ -819,7 +819,7 @@ LPAPLCHAR SavedWsFormGlbFcn
             if (lpMemDfnHdr->hGlbUndoBuff)
             {
                 LPUNDO_BUF lpMemUndo;               // Ptr to Undo Buffer global memory
-                UINT       uUndoCount;              // # entries in the Undo Buffer
+                SIZE_T     uUndoCount;              // # entries in the Undo Buffer
                 LPAPLCHAR  lpUndoOut;               // Ptr to output save area
                 WCHAR      wcTmp[2];                // Temporary char string
 

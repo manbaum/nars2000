@@ -60,8 +60,9 @@
 #define yy_reduce_print         fh_yy_reduce_print
 #define yydestruct              fh_yydestruct
 
-#define DbgMsgW2(a) if (gDbgLvl > 2) DbgMsgW(a)
-////#define DbgMsgW2(a) DbgMsgW(a); DbgBrk ()
+////#define DbgMsgW2(a) if (gDbgLvl > 2) DbgMsgW(a)
+////#define DbgMsgW2(a)                  DbgMsgW(a); DbgBrk ()
+    #define DbgMsgW2(a)                  DbgMsgW(a)
 
 %}
 
@@ -653,7 +654,7 @@ int fh_yylex
     // Return the current token
     lpYYLval->tkToken            = *lpfhLocalVars->lpNext;
     lpYYLval->uStrandLen         =
-    lpYYLval->Indirect           = 0;
+    lpYYLval->Indirect           = FALSE;
     lpYYLval->List               = FALSE;
     lpYYLval->lpYYStrandIndirect = NULL;
     lpYYLval->lpYYStrandBase     = lpfhLocalVars->lpYYStrandBase;

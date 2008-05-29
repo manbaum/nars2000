@@ -92,7 +92,7 @@ extern void USER_Unlock(void);
 
 inline static HWND WIN_GetFullHandle( HWND hwnd )
 {
-    if (!HIWORD(hwnd) && hwnd) hwnd = WIN_Handle32( LOWORD(hwnd) );
+    if (!HIWORD((__int3264)*(HANDLE_PTR *) &hwnd) && hwnd) hwnd = WIN_Handle32( LOWORD((__int3264)*(HANDLE_PTR *) &hwnd) );
     return hwnd;
 }
 

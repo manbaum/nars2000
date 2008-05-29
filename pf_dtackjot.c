@@ -380,7 +380,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
                 lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_CHAR;
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkChar     = aplCharRht;
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -567,7 +567,7 @@ NORMAL_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -793,7 +793,7 @@ LPAPLCHAR CompileArrInteger
             lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
 
             // Calculate the length of the integer part
-            uLen = (lpaplChar - lpwszOut) - 1;
+            uLen = (UINT) (lpaplChar - lpwszOut) - 1;
 
             // Max the current integer width with this
             lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
@@ -915,14 +915,14 @@ LPAPLCHAR CompileArrFloat
             if (lpwsz)
             {
                 // Calculate the length of the integer part
-                uLen = (lpwsz - lpwszOut);
+                uLen = (UINT) (lpwsz - lpwszOut);
 
                 // Max the current integer width with this
                 lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
 
                 // Calculate the length of the fractional part
                 //   including the decimal point
-                uLen = (lpaplChar - lpwsz) - 1;
+                uLen = (UINT) (lpaplChar - lpwsz) - 1;
 
                 // Max the current fractional width with this
                 lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
@@ -932,7 +932,7 @@ LPAPLCHAR CompileArrFloat
             } else  // No decimal point
             {
                 // Calculate the length of the integer part
-                uLen = (lpaplChar - lpwszOut) - 1;
+                uLen = (UINT) (lpaplChar - lpwszOut) - 1;
 
                 // Max the current integer width with this
                 lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
@@ -1233,7 +1233,7 @@ LPAPLCHAR CompileArrAPA
             lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
 
             // Calculate the length of the integer part
-            uLen = (lpaplChar - lpwszOut) - 1;
+            uLen = (UINT) (lpaplChar - lpwszOut) - 1;
 
             // Max the current integer width with this
             lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
@@ -1423,13 +1423,13 @@ LPAPLCHAR CompileArrHetero
              && (lpwsz = strchrW (lpwszOut, L'.')))
             {
                 // Calculate the length of the integer part
-                uLen = (lpwsz - lpwszOut);
+                uLen = (UINT) (lpwsz - lpwszOut);
 
                 // Max the current integer width with this
                 lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
 
                 // Calculate the length of the fractional part
-                uLen = (lpaplChar - lpwsz) - 1;
+                uLen = (UINT) (lpaplChar - lpwsz) - 1;
 
                 // Max the current fractional width with this
                 lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
@@ -1439,7 +1439,7 @@ LPAPLCHAR CompileArrHetero
                 // We use the following odd construction because
                 //   if the previous SymEntry was a []TCLF,
                 //   lpaplChar EQ lpwszOut
-                uLen = lpaplChar - lpwszOut;
+                uLen = (UINT) (lpaplChar - lpwszOut);
                 uLen = max (uLen, 1) - 1;
 
                 if (IsImmChr (immTypeCur))
@@ -2359,7 +2359,7 @@ LPAPLCHAR FormatArrSimple
                             uLead = 0;
                         else
                         {
-                            uCol = (lpw - lpaplChar) + lpFmtColStr[aplDimCol].uFrcs;
+                            uCol = (UINT) (lpw - lpaplChar) + lpFmtColStr[aplDimCol].uFrcs;
                             uLead = uCmpWid - max (uActLen, uCol);  // # leading blanks to align decimal points
                         } // End IF/ELSE
 
@@ -2370,7 +2370,7 @@ LPAPLCHAR FormatArrSimple
                         // If this is raw output,
                         // break the line if it would exceed []PW
                         //   and the line is non-empty.
-                        uCol = lpwszOut - lpwszOutStart;
+                        uCol = (UINT) (lpwszOut - lpwszOutStart);
                         if (bRawOutput
                          && DEF_INDENT < uCol
                          && uQuadPW < (uLeadBefore + uCmpWid + uCol))
@@ -3351,7 +3351,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     } // End SWITCH
 
                     // Get the formatted length
-                    uLen = (lpaplChar - lpaplCharIni) - 1;
+                    uLen = (UINT) (lpaplChar - lpaplCharIni) - 1;
 
                     // Check for automatic width
                     if (Auto)
@@ -3461,7 +3461,7 @@ YYALLOC_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

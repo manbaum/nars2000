@@ -152,7 +152,7 @@ BOOL CmdClear_EM
     (LPWCHAR lpwszTail)
 
 {
-    if (!bNewTabOnClear)
+    if (!OptionFlags.bNewTabOnClear)
         CloseTab (TabCtrl_GetCurSel (hWndTC));
 
     return CreateNewTab (hWndMF,

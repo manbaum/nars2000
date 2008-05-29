@@ -111,7 +111,7 @@ FREE:
 //  Just yer standard About box.
 //***************************************************************************
 
-BOOL CALLBACK AboutDlgProc
+__int3264 CALLBACK AboutDlgProc
     (HWND   hDlg,
      UINT   message,
      WPARAM wParam,
@@ -143,10 +143,10 @@ BOOL CALLBACK AboutDlgProc
 
             // Subclass the IDC_LINK control
             //   so we can handle WM_LBUTTONDOWN
-            lpfnOldStaticWndProc =
-              (WNDPROC) SetWindowLong (hWndStatic,
-                                       GWL_WNDPROC,
-                                       (long) (WNDPROC) &LclStaticWndProc);
+            (HANDLE_PTR) lpfnOldStaticWndProc =
+              SetWindowLongPtr (hWndStatic,
+                                GWL_WNDPROC,
+                                (__int3264) (LONG_PTR) (WNDPROC) &LclStaticWndProc);
             // Set the cursor for the static control to a hand
 
 
@@ -186,7 +186,7 @@ BOOL CALLBACK AboutDlgProc
                 SelectObject (hDC, hFont);
 
                 // Return handle of brush for background
-                return (int) CreateSolidBrush (GetSysColor (COLOR_BTNFACE));
+                return (__int3264) (HANDLE_PTR) CreateSolidBrush (GetSysColor (COLOR_BTNFACE));
             } else
                 break;
 #undef  hWnd
@@ -200,9 +200,9 @@ BOOL CALLBACK AboutDlgProc
             } // End IF
 
             // Restore the old WndProc
-            (WNDPROC) SetWindowLong (hWndStatic,
-                                     GWL_WNDPROC,
-                                     (long) (WNDPROC) lpfnOldStaticWndProc);
+            SetWindowLongPtr (hWndStatic,
+                              GWL_WNDPROC,
+                              (__int3264) (LONG_PTR) (WNDPROC) lpfnOldStaticWndProc);
             lpfnOldStaticWndProc = NULL;
 
             EndDialog (hDlg, TRUE); // Quit this dialog

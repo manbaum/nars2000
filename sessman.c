@@ -26,6 +26,7 @@
 #include <windowsx.h>
 #include <colors.h>
 
+#include "uniscribe.h"
 #include "main.h"
 #include "aplerrors.h"
 #include "resdebug.h"
@@ -150,7 +151,7 @@ HWND GetThreadSMEC
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -216,10 +217,10 @@ void ReplaceLine
          uLineLen;
 
     // Get the line position of the given line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
 
     // Get the length of the line
-    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+    uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     // Set the selection to this line
     SendMessageW (hWndEC, EM_SETSEL, uLinePos, uLinePos + uLineLen);
@@ -308,13 +309,13 @@ BOOL IzitLastLine
          uCharPos;
 
     // Get the # lines in the text
-    uLineCnt = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+    uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
     // Get the line position of the last line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, (WPARAM) (uLineCnt - 1), 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, (WPARAM) (uLineCnt - 1), 0);
 
     // Get the length of the line
-    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+    uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     // Get the char position of the caret
     uCharPos = GetCurCharPos (hWndEC);
@@ -442,13 +443,13 @@ void MoveCaretEOB
          uCharPos;
 
     // Get the # lines in the text
-    uLineCnt = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+    uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
     // Get the initial char pos of the last line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineCnt - 1, 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineCnt - 1, 0);
 
     // Get the length of the last line
-    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+    uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     // Add to get char pos
     uCharPos = uLinePos + uLineLen;
@@ -499,10 +500,10 @@ UINT GetLineLength
     UINT uLinePos;          // Char position of start of line
 
     // Get the position of the start of the line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
 
     // Get the line length
-    return SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+    return (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 } // GetLineLength
 
 
@@ -682,7 +683,6 @@ LRESULT APIENTRY SMWndProc
 
 {
     HWND         hWndEC;                // Window handle to Edit Control
-    int          iMaxLimit;             // Maximum # chars in edit control
     VKSTATE      vkState;
     long         lvkState;
     HGLOBAL      hGlbPTD;               // Handle to this window's PerTabData
@@ -698,7 +698,7 @@ LRESULT APIENTRY SMWndProc
     LPMEMVIRTSTR lpLclMemVirtStr;       // Ptr to local MemVirtStr
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLongW (hWnd, GWLSF_HWNDEC);
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -706,7 +706,7 @@ LRESULT APIENTRY SMWndProc
 ////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
     {
-#define lpMDIcs     ((LPMDICREATESTRUCTW) (((LPCREATESTRUCTW) lParam)->lpCreateParams))
+#define lpMDIcs     ((LPMDICREATESTRUCTW) ((*(LPCREATESTRUCTW *) &lParam)->lpCreateParams))
         case WM_NCCREATE:               // 0 = (int) wParam
                                         // lpcs = (LPCREATESTRUCTW) lParam
         {
@@ -743,7 +743,7 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_LPMVS, (long) lpLclMemVirtStr);
+            SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (__int3264) (LONG_PTR) lpLclMemVirtStr);
 
             // Allocate virtual memory for the []ERROR/[]ES buffer
 #ifdef DEBUG
@@ -785,7 +785,7 @@ WM_NCCREATE_FAIL:
         } // End WM_NCCREATE
 #undef  lpMDIcs
 
-#define lpMDIcs     ((LPMDICREATESTRUCTW) (((LPCREATESTRUCTW) lParam)->lpCreateParams))
+#define lpMDIcs     ((LPMDICREATESTRUCTW) ((*(LPCREATESTRUCTW *) &lParam)->lpCreateParams))
         case WM_CREATE:             // 0 = (int) wParam
                                     // lpcs = (LPCREATESTRUCTW) lParam
         {
@@ -813,7 +813,7 @@ WM_NCCREATE_FAIL:
             // _LST is the (dynamic) ptr to the last available entry.
             //    Redo entries are between _NXT and _LST[-1], inclusive.
 
-            (long) lpLclMemVirtStr = GetWindowLongW (hWnd, GWLSF_LPMVS);
+            (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
 
             // Allocate virtual memory for the Undo Buffer
 #ifdef DEBUG
@@ -844,9 +844,9 @@ WM_NCCREATE_FAIL:
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // Save in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
-            SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
-            SetWindowLongW (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (__int3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (__int3264) (LONG_PTR) lpUndoBeg);
 ////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
             // Start with an initial action of nothing
@@ -858,7 +858,7 @@ WM_NCCREATE_FAIL:
                         UNDO_NOGROUP,               // Group index
                         0);                         // Character
             // Save incremented starting ptr in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) ++lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (__int3264) (LONG_PTR) ++lpUndoBeg);
 
 ////////////// *************** lptkStackBase ***************************
 ////////////
@@ -1292,16 +1292,16 @@ WM_NCCREATE_FAIL:
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_HWNDEC, (long) hWndEC);
+            SetWindowLongPtrW (hWnd, GWLSF_HWNDEC, (__int3264) (LONG_PTR) hWndEC);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Subclass the Edit Control so we can handle some of its messages
-            lpMemPTD->lpfnOldEditCtrlWndProc = (WNDPROC)
-              SetWindowLongW (hWndEC,
-                              GWL_WNDPROC,
-                              (long) (WNDPROC) &LclEditCtrlWndProc);
+            (HANDLE_PTR) lpMemPTD->lpfnOldEditCtrlWndProc =
+              SetWindowLongPtrW (hWndEC,
+                                 GWL_WNDPROC,
+                                 (__int3264) (LONG_PTR) (WNDPROC) &LclEditCtrlWndProc);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1335,13 +1335,13 @@ WM_NCCREATE_FAIL:
             InvalidateRect (lpMemPTD->hWndMC, NULL, TRUE);
 
             // Save the bExecLX flag
-            lpMemPTD->bExecLX = ((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->bExecLX;
+            lpMemPTD->bExecLX = (*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->bExecLX;
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Load the workspace
-            if (!LoadWorkspace_EM (((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->hGlbDPFE, hWndEC))
+            if (!LoadWorkspace_EM ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE, hWndEC))
                 goto LOAD_WORKSPACE_FAIL;
 
             // Display the )LOAD message once and only once
@@ -1368,9 +1368,9 @@ WM_CREATE_FAIL_UNHOOK:
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Unhook the LclEditCtrlWndProc
-            SetWindowLongW (hWndEC,
-                            GWL_WNDPROC,
-                            (long) lpMemPTD->lpfnOldEditCtrlWndProc);
+            SetWindowLongPtrW (hWndEC,
+                               GWL_WNDPROC,
+                               (__int3264) (LONG_PTR) lpMemPTD->lpfnOldEditCtrlWndProc);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 WM_CREATE_FAIL:
@@ -1407,7 +1407,7 @@ LOAD_WORKSPACE_FAIL:
                     UINT uCharPos;              // Character position
 
                     // Ask the Edit Control what char is under the mouse cursor
-                    uCharPos = SendMessageW (hWndEC, EM_CHARFROMPOS, 0, lParam);
+                    uCharPos = (UINT) SendMessageW (hWndEC, EM_CHARFROMPOS, 0, lParam);
 
                     // If it's valid, ...
                     if (uCharPos NE NEG1U)
@@ -1445,7 +1445,7 @@ LOAD_WORKSPACE_FAIL:
         case MYWM_INIT_EC:
             // Wait for the third receipt of this message
             //   so we are sure everything is initialized
-            switch ((int) GetPropW (hWnd, L"INIT_EC"))
+            switch ((__int3264) (LONG_PTR)GetPropW (hWnd, L"INIT_EC"))
             {
                 case 0:
                     SetPropW (hWnd, L"INIT_EC", (HANDLE) 1);
@@ -1514,14 +1514,14 @@ LOAD_WORKSPACE_FAIL:
         case MYWM_ERRMSG:           // lpwErrMsg = (LPWCHAR) lParam;
             // Display the error message, replacing the current
             //   line as it might have a prompt on it
-            ReplaceLastLineCRPmt ((LPWCHAR) lParam);
+            ReplaceLastLineCRPmt (*(LPWCHAR *) &lParam);
 
             return FALSE;           // We handled the msg
 
         case MYWM_SAVE_WS:          // 0 = wParam;
                                     // lpwWSID = (LPWCHAR) lParam;
             // Save the workspace
-            return CmdSave_EM ((LPWCHAR) lParam);
+            return CmdSave_EM (*(LPWCHAR *) &lParam);
 
 #define fwSizeType  wParam
 #define nWidth      (LOWORD (lParam))
@@ -1582,9 +1582,7 @@ LOAD_WORKSPACE_FAIL:
         case WM_COPY:
         case WM_CUT:
         case WM_PASTE:
-        case MYWM_PASTE_APLWIN:
-        case MYWM_PASTE_APL2:
-        case MYWM_PASTE_ISO:
+        case MYWM_PASTE_APL:
         case WM_CLEAR:
         case MYWM_SELECTALL:
             // Pass on to the Edit Control
@@ -1674,7 +1672,7 @@ LOAD_WORKSPACE_FAIL:
                             MoveCaretEOB (hWndEC);
 
                             // Get the # of the last line
-                            uLastNum = SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+                            uLastNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
                             // Replace the last line in the buffer
                             ReplaceLine (hWndEC, lpwTmpLine, uLastNum);
@@ -1729,7 +1727,7 @@ LOAD_WORKSPACE_FAIL:
 
                 case VK_DOWN:
                     // Get the # lines in the Edit Control
-                    uLineCnt = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+                    uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
                     // If the next line is out of range, exit
                     if (uLineCnt <= (uLineNum + 1))
@@ -1896,7 +1894,7 @@ LOAD_WORKSPACE_FAIL:
 
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
-#define lpnmEC  ((LPNMEDITCTRL) lParam)
+#define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
 
             // Ensure from Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
@@ -1914,7 +1912,7 @@ LOAD_WORKSPACE_FAIL:
 
 #define wNotifyCode     (HIWORD (wParam))
 #define wID             (LOWORD (wParam))
-#define hWndCtrl        ((HWND) lParam)
+#define hWndCtrl        (*(HWND *) &lParam)
         case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // Notification code
                                     // wID = LOWORD (wParam);         // Item, control, or accelerator identifier
                                     // hwndCtrl = (HWND) lParam;      // Handle of control
@@ -1940,9 +1938,9 @@ LOAD_WORKSPACE_FAIL:
 
                     // The default maximum is 32K, so we increase it by that amount
                     Assert (hWndEC NE 0);
-                    iMaxLimit = SendMessageW (hWndEC, EM_GETLIMITTEXT, 0, 0);
-                    SendMessageW (hWndEC, EM_SETLIMITTEXT, iMaxLimit + 32*1024, 0);
-
+                    SendMessageW (hWndEC,
+                                  EM_SETLIMITTEXT,
+                                  (UINT) SendMessageW (hWndEC, EM_GETLIMITTEXT, 0, 0) + 32*1024, 0);
                     break;
 
 ////            case EN_SETFOCUS:   // 0x0100
@@ -1953,7 +1951,7 @@ LOAD_WORKSPACE_FAIL:
 ////            case EN_MAXTEXT:    // 0x0501
 ////            case EN_HSCROLL:    // 0x0601
 ////            case EN_VSCROLL:    // 0x0602
-                    break;
+////                break;
             } // End IF
 
             break;
@@ -2014,7 +2012,7 @@ LOAD_WORKSPACE_FAIL:
             // *************** lpwszFormat *****************************
 
             // Get the MemVirtStr ptr
-            (long) lpLclMemVirtStr = GetWindowLongW (hWnd, GWLSF_LPMVS);
+            (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
             if (lpLclMemVirtStr)
             {
                 for (uCnt = 0; uCnt < PTDMEMVIRT_LENGTH; uCnt++)
@@ -2031,7 +2029,7 @@ LOAD_WORKSPACE_FAIL:
                 MyVirtualFree (lpLclMemVirtStr, 0,MEM_RELEASE); lpLclMemVirtStr = NULL;
 
                 // Zap the window extra in case we're called again???
-                SetWindowLongW (hWnd, GWLSF_LPMVS, 0);
+                SetWindowLongPtrW (hWnd, GWLSF_LPMVS, 0);
             } // End IF
 
             // Uninitialize window-specific resources

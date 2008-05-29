@@ -106,7 +106,7 @@ void TypeDemote
                       aplTypeSub;       // Right arg item ...
     LPSYMENTRY        lpSymEntry;       // Ptr to Hetero item
     LPVARARRAY_HEADER lpMemRhtHdr;      //
-    DWORD             dwSize;           //
+    SIZE_T            dwSize;           //
 
     // Note that neither ARRAY_APA not ARRAY_LIST can occur
     //   as an argument to this function.
@@ -479,7 +479,7 @@ void TypeDemote
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeRes;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMRht;
             lpHeader->Rank       = aplRankRht;
@@ -902,7 +902,7 @@ BOOL TypePromoteGlb_EM
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE     // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMArg;
     lpHeader->Rank       = aplRankArg;

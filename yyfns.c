@@ -222,7 +222,7 @@ void YYCopyFreeDst
     {
         lpYYDst->YYInuse = TRUE;    // Mark as in use for YYCopy
         YYCopy (lpYYDst, lpYYSrc);
-        lpYYDst->YYInuse = 0;       // Mark as no longer in use
+        lpYYDst->YYInuse = FALSE;   // Mark as no longer in use
     } // End IF/ELSE
 } // End YYCopyFreeDst
 
@@ -248,7 +248,7 @@ void YYFree
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    u = lpYYRes - lpMemPTD->lpYYRes;
+    u = (UINT) (lpYYRes - lpMemPTD->lpYYRes);
     Assert (u < lpMemPTD->numYYRes);
     Assert (lpYYRes->YYInuse);
 
@@ -553,13 +553,13 @@ LPPL_YYSTYPE YYCopyFcn
                 {
                     YYFcn.tkToken.tkFlags.TknType   = TranslateImmTypeToTknType (lpToken->tkData.tkSym->stFlags.ImmType);
                     YYFcn.tkToken.tkFlags.ImmType   = lpToken->tkData.tkSym->stFlags.ImmType;
-////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
+////////////////////YYFcn.tkToken.tkFlags.NoDisplay = FALSE;    // Already zero from = {0}
                     YYFcn.tkToken.tkData.tkLongest  = 0;        // Keep the extraneous data clear
                     YYFcn.tkToken.tkData.tkChar     = lpToken->tkData.tkSym->stData.stChar;
                     YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
                     YYFcn.TknCount                  = TknCount;
-////////////////////YYFcn.YYInuse                   = 0;        // (Factored out below)
-////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
+////////////////////YYFcn.YYInuse                   = FALSE;    // (Factored out below)
+////////////////////YYFcn.YYIndirect                = FALSE;    // Already zero from = {0}
 ////////////////////YYFcn.YYAvail                   = 0;        // Already zero from = {0}
 ////////////////////YYFcn.YYIndex                   = 0;        // (Factored out below)
 ////////////////////YYFcn.YYFlag                    = 0;        // Already zero from = {0}
@@ -591,12 +591,12 @@ LPPL_YYSTYPE YYCopyFcn
                                 // Fill in the token
                                 YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
 ////////////////////////////////YYFcn.tkToken.tkFlags.ImmType   = 0;        // Already zero from = {0}
-////////////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
+////////////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = FALSE;    // Already zero from = {0}
                                 YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;
                                 YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
                                 YYFcn.TknCount                  = TknCount;
-////////////////////////////////YYFcn.YYInuse                   = 0;        // (Factored out below)
-////////////////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
+////////////////////////////////YYFcn.YYInuse                   = FALSE;    // (Factored out below)
+////////////////////////////////YYFcn.YYIndirect                = FALSE;    // Already zero from = {0}
 ////////////////////////////////YYFcn.YYAvail                   = 0;        // Already zero from = {0}
 ////////////////////////////////YYFcn.YYIndex                   = 0;        // (Factored out below)
 ////////////////////////////////YYFcn.YYFlag                    = 0;        // Already zero from = {0}
@@ -640,7 +640,7 @@ LPPL_YYSTYPE YYCopyFcn
                 // If we didn't expand a function array, ...
                 if (TknCount EQ 1)
                 {
-                    YYFcn.YYInuse  = 0;
+                    YYFcn.YYInuse  = FALSE;
 #ifdef DEBUG
                     YYFcn.YYIndex  = NEG1U;
 #endif

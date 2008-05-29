@@ -220,7 +220,7 @@ void FreeResultSub
                 stFlags.SysVarValid = NEG1U;
 
                 // Clear the symbol table flags
-                *(PUINT_PTR) &lptkRes->tkData.tkSym->stFlags &= *(PUINT_PTR) &stFlags;
+                *(UINT *) &lptkRes->tkData.tkSym->stFlags &= *(UINT *) &stFlags;
             } // End IF
 
             return;
@@ -735,7 +735,7 @@ BOOL FreeResultGlobalDfn
         stFlags.SysVarValid = NEG1U;
 
         // Clear the symbol table flags for the function name
-        *(PUINT_PTR) &lpMemDfnHdr->steFcnName->stFlags &= *(PUINT_PTR) &stFlags;
+        *(UINT *) &lpMemDfnHdr->steFcnName->stFlags &= *(UINT *) &stFlags;
 
         // Check the static HGLOBALs
         if (lpMemDfnHdr->hGlbTxtHdr)

@@ -107,8 +107,8 @@ UINT MaskTheHash
         // Because this hash is below lpHshTabSplitNext,
         //   we use the next hash function in sequence.
         uHashMasked = uHash & (1 + 2 * lpHTS->uHashMask);
-        Assert ((int) lpHTS->lpHshTab[uHashMasked].NextSameHash);
-        Assert ((int) lpHTS->lpHshTab[uHashMasked].PrevSameHash);
+        Assert (NULL NE lpHTS->lpHshTab[uHashMasked].NextSameHash);
+        Assert (NULL NE lpHTS->lpHshTab[uHashMasked].PrevSameHash);
         Assert (uHashMasked < (UINT) (     lpHTS->iHshTabTotalSize / lpHTS->iHshTabEPB));
         Assert (uHashMasked < (UINT) ((2 * lpHTS->iHshTabBaseSize) / lpHTS->iHshTabEPB));
     } else
@@ -201,7 +201,7 @@ BOOL HshTabFrisk
             htFlags = lp->htFlags;
             htFlags.PrinHash = FALSE;
 
-            Assert (0 EQ *(PUINT_PTR) &htFlags);
+            Assert (0 EQ *(UINT *) &htFlags);
 
             if (!lp->htFlags.PrinHash)
                 Assert (lp->NextSameHash EQ LPHSHENTRY_NONE
@@ -1190,8 +1190,8 @@ LPHSHENTRY HshTabLookupCharHash
 #endif
     {
         // Check the flags
-        if (((*(PUINT_PTR) &lpHshEntry->htFlags) & *(PUINT_PTR) &htMaskFlags)
-             EQ *(PUINT_PTR) &htMaskFlags
+        if (((*(UINT *) &lpHshEntry->htFlags) & *(UINT *) &htMaskFlags)
+             EQ *(UINT *) &htMaskFlags
          && aplChar EQ lpHshEntry->htFlags.htChar)
             break;
     } // End FOR/IF/ELSE
@@ -1256,8 +1256,8 @@ LPHSHENTRY HshTabLookupNameHash
 #endif
     {
         // Check the flags
-        if (((*(PUINT_PTR) &lpHshEntry->htFlags) & *(PUINT_PTR) &htMaskFlags)
-             EQ *(PUINT_PTR) &htMaskFlags
+        if (((*(UINT *) &lpHshEntry->htFlags) & *(UINT *) &htMaskFlags)
+             EQ *(UINT *) &htMaskFlags
          && lstrcmpW (lpHshEntry->lpwCharName, lpwCharName) EQ 0)
             break;
     } // End FOR/IF/ELSE
@@ -1595,8 +1595,8 @@ LPSYMENTRY SymTabLookupChar
         // Check the flags
         if (lpHshEntry->htFlags.Inuse
          && !lpHshEntry->htFlags.CharIsValid
-         && ((*(PUINT_PTR) &lpHshEntry->htSymEntry->stFlags) & *(PUINT_PTR) &stMaskFlags)
-             EQ *(PUINT_PTR) lpstFlags
+         && ((*(UINT *) &lpHshEntry->htSymEntry->stFlags) & *(UINT *) &stMaskFlags)
+             EQ *(UINT *) lpstFlags
          && aplChar EQ lpHshEntry->htSymEntry->stData.stChar)
         {
             lpSymEntry = lpHshEntry->htSymEntry;
@@ -1664,8 +1664,8 @@ LPSYMENTRY SymTabLookupNumber
         // Check the flags
         if (lpHshEntry->htFlags.Inuse
          && !lpHshEntry->htFlags.CharIsValid
-         && ((*(PUINT_PTR) &lpHshEntry->htSymEntry->stFlags) & *(PUINT_PTR) &stMaskFlags)
-             EQ *(PUINT_PTR) lpstNeedFlags
+         && ((*(UINT *) &lpHshEntry->htSymEntry->stFlags) & *(UINT *) &stMaskFlags)
+             EQ *(UINT *) lpstNeedFlags
          && aplInteger EQ lpHshEntry->htSymEntry->stData.stInteger)
         {
             lpSymEntry = lpHshEntry->htSymEntry;
@@ -1730,8 +1730,8 @@ LPSYMENTRY SymTabLookupFloat
         // Check the flags
         if (lpHshEntry->htFlags.Inuse
          && !lpHshEntry->htFlags.CharIsValid
-         && ((*(PUINT_PTR) &lpHshEntry->htSymEntry->stFlags) & *(PUINT_PTR) &stMaskFlags)
-             EQ *(PUINT_PTR) lpstFlags
+         && ((*(UINT *) &lpHshEntry->htSymEntry->stFlags) & *(UINT *) &stMaskFlags)
+             EQ *(UINT *) lpstFlags
          && fFloat EQ lpHshEntry->htSymEntry->stData.stFloat)
         {
             lpSymEntry = lpHshEntry->htSymEntry;
@@ -1825,8 +1825,8 @@ LPSYMENTRY SymTabLookupNameLength
         // Check the flags
         if (lpHshEntry->htFlags.Inuse
          && !lpHshEntry->htFlags.CharIsValid
-         && ((*(PUINT_PTR) &lpHshEntry->htSymEntry->stFlags) & *(PUINT_PTR) &stMaskFlags)
-             EQ *(PUINT_PTR) lpstFlags)
+         && ((*(UINT *) &lpHshEntry->htSymEntry->stFlags) & *(UINT *) &stMaskFlags)
+             EQ *(UINT *) lpstFlags)
         {
             LPWCHAR lpGlbName;
             int     iCmp;
@@ -2140,7 +2140,7 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
 
         // Save the symbol table flags
         stNeedFlags.Perm = bPerm;
-        *(PUINT_PTR) &lpSymEntryDest->stFlags |= *(PUINT_PTR) &stNeedFlags;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stNeedFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
@@ -2268,7 +2268,7 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
 
         // Save the symbol table flags
         stFlags.Perm = bPerm;
-        *(PUINT_PTR) &lpSymEntryDest->stFlags |= *(PUINT_PTR) &stFlags;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
@@ -2395,7 +2395,7 @@ LPSYMENTRY SymTabAppendCharCommon_EM
 
         // Save the symbol table flags
         stFlags.Perm = bPerm;
-        *(PUINT_PTR) &lpSymEntryDest->stFlags |= *(PUINT_PTR) &stFlags;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;

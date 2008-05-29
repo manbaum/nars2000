@@ -38,7 +38,6 @@ typedef struct tagSF_FCNS
 
 
 // Aliases for common functions
-#define SF_NumLinesM        SF_NumLinesCom
 #define SF_NumLinesN        SF_NumLinesCom
 #define SF_NumLinesSV       SF_NumLinesCom
 #define SF_CreationTimeM    SF_CreationTimeCom

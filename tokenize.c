@@ -1764,7 +1764,7 @@ BOOL fnPrmDone
         // Mark the data as a variable
         tkFlags.TknType   = TKT_VARARRAY;
 ////////tkFlags.ImmType   = 0;      // Already zero from {0}
-////////tkFlags.NoDisplay = 0;      // Already zero from {0}
+////////tkFlags.NoDisplay = FALSE;  // Already zero from {0}
         (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlbZilde);
     } else
     {
@@ -2033,7 +2033,7 @@ BOOL fnComDone
     lpwch = strchrW (lptkLocalVars->lpwsz, L'\n');
     if (lpwch)
     {
-        iLen2 = lpwch - lptkLocalVars->lpwsz;
+        iLen2 = (UINT) (lpwch - lptkLocalVars->lpwsz);
         iLen  = min (iLen2, iLen);
     } // End IF
 
@@ -2231,7 +2231,7 @@ BOOL fnQuoDone
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_CHAR;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;
-////////////lpHeader->SysVar     = 0;
+////////////lpHeader->SysVar     = FALSE;
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = lpMemPTD->iStrLen;
             lpHeader->Rank       = 1;
@@ -2362,7 +2362,7 @@ BOOL GroupInitCom
                              &aplLongest,
                               0);
     // Save as location of previous left grouping symbol
-    lptkLocalVars->t2.lpHeader->PrevGroup = lpNext - lptkLocalVars->lpStart;
+    lptkLocalVars->t2.lpHeader->PrevGroup = (UINT) (lpNext - lptkLocalVars->lpStart);
 
     return bRet;
 } // End GroupInitCom
@@ -2770,7 +2770,7 @@ HGLOBAL Tokenize_EM
                 // Calculate the # tokens in this last stmt
                 AppendEOSToken (&tkLocalVars, FALSE);
 
-                uNext = tkLocalVars.lpNext - tkLocalVars.lpStart;
+                uNext = (UINT) (tkLocalVars.lpNext - tkLocalVars.lpStart);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (tkLocalVars.hGlbToken);
@@ -3052,7 +3052,7 @@ BOOL AppendEOSToken
     APLINT aplInteger;
 
     // Calculate the # tokens in this stmt
-    lptkLocalVars->lpLastEOS->tkData.tkIndex = lptkLocalVars->lpNext - lptkLocalVars->lpLastEOS;
+    lptkLocalVars->lpLastEOS->tkData.tkIndex = (UINT) (lptkLocalVars->lpNext - lptkLocalVars->lpLastEOS);
 
     if (lptkLocalVars->lpStart EQ lptkLocalVars->lpLastEOS
      && lptkLocalVars->lpNext >   lptkLocalVars->lpStart
@@ -3151,7 +3151,7 @@ BOOL AppendNewToken_EM
     lptkLocalVars->lpNext->tkFlags          = *lptkFlags;// Append the flags
 
     // Save index in input line of this token
-    lptkLocalVars->lpNext->tkCharIndex = iCharOffset + lptkLocalVars->lpwsz - lptkLocalVars->lpwszOrig;
+    lptkLocalVars->lpNext->tkCharIndex = iCharOffset + (UINT) (lptkLocalVars->lpwsz - lptkLocalVars->lpwszOrig);
 
     // Count in another token
     lptkLocalVars->t2.lpHeader->TokenCnt++;

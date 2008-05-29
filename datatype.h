@@ -273,10 +273,7 @@ typedef enum tagPTR_TYPES
 //   those values can be re-used in another array without having
 //   to make a copy.  In that case, the original value is replaced
 //   by this which is checked for before trying to free it.
-#define PTR_REUSED  ((LPVOID) (0xFFFFFFF0 + PTRTYPE_REUSED))
-
-#define PtrReusedDir(lpMem)                  (lpMem  EQ PTR_REUSED)
-#define PtrReusedInd(lpMem)     ((*(LPVOID *) lpMem) EQ PTR_REUSED)
+#define PTR_REUSED  ((LPVOID) (HANDLE_PTR) (0xFFFFFFF0 + PTRTYPE_REUSED))
 
 
 //***************************************************************************

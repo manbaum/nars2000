@@ -185,7 +185,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -250,7 +250,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                     //   and the .Inuse flag
                     ZeroMemory (&stFlags, sizeof (stFlags));
                     lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                        &lpMemDataRht[uRht] - lpMemDataStart,
+                                                        (UINT) (&lpMemDataRht[uRht] - lpMemDataStart),
                                                         &stFlags);
                     // If found, attempt to expunge the name
                     // If not found, return a one if it's a valid name, zero otherwise
@@ -258,7 +258,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                         *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
                     else
                         *lpMemDataRes |= (ValidName (lpMemDataStart,
-                                                    &lpMemDataRht[uRht] - lpMemDataStart)) << uBitIndex;
+                                                    (UINT) (&lpMemDataRht[uRht] - lpMemDataStart))) << uBitIndex;
                     // Check for end-of-byte
                     if (++uBitIndex EQ NBIB)
                     {
@@ -322,7 +322,7 @@ YYALLOC_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -404,7 +404,7 @@ void EraseSTE
         stFlagsMT.ObjName = NEG1U;      // ...    ObjName setting
 
         // Clear the STE flags & data
-        *(PUINT_PTR) &lpSymEntry->stFlags &= *(PUINT_PTR) &stFlagsMT;
+        *(UINT *) &lpSymEntry->stFlags &= *(UINT *) &stFlagsMT;
         lpSymEntry->stData.stLongest = 0;
     } // End IF
 } // End EraseSTE

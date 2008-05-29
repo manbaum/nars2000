@@ -102,7 +102,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
 ////lpHeader->NELM       = SYSVER_NELM;     // Filled in below
     lpHeader->Rank       = 1;
@@ -138,13 +138,13 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
         IMAGE_NT_HEADERS32 inth;
 
         // Set the file pointer to read the e_lfanew value
-        SetFilePointer (hFile, ((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh, NULL, FILE_BEGIN);
+        SetFilePointer (hFile, (UINT) (((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh), NULL, FILE_BEGIN);
 
         // Read in the e_lfanew value
         ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
 
         // Add in the distance to the file timestamp
-        dwTemp += ((LPBYTE) (&inth.FileHeader.TimeDateStamp)) - (LPBYTE) &inth;
+        dwTemp += (UINT) (((LPBYTE) &inth.FileHeader.TimeDateStamp) - (LPBYTE) &inth);
 
         // Set file pointer to the file timestamp
         SetFilePointer (hFile, dwTemp, NULL, FILE_BEGIN);
@@ -201,7 +201,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

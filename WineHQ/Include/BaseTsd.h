@@ -102,10 +102,20 @@ typedef unsigned __int64 DECLSPEC_ALIGN(8) ULONG64, *PULONG64;
 typedef unsigned __int64 DECLSPEC_ALIGN(8) DWORD64, *PDWORD64;
 #endif
 
+#if !defined(_W64)
+#if !defined(__midl) && (defined(_X86_) || defined(_M_IX86)) && _MSC_VER >= 1300
+#define _W64 __w64
+#else
+#define _W64
+#endif
+#endif
+
 /* Win32 or Win64 dependent typedef/defines. */
 
 #ifdef _WIN64
 
+typedef unsigned __int64 HANDLE_PTR;
+#define __int3264   __int64
 typedef signed __int64   INT_PTR, *PINT_PTR;
 typedef signed __int64   LONG_PTR, *PLONG_PTR;
 typedef unsigned __int64 UINT_PTR, *PUINT_PTR;
@@ -123,8 +133,132 @@ typedef unsigned int UHALF_PTR, *PUHALF_PTR;
 #define MINHALF_PTR 0x80000000
 #define MAXUHALF_PTR 0xffffffff
 
+__inline
+unsigned long
+HandleToUlong(
+    const void *h
+    )
+{
+    return((unsigned long) h );
+}
+
+__inline
+long
+HandleToLong(
+    const void *h
+    )
+{
+    return((long) h );
+}
+
+__inline
+void *
+LongToHandle(
+    const long h
+    )
+{
+    return((void *) (INT_PTR) h );
+}
+
+
+__inline
+unsigned long
+PtrToUlong(
+    const void  *p
+    )
+{
+    return((unsigned long) p );
+}
+
+__inline
+unsigned int
+PtrToUint(
+    const void  *p
+    )
+{
+    return((unsigned int) p );
+}
+
+__inline
+unsigned short
+PtrToUshort(
+    const void  *p
+    )
+{
+    return((unsigned short) p );
+}
+
+__inline
+long
+PtrToLong(
+    const void  *p
+    )
+{
+    return((long) p );
+}
+
+__inline
+int
+PtrToInt(
+    const void  *p
+    )
+{
+    return((int) p );
+}
+
+__inline
+short
+PtrToShort(
+    const void  *p
+    )
+{
+    return((short) p );
+}
+
+__inline
+void *
+IntToPtr(
+    const int i
+    )
+// Caution: IntToPtr() sign-extends the int value.
+{
+    return( (void *)(INT_PTR)i );
+}
+
+__inline
+void *
+UIntToPtr(
+    const unsigned int ui
+    )
+// Caution: UIntToPtr() zero-extends the unsigned int value.
+{
+    return( (void *)(UINT_PTR)ui );
+}
+
+__inline
+void *
+LongToPtr(
+    const long l
+    )
+// Caution: LongToPtr() sign-extends the long value.
+{
+    return( (void *)(LONG_PTR)l );
+}
+
+__inline
+void *
+ULongToPtr(
+    const unsigned long ul
+    )
+// Caution: ULongToPtr() zero-extends the unsigned long value.
+{
+    return( (void *)(ULONG_PTR)ul );
+}
+
 #else /* FIXME: defined(_WIN32) */
 
+typedef _W64 unsigned long HANDLE_PTR;
+#define __int3264   __int32
 typedef int INT_PTR, *PINT_PTR;
 typedef long LONG_PTR, *PLONG_PTR;
 typedef unsigned int UINT_PTR, *PUINT_PTR;
@@ -141,6 +275,20 @@ typedef unsigned short UHALF_PTR, *PUHALF_PTR;
 #define MAXUHALF_PTR 0xffff
 #define MAXHALF_PTR 0x7fff
 #define MINHALF_PTR 0x8000
+
+#define HandleToUlong( h ) ((ULONG)(ULONG_PTR)(h) )
+#define HandleToLong( h ) ((LONG)(LONG_PTR) (h) )
+#define LongToHandle( h) ((HANDLE)(LONG_PTR) (h))
+#define PtrToUlong( p ) ((ULONG)(ULONG_PTR) (p) )
+#define PtrToLong( p ) ((LONG)(LONG_PTR) (p) )
+#define PtrToUint( p ) ((UINT)(UINT_PTR) (p) )
+#define PtrToInt( p ) ((INT)(INT_PTR) (p) )
+#define PtrToUshort( p ) ((unsigned short)(ULONG_PTR)(p) )
+#define PtrToShort( p ) ((short)(LONG_PTR)(p) )
+#define IntToPtr( i )    ((VOID *)(INT_PTR)((int)i))
+#define UIntToPtr( ui )  ((VOID *)(UINT_PTR)((unsigned int)ui))
+#define LongToPtr( l )   ((VOID *)(LONG_PTR)((long)l))
+#define ULongToPtr( ul )  ((VOID *)(ULONG_PTR)((unsigned long)ul))
 
 #endif /* defined(_WIN64) || defined(_WIN32) */
 

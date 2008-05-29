@@ -113,7 +113,7 @@ void DisplayHshTab
         UINT  htFlags;
 
         // Format the flags
-        htFlags = *(PUINT_PTR) &lpHshEntry->htFlags;
+        htFlags = *(LPUINT) &lpHshEntry->htFlags;
         for (j = 0;
              j < HT_FLAGNAMES_NROWS;
              j++)
@@ -279,7 +279,7 @@ void DisplaySymTab
         for (j = 0;
              j < ST_FLAGNAMES_NROWS;
              j++)
-        if ((*(PUINT_PTR) &stFlags) & astFlagNames[j].uMask)
+        if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
             lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
         if (IsNameTypeVar (stFlags.stNameType)
@@ -1412,10 +1412,10 @@ void DisplayUndo
     uCharPos = GetCurCharPos (hWnd);
 
     // Get the lines in the text
-    uLineCount = SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
+    uLineCount = (UINT) SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
 
     // Get the Edit Control's memory handle
-    (long) hGlbEC = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
+    (HANDLE_PTR) hGlbEC = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
 
     // Display it
     dprintfW (L"Caret position = %d, # lines = %d, hGlbEC = %p (%S#%d)",
@@ -1468,8 +1468,8 @@ void DisplayUndo
     hWndParent = GetParent (hWnd);
 
     // Get the ptrs to the next available slot in our Undo Buffer
-    (long) lpUndoNxt = GetWindowLongW (hWndParent, GWLSF_UNDO_NXT);
-    (long) lpUndoBeg = GetWindowLongW (hWndParent, GWLSF_UNDO_BEG);
+    (HANDLE_PTR) lpUndoNxt = GetWindowLongPtrW (hWndParent, GWLSF_UNDO_NXT);
+    (HANDLE_PTR) lpUndoBeg = GetWindowLongPtrW (hWndParent, GWLSF_UNDO_BEG);
 
     // Loop through the undo buffer entries
     for (; lpUndoBeg < lpUndoNxt; lpUndoBeg++)

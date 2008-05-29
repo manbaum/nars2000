@@ -468,7 +468,7 @@ long CheckException
 //  Compare starting addresses so as to sort them
 //***************************************************************************
 
-int __cdecl CompareStartAddresses
+UINT __cdecl CompareStartAddresses
     (const void *elem1,
      const void *elem2)
 
@@ -476,8 +476,8 @@ int __cdecl CompareStartAddresses
 #define lpSALft     ((LPSTART_ADDRESSES) elem1)
 #define lpSARht     ((LPSTART_ADDRESSES) elem2)
 
-    return lpSALft->StartAddressAddr
-         - lpSARht->StartAddressAddr;
+    return (UINT) (lpSALft->StartAddressAddr
+                 - lpSARht->StartAddressAddr);
 #undef  lpSARht
 #undef  lpSALft
 } // End CompareStartAddresses
@@ -599,7 +599,7 @@ UINT FindRoutineAddress
         if (exceptAddr >= startAddr
          && ((UINT) (exceptAddr - startAddr)) < *lpNearAddress)
         {
-            *lpNearAddress = exceptAddr - startAddr;
+            *lpNearAddress = (UINT) (exceptAddr - startAddr);
             *lpNearIndex   = i;
         } // End IF
     } // End FOR

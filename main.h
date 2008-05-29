@@ -64,29 +64,29 @@ default:        \
 #define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (long)  // Total # extra bytes
 
 // Define common offset between the Session Manager and Function Editor
-#define GWLSF_PERTAB    0                                   // HGLOBAL of corresponding PERTABDATA struc
-#define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (long)  // Handle of the matching Edit control
-#define GWLSF_UNDO_INI  GWLSF_HWNDEC   + 1 * sizeof (long)  // Ptr to Undo stack, initial (as allocated)
-#define GWLSF_UNDO_BEG  GWLSF_UNDO_INI + 1 * sizeof (long)  // ...                beginning
-#define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (long)  // ...                next
-#define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (long)  // ...                last
-#define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (long)  // Value of next Undo group index
-#define GWLSF_VKSTATE   GWLSF_UNDO_GRP + 1 * sizeof (long)  // Virtal Key state (VKSTATE struc)
-#define GWLSF_LASTKEY   GWLSF_VKSTATE  + 1 * sizeof (long)  // Value of last WM_KEYDOWN key
-#define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)  // Boolean of whether or not the text has changed
-#define GWLSF_LPMVS     GWLSF_CHANGED  + 1 * sizeof (long)  // Ptr to LPMEMVIRTSTR
+#define GWLSF_PERTAB    0                                           // HGLOBAL of corresponding PERTABDATA struc
+#define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (HANDLE_PTR)    // Handle of the matching Edit control
+#define GWLSF_UNDO_INI  GWLSF_HWNDEC   + 1 * sizeof (HANDLE_PTR)    // Ptr to Undo stack, initial (as allocated)
+#define GWLSF_UNDO_BEG  GWLSF_UNDO_INI + 1 * sizeof (HANDLE_PTR)    // ...                beginning
+#define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (HANDLE_PTR)    // ...                next
+#define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (HANDLE_PTR)    // ...                last
+#define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (HANDLE_PTR)    // Value of next Undo group index
+#define GWLSF_VKSTATE   GWLSF_UNDO_GRP + 1 * sizeof (long)          // Virtal Key state (VKSTATE struc)
+#define GWLSF_LASTKEY   GWLSF_VKSTATE  + 1 * sizeof (long)          // Value of last WM_KEYDOWN key
+#define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)          // Boolean of whether or not the text has changed
+#define GWLSF_LPMVS     GWLSF_CHANGED  + 1 * sizeof (long)          // Ptr to LPMEMVIRTSTR
 
 // Define offsets in SMWNDCLASS window extra bytes
-#define GWLSM_EXTRA     GWLSF_LPMVS    + 1 * sizeof (long)  // Total # extra bytes
+#define GWLSM_EXTRA     GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
 // Define offsets in FEWNDCLASS window extra bytes
-#define GWLFE_EXTRA     GWLSF_LPMVS    + 1 * sizeof (long)  // Total # extra bytes
+#define GWLFE_EXTRA     GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
 // Define offsets in MEWNDCLASS window extra bytes
-#define GWLME_EXTRA     0                                   // Total # extra bytes
+#define GWLME_EXTRA     0                                           // Total # extra bytes
 
 // Define offsets in VEWNDCLASS window extra bytes
-#define GWLVE_EXTRA     0                                   // Total # extra bytes
+#define GWLVE_EXTRA     0                                           // Total # extra bytes
 
 
 // Define local window messages

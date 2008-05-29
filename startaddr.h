@@ -317,7 +317,7 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
     // trailer
-    "<no name>"                 , (LPUCHAR) NEG1U                       ,
+    "<no name>"                 , (LPUCHAR) (HANDLE_PTR) -1             ,
   };
 
   #define START_ADDRESSES_LENGTH      ((sizeof (StartAddresses) / sizeof (StartAddresses[0])) - 1)

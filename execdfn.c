@@ -466,7 +466,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
                       lpMemDfnHdr,
                       lpMemPTD);
     // Save the # LPSYMENTRYs localized
-    lpMemPTD->lpSISNxt->numSymEntries = lpSymEntryNxt - lpSymEntryBeg;
+    lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
 
     // Save as new SISNxt ptr
     lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
@@ -685,7 +685,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             HWND hWndEC;        // Edit Control window handle
 
             // Get the Edit Control window handle
-            hWndEC = (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC);
+            (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
             // If we're at a stop, display the error message
             //   along with the function name/line #
@@ -1323,7 +1323,7 @@ LPSYMENTRY LocalizeLabels
                 *lpSymEntryNxt++ = *lpSymEntrySrc;
 
                 // Clear the STE flags & data
-                *((PUINT_PTR) &lpSymEntrySrc->stFlags) &= *(PUINT_PTR) &stFlagsClr;
+                *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
 ////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below
 
                 // Initialize the SYMENTRY to an integer constant
@@ -1391,7 +1391,7 @@ void InitVarSTEs
                 for (uSym = 0; uSym < numArgSTE; uSym++, lplpSymEntry++)
                 {
                     // Clear the STE flags & data
-                    *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
+                    *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 ////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
                     (*lplpSymEntry)->stFlags.Imm        = TRUE;
@@ -1422,7 +1422,7 @@ void InitVarSTEs
                     for (uSym = 0; uSym < numArgSTE; uSym++, lplpSymEntry++)
                     {
                         // Clear the STE flags & data
-                        *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
+                        *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 ////////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
                         (*lplpSymEntry)->stFlags.Imm        = TRUE;
@@ -1451,11 +1451,11 @@ void InitVarSTEs
         if (numArgSTE EQ 1)
         {
             // Clear the STE flags & data
-            *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
-////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
+            *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
+////////////(*lplpSymEntry)->stData.stLongest = 0;          // stLongest set below
 
-////////////(*lplpSymEntry)->stFlags.Imm        = 0;    // Already zero from previous initialization
-////////////(*lplpSymEntry)->stFlags.ImmType    = 0;    // Already zero from previous initialization
+////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;    // Already zero from previous initialization
+////////////(*lplpSymEntry)->stFlags.ImmType    = 0;        // Already zero from previous initialization
             (*lplpSymEntry)->stFlags.Value      = TRUE;
             (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
             (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
@@ -1502,7 +1502,7 @@ void InitVarSTEs
             for (uSym = 0; uSym < numArgSTE; uSym++, lplpSymEntry++)
             {
                 // Clear the STE flags & data
-                *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
+                *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
                 (*lplpSymEntry)->stData.stLongest = 0;
 
                 // Split cases based upon the arg storage type
@@ -1584,7 +1584,7 @@ void InitVarSTEs
                                 break;
 
                             case PTRTYPE_HGLOBAL:
-////////////////////////////////(*lplpSymEntry)->stFlags.Imm        = 0;    // Already zero from previous initialization
+////////////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;// Already zero from previous initialization
 ////////////////////////////////(*lplpSymEntry)->stFlags.ImmType    = 0;    // Already zero from previous initialization
                                 (*lplpSymEntry)->stFlags.Value      = TRUE;
                                 (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
@@ -1647,8 +1647,8 @@ BOOL InitFcnSTEs
          && lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNIMMED)
         {
             // Clear the STE flags & data
-            *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
-////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
+            *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
+////////////(*lplpSymEntry)->stData.stLongest = 0;          // stLongest set below
 
             (*lplpSymEntry)->stFlags.Imm        = TRUE;
             (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
@@ -1720,11 +1720,10 @@ BOOL InitFcnSTEs
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
             // Clear the STE flags & data
-            *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
-////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
-
-////////////(*lplpSymEntry)->stFlags.Imm        = 0;    // Already zero from above
-////////////(*lplpSymEntry)->stFlags.ImmType    = 0;    // Already zero from above
+            *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
+////////////(*lplpSymEntry)->stData.stLongest   = 0;        // stLongest set below
+////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;    // Already zero from above
+////////////(*lplpSymEntry)->stFlags.ImmType    = 0;        // Already zero from above
             (*lplpSymEntry)->stFlags.Value      = TRUE;
             (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
             (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;

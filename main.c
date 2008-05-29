@@ -34,10 +34,12 @@
 #include <float.h>
 #include <wininet.h>
 
+#include "uniscribe.h"
 #include "main.h"
 #include "resdebug.h"
 #include "resource.h"
 #include "editctrl.h"
+#include "unitranshdr.h"
 
 #define DEFINE_VARS
 #define DEFINE_VALUES
@@ -346,8 +348,10 @@ void CreateNewFontSM
 
 {
     ENUMSETFONTW enumSetFontW;
+#ifndef UNISCRIBE
     LOGFONT      lfAlt;
     TEXTMETRIC   tmAlt;
+#endif
 
     // Call common routine to set various variables
     CreateNewFontCom (&hFontSM,
@@ -363,6 +367,7 @@ void CreateNewFontSM
     // Refont the SM windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
 
+#ifndef UNISCRIBE
     // Copy the SM LOGFONT & TEXTMETRICS
     lfAlt = lfSM;
     tmAlt = tmSM;
@@ -377,6 +382,7 @@ void CreateNewFontSM
                       &tmAlt,
                        NULL,
                        NULL);
+#endif
 #ifdef DEBUG
     // Initialize the struct
     enumSetFontW.lpwClassName = LDBWNDCLASS;
@@ -563,10 +569,10 @@ BOOL CreateChildWindows
     } // End IF
 
     // Subclass the Tab Control so we can handle some of its messages
-    lpfnOldTabCtrlWndProc = (WNDPROC)
-      SetWindowLongW (hWndTC,
-                      GWL_WNDPROC,
-                      (long) (WNDPROC) &LclTabCtrlWndProc);
+    (HANDLE_PTR) lpfnOldTabCtrlWndProc =
+      SetWindowLongPtrW (hWndTC,
+                         GWL_WNDPROC,
+                         (__int3264) (HANDLE_PTR) (WNDPROC) &LclTabCtrlWndProc);
     // Show and paint the window
     ShowWindow (hWndTC, SW_SHOWNORMAL);
     UpdateWindow (hWndTC);
@@ -884,7 +890,7 @@ LRESULT APIENTRY MFWndProc
 
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
-#define lpnmh   ((LPNMHDR) lParam)
+#define lpnmh   (*(LPNMHDR *) &lParam)
 
             // Split cases based upon the notification code
             switch (lpnmh->code)
@@ -894,16 +900,16 @@ LRESULT APIENTRY MFWndProc
                 {
                     static WCHAR TooltipText[_MAX_PATH];
                     LPAPLCHAR    lpMemWSID;     // Ptr to []WSID global memory
-#define lpttt   ((LPTOOLTIPTEXTW) lParam)
+#define lpttt   (*(LPTOOLTIPTEXTW *) &lParam)
 
                     // Get a ptr to the ws name
-                    lpMemWSID = PointToWsName (lpttt->hdr.idFrom);
+                    lpMemWSID = PointToWsName ((__int3264) (HANDLE_PTR) lpttt->hdr.idFrom);
 #ifndef DEBUG
                     // Return a ptr to the stored tooltip text
                     lstrcpyW (TooltipText, lpMemWSID);
 #else
                     // Get the PerTabData global memory handle
-                    hGlbPTD = GetPerTabHandle (lpttt->hdr.idFrom); Assert (hGlbPTD NE NULL);
+                    hGlbPTD = GetPerTabHandle ((__int3264) (HANDLE_PTR) lpttt->hdr.idFrom); Assert (hGlbPTD NE NULL);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -970,7 +976,7 @@ LRESULT APIENTRY MFWndProc
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // control identifier
                                     // lpdis = (LPDRAWITEMSTRUCT) lParam; // item-drawing information
         {
-#define lpdis   ((LPDRAWITEMSTRUCT) lParam)
+#define lpdis   (*(LPDRAWITEMSTRUCT *) &lParam)
 
             // Ensure this message is for our tab control
             if (lpdis->CtlType NE ODT_TAB)
@@ -1068,17 +1074,22 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;       // We handled the msg
 
                 case IDM_PASTE_APLWIN:
-                    SendMessageW (hWndActive, MYWM_PASTE_APLWIN, 0, 0);
+                    SendMessageW (hWndActive, MYWM_PASTE_APL, UNITRANS_APLWIN, 0);
 
                     return FALSE;       // We handled the msg
 
                 case IDM_PASTE_APL2:
-                    SendMessageW (hWndActive, MYWM_PASTE_APL2, 0, 0);
+                    SendMessageW (hWndActive, MYWM_PASTE_APL, UNITRANS_APL2, 0);
 
                     return FALSE;       // We handled the msg
 
                 case IDM_PASTE_ISO:
-                    SendMessageW (hWndActive, MYWM_PASTE_ISO, 0, 0);
+                    SendMessageW (hWndActive, MYWM_PASTE_APL, UNITRANS_ISO, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_PASTE_PC3270:
+                    SendMessageW (hWndActive, MYWM_PASTE_APL, UNITRANS_PC3270, 0);
 
                     return FALSE;       // We handled the msg
 
@@ -1160,7 +1171,7 @@ LRESULT APIENTRY MFWndProc
                     DialogBox (_hInstance,
                                MAKEINTRESOURCE (IDD_ABOUT),
                                hWnd,
-                               &AboutDlgProc);
+                               (DLGPROC) &AboutDlgProc);
                     return FALSE;       // We handled the msg
 
                 case IDM_UPDATES:
@@ -1482,7 +1493,7 @@ BOOL CALLBACK EnumCallbackQueryClose
     if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
         return TRUE;                    // skip it, and continue enumerating
 
-    return SendMessageW (hWnd, WM_QUERYENDSESSION, 0, 0);
+    return (UINT) SendMessageW (hWnd, WM_QUERYENDSESSION, 0, 0);
 } // End EnumCallbackQueryClose
 
 
@@ -1644,7 +1655,7 @@ void CheckForUpdates
             DialogBoxParam (_hInstance,
                             MAKEINTRESOURCE (IDD_UPDATES),
                             hWndMF,
-                           &UpdatesDlgProc,
+                 (DLGPROC) &UpdatesDlgProc,
                   (LPARAM) &updatesDlgStr);
 
             goto NORMAL_EXIT;
@@ -1762,10 +1773,10 @@ BOOL CALLBACK UpdatesDlgProc
 ////
 ////        // Subclass the IDC_LINK control
 ////        //   so we can handle WM_LBUTTONDOWN
-////        lpfnOldStaticWndProc =
-////          (WNDPROC) SetWindowLong (hWndStatic,
-////                                   GWL_WNDPROC,
-////                                   (long) (WNDPROC) &LclStaticWndProc);
+////        (HANDLE_PTR) lpfnOldStaticWndProc =
+////          SetWindowLongPtrW (hWndStatic,
+////                             GWL_WNDPROC,
+////                             (__int3264) (HANDLE_PTR) (WNDPROC) &LclStaticWndProc);
 ////        // Set the cursor for the static control to a hand
 
 
@@ -1819,9 +1830,9 @@ BOOL CALLBACK UpdatesDlgProc
             } // End IF
 
 ////        // Restore the old WndProc
-////        (WNDPROC) SetWindowLong (hWndStatic,
-////                                 GWL_WNDPROC,
-////                                 (long) (WNDPROC) lpfnOldStaticWndProc);
+////        SetWindowLongPtrW (hWndStatic,
+////                           GWL_WNDPROC,
+////                           (__int3264) (HANDLE_PTR) (WNDPROC) lpfnOldStaticWndProc);
 ////        lpfnOldStaticWndProc = NULL;
 
             EndDialog (hDlg, TRUE); // Quit this dialog

@@ -1,6 +1,6 @@
-//***************************************************************************
-//  NARS2000 -- Includable Edit Menu Items
-//***************************************************************************
+//****************************************************************************
+//  NARS2000 -- Unicode Translation Header
+//****************************************************************************
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
@@ -20,23 +20,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-        MENUITEM "&Undo\tCtrl-Z",               IDM_UNDO
-        MENUITEM "&Redo\tCtrl-Y",               IDM_REDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tCtrl-X",                IDM_CUT
-        MENUITEM "&Copy\tCtrl-C",               IDM_COPY
-        MENUITEM "&Paste\tCtrl-V",              IDM_PASTE
-        POPUP "Paste AP&L"
-        BEGIN
-            MENUITEM "Paste APL+&WIN",          IDM_PASTE_APLWIN
-            MENUITEM "Paste APL&2",             IDM_PASTE_APL2
-            MENUITEM "Paste &ISO",              IDM_PASTE_ISO
-            MENUITEM "Paste &PC3270"            IDM_PASTE_PC3270
-        END
-        MENUITEM "&Delete",                     IDM_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "Select &All\tCtrl-A",         IDM_SELECTALL
+
+typedef enum tagUNI_TRANS
+{
+    UNITRANS_APLWIN = 0,    // 00:  APL+WIN 3.6 (and maybe later)
+    UNITRANS_ISO,           // 01:  ISO Standard (What Typeface is this???)
+    UNITRANS_APL2,          // 02:  APL2 ???     ***FINISHME***
+    UNITRANS_DYALOG,        // 03:  Dyalog ???   ***FINISHME***
+    UNITRANS_PC3270,        // 04:  PC3270
+    UNITRANS_NORMAL,        // 05:  Normal paste translation (from Ctrl-v)
+    UNITRANS_NARS,          // 06:  NARS2000
+    UNITRANS_LENGTH,        // 07:  Length of the enum *MUST* be last
+                            // 08-0F:  Available entries (4 bits)
+} UNI_TRANS;
+
 
 //***************************************************************************
-//  End of File: edit.rc
+//  End of File: unitranshdr.h
 //***************************************************************************

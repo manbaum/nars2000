@@ -203,6 +203,33 @@
 #define UTF16_STILE2             0x007C         // Stile (a.k.a. 0x2223)
 #define UTF16_RBRACE             0x007D         // Right brace
 
+#define UTF16_A_                 0xE036         // A underbar
+#define UTF16_B_                 0xE037         // B underbar
+#define UTF16_C_                 0xE038         // C underbar
+#define UTF16_D_                 0xE039         // D underbar
+#define UTF16_E_                 0xE03A         // E underbar
+#define UTF16_F_                 0xE03B         // F underbar
+#define UTF16_G_                 0xE03C         // G underbar
+#define UTF16_H_                 0xE03D         // H underbar
+#define UTF16_I_                 0xE03E         // I underbar
+#define UTF16_J_                 0xE03F         // J underbar
+#define UTF16_K_                 0xE040         // K underbar
+#define UTF16_L_                 0xE041         // L underbar
+#define UTF16_M_                 0xE042         // M underbar
+#define UTF16_N_                 0xE043         // N underbar
+#define UTF16_O_                 0xE044         // O underbar
+#define UTF16_P_                 0xE045         // P underbar
+#define UTF16_Q_                 0xE046         // Q underbar
+#define UTF16_R_                 0xE047         // R underbar
+#define UTF16_S_                 0xE048         // S underbar
+#define UTF16_T_                 0xE049         // T underbar
+#define UTF16_U_                 0xE04A         // U underbar
+#define UTF16_V_                 0xE04B         // V underbar
+#define UTF16_W_                 0xE04C         // W underbar
+#define UTF16_X_                 0xE04D         // X underbar
+#define UTF16_Y_                 0xE04E         // Y underbar
+#define UTF16_Z_                 0xE04F         // Z underbar
+
 
 // The corresponding wide string constants
 
@@ -359,6 +386,33 @@
 #define WS_UTF16_LBRACE             L"\x007B"   // Left brace
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. 0x2223)
 #define WS_UTF16_RBRACE             L"\x007D"   // Right brace
+
+#define WS_UTF16_A_                 L"\xE036"   // A underbar
+#define WS_UTF16_B_                 L"\xE037"   // B underbar
+#define WS_UTF16_C_                 L"\xE038"   // C underbar
+#define WS_UTF16_D_                 L"\xE039"   // D underbar
+#define WS_UTF16_E_                 L"\xE03A"   // E underbar
+#define WS_UTF16_F_                 L"\xE03B"   // F underbar
+#define WS_UTF16_G_                 L"\xE03C"   // G underbar
+#define WS_UTF16_H_                 L"\xE03D"   // H underbar
+#define WS_UTF16_I_                 L"\xE03E"   // I underbar
+#define WS_UTF16_J_                 L"\xE03F"   // J underbar
+#define WS_UTF16_K_                 L"\xE040"   // K underbar
+#define WS_UTF16_L_                 L"\xE041"   // L underbar
+#define WS_UTF16_M_                 L"\xE042"   // M underbar
+#define WS_UTF16_N_                 L"\xE043"   // N underbar
+#define WS_UTF16_O_                 L"\xE044"   // O underbar
+#define WS_UTF16_P_                 L"\xE045"   // P underbar
+#define WS_UTF16_Q_                 L"\xE046"   // Q underbar
+#define WS_UTF16_R_                 L"\xE047"   // R underbar
+#define WS_UTF16_S_                 L"\xE048"   // S underbar
+#define WS_UTF16_T_                 L"\xE049"   // T underbar
+#define WS_UTF16_U_                 L"\xE04A"   // U underbar
+#define WS_UTF16_V_                 L"\xE04B"   // V underbar
+#define WS_UTF16_W_                 L"\xE04C"   // W underbar
+#define WS_UTF16_X_                 L"\xE04D"   // X underbar
+#define WS_UTF16_Y_                 L"\xE04E"   // Y underbar
+#define WS_UTF16_Z_                 L"\xE04F"   // Z underbar
 
 
 //***************************************************************************

@@ -605,7 +605,7 @@ void GetValueIntoToken
 
 {
     // Clear the NoDisplay flag
-    lptkArg->tkFlags.NoDisplay = 0;
+    lptkArg->tkFlags.NoDisplay = FALSE;
 
     // Split cases based upon the arg storage type
     switch (aplTypeArg)
@@ -1178,7 +1178,7 @@ LPSYMENTRY GetSteZero
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
 
     // Ensure we are where we think we are
-    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+    Assert ('PL' EQ (__int3264) (HANDLE_PTR) TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1211,7 +1211,7 @@ LPSYMENTRY GetSteOne
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
 
     // Ensure we are where we think we are
-    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+    Assert ('PL' EQ (__int3264) (HANDLE_PTR) TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1244,7 +1244,7 @@ LPSYMENTRY GetSteBlank
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
 
     // Ensure we are where we think we are
-    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+    Assert ('PL' EQ (__int3264) (HANDLE_PTR) TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);

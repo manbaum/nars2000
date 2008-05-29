@@ -78,7 +78,7 @@ BOOL CmdErase_EM
             //   and the .Inuse flag
             ZeroMemory (&stFlags, sizeof (stFlags));
             lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                &lpwszTail[uRht] - lpMemDataStart,
+                                                (UINT) (&lpwszTail[uRht] - lpMemDataStart),
                                                 &stFlags);
             // If found, attempt to expunge the name
             // If not found, ignore it if it's a valid name
@@ -91,7 +91,7 @@ BOOL CmdErase_EM
             } else
             {
                 if (!ValidName (lpMemDataStart,
-                               &lpwszTail[uRht] - lpMemDataStart))
+                               (UINT) (&lpwszTail[uRht] - lpMemDataStart)))
                     ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
             } // End IF/ELSE
         } else

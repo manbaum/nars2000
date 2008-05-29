@@ -811,9 +811,9 @@ BOOL _MyReleaseDC
 //***************************************************************************
 
 LPVOID _MyGlobalAlloc
-    (UINT  uFlags,  // object allocation attributes
-     DWORD dwBytes, // number of bytes to allocate
-     UINT  uLine)   // Line #
+    (UINT   uFlags,     // Object allocation attributes
+     SIZE_T dwBytes,    // Number of bytes to allocate
+     UINT   uLine)      // Line #
 
 {
     LPVOID lpVoid;
@@ -956,12 +956,12 @@ BOOL _MyGlobalUnlock
 //  Get the size of a global variable
 //***************************************************************************
 
-DWORD _MyGlobalSize
+SIZE_T _MyGlobalSize
     (HGLOBAL hMem,      // Address of the global memory object
      UINT    uLine)     // Line #
 
 {
-    DWORD dwRet;
+    SIZE_T dwRet;
 
     CheckMemStat ();
 
@@ -1026,12 +1026,12 @@ DWORD _MyGlobalFlags
 
 HGLOBAL _MyGlobalReAlloc
     (HGLOBAL hMem,      // Address of the global memory object
-     DWORD   dwBytes,   // New size of block
+     SIZE_T  dwBytes,   // New size of block
      UINT    uFlags,    // How to reallocate
      UINT    uLine)     // Line #
 
 {
-    DWORD dwRet;
+    SIZE_T  dwRet;
     HGLOBAL hGlb;
 
     CheckMemStat ();

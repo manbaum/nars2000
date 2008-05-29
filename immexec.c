@@ -136,10 +136,10 @@ void ImmExecLine
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Get the position of the start of the line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
 
     // Get the line length
-    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+    uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     // Allocate virtual memory for the line (along with its continuations)
     lpwszCompLine =
@@ -438,7 +438,7 @@ DWORD WINAPI ImmExecStmtInThread
               ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
                            FALSE,               // TRUE iff free the lpwszLine on completion
                            TRUE,                // TRUE iff wait until finished
-                           (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+                           (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
             // Split cases based upon the exit type
             switch (exitType)
             {
@@ -510,7 +510,7 @@ DWORD WINAPI ImmExecStmtInThread
                       ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
                                    FALSE,           // TRUE iff free the lpwszLine on completion
                                    TRUE,            // TRUE iff wait until finished
-                                   (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
+                                   (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
@@ -548,7 +548,7 @@ DWORD WINAPI ImmExecStmtInThread
                   ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
                                FALSE,           // TRUE iff free the lpwszLine on completion
                                TRUE,            // TRUE iff wait until finished
-                               (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
+                               (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 

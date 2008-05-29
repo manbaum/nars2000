@@ -182,7 +182,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -247,11 +247,11 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                     //   and the .Inuse flag
                     ZeroMemory (&stFlags, sizeof (stFlags));
                     lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                        &lpMemDataRht[uRht] - lpMemDataStart,
+                                                        (UINT) (&lpMemDataRht[uRht] - lpMemDataStart),
                                                         &stFlags);
                     // If not found, return NAMECLASS_INV or NAMECLASS_AVL
                     if (!lpSymEntry)
-                        *lpMemDataRes++ = ValidName (lpMemDataStart, &lpMemDataRht[uRht] - lpMemDataStart)
+                        *lpMemDataRes++ = ValidName (lpMemDataStart, (UINT) (&lpMemDataRht[uRht] - lpMemDataStart))
                                         ? NAMECLASS_AVL : NAMECLASS_INV;
                     else
                         *lpMemDataRes++ = CalcNameClass (lpSymEntry);
@@ -305,7 +305,7 @@ YYALLOC_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

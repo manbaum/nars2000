@@ -100,7 +100,7 @@ LPPL_YYSTYPE PushVarStrand_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRAND;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
     lpYYRes->TknCount                  = 0;
@@ -219,7 +219,7 @@ void FreeStrand
     LPPL_YYSTYPE lpYYToken;
 
     // Get the # elements in the strand
-    iLen = lpYYStrandNext - lpYYStrand;
+    iLen = (UINT) (lpYYStrandNext - lpYYStrand);
 
     for (lpYYToken = &lpYYStrand[iLen - 1];
          lpYYToken NE &lpYYStrand[-1];
@@ -381,7 +381,7 @@ static char tabConvert[][STRAND_LENGTH] =
     lpYYRes->lpYYFcnBase = (LPPL_YYSTYPE) -1;  // For debugging
 
     // Get the # elements in the strand
-    iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
+    iLen = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand);
 
     // Trundle through the strand stack converting
     //   to a common memory allocation type
@@ -581,7 +581,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         // Fill in the result token
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                         lpYYRes->tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -623,7 +623,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         // Fill in the result token
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                         lpYYRes->tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -642,7 +642,7 @@ static char tabConvert[][STRAND_LENGTH] =
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
                 lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -678,7 +678,7 @@ static char tabConvert[][STRAND_LENGTH] =
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -690,7 +690,7 @@ static char tabConvert[][STRAND_LENGTH] =
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType = aplType;
 ////lpHeader->PermNdx = PERMNDX_NONE;   // Already zero from GHND
-////lpHeader->SysVar  = 0;              // Already zero from GHND
+////lpHeader->SysVar  = FALSE;          // Already zero from GHND
     lpHeader->RefCnt  = 1;
     lpHeader->NELM    = iLen;
     lpHeader->Rank    = 1;
@@ -1157,8 +1157,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;    // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;    // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
@@ -1195,7 +1195,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, TRUE);
 
     // Calculate the actual length
-    lpHeader->tknNELM = uActLen = lpYYMemData - lpYYMemStart;
+    lpHeader->tknNELM = uActLen = (UINT) (lpYYMemData - lpYYMemStart);
 
     Assert (TknCount EQ uIniLen);
     Assert (uActLen  EQ uIniLen);
@@ -1222,7 +1222,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
                          NULL,              // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
                          NULL);             // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
         // Get the line length
-        uLineLen = lpMemTxtEnd - lpMemTxtSrc;
+        uLineLen = (UINT) (lpMemTxtEnd - lpMemTxtSrc);
 
         // Allocate global memory for a length <uLineLen> vector of type <APLCHAR>.
         lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
@@ -1317,7 +1317,7 @@ LPPL_YYSTYPE CopyString_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYStr->tkToken.tkData.tkGlbData);
     lpYYRes->tkToken.tkCharIndex       = lpYYStr->tkToken.tkCharIndex;
 
@@ -1367,7 +1367,7 @@ LPPL_YYSTYPE MakeAxis_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYAxis->tkToken.tkData.tkSym->stData.stGlbData);
                 lpYYRes->tkToken.tkCharIndex       = lpYYAxis->tkToken.tkCharIndex;
 
@@ -1377,7 +1377,7 @@ LPPL_YYSTYPE MakeAxis_YY
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = lpYYAxis->tkToken.tkData.tkSym->stFlags.ImmType;
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkLongest  = lpYYAxis->tkToken.tkData.tkSym->stData.stLongest;
             lpYYRes->tkToken.tkCharIndex       = lpYYAxis->tkToken.tkCharIndex;
 
@@ -1618,7 +1618,7 @@ LPPL_YYSTYPE PushNameStrand_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRAND;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
@@ -1674,7 +1674,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
     // Get the # elements in the strand
-    iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
+    iLen = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand);
 
     // Save these tokens in global memory
 
@@ -1695,7 +1695,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRNAMED;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -1760,7 +1760,7 @@ LPPL_YYSTYPE InitList0_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_LISTINT;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = NEG1U;
 
@@ -1826,12 +1826,12 @@ LPPL_YYSTYPE PushList_YY
 
         YYTmp.tkToken.tkFlags.TknType   = TKT_LISTSEP;
 ////////YYTmp.tkToken.tkFlags.ImmType   = 0;    // Already zero from = {0}
-////////YYTmp.tkToken.tkFlags.NoDisplay = 0;    // Already zero from = {0}
+////////YYTmp.tkToken.tkFlags.NoDisplay = FALSE;// Already zero from = {0}
         YYTmp.tkToken.tkData.tkLongest  = NEG1U;        // Debug value
         YYTmp.tkToken.tkCharIndex       = NEG1U;        // ...
 ////////YYTmp.TknCount                  = 0;    // Already zero from = {0}
-////////YYTmp.YYInuse                   = 0;    // Already zero from = {0}
-////////YYTmp.Indirect                  = 0;    // Already zero from = {0}
+////////YYTmp.YYInuse                   = FALSE;// Already zero from = {0}
+////////YYTmp.Indirect                  = FALSE;// Already zero from = {0}
 ////////YYTmp.Avail                     = 0;    // Already zero from = {0}
 ////////YYTmp.YYIndex                   = 0;    // Already zero from = {0}
 ////////YYTmp.YYFlag                    = 0;    // Already zero from = {0}
@@ -1894,7 +1894,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
     // Get the # elements in the strand
-    iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
+    iLen = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand);
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_NESTED, iLen, 1);
@@ -1920,7 +1920,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_LIST;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = iLen;
     lpHeader->Rank       = 1;
@@ -1993,7 +1993,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = bBrackets ? TKT_LISTBR : TKT_LISTPAR;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLst);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 

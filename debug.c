@@ -257,7 +257,7 @@ LRESULT APIENTRY DBWndProc
 #define PROP_LINENUM    L"iLineNum"
 
     // Get the window handle of the Listbox
-    (long) hWndLB = GetWindowLongW (hWnd, GWLDB_HWNDLB);
+    (HANDLE_PTR) hWndLB = GetWindowLongPtrW (hWnd, GWLDB_HWNDLB);
 
 ////LCLODSAPI ("DB: ", hWnd, message, wParam, lParam);
     switch (message)
@@ -265,7 +265,7 @@ LRESULT APIENTRY DBWndProc
         case WM_CREATE:
         {
             iLineNum = 0;
-            SetPropW (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+            SetPropW (hWnd, PROP_LINENUM, ULongToHandle (iLineNum));
 
             // Create a listbox to fit inside this window
             hWndLB =
@@ -289,7 +289,7 @@ LRESULT APIENTRY DBWndProc
                              _hInstance,            // Instance
                              0);                    // lParam
             // Save for later use
-            SetWindowLongW (hWnd, GWLDB_HWNDLB, (long) hWndLB);
+            SetWindowLongPtrW (hWnd, GWLDB_HWNDLB, (__int3264) (LONG_PTR) hWndLB);
 
             // Show the windows
             ShowWindow (hWndLB, SW_SHOWNORMAL);
@@ -304,10 +304,10 @@ LRESULT APIENTRY DBWndProc
             // Subclass the List Box so we can pass
             //   certain WM_KEYDOWN messages to the
             //   session manager.
-            lpMemPTD->lpfnOldListboxWndProc = (WNDPROC)
-              SetWindowLongW (hWndLB,
-                              GWL_WNDPROC,
-                              (long) (WNDPROC) &LclListboxWndProc);
+            (HANDLE_PTR) lpMemPTD->lpfnOldListboxWndProc =
+              SetWindowLongPtrW (hWndLB,
+                                 GWL_WNDPROC,
+                                 (__int3264) (LONG_PTR) (WNDPROC) &LclListboxWndProc);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -368,20 +368,20 @@ LRESULT APIENTRY DBWndProc
 #undef  fwSizeType
 
         case MYWM_DBGMSGA:          // Single-char message
-            iLineNum = (int) GetPropW (hWnd, PROP_LINENUM);
+            iLineNum = HandleToUlong (GetPropW (hWnd, PROP_LINENUM));
 
             // Format the string with a preceding line #
             wsprintfA (szTemp,
                        "%4d:  %s",
                        ++iLineNum,
-                       (LPCHAR) lParam);
+                       *(LPCHAR *) &lParam);
             // Convert the string from A to W
             A2W (wszTemp, szTemp, sizeof (wszTemp) - 1);
 
-            SetPropW (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+            SetPropW (hWnd, PROP_LINENUM, ULongToHandle (iLineNum));
 
             // Add the string to the ListBox
-            iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
+            iIndex = (UINT) SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
 
             // Scroll this item into view
             SendMessageW (hWnd, MYWM_DBGMSG_SCROLL, iIndex, 0);
@@ -389,18 +389,18 @@ LRESULT APIENTRY DBWndProc
             goto NORMAL_EXIT;       // We handled the msg
 
         case MYWM_DBGMSGW:          // Double-char message
-            iLineNum = (int) GetPropW (hWnd, PROP_LINENUM);
+            iLineNum = HandleToULong (GetPropW (hWnd, PROP_LINENUM));
 
             // Format the string with a preceding line #
             wsprintfW (wszTemp,
                        L"%4d:  %s",
                        ++iLineNum,
-                       (LPWCHAR) lParam);
+                       *(LPWCHAR *) &lParam);
 
-            SetPropW (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+            SetPropW (hWnd, PROP_LINENUM, ULongToHandle (iLineNum));
 
             // Add the string to the ListBox
-            iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
+            iIndex = (UINT) SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
 
             // Scroll this item into view
             SendMessageW (hWnd, MYWM_DBGMSG_SCROLL, iIndex, 0);
@@ -412,13 +412,13 @@ LRESULT APIENTRY DBWndProc
 
             // Check for last line #
             if (iIndex EQ -1)
-                iIndex = SendMessageW (hWndLB, LB_GETCOUNT, 0, 0);
+                iIndex = (UINT) SendMessageW (hWndLB, LB_GETCOUNT, 0, 0);
 
             // Ensure the item just added is visible
             GetClientRect (hWndLB, &rcClient);
 
             // Common item height
-            iHeight = SendMessageW (hWndLB, LB_GETITEMHEIGHT, 0, 0);
+            iHeight = (UINT) SendMessageW (hWndLB, LB_GETITEMHEIGHT, 0, 0);
 
             // Less # whole items we can display
             iIndex -= (rcClient.bottom / iHeight) - 1;
@@ -433,7 +433,7 @@ LRESULT APIENTRY DBWndProc
             // Start over again
             SendMessageW (hWndLB, LB_RESETCONTENT, 0, 0);
             iLineNum = 0;
-            SetPropW (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+            SetPropW (hWnd, PROP_LINENUM, ULongToHandle (iLineNum));
 
             UpdateWindow (hWnd);    // Redraw the screen now
 
@@ -461,9 +461,9 @@ LRESULT APIENTRY DBWndProc
 ////            lpMemPTD = MyGlobalLock (hGlbPTD);
 ////
 ////            // Unhook the LclListboxWndProc
-////            SetWindowLongW (hWndLB,
-////                            GWL_WNDPROC,
-////                            (long) lpMemPTD->lpfnOldListboxWndProc);
+////            SetWindowLongPtrW (hWndLB,
+////                               GWL_WNDPROC,
+////                               (HANDLE_PTR) lpMemPTD->lpfnOldListboxWndProc);
 ////            // We no longer need this ptr
 ////            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 ////        } // End IF
@@ -547,7 +547,7 @@ LRESULT WINAPI LclListboxWndProc
             {
                 case IDM_COPY:
                     // Get the # selected items
-                    iSelCnt = SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
+                    iSelCnt = (UINT) SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
 
                     // Allocate space for that many indices
                     hGlbInd = GlobalAlloc (GHND, iSelCnt * sizeof (int));
@@ -562,7 +562,7 @@ LRESULT WINAPI LclListboxWndProc
                     //   the storage requirement for the collection
                     for (iTotalBytes = i = 0; i < iSelCnt; i++)
                         // The "2 +" is for the '\r' and '\n' at the end of each line
-                        iTotalBytes += sizeof (WCHAR) * (2 + SendMessageW (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
+                        iTotalBytes += sizeof (WCHAR) * (2 + (UINT) SendMessageW (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
 
                     // Allocate storage for the entire collection
                     hGlbSel = GlobalAlloc (GHND | GMEM_DDESHARE, iTotalBytes);
@@ -573,7 +573,7 @@ LRESULT WINAPI LclListboxWndProc
                     // Copy the text to the array, separated by a newline
                     for (p = lpSel, i = 0; i < iSelCnt; i++)
                     {
-                        p += SendMessageW (hWnd, LB_GETTEXT, lpInd[i], (LPARAM) p);
+                        p += (UINT) SendMessageW (hWnd, LB_GETTEXT, lpInd[i], (LPARAM) p);
                         *p++ = '\r';
                         *p++ = '\n';
                     } // End FOR
@@ -634,7 +634,7 @@ LRESULT WINAPI LclListboxWndProc
                                             // yPos = HIWORD(lParam);  // vertical position of cursor
 
             // Ensure there are items selected
-            iSelCnt = SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
+            iSelCnt = (UINT) SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
 
             mfState = (iSelCnt EQ 0) ? MF_GRAYED : MF_ENABLED;
 

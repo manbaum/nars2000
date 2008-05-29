@@ -298,10 +298,10 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     lpGslVectorW = gsl_vector_alloc  ((UINT) uNumCols);                     // N
 
     // Check the return codes for the above allocations
-    if (GSL_ENOMEM EQ (int) lpGslMatrixU
-     || GSL_ENOMEM EQ (int) lpGslMatrixV
-     || GSL_ENOMEM EQ (int) lpGslVectorS
-     || GSL_ENOMEM EQ (int) lpGslVectorW)
+    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixV
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorS
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorW)
         goto WSFULL_EXIT;
 
     // Copy the right arg to the GSL matrix U
@@ -390,7 +390,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     lpGslVectorI = gsl_vector_alloc  ((UINT) uNumRows); // M
 
     // Check the return code for the above allocation
-    if (GSL_ENOMEM EQ (int) lpGslVectorI)
+    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorI)
         goto WSFULL_EXIT;
 
     gsl_vector_set_zero (lpGslVectorI);
@@ -745,11 +745,11 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     lpGslVectorB = gsl_vector_alloc  ((UINT) uNumRowsRht);                      // M
 
     // Check the return codes for the above allocations
-    if (GSL_ENOMEM EQ (int) lpGslMatrixU
-     || GSL_ENOMEM EQ (int) lpGslMatrixV
-     || GSL_ENOMEM EQ (int) lpGslVectorS
-     || GSL_ENOMEM EQ (int) lpGslVectorW
-     || GSL_ENOMEM EQ (int) lpGslVectorX)
+    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixV
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorS
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorW
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorX)
         goto WSFULL_EXIT;
 
     // Copy the right arg to the GSL matrix U

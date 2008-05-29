@@ -114,7 +114,8 @@ BOOL CmdSave_EM
     STFLAGS      stFlags;               // STE flags
     SYSTEMTIME   systemTime;            // Current system (UTC) time
     FILETIME     ftCreation;            // Creation time
-    LPWCHAR      lpwszFormat;           // Ptr to formatting save area
+    LPWCHAR      lpwszFormat,           // Ptr to formatting save area
+                 lpwszTemp;             // Ptr to temporary storage
 
     // Skip to the next blank
     lpw = SkipToCharW (lpwszTail, L' ');
@@ -128,8 +129,9 @@ BOOL CmdSave_EM
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get ptr to formatting save area
+    // Get ptr to formatting save area & temporary storage
     lpwszFormat = lpMemPTD->lpwszFormat;
+    lpwszTemp   = lpMemPTD->lpwszTemp;
 
     // Lock the memory to get a ptr to it
     lpMemOldWSID = MyGlobalLock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));

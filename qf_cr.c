@@ -28,6 +28,7 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "dfnhdr.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -125,6 +126,9 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
+    HGLOBAL        hGlbPTD;             // PerTabData global memory handle
+    LPPERTABDATA   lpMemPTD;            // Ptr to PerTabData global memory
+    LPWCHAR        lpwszTemp;           // Ptr to temporary storage
     APLSTYPE       aplTypeRht,          // Right arg storage type
                    aplTypeRes;          // Result    ...
     APLNELM        aplNELMRht,          // Right arg NELM
@@ -145,6 +149,18 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     LPPL_YYSTYPE   lpYYRes = NULL;      // Ptr to the result
     LPAPLCHAR      lpw;                 // Ptr to wide chars
     BOOL           bMF;                 // TRUE iff we're displaying a Magic Function
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to temporary storage
+    lpwszTemp = lpMemPTD->lpwszTemp;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // See if we're to display a Magic Function
     bMF = 1 EQ SIGN_APLRANK (aplRankRes);

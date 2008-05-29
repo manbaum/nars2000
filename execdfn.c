@@ -704,7 +704,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                 lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 
                 // Format the name and line #
-                wsprintfW (lpwszTemp,
+                wsprintfW (lpMemPTD->lpwszTemp,
                            L"%s[%d]",
                            lpMemName,
                            lpSISCur->CurLineNum);
@@ -712,7 +712,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                 MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
 
                 // Display the function name and line #
-                AppendLine (lpwszTemp, FALSE, TRUE);
+                AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
             } // End IF
 
             // Display the default prompt
@@ -946,16 +946,16 @@ void DisplayFcnLine
     lpMemFcnName = MyGlobalLock (lpMemPTD->lpSISCur->hGlbFcnName);
 
     if (uLineNum EQ NEG1U)
-        wsprintfW (lpwszTemp,
+        wsprintfW (lpMemPTD->lpwszTemp,
                    L"Terminating <%s>",
                    lpMemFcnName);
     else
-        wsprintfW (lpwszTemp,
+        wsprintfW (lpMemPTD->lpwszTemp,
                    L"Executing line %d of <%s>:  %s",
                    uLineNum,
                    lpMemFcnName,
                   &lpMemTxtLine->C);
-    DbgMsgW (lpwszTemp);
+    DbgMsgW (lpMemPTD->lpwszTemp);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemFcnName = NULL;

@@ -1062,8 +1062,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                  ksCtrl;        // ...      VK_SHIFT   ...
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+    LPWCHAR      lpwszFormat;   // Ptr to formatting save area
     WNDPROC      lpfnOldEditCtrlWndProc; // Ptr to preceding Edit Control window procedure
+    LPWCHAR      lpwszTemp;     // Ptr to temporary storage
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1073,6 +1074,9 @@ LRESULT WINAPI LclEditCtrlWndProc
 
     // Get the address of the preceding Edit Control window proc
     lpfnOldEditCtrlWndProc = lpMemPTD->lpfnOldEditCtrlWndProc;
+
+    // Get ptr to temporary storage
+    lpwszTemp = lpMemPTD->lpwszTemp;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1637,14 +1641,16 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // Otherwise, DbgMsg it
                 {
 #ifdef DEBUG
+                    WCHAR wszTemp[1024];    // Ptr to temporary output area
+
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                    wsprintfW (lpwszDebug,
+                    wsprintfW (wszTemp,
                                L"CHAR:  chCharCode = %d, %c",
                                chCharCode,
                                chCharCode);
-                    DbgMsgW (lpwszDebug);
+                    DbgMsgW (wszTemp);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1684,14 +1690,16 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // Otherwise, DbgMsg it
                 {
 #ifdef DEBUG
+                    WCHAR wszTemp[1024];    // Ptr to temporary output area
+
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                    wsprintfW (lpwszDebug,
+                    wsprintfW (wszTemp,
                                L"SYSCHAR:  chCharCode = %d, %c",
                                chCharCode,
                                chCharCode);
-                    DbgMsgW (lpwszDebug);
+                    DbgMsgW (wszTemp);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1700,14 +1708,16 @@ LRESULT WINAPI LclEditCtrlWndProc
             } else
             {
 #ifdef DEBUG
+                WCHAR wszTemp[1024];    // Ptr to temporary output area
+
                 // Lock the memory to get a ptr to it
                 lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                wsprintfW (lpwszDebug,
+                wsprintfW (wszTemp,
                            L"SYSCHAR:  chCharCode = %d, %c",
                            chCharCode,
                            chCharCode);
-                DbgMsgW (lpwszDebug);
+                DbgMsgW (wszTemp);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -2418,15 +2428,18 @@ UINT GetCurCharPos
 //***************************************************************************
 
 WCHAR GetCharValue
-    (HWND hWndEC,       // Window handle of the Edit Control
-     UINT uCharPos)     // Char position (-1 = under the caret)
+    (HWND hWndEC,               // Window handle of the Edit Control
+     UINT uCharPos)             // Char position (-1 = under the caret)
 
 {
-    POINT ptCaret;
-    UINT  uLineNum,
-          uLinePos,
-          uLineLen,
-          uLineOff;
+    POINT        ptCaret;       // The caret position
+    UINT         uLineNum,      // The line #
+                 uLinePos,      // The line position (start of line)
+                 uLineLen,      // The line length
+                 uLineOff;      // The line offset
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPWCHAR      lpwszTemp;     // Ptr to temporary storage
 
     if (uCharPos EQ -1)
     {
@@ -2453,6 +2466,18 @@ WCHAR GetCharValue
     uLineOff = uCharPos - uLinePos;
     if (uLineOff >= uLineLen)
         return (uLineOff EQ uLineLen) ? L'\r' : L'\n';
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to temporary storage
+    lpwszTemp = lpMemPTD->lpwszTemp;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Tell EM_GETLINE maximum # chars in the buffer
     // The output array is a temporary so we don't have to

@@ -757,13 +757,15 @@ BOOL HshTabSplitNextEntry_EM
                 Assert (lpHshEntryDest EQ lpHshEntryHash);  // The 1st time only
 ////        if (lp EQ lpHshEntrySrc)
 ////        {
-////            wsprintf (lpszDebug,
-////                      "HshTabSplitNextEntry:  Entry %p <-- %p (%04X) (%04X)",
-////                      lpHshEntryDest,
-////                      lpHshEntrySrc,
-////                      lpHshEntrySrc->uHashAndMask,
-////                      uHashMask);
-////            MBC (lpszDebug);
+////            WCHAR wszTemp[1024];    // Ptr to temporary output area
+////
+////            wsprintfW (wszTemp,
+////                       L"HshTabSplitNextEntry:  Entry %p <-- %p (%04X) (%04X)",
+////                       lpHshEntryDest,
+////                       lpHshEntrySrc,
+////                       lpHshEntrySrc->uHashAndMask,
+////                       uHashMask);
+////            MBC (wszTemp);
 ////            lp = lpHshEntryDest;
 ////        } // End IF
 #endif
@@ -842,11 +844,13 @@ BOOL HshTabSplitNextEntry_EM
 
 #ifdef DEBUG
 ////{ // ***DEBUG***
-////    wsprintfW (lpwszDebug,
+////    WCHAR wszTemp[1024];    // Ptr to temporary output area
+////
+////    wsprintfW (wszTemp,
 ////               L"@@@@ %d hash table entr%s moved by HshTabSplitNextEntry",
 ////               iCntMoved,
 ////               (iCntMoved EQ 1) ? L"y" : L"ies");
-////    DbgMsgW (lpwszDebug);
+////    DbgMsgW (wszTemp);
 ////} // ***DEBUG*** END
 #endif
 
@@ -1765,6 +1769,54 @@ LPSYMENTRY SymTabLookupName
 
 
 //***************************************************************************
+//  $hashlittleConv
+//
+//  Wrapper around <hashlittle> which converts _alphabet_
+//    to lowercase before hashing.
+//***************************************************************************
+
+uint32_t hashlittleConv
+    (LPWCHAR     lpwName,       // Ptr to name
+     size_t      length,        // Length in WCHARs (***NOT BYTES***)
+     uint32_t    initval)       // Initial value for hash
+
+{
+    LPWCHAR  lpwConv,           // Ptr to global memory for the converted key
+             lpwTmp;            // Ptr to output name
+    uint32_t uhash;             // The result
+    size_t   uCnt;              // Loop counter
+
+    // Allocate virtual memory to hold the converted name
+    lpwConv =
+      MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
+                      (UINT) length * sizeof (WCHAR),
+                      MEM_COMMIT | MEM_TOP_DOWN,
+                      PAGE_READWRITE);
+    if (lpwConv EQ NULL)        // ***FIXME*** -- Better error handling needed
+        return 0;
+
+    // Loop through the name converting _alphabet_ to lowercase
+    for (uCnt = 0,
+          lpwTmp = lpwConv;
+        uCnt < length;
+        uCnt++)
+    if (UTF16_A_ <= *lpwName
+     &&             *lpwName <= UTF16_Z_)
+        *lpwTmp++ = L'a' + (*lpwName++ - UTF16_A_);
+    else
+        *lpwTmp++ = *lpwName++;
+
+    // Hash the converted name
+    uhash = hashlittle (lpwConv, length * sizeof (WCHAR), initval);
+
+    // We no longer need this storage
+    MyVirtualFree (lpwConv, 0, MEM_RELEASE); lpwConv = NULL;
+
+    return uhash;
+} // End hashlittleConv
+
+
+//***************************************************************************
 //  $SymTabLookupNameLength
 //
 //  Lookup a named entry based upon hash, flags, and value
@@ -1797,9 +1849,10 @@ LPSYMENTRY SymTabLookupNameLength
         return NULL;
 
     // Hash the name
-    uHash = hashlittle
-           ((const uint32_t *) lpwszString, // A ptr to the name to hash
-             iLen * sizeof (WCHAR),         // The # bytes pointed to
+    uHash = hashlittleConv
+           (lpwszString,                    // A ptr to the name to hash
+/////////////iLen * sizeof (WCHAR),         // The # bytes pointed to
+             iLen,                          // The # bytes pointed to
              0);                            // Initial value or previous hash
     // If the caller hasn't set this field, set it ourselves
     if (lpstFlags->ObjName EQ OBJNAME_NONE)
@@ -1829,7 +1882,7 @@ LPSYMENTRY SymTabLookupNameLength
              EQ *(UINT *) lpstFlags)
         {
             LPWCHAR lpGlbName;
-            int     iCmp;
+            int     iCmp, iCnt;
 #ifdef DEBUG
 ////////////DisplayHshTab ();
 #endif
@@ -1838,8 +1891,16 @@ LPSYMENTRY SymTabLookupNameLength
             // Lock the memory to get a ptr to it
             lpGlbName = MyGlobalLock (lpHshEntry->htGlbName);
 
+#define ToLowerUnd(wch)     ((UTF16_A_ <= wch && wch <= UTF16_Z_) ? L'a' + (wch - UTF16_A_) : wch)
+
             // Compare sensitive to case
-            iCmp = wcsncmp (lpGlbName, lpwszString, iLen);
+            for (iCnt = iCmp = 0; iCnt < iLen; iCnt++)
+            if (ToLowerUnd (lpGlbName[iCnt]) NE ToLowerUnd (lpwszString[iCnt]))
+            {
+                iCmp = 1;
+
+                break;
+            } // End FOR/IF
 
             // We no longer need this ptr
             MyGlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
@@ -2507,9 +2568,10 @@ LPSYMENTRY SymTabAppendNewName_EM
     iLen = lstrlenW (lpwszString);
 
     // Hash the name
-    uHash = hashlittle
-           ((const uint32_t *) lpwszString, // A ptr to the name to hash
-             iLen * sizeof (WCHAR),         // The # bytes pointed to
+    uHash = hashlittleConv
+           (lpwszString,                    // A ptr to the name to hash
+/////////////iLen * sizeof (WCHAR),         // The # bytes pointed to
+             iLen,                          // The # bytes pointed to
              0);                            // Initial value or previous hash
     // This name isn't in the ST -- find the next free entry
     //   in the hash table, split if necessary

@@ -1032,7 +1032,7 @@ void WritePrivateProfileGlbCharW
     lpMemObj = VarArrayBaseToData (lpMemObj, 1);
 
     // Get starting ptr
-    lpaplChar = lpwszTemp;
+    lpaplChar = lpwszGlbTemp;
 
     // Loop through the array elements
     for (uObj = 0; uObj < aplNELMObj; uObj++, lpMemObj++)
@@ -1049,7 +1049,7 @@ void WritePrivateProfileGlbCharW
     // Write out the global char vector
     WritePrivateProfileStringW (lpwSectName,        // Ptr to the section name
                                 lpwKeyName,         // Ptr to the key name
-                                lpwszTemp,          // Ptr to the key value
+                                lpwszGlbTemp,       // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
     // We no longer need this ptr
     MyGlobalUnlock (hGlbObj); lpMemObj = NULL;

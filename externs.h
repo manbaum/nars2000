@@ -64,12 +64,12 @@
 #define DEF_YYRES_INITSIZE      (   1*1024)                 // Initial size of YYRes buffer
 #define DEF_YYRES_INCRSIZE      (   1*1024)                 // Incremental ...
 #define DEF_YYRES_MAXSIZE       (  16*1024)                 // Maximum ...
-#define DEF_CTEMP_INITSIZE      (   4*1024)                 // Initial size of char  temporary storage
-#define DEF_CTEMP_INCRSIZE      (   1*1024)                 // Incremental ...
-#define DEF_CTEMP_MAXSIZE       (  16*1024)                 // Maximum ...
-#define DEF_WTEMP_INITSIZE      (   4*1024)                 // Initial size of WCHAR ...
-#define DEF_WTEMP_INCRSIZE      (   1*1024)                 // Incremental ...
-#define DEF_WTEMP_MAXSIZE       (  16*1024)                 // Maximum ...
+#define DEF_WPTDTEMP_INITSIZE   (   4*1024)                 // Initial size of WCHAR PTD ...
+#define DEF_WPTDTEMP_INCRSIZE   (   1*1024)                 // Incremental ...
+#define DEF_WPTDTEMP_MAXSIZE    (  16*1024)                 // Maximum ...
+#define DEF_WGLBTEMP_INITSIZE   (   4*1024)                 // Initial size of WCHAR GLB ...
+#define DEF_WGLBTEMP_INCRSIZE   (   1*1024)                 // Incremental ...
+#define DEF_WGLBTEMP_MAXSIZE    (  16*1024)                 // Maximum ...
 #define DEF_DEBUG_INITSIZE      (   1*1024)                 // Initial size of debug ...
 #define DEF_DEBUG_INCRSIZE      (   1*1024)                 // Incremental ...
 #define DEF_DEBUG_MAXSIZE       (  16*1024)                 // Maximum ...
@@ -113,9 +113,9 @@
 
 #include <commctrl.h>
 #include "datatype.h"
+#include "tokens.h"
 #include "primfns.h"
 #include "symtab.h"
-#include "tokens.h"
 #include "parse.h"
 #include "Unicode.h"
 
@@ -351,10 +351,7 @@ DWORD dwTlsType,                        // Thread type (e.g.
 //***************************************************************************
 
 EXTERN
-LPCHAR lpszTemp;                        // Used for temporary char storage
-
-EXTERN
-LPWCHAR lpwszTemp;                      // Used for temporary WCHAR storage
+LPWCHAR lpwszGlbTemp;                   // Used for temporary WCHAR storage
 
 EXTERN
 UCHAR gDbgLvl                           // Debug level 0 = none
@@ -371,19 +368,6 @@ LPWCHAR lpwNameTypeStr[]
 ;
 
 #ifdef DEBUG
-  EXTERN
-  LPCHAR lpszDebug;                     // Used for temporary storage of char
-                                        //   debug output
-  EXTERN
-  LPWCHAR lpwszDebug;                   // Used for temporary storage of WCHAR
-                                        //   debug output
-  EXTERN
-  LPCHAR lpNameTypeStr[]
-  #ifdef DEFINE_VALUES
-   = NAMETYPE_STRPTR
-  #endif
-  ;
-
   EXTERN
   LPWCHAR lpwObjNameStr[]
   #ifdef DEFINE_VALUES
@@ -1101,16 +1085,9 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
 
 typedef enum tagMEMVIRTENUM
 {
-    MEMVIRT_SZTEMP = 0,                 // 00:  lpszTemp
-    MEMVIRT_WSZTEMP,                    // 01:  lpwszTemp
-    MEMVIRT_GLBHSHTAB,                  // 02:  Global HshTab for {symbol} names & values
-#ifdef DEBUG
-    MEMVIRT_SZDEBUG,                    // 03:  lpszDebug
-    MEMVIRT_WSZDEBUG,                   // 04:  lpwszDebug
-    MEMVIRT_LENGTH                      // 05:  # entries
-#else
-    MEMVIRT_LENGTH                      // 03:  # entries
-#endif
+    MEMVIRT_WSZGLBTEMP = 0,             // 00:  lpwszGlbTemp
+    MEMVIRT_GLBHSHTAB,                  // 01:  Global HshTab for {symbol} names & values
+    MEMVIRT_LENGTH                      // 02:  # entries
 } MEMVIRTENUM;
 
 #define MVS     struct tagMEMVIRTSTR

@@ -151,15 +151,10 @@ BOOL CmdWsid_EM
         if (IsEmpty (aplNELMWSID))
             AppendLine (L"CLEAR WS", FALSE, TRUE);
         else
-        {
-            // Because the global memory doesn't have a zero terminator,
-            //   we must copy the data to a temporary location and then
+            // Because the global memory has a zero terminator,
+            //   we don't need to copy the data to a temporary location and then
             //   append a zero terminator
-            lstrcpynW (lpwszTemp, lpMemWSID, (UINT) aplNELMWSID + 1);
-////////////lpwszTemp[aplNELMWSID] = L'\0';     // Already done via "+ 1" in lstrcpynW
-
-            AppendLine (lpwszTemp, FALSE, TRUE);
-        } // End IF/ELSE
+            AppendLine (lpMemWSID, FALSE, TRUE);
 
         // We no longer need this ptr
         MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
@@ -185,13 +180,10 @@ BOOL CmdWsid_EM
             // Skip over the header and dimensions to the data
             lpMemWSID = VarArrayBaseToData (lpMemWSID, aplRankWSID);
 
-            // Because the global memory doesn't have a zero terminator,
-            //   we must copy the data to a temporary location and then
+            // Because the global memory has a zero terminator,
+            //   we don't need to copy the data to a temporary location and then
             //   append a zero terminator
-            lstrcpynW (lpwszTemp, lpMemWSID, (UINT) aplNELMWSID + 1);
-////////////lpwszTemp[aplNELMWSID] = L'\0';     // Already done via "+ 1" in lstrcpynW
-
-            AppendLine (lpwszTemp, FALSE, TRUE);
+            AppendLine (lpMemWSID, FALSE, TRUE);
         } // End IF/ELSE
 
         // We no longer need this ptr

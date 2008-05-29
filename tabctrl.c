@@ -1431,11 +1431,11 @@ LPAPLCHAR PointToWsName
                 while (p = strchrW (q, L'\\'))
                     q = p + 1;
 
-                // Copy to temporary storage
-                lstrcpynW (&lpwszTemp[2], q, (UINT) ((lpMemWSID + aplNELMWSID + 1) - q));
+                // Copy to global temporary storage
+                lstrcpynW (&lpwszGlbTemp[2], q, (UINT) ((lpMemWSID + aplNELMWSID + 1) - q));
 
                 // Copy the ptr
-                lpwTemp = lpwszTemp;
+                lpwTemp = lpwszGlbTemp;
                 lpwTemp[1] = L' ';
             } else
                 // Point to the ws name

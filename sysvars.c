@@ -1207,19 +1207,35 @@ BOOL ValidateCharVector_EM
      BOOL     bWSID)                // TRUE iff this is []WSID
 
 {
-    LPVOID   lpMemRht,              // Ptr to right arg global memory
-             lpMemRes;              // Ptr to result    ...
-    BOOL     bRet = TRUE,           // TRUE iff result is valid
-             bScalar = FALSE;       // TRUE iff right arg is scalar
-    LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
-    APLCHAR  aplChar;               // Right arg first char
-    APLSTYPE aplTypeRht;            // Right arg storage type
-    APLNELM  aplNELMRht,            // Right arg NELM
-             aplNELMRes;            // Result    ...
-    APLRANK  aplRankRht;            // Right arg rank
-    HGLOBAL  hGlbRht,               // Right arg global memory handle
-             hGlbRes;               // Result    ...
-    APLUINT  ByteRes;               // # bytes in the result
+    LPVOID       lpMemRht,          // Ptr to right arg global memory
+                 lpMemRes;          // Ptr to result    ...
+    BOOL         bRet = TRUE,       // TRUE iff result is valid
+                 bScalar = FALSE;   // TRUE iff right arg is scalar
+    LPWCHAR      lpwErrMsg =
+                   ERRMSG_DOMAIN_ERROR APPEND_NAME;
+    APLCHAR      aplChar;           // Right arg first char
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMRes;        // Result    ...
+    APLRANK      aplRankRht;        // Right arg rank
+    HGLOBAL      hGlbRht,           // Right arg global memory handle
+                 hGlbRes;           // Result    ...
+    APLUINT      ByteRes;           // # bytes in the result
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPWCHAR      lpwszTemp;         // Ptr to temporary storage
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to temporary storage
+    lpwszTemp = lpMemPTD->lpwszTemp;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -1345,7 +1361,6 @@ BOOL ValidateCharVector_EM
             break;
     } // End IF/ELSE/SWITCH
 
-
     // We no longer need this ptr
     MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
 
@@ -1436,7 +1451,8 @@ MAKE_VECTOR:
 ALLOC_VECTOR:
     // Calculate space needed for the result
     //   (a character vector)
-    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
+    // Include "+ bWSID" for a trailing zero
+    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes + bWSID, 1);
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);

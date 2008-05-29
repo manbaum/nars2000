@@ -66,11 +66,12 @@ typedef struct tagLW_PARAMS
 {
     LPWCHAR    lpwSectName,         // 00:  Ptr to section name [nnn.Name]
                lpwszDPFE,           // 04:  Ptr to the workspace DPFE
-               lpwBuffer;           // 08:  Ptr to temporary buffer
-    LPWCHAR    lpMemUndoTxt;        // 0C:  Ptr to Undo Buffer in text format
-    FILETIME   ftCreation,          // 10:  Function Creation Time
-               ftLastMod;           // 14:  Function Last Modification Time
-                                    // 18:  Length
+               lpwBuffer,           // 08:  Ptr to temporary buffer
+               lpMemUndoTxt;        // 0C:  Ptr to Undo Buffer in text format
+    UINT       uMaxSize;            // 10:  Maximum size of lpwBuffer
+    FILETIME   ftCreation,          // 14:  Function Creation Time
+               ftLastMod;           // 18:  Function Last Modification Time
+                                    // 1C:  Length
 } LW_PARAMS, *LPLW_PARAMS;
 
 

@@ -176,8 +176,6 @@ BOOL LoadWorkspace_EM
                  uSILevel,              // [General] SILevel value
                  uSID,                  // Loop counter
                  uCnt;                  // Loop counter
-    LPWCHAR      lpwSrc,                // Ptr to incoming data
-                 lpwSrcStart;           // Ptr to starting point
     WCHAR        wszCount[8],           // Save area for formatted uSymVar/Fcn counter
 ////             wszVersion[8],         // ...                     version info
                  wszSectName[15];       // ...                     section name (e.g., [Vars.nnn])
@@ -248,8 +246,22 @@ BOOL LoadWorkspace_EM
             // Loop through the [Vars.sss] section where sss is the SI level
             for (uCnt = 0; uCnt < uSymVar; uCnt++)
             {
-                // Save ptr
-                lpwSrc = lpwszTemp;
+                LPWCHAR lpwSrc,             // Ptr to incoming data
+                        lpwSrcStart;        // Ptr to starting point
+                UINT    uMaxSize;           // Maximum size of lpwSrc
+
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Save ptr & maximum size
+                lpwSrc   = lpMemPTD->lpwszTemp;
+                uMaxSize = lpMemPTD->uTempMaxSize;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                // Save the starting point
+                lpwSrcStart = lpwSrc;
 
                 // Format the counter
                 wsprintfW (wszCount, L"%d", uCnt);
@@ -259,7 +271,7 @@ BOOL LoadWorkspace_EM
                                           wszCount,             // Ptr to the key name
                                           L"",                  // Ptr to the default value
                                           lpwSrc,               // Ptr to the output buffer
-                                          memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                          uMaxSize,             // Byte size of the output buffer
                                           lpwszDPFE);           // Ptr to the file name
                 // Look for the name separator (L'=')
                 lpwCharEnd = strchrW (lpwSrc, L'=');
@@ -267,9 +279,6 @@ BOOL LoadWorkspace_EM
 
                 // Zap to form zero-terminated name
                 *lpwCharEnd = L'\0';
-
-                // Save the starting point
-                lpwSrcStart = lpwSrc;
 
                 // Convert the {name}s and other chars to UTF16_xxx
                 lpwSrc = ConvertNameInPlace (lpwSrc);
@@ -317,6 +326,7 @@ BOOL LoadWorkspace_EM
                 // Parse the value into aplLongestObj and aplTypeObj
                 lpwSrc =
                   ParseSavedWsVar_EM (lpwSrc,           // Ptr to input buffer
+                                      uMaxSize,         // Maximum size of lpwSrc
                                      &lpaplLongestObj,  // Ptr to ptr to output element
                                      &aplTypeObj,       // Ptr to storage type (may be NULL)
                                      &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
@@ -391,10 +401,23 @@ BOOL LoadWorkspace_EM
             // Loop through the [Fcns.sss] section where sss is the SI level
             for (uCnt = 0; uCnt < uSymFcn; uCnt++)
             {
+                LPWCHAR lpwSrc,             // Ptr to incoming data
+                        lpwSrcStart;        // Ptr to starting point
+                UINT    uMaxSize;           // Maximum size of lpwSrc
                 NAME_TYPES nameType;
 
-                // Save ptr
-                lpwSrc = lpwszTemp;
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Save ptr & maximum size
+                lpwSrc   = lpMemPTD->lpwszTemp;
+                uMaxSize = lpMemPTD->uTempMaxSize;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                // Save the starting point
+                lpwSrcStart = lpwSrc;
 
                 // Format the counter
                 wsprintfW (wszCount, L"%d", uCnt);
@@ -404,7 +427,7 @@ BOOL LoadWorkspace_EM
                                           wszCount,             // Ptr to the key name
                                           L"",                  // Ptr to the default value
                                           lpwSrc,               // Ptr to the output buffer
-                                          memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                          uMaxSize,             // Byte size of the output buffer
                                           lpwszDPFE);           // Ptr to the file name
                 // Look for the name separator (L'=')
                 lpwCharEnd = strchrW (lpwSrc, L'=');
@@ -412,9 +435,6 @@ BOOL LoadWorkspace_EM
 
                 // Zap to form zero-terminated name
                 *lpwCharEnd = L'\0';
-
-                // Save the starting point
-                lpwSrcStart = lpwSrc;
 
                 // Convert the {name}s and other chars to UTF16_xxx
                 lpwSrc = ConvertNameInPlace (lpwSrc);
@@ -451,6 +471,7 @@ BOOL LoadWorkspace_EM
 
                 // Parse the line into lpSymEntry->stData
                 if (!ParseSavedWsFcn_EM (lpwSrc,        // Ptr to input buffer
+                                         uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                          lpSymEntry,    // Ptr to STE for the object
                                          nameType,      // Function name type (see NAME_TYPES)
                                          hWndEC,        // Edit Control window handle
@@ -649,6 +670,7 @@ void SendMessageLastTab
 
 BOOL ParseSavedWsFcn_EM
     (LPWCHAR     lpwSrc,                // Ptr to input buffer
+     UINT        uMaxSize,              // Maximum size of lpwSrc
      LPSYMENTRY  lpSymObj,              // Ptr to STE for the object
      NAME_TYPES  nameType,              // Function name type (see NAME_TYPES)
      HWND        hWndEC,                // Edit Control window handle
@@ -694,6 +716,7 @@ BOOL ParseSavedWsFcn_EM
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
                                       lpwDataEnd,   // Ptr to next available byte
+                                      uMaxSize - (UINT) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
                                       hWndEC,       // Edit Control window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
@@ -765,6 +788,7 @@ CORRUPTWS_EXIT:
 
 LPWCHAR ParseSavedWsVar_EM
     (LPWCHAR     lpwSrc,                // Ptr to input buffer
+     UINT        uMaxSize,              // Maximum size of lpwSrc
      LPVOID     *lplpMemObj,            // Ptr to ptr to output element
      LPAPLSTYPE  lpaplTypeObj,          // Ptr to storage type (may be NULL)
      LPBOOL      lpbImmed,              // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
@@ -823,6 +847,7 @@ LPWCHAR ParseSavedWsVar_EM
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
                                       lpwDataEnd,   // Ptr to next available byte
+                                      uMaxSize - (UINT) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
                                       hWndEC,       // Edit Control window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
@@ -1011,6 +1036,7 @@ ERROR_EXIT:
 HGLOBAL LoadWorkspaceGlobal_EM
     (LPWCHAR     lpwGlbName,                // Ptr to keyname (FMTSTR_GLBCNT)
      LPWCHAR     lpwSrc,                    // Ptr to next available byte
+     UINT        uMaxSize,                  // Maximum size of
      HWND        hWndEC,                    // Edit Control window handle
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
      LPWCHAR     lpwszDPFE,                 // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
@@ -1054,12 +1080,15 @@ HGLOBAL LoadWorkspaceGlobal_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
+    // Save the starting ptr
+    lpwSrcStart = lpwSrc;
+
     // Read the corresponding string from [Globals]
     GetPrivateProfileStringW (SECTNAME_GLOBALS,     // Ptr to the section name
                               lpwGlbName,           // Ptr to the key name
                               L"",                  // Ptr to the default value
                               lpwSrc,               // Ptr to the output buffer
-                              memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                              uMaxSize,             // Byte size of the output buffer
                               lpwszDPFE);           // Ptr to the file name
     // Parse the array attributes
     // The result in lpwSrc is
@@ -1276,6 +1305,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
                         lpwSrc =
                           ParseSavedWsVar_EM (lpwSrc,       // Ptr to input buffer
+                                              uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                              &lpMemObj,     // Ptr to ptr to output element
                                               NULL,         // Ptr to storage type (may be NULL)
                                               NULL,         // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
@@ -1329,7 +1359,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                       KEYNAME_CREATIONTIME, // Ptr to the key name
                                       L"",                  // Ptr to the default value
                                       lpwSrc,               // Ptr to the output buffer
-                                      memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                      uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Byte size of the output buffer
                                       lpwszDPFE);           // Ptr to the file name
             // Convert the CreationTime string to time
             swscanf (lpwSrc, SCANFSTR_TIMESTAMP, &ftCreation);
@@ -1339,7 +1369,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                       KEYNAME_LASTMODTIME,  // Ptr to the key name
                                       L"",                  // Ptr to the default value
                                       lpwSrc,               // Ptr to the output buffer
-                                      memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                      uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Byte size of the output buffer
                                       lpwszDPFE);           // Ptr to the file name
             // Convert the LastModTime string to time
             swscanf (lpwSrc, SCANFSTR_TIMESTAMP, &ftLastMod);
@@ -1361,7 +1391,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                             KEYNAME_UNDO,       // Ptr to the key name
                                             L"",                // Ptr to the default value
                                   (LPWCHAR) lpMemUndoTxt,       // Ptr to the output buffer
-                                            memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                            uMaxSize - (UINT) ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart), // Byte size of the output buffer
                                             lpwszDPFE);         // Ptr to the file name
                 // Fill in common values
 ////////////////SF_Fcns.bRet            =                   // Filled in by SaveFunctionCom
@@ -1380,6 +1410,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LW_Params.lpwszDPFE    = lpwszDPFE;      // Ptr to workspace DPFE
                 LW_Params.lpwBuffer    = lpwSrc;         // Ptr to buffer
                 LW_Params.lpMemUndoTxt = lpMemUndoTxt;   // Ptr to Undo Buffer in text format
+                LW_Params.uMaxSize     = (UINT) ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart);
                 LW_Params.ftCreation   = ftCreation;     // Function Creation Time
                 LW_Params.ftLastMod    = ftLastMod;      // Function Last Modification Time
 
@@ -1420,7 +1451,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                           L"0",               // Ptr to the key name
                                           L"",                // Ptr to the default value
                                           lpwSrc,             // Ptr to the output buffer
-                                          memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                          uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart),// Byte size of the output buffer
                                           lpwszDPFE);         // Ptr to the file name
                 // Convert in place
                 lpwSrcStart = lpwSrc;
@@ -1430,6 +1461,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                 // Fill in the extra parms
                 LoadWsGlbVarParm.lpwSrc        = lpwSrc;
+                LoadWsGlbVarParm.uMaxSize      = (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart);
                 LoadWsGlbVarParm.hWndEC        = hWndEC;
                 LoadWsGlbVarParm.lplpSymLink   = lplpSymLink;
                 LoadWsGlbVarParm.lpwszDPFE     = lpwszDPFE;
@@ -1556,6 +1588,7 @@ HGLOBAL LoadWsGlbVarConv
         return
           LoadWorkspaceGlobal_EM (wszGlbCnt,                        // Ptr to keyname (FMTSTR_GLBCNT)
                                   lpLoadWsGlbVarParm->lpwSrc,       // Ptr to next available byte
+                                  lpLoadWsGlbVarParm->uMaxSize,     // Maximum size of lpwSrc
                                   lpLoadWsGlbVarParm->hWndEC,       // Edit Control window handle
                                   lpLoadWsGlbVarParm->lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                   lpLoadWsGlbVarParm->lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)

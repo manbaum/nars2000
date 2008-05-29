@@ -84,7 +84,8 @@ BOOL CmdSiSinlCom_EM
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS_HEADER srtuc
     UINT         SILevel;       // SI level (for CmdSave_EM)
     APLCHAR      szSILevel[10]; // Formatted SI level
-    LPWCHAR      lpwszFormat;   // Ptr to formatting save area
+    LPWCHAR      lpwszFormat,   // Ptr to formatting save area
+                 lpwszTemp;     // Ptr to temporary storage
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -92,8 +93,9 @@ BOOL CmdSiSinlCom_EM
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get ptr to formatting save area
+    // Get ptr to formatting save area & temporary storage
     lpwszFormat = lpMemPTD->lpwszFormat;
+    lpwszTemp   = lpMemPTD->lpwszTemp;
 
     // ***FIXME*** -- Make sensitive to [n] in lpwszTail
 

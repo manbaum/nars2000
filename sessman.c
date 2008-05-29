@@ -97,8 +97,9 @@ typedef enum tagPTDMEMVIRTENUM
     PTDMEMVIRT_YYRES,                   // 05:  lpYYRes
     PTDMEMVIRT_STRAND_VAR,              // 06:  lpStrand[STRAND_VAR]
     PTDMEMVIRT_STRAND_FCN,              // 07:  lpStrand[STRAND_FCN]
-    PTDMEMVIRT_WSZFORMAT,               // 08:
-    PTDMEMVIRT_LENGTH                   // 09:  # entries
+    PTDMEMVIRT_WSZFORMAT,               // 08:  Temporary formatting
+    PTDMEMVIRT_WSZTEMP,                 // 09:  Temporary save area
+    PTDMEMVIRT_LENGTH                   // 0A:  # entries
 } PTDMEMVIRTENUM;
 
 
@@ -1219,6 +1220,45 @@ WM_NCCREATE_FAIL:
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr,
                             DEF_WFORMAT_INITSIZE * sizeof (WCHAR),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
+
+            // *************** lpwszTemp *******************************
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Allocate virtual memory for the WCHAR Formatting storage
+#ifdef DEBUG
+            lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].lpText   = "lpMemPTD->lpwszTemp in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IncrSize = DEF_WPTDTEMP_INCRSIZE * sizeof (WCHAR);
+            lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize  = DEF_WPTDTEMP_MAXSIZE  * sizeof (WCHAR);
+            lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr  = (LPVOID)
+            lpMemPTD->lpwszTemp =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            // Save the maximum size
+            lpMemPTD->uTempMaxSize = lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("InitInstance:  GuardAlloc for <lpwszTemp> failed");
+
+                return FALSE;           // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr,
+                            DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 

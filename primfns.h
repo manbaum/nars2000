@@ -21,16 +21,16 @@
 ***************************************************************************/
 
 // Common TYPEDEF used to call all primitive functions
-typedef struct tagPL_YYSTYPE *(*LPPRIMFNS) (struct tagTOKEN *,
-                                            struct tagTOKEN *,
-                                            struct tagTOKEN *,
-                                            struct tagTOKEN *);
+typedef struct tagPL_YYSTYPE *(*LPPRIMFNS) (LPTOKEN,
+                                            LPTOKEN,
+                                            LPTOKEN,
+                                            LPTOKEN);
 
 // Common TYPEDEF used to call all primitive operators
-typedef struct tagPL_YYSTYPE *(*LPPRIMOPS) (struct tagTOKEN *,
+typedef struct tagPL_YYSTYPE *(*LPPRIMOPS) (LPTOKEN,
                                             struct tagPL_YYSTYPE *,
-                                            struct tagTOKEN *,
-                                            struct tagTOKEN *);
+                                            LPTOKEN,
+                                            LPTOKEN);
 
 
 //***************************************************************************

@@ -844,15 +844,13 @@ void fh_yyfprintf
 
     va_end (vl);
 
-    wsprintf (lpszDebug,
-              lpszFmt,
-              i1, i2, i3);
     // Accumulate into local buffer because
     //   Bison calls this function multiple
     //   times for the same line, terminating
     //   the last call for the line with a LF.
-    lstrcat (szTemp, lpszDebug);
-
+    wsprintf (&szTemp[lstrlen (szTemp)],
+              lpszFmt,
+              i1, i2, i3);
     // Check last character.
     i1 = lstrlen (szTemp);
 

@@ -122,14 +122,14 @@ Downloads</h1>
                 $Ext    = substr ($File, -$ExtPos);    // Extract the extension
                 $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
                 $Class  = $Ext;
+                $Notes  = "Notes-$Rel.txt";
+
+                // Get the corresponding release
+                $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
             } // End IF/ELSE
 
             $Date   = gmdate ("Y F d H:i:s", filemtime ($DirName . $File));
             $Size   = number_format (filesize ($DirName . $File));
-            $Notes  = "Notes-$Rel.txt";
-
-            // Get the corresponding release
-            $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
 
             echo   "      <tr class=\"$Class\">\n"
                .   "        <td>$Name</td>\n"

@@ -49,10 +49,10 @@
 ////lpMemPTD->lpSISCur           = NULL;
 ////lpMemPTD->lpPLCur            = NULL;
 ////lpMemPTD->SILevel            = 0;
-////lpmemPTD->hSemaDelay         = NULL;
-////lpmemPTD->lpLstMVS           = NULL;
+////lpMemPTD->hSemaDelay         = NULL;
+////lpMemPTD->lpLstMVS           = NULL;
 #ifndef UNISCRIBE
-////lpmemPTD->lpFontLink         = NULL;
+////lpMemPTD->lpFontLink         = NULL;
 #endif
 
 // Structure for Per Tab Control Data
@@ -149,14 +149,16 @@ typedef struct tagPERTABDATA
     LPLOADWSGLBVARPARM
                  lpLoadWsGlbVarParm;//158:  Ptr to extra parms for LoadWsGlbVarConv
     LPMEMVIRTSTR lpLstMVS;          //164:  Ptr to last MEMVIRTSTR (NULL = none)
-    LPWCHAR      lpwszFormat;       //168:  Ptr to formatting save area
+    LPWCHAR      lpwszFormat,       //168:  Ptr to formatting save area
+                 lpwszTemp;         //16C:  Ptr to temporary  ...
+    UINT         uTempMaxSize;      //170:  Maximum size of lpwszTemp
 #ifndef UNISCRIBE
     IMLangFontLink
-                *lpFontLink;        //16C:  Ptr to FontLink struc
+                *lpFontLink;        //174:  Ptr to FontLink struc
 #endif
-    APLCHAR      cQuadPR,           //170:  []PR     (' ') (When a char scalar)
-                 cQuadxSA;          //172:  []SA     (0)   (in its index form as an integer)
-                                    //174:  Length
+    APLCHAR      cQuadPR,           //178:  []PR     (' ') (When a char scalar)
+                 cQuadxSA;          //17A:  []SA     (0)   (in its index form as an integer)
+                                    //17C:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

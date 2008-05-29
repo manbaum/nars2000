@@ -60,6 +60,7 @@ void DisplayHshTab
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;             // Ptr to hshTab struc
+    WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
     typedef struct tagHT_FLAGNAMES
     {
@@ -97,12 +98,12 @@ void DisplayHshTab
 
     DbgMsg ("********** Hash Table **********************************");
 
-    wsprintf (lpszDebug,
-              "lpHshTab = %p, SplitNext = %p, Last = %p",
-              lpHTS->lpHshTab,
-              lpHTS->lpHshTabSplitNext,
-             &lpHTS->lpHshTab[lpHTS->iHshTabTotalSize]);
-    DbgMsg (lpszDebug);
+    wsprintfW (wszTemp,
+               L"lpHshTab = %p, SplitNext = %p, Last = %p",
+               lpHTS->lpHshTab,
+               lpHTS->lpHshTabSplitNext,
+              &lpHTS->lpHshTab[lpHTS->iHshTabTotalSize]);
+    DbgMsgW (wszTemp);
 
     // Display the hash table
     for (lpHshEntry = lpHTS->lpHshTab, i = 0;
@@ -134,7 +135,7 @@ void DisplayHshTab
 
             lpSymEntry = lpHshEntry->htSymEntry;
             if (lpSymEntry->stFlags.Imm)
-                wsprintfW (lpwszDebug,
+                wsprintfW (wszTemp,
                            L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p",
                            i,
                            lpHshEntry->uHash,
@@ -150,7 +151,7 @@ void DisplayHshTab
                 // Lock the memory to get a ptr to it
                 lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
 
-                wsprintfW (lpwszDebug,
+                wsprintfW (wszTemp,
                            L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
                            i,
                            lpHshEntry->uHash,
@@ -164,14 +165,14 @@ void DisplayHshTab
                 GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
             } // End IF/ELSE/IF
         } else
-            wsprintfW (lpwszDebug,
+            wsprintfW (wszTemp,
                        L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>",
                        i,
                       &wszFlags[1],
                        lpHshEntry->htSymEntry,
                        lpHshEntry->NextSameHash,
                        lpHshEntry->PrevSameHash);
-        DbgMsgW (lpwszDebug);
+        DbgMsgW (wszTemp);
     } // End FOR
 
     DbgMsg ("********** End Hash Table ******************************");
@@ -201,10 +202,11 @@ void DisplaySymTab
     (BOOL bDispAll)
 
 {
-    LPSYMENTRY   lpSymEntry;    // Ptr to current SYMENTRY
-    int          i, j;          // Loop counters
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
+    int          i, j;              // Loop counters
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
     typedef struct tagST_FLAGNAMES
     {
@@ -244,11 +246,11 @@ void DisplaySymTab
     else
         DbgMsg ("********** Symbol Table Referenced Non-SysNames ********");
 
-    wsprintf (lpszDebug,
-              "lpSymTab = %p, Last = %p",
-              lpMemPTD->lpSymTab,
+    wsprintfW (wszTemp,
+               L"lpSymTab = %p, Last = %p",
+               lpMemPTD->lpSymTab,
               &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize]);
-    DbgMsg (lpszDebug);
+    DbgMsgW (wszTemp);
 
     // Display the symbol table
     for (lpSymEntry = lpMemPTD->lpSymTab, i = 0;
@@ -319,7 +321,7 @@ void DisplaySymTab
 
             if (lpSymEntry->stFlags.Imm)
             {
-                wsprintfW (lpwszDebug,
+                wsprintfW (wszTemp,
                            L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p",
                            lpSymEntry,
                            wszName,
@@ -335,7 +337,7 @@ void DisplaySymTab
 
                 if (lpHshEntry)
                 {
-                    wsprintfW (lpwszDebug,
+                    wsprintfW (wszTemp,
                                L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p",
                                lpSymEntry,
                                wszName,
@@ -343,18 +345,18 @@ void DisplaySymTab
                                lpSymEntry->stData.stVoid,
                                lpHshEntry);
                 } else
-                    wsprintfW (lpwszDebug,
+                    wsprintfW (wszTemp,
                                L"ST:%p <******>, <%s>, Hsh=0",
                                lpSymEntry,
                               &wszFlags[1]);
             } // End IF/ELSE/IF
         } else
-            wsprintfW (lpwszDebug,
+            wsprintfW (wszTemp,
                        L"ST:%p (EMPTY) <%s>, Hsh=%p",
                        lpSymEntry,
                       &wszFlags[1],
                        lpSymEntry->stHshEntry);
-        DbgMsgW (lpwszDebug);
+        DbgMsgW (wszTemp);
     } // End FOR
 
     DbgMsg ("********** End Symbol Table ****************************");
@@ -415,8 +417,9 @@ void DisplayGlobals
     LPVOID       lpData;
     APLCHAR      aplArrChar[19];
     LPAPLCHAR    lpwsz;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -438,10 +441,10 @@ void DisplayGlobals
         lpMem = GlobalLock (hGlb);
         if (!lpMem)
         {
-            wsprintf (lpszDebug,
-                      "hGlb=%p *** INVALID ***",
-                      hGlb);
-            DbgMsg (lpszDebug);
+            wsprintfW (wszTemp,
+                       L"hGlb=%p *** INVALID ***",
+                       hGlb);
+            DbgMsgW (wszTemp);
 
             continue;
         } // End IF
@@ -511,7 +514,7 @@ void DisplayGlobals
                  || uDispGlb EQ 2
                  || lpHeader->PermNdx EQ PERMNDX_NONE)
                 {
-                    wsprintfW (lpwszDebug,
+                    wsprintfW (wszTemp,
                                L"hGlb=%p, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Lock=%d, Line#=%4d, (%s)",
                                hGlb,
                                ArrayTypeAsChar[lpHeader->ArrType],
@@ -523,7 +526,7 @@ void DisplayGlobals
                                (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
                                auLinNumGLOBAL[i],
                                aplArrChar);
-                    DbgMsgW (lpwszDebug);
+                    DbgMsgW (wszTemp);
                 } // End IF
             } // End IF
         } else
@@ -534,23 +537,23 @@ void DisplayGlobals
             // It's a valid HGLOBAL function array
             Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlb)));
 
-            wsprintf (lpszDebug,
-                      "hGlb=%p, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
-                      hGlb,
-                      lpNameTypeStr[lpHeader->fnNameType],
-                      lpHeader->tknNELM,
-                      lpHeader->RefCnt,
-                      (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                      auLinNumGLOBAL[i]);
-            DbgMsg (lpszDebug);
+            wsprintfW (wszTemp,
+                       L"hGlb=%p, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
+                       hGlb,
+                       lpwNameTypeStr[lpHeader->fnNameType],
+                       lpHeader->tknNELM,
+                       lpHeader->RefCnt,
+                       (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                       auLinNumGLOBAL[i]);
+            DbgMsgW (wszTemp);
         } else
 #undef  lpHeader
         if (uDispGlb EQ 2)
         {
-            wsprintf (lpszDebug,
-                      "hGlb=%p -- No NARS/FCNS Signature",
-                      hGlb);
-            DbgMsg (lpszDebug);
+            wsprintfW (wszTemp,
+                       L"hGlb=%p -- No NARS/FCNS Signature",
+                       hGlb);
+            DbgMsgW (wszTemp);
         } // End IF/ELSE
 
         // We no longer need this ptr
@@ -578,10 +581,12 @@ void DisplayTokens
     (HGLOBAL hGlbToken)
 
 {
-    LPTOKEN      lpToken;
-    int          i, iLen;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPTOKEN      lpToken;           // Ptr to temporary token
+    int          i,                 // Loop counter
+                 iLen;              // Token count
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
     if (gDbgLvl <= 2)
         return;
@@ -605,13 +610,13 @@ void DisplayTokens
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
 #define lpHeader    ((LPTOKEN_HEADER) lpToken)
-    wsprintf (lpszDebug,
-              "lpToken = %p, Version # = %d, TokenCnt = %d, PrevGroup = %d",
-              lpToken,
-              lpHeader->Version,
-              lpHeader->TokenCnt,
-              lpHeader->PrevGroup);
-    DbgMsg (lpszDebug);
+    wsprintfW (wszTemp,
+               L"lpToken = %p, Version # = %d, TokenCnt = %d, PrevGroup = %d",
+               lpToken,
+               lpHeader->Version,
+               lpHeader->TokenCnt,
+               lpHeader->PrevGroup);
+    DbgMsgW (wszTemp);
 
     iLen = lpHeader->TokenCnt;
 #undef  lpHeader
@@ -620,13 +625,13 @@ void DisplayTokens
 
     for (i = 0; i < iLen; i++, lpToken++)
     {
-        wsprintf (lpszDebug,
-                  "(%2d) Data=%I64X, CharIndex=%2d, Type=%s",
-                  i,
-                  *(LPAPLINT) &lpToken->tkData.tkFloat,
-                  lpToken->tkCharIndex,
-                  GetTokenTypeName (lpToken->tkFlags.TknType));
-        DbgMsg (lpszDebug);
+        wsprintfW (wszTemp,
+                   L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S",
+                   i,
+                   *(LPAPLINT) &lpToken->tkData.tkFloat,
+                   lpToken->tkCharIndex,
+                   GetTokenTypeName (lpToken->tkFlags.TknType));
+        DbgMsgW (wszTemp);
     } // End FOR
 
     DbgMsg ("********** End Tokens **********************************");
@@ -723,13 +728,14 @@ static TOKENNAMES tokenNames[] =
 //***************************************************************************
 
 void DisplayFcnStrand
-    (LPTOKEN lptkFunc)          // Ptr to function token
+    (LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL      hGlbData;      // Function array global memory handle
-    LPWCHAR      lpaplChar;     // Ptr to output save area
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    HGLOBAL      hGlbData;          // Function array global memory handle
+    LPWCHAR      lpaplChar;         // Ptr to output save area
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -737,7 +743,7 @@ void DisplayFcnStrand
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    lpaplChar = lpwszDebug;
+    lpaplChar = wszTemp;
 
     // Split cases based upon the token type
     switch (lptkFunc->tkFlags.TknType)
@@ -841,7 +847,7 @@ void DisplayFcnStrand
     *lpaplChar = L'\0';
 
     // Display the line in the debugging window
-    DbgMsgW (lpwszDebug);
+    DbgMsgW (wszTemp);
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1265,19 +1271,21 @@ LPWCHAR DisplayFcnSub
 //***************************************************************************
 
 void DisplayFcnArr
-    (HGLOBAL hGlbStr)           // Function array global memory handle
+    (HGLOBAL hGlbStr)               // Function array global memory handle
 
 {
+    WCHAR wszTemp[1024];            // Ptr to temporary output area
+
     Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbStr)));
 
     DbgMsgW (L"********** Function Array ******************************");
 
-    DisplayFcnGlb (lpwszDebug,      // Ptr to output save area
+    DisplayFcnGlb (wszTemp,         // Ptr to output save area
                    hGlbStr,         // Function array global memory handle
                    TRUE,            // TRUE iff we're to display the header
                    NULL,            // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
                    NULL);           // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
-    DbgMsgW (lpwszDebug);
+    DbgMsgW (wszTemp);
 
     DbgMsgW (L"********** End Function Array **************************");
 } // End DisplayFcnArr
@@ -1298,8 +1306,9 @@ void DisplayStrand
     LPPL_YYSTYPE  lp,
                   lpLast;
     LPPLLOCALVARS lpplLocalVars;
-    HGLOBAL       hGlbPTD;      // PerTabData global memory handle
-    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory
+    HGLOBAL       hGlbPTD;          // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;         // Ptr to PerTabData global memory
+    WCHAR         wszTemp[1024];    // Ptr to temporary output area
 
     // Check debug level
     if (gDbgLvl <= 2)
@@ -1330,12 +1339,12 @@ void DisplayStrand
             break;
     } // End SWITCH
 
-    wsprintf (lpszDebug,
-              "Start=%p Base=%p Next=%p",
-              lpplLocalVars->lpYYStrandStart[strType],
-              lpplLocalVars->lpYYStrandBase[strType],
-              lpplLocalVars->lpYYStrandNext[strType]);
-    DbgMsg (lpszDebug);
+    wsprintfW (wszTemp,
+               L"Start=%p Base=%p Next=%p",
+               lpplLocalVars->lpYYStrandStart[strType],
+               lpplLocalVars->lpYYStrandBase[strType],
+               lpplLocalVars->lpYYStrandNext[strType]);
+    DbgMsgW (wszTemp);
 
     for (lp = lpplLocalVars->lpYYStrandStart[strType], lpLast = NULL;
          lp NE lpplLocalVars->lpYYStrandNext[strType];
@@ -1347,17 +1356,17 @@ void DisplayStrand
             lpLast  = lp->lpYYStrandBase;
         } // End IF
 
-        wsprintf (lpszDebug,
-                  "Strand (%p): %-9.9s D=%I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
-                  lp,
-                  GetTokenTypeName (lp->tkToken.tkFlags.TknType),
-                  lp->tkToken.tkData.tkInteger,
-                  lp->tkToken.tkCharIndex,
-                  lp->TknCount,
-                  lp->YYIndirect,
-                  lp->lpYYFcnBase,
-                  lpLast);
-        DbgMsg (lpszDebug);
+        wsprintfW (wszTemp,
+                   L"Strand (%p): %-9.9S D=%I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
+                   lp,
+                   GetTokenTypeName (lp->tkToken.tkFlags.TknType),
+                   lp->tkToken.tkData.tkInteger,
+                   lp->tkToken.tkCharIndex,
+                   lp->TknCount,
+                   lp->YYIndirect,
+                   lp->lpYYFcnBase,
+                   lpLast);
+        DbgMsgW (wszTemp);
     } // End FOR
 
     DbgMsg ("********** End Strands *********************************");
@@ -1384,11 +1393,12 @@ void DisplayUndo
     HGLOBAL      hGlbEC;
     LPWCHAR      lpwsz, p;
     HWND         hWndParent;
-    LPUNDO_BUF   lpUndoBeg,     // Ptr to start of Undo Buffer
-                 lpUndoNxt;     // ...    next available slot in the Undo Buffer
+    LPUNDO_BUF   lpUndoBeg,             // Ptr to start of Undo Buffer
+                 lpUndoNxt;             // ...    next available slot in the Undo Buffer
     BOOL         bShift;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    WCHAR        wszTemp[1024];         // Ptr to temporary output area
     static LPWCHAR Actions[]={L"None",
                               L"Ins",
                               L"Rep",
@@ -1474,14 +1484,14 @@ void DisplayUndo
     // Loop through the undo buffer entries
     for (; lpUndoBeg < lpUndoNxt; lpUndoBeg++)
     {
-        wsprintfW (lpwszDebug,
+        wsprintfW (wszTemp,
                    L"Act = %9s, %2d-%2d, Group = %3d, Char = 0x%04X",
                    Actions[lpUndoBeg->Action],
                    lpUndoBeg->CharPosBeg,
                    lpUndoBeg->CharPosEnd,
                    lpUndoBeg->Group,
                    lpUndoBeg->Char);
-        DbgMsgW (lpwszDebug);
+        DbgMsgW (wszTemp);
     } // End FOR
 
     DbgMsg ("********** End Undo Buffer *****************************");
@@ -1503,7 +1513,7 @@ void DisplayFnHdr
     (LPFHLOCALVARS lpfhLocalVars)
 
 {
-    WCHAR     wszTemp[1024];
+    WCHAR     wszTemp[1024];            // Ptr to temporary output area
     HGLOBAL   hGlbName;
     LPAPLCHAR lpMemName;
     UINT      uLen, uItm;

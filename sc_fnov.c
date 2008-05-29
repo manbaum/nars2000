@@ -185,7 +185,7 @@ BOOL CmdFNOV_EM
     lpwszFormat = lpMemPTD->lpwszFormat;
 
     // Initialize the LPSYMENTRY sort array
-    lpSymSort = (LPSYMENTRY *) lpwszTemp;
+    lpSymSort = (LPSYMENTRY *) lpMemPTD->lpwszTemp;
 
     // Trundle through the Symbol Table
     //   looking for functions (niladic or monadic/dyadic),

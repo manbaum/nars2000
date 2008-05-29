@@ -75,7 +75,7 @@ void BreakMessage
 
     // Format the name and line #
     aplNELMRes =
-      wsprintfW (lpwszTemp,
+      wsprintfW (lpMemPTD->lpwszTemp,
                  L"%s[%d]",
                  lpMemName,
                  lpSISCur->CurLineNum);
@@ -119,7 +119,7 @@ void BreakMessage
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the function name[line #] to the result
-    CopyMemory (lpMemRes, lpwszTemp, (UINT) aplNELMRes * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, lpMemPTD->lpwszTemp, (UINT) aplNELMRes * sizeof (APLCHAR));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -204,7 +204,7 @@ void ErrorMessageDirect
 
                 // Format the name and line #
                 uNameLen =
-                  wsprintfW (lpwszTemp,
+                  wsprintfW (lpMemPTD->lpwszTemp,
                              L"%s[%d] ",
                              lpMemName,
                              lpSISCur->CurLineNum);
@@ -238,7 +238,7 @@ void ErrorMessageDirect
             case DFNTYPE_EXEC:
                 // Include a leading marker
 
-                lstrcpyW (lpwszTemp, WS_UTF16_UPTACKJOT L"     ");
+                lstrcpyW (lpMemPTD->lpwszTemp, WS_UTF16_UPTACKJOT L"     ");
                 uNameLen = 6;
 
                 break;
@@ -316,7 +316,7 @@ void ErrorMessageDirect
     *lpMemRes++ = L'\r'; *lpMemRes++ = L'\n';
 
     // Copy the function name[line #] to the result
-    CopyMemory (lpMemRes, lpwszTemp, uNameLen * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, lpMemPTD->lpwszTemp, uNameLen * sizeof (APLCHAR));
     lpMemRes += uNameLen;
 
     // Copy the function line to the result
@@ -404,7 +404,7 @@ void ErrorMessageDirect
             lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
 
             // Copy the function name[line #] to the result
-            CopyMemory (lpMemRes, lpwszTemp, uNameLen * sizeof (APLCHAR));
+            CopyMemory (lpMemRes, lpMemPTD->lpwszTemp, uNameLen * sizeof (APLCHAR));
             lpMemRes += uNameLen;
 
             // Copy the function line to the result

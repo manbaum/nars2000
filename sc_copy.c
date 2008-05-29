@@ -61,7 +61,9 @@ BOOL CmdCopy_EM
                  wcTmp;                     // Temporary char
     LPWCHAR      lpwCmd,                    // Ptr to command line
                  lpwErrMsg,                 // Ptr to (constant) error message text
-                 lpwNotFound;               // Ptr to list of names not found
+                 lpwNotFound,               // Ptr to list of names not found
+                 lpwszTemp;                 // Ptr to temporary storage
+    UINT         uMaxSize;                  // Maximum size of lpwszTemp
     int          iCurTabID,                 // Tab ID
                  iSrcTabID,                 // Source tab ID
                  iSrcTabIndex,              // Source tab index
@@ -74,6 +76,16 @@ BOOL CmdCopy_EM
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to temporary storage & maximum size
+    lpwszTemp = lpMemPTD->lpwszTemp;
+    uMaxSize  = lpMemPTD->uTempMaxSize;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the Session Manager's hWndEC
     hWndEC = GetThreadSMEC ();
@@ -169,7 +181,10 @@ BOOL CmdCopy_EM
                            &lpwErrMsg,              // Ptr to ptr to (constant) error message text
                             TRUE,                   // TRUE if we should process all names
                            &lpSymLink,              // Ptr to ptr to SYMENTRY link
-                            wszTailDPFE) EQ -1)     // Save area for canonical form of given ws name
+                            wszTailDPFE,            // Save area for canonical form of given ws name
+                            lpwszTemp,              // Ptr to temporary storage
+                            uMaxSize)               // Maximum size of lpwszTemp
+                    EQ -1)                          // If it's an error, ...
                 goto ERRMSG_EXIT;
 
             // Loop through the [Fcns.0] section copying
@@ -179,7 +194,9 @@ BOOL CmdCopy_EM
                            &lpwErrMsg,              // Ptr to ptr to (constant) error message text
                             TRUE,                   // TRUE if we should process all names
                            &lpSymLink,              // Ptr to ptr to SYMENTRY link
-                            wszTailDPFE))           // Save area for canonical form of given ws name
+                            wszTailDPFE,            // Save area for canonical form of given ws name
+                            lpwszTemp,              // Ptr to temporary storage
+                            uMaxSize))              // Maximum size of lpwszTemp
                 goto ERRMSG_EXIT;
         } else
         {
@@ -207,7 +224,9 @@ BOOL CmdCopy_EM
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
                                     FALSE,          // TRUE if we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
-                                    wszTailDPFE))   // Save area for canonical form of given ws name
+                                    wszTailDPFE,    // Save area for canonical form of given ws name
+                                    lpwszTemp,      // Ptr to temporary storage
+                                    uMaxSize))      // Maximum size of lpwszTemp
                 {
                     case -1:
                         goto ERRMSG_EXIT;
@@ -232,7 +251,9 @@ BOOL CmdCopy_EM
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
                                     FALSE,          // TRUE if we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
-                                    wszTailDPFE))   // Save area for canonical form of given ws name
+                                    wszTailDPFE,    // Save area for canonical form of given ws name
+                                    lpwszTemp,      // Ptr to temporary storage
+                                    uMaxSize))      // Maximum size of lpwszTemp
                 {
                     case -1:
                         goto ERRMSG_EXIT;
@@ -355,7 +376,9 @@ int CopyWsVars
      LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
      BOOL        bAllNames,                 // TRUE if we should process all names
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
-     WCHAR       wszTailDPFE[])             // Save area for canonical form of given ws name
+     WCHAR       wszTailDPFE[],             // Save area for canonical form of given ws name
+     LPWCHAR     lpwszTemp,                 // Ptr to temporary storage
+     UINT        uMaxSize)                  // Maximum size of lpwszTemp
 
 {
     WCHAR        wszCount[8];               // Save area for formatted uSymVar/Fcn counter
@@ -386,7 +409,7 @@ int CopyWsVars
                                   wszCount,             // Ptr to the key name
                                   L"",                  // Ptr to the default value
                                   lpwNameInWrk,         // Ptr to the output buffer
-                                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                  uMaxSize,             // Byte size of the output buffer
                                   wszTailDPFE);         // Ptr to the file name
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
@@ -448,6 +471,7 @@ int CopyWsVars
             // Parse the value into aplLongestObj and aplTypeObj
             lpwDataInWrk =
               ParseSavedWsVar_EM (lpwDataInWrk,     // Ptr to input buffer
+                                  uMaxSize - (UINT) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
                                  &lpaplLongestObj,  // Ptr to ptr to output element
                                  &aplTypeObj,       // Ptr to storage type (may be NULL)
                                  &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
@@ -539,7 +563,9 @@ int CopyWsFcns
      LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
      BOOL        bAllNames,                 // TRUE if we should process all names
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
-     WCHAR       wszTailDPFE[])             // Save area for canonical form of given ws name
+     WCHAR       wszTailDPFE[],             // Save area for canonical form of given ws name
+     LPWCHAR     lpwszTemp,                 // Ptr to temporary storage
+     UINT        uMaxSize)                  // Maximum size of lpwszTemp
 
 {
     WCHAR        wszCount[8];               // Save area for formatted uSymVar/Fcn counter
@@ -572,7 +598,7 @@ int CopyWsFcns
                                   wszCount,             // Ptr to the key name
                                   L"",                  // Ptr to the default value
                                   lpwNameInWrk,         // Ptr to the output buffer
-                                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                  uMaxSize,             // Byte size of the output buffer
                                   wszTailDPFE);         // Ptr to the file name
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
@@ -613,6 +639,7 @@ int CopyWsFcns
 
             // Parse the line into lpSymEntry->stData
             if (!ParseSavedWsFcn_EM (lpwDataInWrk,      // Ptr to input buffer
+                                     uMaxSize - (UINT) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
                                      lpSymEntry,        // Ptr to STE for the object
                                      nameType,          // Function name type (see NAME_TYPES)
                                      hWndEC,            // Edit Control window handle

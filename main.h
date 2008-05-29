@@ -134,7 +134,7 @@ typedef struct tagGLBHIST
 
 typedef struct tagVKSTATE
 {
-    ULONG Shift:1,              // 00000001:  Left- or right-shift key up(0) or down(1)
+    UINT  Shift:1,              // 00000001:  Left- or right-shift key up(0) or down(1)
 ////     lShift:1,
 ////     rShift:1,
           Alt:1,                // 00000002:  Left- or right-Alt key up(0) or down(1)

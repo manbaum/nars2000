@@ -274,7 +274,7 @@ void SF_ReadLineLW
                               wszLineNum,                           // Ptr to the key name
                               L"",                                  // Ptr to the default value
                               lpLW_Params->lpwBuffer,               // Ptr to the output buffer
-                              memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                              lpLW_Params->uMaxSize,                // Byte size of the output buffer
                               lpLW_Params->lpwszDPFE);              // Ptr to the file name
     // Convert the {name}s and other chars to UTF16_xxx
     (void) ConvertNameInPlace (lpLW_Params->lpwBuffer);

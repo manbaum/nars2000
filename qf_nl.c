@@ -337,7 +337,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Initialize the LPSYMENTRY sort array
-    lpSymSort = (LPSYMENTRY *) lpwszTemp;
+    lpSymSort = (LPSYMENTRY *) lpMemPTD->lpwszTemp;
 
     // Loop through the symbol table looking for STEs
     //   with one of the right arg name classes

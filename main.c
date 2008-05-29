@@ -1591,11 +1591,11 @@ void CheckForUpdates
                        0);                                  // Context value
     if (!hNetConnect)       // ***FIXME** -- Display error message
     {
-        wsprintfW (lpwszTemp,
+        wsprintfW (lpwszGlbTemp,
                    L"InternetConnect failed with error code %d (%08X)",
                    GetLastError (),
                    GetLastError ());
-        MessageBoxW (NULL, lpwszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+        MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
 
         goto ERROR_EXIT;
     } // End IF
@@ -1617,11 +1617,11 @@ void CheckForUpdates
                        0);                                  // Context value
     if (!hNetRequest)
     {
-        wsprintfW (lpwszTemp,
+        wsprintfW (lpwszGlbTemp,
                    L"HttpOpenRequest failed with error code %d (%08X)",
                    GetLastError (),
                    GetLastError ());
-        MessageBoxW (NULL, lpwszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+        MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
 
         goto ERROR_EXIT;
     } // End IF
@@ -1661,21 +1661,21 @@ void CheckForUpdates
             goto NORMAL_EXIT;
         } else
         {
-            wsprintfW (lpwszTemp,
+            wsprintfW (lpwszGlbTemp,
                        L"InternetReadFile failed with error code %d (%08X)",
                        GetLastError (),
                        GetLastError ());
-            MessageBoxW (NULL, lpwszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+            MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
 
             goto ERROR_EXIT;
         } // End IF/ELSE
     } else
     {
-        wsprintfW (lpwszTemp,
+        wsprintfW (lpwszGlbTemp,
                    L"HttpSendRequest failed with error code %d (%08X)",
                    GetLastError (),
                    GetLastError ());
-        MessageBoxW (NULL, lpwszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+        MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
 
         goto ERROR_EXIT;
     } // End IF/ELSE
@@ -2047,58 +2047,30 @@ BOOL InitInstance
     _hInstance = hInstance;
 
     //***************************************************************
-    // Allocate virtual memory for the char temporary storage
-    //***************************************************************
-#ifdef DEBUG
-    memVirtStr[MEMVIRT_SZTEMP].lpText   = "lpszTemp in <InitInstance>";
-#endif
-    memVirtStr[MEMVIRT_SZTEMP].IncrSize = DEF_CTEMP_INCRSIZE * sizeof (char);
-    memVirtStr[MEMVIRT_SZTEMP].MaxSize  = DEF_CTEMP_MAXSIZE  * sizeof (char);
-    memVirtStr[MEMVIRT_SZTEMP].IniAddr  = (LPUCHAR)
-    lpszTemp =
-      GuardAlloc (NULL,             // Any address
-                  memVirtStr[MEMVIRT_SZTEMP].MaxSize,
-                  MEM_RESERVE,      // memVirtStr
-                  PAGE_READWRITE);
-    if (!memVirtStr[MEMVIRT_SZTEMP].IniAddr)
-    {
-        // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  GuardAlloc for <lpszTemp> failed");
-
-        return FALSE;           // Mark as failed
-    } // End IF
-
-    // Commit the intial size
-    MyVirtualAlloc (memVirtStr[MEMVIRT_SZTEMP].IniAddr,
-                    DEF_CTEMP_INITSIZE * sizeof (char),
-                    MEM_COMMIT,
-                    PAGE_READWRITE);
-
-    //***************************************************************
     // Allocate virtual memory for the WCHAR temporary storage
     //***************************************************************
 #ifdef DEBUG
-    memVirtStr[MEMVIRT_WSZTEMP].lpText   = "lpwszTemp in <InitInstance>";
+    memVirtStr[MEMVIRT_WSZGLBTEMP].lpText   = "lpwszGlbTemp in <InitInstance>";
 #endif
-    memVirtStr[MEMVIRT_WSZTEMP].IncrSize = DEF_WTEMP_INCRSIZE * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZTEMP].MaxSize  = DEF_WTEMP_MAXSIZE  * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZTEMP].IniAddr  = (LPUCHAR)
-    lpwszTemp =
+    memVirtStr[MEMVIRT_WSZGLBTEMP].IncrSize = DEF_WGLBTEMP_INCRSIZE * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZGLBTEMP].MaxSize  = DEF_WGLBTEMP_MAXSIZE  * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr  = (LPUCHAR)
+    lpwszGlbTemp =
       GuardAlloc (NULL,             // Any address
-                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,
+                  memVirtStr[MEMVIRT_WSZGLBTEMP].MaxSize,
                   MEM_RESERVE,      // memVirtStr
                   PAGE_READWRITE);
-    if (!memVirtStr[MEMVIRT_WSZTEMP].IniAddr)
+    if (!memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  GuardAlloc for <lpwszTemp> failed");
+        DbgMsg ("InitInstance:  GuardAlloc for <lpwszGlbTemp> failed");
 
         return FALSE;       // Mark as failed
     } // End IF
 
     // Commit the intial size
-    MyVirtualAlloc (memVirtStr[MEMVIRT_WSZTEMP].IniAddr,
-                    DEF_WTEMP_INITSIZE * sizeof (WCHAR),
+    MyVirtualAlloc (memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr,
+                    DEF_WGLBTEMP_INITSIZE * sizeof (WCHAR),
                     MEM_COMMIT,
                     PAGE_READWRITE);
 
@@ -2152,63 +2124,6 @@ BOOL InitInstance
     htsGLB.iHshTabIncrSize   = DEF_GLBHSHTAB_INCRSIZE;
     htsGLB.uHashMask         = DEF_GLBHSHTAB_HASHMASK;
 
-#ifdef DEBUG
-    //***************************************************************
-    // Allocate virtual memory for the char debug storage
-    //***************************************************************
-#ifdef DEBUG
-    memVirtStr[MEMVIRT_SZDEBUG].lpText   = "lpszDebug in <InitInstance>";
-#endif
-    memVirtStr[MEMVIRT_SZDEBUG].IncrSize = DEF_DEBUG_INCRSIZE * sizeof (char);
-    memVirtStr[MEMVIRT_SZDEBUG].MaxSize  = DEF_DEBUG_MAXSIZE  * sizeof (char);
-    memVirtStr[MEMVIRT_SZDEBUG].IniAddr  = (LPUCHAR)
-    lpszDebug =
-      GuardAlloc (NULL,             // Any address
-                  memVirtStr[MEMVIRT_SZDEBUG].MaxSize,
-                  MEM_RESERVE,      // memVirtStr
-                  PAGE_READWRITE);
-    if (!memVirtStr[MEMVIRT_SZDEBUG].IniAddr)
-    {
-        // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  GuardAlloc for <lpszDebug> failed");
-
-        return FALSE;           // Mark as failed
-    } // End IF
-
-    // Commit the intial size
-    MyVirtualAlloc (memVirtStr[MEMVIRT_SZDEBUG].IniAddr,
-                    DEF_DEBUG_INITSIZE * sizeof (char),
-                    MEM_COMMIT,
-                    PAGE_READWRITE);
-
-    //***************************************************************
-    // Allocate virtual memory for the WCHAR debug storage
-    //***************************************************************
-#ifdef DEBUG
-    memVirtStr[MEMVIRT_WSZDEBUG].lpText   = "lpwszDebug in <InitInstance>";
-#endif
-    memVirtStr[MEMVIRT_WSZDEBUG].IncrSize = DEF_DEBUG_INCRSIZE * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZDEBUG].MaxSize  = DEF_DEBUG_MAXSIZE  * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZDEBUG].IniAddr  = (LPUCHAR)
-    lpwszDebug =
-      GuardAlloc (NULL,             // Any address
-                  memVirtStr[MEMVIRT_WSZDEBUG].MaxSize,
-                  MEM_RESERVE,      // memVirtStr
-                  PAGE_READWRITE);
-    if (!memVirtStr[MEMVIRT_WSZDEBUG].IniAddr)
-    {
-        // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  GuardAlloc for <lpwszDebug> failed");
-
-        return FALSE;           // Mark as failed
-    } // End IF
-
-    // Commit the intial size
-    MyVirtualAlloc (memVirtStr[MEMVIRT_WSZDEBUG].IniAddr,
-                    DEF_DEBUG_INITSIZE * sizeof (WCHAR),
-                    MEM_COMMIT,
-                    PAGE_READWRITE);
-#endif
     // Read in the icons
     hIconMF_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_LARGE));
     hIconMF_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_SMALL));

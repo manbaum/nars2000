@@ -47,10 +47,25 @@ BOOL CmdLib_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {
+    HGLOBAL          hGlbPTD;   // PerTabData global memory handle
+    LPPERTABDATA     lpMemPTD;  // Ptr to PerTabData global memory
     HANDLE           hFind;     // Handle to FindData
     WIN32_FIND_DATAW FindData;  // FindFirstFile return data struc
     UINT             uExtLen;   // Length of workspace extension
-    LPWCHAR          lpw;       // Temporary ptr
+    LPWCHAR          lpw,       // Temporary ptr
+                     lpwszTemp; // Ptr to temporary storage
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to temporary storage
+    lpwszTemp = lpMemPTD->lpwszTemp;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Skip to the next blank
     lpw = SkipToCharW (lpwszTail, L' ');

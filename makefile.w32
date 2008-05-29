@@ -47,6 +47,8 @@ MP=makepro
 
 WIN=32
 WDEF=_WIN$(WIN)
+WP=32                           # Target width to check against
+MFEXT=w$(WP)
 
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
@@ -57,6 +59,9 @@ CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
 !endif
 
 CFLAGS_WEXE = /nologo /Gs /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
+!if "$(WP)" == "64"
+CFLAGS_WEXE=$(CFLAGS_WEXE) /Wp64
+!endif
 LFLAGS_WEXE = /NOLOGO /MAP
 LIBS_WEXE = GDI32.LIB           \
             KERNEL32.LIB        \
@@ -95,14 +100,14 @@ AFLAGS=/Mu /DDEBUG=$(DEBUG)
 
 !if "$(VS)" == "1"
 O=DEBUG\                        # define output directory for intermediate files
-B=$(BIN)D32\                    # ...                         binaries
+B=$(BIN)D$(WP)\                 # ...                         binaries
 !else
 !if "$(DEBUG)" == "1"
-O=RET\D32\                      # define output directory for intermediate files
-B=$(BIN)D32\                    # ...                         binaries
+O=RET\D$(WP)\                   # define output directory for intermediate files
+B=$(BIN)D$(WP)\                 # ...                         binaries
 !else
-O=RET\ND32\                     # define output directory for intermediate files
-B=$(BIN)ND32\                   # ...                         binaries
+O=RET\ND$(WP)\                  # define output directory for intermediate files
+B=$(BIN)ND$(WP)\                # ...                         binaries
 !endif
 !endif
 OC=RET\COM\                     # Define output directory for common intermediate files
@@ -1257,7 +1262,7 @@ OBJS=                       \
 
 $(O)$(ENAME).EXE:       $(OBJS)         \
                         $(DEFFILE)      \
-                        makefile.w32
+                        makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.CRF
 $(OBJS)
 /OUT:$(O)$(ENAME).EXE

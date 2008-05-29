@@ -980,6 +980,8 @@ LPAPLCHAR FormatFloatFC
      UINT     dtoaMode)         // DTOA mode
 
 {
+    char szTemp[1024];          // Ptr to temporary output area
+
     if (!_finite (fFloat))
     {
         if (fFloat < 0)
@@ -991,7 +993,7 @@ LPAPLCHAR FormatFloatFC
 
         // Convert fFloat to an ASCII string
         // Use David Gay's routines
-        g_fmt (lpszTemp,        // Output save area
+        g_fmt (szTemp,          // Output save area
                fFloat,          // # to convert to ASCII
                dtoaMode,        // DTOA mode
          (int) uPrecision);     // ndigits
@@ -999,7 +1001,7 @@ LPAPLCHAR FormatFloatFC
         // Convert from one-byte ASCII to two-byte UTF16
         // The destin buffer length just needs be long enough
         //    to handle a FP number
-        A2W (lpaplChar, lpszTemp, 4096);
+        A2W (lpaplChar, szTemp, 4096);
 
         p  = lpaplChar;
         ep = strchrW (lpaplChar, L'e');

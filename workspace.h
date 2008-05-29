@@ -57,6 +57,7 @@ typedef LPAPLCHAR (*LPSAVEDWSGLBVARCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBVARPAR
 typedef struct tagLOADWSGLBVARPARM
 {
     LPWCHAR     lpwSrc;                 // Ptr to next available byte
+    UINT        uMaxSize;               // Maximum size of lpwSrc
     HWND        hWndEC;                 // Edit Control window handle
     LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
     LPAPLCHAR   lpwszDPFE;              // Ptr to saved WS file DPFE

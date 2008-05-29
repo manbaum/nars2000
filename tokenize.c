@@ -1100,10 +1100,12 @@ BOOL fnIntAccum
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         { // ***DEBUG***
-            wsprintf (lpszDebug,
-                      "aplInteger = %I64X",
-                      lpMemPTD->aplInteger);
-            DbgMsg (lpszDebug);
+            WCHAR wszTemp[1024];            // Ptr to temporary output area
+
+            wsprintfW (wszTemp,
+                       L"aplInteger = %I64X",
+                       lpMemPTD->aplInteger);
+            DbgMsgW (wszTemp);
         } // ***DEBUG*** END
 #endif
     } // End IF/ELSE
@@ -2692,7 +2694,7 @@ HGLOBAL Tokenize_EM
         wchColNum = CharTrans (wchOrig);
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-        wsprintfW (lpwszDebug,
+        wsprintfW (wszTemp,
                    L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
                    wchOrig ? wchOrig : 8230,
                    wchOrig,
@@ -2702,7 +2704,7 @@ HGLOBAL Tokenize_EM
                    fsaColTable[tkLocalVars.State][wchColNum].iNewState,
                    fsaColTable[tkLocalVars.State][wchColNum].fnAction1,
                    fsaColTable[tkLocalVars.State][wchColNum].fnAction2);
-        DbgMsgW (lpwszDebug);
+        DbgMsgW (wszTemp);
 #endif
 
         // Get primary action and new state
@@ -2999,14 +3001,15 @@ void Untokenize
 #ifdef DEBUG
             {
                 LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+                WCHAR        wszTemp[1024]; // Ptr to temporary output area
 
                 // Lock the memory to get a ptr to it
                 lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                wsprintf (lpszDebug,
-                          "Untokenize:  *** Unknown Token Value:  %d",
-                          lpToken->tkFlags.TknType);
-                DbgMsg (lpszDebug);
+                wsprintfW (wszTemp,
+                           L"Untokenize:  *** Unknown Token Value:  %d",
+                           lpToken->tkFlags.TknType);
+                DbgMsgW (wszTemp);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -3021,14 +3024,15 @@ void Untokenize
     {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+        WCHAR        wszTemp[1024]; // Ptr to temporary output area
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
-        wsprintf (lpszDebug,
-                  "Untokenize:  hGlobToken (%p) is invalid.",
-                  hGlbToken);
-        DbgMsg (lpszDebug);
+        wsprintfW (wszTemp,
+                   L"Untokenize:  hGlobToken (%p) is invalid.",
+                   hGlbToken);
+        DbgMsgW (wszTemp);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -3230,6 +3234,34 @@ WCHAR CharTrans
         case L'X':
         case L'Y':
         case L'Z':
+
+        case UTF16_A_:                  // Alphabet underbar
+        case UTF16_B_:
+        case UTF16_C_:
+        case UTF16_D_:
+        case UTF16_E_:
+        case UTF16_F_:
+        case UTF16_G_:
+        case UTF16_H_:
+        case UTF16_I_:
+        case UTF16_J_:
+        case UTF16_K_:
+        case UTF16_L_:
+        case UTF16_M_:
+        case UTF16_N_:
+        case UTF16_O_:
+        case UTF16_P_:
+        case UTF16_Q_:
+        case UTF16_R_:
+        case UTF16_S_:
+        case UTF16_T_:
+        case UTF16_U_:
+        case UTF16_V_:
+        case UTF16_W_:
+        case UTF16_X_:
+        case UTF16_Y_:
+        case UTF16_Z_:
+
         case UTF16_DELTA:               // Alt-'h' - delta
         case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar
             return COL_ALPHA;

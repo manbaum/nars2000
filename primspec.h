@@ -20,12 +20,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+// Define incomplete definition of a struc defined in full later
+struct tagPRIMSPEC;
+
 // Call this function for each monadic primitive function
 typedef LPPL_YYSTYPE PRIMFN_MON
     (LPTOKEN lptkFunc,                      // Ptr to function token
      LPTOKEN lptkRhtArg,                    // Ptr to right arg token
      LPTOKEN lptkAxis,                      // Ptr to axis token (may be NULL)
-     struct tagPrimSpec *lpPrimSpec);       // Ptr to local PRIMSPEC
+     struct tagPRIMSPEC *lpPrimSpec);       // Ptr to local PRIMSPEC
 
 typedef PRIMFN_MON *LPPRIMFN_MON;
 
@@ -35,7 +38,7 @@ typedef LPPL_YYSTYPE PRIMFN_DYD
      LPTOKEN lptkFunc,                      // Ptr to function token
      LPTOKEN lptkRhtArg,                    // Ptr to right arg token
      LPTOKEN lptkAxis,                      // Ptr to axis token (may be NULL)
-     struct tagPrimSpec *lpPrimSpec);       // Ptr to local PRIMSPEC
+     struct tagPRIMSPEC *lpPrimSpec);       // Ptr to local PRIMSPEC
 
 typedef PRIMFN_DYD *LPPRIMFN_DYD;
 
@@ -68,7 +71,7 @@ typedef BOOL PRIMFN_DYD_SNvSN
      APLNELM      aplNELMRht,               // Right ...
      APLNELM      aplNELMRes,               // Result ...
      APLNELM      aplNELMAxis,              // Axis ...
-     struct tagPrimSpec *lpPrimSpec);       // Ptr to local PRIMSPEC
+     struct tagPRIMSPEC *lpPrimSpec);       // Ptr to local PRIMSPEC
 
 typedef PRIMFN_DYD_SNvSN *LPPRIMFN_DYD_SNvSN;
 
@@ -101,7 +104,7 @@ typedef BOOL APARESULT_MON
 
          APLRANK      aplRankRht,           // Right arg rank
 
-         struct tagPrimSpec *lpPrimSpec);   // Ptr to local PRIMSPEC
+         struct tagPRIMSPEC *lpPrimSpec);   // Ptr to local PRIMSPEC
 
 typedef APARESULT_MON *LPAPARESULT_MON;
 
@@ -122,86 +125,86 @@ typedef BOOL APARESULT_DYD
          APLNELM      aplNELMRht,           // Right ...
 
          APLINT       aplInteger,           // The integer from the simple side
-         struct tagPrimSpec *lpPrimSpec);   // Ptr to local PRIMSPEC
+         struct tagPRIMSPEC *lpPrimSpec);   // Ptr to local PRIMSPEC
 
 typedef APARESULT_DYD *LPAPARESULT_DYD;
 
 
-typedef APLBOOL  BISB   (APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISI   (APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISF   (APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISC   (APLCHAR , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISI   (APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISF   (APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISC   (APLCHAR , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISI   (APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISF   (APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISC   (APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLBOOL  BISB   (APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISI   (APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISF   (APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISC   (APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISI   (APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISF   (APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISC   (APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISI   (APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISF   (APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISC   (APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
 
-typedef APLBOOL  BISBVB (APLBOOL , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISBVI (APLBOOL , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISBVF (APLBOOL , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISBVC (APLBOOL , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLBOOL  BISBVB (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISBVI (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISBVF (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISBVC (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLBOOL  BISIVB (APLINT  , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISIVI (APLINT  , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISIVF (APLINT  , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISIVC (APLINT  , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLBOOL  BISIVB (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISIVI (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISIVF (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISIVC (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLBOOL  BISFVB (APLFLOAT, APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISFVI (APLFLOAT, APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISFVF (APLFLOAT, APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISFVC (APLFLOAT, APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLBOOL  BISFVB (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISFVI (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISFVF (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISFVC (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLBOOL  BISCVB (APLCHAR , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISCVI (APLCHAR , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISCVF (APLCHAR , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLBOOL  BISCVC (APLCHAR , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLBOOL  BISCVB (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISCVI (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISCVF (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISCVC (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLINT   IISBVB (APLBOOL , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISBVI (APLBOOL , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISBVF (APLBOOL , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISBVC (APLBOOL , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLINT   IISBVB (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISBVI (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISBVF (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISBVC (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLINT   IISIVB (APLINT  , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISIVI (APLINT  , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISIVF (APLINT  , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISIVC (APLINT  , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLINT   IISIVB (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISIVI (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISIVF (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISIVC (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLINT   IISFVB (APLFLOAT, APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISFVI (APLFLOAT, APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISFVF (APLFLOAT, APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISFVC (APLFLOAT, APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLINT   IISFVB (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISFVI (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISFVF (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISFVC (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLINT   IISCVB (APLCHAR , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISCVI (APLCHAR , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISCVF (APLCHAR , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLINT   IISCVC (APLCHAR , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLINT   IISCVB (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISCVI (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISCVF (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISCVC (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLFLOAT FISBVB (APLBOOL , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISBVI (APLBOOL , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISBVF (APLBOOL , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISBVC (APLBOOL , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLFLOAT FISBVB (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISBVI (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISBVF (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISBVC (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLFLOAT FISIVB (APLINT  , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISIVI (APLINT  , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISIVF (APLINT  , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISIVC (APLINT  , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLFLOAT FISIVB (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISIVI (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISIVF (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISIVC (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLFLOAT FISFVB (APLFLOAT, APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISFVI (APLFLOAT, APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISFVF (APLFLOAT, APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISFVC (APLFLOAT, APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLFLOAT FISFVB (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISFVI (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISFVF (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISFVC (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLFLOAT FISCVB (APLCHAR , APLBOOL , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISCVI (APLCHAR , APLINT  , struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISCVF (APLCHAR , APLFLOAT, struct tagPrimSpec *lpPrimSpec);
-typedef APLFLOAT FISCVC (APLCHAR , APLCHAR , struct tagPrimSpec *lpPrimSpec);
+typedef APLFLOAT FISCVB (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISCVI (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISCVF (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISCVC (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
 
 // General structure passed to all primitive functions
-typedef struct tagPrimSpec
+typedef struct tagPRIMSPEC
 {
     // Monadic functions
     LPPRIMFN_MON        PrimFnMon_EM_YY;    // Ptr to monadic primitive function

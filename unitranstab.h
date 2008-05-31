@@ -52,7 +52,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {  NA  , 0x00D9,   NA  ,   NA  , 0x00C3,   NA  , UTF16_W_                }, // W underbar
     {  NA  , 0x00DA,   NA  ,   NA  , 0x00C5,   NA  , UTF16_X_                }, // X underbar
     {  NA  , 0x00DB,   NA  ,   NA  , 0x00C7,   NA  , UTF16_Y_                }, // Y underbar
-    {  NA  , 0x00DC,   NA  ,   NA  , 0x20D1,   NA  , UTF16_Z_                }, // Z underbar
+    {  NA  , 0x00DC,   NA  ,   NA  , 0x00D1,   NA  , UTF16_Z_                }, // Z underbar
 //  APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
     {0x00B8, 0x00A9,   NA  ,   NA  , 0x005E,   NA  , UTF16_ALPHA             }, // Alpha
     {0x00B1, 0x00B4,   NA  ,   NA  , 0x00B8,   NA  , UTF16_CIRCLE            }, // Circle

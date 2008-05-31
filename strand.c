@@ -1820,6 +1820,7 @@ LPPL_YYSTYPE PushList_YY
 {
     LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
+    PL_YYSTYPE YYTmp = {0};         // Temporary PL_YYSTYPE
 
     // Get this thread's LocalVars ptr
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
@@ -1833,8 +1834,6 @@ LPPL_YYSTYPE PushList_YY
     // If the token is NULL, push an empty token
     if (lpYYArg EQ NULL)
     {
-        PL_YYSTYPE YYTmp = {0};     // Temporary PL_YYSTYPE
-
         YYTmp.tkToken.tkFlags.TknType   = TKT_LISTSEP;
 ////////YYTmp.tkToken.tkFlags.ImmType   = 0;    // Already zero from = {0}
 ////////YYTmp.tkToken.tkFlags.NoDisplay = FALSE;// Already zero from = {0}

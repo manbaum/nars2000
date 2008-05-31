@@ -1727,6 +1727,32 @@ void DisplayFnHdr
 #endif
 
 
+#ifdef DEBUG
+//***************************************************************************
+//  $DisplayYYRes
+//
+//  Display a YYRes
+//***************************************************************************
+
+void DisplayYYRes
+    (LPPL_YYSTYPE lpYYRes)
+
+{
+    LPDWORD lpdw;
+
+    lpdw = (DWORD *) &lpYYRes->tkToken;
+
+    wsprintfW (lpwszGlbTemp,
+               L"%08X-%08X-%08X-%08X",
+               lpdw[0],
+               lpdw[1],
+               lpdw[2],
+               lpdw[3]);
+    MBWC (lpwszGlbTemp);
+} // End DisplayYYRes
+#endif
+
+
 //***************************************************************************
 //  End of File: dispdbg.c
 //***************************************************************************

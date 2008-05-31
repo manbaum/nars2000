@@ -28,6 +28,7 @@
 #include "resdebug.h"
 #include "sysvars.h"
 #include "externs.h"
+#include "unitranshdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -39,6 +40,7 @@
 #define SECTNAME_GENERAL        L"General"
 #define SECTNAME_SYSVARS        L"SysVars"
 #define SECTNAME_FONTS          L"Fonts"
+#define SECTNAME_OPTIONS        L"Options"
 
 // Key names
 #define KEYNAME_VERSION         L"Version"
@@ -66,6 +68,13 @@
 #define KEYNAME_LOGFONTSM       L"LogFontSM"
 #define KEYNAME_LOGFONTTC       L"LogFontTC"
 #define KEYNAME_LOGFONTVE       L"LogFontVE"
+
+#define KEYNAME_ADJUSTPW                L"AdjustPW"
+#define KEYNAME_UNDERBARTOLOWERCASE     L"UnderbarToLowercase"
+#define KEYNAME_NEWTABONCLEAR           L"NewTabOnClear"
+#define KEYNAME_NEWTABONLOAD            L"NewTabOnload"
+#define KEYNAME_USELOCALTIME            L"UseLocalTime"
+#define KEYNAME_DEFAULTPASTE            L"DefaultPaste"
 
 // Format string for [Fonts] section LOGFONT
 #define FMTSTR_LOGFONT_INP      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
@@ -192,12 +201,58 @@ void ReadIniFileGlb
          *lpwszTemp;                // Temporary ptr into wszTemp
     UINT  uCnt;                     // Loop counter
 
+    // Read in the [Fonts] section
+
     // Read in the LOGFONT strucs
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTFE, &lfFE);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTME, &lfME);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTSM, &lfSM);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC, &lfTC);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTVE, &lfVE);
+
+    // Read in the [Options] section
+
+    // Read in bAdjustPW
+    OptionFlags.bAdjustPW =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_ADJUSTPW,      // Ptr to the key name
+                             DEF_ADJUSTPW,          // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+
+    // Read in bUnderbarToLowercase
+    OptionFlags.bUnderbarToLowercase =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_UNDERBARTOLOWERCASE,// Ptr to the key name
+                             DEF_UNDERBARTOLOWERCASE,// Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+
+    // Read in bNewTabOnClear
+    OptionFlags.bNewTabOnClear =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_NEWTABONCLEAR, // Ptr to the key name
+                             DEF_NEWTABONCLEAR,     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+
+    // Read in bNewTabOnLoad
+    OptionFlags.bNewTabOnLoad =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_NEWTABONLOAD,  // Ptr to the key name
+                             DEF_NEWTABONLOAD,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+
+    // Read in bUseLocalTime
+    OptionFlags.bNewTabOnLoad =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_USELOCALTIME,  // Ptr to the key name
+                             DEF_USELOCALTIME,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+
+    // Read in uDefaultPaste
+    OptionFlags.uDefaultPaste =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_DEFAULTPASTE,  // Ptr to the key name
+                             DEF_DEFAULTPASTE,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
 
     // Read in default values for system variables in a CLEAR WS
 
@@ -822,6 +877,65 @@ void SaveIniFile
                                  KEYNAME_LOGFONTVE, // Ptr to the key name
                                 &lfVE,              // Ptr to LOGFONT
                                  lpwszIniFile);     // Ptr to the file name
+    //*********************************************************
+    // Write out [Options] section entries
+    //*********************************************************
+
+    //******************* bAdjustPW ***************************
+    wszTemp[0] = L'0' + OptionFlags.bAdjustPW;
+    wszTemp[1] = L'\0';
+
+    // Write out bAdjustPw
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_ADJUSTPW,   // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bUnderbarToLowercase ****************
+    wszTemp[0] = L'0' + OptionFlags.bUnderbarToLowercase;
+    wszTemp[1] = L'\0';
+
+    // Write out bUnderbarToLowercase
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_UNDERBARTOLOWERCASE,// Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bNewTabOnClear **********************
+    wszTemp[0] = L'0' + OptionFlags.bNewTabOnClear;
+    wszTemp[1] = L'\0';
+
+    // Write out bNewTabOnClear
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_NEWTABONCLEAR, // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bNewTabOnLoad ***********************
+    wszTemp[0] = L'0' + OptionFlags.bNewTabOnLoad;
+    wszTemp[1] = L'\0';
+
+    // Write out bNewTabOnLoad
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_NEWTABONLOAD, // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bUseLocalTime ***********************
+    wszTemp[0] = L'0' + OptionFlags.bUseLocalTime;
+    wszTemp[1] = L'\0';
+
+    // Write out bUseLocalTime
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_USELOCALTIME, // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* uDefaultPaste ***********************
+    wsprintfW (wszTemp,
+               L"%u",
+               OptionFlags.uDefaultPaste);
+    // Write out uDefaultPaste
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_DEFAULTPASTE, // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+
     //*********************************************************
     // Write out [SysVars] section entries
     //*********************************************************

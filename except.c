@@ -53,6 +53,9 @@ EXCEPT_NAMES ExceptNames[] =
 
 #define EXCEPT_NAMES_LENGTH         (sizeof (ExceptNames) / sizeof (ExceptNames[0]))
 
+// Save area for exception address if EXCEPTION_BREAKPOINT
+DWORD glbExceptAddr;
+
 
 //***************************************************************************
 //  $MyGetExceptionCode
@@ -449,8 +452,16 @@ long CheckException
         case EXCEPTION_FLT_DIVIDE_BY_ZERO:
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
         case EXCEPTION_SINGLE_STEP:
-        case EXCEPTION_BREAKPOINT:
         case EXCEPTION_GUARD_PAGE:
+            return EXCEPTION_EXECUTE_HANDLER;
+
+        case EXCEPTION_BREAKPOINT:
+            // In this case, we need to know who called us,
+            //   so we can report it to the end user
+
+            // Save our return address for later use
+            glbExceptAddr = *(LPDWORD) ULongToPtr (lpExcept->ContextRecord->Esp);
+
             return EXCEPTION_EXECUTE_HANDLER;
 
         case EXCEPTION_CTRL_BREAK:
@@ -526,6 +537,13 @@ void DisplayException
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // If the exception is EXCEPTION_BREAKPOINT (from DbgStop),
+    //   we need to display the return address as that's from
+    //   where we were called.  Displaying DbgStop address is
+    //   of no help
+    if (exceptCode EQ EXCEPTION_BREAKPOINT)
+        exceptAddr = *(LPUCHAR *) &glbExceptAddr;
 
     // Find the address closest to and at or below the given address
     // If the address is not found, it could be that we're

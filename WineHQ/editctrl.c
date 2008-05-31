@@ -3335,7 +3335,6 @@ static LRESULT EDIT_EM_PosFromChar(EDITSTATE *es, INT index, BOOL after_wrap)
 static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replace, BOOL send_update, BOOL honor_limit)
 {
     UINT strl = strlenW(lpsz_replace);
-    UINT strl2;
     UINT tl = get_text_length(es);
     UINT utl;
     UINT s;
@@ -3377,14 +3376,15 @@ static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replac
 
         /* Buffer limit can be smaller than the actual length of text in combobox */
         if (es->buffer_limit < (tl - (e-s)))
-            strl2 = 0;
+            strl = 0;
         else
-            strl2 = es->buffer_limit - (tl - (e-s));
+        {
+            UINT strl2 = es->buffer_limit - (tl - (e-s));
+            strl = min (strl, strl2);
+        }
     }
-    else
-        strl2 = strl;
 
-    if (!EDIT_MakeFit(es, tl - (e - s) + strl2))
+    if (!EDIT_MakeFit(es, tl - (e - s) + strl))
         return;
 
     if (e != s) {

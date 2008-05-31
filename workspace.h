@@ -21,19 +21,19 @@
 ***************************************************************************/
 
 // Section names
-#define SECTNAME_GENERAL        L"General"
-#define SECTNAME_GLOBALS        L"Globals"
-#define SECTNAME_VARS           L"Vars"
-#define SECTNAME_FCNS           L"Fcns"
+#define SECTNAME_GENERAL                L"General"
+#define SECTNAME_GLOBALS                L"Globals"
+#define SECTNAME_VARS                   L"Vars"
+#define SECTNAME_FCNS                   L"Fcns"
 
 // Key names
-#define KEYNAME_COUNT           L"Count"
-#define KEYNAME_VERSION         L"Version"
-#define KEYNAME_UNDO            L"Undo"
-#define KEYNAME_SILEVEL         L"SILevel"
-#define KEYNAME_CREATIONTIME    L"CreationTime"
-#define KEYNAME_LASTMODTIME     L"LastModTime"
-#define KEYNAME_USERDEFINED     L"UserDefined"
+#define KEYNAME_COUNT                   L"Count"
+#define KEYNAME_VERSION                 L"Version"
+#define KEYNAME_UNDO                    L"Undo"
+#define KEYNAME_SILEVEL                 L"SILevel"
+#define KEYNAME_CREATIONTIME            L"CreationTime"
+#define KEYNAME_LASTMODTIME             L"LastModTime"
+#define KEYNAME_USERDEFINED             L"UserDefined"
 
 // Format string for [Globals] section keyname
 #define FMTCHR_LEAD             L':'

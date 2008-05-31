@@ -103,6 +103,7 @@
 #define DEF_NEWTABONCLEAR           TRUE
 #define DEF_NEWTABONLOAD            TRUE
 #define DEF_USELOCALTIME            TRUE
+#define DEF_DEFAULTPASTE            UNITRANS_NORMAL
 
 
 // Date/time formats
@@ -974,7 +975,7 @@ OPTIONFLAGS OptionFlags
    DEF_NEWTABONCLEAR,
    DEF_NEWTABONLOAD,
    DEF_USELOCALTIME,
-   UNITRANS_NORMAL}
+   DEF_DEFAULTPASTE}
 #endif
 ;
 

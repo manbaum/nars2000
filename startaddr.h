@@ -261,6 +261,8 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // strand.c
     "InitVarStrand"             , (LPUCHAR) &InitVarStrand              ,
+    "MakeList_EM_YY"            , (LPUCHAR) &MakeList_EM_YY             ,
+    "CopyImmToken_EM"           , (LPUCHAR) &CopyImmToken_EM            ,
 
     // symtab.c
   #ifdef DEBUG
@@ -307,6 +309,10 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
   #ifdef DEBUG
     "YYCheckInuse"              , (LPUCHAR) YYCheckInuse                ,
   #endif
+
+    // DBGBRK.ASM
+    "DbgBrk"                    , (LPUCHAR) &DbgBrk                     ,
+    "DbgStop"                   , (LPUCHAR) &DbgStop                    ,
 
     // C API routines
     "memset"                    , (LPUCHAR) &memset                     ,

@@ -44,10 +44,7 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "CheckAxisOper"             , (LPUCHAR) &CheckAxisOper              ,
 
     // bjhash.c
-    "hashword"                  , (LPUCHAR) &hashword                   ,
     "hashlittle"                , (LPUCHAR) &hashlittle                 ,
-    "hashlittle2"               , (LPUCHAR) &hashlittle2                ,
-    "hashbig"                   , (LPUCHAR) &hashbig                    ,
 
     // chkesp.c
 

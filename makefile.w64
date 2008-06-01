@@ -32,9 +32,13 @@ OLDPATH=$(PATH)                 # Save the current path
 GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
-SDK=U:\                         # Directory of SDK
 
-MSVC=V:\                        # MSVC build
+##SDK=K:\                       # Directory of SDK ("C:\Program Files\Microsoft Platform SDK")
+SDK=U:\                         # Directory of SDK ("C:\Program Files\Microsoft SDKs\Windows\v6.1")
+##MSVC=L:\VC98\                 # MSVC compiler ("C:\Program Files\Microsoft Visual Studio")        (Version 12.00.8168)
+##MSVC=O:\VC\                   # MSVC compiler ("C:\Program Files\Microsoft Visual Studio 8")      (Version 14.00.50727.762)
+MSVC=V:\VC\                     # MSVC compiler ("C:\Program Files\Microsoft Visual Studio 9.0")    (Version 15.00.21022.08)
+
 I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
 L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG)
 
@@ -58,9 +62,9 @@ RESDEBUG=0
 CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
 !endif
 
-CFLAGS_WEXE = /nologo /Gs /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
+CFLAGS_WEXE = /nologo /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
 !if "$(WP)" == "64"
-CFLAGS_WEXE=$(CFLAGS_WEXE) /Wp64
+##CFLAGS_WEXE=$(CFLAGS_WEXE) /Wp64 /GS-
 !endif
 LFLAGS_WEXE = /NOLOGO /MAP
 LIBS_WEXE = GDI32.LIB           \
@@ -113,7 +117,6 @@ B=$(BIN)ND$(WP)\                # ...                         binaries
 OC=RET\COM\                     # Define output directory for common intermediate files
 
 HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
-P=R:\$(NAME)\                   # Full path to . dir for HCRTF
 
 
 ALL:    DIR                 \

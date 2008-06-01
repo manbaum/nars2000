@@ -1390,7 +1390,7 @@ WM_NCCREATE_FAIL:
                 // Display leading Copyright text and disclaimer
                 AppendLine (L"NARS2000 Copyright (C) 2006-8 Sudley Place Software.",              FALSE, TRUE);
                 AppendLine (L"This program comes with ABSOLUTELY NO WARRANTY; for details visit", TRUE , TRUE);
-                AppendLine (L"  http://www.nars2000.org/LICENSE, or click on Help > About.",      TRUE , TRUE);
+                AppendLine (L"  http://www.nars2000.org/License.html, or click on Help > About.",      TRUE , TRUE);
                 AppendLine (L"This is free software, and you are welcome to redistribute it",     TRUE , TRUE);
                 AppendLine (L"  under certain conditions; visit the above link for details.",     TRUE , TRUE);
 

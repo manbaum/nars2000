@@ -197,7 +197,7 @@ BEGIN
                     IDC_STATIC,10,30,150,18,NOT WS_GROUP
     LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see",
                     IDC_STATIC,10,55,170,20
-    LTEXT           "http://www.nars2000.org/LICENSE",
+    LTEXT           "http://www.nars2000.org/License.html",
                     IDC_LINK,10,75,170,9,SS_NOTIFY
 END
 

@@ -20,6 +20,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+// Disable stack checking
+#pragma check_stack(off)
+
 #include "macros.h"
 
 #define EQ ==

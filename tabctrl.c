@@ -69,22 +69,22 @@ TABCOLORS crTab[] =
 //     Background         Foreground         Highlight
 {
  {RGB (255,228,181), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Moccasin              1
- {RGB (220, 20, 60), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Crimson               2
- {RGB (255,  0,255), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Fuchsia               3
- {RGB (123,104,238), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Medium slate blue     4
- {RGB ( 30,144,255), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dodger blue           5
- {RGB ( 50,205, 50), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Line green            6
- {RGB (255,215,  0), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Gold                  7
- {RGB (189,183,107), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark khaki            8
- {RGB (222,184,135), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Burly wood            9
- {RGB (193,208,165), RGB (  0,  0,  0), RGB (255,  0,  0)}, //                      10
- {RGB (244,164, 96), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Sandy brown          11
- {RGB (184,134, 11), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark goldenrod       12
- {RGB (  0,250,154), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Medium spring green  13
- {RGB (173,255, 47), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Green yellow         14
- {RGB (148,  0,211), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark violet          15
- {RGB (230,230,250), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Lavender             16
- {RGB (255,105,180), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Hot pink             17
+ {RGB (255,  0,255), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Fuchsia               2
+ {RGB (123,104,238), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Medium slate blue     3
+ {RGB ( 30,144,255), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dodger blue           4
+ {RGB ( 50,205, 50), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Line green            5
+ {RGB (255,215,  0), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Gold                  6
+ {RGB (189,183,107), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark khaki            7
+ {RGB (222,184,135), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Burly wood            8
+ {RGB (193,208,165), RGB (  0,  0,  0), RGB (255,  0,  0)}, //                       9
+ {RGB (244,164, 96), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Sandy brown          10
+ {RGB (184,134, 11), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark goldenrod       11
+ {RGB (  0,250,154), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Medium spring green  12
+ {RGB (173,255, 47), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Green yellow         13
+ {RGB (148,  0,211), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark violet          14
+ {RGB (230,230,250), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Lavender             15
+ {RGB (255,105,180), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Hot pink             16
+ {RGB (220, 20, 60), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Crimson              17
 };
 
 #define NUM_CRTABS  (sizeof (crTab) / sizeof (crTab[0]))
@@ -220,7 +220,7 @@ BOOL CreateNewTab
 
     // Save args in struc to pass to thread func
     cntThread.hWndParent = hWndParent;
-    cntThread.hGlbDPFE   = hGlbDPFE;
+    cntThread.hGlbDPFE   = hGlbDPFE;        // Freed in sessman.c/WM_CREATE
     cntThread.iTabIndex  = iTabIndex;
     cntThread.bExecLX    = bExecLX;
 
@@ -278,7 +278,7 @@ BOOL WINAPI CreateNewTabInThread
                  hWndParent,        // Window handle of the parent
                  hWndTmp;           // Temporary window handle
     int          iTabIndex;         // Insert the new tab to the left of this one
-    MSG          Msg;               // Message for GetMessage loop
+    MSG          Msg;               // Message for GetMessageW loop
     int          nThreads;
     WCHAR        wszTemp[32];       // Temporary storage
     BOOL         bExecLX;           // TRUE iff execute []LX after successful load
@@ -288,7 +288,7 @@ BOOL WINAPI CreateNewTabInThread
 
     // Extract values from the arg struc
     hWndParent = lpcntThread->hWndParent;
-    hGlbDPFE   = lpcntThread->hGlbDPFE;
+    hGlbDPFE   = lpcntThread->hGlbDPFE;     // Freed in sessman.c/WM_CREATE
     iTabIndex  = lpcntThread->iTabIndex;
     bExecLX    = lpcntThread->bExecLX;
     hThread    = lpcntThread->hThread;
@@ -408,7 +408,7 @@ BOOL WINAPI CreateNewTabInThread
 #endif
 
     // Fill in the SM WM_CREATE data struct
-    csSM.hGlbDPFE = hGlbDPFE;
+    csSM.hGlbDPFE = hGlbDPFE;               // Freed in sessman.c/WM_CREATE
     csSM.bExecLX  = bExecLX;
 
     // Save hWndMC for use inside message loop
@@ -473,23 +473,17 @@ BOOL WINAPI CreateNewTabInThread
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    // Free the storage for the workspace DPFE global memory
-    if (hGlbDPFE)
-    {
-        MyGlobalFree (hGlbDPFE); hGlbDPFE = NULL;
-    } // End IF
-
     __try
     {
         // Main message loop
-        while (GetMessage (&Msg, NULL, 0, 0))
+        while (GetMessageW (&Msg, NULL, 0, 0))
         {
             // Handle MDI messages and accelerators
             if (!TranslateMDISysAccel (hWndMC, &Msg)
              && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
             {
                 TranslateMessage (&Msg);
-                DispatchMessage  (&Msg);
+                DispatchMessageW (&Msg);
             } // End IF
         } // End WHILE
     } __except (CheckException (GetExceptionInformation (), "CreateNewTabInThread"))
@@ -497,10 +491,13 @@ BOOL WINAPI CreateNewTabInThread
         // Display message for unhandled exception
         DisplayException ();
     } // End __try/__except
-    // GetMessage returned FALSE for a Quit message
+    // GetMessageW returned FALSE for a Quit message
 
     // Mark as successful
     bRet = TRUE;
+
+    // Zap so we don't try to free it
+    hGlbDPFE = NULL;
 
     goto NORMAL_EXIT;
 

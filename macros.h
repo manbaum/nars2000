@@ -55,8 +55,6 @@
 #ifdef DEBUG
   #define YYAlloc()     _YYAlloc(FNLN)
 
-  #define IsGlbPtr(a) (((a) NE NULL) && (GlobalFlags (a) NE GMEM_INVALID_HANDLE))
-
   #ifdef DEBUG_ALLOCFREE
     #define DbgGlobalAlloc(uFlags,ByteRes) \
     DbgGlobalAllocSub ((uFlags), (ByteRes), L"##GlobalAlloc in " APPEND_NAME L": %p (%S#%d)", FNLN)
@@ -108,8 +106,6 @@
 #else
   #define YYAlloc()     _YYAlloc()
 
-  #define IsGlbPtr(a) ((a) NE NULL && GlobalFlags (a) NE GMEM_INVALID_HANDLE)
-
   #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc ((uFlags), (ByteRes))
 
   #define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken)
@@ -130,7 +126,6 @@
   #define Assert(a)     ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
 #endif
-
 
 #define SIGN_APLNELM(a)     ((a) >> 63)     // Sign bit of an APLNELM
 #define SIGN_APLRANK(a)     ((a) >> 63)     // ...            APLRANK

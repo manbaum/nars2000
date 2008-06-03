@@ -1,6 +1,7 @@
 TO DO:  General:  Important (pre-alpha)
 ---------------------------------------
 * Document MAKEFILE so others may build the product
+* Implement )IN and )OUT to enable users to import/export data easily
 
 
 TO DO:  General:  Less Important (post-alpha)
@@ -25,6 +26,7 @@ TO DO:  General:  Less Important (post-alpha)
 * Check for overflow on integer addition/multiplication
 * Check for 64-bit compile
 * Check for updates from the web:  nars2000.org/CurrentRelease.php
+* Need an installation program which also sets up file associations for (ws.nars)
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -89,11 +91,22 @@ TO DO:  General:  Less Important (post-alpha)
 * ...
 
 
-TODO: Session Manager
+TO DO:  Session Manager
 ---------------------
 * Ensure APL font is installed
 * Language bar to speed entry of APL chars
 * When closing a tab, ensure that all threads under it are terminated
+* Support different keyboard layouts
+*
+
+TO DO:  Options Menu
+--------------------
+* Fonts
+* Syntax Colors
+* Tab Colors
+* CLEAR WS values
+* Directory preferences
+* User preferences
 *
 
 

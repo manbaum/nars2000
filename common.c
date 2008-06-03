@@ -393,5 +393,25 @@ BOOL CALLBACK EnumCallbackRemoveProp
 
 
 //***************************************************************************
+//  $IsGlbPtr
+//
+//  Return TRUE iff the given handle/ptr is valid
+//***************************************************************************
+
+BOOL IsGlbPtr
+    (HGLOBAL hGlbSrc)
+
+{
+    __try
+    {
+        return ((hGlbSrc NE NULL) && (GlobalFlags (hGlbSrc) NE GMEM_INVALID_HANDLE));
+    } __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+        return FALSE;
+    } // End __try/__except
+} // End IsGlbPtr
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

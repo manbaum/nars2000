@@ -109,7 +109,7 @@ BOOL WINAPI CreateDebuggerInThread
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     HWND         hWndMC,        // MDI Client window handle
                  hWndDB;        // Debugger window handle
-    MSG          Msg;           // Message for GetMessage loop
+    MSG          Msg;           // Message for GetMessageW loop
 
     __try
     {
@@ -175,18 +175,18 @@ BOOL WINAPI CreateDebuggerInThread
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Main message loop
-            while (GetMessage (&Msg, NULL, 0, 0))
+            while (GetMessageW (&Msg, NULL, 0, 0))
             {
                 // Handle MDI messages and accelerators
                 if (!TranslateMDISysAccel (hWndMC, &Msg)
                  && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
                 {
                     TranslateMessage (&Msg);
-                    DispatchMessage  (&Msg);
+                    DispatchMessageW (&Msg);
                 } // End IF
             } // End WHILE
 
-            // GetMessage returned FALSE for a Quit message
+            // GetMessageW returned FALSE for a Quit message
         } // End IF
     } __except (CheckException (GetExceptionInformation (), "CreateDebuggerInThread"))
     {

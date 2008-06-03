@@ -85,7 +85,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x2022, 0x00E0,   NA  ,   NA  , 0x00D5,   NA  , UTF16_DOWNTACKJOT       }, // Down tack jot
     {0x00B9, 0x00AD,   NA  ,   NA  , 0x00A3,   NA  , UTF16_EPSILON           }, // Epsilon
     {0x00BA,   NA  ,   NA  ,   NA  , 0x00CD,   NA  , UTF16_EPSILONUNDERBAR   }, // Epsilon underbar     Missing from ISO charset
-    {0x00AD, 0x00F4,   NA  ,   NA  ,   NA  ,   NA  , UTF16_EQUALUNDERBAR     }, // Equal underbar
+    {0x00AD, 0x00F4,   NA  ,   NA  , 0x005C,   NA  , UTF16_EQUALUNDERBAR     }, // Equal underbar
 ////{0x20AC,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_EURO              }, // Euro
     {  NA  ,   NA  ,   NA  ,   NA  , 0x00B9,   NA  , UTF16_IBEAM             }, // I-beam
     {  NA  ,   NA  ,   NA  ,   NA  , 0x00C8,   NA  , UTF16_IOTAUNDERBAR      }, // Iota underbar

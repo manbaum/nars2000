@@ -2267,6 +2267,37 @@ static void EDIT_MoveUp_ML(EDITSTATE *es, BOOL extend)
 
 /*********************************************************************
  *
+ *  EDIT_MoveBufferHome_ML
+ *
+ *  Only for multi line controls
+ *  Move the caret to the beginning of the buffer.
+ *
+ */
+static void EDIT_MoveBufferHome_ML(EDITSTATE *es)
+{
+    EDIT_EM_SetSel(es, 0, 0, FALSE);
+    EDIT_EM_ScrollCaret(es);
+}
+
+
+/*********************************************************************
+ *
+ *  EDIT_MoveBufferEnd_ML
+ *
+ *  Only for multi line controls
+ *  Move the caret to the end of the buffer.
+ *
+ */
+static void EDIT_MoveBufferEnd_ML(EDITSTATE *es)
+{
+    INT e = get_text_length(es);
+    EDIT_EM_SetSel(es, e, e, TRUE);
+    EDIT_EM_ScrollCaret(es);
+}
+
+
+/*********************************************************************
+ *
  *  EDIT_MoveWordBackward
  *
  */
@@ -4767,10 +4798,16 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
             EDIT_MoveForward(es, shift);
         break;
     case VK_HOME:
-        EDIT_MoveHome(es, shift);
+        if ((es->style & ES_MULTILINE) && control)
+            EDIT_MoveBufferHome_ML(es);
+        else
+            EDIT_MoveHome(es, shift);
         break;
     case VK_END:
-        EDIT_MoveEnd(es, shift);
+        if ((es->style & ES_MULTILINE) && control)
+            EDIT_MoveBufferEnd_ML(es);
+        else
+            EDIT_MoveEnd(es, shift);
         break;
     case VK_PRIOR:
         if (es->style & ES_MULTILINE)

@@ -42,7 +42,7 @@
 //***************************************************************************
 //  $MakeWorkspaceNameCanonical
 //
-// Convert a workspace name into a canonical form (without WSKEXT)
+// Convert a workspace name into a canonical form (without WS_WKSEXT)
 //***************************************************************************
 
 void MakeWorkspaceNameCanonical
@@ -51,6 +51,19 @@ void MakeWorkspaceNameCanonical
      LPWCHAR wszDefDir)         // Default drive and directory if no drive letter
 
 {
+    UINT uLen;
+
+    // If the incoming workspace name begins with a double-quote, skip over it
+    if (wszInp[0] EQ L'"')
+        wszInp++;
+
+    // Get the incoming workspace name string length
+    uLen = lstrlenW (wszInp);
+
+    // If the incoming workspace name ends with a double-quote, delete it
+    if (uLen && wszInp[uLen - 1] EQ L'"')
+        wszInp[uLen - 1] = L'\0';
+
     // If the name doesn't begin with a drive letter and
     //   doesn't start at the root or a dot, prepend the
     //   default dir
@@ -63,6 +76,13 @@ void MakeWorkspaceNameCanonical
         lstrcatW (wszOut, wszInp);
     } else
         lstrcpyW (wszOut, wszInp);
+
+    // Get the outgoing workspace name string length
+    uLen = lstrlenW (wszOut);
+
+    // If the workspace name ends with WSKEXT
+    if (lstrcmpiW (&wszOut[uLen - WS_WKSEXT_LEN], WS_WKSEXT) EQ 0)
+        wszOut[uLen - WS_WKSEXT_LEN] = L'\0';
 } //  End MakeWorkspaceNameCanonical
 
 
@@ -151,7 +171,7 @@ BOOL CmdSave_EM
     lstrcpynW (wszTempDPFE, lpMemSaveWSID, (UINT) aplNELMWSID + 1);
 ////wszTempDPFE[aplNELMWSID] = L'\0';   // Already done via "+ 1" in lstrcpynW
 
-    // Convert the []WSID workspace name into a canonical form (without WKSEXT)
+    // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
     MakeWorkspaceNameCanonical (wszWsidDPFE, wszTempDPFE, lpwszWorkDir);
 
     // If there is a specified WS Name,
@@ -161,7 +181,7 @@ BOOL CmdSave_EM
     //     "NOT SAVED, THIS WS IS ",[]WSID
     if (*lpwszTail)
     {
-        // Convert the given workspace name into a canonical form (without WKSEXT)
+        // Convert the given workspace name into a canonical form (without WS_WKSEXT)
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
         // Compare the workspace names (without their extensions)
@@ -583,10 +603,10 @@ BOOL CmdSave_EM
     if (lpMemPTD->SILevel)
         ReplaceLastLineCRPmt (L"WARNING:  SI non-empty -- not restartable after )LOAD");
 
-    // Get the length of the []WSID excluding WKSEXT
-    iCmp = lstrlenW (lpMemSaveWSID) - ((sizeof WKSEXT) - 1);
+    // Get the length of the []WSID excluding WS_WKSEXT
+    iCmp = lstrlenW (lpMemSaveWSID) - WS_WKSEXT_LEN;
 
-    // Omit the trailing WKSEXT
+    // Omit the trailing WS_WKSEXT
     Assert (lpMemSaveWSID[iCmp] EQ L'.');
     lpMemSaveWSID[iCmp] = L'\0';
 
@@ -1466,13 +1486,13 @@ LPAPLCHAR AppendArrayHeader
 #endif
 
 BOOL SaveNewWsid_EM
-    (LPAPLCHAR lpMemSaveWSID)           // Ptr to []WSID to save (includes WKSEXT)
+    (LPAPLCHAR lpMemSaveWSID)           // Ptr to []WSID to save (includes WS_WKSEXT)
 
 {
     HGLOBAL      hGlbPTD,               // PerTabData global memory handle
                  hGlbWSID;              // []WSID global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    int          iLen,                  // Length of []WSID (with WKSEXT)
+    int          iLen,                  // Length of []WSID (with WS_WKSEXT)
                  iLen2;                 // ...              (w/o  ...)
     APLUINT      ByteWSID;              // # bytes in the []WSID
     LPAPLCHAR    lpMemNewWSID;          // Ptr to new []WSID global memory
@@ -1484,14 +1504,14 @@ BOOL SaveNewWsid_EM
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get the length of the []WSID (including WKSEXT)
+    // Get the length of the []WSID (including WS_WKSEXT)
     iLen = lstrlenW (lpMemSaveWSID);
 
     // If the []WSID is non-empty, ...
     if (iLen)
     {
-        // Omit the trailing WKSEXT
-        iLen2 = iLen - ((sizeof WKSEXT) - 1);
+        // Omit the trailing WS_WKSEXT
+        iLen2 = iLen - WS_WKSEXT_LEN;
         Assert (lpMemSaveWSID[iLen2] EQ L'.');
         lpMemSaveWSID[iLen2] = L'\0';
 

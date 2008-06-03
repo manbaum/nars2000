@@ -81,12 +81,12 @@ typedef struct tagUPDATESDLGSTR
             lpWebVer;           // Ptr to web  ...
 } UPDATESDLGSTR, *LPUPDATESDLGSTR;
 
-int nMinState,                          // Minimized state as per WinMain
-    iScrollSize;                        // Width of a vertical scrollbar
+int  nMinState,                         // Minimized state as per WinMain
+     iScrollSize;                       // Width of a vertical scrollbar
 BOOL fHelp = FALSE,                     // TRUE iff we displayed help
-     bCommandLine;                      // ...      there is a filename on the command line
+     bCommandLine = FALSE;              // ...      there is a filename on the command line
 
-HMODULE user32_module;
+HMODULE user32_module;                  // Needed by WineHQ\EDITCTRL.C
 
 HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconSM_Large, hIconSM_Small,
@@ -751,11 +751,11 @@ LRESULT APIENTRY MFWndProc
 ////////////if (!hGlbPTD)
 ////////////    return -1;          // Stop the whole process
 
-            // Load a CLEAR WS
+            // Load a CLEAR WS or the worksapce named on the command line
             if (!CreateNewTab (hWnd,
-                               L"",
+                               wszLoadFile,
                                TabCtrl_GetItemCount (hWndTC),
-                               FALSE))
+                               wszLoadFile[0] NE L'\0'))
                 return -1;          // Stop the whole process
 
             // *************** Fonts ***********************************
@@ -2189,14 +2189,21 @@ BOOL ParseCommandLine
 
 {
     LPCHAR p;
+    WCHAR  wszTempDPFE[1024];
 
     // Skip over leading space
     p = SkipWhite (lpCmdLine);
 
     if (*p)
     {
-        // Copy to buffer
-        lstrcpy (szOpenFile, p);
+        // Copy to temporary buffer
+        A2W (wszTempDPFE, p, sizeof (wszTempDPFE));
+
+        // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
+        MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
+
+        // Append the common workspace extension
+        lstrcatW (wszLoadFile, WS_WKSEXT);
 
         // Mark as present
         bCommandLine = TRUE;
@@ -2219,7 +2226,7 @@ int PASCAL WinMain
      int         nCmdShow)
 
 {
-    MSG  Msg;           // Message for GetMessage loop
+    MSG  Msg;           // Message for GetMessageW loop
 
     // This is needed by Wine's EDITCTRL.C
     user32_module = hInstance;
@@ -2329,7 +2336,7 @@ int PASCAL WinMain
     __try
     {
         // Main message loop
-        while (GetMessage (&Msg, NULL, 0, 0))
+        while (GetMessageW (&Msg, NULL, 0, 0))
         {
             HWND hWndMC;        // MDI Client window handle
 
@@ -2341,7 +2348,7 @@ int PASCAL WinMain
              && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
             {
                 TranslateMessage (&Msg);
-                DispatchMessage  (&Msg);
+                DispatchMessageW (&Msg);
             } // End IF
         } // End WHILE
     } __except (CheckException (GetExceptionInformation (), "WinMain"))
@@ -2350,7 +2357,7 @@ int PASCAL WinMain
         DisplayException ();
     } // End __try/__except
 
-    // GetMessage returned FALSE for a Quit message
+    // GetMessageW returned FALSE for a Quit message
 EXIT4:
     DeleteCriticalSection (&CSO1);
     DeleteCriticalSection (&CSO0);

@@ -313,10 +313,9 @@ char lpszAppName[]                      // Application name for MessageBox
 ;
 
 EXTERN
-WCHAR wszAppDPFE  [_MAX_PATH],          // .EXE drive, path, filename.ext
-      wszHlpDPFE  [_MAX_PATH];          // .HLP ...
-EXTERN
-char szOpenFile [_MAX_PATH];            // Save area for multiple files to open
+WCHAR wszAppDPFE [_MAX_PATH],           // .EXE drive, path, filename.ext
+      wszHlpDPFE [_MAX_PATH],           // .HLP ...
+      wszLoadFile[_MAX_PATH];           // Save area for initial workspace to load
 
 #define WS_WKSNAME  L"workspaces"       // Name of Workspaces subdirectory under main dir
 

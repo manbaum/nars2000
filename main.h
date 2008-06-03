@@ -216,6 +216,7 @@ typedef enum tagEXIT_TYPES
 // Extensions
 #define WKSEXT          ".ws.nars"
 #define WS_WKSEXT       L".ws.nars"
+#define WS_WKSEXT_LEN   ((sizeof (WS_WKSEXT) / sizeof (WS_WKSEXT[0])) - 1)
 
 // From
 #define strchrW         wcschr

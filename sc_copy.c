@@ -154,7 +154,7 @@ BOOL CmdCopy_EM
         if (wcTmp)
             lpwCmd = SkipWhiteW (lpwCmd);
 
-        // Convert the given workspace name into a canonical form (without WKSEXT)
+        // Convert the given workspace name into a canonical form (without WS_WKSEXT)
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
         // Append the common workspace extension

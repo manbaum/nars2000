@@ -2123,11 +2123,11 @@ HGLOBAL CopyGlbMemory
             lpMemDst;       // Ptr to result ...
 
     // Check for bad handle
-    if (hGlbSrc EQ NULL)
+    if (!IsGlbPtr (hGlbSrc))
         return NULL;
 
     // Get the size of the global memory object
-    dwSize = GlobalSize (hGlbSrc);
+    dwSize = MyGlobalSize (hGlbSrc);
 
     // Allocate space for the result
     // Note we do not use MyGlobalAlloc here as the global memory handle
@@ -2295,6 +2295,8 @@ void PasteAPLChars
 
             // Place all the other formats on the clipboard first
             for (uFmt = 0; uFmt < uCount; uFmt++)
+            if (lpMemFmts[uFmt].uFmtNum NE CF_PRIVATEFIRST
+             && lpMemFmts[uFmt].hGlbFmt NE NULL)
                 SetClipboardData (lpMemFmts[uFmt].uFmtNum, lpMemFmts[uFmt].hGlbFmt);
 
             // Place the changed data onto the clipboard

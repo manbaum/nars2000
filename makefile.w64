@@ -33,14 +33,21 @@ GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 
+WIN=32
+WDEF=_WIN$(WIN)
+WP=64                           # Target width to check against
+MFEXT=w$(WP)
+
+PFNE="C:\Program Files\NARS2000\W$(WP)\$(ENAME).EXE"  # Directory for Program Files for NARS2000
+PCRE=C:\PCRE\                   # Directory for Perl-Compatible Regular Expressions
 ##SDK=K:\                       # Directory of SDK ("C:\Program Files\Microsoft Platform SDK")
 SDK=U:\                         # Directory of SDK ("C:\Program Files\Microsoft SDKs\Windows\v6.1")
 ##MSVC=L:\VC98\                 # MSVC compiler ("C:\Program Files\Microsoft Visual Studio")        (Version 12.00.8168)
 ##MSVC=O:\VC\                   # MSVC compiler ("C:\Program Files\Microsoft Visual Studio 8")      (Version 14.00.50727.762)
 MSVC=V:\VC\                     # MSVC compiler ("C:\Program Files\Microsoft Visual Studio 9.0")    (Version 15.00.21022.08)
 
-I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
-L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG)
+I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG);$(PCRE)include
+L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG);$(PCRE)lib
 
 LD=$(MSVC)BIN\link.exe
 CC=$(MSVC)BIN\cl.exe
@@ -48,11 +55,6 @@ RC=$(MSVC)BIN\rc.exe
 
 MV=makever
 MP=makepro
-
-WIN=32
-WDEF=_WIN$(WIN)
-WP=64                           # Target width to check against
-MFEXT=w$(WP)
 
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
@@ -120,7 +122,7 @@ HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
 
 
 ALL:    DIR                 \
-        PRO                 \
+########PRO                 \
         DEP                 \
         EXE                 \
         MAKEVER             \
@@ -129,6 +131,9 @@ ALL:    DIR                 \
 EXE:                        \
         $(O)$(ENAME).EXE    \
         $(B)$(ENAME).EXE    \
+!if "$(DEBUG)" == "0"
+        $(PFNE)             \
+!endif
         $(BC)$(ENAME).HLP
 
 MAKEVER:                    \
@@ -921,17 +926,20 @@ $(O)yyfns.PRO
 {}.C{$(O)}.PRO:
         @Set INCLUDE=$(I98);$(O)
         @echo %s
-        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO %s} {$@}
+########@php makepro.php {%s} {$@}
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO} {%s} {$@}
 
 {$(O)}.C{$(O)}.PRO:
         @Set INCLUDE=$(I98);$(O)
         @echo %s
-        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO %s} {$@}
+########@php makepro.php {%s} {$@}
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO} {%s} {$@}
 
 {$(WS)}.C{$(O)}.PRO:
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
         @echo %s
-        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO /DUNICODE %s} {$@}
+########@php makepro.php {%s} {$@}
+        @$(BC)$(MP) {$(CC)} {$(CFLAGS_WEXE) /Zg /DPROTO /DUNICODE} {%s} {$@}
 
 ########################## UTILITY ROUTINES ##########################
 
@@ -1283,8 +1291,11 @@ $(LIBS_WEXE) $(LIBS_EXT)
         @copy $(O)$(MAPFILE) $(B)$(@B).MAP >NUL
 
 $(B)$(ENAME).EXE:       $(O)$(ENAME).EXE
-        @xc/r    %s      $@ >NUL
+        @copy %s $@ >NUL
         @dir /ON $(B)$(ENAME).*|grep "$(ENAME)\."
+
+$(PFNE):                $(O)$(ENAME).EXE
+        @copy %s $(PFNE) >NUL
 
 
 ############################# MAKEVER EXECUTABLE #####################
@@ -1307,7 +1318,7 @@ kernel32.lib user32.lib version.lib libcmt.lib
         @del $(OC)$(@B).lib
 
 $(BC)$(MV).exe:         $(OC)$(MV).exe
-        @xc/r    %s     $@ >NUL
+        @copy    %s     $@ >NUL
 
 $(ENAME).ver:           $(O)$(ENAME).exe
         @$(OC)$(MV).exe $(O)$(ENAME).exe
@@ -1322,7 +1333,7 @@ $(OC)$(MP).exe:         $(OC)$(MP).obj   $(OC)DbgBrk.obj
 $**
 /OUT:$(OC)$(MP).exe
 /MAP:$(OC)$(MP).map
-kernel32.lib libcmt.lib
+kernel32.lib libcmt.lib user32.lib pcre.lib
 /NODEFAULTLIB
 /DEF:$(MP).def
 <<KEEP
@@ -1333,5 +1344,5 @@ kernel32.lib libcmt.lib
         @del $(OC)$(@B).lib
 
 $(BC)$(MP).exe:         $(OC)$(MP).exe
-        @xc/r    %s     $@ >NUL
+        @copy    %s     $@ >NUL
 

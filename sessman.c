@@ -792,6 +792,7 @@ WM_NCCREATE_FAIL:
         {
             int     i;                  // Loop counter
             HGLOBAL hGlbTmp;            // Temporary hGlbNum/hGlbStr
+            LRESULT lResult = -1;       // The result (assume we failed)
 
             // Initialize # threads
             SetPropW (hWnd, L"NTHREADS", 0);
@@ -1380,17 +1381,13 @@ WM_NCCREATE_FAIL:
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            // Load the workspace
-            if (!LoadWorkspace_EM ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE, hWndEC))
-                goto LOAD_WORKSPACE_FAIL;
-
             // Display the )LOAD message once and only once
             if (!bLoadMsgDisp)
             {
                 // Display leading Copyright text and disclaimer
                 AppendLine (L"NARS2000 Copyright (C) 2006-8 Sudley Place Software.",              FALSE, TRUE);
                 AppendLine (L"This program comes with ABSOLUTELY NO WARRANTY; for details visit", TRUE , TRUE);
-                AppendLine (L"  http://www.nars2000.org/License.html, or click on Help > About.",      TRUE , TRUE);
+                AppendLine (L"  http://www.nars2000.org/License.html, or click on Help > About.", TRUE , TRUE);
                 AppendLine (L"This is free software, and you are welcome to redistribute it",     TRUE , TRUE);
                 AppendLine (L"  under certain conditions; visit the above link for details.",     TRUE , TRUE);
 
@@ -1398,10 +1395,24 @@ WM_NCCREATE_FAIL:
                 bLoadMsgDisp = TRUE;
             } // End IF
 
+            // Attempt to load the workspace
+            if (!LoadWorkspace_EM ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE, hWndEC))
+            {
+                // If we're loading a workspace from the command line, we can't afford to fail
+                if (wszLoadFile[0]
+                 && !LoadWorkspace_EM (NULL, hWndEC))   // Attempt to load a CLEAR WS
+                    goto LOAD_WORKSPACE_FAIL;           // If that fails, give up
+            } // End IF
+
+            // Zap so the above test doesn't succeed again
+            wszLoadFile[0] = L'\0';
+
             // Tell the window to finish initialization
             PostMessageW (hWnd, MYWM_INIT_EC, 0, 0);
 
-            return FALSE;           // We handled the msg
+            lResult = FALSE;        // We handled the msg
+
+            goto NORMAL_EXIT;       // Join common code
 
 WM_CREATE_FAIL_UNHOOK:
             // Lock the memory to get a ptr to it
@@ -1417,7 +1428,11 @@ WM_CREATE_FAIL:
             // Send a constant message to the previous tab
             SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, hGlbPTD);
 LOAD_WORKSPACE_FAIL:
-            return -1;              // Mark as failed
+NORMAL_EXIT:
+            // Free the workspace global
+            MyGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE);
+
+            return lResult;         // Mark as failed
         } // End WM_CREATE
 #undef  lpMDIcs
 

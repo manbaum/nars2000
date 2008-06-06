@@ -1888,6 +1888,15 @@ StrandRec:
     | StrandRec   error                 {DbgMsgW2 (L"%%StrandRec:  error StrandRec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpplLocalVars->lpYYStr =
+                                               MakeVarStrand_EM_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
+                                                 YYERROR;
+
+                                             FreeResult (&lpplLocalVars->lpYYStr->tkToken); YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
                                              YYERROR;
                                          } else

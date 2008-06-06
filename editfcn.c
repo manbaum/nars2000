@@ -149,10 +149,31 @@ BOOL CreateFcnWindow
     // If it didn't succeed, ...
     if (hWnd EQ NULL)
     {
-        if (feCreateStructW.ErrCode EQ 1)
-            MB (pszNoEditPrimFn);
-        else
-            MB (pszNoCreateFEWnd);
+        switch (feCreateStructW.ErrCode)
+        {
+            case NAMETYPE_VAR:
+                MB (pszNoEditVars);
+
+                break;
+
+            case NAMETYPE_FN12:
+            case NAMETYPE_OP1:
+            case NAMETYPE_OP2:
+            case NAMETYPE_OP3:
+                MB (pszNoEditPrimFns);
+
+                break;
+
+            case NAMETYPE_UNK:
+            case NAMETYPE_FN0:
+                MB (pszNoCreateFEWnd);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
         return FALSE;
     } // End IF
 
@@ -270,12 +291,10 @@ LRESULT APIENTRY FEWndProc
             lpSymName = ParseFunctionName (hWnd, (*(LPFE_CREATESTRUCTW *) &lpMDIcs->lParam)->lpwszLine);
             if (lpSymName)
             {
-                // If it's a function/operator but not a user-defined function/operator, ...
-                if (IsNameTypeFnOp (lpSymName->stFlags.stNameType)
-                 && !lpSymName->stFlags.UsrDfn)
+                // If it's not a user-defined function/operator, ...
+                if (!lpSymName->stFlags.UsrDfn)
                 {
-                    // ***FIXME*** -- Allow the user to edit the function array
-                    ((LPFE_CREATESTRUCTW) (lpMDIcs->lParam))->ErrCode = 1;
+                    ((LPFE_CREATESTRUCTW) (lpMDIcs->lParam))->ErrCode = lpSymName->stFlags.stNameType;
 
                     return -1;
                 } else

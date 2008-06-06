@@ -997,9 +997,14 @@ char pszNoInsertTCTab[]
  = "Unable to create a new Tab"
 #endif
 ,
-     pszNoEditPrimFn[]
+     pszNoEditPrimFns[]
 #ifdef DEFINE_VALUES
- = "NONCE ERROR:  Unable to edit named primitive function/operator"
+ = "NONCE ERROR:  Unable to edit named primitive function/operators"
+#endif
+,
+     pszNoEditVars[]
+#ifdef DEFINE_VALUES
+ = "NONCE ERROR:  Unable to edit named variables"
 #endif
 ,
      pszNoCreateFEEditCtrl[]

@@ -151,14 +151,15 @@ typedef struct tagPERTABDATA
     LPMEMVIRTSTR lpLstMVS;          //164:  Ptr to last MEMVIRTSTR (NULL = none)
     LPWCHAR      lpwszFormat,       //168:  Ptr to formatting save area
                  lpwszTemp;         //16C:  Ptr to temporary  ...
-    UINT         uTempMaxSize;      //170:  Maximum size of lpwszTemp
+    UINT         uTempMaxSize,      //170:  Maximum size of lpwszTemp
+                 RegisterEBP;       //174:  Register EBP from an exception
 #ifndef UNISCRIBE
     IMLangFontLink
-                *lpFontLink;        //174:  Ptr to FontLink struc
+                *lpFontLink;        //178:  Ptr to FontLink struc
 #endif
-    APLCHAR      cQuadPR,           //178:  []PR     (' ') (When a char scalar)
-                 cQuadxSA;          //17A:  []SA     (0)   (in its index form as an integer)
-                                    //17C:  Length
+    APLCHAR      cQuadPR,           //17C:  []PR     (' ') (When a char scalar)
+                 cQuadxSA;          //17E:  []SA     (0)   (in its index form as an integer)
+                                    //180:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

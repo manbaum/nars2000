@@ -91,6 +91,9 @@ default:        \
 // Define offsets in VEWNDCLASS window extra bytes
 #define GWLVE_EXTRA     0                                           // Total # extra bytes
 
+// Define offsets in CCWNDCLASS window extra bytes
+#define GWLCC_EXTRA     0                                           // Total # extra bytes
+
 
 // Define local window messages
 #define MYWM_MOVE           (WM_APP + 0)    // MF
@@ -104,6 +107,7 @@ default:        \
 #define MYWM_INIT_SMDB      (WM_APP + 8)    // SM (Initialize SM/DB windows)
 #define MYWM_ERRMSG         (WM_APP + 9)    // SM (Display error message)
 #define MYWM_SAVE_WS        (WM_APP +10)    // SM (Save workspace)
+#define MYWM_DISPMB         (WM_APP +11)    // CC (Display MessageBox)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP + 0)    // DB

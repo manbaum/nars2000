@@ -49,7 +49,8 @@ typedef struct tagSIS_HEADER
                      Suspended:1,   //      00000100:  Function is suspended
                      ResetFlag:3,   //      00000E00:  SI stack is resetting (see RESET_FLAGS)
                      PermFn:1,      //      00001000:  Permanent function (i.e. Magic Function)
-                     Avail:19;      //      FFFFE000:  Available bits
+                     Restartable:1, //      00002000:  This SI level is restartable
+                     Avail:18;      //      FFFFC000:  Available bits
     UINT             EventType,     // 1C:  Event type (Major, Minor) (see EVENT_TYPES)
                      CurLineNum,    // 20:  Current line # (origin-1)
                      NxtLineNum,    // 24:  Next    ...

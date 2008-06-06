@@ -25,6 +25,7 @@
 #define SECTNAME_GLOBALS                L"Globals"
 #define SECTNAME_VARS                   L"Vars"
 #define SECTNAME_FCNS                   L"Fcns"
+#define SECTNAME_SI                     L"SI"
 
 // Key names
 #define KEYNAME_COUNT                   L"Count"

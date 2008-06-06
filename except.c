@@ -250,6 +250,37 @@ void MySetInvalidAddr
 
 
 //***************************************************************************
+//  $MySetRegisterEBP
+//
+//  Set the current EBP
+//***************************************************************************
+
+void MySetRegisterEBP
+    (UINT RegisterEBP)          // Register EBP contents
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // If hGlbPTD isn't set, just exit
+    if (hGlbPTD EQ NULL)
+        return;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Set the register
+    lpMemPTD->RegisterEBP = RegisterEBP;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End MySetRegisterEBP
+
+
+//***************************************************************************
 //  $CheckVirtAlloc
 //
 //  Check on virtual allocs
@@ -402,46 +433,25 @@ long CheckException
     int     iRet;               // Return code
     LPUCHAR lpInvalidAddr;      // Ptr to invalid address
 
+    // Get the invalid address
+    lpInvalidAddr = (LPUCHAR) lpExcept->ExceptionRecord->ExceptionInformation[1];
+
     // Save the exception code, address, and text for later use
     MySetExceptionCode (lpExcept->ExceptionRecord->ExceptionCode);
     MySetExceptionAddr (lpExcept->ExceptionRecord->ExceptionAddress);
     MySetExceptionText (lpText);
+    MySetRegisterEBP   (lpExcept->ContextRecord->Ebp);
+    MySetInvalidAddr   (lpInvalidAddr);
 
     // Split cases based upon the exception code
     switch (lpExcept->ExceptionRecord->ExceptionCode)
     {
         case EXCEPTION_ACCESS_VIOLATION:
-            // Get the invalid address
-            lpInvalidAddr = (LPUCHAR) lpExcept->ExceptionRecord->ExceptionInformation[1];
-
-            // Save for later use
-            MySetInvalidAddr (lpInvalidAddr);
-
             // Check on virtual allocs from <memVirtStr>
             iRet = CheckMemVirtStr (lpInvalidAddr);
             if (iRet)
                 return iRet;
-#if 0
-            {
-                DWORD   regEBP;             // Stack trace ptr
-                LPBYTE  caller;             // Ptr to caller in stack trace
 
-                DbgBrk ();
-
-                // Do a stack trace
-                regEBP = lpExcept->ContextRecord->Ebp;
-
-                do
-                {
-                    if (regEBP & 3
-                     || IsBadReadPtr ((LPVOID) regEBP, 8))
-                        break;
-
-                    caller = ((LPBYTE *) regEBP)[1];
-                    regEBP = *(DWORD *) regEBP;
-                } while (TRUE);
-            } // End ***DEBUG***
-#endif
             // Fall through to common handler execution
 
 ////////case EXCEPTION_RESULT_BOOL:
@@ -451,7 +461,7 @@ long CheckException
         case EXCEPTION_LIMIT_ERROR:
         case EXCEPTION_FLT_DIVIDE_BY_ZERO:
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
-        case EXCEPTION_SINGLE_STEP:
+////    case EXCEPTION_SINGLE_STEP:             // ***DEBUG***
         case EXCEPTION_GUARD_PAGE:
             return EXCEPTION_EXECUTE_HANDLER;
 
@@ -495,6 +505,33 @@ UINT __cdecl CompareStartAddresses
 
 
 //***************************************************************************
+//  $IsGoodReadPtr
+//
+//  Return TRUE iff the given ptr is valid for reading a given # bytes
+//***************************************************************************
+
+BOOL IsGoodReadPtr
+    (LPBYTE lpReadPtr,
+     DWORD  dwBytes)
+
+{
+    DWORD dwCnt;
+    BYTE  dwRead;
+
+    __try
+    {
+        for (dwCnt = 0; dwCnt < dwBytes; dwCnt++)
+            dwRead += *lpReadPtr++;
+
+        return TRUE;
+    } __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+        return FALSE;
+    } // End __try/__except
+} // End IsGoodReadPtr
+
+
+//***************************************************************************
 //  $DisplayException
 //
 //  Display an exception code, address, etc.
@@ -504,15 +541,21 @@ void DisplayException
     (void)
 
 {
-    char         szTemp[1024];  // Temp output save area
+    WCHAR        wszTemp[1024]; // Temp output save area
     int          exceptIndex;   // Exception index
     UINT         exceptCode,    // Exception code
                  nearAddress,   // Offset from closest address
-                 nearIndex;     // Index into StartAddresses
+                 nearIndex,     // Index into StartAddresses
+                 nearAddress0,  // Offset from closest address
+                 nearIndex0,    // Index into StartAddresses
+                 nearAddress1,  // Offset from closest address
+                 nearIndex1;    // Index into StartAddresses
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPCHAR       exceptText;    // Ptr to exception text
     LPUCHAR      exceptAddr;    // Exception address
+    DWORD        regEBP;        // Stack trace ptr
+    LPBYTE       caller;        // Ptr to caller in stack trace
 
     // Sort the StartAddresses in ascending order by address
     qsort (StartAddresses,
@@ -534,6 +577,7 @@ void DisplayException
     exceptCode = lpMemPTD->ExceptionCode;
     exceptAddr = lpMemPTD->ExceptionAddr;
     exceptText = lpMemPTD->ExceptionText;
+    regEBP     = lpMemPTD->RegisterEBP;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -550,31 +594,115 @@ void DisplayException
     //   running under a debugger and the debugger has changed the
     //   starting address of the routine to a near JMP instruction,
     //   so try again with that assumption
-    if (START_ADDRESSES_LENGTH EQ FindRoutineAddress (exceptAddr, &nearAddress, &nearIndex, TRUE))
-        FindRoutineAddress (exceptAddr, &nearAddress, &nearIndex, TRUE);
+    FindRoutineAddress (exceptAddr, &nearAddress0, &nearIndex0, FALSE);
+    FindRoutineAddress (exceptAddr, &nearAddress1, &nearIndex1, TRUE);
+    if (nearAddress0 < nearAddress1)
+    {
+        nearAddress = nearAddress0;
+        nearIndex   = nearIndex0;
+    } else
+    {
+        nearAddress = nearAddress1;
+        nearIndex   = nearIndex1;
+    } // End IF/ELSE
 
     for (exceptIndex = 0; exceptIndex < EXCEPT_NAMES_LENGTH; exceptIndex++)
     if (exceptCode EQ ExceptNames[exceptIndex].ExceptCode)
         break;
 
-    wsprintf (szTemp,
-              "WRITE THIS DOWN!! -- "
-              "Exception code = %08X (%s) at %p"
-              " (%s + %p)"
-              " from %s -- When you press OK, the program will terminate.",
-              exceptCode,
-              (exceptIndex EQ EXCEPT_NAMES_LENGTH)
-                ? "Exception Unknown"
-                : ExceptNames[exceptIndex].ExceptName,
-              exceptAddr,
-              StartAddresses[nearIndex].StartAddressName,
-              nearAddress,
-              exceptText);
+    ShowWindow (hWndCC, SW_SHOWNORMAL);
+    UpdateWindow (hWndCC);
+
+#define NewMsg(a)   SendMessageW (hWndCC, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC)
+
+    NewMsg (L"COPY THIS TEXT TO AN EMAIL MESSAGE");
+    NewMsg (L"   and send it to <nars2000-discuss@googlegroups.com>");
+    NewMsg (L"   along with a detailed statement of what you were doing just prior to the crash.");
+
+    wsprintfW (wszTemp,
+               L"Exception code = %08X (%S)",
+               exceptCode,
+               (exceptIndex EQ EXCEPT_NAMES_LENGTH)
+                 ? "Exception Unknown"
+                 : ExceptNames[exceptIndex].ExceptName);
+    NewMsg (wszTemp);
+
+    wsprintfW (wszTemp,
+               L"   at %p (%S + %p)",
+               exceptAddr,
+               StartAddresses[nearIndex].StartAddressName,
+               nearAddress);
+    NewMsg (wszTemp);
+
+    wsprintfW (wszTemp,
+               L"   from %S",
+               exceptText);
+    NewMsg (wszTemp);
+
+    // Display the backtrace
+    NewMsg (L"");
+    NewMsg (L"== BACKTRACE ==");
+
+    // Do a stack trace
+    while (TRUE)
+    {
+        // If the register is misaligned or a bad ptr, quit
+        if (regEBP & 3
+         || !IsGoodReadPtr ((LPVOID) regEBP, 8))
+            break;
+
+        // Get the caller's address
+        caller = ((LPBYTE *) regEBP)[1];
+
+        // Check for all done
+        if (caller EQ 0)
+            break;
+
+        FindRoutineAddress (caller, &nearAddress0, &nearIndex0, FALSE);
+        FindRoutineAddress (caller, &nearAddress1, &nearIndex1, TRUE);
+        if (nearAddress0 < nearAddress1)
+        {
+            nearAddress = nearAddress0;
+            nearIndex   = nearIndex0;
+        } else
+        {
+            nearAddress = nearAddress1;
+            nearIndex   = nearIndex1;
+        } // End IF/ELSE
+
+        // If the address is out of bounds, just display the address
+        if (nearAddress > 0x00100000)
+            // Format the addresses
+            wsprintfW (wszTemp,
+                       L"%p -- EBP = %08X",
+                       caller,
+                       regEBP);
+        else
+            // Format the addresses
+            wsprintfW (wszTemp,
+                       L"%p (%S + %p) -- EBP = %08X",
+                       caller,
+                       StartAddresses[nearIndex].StartAddressName,
+                       nearAddress,
+                       regEBP);
+        NewMsg (wszTemp);
+
+        // Handle case where we get stuck
+        if (regEBP EQ *(DWORD *) regEBP)
+            break;
+
+        // Get the next EBP
+        regEBP = *(DWORD *) regEBP;
+    } // End WHILE
+
+    // Tell the Crash Control window to display a MessageBox
+    SendMessageW (hWndCC, MYWM_DISPMB, 0, 0);
+
+#undef  NewMsg
+
 #ifdef DEBUG
-    DbgMsg (szTemp);
-    DbgStop ();
+    DbgBrk ();
 #else
-    MB (szTemp);
     exit (exceptCode);
 #endif
 } // End DisplayException
@@ -586,7 +714,7 @@ void DisplayException
 //  Find the address of the routine at or below a given address
 //***************************************************************************
 
-UINT FindRoutineAddress
+void FindRoutineAddress
     (LPUCHAR exceptAddr,            // Exception address
      LPUINT  lpNearAddress,         // Ptr to offset from closest address
      LPUINT  lpNearIndex,           // Ptr to index into StartAddresses
@@ -608,6 +736,7 @@ UINT FindRoutineAddress
 
         // If we're testing for debugger and it's a near JMP (E9 xx xx xx xx), ...
         if (bDebugger
+         && IsGoodReadPtr (startAddr, 5)
          && *startAddr EQ 0xE9)
             // Skip over the instruction ("5 +") and add in the
             //   value of the near offset arg to the JMP
@@ -621,8 +750,6 @@ UINT FindRoutineAddress
             *lpNearIndex   = i;
         } // End IF
     } // End FOR
-
-    return i;
 } // End FindRoutineAddress
 
 

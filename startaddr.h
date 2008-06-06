@@ -52,6 +52,10 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // convert.c
 
+    // crash.c
+    "CCWndProc"                 , (LPUCHAR) &CCWndProc                  ,
+    "LclCCListboxWndProc"       , (LPUCHAR) &LclCCListboxWndProc        ,
+
     // debug.c
   #ifdef DEBUG
     "CreateDebuggerWindow"      , (LPUCHAR) &CreateDebuggerWindow       ,
@@ -90,8 +94,10 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "LclEditCtrlWndProc"        , (LPUCHAR) &LclEditCtrlWndProc         ,
 
     // editmat.c
+    "MEWndProc"                 , (LPUCHAR) &MEWndProc                  ,
 
     // editvec.c
+    "VEWndProc"                 , (LPUCHAR) &VEWndProc                  ,
 
     // errmsg.c
 
@@ -127,12 +133,14 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // immexec.c
     "WaitForImmExecStmt"        , (LPUCHAR) &WaitForImmExecStmt         ,
+    "ImmExecStmtInThread"       , (LPUCHAR) &ImmExecStmtInThread        ,
 
     // initdata.c
     "InitPrimTabs"              , (LPUCHAR) &InitPrimTabs               ,
 
     // main.c
     "EnumCallbackPassMsg"       , (LPUCHAR) &EnumCallbackPassMsg        ,
+    "MFWndProc"                 , (LPUCHAR) &MFWndProc                  ,
 
     // parse.c/y
     "pl_yyparse"                , (LPUCHAR) &pl_yyparse                 ,
@@ -173,6 +181,9 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "PrimFnUpTack_EM_YY"        , (LPUCHAR) &PrimFnUpTack_EM_YY         ,
     "PrimFnMonUpTack_EM_YY"     , (LPUCHAR) &PrimFnMonUpTack_EM_YY      ,
     "PrimFnDydUpTack_EM_YY"     , (LPUCHAR) &PrimFnDydUpTack_EM_YY      ,
+
+    // pf_utackjot.c
+    "PrimFnMonUptackJotInThread", (LPUCHAR) &PrimFnMonUpTackJotInThread ,
 
     // po_cmiddot.c
     "PrimOpDydCircleMiddleDotCommon_EM_YY", (LPUCHAR) &PrimOpDydCircleMiddleDotCommon_EM_YY,
@@ -237,6 +248,15 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // sc_load.c
     "CmdLoad_EM"                , (LPUCHAR) &CmdLoad_EM                 ,
+    "CmdXload_EM"               , (LPUCHAR) &CmdXload_EM                ,
+    "CmdLoadCom_EM"             , (LPUCHAR) &CmdLoadCom_EM              ,
+    "LoadWorkspace_EM"          , (LPUCHAR) &LoadWorkspace_EM           ,
+    "DisplayWorkspaceStamp"     , (LPUCHAR) &DisplayWorkspaceStamp      ,
+    "SendMessageLastTab"        , (LPUCHAR) &SendMessageLastTab         ,
+    "ParseSavedWsFcn_EM"        , (LPUCHAR) &ParseSavedWsFcn_EM         ,
+    "ParseSavedWsVar_EM"        , (LPUCHAR) &ParseSavedWsVar_EM         ,
+    "LoadWorkspaceGlobal_EM"    , (LPUCHAR) &LoadWorkspaceGlobal_EM     ,
+    "LoadWsGlbVarConv"          , (LPUCHAR) &LoadWsGlbVarConv           ,
 
     // sc_reset.c
     "CmdReset_EM"               , (LPUCHAR) &CmdReset_EM                ,
@@ -252,6 +272,7 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // sessman.c
     "SetAttrs"                  , (LPUCHAR) &SetAttrs                   ,
+    "SMWndProc"                 , (LPUCHAR) &SMWndProc                  ,
 
     // sort.c
     "ShellSort"                 , (LPUCHAR) &ShellSort                  ,
@@ -277,6 +298,8 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // tabctrl.c
     "EnumCallbackShowHide"      , (LPUCHAR) &EnumCallbackShowHide       ,
+    "LclTabCtrlWndProc"         , (LPUCHAR) &LclTabCtrlWndProc          ,
+    "CreateNewTabInThread"      , (LPUCHAR) &CreateNewTabInThread       ,
 
     // tokenize.c
     "UTLockAndSet"              , (LPUCHAR) &UTLockAndSet               ,
@@ -293,6 +316,7 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // ver.c
     "LclFileVersionStrW"        , (LPUCHAR) &LclFileVersionStrW         ,
+    "LclStaticWndProc"          , (LPUCHAR) &LclStaticWndProc           ,
 
     // yyfns.c
     "YYAlloc"                   , (LPUCHAR) &_YYAlloc                   ,

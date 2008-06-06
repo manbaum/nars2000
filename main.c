@@ -96,14 +96,15 @@ HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconFE_Large, hIconFE_Small,
       hIconME_Large, hIconME_Small,
       hIconVE_Large, hIconVE_Small,
+      hIconCC_Large, hIconCC_Small,
       hIconClose;
 
 #define  MFWNDCLASS          "MFClass"                                      // Master Frame Window class
 #define LMFWNDCLASS         L"MFClass"                                      // Master Frame Window class
 
 WCHAR wszMFTitle[]          = WS_APPNAME WS_APPEND_DEBUG,                   // Master frame window title
-      wszTCTitle[]          = WS_APPNAME L" Tab Control Window" WS_APPEND_DEBUG,// Tab Control ... (for debugging purposes only)
-      wszMFClass[]          = LMFWNDCLASS;                                  // Master Frame Window class
+      wszCCTitle[]          = WS_APPNAME L" Crash Control Window" WS_APPEND_DEBUG, // Crash Control window title
+      wszTCTitle[]          = WS_APPNAME L" Tab Control Window" WS_APPEND_DEBUG;// Tab Control ... (for debugging purposes only)
 
 char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.",
      pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS ">.",
@@ -113,11 +114,13 @@ char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.
      pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS ">.",
      pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
      pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.",
-     pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS ">.";
+     pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS ">.",
+     pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS ">.";
 
 char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateTCWnd[]     = "Unable to create Tab Control window",
-     pszNoCreateTTWnd[]     = "Unable to create ToolTip window";
+     pszNoCreateTTWnd[]     = "Unable to create ToolTip window",
+     pszNoCreateCCWnd[]     = "Unable to create Crash Control window";
 
 
 //***************************************************************************
@@ -338,6 +341,31 @@ void CreateNewFontTC
 
 
 //***************************************************************************
+//  $CreateNewFontCC
+//
+//  Create a new font for the CC window.
+//***************************************************************************
+
+void CreateNewFontCC
+    (void)
+
+{
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontCC,
+                      &lfCC,
+                      &cfCC,
+                      &tmCC,
+                       NULL,
+                       NULL);
+    // Tell the CC about the new font
+    SendMessageW (hWndCC, WM_SETFONT, (WPARAM) hFontCC, MAKELPARAM (TRUE, 0));
+
+    // Repaint the CC text
+    InvalidateRect (hWndCC, NULL, TRUE);
+} // End CreateNewFontCC
+
+
+//***************************************************************************
 //  $CreateNewFontSM
 //
 //  Create a new font for the SM windows.
@@ -542,6 +570,26 @@ BOOL CreateChildWindows
 
     if (hWndTT EQ NULL)
         return FALSE;       // Stop the whole process
+
+    // Create the crash control window
+    hWndCC =
+      CreateWindowExW (0L,                  // Extended styles
+                       LCCWNDCLASS,         // Class
+                       wszCCTitle,          // Window title (for debugging purposes only)
+                       0
+                     | WS_OVERLAPPEDWINDOW
+                       ,                    // Styles
+                       CW_USEDEFAULT, CW_USEDEFAULT,    // X- and Y-coord
+                       CW_USEDEFAULT, CW_USEDEFAULT,    // X- and Y-size
+                       hWnd,                // Parent window
+                       NULL,                // Menu
+                       _hInstance,          // Instance
+                       NULL);               // No extra data
+    if (hWndCC EQ NULL)
+    {
+        MB (pszNoCreateCCWnd);
+        return FALSE;
+    } // End IF
 
     // Create the tab control window
     hWndTC =
@@ -762,6 +810,7 @@ LRESULT APIENTRY MFWndProc
             // Create a new font for various windows
             CreateNewFontTC ();
             CreateNewFontSM ();
+            CreateNewFontCC ();
             CreateNewFontFE ();
             CreateNewFontME ();
             CreateNewFontVE ();
@@ -1360,6 +1409,11 @@ LRESULT APIENTRY MFWndProc
             if (hFontSM)
             {
                 MyDeleteObject (hFontSM); hFontSM = NULL;
+            } // End IF
+
+            if (hFontCC)
+            {
+                MyDeleteObject (hFontCC); hFontCC = NULL;
             } // End IF
 
             if (hFontFE)
@@ -1994,6 +2048,27 @@ BOOL InitApplication
     } // End IF
 #endif
 
+    // Fill in Crash Control window class structure
+    wcw.style           = CS_DBLCLKS;
+    wcw.lpfnWndProc     = (WNDPROC) CCWndProc;
+    wcw.cbClsExtra      = 0;
+    wcw.cbWndExtra      = GWLCC_EXTRA;
+    wcw.hInstance       = hInstance;
+    wcw.hIcon           = hIconCC_Large;
+    wcw.hIconSm         = hIconCC_Small;
+    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
+////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_CCMENU);
+    wcw.lpszMenuName    = NULL;
+    wcw.lpszClassName   = LCCWNDCLASS;
+
+    // Register the Crash Control window class
+    if (!RegisterClassExW (&wcw))
+    {
+        MB (pszNoRegCCWndClass);
+        return FALSE;
+    } // End IF
+
     // Fill in Edit Control window class structure
     wcw.style           = CS_DBLCLKS;
     wcw.lpfnWndProc     = (WNDPROC) EditWndProcW;
@@ -2144,6 +2219,9 @@ BOOL InitInstance
 
     hIconVE_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_VE_LARGE));
     hIconVE_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_VE_SMALL));
+
+    hIconCC_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CC_LARGE));
+    hIconCC_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CC_SMALL));
 
     hIconClose    = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CLOSE   ));
 
@@ -2312,7 +2390,7 @@ int PASCAL WinMain
     // Create the Master Frame window
     hWndMF =
       CreateWindowExW (0L,                              // Extended styles
-                       wszMFClass,                      // Class
+                       LMFWNDCLASS,                     // Class
                        wszMFTitle,                      // Title
                        0
                      | WS_OVERLAPPEDWINDOW

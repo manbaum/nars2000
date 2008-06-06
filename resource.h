@@ -41,6 +41,7 @@
 #define IDWC_SM_EC                        3     // ...
 #define IDWC_SM_DB                        4     // ...
 #define IDWC_TC_MC                        5     // ...
+#define IDWC_CC_LB                        6     // ...
 
 #define IDB_LINECONT                     90
 
@@ -64,8 +65,10 @@
 #define IDI_ME_SMALL                    111
 #define IDI_VE_LARGE                    112
 #define IDI_VE_SMALL                    113
-#define IDI_ABOUT                       114
-#define IDI_CLOSE                       115
+#define IDI_CC_LARGE                    114
+#define IDI_CC_SMALL                    115
+#define IDI_ABOUT                       116
+#define IDI_CLOSE                       117
 
 
 #define IDD_ABOUT                       120

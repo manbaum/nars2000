@@ -157,9 +157,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  aplNELMRht;        // Right ...
     APLRANK      aplRankLft,        // Left arg rank
                  aplRankRht;        // Right ...
-    LPSYMENTRY   lpSymEntryBeg,     // Ptr to start of SYMENTRYs on the SIS
-                 lpSymEntryNxt,     // Ptr to next     ...
-                 lpSymLftFcn = NULL,// Ptr to original tkSym in the named left operand
+    LPSYMENTRY   lpSymLftFcn = NULL,// Ptr to original tkSym in the named left operand
                  lpSymRhtFcn = NULL;// ...                                right ...
     HGLOBAL      hGlbPTD = NULL;    // PerTabData global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
@@ -275,66 +273,28 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     // Check for non-existant label
     if (startLineNum EQ 0)
         goto DOMAIN_EXIT;
-RESTART_EXCEPTION_EXECDFNGLB:
-    __try
-    {
-        // Fill in the SIS header for a User-Defined Function/Operator
-        FillSISNxt (lpMemPTD,                   // Ptr to PerTabData global memory
-                    NULL,                       // Semaphore handle (Filled in by ExecuteFunction_EM_YY)
-                    lpMemDfnHdr->DfnType,       // DfnType
-                    lpMemDfnHdr->FcnValence,    // FcnValence
-                    FALSE,                      // Suspended
-                    FALSE);                     // LinkIntoChain
-        // Fill in the non-default SIS header entries
-        lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
-        lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
-        lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
-        lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
-        lpMemPTD->lpSISNxt->CurLineNum   = 1;
-        lpMemPTD->lpSISNxt->NxtLineNum   = 2;
-////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in below
-        lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
-////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
+
+    // Fill in the SIS header for a User-Defined Function/Operator
+    FillSISNxt (lpMemPTD,                   // Ptr to PerTabData global memory
+                NULL,                       // Semaphore handle (Filled in by ExecuteFunction_EM_YY)
+                lpMemDfnHdr->DfnType,       // DfnType
+                lpMemDfnHdr->FcnValence,    // FcnValence
+                FALSE,                      // Suspended
+                TRUE,                       // Restartable
+                FALSE);                     // LinkIntoChain
+    // Fill in the non-default SIS header entries
+    lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
+    lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
+    lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
+    lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
+    lpMemPTD->lpSISNxt->CurLineNum   = 1;
+    lpMemPTD->lpSISNxt->NxtLineNum   = 2;
+////lpMemPTD->lpSISNxt->numLabels    =              // Filled in by LocalizeAll
+    lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
+////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
 #ifdef DEBUG
-        dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
+    dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
 #endif
-    } __except (CheckException (GetExceptionInformation (), "ExecDfnGlb_EM_YY"))
-    {
-        switch (MyGetExceptionCode ())
-        {
-            case EXCEPTION_ACCESS_VIOLATION:
-            {
-                MEMORY_BASIC_INFORMATION mbi;
-
-                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                // See how many pages are already allocated
-                VirtualQuery (lpMemPTD->lpSISNxt,
-                             &mbi,
-                              sizeof (mbi));
-
-                // Check for no allocation as yet
-                if (mbi.State EQ MEM_RESERVE)
-                    mbi.RegionSize = 0;
-
-                // Allocate more memory to the YYRes buffer
-                if (VirtualAlloc (lpMemPTD->lpSISNxt,
-                                  mbi.RegionSize + DEF_SIS_INCRSIZE * sizeof (SYMENTRY),
-                                  MEM_COMMIT,
-                                  PAGE_READWRITE) NE NULL)
-                    goto RESTART_EXCEPTION_EXECDFNGLB;
-
-                // Fall through to never-never-land
-
-            } // End EXCEPTION_ACCESS_VIOLATION
-
-            default:
-                // Display message for unhandled exception
-                DisplayException ();
-
-                break;
-        } // End SWITCH
-    } // End __try/__except
 
     //***************************************************************
     // Errors beyond this point must call Unlocalize
@@ -410,66 +370,8 @@ RESTART_EXCEPTION_EXECDFNGLB:
     } else
         lptkRhtTmp = NULL;
 
-    // Point to the destination SYMENTRYs
-    lpSymEntryBeg =
-    lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
-
-    // Copy onto the SIS the current STEs for each local
-    //   and undefine all but the system vars
-
-    // Localize and clear the result STEs
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->numResultSTE,
-                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE),
-                          lpMemPTD);
-    // Localize and clear the left arg STEs
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->numLftArgSTE,
-                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE),
-                          lpMemPTD);
-    // Localize and clear the left operand STE
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->steLftOpr NE NULL,
-                         &lpMemDfnHdr->steLftOpr,
-                          lpMemPTD);
-    // Localize and clear the axis operand STE
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->steAxisOpr NE NULL,
-                         &lpMemDfnHdr->steAxisOpr,
-                          lpMemPTD);
-    // Localize and clear the right operand STE
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->steRhtOpr NE NULL,
-                         &lpMemDfnHdr->steRhtOpr,
-                          lpMemPTD);
-    // Localize and clear the right arg STEs
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->numRhtArgSTE,
-                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE),
-                          lpMemPTD);
-    // Localize and clear the locals STEs
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->numLocalsSTE,
-                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLocalsSTE),
-                          lpMemPTD);
-    // Search for line labels, localize and initialize them
-    lpSymEntryNxt =
-      LocalizeLabels (lpSymEntryNxt,
-                     &lpMemPTD->lpSISNxt->numLabels,
-                      lpMemDfnHdr,
-                      lpMemPTD);
-    // Save the # LPSYMENTRYs localized
-    lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
-
-    // Save as new SISNxt ptr
-    lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
+    // Localize all arguments, results, and locals
+    LocalizeAll (lpMemPTD, lpMemDfnHdr);
 
     // Setup the left arg STEs
     InitVarSTEs (lptkLftTmp,
@@ -584,6 +486,83 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End ExecDfnOprGlb_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $LocalizeAll
+//
+//  Localize all args of a given function
+//***************************************************************************
+
+void LocalizeAll
+    (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
+     LPDFN_HEADER lpMemDfnHdr)          // Ptr to user-defined function/operator header
+
+{
+    LPSYMENTRY lpSymEntryBeg,           // Ptr to start of SYMENTRYs on the SIS
+               lpSymEntryNxt;           // Ptr to next     ...
+
+    // Point to the destination SYMENTRYs
+    lpSymEntryBeg =
+    lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
+
+    // Copy onto the SIS the current STEs for each local
+    //   and undefine all but the system vars
+
+    // Localize and clear the result STEs
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          lpMemDfnHdr->numResultSTE,
+                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE),
+                          lpMemPTD);
+    // Localize and clear the left arg STEs
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          lpMemDfnHdr->numLftArgSTE,
+                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE),
+                          lpMemPTD);
+    // Localize and clear the left operand STE
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          lpMemDfnHdr->steLftOpr NE NULL,
+                         &lpMemDfnHdr->steLftOpr,
+                          lpMemPTD);
+    // Localize and clear the axis operand STE
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          lpMemDfnHdr->steAxisOpr NE NULL,
+                         &lpMemDfnHdr->steAxisOpr,
+                          lpMemPTD);
+    // Localize and clear the right operand STE
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          lpMemDfnHdr->steRhtOpr NE NULL,
+                         &lpMemDfnHdr->steRhtOpr,
+                          lpMemPTD);
+    // Localize and clear the right arg STEs
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          lpMemDfnHdr->numRhtArgSTE,
+                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE),
+                          lpMemPTD);
+    // Localize and clear the locals STEs
+    lpSymEntryNxt =
+      LocalizeSymEntries (lpSymEntryNxt,
+                          lpMemDfnHdr->numLocalsSTE,
+                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLocalsSTE),
+                          lpMemPTD);
+    // Search for line labels, localize and initialize them
+    lpSymEntryNxt =
+      LocalizeLabels (lpSymEntryNxt,
+                     &lpMemPTD->lpSISNxt->numLabels,
+                      lpMemDfnHdr,
+                      lpMemPTD);
+    // Save the # LPSYMENTRYs localized
+    lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
+
+    // Save as new SISNxt ptr
+    lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
+} // End LocalizeAll
 
 
 //***************************************************************************

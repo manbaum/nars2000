@@ -352,6 +352,7 @@ BOOL CmdSave_EM
             // Save the GlbData handle
             stGlbData = MakePtrTypeGlb (lpMemPTD->hGlbQuadDM);
         } else
+            // Save the GlbData handle
             stGlbData = lpSymEntry->stData.stGlbData;
 
         if (stFlags.Value)                      // Must have a value
@@ -514,10 +515,32 @@ BOOL CmdSave_EM
         WCHAR      wszGlbObj[16 + 1];   // Save area for formatted hGlbObj
                                         //   (room for 64-bit ptr plus terminating zero)
 
+        // Check for []DM
+
+        // Get the symbol name's global memory handle
+        hGlbName = lpSymLink->stHshEntry->htGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLock (hGlbName);
+
+        // Compare the names
+        iCmp = lstrcmpW (lpMemName, WS_UTF16_QUAD L"dm");
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+        // If they are equal, ...
+        if (iCmp EQ 0)
+            // Get the GlbData handle for []DM
+            stGlbData = lpMemPTD->hGlbQuadDM;
+        else
+            // Get the GlbData handle
+            stGlbData = lpSymLink->stData.stGlbData;
+
         // Format the global memory handle
         wsprintfW (wszGlbObj,
                    FMTSTR_GLBOBJ,
-                   ClrPtrTypeDirAsGlb (lpSymLink->stData.stGlbData));
+                   ClrPtrTypeDir (stGlbData));
         // Delete the FMTSTR_GLBOBJ= entry in the [Globals] section
         WritePrivateProfileStringW (SECTNAME_GLOBALS,           // Ptr to the section name
                                    wszGlbObj,                   // Ptr to key name
@@ -580,7 +603,7 @@ BOOL CmdSave_EM
                                 lpMemSaveWSID);                 // Ptr to the file name
     // Write out the SI stack to the [SI] section
     CmdSiSinlCom_EM (L"",               // Ptr to command tail
-                     TRUE,              // TRUE iff )SINL
+                     FALSE,             // TRUE iff )SINL
                      lpMemSaveWSID);    // Ptr to the file name
     // Get the current system (UTC) time
     GetSystemTime (&systemTime);
@@ -593,7 +616,6 @@ BOOL CmdSave_EM
                FMTSTR_DATETIME,
                ftCreation.dwHighDateTime,
                ftCreation.dwLowDateTime);
-
     // Write out the creation time to the [General] section
     WritePrivateProfileStringW (SECTNAME_GENERAL,               // Ptr to the section name
                                 KEYNAME_CREATIONTIME,           // Ptr to the key name

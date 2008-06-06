@@ -31,6 +31,8 @@
 #include "aplerrors.h"
 #include "pertab.h"
 #include "savefcn.h"
+#include "dfnhdr.h"
+#include "sis.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -180,7 +182,8 @@ BOOL LoadWorkspace_EM
 ////             wszVersion[8],         // ...                     version info
                  wszSectName[15];       // ...                     section name (e.g., [Vars.nnn])
     BOOL         bRet = FALSE,          // TRUE iff the result is valid
-                 bImmed;                // TRUE iff the result of ParseSavedWsVar_EM is immediate
+                 bImmed,                // TRUE iff the result of ParseSavedWsVar_EM is immediate
+                 bSuspended;            // TRUE iff the function is suspended
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     APLSTYPE     aplTypeObj;            // Object storage type
@@ -236,9 +239,157 @@ BOOL LoadWorkspace_EM
                              lpwszDPFE);                // Ptr to the file name
     __try
     {
+        // Mark as suspended to handle the initial case
+        bSuspended = TRUE;
+
         // Loop through the SI levels
         for (uSID = 0; uSID <= uSILevel; uSID++)
         {
+            //***************************************************************
+            // If this isn't the first SI level, create a new SIS struc
+            //***************************************************************
+            if (0 < uSID)
+            {
+                LPWCHAR      lpwSrc,                // Ptr to incoming data
+                             lpwSrcStart,           // Ptr to starting point
+                             lpwFcnName,            // Ptr to function name
+                             lpwFcnLine;            // Ptr to function line #
+                UINT         uMaxSize,              // Maximum size of lpwSrc
+                             uLineNum;              // Function line #
+                BOOL         bSuspended;            // TRUE iff the function is suspended
+                LPSYMENTRY   lpSymEntry;            // Ptr to function SYMENTRY
+                HGLOBAL      hGlbDfnHdr;            // Defined function global memory handle
+                LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
+
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+////////////////__try
+////////////////{
+////////////////    uMaxSize = 1 / (uSID - 1);
+////////////////} __except (CheckException (GetExceptionInformation (), "LoadWorkspace_EM"))
+////////////////{
+////////////////    // Display message for unhandled exception
+////////////////    DisplayException ();
+////////////////} // End __try/__Except
+
+                // If there are more SI levels and the previous level was suspended,
+                //   create a new SIS struc for immediate execution mode
+                if (uSID < uSILevel
+                 && bSuspended)
+                    // Fill in the SIS header for Immediate Execution Mode
+                    FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
+                                NULL,                   // Semaphore handle
+                                DFNTYPE_IMM,            // DfnType
+                                FCNVALENCE_IMM,         // FcnValence
+                                FALSE,                  // Suspended
+                                FALSE,                  // Restartable
+                                TRUE);                  // LinkIntoChain
+
+                // Save ptr & maximum size
+                lpwSrc   = lpMemPTD->lpwszTemp;
+                uMaxSize = lpMemPTD->uTempMaxSize;
+                lpwSrcStart = lpwSrc;
+
+                // Format the counter
+                wsprintfW (wszCount, L"%d", uSID - 1);
+
+                // Read in the SI line
+                GetPrivateProfileStringW (SECTNAME_SI,          // Ptr to the section name
+                                          wszCount,             // Ptr to the key name
+                                          L"",                  // Ptr to the default value
+                                          lpwSrc,               // Ptr to the output buffer
+                                          uMaxSize,             // Byte size of the output buffer
+                                          lpwszDPFE);           // Ptr to the file name
+                // Copy as ptr to function name or Quad
+                lpwFcnName = lpwSrc;
+
+                // Convert the {name}s and other chars to UTF16_xxx
+                (void) ConvertNameInPlace (lpwFcnName);
+
+                // Find the trailing marker of the function name
+                lpwFcnLine = strchrW (lpwFcnName, L'[');
+
+                // Check for Quad suspension first
+                if ((lpwFcnName[0] NE L'\0')
+                 && (lstrcmpW (lpwFcnName, WS_UTF16_QUAD) EQ 0))
+                {
+                    // Fill in the SIS header for Quad Input Mode
+                    FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
+                                NULL,                   // Semaphore handle
+                                DFNTYPE_QUAD,           // DfnType
+                                FCNVALENCE_NIL,         // FcnValence
+                                TRUE,                   // Suspended
+                                FALSE,                  // Restartable
+                                TRUE);                  // LinkIntoChain
+                    // If this is the last SI level, mark as not executing []LX
+                    if (uSID EQ (uSILevel - 1))
+                        lpMemPTD->bExecLX = FALSE;
+                } else
+                // If there's no left bracket, this SI level is uninteresting
+                if (lpwFcnLine NE NULL)
+                {
+                    // Zap the trailing marker
+                    *lpwFcnLine++ = L'\0';
+
+                    // Get the function line #
+                    swscanf (lpwFcnLine,
+                             L"%u",
+                            &uLineNum);
+                    // Set the flags for what we're looking up
+                    ZeroMemory (&stFlags, sizeof (stFlags));
+                    stFlags.Inuse   = TRUE;
+                    stFlags.ObjName = OBJNAME_USR;
+
+                    // Look up the function name
+                    lpSymEntry =
+                      SymTabLookupName (lpwFcnName, &stFlags);
+
+////////////////////if (!lpSymEntry)            // ***FIXME***
+
+                    // Get a ptr to the function header
+                    hGlbDfnHdr = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+                    // Get suspended state
+                    bSuspended = strchrW (lpwFcnLine, L'*') NE NULL;
+
+                    // Fill in the SIS header for a User-Defined Function/Operator
+                    FillSISNxt (lpMemPTD,                   // Ptr to PerTabData global memory
+                                NULL,                       // Semaphore handle (Filled in by ExecuteFunction_EM_YY)
+                                lpMemDfnHdr->DfnType,       // DfnType
+                                lpMemDfnHdr->FcnValence,    // FcnValence
+                                bSuspended,                 // TRUE iff suspended
+                                FALSE,                      // Restartable
+                                FALSE);                     // LinkIntoChain
+                    // Fill in the non-default SIS header entries
+                    lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
+                    lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
+                    lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
+                    lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
+                    lpMemPTD->lpSISNxt->CurLineNum   = uLineNum;
+                    lpMemPTD->lpSISNxt->NxtLineNum   = uLineNum + 1;
+////////////////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in by LocalizeAll
+                    lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
+////////////////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
+#ifdef DEBUG
+                    dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"LoadWorkspace_EM");
+#endif
+                    lpMemPTD->lpSISCur               = lpMemPTD->lpSISNxt;
+
+                    // Localize all arguments, results, and locals
+                    LocalizeAll (lpMemPTD, lpMemDfnHdr);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+                } // End IF
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+            } // End IF
+
             //***************************************************************
             // Load the variables at this SI level
             //***************************************************************
@@ -296,6 +447,7 @@ BOOL LoadWorkspace_EM
                 lpwSrc++;
 
                 // Set the flags for what we're looking up/appending
+                ZeroMemory (&stFlags, sizeof (stFlags));
                 stFlags.Inuse   = TRUE;
 
                 if (IsSysName (lpwSrcStart))
@@ -367,7 +519,7 @@ BOOL LoadWorkspace_EM
                 } else
                 {
                     // Out with the old
-                    if (!lpSymEntry->stFlags.Imm)
+                    if (lpSymEntry->stFlags.Value && !lpSymEntry->stFlags.Imm)
                     {
                         FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
                     } // End IF
@@ -457,6 +609,7 @@ BOOL LoadWorkspace_EM
                 Assert (*lpwSrc EQ L'='); lpwSrc++;
 
                 // Set the flags for what we're looking up
+                ZeroMemory (&stFlags, sizeof (stFlags));
                 stFlags.Inuse   = TRUE;
                 stFlags.ObjName = OBJNAME_USR;
 
@@ -489,42 +642,6 @@ BOOL LoadWorkspace_EM
                                         &lpwErrMsg))    // Ptr to ptr to (constant) error message text
                     goto ERRMSG_EXIT;
             } // End FOR
-
-            // If there's another SI level to process, create a new SIS struc
-            if (uSID < uSILevel)
-            {
-////////        DbgBrk ();
-
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
-
-
-#if 0
-                // Fill in the SIS header for a User-Defined Function/Operator
-                FillSISNxt (lpMemPTD,                   // Ptr to PerTabData global memory
-                            NULL,                       // Semaphore handle (Filled in by ExecuteFunction_EM_YY)
-                            lpMemDfnHdr->DfnType,       // DfnType
-                            lpMemDfnHdr->FcnValence,    // FcnValence
-                            FALSE,                      // Suspended
-                            FALSE);                     // LinkIntoChain
-                // Fill in the non-default SIS header entries
-                lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
-                lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
-                lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
-                lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
-                lpMemPTD->lpSISNxt->CurLineNum   = 1;
-                lpMemPTD->lpSISNxt->NxtLineNum   = 2;
-////////////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in below
-                lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
-////////////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
-#endif
-
-
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-            } // End IF
         } // End FOR
     } __except (CheckVirtAlloc (GetExceptionInformation (),
                                 "LoadWorkspace_EM"))
@@ -701,6 +818,7 @@ BOOL ParseSavedWsFcn_EM
     BOOL       bRet = FALSE;            // TRUE iff result is valid
 
     // Tell 'em we're looking for )LOAD objects
+////ZeroMemory (&stFlags, sizeof (stFlags));
     stFlags.Inuse   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
 
@@ -836,6 +954,7 @@ LPWCHAR ParseSavedWsVar_EM
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Tell 'em we're looking for )LOAD objects
+////ZeroMemory (&stFlags, sizeof (stFlags));
     stFlags.Inuse   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
 
@@ -1517,6 +1636,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             //   so we can save it in the STE for FMTSTR_GLBCNT
 
             // Set the flags for what we're looking up
+            ZeroMemory (&stFlags, sizeof (stFlags));
             stFlags.Inuse   = TRUE;
             stFlags.ObjName = OBJNAME_USR;
 
@@ -1535,6 +1655,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     } // End SWITCH
 
     // Set the flags for what we're appending
+    ZeroMemory (&stFlags, sizeof (stFlags));
     stFlags.Inuse   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
 
@@ -1584,6 +1705,7 @@ HGLOBAL LoadWsGlbVarConv
     LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
 
     // Tell 'em we're looking for )LOAD objects
+////ZeroMemory (&stFlags, sizeof (stFlags));
     stFlags.Inuse   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
 

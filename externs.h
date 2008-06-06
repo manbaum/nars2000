@@ -24,18 +24,21 @@
 #define DEF_TCFONTNAME      "Tahoma"            // Default TabCtrl font
 #define DEF_ASFONTNAME      "Arial Unicode MS"  // Default Alternate SM font
 #define DEF_SMFONTNAME      "SImPL"             // Or "APL385 Unicode"
+#define DEF_CCFONTNAME      "SImPL"             // Or "APL385 Unicode"
 #define DEF_FEFONTNAME      "SImPL"             // Or "APL385 Unicode"
 #define DEF_MEFONTNAME      "SImPL"             // Or "APL385 Unicode"
 #define DEF_VEFONTNAME      "SImPL"             // Or "APL385 Unicode"
 
 #define DEF_TCLOGFONT       0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,DEF_TCFONTNAME
 #define DEF_SMLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_SMFONTNAME
+#define DEF_CCLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_CCFONTNAME
 #define DEF_FELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_FEFONTNAME
 #define DEF_MELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_MEFONTNAME
 #define DEF_VELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_VEFONTNAME
 
 #define DEF_TCPTSIZE       10           // Point size for TC font
 #define DEF_SMPTSIZE       13           // ...            SM ...
+#define DEF_CCPTSIZE       13           // ...            CC ...
 #define DEF_FEPTSIZE       13           // ...            FE ...
 #define DEF_MEPTSIZE       13           // ...            ME ...
 #define DEF_VEPTSIZE       13           // ...            VE ...
@@ -804,6 +807,8 @@ int gLstTabID                           // ID of the previous (outgoing) tab (-1
 EXTERN
 HWND hWndTC,                            // Global Tab Control window handle
      hWndMF,                            // ...    Master Frame ...
+     hWndCC,                            // ...    Crash Control ...
+     hWndCC_LB,                         // ...    Crash Control Listbox ...
      hWndTT;                            // ...    ToolTip      ...
 
 EXTERN
@@ -890,6 +895,11 @@ LOGFONT lfSM                            // LOGFONT for the SM
  = {DEF_SMLOGFONT}
 #endif
 ,
+        lfCC                            // LOGFONT for the CC
+#ifdef DEFINE_VALUES
+ = {DEF_CCLOGFONT}
+#endif
+,
         lfTC                            // LOGFONT for the TC
 #ifdef DEFINE_VALUES
  = {DEF_TCLOGFONT}
@@ -919,6 +929,7 @@ HFONT hFontTC,                          // Handle to font for the TC
       hFontAlt,                         // ...                    Alternate SM
 #endif
       hFontSM,                          // ...                    SM
+      hFontCC,                          // ...                    CC
       hFontFE,                          // ...                    FE
       hFontME,                          // ...                    ME
       hFontVE;                          // ...                    VE
@@ -926,6 +937,7 @@ HFONT hFontTC,                          // Handle to font for the TC
 EXTERN
 CHOOSEFONT cfTC,                        // Global for ChooseFont for the TC
            cfSM,                        // ...                           SM
+           cfCC,                        // ...                           CC
            cfFE,                        // ...                           FE
            cfME,                        // ...                           ME
            cfVE;                        // ...                           VE
@@ -933,6 +945,7 @@ CHOOSEFONT cfTC,                        // Global for ChooseFont for the TC
 EXTERN
 TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
            tmSM,                        // ...                           SM
+           tmCC,                        // ...                           CC
            tmFE,                        // ...                           FE
            tmME,                        // ...                           ME
            tmVE;                        // ...                           VE
@@ -1082,6 +1095,8 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
 #define LVEWNDCLASS    L"VEClass"       // Vector Editor ...
 #define  ECWNDCLASS     "ECClass"       // Edit Control ...
 #define LECWNDCLASS    L"ECClass"       // Edit Control ...
+#define  CCWNDCLASS     "CCClass"       // Crash Control ...
+#define LCCWNDCLASS    L"CCClass"       // Crash Control ...
 
 typedef enum tagMEMVIRTENUM
 {

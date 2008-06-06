@@ -445,6 +445,7 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
                 DFNTYPE_EXEC,           // DfnType
                 FCNVALENCE_MON,         // FcnValence
                 FALSE,                  // Suspended
+                TRUE,                   // Restartable
                 TRUE);                  // LinkIntoChain
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

@@ -1544,6 +1544,10 @@ NORMAL_EXIT:
                              FALSE,                                     // TRUE iff wait until finished
                              hWndEC);                                   // Edit Control window handle
             } else
+            // If the SI level is for Quad Input
+            if (lpMemPTD->lpSISCur && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                PostMessageW (hWnd, MYWM_QUOTEQUAD, FALSE, 15);
+            else
                 // Display the default prompt
                 DisplayPrompt (hWndEC, 1);
 

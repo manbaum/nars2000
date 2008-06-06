@@ -2207,8 +2207,10 @@ void PasteAPLChars
     for (uFmtNum = uFmt = 0; uFmt < uCount; uFmt++)
     {
         uFmtNum = EnumClipboardFormats (uFmtNum);
-        if (uFmtNum NE 0
-         && uFmtNum NE CF_PRIVATEFIRST)
+        if (uFmtNum EQ CF_TEXT
+         && uFmtNum EQ CF_OEMTEXT
+         && uFmtNum EQ CF_UNICODETEXT
+         && uFmtNum EQ CF_DSPTEXT)
         {
             // Save the format #
             lpMemFmts[uFmt].uFmtNum = uFmtNum;
@@ -2217,8 +2219,7 @@ void PasteAPLChars
             //   and make a copy of the data
             lpMemFmts[uFmt].hGlbFmt =
               CopyGlbMemory (GetClipboardData (uFmtNum));
-        } else
-            break;
+        } // End IF
     } // End FOR
 
     // Get a handle to the clipboard data for CF_PRIVATEFIRST

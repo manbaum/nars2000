@@ -194,6 +194,7 @@ $(O)axisfns.DEP         \
 $(O)bjhash.DEP          \
 $(O)common.DEP          \
 $(O)convert.DEP         \
+$(O)crash.DEP           \
 $(O)debug.DEP           \
 $(O)dfnhdr.DEP          \
 $(O)dispdbg.DEP         \
@@ -370,6 +371,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)convert.DEP)
 !       include $(O)convert.DEP
+!endif
+!if exist ($(O)crash.DEP)
+!       include $(O)crash.DEP
 !endif
 !if exist ($(O)debug.DEP)
 !       include $(O)debug.DEP
@@ -789,6 +793,7 @@ $(O)axisfns.PRO         \
 $(O)bjhash.PRO          \
 $(O)common.PRO          \
 $(O)convert.PRO         \
+$(O)crash.PRO           \
 $(O)debug.PRO           \
 $(O)dfnhdr.PRO          \
 $(O)dispdbg.PRO         \
@@ -958,6 +963,7 @@ ICONS=$(A)About.ico     \
       $(A)FE.ico        \
       $(A)ME.ico        \
       $(A)VE.ico        \
+      $(A)CC.ico        \
       $(A)LineCont.bmp
 
 ## Cygwin-specific files
@@ -982,6 +988,7 @@ $(O)axisfns.OBJ:        $(@B).C         $(AXISFNS_DEP)
 $(O)bjhash.OBJ:         $(@B).C         $(BJHASH_DEP)
 $(O)common.OBJ:         $(@B).C         $(COMMON_DEP)
 $(O)convert.OBJ:        $(@B).C         $(CONVERT_DEP)
+$(O)crash.OBJ:          $(@B).C         $(CRASH_DEP)
 $(O)debug.OBJ:          $(@B).C         $(DEBUG_DEP)
 $(O)dispdbg.OBJ:        $(@B).C         $(DISPDBG_DEP)
 $(O)display.OBJ:        $(@B).C         $(DISPLAY_DEP)
@@ -1133,6 +1140,7 @@ OBJS=                       \
      $(O)bjhash.OBJ         \
      $(O)common.OBJ         \
      $(O)convert.OBJ        \
+     $(O)crash.OBJ          \
      $(O)debug.OBJ          \
      $(O)dfnhdr.OBJ         \
      $(O)dispdbg.OBJ        \

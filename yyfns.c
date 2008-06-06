@@ -105,62 +105,19 @@ LPPL_YYSTYPE _YYAlloc
     // If we get here, we ran out of indices
     lpYYRes = &lpMemPTD->lpYYRes[u++];
     lpMemPTD->numYYRes = u;
-RESTART_EXCEPTION_YYALLOC:
-    __try
-    {
-        // Zero the memory
-        ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 
-        // Mark as inuse
-        lpYYRes->YYInuse = TRUE;
+    // Zero the memory
+    ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
+
+    // Mark as inuse
+    lpYYRes->YYInuse = TRUE;
 #ifdef DEBUG
-        lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
-        lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
+    lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
+    lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
 
-        // Save unique number for debugging/tracking purposes
-        lpYYRes->YYIndex = ++YYIndex;
+    // Save unique number for debugging/tracking purposes
+    lpYYRes->YYIndex = ++YYIndex;
 #endif
-    } __except (CheckException (GetExceptionInformation (), "YYAlloc"))
-    {
-#ifdef DEBUG
-        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %p (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
-        // Split cases based upon the ExceptionCode
-        switch (MyGetExceptionCode ())
-        {
-            case EXCEPTION_ACCESS_VIOLATION:
-            {
-                MEMORY_BASIC_INFORMATION mbi;
-
-                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                // See how many pages are already allocated
-                VirtualQuery (lpMemPTD->lpYYRes,
-                             &mbi,
-                              sizeof (mbi));
-
-                // Check for no allocation as yet
-                if (mbi.State EQ MEM_RESERVE)
-                    mbi.RegionSize = 0;
-
-                // Allocate more memory to the YYRes buffer
-                if (VirtualAlloc (lpMemPTD->lpYYRes,
-                                  mbi.RegionSize + DEF_YYRES_INCRSIZE * sizeof (PL_YYSTYPE),
-                                  MEM_COMMIT,
-                                  PAGE_READWRITE) NE NULL)
-                    goto RESTART_EXCEPTION_YYALLOC;
-
-                // Fall through to never-never-land
-
-            } // End EXCEPTION_ACCESS_VIOLATION
-
-            default:
-                // Display message for unhandled exception
-                DisplayException ();
-
-                break;
-        } // End SWITCH
-    } // End __try/__except
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

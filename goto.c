@@ -106,15 +106,19 @@ EXIT_TYPES GotoLine_EM
             goto DOMAIN_EXIT;
     } // End IF
 
-    // If the right arg is empty or out of range, ...
-    if (IsEmpty (aplNELMRht)
-     || aplIntegerRht < 0
-     || aplIntegerRht > 0x7FFFFFFF)
+    // If the right arg is empty, ...
+    if (IsEmpty (aplNELMRht))
     {
         exitType = EXITTYPE_GOTO_ZILDE;
 
         goto NORMAL_EXIT;
     } // End IF
+
+    // Check for not restartable SI level
+    if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_IMM      // This level is Immediate
+     && lpMemPTD->lpSISCur->lpSISPrv                    // There is a previous level
+     && !lpMemPTD->lpSISCur->lpSISPrv->Restartable)     // and it's not restartable
+        goto NORESTART_EXIT;
 
     exitType = EXITTYPE_GOTO_LINE;
 
@@ -186,6 +190,11 @@ RANK_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+NORESTART_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NOTRESTARTABLE APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

@@ -2439,89 +2439,51 @@ void FillSISNxt
      DFN_TYPES    DfnType,              // DFNTYPE_xxx
      FCN_VALENCES FcnValence,           // FCNVALENCE_xxx
      BOOL         Suspended,            // TRUE iff starts Suspended
+     BOOL         Restartable,          // TRUE iff restartable
      BOOL         LinkIntoChain)        // TRUE iff we should link this entry into the SIS chain
 
 {
     lpMemPTD->SILevel++;
 
-RESTART_EXCEPTION_FILLSISNXT:
-    __try
-    {
-        // Clear to default value
-        ZeroMemory (lpMemPTD->lpSISNxt, sizeof (*lpMemPTD->lpSISNxt));
+    // Clear to default value
+    ZeroMemory (lpMemPTD->lpSISNxt, sizeof (*lpMemPTD->lpSISNxt));
 
-        // Create another level on the SI stack
-        lpMemPTD->lpSISNxt->Sig.nature    = SIS_HEADER_SIGNATURE;
-        lpMemPTD->lpSISNxt->hSemaphore    = hSemaphore;
-////////lpMemPTD->lpSISNxt->hSigaphore    = NULL;           // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;           // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;           // Already zero from ZeroMemory
-        lpMemPTD->lpSISNxt->hGlbQuadEM    = hGlbM3x0Char;
-        lpMemPTD->lpSISNxt->DfnType       = DfnType;
-        lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
-////////lpMemPTD->lpSISNxt->DfnAxis       = FALSE;          // Already zero from ZeroMemory
-        lpMemPTD->lpSISNxt->Suspended     = Suspended;
-////////lpMemPTD->lpSISNxt->ResetFlag     = RESETFLAG_NONE; // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->PermFn        = FALSE;          // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->Avail         = 0;              // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->EventType     = 0;              // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->CurLineNum    = 0;              // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->NxtLineNum    = 0;              // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->numLabels     = 0;              // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->numFcnLines   = 0;              // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->QQPromptLen   = 0;              // Already zero from ZeroMemory
-////////lpMemPTD->lpSISNxt->ErrorCode     = ERRORCODE_NONE; // Already zero from ZeroMemory
-        lpMemPTD->lpSISNxt->lpSISPrv      = lpMemPTD->lpSISCur;
-        lpMemPTD->lpSISNxt->lpSISNxt      = (LPSIS_HEADER) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
-////////lpMemPTD->lpSISNxt->lptkFunc      = NULL;           // Already zero from ZeroMemory
+    // Create another level on the SI stack
+    lpMemPTD->lpSISNxt->Sig.nature    = SIS_HEADER_SIGNATURE;
+    lpMemPTD->lpSISNxt->hSemaphore    = hSemaphore;
+////lpMemPTD->lpSISNxt->hSigaphore    = NULL;           // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;           // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;           // Already zero from ZeroMemory
+    lpMemPTD->lpSISNxt->hGlbQuadEM    = hGlbM3x0Char;
+    lpMemPTD->lpSISNxt->DfnType       = DfnType;
+    lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
+////lpMemPTD->lpSISNxt->DfnAxis       = FALSE;          // Already zero from ZeroMemory
+    lpMemPTD->lpSISNxt->Suspended     = Suspended;
+////lpMemPTD->lpSISNxt->ResetFlag     = RESETFLAG_NONE; // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->PermFn        = FALSE;          // Already zero from ZeroMemory
+    lpMemPTD->lpSISNxt->Restartable   = Restartable;
+////lpMemPTD->lpSISNxt->Avail         = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->EventType     = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->CurLineNum    = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->NxtLineNum    = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->numLabels     = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->numFcnLines   = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->QQPromptLen   = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->ErrorCode     = ERRORCODE_NONE; // Already zero from ZeroMemory
+    lpMemPTD->lpSISNxt->lpSISPrv      = lpMemPTD->lpSISCur;
+    lpMemPTD->lpSISNxt->lpSISNxt      = (LPSIS_HEADER) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
+////lpMemPTD->lpSISNxt->lptkFunc      = NULL;           // Already zero from ZeroMemory
 #ifdef DEBUG
-        dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
+    dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
 #endif
-        // Link this SIS into the chain, if requested
-        if (LinkIntoChain)
-        {
-            if (lpMemPTD->lpSISCur)
-                lpMemPTD->lpSISCur->lpSISNxt = lpMemPTD->lpSISNxt;
-            lpMemPTD->lpSISCur = lpMemPTD->lpSISNxt;
-            lpMemPTD->lpSISNxt = lpMemPTD->lpSISNxt->lpSISNxt;
-        } // End IF
-    } __except (CheckException (GetExceptionInformation (), "FillSISNxt"))
+    // Link this SIS into the chain, if requested
+    if (LinkIntoChain)
     {
-        switch (MyGetExceptionCode ())
-        {
-            case EXCEPTION_ACCESS_VIOLATION:
-            {
-                MEMORY_BASIC_INFORMATION mbi;
-
-                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                // See how many pages are already allocated
-                VirtualQuery (lpMemPTD->lpSISNxt,
-                             &mbi,
-                              sizeof (mbi));
-
-                // Check for no allocation as yet
-                if (mbi.State EQ MEM_RESERVE)
-                    mbi.RegionSize = 0;
-
-                // Allocate more memory to the YYRes buffer
-                if (VirtualAlloc (lpMemPTD->lpSISNxt,
-                                  mbi.RegionSize + DEF_SIS_INCRSIZE * sizeof (SYMENTRY),
-                                  MEM_COMMIT,
-                                  PAGE_READWRITE) NE NULL)
-                    goto RESTART_EXCEPTION_FILLSISNXT;
-
-                // Fall through to never-never-land
-
-            } // End EXCEPTION_ACCESS_VIOLATION
-
-            default:
-                // Display message for unhandled exception
-                DisplayException ();
-
-                break;
-        } // End SWITCH
-    } // End __try/__except
+        if (lpMemPTD->lpSISCur)
+            lpMemPTD->lpSISCur->lpSISNxt = lpMemPTD->lpSISNxt;
+        lpMemPTD->lpSISCur = lpMemPTD->lpSISNxt;
+        lpMemPTD->lpSISNxt = lpMemPTD->lpSISNxt->lpSISNxt;
+    } // End IF
 } // End FillSISNxt
 
 

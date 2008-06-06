@@ -6661,6 +6661,7 @@ LPPL_YYSTYPE WaitForInput
                 bQuoteQuad ? DFNTYPE_QQUAD: DFNTYPE_QUAD, // DfnType
                 FCNVALENCE_NIL,         // FcnValence
                 TRUE,                   // Suspended
+                TRUE,                   // Restartable
                 TRUE);                  // LinkIntoChain
     // Save a ptr to the function token
     lpMemPTD->lpSISCur->lptkFunc = lptkFunc;

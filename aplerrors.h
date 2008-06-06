@@ -50,6 +50,8 @@
 
 #define ERRMSG_NOT_ERASED                       L"NOT ERASED:"
 
+#define ERRMSG_NOTRESTARTABLE                   L"SI LEVEL NOT RESTARTABLE, USE " WS_UTF16_RIGHTARROW L" OR )RESET"
+
 
 //***************************************************************************
 //  End of File: aplerrors.h

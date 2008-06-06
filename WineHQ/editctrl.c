@@ -208,6 +208,8 @@ static void EDIT_MoveDown_ML(EDITSTATE *es, BOOL extend);
 static void EDIT_MovePageDown_ML(EDITSTATE *es, BOOL extend);
 static void EDIT_MovePageUp_ML(EDITSTATE *es, BOOL extend);
 static void EDIT_MoveUp_ML(EDITSTATE *es, BOOL extend);
+static void EDIT_MoveBufferHome_ML(EDITSTATE *es);
+static void EDIT_MoveBufferEnd_ML(EDITSTATE *es);
 /*
  *  Helper functions valid for both single line _and_ multi line controls
  */

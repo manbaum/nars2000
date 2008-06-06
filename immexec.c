@@ -392,8 +392,9 @@ DWORD WINAPI ImmExecStmtInThread
     HGLOBAL       hGlbPTD;              // Handle to this window's PerTabData
     LPPERTABDATA  lpMemPTD;             // Ptr to ...
     RESET_FLAGS   resetFlag;            // Reset flag (see RESET_FLAGS)
-    BOOL          bFreeLine,            // TRUE iff we should free lpszCompLine on completion
-                  bWaitUntilFini;       // TRUE iff wait until finished
+    UINT          bFreeLine,            // TRUE iff we should free lpszCompLine on completion
+                  bWaitUntilFini,       // TRUE iff wait until finished
+                  bQuadPrompt = FALSE;  // TRUE iff Quad Prompt has been displayed
     EXIT_TYPES    exitType;             // Return code from ParseLine
     LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
     LPSIS_HEADER  lpSISPrv;             // Ptr to previous SIS header
@@ -474,11 +475,12 @@ DWORD WINAPI ImmExecStmtInThread
                     DFNTYPE_IMM,            // DfnType
                     FCNVALENCE_IMM,         // FcnValence
                     FALSE,                  // Suspended
+                    TRUE,                   // Restartable
                     TRUE);                  // LinkIntoChain
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-        // Run the parser in a separate thread
+        // Call the parser
         exitType =
           ParseLine (hWndSM,                // Session Manager window handle
                      NULL,                  // Line text global memory handle
@@ -560,7 +562,14 @@ DWORD WINAPI ImmExecStmtInThread
                 // If from Quad Input, tell SM to redisplay the prompt
                 if (lpSISPrv
                  &&lpSISPrv->DfnType EQ DFNTYPE_QUAD)
+                {
+                    // Tell SM to display the Quad Prompt
                     PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
+
+                    // Mark as displayed
+                    bQuadPrompt = TRUE;
+                } // End IF
+
                 break;
 
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
@@ -668,17 +677,20 @@ ERROR_EXIT:
         //   if we're not resetting, and
         //   the caller isn't waiting for us to finish, and
 //////////   the exit type isn't error, and
+        //   Quad Prompt was not displayed, and
         //   there's no semaphore to signal
 #ifdef DEBUG
-        dprintfW (L"--Before DisplayPrompt (3):  resetFlag = %d, bWaitUntilFini = %d, exitType = %d, hSigaphore = %p",
+        dprintfW (L"--Before DisplayPrompt (3):  resetFlag = %d, bWaitUntilFini = %d, exitType = %d, bQuadPrompt = %d, hSigaphore = %p",
                   resetFlag,
                   bWaitUntilFini,
                   exitType,
+                  bQuadPrompt,
                   hSigaphore);
 #endif
         if (resetFlag EQ RESETFLAG_NONE
          && !bWaitUntilFini
 /////////&& exitType NE EXITTYPE_ERROR
+         && !bQuadPrompt
          && hSigaphore EQ NULL)
             DisplayPrompt (hWndEC, 3);
         return exitType;

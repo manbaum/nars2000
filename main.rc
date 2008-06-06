@@ -236,6 +236,8 @@ IDI_ME_LARGE            ICON    DISCARDABLE     "Images\\ME.ico"
 IDI_ME_SMALL            ICON    DISCARDABLE     "Images\\ME.ico"
 IDI_VE_LARGE            ICON    DISCARDABLE     "Images\\VE.ico"
 IDI_VE_SMALL            ICON    DISCARDABLE     "Images\\VE.ico"
+IDI_CC_LARGE            ICON    DISCARDABLE     "Images\\CC.ico"
+IDI_CC_SMALL            ICON    DISCARDABLE     "Images\\CC.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

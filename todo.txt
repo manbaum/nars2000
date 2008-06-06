@@ -228,6 +228,7 @@ DONE:  General
 * Handle multiple SI levels in a saved ws
 * Allow negative indices to the axis operator (except for where fractional values are allowed).
 * Move registry info into <nars2000.ini> file
+* Implement crash Control window
 
 
 DONE:  Session Manager
@@ -257,6 +258,7 @@ DONE:  Features
 * ± infinity
 * Use structured exception handling to change storage
   type on the fly (such as {floor} {infinity})
+* Icons at size 48x48 are at point size 32 using typeface Saltino
 *
 
 

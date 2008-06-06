@@ -436,10 +436,9 @@ Welcome to NARS2000</h1>
   the <a class="linkleft" href="/Contributors.html">List of Contributors</a>.
   First time contributors will also need to
   <a class="linkleft" href="http://www.gnu.org/licenses/why-assign.html">assign
-  copyright</a> of what you contribute to the project, in
-  particular to the principal author, Bob Smith.  This is by no means
-  an attempt to take
-  credit for what you have contributed &mdash; instead, it provides a
+  copyright</a> of what you contribute to the project, in particular
+  to the principal author, Bob Smith.  This is by no means an attempt
+  to take credit for what you have contributed &mdash; instead, it provides a
   single point of reference from a legal standpoint in case the program's copyright
   (actually <a class="linkleft" href="http://www.gnu.org/copyleft/copyleft.html">copyleft</a>)
   needs to be enforced.  See the "assign copyright" link above for why this is
@@ -456,6 +455,22 @@ Welcome to NARS2000</h1>
     relative to this project, and is not meant to supplant other
     forums such as the <a class="linkleft"
     href="news:comp.lang.apl">comp.lang.apl</a> newsgroup.</p>
+</div>
+
+<div class="section">
+  <h2 id="Fonts">Fonts</h2>
+
+  <p>The pages on this site were designed to be displayed with an
+    attractive APL font such as <a class="ttfLeft"
+   title="If the APL characters on this page don't display correctly, ..."
+   href="http://www.vector.org.uk/resource/simpl02.zip">SImPL (Unicode)</a>,
+   or <a class="ttfLeft"
+         title="If the APL characters on this page don't display correctly, ..."
+         href="http://www.vector.org.uk/resource/apl385.zip">APL385 Unicode</a>.
+   Moreover, your choice of browser can materially affect how the APL
+   characters appear.  Either <a class="linkleft"
+   href="http://www.getfirefox.com">Firefox</a> or Internet Explorer
+   (Version 7 or later, only) are good choices.</p>
 </div>
 
 <div class="section">

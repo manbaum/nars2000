@@ -119,17 +119,13 @@ BOOL CmdSiSinlCom_EM
         switch (lpSISCur->DfnType)
         {
             case DFNTYPE_IMM:
+#ifdef DEBUG
                 // If it's not CmsSave_EM, ...
                 if (lpMemSaveWSID EQ NULL)
                 {
-#ifdef DEBUG
                     AppendLine (WS_UTF16_IOTA, FALSE, TRUE);
+                } // End IF
 #endif
-                } else
-                    WritePrivateProfileStringW (L"SI",          // Ptr to the section name
-                                                szSILevel,      // Ptr to the key name
-                                                L"{iota}",      // Ptr to the key value
-                                                lpMemSaveWSID); // Ptr to the file name
                 break;
 
             case DFNTYPE_OP1:
@@ -159,7 +155,7 @@ BOOL CmdSiSinlCom_EM
                     // Display the function name & line #
                     AppendLine (lpwszTemp, FALSE, !bSINL);
                 else
-                    WritePrivateProfileStringW (L"SI",          // Ptr to the section name
+                    WritePrivateProfileStringW (SECTNAME_SI,    // Ptr to the section name
                                                 szSILevel,      // Ptr to the key name
                                                 lpwszTemp,      // Ptr to the key value
                                                 lpMemSaveWSID); // Ptr to the file name
@@ -213,6 +209,7 @@ BOOL CmdSiSinlCom_EM
                         // Display the name preceded by two blanks
                         AppendLine (L"  ", FALSE, FALSE);
                         AppendLine (lpwszTemp, FALSE, FALSE);
+
                         uLineLen += uNameLen;
                     } // End FOR
 
@@ -227,7 +224,7 @@ BOOL CmdSiSinlCom_EM
                 if (lpMemSaveWSID EQ NULL)
                     AppendLine (WS_UTF16_UPTACKJOT, FALSE, TRUE);
                 else
-                    WritePrivateProfileStringW (L"SI",              // Ptr to the section name
+                    WritePrivateProfileStringW (SECTNAME_SI,        // Ptr to the section name
                                                 szSILevel,          // Ptr to the key name
                                                 L"{uptackjot}",     // Ptr to the key value
                                                 lpMemSaveWSID);     // Ptr to the file name
@@ -238,7 +235,7 @@ BOOL CmdSiSinlCom_EM
                 if (lpMemSaveWSID EQ NULL)
                     AppendLine (WS_UTF16_QUAD, FALSE, TRUE);
                 else
-                    WritePrivateProfileStringW (L"SI",              // Ptr to the section name
+                    WritePrivateProfileStringW (SECTNAME_SI,        // Ptr to the section name
                                                 szSILevel,          // Ptr to the key name
                                                 L"{quad}",          // Ptr to the key value
                                                 lpMemSaveWSID);     // Ptr to the file name

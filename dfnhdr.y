@@ -454,11 +454,11 @@ NoResHdr:                       // N.B. that this production does not need to re
 Locals:
               LINECONT          {DbgMsgW2 (L"%%Locals:  LINECONT");
                                 }
-    |         ';'      NAMEUNK  {DbgMsgW2 (L"%%Locals:  ':' NAMEUNK");
+    |         ';'      NAMEUNK  {DbgMsgW2 (L"%%Locals:  ';' NAMEUNK");
                                  InitHdrStrand (&$2);
                                  $$ = *PushHdrStrand_YY (&$2);
                                 }
-    |         ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  ':' NAMESYS");
+    |         ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  ';' NAMESYS");
                                  if (!$2.tkToken.tkData.tkSym->stFlags.Value)
                                  {
                                      fh_yyerror (lpfhLocalVars, "value error");
@@ -473,7 +473,7 @@ Locals:
     | Locals  ';'      NAMEUNK  {DbgMsgW2 (L"%%Locals:  Locals ';' NAMEUNK");
                                  $$ = *PushHdrStrand_YY (&$3);
                                 }
-    | Locals  ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  Locals ':' NAMESYS");
+    | Locals  ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  Locals ';' NAMESYS");
                                  if (!$3.tkToken.tkData.tkSym->stFlags.Value)
                                  {
                                      fh_yyerror (lpfhLocalVars, "value error");

@@ -616,7 +616,9 @@ void DisplayException
 #define NewMsg(a)   SendMessageW (hWndCC, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC)
 
     NewMsg (L"COPY THIS TEXT TO AN EMAIL MESSAGE");
-    NewMsg (L"   and send it to <nars2000-discuss@googlegroups.com>");
+    NewMsg (L"Use Right-click:  Select All, and right-click:  Copy");
+    NewMsg (L"   to copy the entire text to the clipboard.");
+    NewMsg (L"Send the text to <nars2000-discuss@googlegroups.com>");
     NewMsg (L"   along with a detailed statement of what you were doing just prior to the crash.");
 
     wsprintfW (wszTemp,

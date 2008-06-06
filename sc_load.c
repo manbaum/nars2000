@@ -705,15 +705,27 @@ void DisplayWorkspaceStamp
 #define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss"
 
     WCHAR      wszTimeStamp[16 + 1],    // Output save area for time stamp
+               wszTimeStamp2[16 + 1],   // Output save area for time stamp
                wszTemp[1 + (sizeof (TIMESTAMP_FMT) / sizeof (WCHAR))];
     FILETIME   ftCreation,              // Function creation time in UTC
                ftLocalTime;             // ...                       localtime
     SYSTEMTIME systemTime;              // Current system (UTC) time
 
+    // Get the current system (UTC) time
+    GetSystemTime (&systemTime);
+
+    // Convert system time to file time and save as creation time
+    SystemTimeToFileTime (&systemTime, &ftCreation);
+
+    // Format the creation time
+    wsprintfW (wszTimeStamp2,
+               FMTSTR_DATETIME,
+               ftCreation.dwHighDateTime,
+               ftCreation.dwLowDateTime);
     // Read the creation time
     GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
                               KEYNAME_CREATIONTIME, // Ptr to the key name
-                              L"",                  // Ptr to the default value
+                              wszTimeStamp2,        // Ptr to the default value
                               wszTimeStamp,         // Ptr to the output buffer
                               sizeof (wszTimeStamp),// Byte size of the output buffer
                               lpwszDPFE);           // Ptr to the file name
@@ -1183,7 +1195,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
     STFLAGS      stFlags = {0};             // SymTab flags
     LPSYMENTRY   lpSymEntry,                // Ptr to STE for HGLOBAL
                  lpSymLink;                 // Ptr to SYMENTRY temp for *lplpSymLink
-    WCHAR        wcTmp;                     // Temporary char
+    WCHAR        wcTmp,                     // Temporary char
+                 wszTimeStamp[16 + 1];      // Output save area for time stamp
     LPWCHAR      lpwFcnName,                // Ptr to function name
                  lpwSectName,               // Ptr to section name
                  lpwSrcStart,               // Ptr to starting point
@@ -1192,6 +1205,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                  uLineCnt;                  // # lines in the current function
     FILETIME     ftCreation,                // Function creation time
                  ftLastMod;                 // ...      last modification time
+    SYSTEMTIME   systemTime;                // Current system (UTC) time
     BOOL         bUserDefined;              // TRUE iff the durrent function is User-Defined
     LPVOID       lpMemObj;                  // Ptr to object global memory
     APLINT       aplInteger;                // Temporary integer
@@ -1485,10 +1499,21 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                      KEYNAME_USERDEFINED,       // Ptr to the key name
                                      0,                         // Default value if not found
                                      lpwszDPFE);                // Ptr to the file name
+            // Get the current system (UTC) time
+            GetSystemTime (&systemTime);
+
+            // Convert system time to file time and save as creation time
+            SystemTimeToFileTime (&systemTime, &ftCreation);
+
+            // Format the CreationTime/LastModTime
+            wsprintfW (wszTimeStamp,
+                       FMTSTR_DATETIME,
+                       ftCreation.dwHighDateTime,
+                       ftCreation.dwLowDateTime);
             // Get the CreationTime string
             GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
                                       KEYNAME_CREATIONTIME, // Ptr to the key name
-                                      L"",                  // Ptr to the default value
+                                      wszTimeStamp,         // Ptr to the default value
                                       lpwSrc,               // Ptr to the output buffer
                                       uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                       lpwszDPFE);           // Ptr to the file name
@@ -1498,7 +1523,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Get the LastModTime string
             GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
                                       KEYNAME_LASTMODTIME,  // Ptr to the key name
-                                      L"",                  // Ptr to the default value
+                                      wszTimeStamp,         // Ptr to the default value
                                       lpwSrc,               // Ptr to the output buffer
                                       uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                       lpwszDPFE);           // Ptr to the file name

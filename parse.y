@@ -76,9 +76,9 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 #define yy_reduce_print         pl_yy_reduce_print
 #define yydestruct              pl_yydestruct
 
-////#define DbgMsgW2(a) if (gDbgLvl > 2) DbgMsgW(a)
-////#define DbgMsgW2(a)                  DbgMsgW(a); DbgBrk ()
-    #define DbgMsgW2(a)                  DbgMsgW(a)
+////#define DbgMsgW2(a) if (gDbgLvl > 2) DbgMsgW(lpplLocalVars->bLookAhead ? L"==" a : a)
+////#define DbgMsgW2(a)                  DbgMsgW(lpplLocalVars->bLookAhead ? L"==" a : a); DbgBrk ()
+    #define DbgMsgW2(a)                  DbgMsgW(lpplLocalVars->bLookAhead ? L"==" a : a)
 
 #ifdef DEBUG
 #define APPEND_NAME     L" -- pl_yyparse"
@@ -1978,7 +1978,15 @@ StrandInst:
     | error           StrandRec         {DbgMsgW2 (L"%%StrandInst:  StrandRec error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpplLocalVars->lpYYStr =
+                                               MakeVarStrand_EM_YY (&$2);
                                              FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
+                                                 YYERROR;
+
+                                             FreeResult (&lpplLocalVars->lpYYStr->tkToken); YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
                                              YYERROR;
                                          } else
@@ -4752,6 +4760,14 @@ IndexListBR:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
+    |      ']' error       '['          {DbgMsgW2 (L"%%IndexListBR:  [error]");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
     |      ']' IndexListWE '['          {DbgMsgW2 (L"%%IndexListBR:  [IndexListWE]");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
@@ -4778,6 +4794,14 @@ IndexListBR:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
+                                        }
+    | IndexListBR ']' error       '['   {DbgMsgW2 (L"%%IndexListBR:  [error] IndexListBR ");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
                                         }
     | IndexListBR ']' IndexListWE '['   {DbgMsgW2 (L"%%IndexListBR:  [IndexListWE] IndexListBR ");
                                          if (lpplLocalVars->bCtrlBreak)
@@ -4814,11 +4838,9 @@ IndexListBR:
 // Index list, with empties (meaning no ArrExpr between semicolons)
 // Skip Ctrl-Break checking here so the List processing isn't interrupted
 IndexListWE:
-////| error                             //--Conflicts
       IndexListWE1                      {DbgMsgW2 (L"%%IndexListWE:  IndexListWE1");
                                          $$ = $1;
                                         }
-////| error                             //--Conflicts
     | IndexListWE2                      {DbgMsgW2 (L"%%IndexListWE:  IndexListWE2");
                                          $$ = $1;
                                         }
@@ -4926,15 +4948,7 @@ IndexListWE1:
     ;
 
 IndexListWE2:
-                       error            {DbgMsgW2 (L"%%IndexListWE2:  error");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
-                                         } else
-                                             YYERROR;
-                                        }
-    |                  ArrExpr          {DbgMsgW2 (L"%%IndexListWE2:  ArrExpr");
+                       ArrExpr          {DbgMsgW2 (L"%%IndexListWE2:  ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with the arg

@@ -616,6 +616,7 @@ RESTART_EXCEPTION_VARNAMED:
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
+                            // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
                             dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -762,6 +763,7 @@ RESTART_EXCEPTION_VARIMMED:
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
+                            // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
                             dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -1344,6 +1346,7 @@ RESTART_EXCEPTION:
                 if (IsSimpleNum (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
+                    // It's now a FLOAT result
                     aplTypeRes = ARRAY_FLOAT;
 
                     // We no longer need this ptr
@@ -2391,27 +2394,28 @@ HGLOBAL PrimFnDydNestSiSc_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    BOOL     bRet = TRUE;
-    HGLOBAL  hGlbLft = NULL,
-             hGlbRes = NULL,
-             hGlbSub;
-    LPVOID   lpMemLft,
-             lpMemRes = NULL;
-    APLSTYPE aplTypeLft,
-             aplTypeRes;
-    APLNELM  aplNELMLft,
-             aplNELMRht = 1,
-             aplNELMRes;
-    APLRANK  aplRankLft,
-             aplRankRht = 0,
-             aplRankRes;
-    APLINT   aplIntegerLft,
-             uLft,
-             apaOffLft,
-             apaMulLft;
-    APLFLOAT aplFloatLft;
-    APLCHAR  aplCharLft;
-    UINT     uBitIndex = 0;
+    BOOL              bRet = TRUE;
+    HGLOBAL           hGlbLft = NULL,
+                      hGlbRes = NULL,
+                      hGlbSub;
+    LPVOID            lpMemLft,
+                      lpMemRes = NULL;
+    LPVARARRAY_HEADER lpMemHdrRes;
+    APLSTYPE          aplTypeLft,
+                      aplTypeRes;
+    APLNELM           aplNELMLft,
+                      aplNELMRht = 1,
+                      aplNELMRes;
+    APLRANK           aplRankLft,
+                      aplRankRht = 0,
+                      aplRankRes;
+    APLINT            aplIntegerLft,
+                      uLft,
+                      apaOffLft,
+                      apaMulLft;
+    APLFLOAT          aplFloatLft;
+    APLCHAR           aplCharLft;
+    UINT              uBitIndex = 0;
 
     DBGENTER;
 
@@ -2484,7 +2488,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = lpMemHdrRes = MyGlobalLock (hGlbRes);
 
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
@@ -2503,6 +2507,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
         bRet = PrimFnDydMultSing_EM (aplTypeRes,
+                                     lpMemHdrRes,
                                      lpMemRes,
                                      aplNELMRes,
                                      aplTypeLft,
@@ -2790,19 +2795,20 @@ ERROR_EXIT:
 #endif
 
 BOOL PrimFnDydSingMult_EM
-    (APLSTYPE   aplTypeRes,         // Result type
-     LPVOID     lpMemRes,           // Ptr to result memory (Points to the data)
-     APLNELM    aplNELMRes,         // Result NELM
-     APLSTYPE   aplTypeLft,         // Left arg type
-     APLINT     aplIntegerLft,      // ...      integer value
-     APLFLOAT   aplFloatLft,        // ...      float   ...
-     APLCHAR    aplCharLft,         // ...      char    ...
-     APLSTYPE   aplTypeRht,         // Right arg type
-     APLINT     apaOffRht,          // ...       APA offset
-     APLINT     apaMulRht,          // ...       ... multiplier
-     LPVOID     lpMemRht,           // Points to the data
-     LPTOKEN    lptkFunc,           // Ptr to function token
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+    (APLSTYPE          aplTypeRes,          // Result type
+     LPVARARRAY_HEADER lpMemHdrRes,         // Ptr to result header (in case we blow up)
+     LPVOID            lpMemRes,            // Ptr to result memory (Points to the data)
+     APLNELM           aplNELMRes,          // Result NELM
+     APLSTYPE          aplTypeLft,          // Left arg type
+     APLINT            aplIntegerLft,       // ...      integer value
+     APLFLOAT          aplFloatLft,         // ...      float   ...
+     APLCHAR           aplCharLft,          // ...      char    ...
+     APLSTYPE          aplTypeRht,          // Right arg type
+     APLINT            apaOffRht,           // ...       APA offset
+     APLINT            apaMulRht,           // ...       ... multiplier
+     LPVOID            lpMemRht,            // Points to the data
+     LPTOKEN           lptkFunc,            // Ptr to function token
+     LPPRIMSPEC        lpPrimSpec)          // Ptr to local PRIMSPEC
 
 {
     APLINT   uRes;
@@ -3491,7 +3497,15 @@ RESTART_EXCEPTION:
                 if (IsSimpleNum (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
+                    // Note that the old result storage type must be ARRAY_INT
+                    //   as BOOL is handled differently, and APA can't occur
+                    Assert (aplTypeRes EQ ARRAY_INT);
+
+                    // It's now a FLOAT result
                     aplTypeRes = ARRAY_FLOAT;
+
+                    // Tell the header about it
+                    lpMemHdrRes->ArrType = aplTypeRes;
 
                     // Restart the pointers
                     lpMemRes = lpMemResStart;
@@ -3531,19 +3545,20 @@ RESTART_EXCEPTION:
 #endif
 
 BOOL PrimFnDydMultSing_EM
-    (APLSTYPE   aplTypeRes,         // Result type
-     LPVOID     lpMemRes,           // Ptr to result memory (Points to the data)
-     APLNELM    aplNELMRes,         // Result NELM
-     APLSTYPE   aplTypeLft,         // Left arg type
-     APLINT     apaOffLft,          // ...      APA offset
-     APLINT     apaMulLft,          // ...      ... multiplier
-     LPVOID     lpMemLft,           // Points to the data
-     APLSTYPE   aplTypeRht,         // Right arg type
-     APLINT     aplIntegerRht,      // ...       integer value
-     APLFLOAT   aplFloatRht,        // ...       float   ...
-     APLCHAR    aplCharRht,         // ...       char    ...
-     LPTOKEN    lptkFunc,           // Ptr to function token
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+    (APLSTYPE          aplTypeRes,          // Result type
+     LPVARARRAY_HEADER lpMemHdrRes,         // Ptr to result header (in case we blow up)
+     LPVOID            lpMemRes,            // Ptr to result memory (Points to the data)
+     APLNELM           aplNELMRes,          // Result NELM
+     APLSTYPE          aplTypeLft,          // Left arg type
+     APLINT            apaOffLft,           // ...      APA offset
+     APLINT            apaMulLft,           // ...      ... multiplier
+     LPVOID            lpMemLft,            // Points to the data
+     APLSTYPE          aplTypeRht,          // Right arg type
+     APLINT            aplIntegerRht,       // ...       integer value
+     APLFLOAT          aplFloatRht,         // ...       float   ...
+     APLCHAR           aplCharRht,          // ...       char    ...
+     LPTOKEN           lptkFunc,            // Ptr to function token
+     LPPRIMSPEC        lpPrimSpec)          // Ptr to local PRIMSPEC
 
 {
     APLINT   uRes;
@@ -4232,7 +4247,15 @@ RESTART_EXCEPTION:
                 if (IsSimpleNum (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
+                    // Note that the old result storage type must be ARRAY_INT
+                    //   as BOOL is handled differently, and APA can't occur
+                    Assert (aplTypeRes EQ ARRAY_INT);
+
+                    // It's now a FLOAT result
                     aplTypeRes = ARRAY_FLOAT;
+
+                    // Tell the header about it
+                    lpMemHdrRes->ArrType = aplTypeRes;
 
                     // Restart the pointers
                     lpMemRes = lpMemResStart;
@@ -4280,27 +4303,28 @@ HGLOBAL PrimFnDydSiScNest_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    BOOL     bRet = TRUE;
-    HGLOBAL  hGlbRht = NULL,
-             hGlbRes = NULL,
-             hGlbSub;
-    LPVOID   lpMemRht,
-             lpMemRes = NULL;
-    APLSTYPE aplTypeRht,
-             aplTypeRes;
-    APLNELM  aplNELMLft = 1,
-             aplNELMRht,
-             aplNELMRes;
-    APLRANK  aplRankLft = 0,
-             aplRankRht,
-             aplRankRes;
-    APLINT   aplIntegerRht,
-             uRht,
-             apaOffRht,
-             apaMulRht;
-    APLFLOAT aplFloatRht;
-    APLCHAR  aplCharRht;
-    UINT     uBitIndex = 0;
+    BOOL              bRet = TRUE;
+    HGLOBAL           hGlbRht = NULL,
+                      hGlbRes = NULL,
+                      hGlbSub;
+    LPVOID            lpMemRht,
+                      lpMemRes = NULL;
+    LPVARARRAY_HEADER lpMemHdrRes;
+    APLSTYPE          aplTypeRht,
+                      aplTypeRes;
+    APLNELM           aplNELMLft = 1,
+                      aplNELMRht,
+                      aplNELMRes;
+    APLRANK           aplRankLft = 0,
+                      aplRankRht,
+                      aplRankRes;
+    APLINT            aplIntegerRht,
+                      uRht,
+                      apaOffRht,
+                      apaMulRht;
+    APLFLOAT          aplFloatRht;
+    APLCHAR           aplCharRht;
+    UINT              uBitIndex = 0;
 
     DBGENTER;
 
@@ -4373,7 +4397,7 @@ HGLOBAL PrimFnDydSiScNest_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = lpMemHdrRes = MyGlobalLock (hGlbRes);
 
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
@@ -4392,6 +4416,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
         bRet = PrimFnDydSingMult_EM (aplTypeRes,
+                                     lpMemHdrRes,
                                      lpMemRes,
                                      aplNELMRes,
                                      aplTypeLft,
@@ -4808,32 +4833,33 @@ BOOL PrimFnDydSimpSimp_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-    LPVOID    lpMemRes = NULL;  // Ptr to result global memory
-    BOOL      bRet = TRUE;      // TRUE iff result is valid
-    APLSTYPE  aplTypeArg;
-    APLINT    aplIntegerLft,
-              aplIntegerRht;
-    APLFLOAT  aplFloatLft,
-              aplFloatRht;
-    LPAPLUINT lpMemWVec = NULL,
-              lpMemOdo = NULL;
-    HGLOBAL   hGlbWVec = NULL,
-              hGlbOdo = NULL;
-    APLINT    uLft,
-              uRht,
-              uRes;
-    LPAPLDIM  lpMemDimArg,
-              lpMemDimRes;
-    APLINT    apaOffLft,
-              apaMulLft,
-              apaOffRht,
-              apaMulRht,
-              iRht;
-    UINT      uBitIndex = 0;
-    LPVOID    lpMemResStart;
-    APLUINT   ByteRes;          // # bytes in the result
-    APLCHAR   aplCharLft,
-              aplCharRht;
+    LPVOID            lpMemRes = NULL;  // Ptr to result global memory
+    LPVARARRAY_HEADER lpMemHdrRes;      // Ptr to result header (in case we blow up)
+    BOOL              bRet = TRUE;      // TRUE iff result is valid
+    APLSTYPE          aplTypeArg;
+    APLINT            aplIntegerLft,
+                      aplIntegerRht;
+    APLFLOAT          aplFloatLft,
+                      aplFloatRht;
+    LPAPLUINT         lpMemWVec = NULL,
+                      lpMemOdo = NULL;
+    HGLOBAL           hGlbWVec = NULL,
+                      hGlbOdo = NULL;
+    APLINT            uLft,
+                      uRht,
+                      uRes;
+    LPAPLDIM          lpMemDimArg,
+                      lpMemDimRes;
+    APLINT            apaOffLft,
+                      apaMulLft,
+                      apaOffRht,
+                      apaMulRht,
+                      iRht;
+    UINT              uBitIndex = 0;
+    LPVOID            lpMemResStart;
+    APLUINT           ByteRes;          // # bytes in the result
+    APLCHAR           aplCharLft,
+                      aplCharRht;
 
     DBGENTER;
 
@@ -4843,7 +4869,7 @@ BOOL PrimFnDydSimpSimp_EM
 
     // Lock the memory to get a ptr to it
     if (*lphGlbRes)
-        lpMemRes = MyGlobalLock (*lphGlbRes);
+        lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
 
     if (IsSingleton (aplNELMLft)
      && IsSingleton (aplNELMRht))
@@ -5036,7 +5062,15 @@ RESTART_EXCEPTION_SINGLETON:
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
+                            // Note that the old result storage type must be ARRAY_INT
+                            //   as BOOL is handled differently, and APA can't occur
+                            Assert (aplTypeRes EQ ARRAY_INT);
+
+                            // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 #ifdef DEBUG
                             dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
@@ -5119,6 +5153,7 @@ RESTART_EXCEPTION_SINGLETON:
         // Split cases based upon which argument is the simgleton
         if (!IsSingleton (aplNELMLft))  // Lft = Multipleton, Rht = Singleton
             bRet = PrimFnDydMultSing_EM (aplTypeRes,
+                                         lpMemHdrRes,
                                          lpMemRes,
                                          aplNELMRes,
                                          aplTypeLft,
@@ -5134,6 +5169,7 @@ RESTART_EXCEPTION_SINGLETON:
 
         else                            // Lft = Singleton, Rht = Multipleton
             bRet = PrimFnDydSingMult_EM (aplTypeRes,
+                                         lpMemHdrRes,
                                          lpMemRes,
                                          aplNELMRes,
                                          aplTypeLft,
@@ -5715,7 +5751,15 @@ RESTART_EXCEPTION_AXIS:
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
+                            // Note that the old result storage type must be ARRAY_INT
+                            //   as BOOL is handled differently, and APA can't occur
+                            Assert (aplTypeRes EQ ARRAY_INT);
+
+                            // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 
                             // Restart the pointers
                             lpMemRes = lpMemResStart;
@@ -6091,7 +6135,15 @@ RESTART_EXCEPTION_NOAXIS:
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
+                            // Note that the old result storage type must be ARRAY_INT
+                            //   as BOOL is handled differently, and APA can't occur
+                            Assert (aplTypeRes EQ ARRAY_INT);
+
+                            // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 
                             // Restart the pointers
                             lpMemRes = lpMemResStart;

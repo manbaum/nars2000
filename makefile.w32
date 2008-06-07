@@ -310,8 +310,10 @@ $(O)sc_copy.DEP         \
 $(O)sc_drop.DEP         \
 $(O)sc_erase.DEP        \
 $(O)sc_fnov.DEP         \
+$(O)sc_in.DEP           \
 $(O)sc_lib.DEP          \
 $(O)sc_load.DEP         \
+$(O)sc_out.DEP          \
 $(O)sc_reset.DEP        \
 $(O)sc_save.DEP         \
 $(O)sc_si.DEP           \
@@ -717,11 +719,17 @@ $(O)yyfns.DEP
 !if exist ($(O)sc_fnov.DEP)
 !       include $(O)sc_fnov.DEP
 !endif
+!if exist ($(O)sc_in.DEP)
+!       include $(O)sc_in.DEP
+!endif
 !if exist ($(O)sc_lib.DEP)
 !       include $(O)sc_lib.DEP
 !endif
 !if exist ($(O)sc_load.DEP)
 !       include $(O)sc_load.DEP
+!endif
+!if exist ($(O)sc_out.DEP)
+!       include $(O)sc_out.DEP
 !endif
 !if exist ($(O)sc_reset.DEP)
 !       include $(O)sc_reset.DEP
@@ -908,8 +916,10 @@ $(O)sc_copy.PRO         \
 $(O)sc_drop.PRO         \
 $(O)sc_erase.PRO        \
 $(O)sc_fnov.PRO         \
+$(O)sc_in.PRO           \
 $(O)sc_lib.PRO          \
 $(O)sc_load.PRO         \
+$(O)sc_out.PRO          \
 $(O)sc_reset.PRO        \
 $(O)sc_save.PRO         \
 $(O)sc_si.PRO           \
@@ -1099,8 +1109,10 @@ $(O)sc_copy.OBJ:        $(@B).C         $(SC_COPY_DEP)
 $(O)sc_drop.OBJ:        $(@B).C         $(SC_DROP_DEP)
 $(O)sc_erase.OBJ:       $(@B).C         $(SC_ERASE_DEP)
 $(O)sc_fnov.OBJ:        $(@B).C         $(SC_FNOV_DEP)
+$(O)sc_in.OBJ:          $(@B).C         $(SC_IN_DEP)
 $(O)sc_lib.OBJ:         $(@B).C         $(SC_LIB_DEP)
 $(O)sc_load.OBJ:        $(@B).C         $(SC_LOAD_DEP)
+$(O)sc_out.OBJ:         $(@B).C         $(SC_OUT_DEP)
 $(O)sc_reset.OBJ:       $(@B).C         $(SC_RESET_DEP)
 $(O)sc_save.OBJ:        $(@B).C         $(SC_SAVE_DEP)
 $(O)sc_si.OBJ:          $(@B).C         $(SC_SI_DEP)
@@ -1257,8 +1269,10 @@ OBJS=                       \
      $(O)sc_drop.OBJ        \
      $(O)sc_erase.OBJ       \
      $(O)sc_fnov.OBJ        \
+     $(O)sc_in.OBJ          \
      $(O)sc_lib.OBJ         \
      $(O)sc_load.OBJ        \
+     $(O)sc_out.OBJ         \
      $(O)sc_reset.OBJ       \
      $(O)sc_save.OBJ        \
      $(O)sc_si.OBJ          \

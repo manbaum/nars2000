@@ -474,8 +474,6 @@ BOOL LoadWorkspace_EM
                     //   (non-existant) stGlbData
                     // Set other flags as appropriate
                     lpSymEntry->stFlags.Imm        = TRUE;
-                    lpSymEntry->stFlags.ObjName    = OBJNAME_USR;
-                    lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
                 } // End IF
 
                 // Clear so we save a clean value
@@ -526,20 +524,15 @@ BOOL LoadWorkspace_EM
 
                     // In with the new
                     if (bImmed)
-                    {
-                        // Set the stFlags & stData
-                        lpSymEntry->stFlags.Imm      = TRUE;
-                        lpSymEntry->stFlags.Value    = TRUE;
                         lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
-                        lpSymEntry->stData.stLongest = aplLongestObj;
-                    } else
-                    {
-                        // Set the stFlags & stData
-                        lpSymEntry->stFlags.Imm      = FALSE;
-                        lpSymEntry->stFlags.Value    = TRUE;
+                    else
                         lpSymEntry->stFlags.ImmType  = 0;
-                        lpSymEntry->stData.stLongest = aplLongestObj;
-                    } // End IF/ELSE
+                    // Set the common values
+                    lpSymEntry->stFlags.Imm        = bImmed;
+                    lpSymEntry->stFlags.Value      = TRUE;
+                    lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
+                    lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+                    lpSymEntry->stData.stLongest   = aplLongestObj;
                 } // End IF
 
                 // Restore the original value

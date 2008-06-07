@@ -66,7 +66,7 @@ PRIMSPEC PrimSpecColonBar =
     NULL,   // &PrimFnDydColonBarBisCvC, -- Can't happen w/ColonBar
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydColonBarIisIvI, -- Can't happen w/ColonBar
+    &PrimFnDydColonBarIisIvI,
     NULL,   // &PrimFnDydColonBarIisFvF, -- Can't happen w/ColonBar
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
@@ -219,12 +219,43 @@ APLSTYPE PrimSpecColonBarStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // Except that BOOL, INT, and APA become FLOAT
+    // Except that BOOL, INT, and APA become INT
+    // If a result doesn't fit in an INT, blow up to FLOAT.
     if (IsSimpleInt (aplTypeRes))
-        return ARRAY_FLOAT;
+        return ARRAY_INT;
 
     return aplTypeRes;
 } // End PrimSpecColonBarStorageTypeDyd
+
+
+//***************************************************************************
+//  $PrimFnDydColonBarIisIvI
+//
+//  Primitive scalar function dyadic ColonBar:  I {is} I fn I
+//***************************************************************************
+
+APLINT PrimFnDydColonBarIisIvI
+    (APLINT     aplIntegerLft,
+     APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLINT aplIntegerRes;
+
+    // Check for indeterminates:  0 {div} 0
+    if (aplIntegerLft EQ 0
+     || aplIntegerRht EQ 0)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
+    // Try integer division first
+    aplIntegerRes = aplIntegerLft / aplIntegerRht;
+
+    // See if the result is integral
+    if (aplIntegerLft NE (aplIntegerRes * aplIntegerRht))
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
+    return aplIntegerRes;
+} // End PrimFnDydColonBarIisIvI
 
 
 //***************************************************************************

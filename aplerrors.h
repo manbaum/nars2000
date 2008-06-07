@@ -48,6 +48,9 @@
 #define ERRMSG_NOT_SAVED_FILE_ERROR             L"NOT SAVED, FILE NAME ERROR"
 #define ERRMSG_WS_NOT_FOUND                     L"WS NOT FOUND"
 
+#define ERRMSG_FILE_EXISTS                      L"FILE EXISTS"
+#define ERRMSG_FILE_NOT_FOUND                   L"FILE NOT FOUND"
+
 #define ERRMSG_NOT_ERASED                       L"NOT ERASED:"
 
 #define ERRMSG_NOTRESTARTABLE                   L"SI LEVEL NOT RESTARTABLE, USE " WS_UTF16_RIGHTARROW L" OR )RESET"

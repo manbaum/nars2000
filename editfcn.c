@@ -291,8 +291,9 @@ LRESULT APIENTRY FEWndProc
             lpSymName = ParseFunctionName (hWnd, (*(LPFE_CREATESTRUCTW *) &lpMDIcs->lParam)->lpwszLine);
             if (lpSymName)
             {
-                // If it's not a user-defined function/operator, ...
-                if (!lpSymName->stFlags.UsrDfn)
+                // If it has a value and is not a user-defined function/operator, ...
+                if (lpSymName->stFlags.Value
+                 && !lpSymName->stFlags.UsrDfn)
                 {
                     ((LPFE_CREATESTRUCTW) (lpMDIcs->lParam))->ErrCode = lpSymName->stFlags.stNameType;
 

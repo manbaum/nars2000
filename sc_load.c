@@ -267,7 +267,7 @@ BOOL LoadWorkspace_EM
 ////////////////__try
 ////////////////{
 ////////////////    uMaxSize = 1 / (uSID - 1);
-////////////////} __except (CheckException (GetExceptionInformation (), "LoadWorkspace_EM"))
+////////////////} __except (CheckException (GetExceptionInformation (), L"LoadWorkspace_EM"))
 ////////////////{
 ////////////////    // Display message for unhandled exception
 ////////////////    DisplayException ();

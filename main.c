@@ -2429,7 +2429,7 @@ int PASCAL WinMain
                 DispatchMessageW (&Msg);
             } // End IF
         } // End WHILE
-    } __except (CheckException (GetExceptionInformation (), "WinMain"))
+    } __except (CheckException (GetExceptionInformation (), L"WinMain"))
     {
         // Display message for unhandled exception
         DisplayException ();

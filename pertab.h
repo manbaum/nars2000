@@ -61,7 +61,7 @@ typedef struct tagPERTABDATA
     HEADER_SIGNATURE Sig;           // 00:  Signature
     EXCEPTION_CODES ExceptionCode;  // 04:  Exception code
     LPUCHAR      ExceptionAddr;     // 08:  ...       address
-    LPCHAR       ExceptionText;     // 0C:  ...       text
+    LPWCHAR      ExceptionText;     // 0C:  ...       text
     LPUCHAR      lpInvalidAddr;     // 10:  Ptr to invalid address (if ExceptionCode EQ EXCEPTION_ACCESS_VIOLATION)
     LPPL_YYSTYPE lpYYRes;           // 14:  The result token
     UINT         numYYRes;          // 18:  # YYRes elements in the array

@@ -188,7 +188,7 @@ BOOL WINAPI CreateDebuggerInThread
 
             // GetMessageW returned FALSE for a Quit message
         } // End IF
-    } __except (CheckException (GetExceptionInformation (), "CreateDebuggerInThread"))
+    } __except (CheckException (GetExceptionInformation (), L"CreateDebuggerInThread"))
     {
         // Display message for unhandled exception
         DisplayException ();

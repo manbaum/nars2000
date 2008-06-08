@@ -56,6 +56,10 @@ EXCEPT_NAMES ExceptNames[] =
 // Save area for exception address if EXCEPTION_BREAKPOINT
 DWORD glbExceptAddr;
 
+// Save area for crash information
+CONTEXT ContextRecord;
+EXCEPTION_RECORD ExceptionRecord;
+
 
 //***************************************************************************
 //  $MyGetExceptionCode
@@ -194,7 +198,7 @@ void MySetExceptionAddr
 //***************************************************************************
 
 void MySetExceptionText
-    (LPCHAR ExceptionText)      // Exception text
+    (LPWCHAR ExceptionText)     // Exception text
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -427,11 +431,15 @@ int CheckMemVirtStr
 
 long CheckException
     (LPEXCEPTION_POINTERS lpExcept,         // Ptr to exception information
-     LPCHAR               lpText)           // Ptr to text of exception handler
+     LPWCHAR              lpText)           // Ptr to text of exception handler
 
 {
     int     iRet;               // Return code
     LPUCHAR lpInvalidAddr;      // Ptr to invalid address
+
+    // Save in globals
+    ContextRecord   = *lpExcept->ContextRecord;
+    ExceptionRecord = *lpExcept->ExceptionRecord;
 
     // Get the invalid address
     lpInvalidAddr = (LPUCHAR) lpExcept->ExceptionRecord->ExceptionInformation[1];
@@ -552,7 +560,7 @@ void DisplayException
                  nearIndex1;    // Index into StartAddresses
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPCHAR       exceptText;    // Ptr to exception text
+    LPWCHAR      exceptText;    // Ptr to exception text
     LPUCHAR      exceptAddr;    // Exception address
     DWORD        regEBP;        // Stack trace ptr
     LPBYTE       caller;        // Ptr to caller in stack trace
@@ -637,8 +645,39 @@ void DisplayException
     NewMsg (wszTemp);
 
     wsprintfW (wszTemp,
-               L"   from %S",
+               L"   from %s",
                exceptText);
+    NewMsg (wszTemp);
+
+    // Display the registers
+    NewMsg (L"");
+    NewMsg (L"== REGISTERS ==");
+    wsprintfW (wszTemp,
+               L"EAX = %08X EBX = %08X ECX = %08X EDX = %08X EIP = %08X",
+               ContextRecord.Eax,
+               ContextRecord.Ebx,
+               ContextRecord.Ecx,
+               ContextRecord.Edx,
+               ContextRecord.Eip);
+    NewMsg (wszTemp);
+
+    wsprintfW (wszTemp,
+               L"ESI = %08X EDI = %08X EBP = %08X ESP = %08X EFL = %08X",
+               ContextRecord.Esi,
+               ContextRecord.Edi,
+               ContextRecord.Ebp,
+               ContextRecord.Esp,
+               ContextRecord.EFlags);
+    NewMsg (wszTemp);
+
+    wsprintfW (wszTemp,
+               L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X",
+               ContextRecord.SegCs,
+               ContextRecord.SegDs,
+               ContextRecord.SegEs,
+               ContextRecord.SegFs,
+               ContextRecord.SegGs,
+               ContextRecord.SegSs);
     NewMsg (wszTemp);
 
     // Display the backtrace

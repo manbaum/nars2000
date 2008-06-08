@@ -464,7 +464,12 @@ BOOL PrimScalarFnDydAllocate_EM
         //   not global memory.
         if (IsScalar (*lpaplRankRes)
          && IsSimpleNum (aplTypeRes))
+        {
+            // Initialize the result
+            *lphGlbRes = NULL;
+
             return TRUE;
+        } // End IF
     } else
     if (IsSingleton (aplNELMLft)
      || IsSingleton (aplNELMRht))
@@ -527,7 +532,7 @@ BOOL PrimScalarFnDydAllocate_EM
     if (IsSingleton (aplNELMLft)
      || IsSingleton (aplNELMRht))
     {
-        // Copy the ptr to the non-singleton argument
+        // Copy the ptr of the non-singleton argument
         if (!IsSingleton (aplNELMLft))
             lpMemDimArg = lpMemLft;
         else
@@ -2397,7 +2402,7 @@ LPPL_YYSTYPE MakeNoValue_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARNAMED;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
-    lpYYRes->tkToken.tkFlags.NoDisplay = 1;
+    lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
     lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->steNoValue;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

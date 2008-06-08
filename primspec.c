@@ -234,8 +234,8 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
                 lpYYRes->tkToken.tkData.tkChar = L' ';
             else
             {
-                lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_BOOL;
-                lpYYRes->tkToken.tkData.tkBoolean = 0;
+                lpYYRes->tkToken.tkFlags.ImmType  = IMMTYPE_BOOL;
+                lpYYRes->tkToken.tkData.tkBoolean = FALSE;
             } // End IF/ELSE
 
             break;
@@ -338,7 +338,7 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkInteger  = 0;
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -363,7 +363,7 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -478,7 +478,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -492,7 +492,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = aplTypeRes;
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkData            =        // Filled in below
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 RESTART_EXCEPTION_VARNAMED:
@@ -591,10 +591,10 @@ RESTART_EXCEPTION_VARNAMED:
                     defstop
                         return NULL;
                 } // SWITCH
-            } __except (CheckException (GetExceptionInformation (), "PrimFnMon_EM_YY #1"))
+            } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                 // Split cases based upon the ExceptionCode
                 switch (MyGetExceptionCode ())
@@ -619,7 +619,7 @@ RESTART_EXCEPTION_VARNAMED:
                             // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_VARNAMED;
                         } // End IF
@@ -738,10 +738,10 @@ RESTART_EXCEPTION_VARIMMED:
                     defstop
                         return NULL;
                 } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), "PrimFnMon_EM_YY #2"))
+            } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #2"))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                 // Split cases based upon the ExceptionCode
                 switch (MyGetExceptionCode ())
@@ -766,7 +766,7 @@ RESTART_EXCEPTION_VARIMMED:
                             // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_VARIMMED;
                         } // End IF
@@ -787,7 +787,7 @@ RESTART_EXCEPTION_VARIMMED:
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = aplTypeRes;
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkData            = (Filled in above)
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -822,7 +822,7 @@ RESTART_EXCEPTION_VARIMMED:
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -941,7 +941,7 @@ RESTART_EXCEPTION:
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
@@ -1323,7 +1323,7 @@ RESTART_EXCEPTION:
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), "PrimFnMonGlb_EM"))
+    } __except (CheckException (GetExceptionInformation (), L"PrimFnMonGlb_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -1985,7 +1985,7 @@ BOOL PrimFnDydSimpNest_EM
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -2326,7 +2326,7 @@ BOOL PrimFnDydNestSimp_EM
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -2400,7 +2400,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
                       hGlbSub;
     LPVOID            lpMemLft,
                       lpMemRes = NULL;
-    LPVARARRAY_HEADER lpMemHdrRes;
+    LPVARARRAY_HEADER lpMemHdrRes,
+                      lpMemHdrLft;
     APLSTYPE          aplTypeLft,
                       aplTypeRes;
     APLNELM           aplNELMLft,
@@ -2490,6 +2491,9 @@ HGLOBAL PrimFnDydNestSiSc_EM
     // Lock the memory to get a ptr to it
     lpMemRes = lpMemHdrRes = MyGlobalLock (hGlbRes);
 
+    // Save ptr to header
+    lpMemHdrLft = lpMemLft;
+
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
@@ -2506,13 +2510,15 @@ HGLOBAL PrimFnDydNestSiSc_EM
 
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
-        bRet = PrimFnDydMultSing_EM (aplTypeRes,
+        bRet = PrimFnDydMultSing_EM (&hGlbRes,
+                                     aplTypeRes,
                                      lpMemHdrRes,
-                                     lpMemRes,
+                                    &lpMemRes,
                                      aplNELMRes,
                                      aplTypeLft,
                                      apaOffLft,
                                      apaMulLft,
+                                     lpMemHdrLft,
                                      lpMemLft,
                                      aplTypeRht,
                                      aplIntegerRht,
@@ -2640,7 +2646,7 @@ void FillToken
         case PTRTYPE_STCONST:
             lptkArg->tkFlags.TknType   = TKT_VARIMMED;
             lptkArg->tkFlags.ImmType   = ((LPSYMENTRY) lpMem)->stFlags.ImmType;
-////////////lptkArg->tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lptkArg->tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
             lptkArg->tkData.tkLongest  = ((LPSYMENTRY) lpMem)->stData.stLongest;
             lptkArg->tkCharIndex       = tkCharIndex;
 
@@ -2649,7 +2655,7 @@ void FillToken
         case PTRTYPE_HGLOBAL:
             lptkArg->tkFlags.TknType   = TKT_VARARRAY;
 ////////////lptkArg->tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////lptkArg->tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lptkArg->tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
             lptkArg->tkData.tkGlbData  = lpMem;
             lptkArg->tkCharIndex       = tkCharIndex;
 
@@ -2768,8 +2774,8 @@ BOOL PrimFnDydNestNest_EM
     {
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF
@@ -2795,9 +2801,10 @@ ERROR_EXIT:
 #endif
 
 BOOL PrimFnDydSingMult_EM
-    (APLSTYPE          aplTypeRes,          // Result type
+    (HGLOBAL          *lphGlbRes,           // Ptr to result handle
+     APLSTYPE          aplTypeRes,          // Result type
      LPVARARRAY_HEADER lpMemHdrRes,         // Ptr to result header (in case we blow up)
-     LPVOID            lpMemRes,            // Ptr to result memory (Points to the data)
+     LPVOID           *lplpMemRes,          // Ptr to ptr to result memory (Points to the data)
      APLNELM           aplNELMRes,          // Result NELM
      APLSTYPE          aplTypeLft,          // Left arg type
      APLINT            aplIntegerLft,       // ...      integer value
@@ -2806,19 +2813,25 @@ BOOL PrimFnDydSingMult_EM
      APLSTYPE          aplTypeRht,          // Right arg type
      APLINT            apaOffRht,           // ...       APA offset
      APLINT            apaMulRht,           // ...       ... multiplier
+     LPVARARRAY_HEADER lpMemHdrRht,         // Ptr to left/right arg header (in case we blow up)
      LPVOID            lpMemRht,            // Points to the data
      LPTOKEN           lptkFunc,            // Ptr to function token
      LPPRIMSPEC        lpPrimSpec)          // Ptr to local PRIMSPEC
 
 {
     APLINT   uRes;
+    BOOL     bRet = FALSE;                  // TRUE iff the result is valid
+    APLRANK  aplRankRes;                    // Temp var for DydAllocate
     UINT     uBitIndex = 0;
-    LPVOID   lpMemResStart,
-             lpMemRhtStart;
+    LPVOID   lpMemRhtStart,
+             lpMemRes;
     APLSTYPE aplTypeHetRht;
     APLINT   aplIntegerRht;
     APLFLOAT aplFloatRht;
     APLCHAR  aplCharRht;
+
+    // Get the memory ptr
+    lpMemRes = *lplpMemRes;
 
     // If the singleton is integer,
     //   attempt to demote it to Boolean
@@ -2828,9 +2841,11 @@ BOOL PrimFnDydSingMult_EM
 
     // Save the starting values in case we need
     //   to restart from an exception
-    lpMemResStart = lpMemRes;
     lpMemRhtStart = lpMemRht;
 RESTART_EXCEPTION:
+    // Skip over the header to the data
+    lpMemRes = VarArrayBaseToData (lpMemHdrRes, lpMemHdrRes->Rank);
+
     __try
     {
     // Split cases based upon the storage type of the result
@@ -3474,7 +3489,7 @@ RESTART_EXCEPTION:
         defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), "PrimFnDydSingMult_EM"))
+    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSingMult_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -3489,7 +3504,7 @@ RESTART_EXCEPTION:
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
-                return FALSE;
+                goto ERROR_EXIT;
 
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -3497,18 +3512,47 @@ RESTART_EXCEPTION:
                 if (IsSimpleNum (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
-                    // Note that the old result storage type must be ARRAY_INT
-                    //   as BOOL is handled differently, and APA can't occur
-                    Assert (aplTypeRes EQ ARRAY_INT);
+                    // If the previous result is Boolean, we need to
+                    //   unlock, free, and allocate the result anew
+                    if (IsSimpleBool (aplTypeRes))
+                    {
+                        // We need to start over with the result
+                        MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                        MyGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
 
-                    // It's now a FLOAT result
-                    aplTypeRes = ARRAY_FLOAT;
+                        // It's now a FLOAT result
+                        aplTypeRes = ARRAY_FLOAT;
 
-                    // Tell the header about it
-                    lpMemHdrRes->ArrType = aplTypeRes;
+                        if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                         lphGlbRes,
+                                                         NULL,
+                                                         lpMemHdrRht,
+                                                         0,
+                                                         lpMemHdrRht->Rank,
+                                                        &aplRankRes,
+                                                         aplTypeRes,
+                                                         1,
+                                                         lpMemHdrRht->NELM,
+                                                         aplNELMRes))
+                            goto ERROR_EXIT;
+                        // Lock the memory to get a ptr to it
+                        lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                    } else
+                    // The previous result must have been INT which is
+                    //   the same size as FLOAT, so there's no need to
+                    //   change storage.
+                    {
+                        // It's now a FLOAT result
+                        aplTypeRes = ARRAY_FLOAT;
 
-                    // Restart the pointers
-                    lpMemRes = lpMemResStart;
+                        // Tell the header about it
+                        lpMemHdrRes->ArrType = aplTypeRes;
+
+                        // Restart the pointers
+                        lpMemRes = lpMemHdrRes;
+                    } // End IF/ELSE
+
+                    // Restart the pointer
                     lpMemRht = lpMemRhtStart;
 #ifdef DEBUG
                     dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -3526,7 +3570,13 @@ RESTART_EXCEPTION:
         } // End SWITCH
     } // End __try/__except
 
-    return TRUE;
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    // Restore the memory ptr
+    *lplpMemRes = lpMemRes;
+
+    return bRet;
 } // End PrimFnDydSingMult_EM
 #undef  APPEND_NAME
 
@@ -3545,13 +3595,15 @@ RESTART_EXCEPTION:
 #endif
 
 BOOL PrimFnDydMultSing_EM
-    (APLSTYPE          aplTypeRes,          // Result type
+    (HGLOBAL          *lphGlbRes,           // Ptr to result handle
+     APLSTYPE          aplTypeRes,          // Result type
      LPVARARRAY_HEADER lpMemHdrRes,         // Ptr to result header (in case we blow up)
-     LPVOID            lpMemRes,            // Ptr to result memory (Points to the data)
+     LPVOID           *lplpMemRes,          // Ptr to ptr to result memory (Points to the data)
      APLNELM           aplNELMRes,          // Result NELM
      APLSTYPE          aplTypeLft,          // Left arg type
      APLINT            apaOffLft,           // ...      APA offset
      APLINT            apaMulLft,           // ...      ... multiplier
+     LPVARARRAY_HEADER lpMemHdrLft,         // Ptr to left arg header (in case we blow up)
      LPVOID            lpMemLft,            // Points to the data
      APLSTYPE          aplTypeRht,          // Right arg type
      APLINT            aplIntegerRht,       // ...       integer value
@@ -3562,13 +3614,18 @@ BOOL PrimFnDydMultSing_EM
 
 {
     APLINT   uRes;
+    BOOL     bRet = FALSE;                  // TRUE iff the result is valid
+    APLRANK  aplRankRes;                    // Temp var for DydAllocate
     UINT     uBitIndex = 0;
-    LPVOID   lpMemResStart,
-             lpMemLftStart;
+    LPVOID   lpMemLftStart,
+             lpMemRes;
     APLSTYPE aplTypeHetLft;
     APLINT   aplIntegerLft;
     APLFLOAT aplFloatLft;
     APLCHAR  aplCharLft;
+
+    // Get the memory ptr
+    lpMemRes = *lplpMemRes;
 
     // If the singleton is integer,
     //   attempt to demote it to Boolean
@@ -3578,9 +3635,11 @@ BOOL PrimFnDydMultSing_EM
 
     // Save the starting values in case we need
     //   to restart from an exception
-    lpMemResStart = lpMemRes;
     lpMemLftStart = lpMemLft;
 RESTART_EXCEPTION:
+    // Skip over the header to the data
+    lpMemRes = VarArrayBaseToData (lpMemHdrRes, lpMemHdrRes->Rank);
+
     __try
     {
     // Split cases based upon the result's storage type
@@ -4224,7 +4283,7 @@ RESTART_EXCEPTION:
         defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), "PrimFnDydMultSing_EM"))
+    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydMultSing_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -4239,7 +4298,7 @@ RESTART_EXCEPTION:
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
-                return FALSE;
+                goto ERROR_EXIT;
 
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -4247,18 +4306,47 @@ RESTART_EXCEPTION:
                 if (IsSimpleNum (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
-                    // Note that the old result storage type must be ARRAY_INT
-                    //   as BOOL is handled differently, and APA can't occur
-                    Assert (aplTypeRes EQ ARRAY_INT);
+                    // If the previous result is Boolean, we need to
+                    //   unlock, free, and allocate the result anew
+                    if (IsSimpleBool (aplTypeRes))
+                    {
+                        // We need to start over with the result
+                        MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                        MyGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
 
-                    // It's now a FLOAT result
-                    aplTypeRes = ARRAY_FLOAT;
+                        // It's now a FLOAT result
+                        aplTypeRes = ARRAY_FLOAT;
 
-                    // Tell the header about it
-                    lpMemHdrRes->ArrType = aplTypeRes;
+                        if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                         lphGlbRes,
+                                                         lpMemHdrLft,
+                                                         NULL,
+                                                         lpMemHdrLft->Rank,
+                                                         0,
+                                                        &aplRankRes,
+                                                         aplTypeRes,
+                                                         lpMemHdrLft->NELM,
+                                                         1,
+                                                         aplNELMRes))
+                            goto ERROR_EXIT;
+                        // Lock the memory to get a ptr to it
+                        lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                    } else
+                    // The previous result must have been INT which is
+                    //   the same size as FLOAT, so there's no need to
+                    //   change storage.
+                    {
+                        // It's now a FLOAT result
+                        aplTypeRes = ARRAY_FLOAT;
 
-                    // Restart the pointers
-                    lpMemRes = lpMemResStart;
+                        // Tell the header about it
+                        lpMemHdrRes->ArrType = aplTypeRes;
+
+                        // Restart the pointers
+                        lpMemRes = lpMemHdrRes;
+                    } // End IF/ELSE
+
+                    // Restart the pointer
                     lpMemLft = lpMemLftStart;
 #ifdef DEBUG
                     dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -4276,7 +4364,13 @@ RESTART_EXCEPTION:
         } // End SWITCH
     } // End __try/__except
 
-    return TRUE;
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    // Restore the memory ptr
+    *lplpMemRes = lpMemRes;
+
+    return bRet;
 } // End PrimFnDydMultSing_EM
 #undef  APPEND_NAME
 
@@ -4309,7 +4403,8 @@ HGLOBAL PrimFnDydSiScNest_EM
                       hGlbSub;
     LPVOID            lpMemRht,
                       lpMemRes = NULL;
-    LPVARARRAY_HEADER lpMemHdrRes;
+    LPVARARRAY_HEADER lpMemHdrRes,
+                      lpMemHdrRht;
     APLSTYPE          aplTypeRht,
                       aplTypeRes;
     APLNELM           aplNELMLft = 1,
@@ -4335,7 +4430,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     hGlbRht = ClrPtrTypeDirAsGlb (aplNestedRht);
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemRht = lpMemHdrRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type, NELM, and Rank
@@ -4415,20 +4510,22 @@ HGLOBAL PrimFnDydSiScNest_EM
 
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
-        bRet = PrimFnDydSingMult_EM (aplTypeRes,
-                                     lpMemHdrRes,
-                                     lpMemRes,
-                                     aplNELMRes,
-                                     aplTypeLft,
-                                     aplIntegerLft,
-                                     aplFloatLft,
-                                     aplCharLft,
-                                     aplTypeRht,
-                                     apaOffRht,
-                                     apaMulRht,
-                                     lpMemRht,
-                                     lptkFunc,
-                                     lpPrimSpec);
+        bRet = PrimFnDydSingMult_EM (&hGlbRes,
+                                      aplTypeRes,
+                                      lpMemHdrRes,
+                                     &lpMemRes,
+                                      aplNELMRes,
+                                      aplTypeLft,
+                                      aplIntegerLft,
+                                      aplFloatLft,
+                                      aplCharLft,
+                                      aplTypeRht,
+                                      apaOffRht,
+                                      apaMulRht,
+                                      lpMemHdrRht,
+                                      lpMemRht,
+                                      lptkFunc,
+                                      lpPrimSpec);
     else
     // If nested result, ...
     if (IsNested (aplTypeRes))
@@ -4632,7 +4729,7 @@ RESTART_EXCEPTION_IMMED:
     // Fill in the result token
     lptkRes->tkFlags.TknType   = TKT_VARIMMED;
     lptkRes->tkFlags.ImmType   = immType;
-////lptkRes->tkFlags.NoDisplay = 0; // Already zero from YYAlloc
+////lptkRes->tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
     lptkRes->tkCharIndex       = lptkFunc->tkCharIndex;
 
     __try
@@ -4742,7 +4839,7 @@ RESTART_EXCEPTION_IMMED:
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), "PrimFnDydSiScSiScSub_EM"))
+    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSiScSiScSub_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -4834,7 +4931,10 @@ BOOL PrimFnDydSimpSimp_EM
 
 {
     LPVOID            lpMemRes = NULL;  // Ptr to result global memory
-    LPVARARRAY_HEADER lpMemHdrRes;      // Ptr to result header (in case we blow up)
+    LPVARARRAY_HEADER lpMemHdrRes,      // Ptr to result header (in case we blow up)
+                      lpMemHdrLft,      // Ptr to left arg ...
+                      lpMemHdrRht,      // Ptr to right ...
+                      lpMemHdrArg;      // Ptr to left/right ...
     BOOL              bRet = TRUE;      // TRUE iff result is valid
     APLSTYPE          aplTypeArg;
     APLINT            aplIntegerLft,
@@ -4856,7 +4956,6 @@ BOOL PrimFnDydSimpSimp_EM
                       apaMulRht,
                       iRht;
     UINT              uBitIndex = 0;
-    LPVOID            lpMemResStart;
     APLUINT           ByteRes;          // # bytes in the result
     APLCHAR           aplCharLft,
                       aplCharRht;
@@ -4866,6 +4965,10 @@ BOOL PrimFnDydSimpSimp_EM
     //***************************************************************
     // Both arguments are simple
     //***************************************************************
+
+    // Save the starting values
+    lpMemHdrLft = lpMemLft;
+    lpMemHdrRht = lpMemRht;
 
     // Lock the memory to get a ptr to it
     if (*lphGlbRes)
@@ -4916,9 +5019,6 @@ BOOL PrimFnDydSimpSimp_EM
         } else
         // It's a singleton array
         {
-            // Skip over the header and dimensions to the data
-            lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
-
             // Get the respective values
             GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
                                &aplIntegerLft,  // Ptr to integer result
@@ -4937,6 +5037,12 @@ BOOL PrimFnDydSimpSimp_EM
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
 RESTART_EXCEPTION_SINGLETON:
+            // Skip over the header and dimensions to the data
+            lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+
+            // Skip over the header to the dimensions
+            lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+
             __try
             {
             // Split cases based upon the result's storage type
@@ -5037,10 +5143,10 @@ RESTART_EXCEPTION_SINGLETON:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), "PrimFnDydSimpSimp_EM #1"))
+            } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSimpSimp_EM #1"))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
@@ -5052,8 +5158,6 @@ RESTART_EXCEPTION_SINGLETON:
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                            lptkFunc);
-                        bRet = FALSE;
-
                         goto ERROR_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
@@ -5062,17 +5166,47 @@ RESTART_EXCEPTION_SINGLETON:
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
-                            // Note that the old result storage type must be ARRAY_INT
-                            //   as BOOL is handled differently, and APA can't occur
-                            Assert (aplTypeRes EQ ARRAY_INT);
+                            // If the previous result is Boolean, we need to
+                            //   unlock, free, and allocate the result anew
+                            if (IsSimpleBool (aplTypeRes))
+                            {
+                                // We need to start over with the result
+                                MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                                MyGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
 
-                            // It's now a FLOAT result
-                            aplTypeRes = ARRAY_FLOAT;
+                                // It's now a FLOAT result
+                                aplTypeRes = ARRAY_FLOAT;
 
-                            // Tell the header about it
-                            lpMemHdrRes->ArrType = aplTypeRes;
+                                if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                                 lphGlbRes,
+                                                                 lpMemHdrLft,
+                                                                 lpMemHdrRht,
+                                                                 aplRankLft,
+                                                                 aplRankRht,
+                                                                &aplRankRes,
+                                                                 aplTypeRes,
+                                                                 aplNELMLft,
+                                                                 aplNELMRht,
+                                                                 aplNELMRes))
+                                    goto ERROR_EXIT;
+                                // Lock the memory to get a ptr to it
+                                lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            } else
+                            // The previous result must have been INT which is
+                            //   the same size as FLOAT, so there's no need to
+                            //   change storage.
+                            {
+                                // It's now a FLOAT result
+                                aplTypeRes = ARRAY_FLOAT;
+
+                                // Tell the header about it
+                                lpMemHdrRes->ArrType = aplTypeRes;
+
+                                // Restart the pointers
+                                lpMemRes = lpMemHdrRes;
+                            } // End IF/ELSE
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_SINGLETON;
                         } // End IF
@@ -5089,8 +5223,8 @@ RESTART_EXCEPTION_SINGLETON:
 
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         } // End IF/ELSE
 
@@ -5116,6 +5250,9 @@ RESTART_EXCEPTION_SINGLETON:
             lpMemDimArg = lpMemRht;
             aplTypeArg  = aplTypeRht;
         } // End IF/ELSE
+
+        // Save the ptr to the header
+        lpMemHdrArg = (LPVARARRAY_HEADER) lpMemDimArg;
 
         // Skip over the header and dimensions to the data
         lpMemRes    = VarArrayBaseToData (lpMemRes,    aplRankRes);
@@ -5152,13 +5289,15 @@ RESTART_EXCEPTION_SINGLETON:
                                 NULL);          // Ptr to array type ...
         // Split cases based upon which argument is the simgleton
         if (!IsSingleton (aplNELMLft))  // Lft = Multipleton, Rht = Singleton
-            bRet = PrimFnDydMultSing_EM (aplTypeRes,
+            bRet = PrimFnDydMultSing_EM (lphGlbRes,
+                                         aplTypeRes,
                                          lpMemHdrRes,
-                                         lpMemRes,
+                                        &lpMemRes,
                                          aplNELMRes,
                                          aplTypeLft,
                                          apaOffLft,
                                          apaMulLft,
+                                         lpMemHdrArg,
                                          lpMemDimArg,
                                          aplTypeRht,
                                          aplIntegerRht,
@@ -5166,11 +5305,11 @@ RESTART_EXCEPTION_SINGLETON:
                                          aplCharRht,
                                          lptkFunc,
                                          lpPrimSpec);
-
         else                            // Lft = Singleton, Rht = Multipleton
-            bRet = PrimFnDydSingMult_EM (aplTypeRes,
+            bRet = PrimFnDydSingMult_EM (lphGlbRes,
+                                         aplTypeRes,
                                          lpMemHdrRes,
-                                         lpMemRes,
+                                        &lpMemRes,
                                          aplNELMRes,
                                          aplTypeLft,
                                          aplIntegerLft,
@@ -5179,6 +5318,7 @@ RESTART_EXCEPTION_SINGLETON:
                                          aplTypeRht,
                                          apaOffRht,
                                          apaMulRht,
+                                         lpMemHdrArg,
                                          lpMemDimArg,
                                          lptkFunc,
                                          lpPrimSpec);
@@ -5189,7 +5329,7 @@ RESTART_EXCEPTION_SINGLETON:
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
@@ -5201,16 +5341,12 @@ RESTART_EXCEPTION_SINGLETON:
         // Axis is significant (if present)
 
         // Skip over the header to the dimensions
-        lpMemDimRes = VarArrayBaseToDim (lpMemRes);
+        lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-
-        // Save the starting value in case we need
-        //   to restart from an exception
-        lpMemResStart = lpMemRes;
+        lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+        lpMemLft = VarArrayBaseToData (lpMemHdrLft, aplRankLft);
+        lpMemRht = VarArrayBaseToData (lpMemHdrRht, aplRankRht);
 
         // If the left arg is an APA, ...
         if (IsSimpleAPA (aplTypeLft))
@@ -5287,6 +5423,12 @@ RESTART_EXCEPTION_SINGLETON:
             // Lock the memory to get a ptr to it
             lpMemOdo = MyGlobalLock (hGlbOdo);
 RESTART_EXCEPTION_AXIS:
+            // Skip over the header and dimensions to the data
+            lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+
+            // Skip over the header to the dimensions
+            lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+
             __try
             {
             // Split cases based upon the result's storage type
@@ -5728,10 +5870,10 @@ RESTART_EXCEPTION_AXIS:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), "PrimFnDydSimpSimp_EM #2"))
+            } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSimpSimp_EM #2"))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
@@ -5743,7 +5885,7 @@ RESTART_EXCEPTION_AXIS:
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
-                        return FALSE;
+                        goto ERROR_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -5751,24 +5893,51 @@ RESTART_EXCEPTION_AXIS:
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
-                            // Note that the old result storage type must be ARRAY_INT
-                            //   as BOOL is handled differently, and APA can't occur
-                            Assert (aplTypeRes EQ ARRAY_INT);
+                            // If the previous result is Boolean, we need to
+                            //   unlock, free, and allocate the result anew
+                            if (IsSimpleBool (aplTypeRes))
+                            {
+                                // We need to start over with the result
+                                MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                                MyGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
 
-                            // It's now a FLOAT result
-                            aplTypeRes = ARRAY_FLOAT;
+                                // It's now a FLOAT result
+                                aplTypeRes = ARRAY_FLOAT;
 
-                            // Tell the header about it
-                            lpMemHdrRes->ArrType = aplTypeRes;
+                                if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                                 lphGlbRes,
+                                                                 lpMemHdrLft,
+                                                                 lpMemHdrRht,
+                                                                 aplRankLft,
+                                                                 aplRankRht,
+                                                                &aplRankRes,
+                                                                 aplTypeRes,
+                                                                 aplNELMLft,
+                                                                 aplNELMRht,
+                                                                 aplNELMRes))
+                                    goto ERROR_EXIT;
+                                // Lock the memory to get a ptr to it
+                                lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            } else
+                            // The previous result must have been INT which is
+                            //   the same size as FLOAT, so there's no need to
+                            //   change storage.
+                            {
+                                // It's now a FLOAT result
+                                aplTypeRes = ARRAY_FLOAT;
 
-                            // Restart the pointers
-                            lpMemRes = lpMemResStart;
+                                // Tell the header about it
+                                lpMemHdrRes->ArrType = aplTypeRes;
+
+                                // Restart the pointers
+                                lpMemRes = lpMemHdrRes;
+                            } // End IF/ELSE
 
                             // Re-initialize lpMemOdo
                             for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
                                 lpMemOdo[uRes] = 0;
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_AXIS;
                         } // End IF
@@ -5785,6 +5954,12 @@ RESTART_EXCEPTION_AXIS:
         } else      // Axis is not significant, neither argument is singleton
         {
 RESTART_EXCEPTION_NOAXIS:
+            // Skip over the header and dimensions to the data
+            lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+
+            // Skip over the header to the dimensions
+            lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+
             __try
             {
             // Split cases based upon the result's storage type
@@ -6112,10 +6287,10 @@ RESTART_EXCEPTION_NOAXIS:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), "PrimFnDydSimpSimp_EM #3"))
+            } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSimpSimp_EM #3"))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
@@ -6127,7 +6302,7 @@ RESTART_EXCEPTION_NOAXIS:
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
-                        return FALSE;
+                        goto ERROR_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -6135,20 +6310,47 @@ RESTART_EXCEPTION_NOAXIS:
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
-                            // Note that the old result storage type must be ARRAY_INT
-                            //   as BOOL is handled differently, and APA can't occur
-                            Assert (aplTypeRes EQ ARRAY_INT);
+                            // If the previous result is Boolean, we need to
+                            //   unlock, free, and allocate the result anew
+                            if (IsSimpleBool (aplTypeRes))
+                            {
+                                // We need to start over with the result
+                                MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                                MyGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
 
-                            // It's now a FLOAT result
-                            aplTypeRes = ARRAY_FLOAT;
+                                // It's now a FLOAT result
+                                aplTypeRes = ARRAY_FLOAT;
 
-                            // Tell the header about it
-                            lpMemHdrRes->ArrType = aplTypeRes;
+                                if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                                 lphGlbRes,
+                                                                 lpMemHdrLft,
+                                                                 lpMemHdrRht,
+                                                                 aplRankLft,
+                                                                 aplRankRht,
+                                                                &aplRankRes,
+                                                                 aplTypeRes,
+                                                                 aplNELMLft,
+                                                                 aplNELMRht,
+                                                                 aplNELMRes))
+                                    goto ERROR_EXIT;
+                                // Lock the memory to get a ptr to it
+                                lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            } else
+                            // The previous result must have been INT which is
+                            //   the same size as FLOAT, so there's no need to
+                            //   change storage.
+                            {
+                                // It's now a FLOAT result
+                                aplTypeRes = ARRAY_FLOAT;
 
-                            // Restart the pointers
-                            lpMemRes = lpMemResStart;
+                                // Tell the header about it
+                                lpMemHdrRes->ArrType = aplTypeRes;
+
+                                // Restart the pointers
+                                lpMemRes = lpMemHdrRes;
+                            } // End IF/ELSE
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_NOAXIS;
                         } // End IF
@@ -6167,10 +6369,13 @@ RESTART_EXCEPTION_NOAXIS:
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE/...
+
+    if (!bRet)
+        goto ERROR_EXIT;
 
     // Unlock the result global memory in case TypeDemote actually demotes
     if (*lphGlbRes && lpMemRes)
@@ -6181,7 +6386,13 @@ RESTART_EXCEPTION_NOAXIS:
 
     // See if it fits into a lower (but not necessarily smaller) datatype
     TypeDemote (&lpYYRes->tkToken);
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
+    // Mark as in error
+    bRet = FALSE;
+NORMAL_EXIT:
     if (*lphGlbRes && lpMemRes)
     {
         // We no longer need this ptr

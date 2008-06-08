@@ -229,6 +229,7 @@ DONE:  General
 * Allow negative indices to the axis operator (except for where fractional values are allowed).
 * Move registry info into <nars2000.ini> file
 * Implement crash Control window
+* Unlocalize in reverse order
 
 
 DONE:  Session Manager
@@ -342,7 +343,6 @@ Anomalous Results
 
 ToDo
 ----
-* Unlocalize in reverse order
 * Unlocalize in one pass (and clear .Value), and restore
   in another pass to handle duplicate localized names
 * Review IBM APL2 Deviations & Restrictions

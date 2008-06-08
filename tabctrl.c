@@ -486,7 +486,7 @@ BOOL WINAPI CreateNewTabInThread
                 DispatchMessageW (&Msg);
             } // End IF
         } // End WHILE
-    } __except (CheckException (GetExceptionInformation (), "CreateNewTabInThread"))
+    } __except (CheckException (GetExceptionInformation (), L"CreateNewTabInThread"))
     {
         // Display message for unhandled exception
         DisplayException ();

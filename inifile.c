@@ -524,9 +524,9 @@ HGLOBAL GetPrivateProfileGlbIntW
 
 
 //***************************************************************************
-//  $GetPrivateProfileGlbCharW
+//  $GetPrivateProfileGlbComW
 //
-//  Read in a global char vector from a .ini file
+//  Read in a global integer or char vector from a .ini file
 //***************************************************************************
 
 HGLOBAL GetPrivateProfileGlbComW
@@ -555,8 +555,16 @@ HGLOBAL GetPrivateProfileGlbComW
                               lpwszIniFile);        // Ptr to the file name
     // If the new value is present, ...
     if (wszTemp[0] NE L'\x0001')
+    {
+        // Catch short default values of []IC where we inserted a
+        //   new value into the middle of the integer vector
+        if (lstrcmpW (lpwKeyName, KEYNAME_QUADIC) EQ 0
+         && lstrcmpW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 1") EQ 0)
+            // Use the new default value
+            lstrcpyW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 2 1");
+        // Use the given (or substituted value)
         lpMemInp = wszTemp;
-    else
+    } else
         // Use the default value
         lpMemInp = lpDefVal;
 

@@ -5289,7 +5289,7 @@ EXIT_TYPES ParseLine
         } __except (CheckVirtAlloc (GetExceptionInformation (),
                                     "ParseLine"))
         {} // End __try/__Except
-    } __except (CheckException (GetExceptionInformation (), "ParseLine"))
+    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
     {
         // Display message for unhandled exception
         DisplayException ();

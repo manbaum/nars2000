@@ -1149,18 +1149,21 @@ BOOL Unlocalize
         // Get # LPSYMENTRYs on the stack
         numSymEntries = lpMemPTD->lpSISCur->numSymEntries;
 
-        // Point to the localized LPSYMENTRYs
+        // Point to the start of the localized LPSYMENTRYs
         lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISCur, sizeof (SIS_HEADER));
+
+        // Point to the end of the localize LPSYMENTRYs
+        lpSymEntryNxt = &lpSymEntryNxt[numSymEntries];
 
         // Loop through the # LPSYMENTRYs
         for (numSym = 0; numSym < numSymEntries; numSym++)
         // If the hash entry is valid, ...
-        if (lpSymEntryNxt[numSym].stHshEntry)
+        if ((--lpSymEntryNxt)->stHshEntry)
         {
             LPSYMENTRY lpSymEntryCur;       // Ptr to SYMENTRY to release & unlocalize
 
             // Get the ptr to the corresponding SYMENTRY
-            lpSymEntryCur = lpSymEntryNxt[numSym].stHshEntry->htSymEntry;
+            lpSymEntryCur = lpSymEntryNxt->stHshEntry->htSymEntry;
 
             // Release the current value of the STE
             //   if it's not immediate and has a value
@@ -1207,7 +1210,7 @@ BOOL Unlocalize
             } // End IF
 
             // Restore the previous STE
-            *lpSymEntryCur = lpSymEntryNxt[numSym];
+            *lpSymEntryCur = *lpSymEntryNxt;
         } // End FOR
 
         // Strip the level from the stack
@@ -1739,20 +1742,21 @@ LPSYMENTRY LocalizeSymEntries
     for (uSym = 0; uSym < numSymEntries; uSym++)
     {
         // Copy the SYMENTRY to the SIS
-        *lpSymEntryNxt++ = **lplpSymEntrySrc;
+        *lpSymEntryNxt = **lplpSymEntrySrc;
 
         // Erase the Symbol Table Entry
         EraseSTE (*lplpSymEntrySrc);
 
         // Set the ptr to the previous entry to the STE on the stack
-        (*lplpSymEntrySrc)->stPrvEntry = &lpSymEntryNxt[-1];
+        (*lplpSymEntrySrc)->stPrvEntry = lpSymEntryNxt;
 
         // Save the SI level for this SYMENTRY
         Assert (lpMemPTD->SILevel);
         (*lplpSymEntrySrc)->stSILevel  = lpMemPTD->SILevel - 1;
 
-        // Skip to next source entry
+        // Skip to next entries
         lplpSymEntrySrc++;
+          lpSymEntryNxt++;
     } // End FOR
 
     return lpSymEntryNxt;

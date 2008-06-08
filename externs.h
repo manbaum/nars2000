@@ -174,11 +174,12 @@ typedef enum tagIC_INDICES
     ICNDX_PiDIVPi,          // 06:  _ {div} _   (same sign)
     ICNDX_NiDIVPi,          // 07:  _ {div} _   (different sign)
     ICNDX_0EXP0,            // 08:  0   *   0
-    ICNDX_0LOG0,            // 09:  0 {log} 0
-    ICNDX_0LOG1,            // 0A:  0 {log} 1
-    ICNDX_1LOG0,            // 0B:  1 {log} 0
-    ICNDX_1LOG1,            // 0C:  1 {log} 1
-    ICNDX_LENGTH,           // 0D:  Length
+    ICNDX_NEXPPi,           // 09:  N   *   _ for N < -1
+    ICNDX_0LOG0,            // 0A:  0 {log} 0
+    ICNDX_0LOG1,            // 0B:  0 {log} 1
+    ICNDX_1LOG0,            // 0C:  1 {log} 0
+    ICNDX_1LOG1,            // 0D:  1 {log} 1
+    ICNDX_LENGTH,           // 0E:  Length
 } IC_INDICES;
 
 EXTERN
@@ -193,10 +194,11 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
     ICVAL_DOMAIN_ERROR,     // 06:  _ {div} _   (same sign)
     ICVAL_DOMAIN_ERROR,     // 07:  _ {div} _   (different sign)
     ICVAL_ONE,              // 08:  0   *   0
-    ICVAL_DOMAIN_ERROR,     // 09:  0 {log} 0
-    ICVAL_DOMAIN_ERROR,     // 0A:  0 {log} 1
-    ICVAL_DOMAIN_ERROR,     // 0B:  1 {log} 0
-    ICVAL_ONE,              // 0C:  1 {log} 1
+    ICVAL_DOMAIN_ERROR,     // 09:  N   *   _ for N < -1
+    ICVAL_DOMAIN_ERROR,     // 0A:  0 {log} 0
+    ICVAL_DOMAIN_ERROR,     // 0B:  0 {log} 1
+    ICVAL_DOMAIN_ERROR,     // 0C:  1 {log} 0
+    ICVAL_ONE,              // 0D:  1 {log} 1
    }
 #endif
 ;

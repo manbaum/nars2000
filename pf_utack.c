@@ -311,7 +311,7 @@ RESTART_EXCEPTION:
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -476,7 +476,7 @@ RESTART_EXCEPTION:
 
                     // Multiply into the weighting value
                     InnValInt = imul64 (InnValInt, aplLongestLft, NULL);
-                } __except (CheckException (GetExceptionInformation (), "PrimFnDydUpTack_EM_YY"))
+                } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
                 {
                     switch (MyGetExceptionCode ())
                     {
@@ -526,7 +526,7 @@ YYALLOC_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

@@ -61,13 +61,13 @@ PRIMSPEC PrimSpecStar =
     &PrimSpecStarStorageTypeDyd,
     NULL,   // &PrimFnDydStarAPA_EM, -- Can't happen w/Star
 
-    &PrimFnDydRightCaretUnderbarBisBvB,
+    &PrimFnDydStarBisBvB,
     NULL,   // &PrimFnDydStarBisIvI, -- Can't happen w/Star
     NULL,   // &PrimFnDydStarBisFvF, -- Can't happen w/Star
     NULL,   // &PrimFnDydStarBisCvC, -- Can't happen w/Star
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydStarIisIvI, -- Can't happen w/Star
+    &PrimFnDydStarIisIvI,
     NULL,   // &PrimFnDydStarIisFvF, -- Can't happen w/Star
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
@@ -201,17 +201,81 @@ APLSTYPE PrimSpecStarStorageTypeDyd
     if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
-    // If both arguments are simple numeric,
-    //   the result is FLOAT
-    if (IsSimpleNum (*lpaplTypeLft)
-     && IsSimpleNum (*lpaplTypeRht))
-        aplTypeRes = ARRAY_FLOAT;
-    else
-        // Calculate the storage type of the result
-        aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
-
-    return aplTypeRes;
+    // Calculate the storage type of the result
+    return aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 } // End PrimSpecStarStorageTypeDyd
+
+
+//***************************************************************************
+//  $PrimFnDydStarBisBvB
+//
+//  Primitive scalar function dyadic Star:  B {is} B fn B
+//***************************************************************************
+
+APLBOOL PrimFnDydStarBisBvB
+    (APLBOOL    aplBooleanLft,
+     APLBOOL    aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLFLOAT aplFloatRes;
+
+    // Check for indeterminates:  0 * 0
+    if (aplBooleanLft EQ 0
+     && aplBooleanRht EQ 0)
+    {
+        // See what the []IC oracle has to say
+        aplFloatRes = TranslateQuadICIndex (ICNDX_0EXP0);
+
+        // If the result is Boolean
+        if (aplFloatRes EQ 0)
+            return 0;
+        else
+        if (aplFloatRes EQ 1)
+            return 1;
+        else
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    } // End IF
+
+    return (aplBooleanLft >= aplBooleanRht);
+} // End PrimFnDydStarBisBvB
+
+
+//***************************************************************************
+//  $PrimFnDydStarIisIvI
+//
+//  Primitive scalar function dyadic Star:  I {is} I fn I
+//***************************************************************************
+
+APLINT PrimFnDydStarIisIvI
+    (APLINT     aplIntegerLft,
+     APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLINT aplIntegerRes;
+
+    // Check for indeterminates:  0 * 0
+    if (aplIntegerLft EQ 0
+     && aplIntegerRht EQ 0)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
+    // Check for special cases:  1 * N
+    if (aplIntegerLft EQ 1)
+        return aplIntegerLft;
+
+    // Check for special cases:  L * R for R < 0 or R > 62
+    if (aplIntegerRht < 0
+     || aplIntegerRht > 62)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
+    // Initialize with identity element for multiplication
+    aplIntegerRes = 1;
+    while (aplIntegerRht--)
+        aplIntegerRes = imul64 (aplIntegerRes, aplIntegerLft, NULL);
+
+    return aplIntegerRes;
+} // End PrimFnDydStarIisIvI
 
 
 //***************************************************************************
@@ -253,6 +317,16 @@ APLFLOAT PrimFnDydStarFisFvF
     if (aplFloatLft EQ 0
      && aplFloatRht EQ 0)
         return TranslateQuadICIndex (ICNDX_0EXP0);
+
+    // Check for indeterminates:  N * _ for N < -1
+    if (aplFloatLft < -1
+     && aplFloatRht EQ PosInfinity)
+        return TranslateQuadICIndex (ICNDX_NEXPPi);
+
+    // Check for special cases:  1 * _ and 1 * -_
+    if (aplFloatLft EQ 1
+     &&  !_finite (aplFloatRht))
+        return aplFloatLft;
 
     // Calculate the power
     aplFloatRes = pow (aplFloatLft, aplFloatRht);

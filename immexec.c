@@ -694,7 +694,7 @@ ERROR_EXIT:
          && hSigaphore EQ NULL)
             DisplayPrompt (hWndEC, 3);
         return exitType;
-    } __except (CheckException (GetExceptionInformation (), "ImmExecStmtInThread"))
+    } __except (CheckException (GetExceptionInformation (), L"ImmExecStmtInThread"))
     {
         // Display message for unhandled exception
         DisplayException ();

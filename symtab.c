@@ -355,7 +355,7 @@ BOOL HshTabFrisk
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
         } // End IF
-    } __except (CheckException (GetExceptionInformation (), "HshTabFrisk"))
+    } __except (CheckException (GetExceptionInformation (), L"HshTabFrisk"))
     {
         // Display message for unhandled exception
         DisplayException ();

@@ -74,6 +74,8 @@
 #define KEYNAME_NEWTABONCLEAR           L"NewTabOnClear"
 #define KEYNAME_NEWTABONLOAD            L"NewTabOnload"
 #define KEYNAME_USELOCALTIME            L"UseLocalTime"
+#define KEYNAME_BACKUPONLOAD            L"BackupOnLoad"
+#define KEYNAME_BACKUPONSAVE            L"BackupOnSave"
 #define KEYNAME_DEFAULTPASTE            L"DefaultPaste"
 
 // Format string for [Fonts] section LOGFONT
@@ -244,6 +246,20 @@ void ReadIniFileGlb
     OptionFlags.bNewTabOnLoad =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_USELOCALTIME,  // Ptr to the key name
+                             DEF_USELOCALTIME,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+
+    // Read in bBackupOnLoad
+    OptionFlags.bBackupOnLoad =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_BACKUPONLOAD,  // Ptr to the key name
+                             DEF_USELOCALTIME,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+
+    // Read in bBackupOnSave
+    OptionFlags.bBackupOnLoad =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_BACKUPONSAVE,  // Ptr to the key name
                              DEF_USELOCALTIME,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
 
@@ -932,6 +948,24 @@ void SaveIniFile
     // Write out bUseLocalTime
     WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
                                 KEYNAME_USELOCALTIME, // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bBackupOnLoad ***********************
+    wszTemp[0] = L'0' + OptionFlags.bBackupOnLoad;
+    wszTemp[1] = L'\0';
+
+    // Write out bBackupOnLoad
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_BACKUPONLOAD, // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bBackupOnSave ***********************
+    wszTemp[0] = L'0' + OptionFlags.bBackupOnSave;
+    wszTemp[1] = L'\0';
+
+    // Write out bBackupOnSave
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_BACKUPONSAVE, // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
     //******************* uDefaultPaste ***********************

@@ -139,6 +139,7 @@
   #include "refcnt.pro"
   //nclude "resdebug.pro"
   #include "savefcn.pro"
+  #include "sc_common.pro"
   #include "sc_copy.pro"
   #include "sc_drop.pro"
   #include "sc_erase.pro"

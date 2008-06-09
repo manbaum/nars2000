@@ -151,6 +151,9 @@ CLEAN:
 DEL:
         @del /Q $(O)*.*
 
+DELPRO:
+        @del /Q $(O)*.pro
+
 DIR:
         @Set PATH=$(BC)
         @vdir -q -c $(O) $(OC) $(B) $(BC) >NUL
@@ -306,6 +309,7 @@ $(O)qf_ucs.DEP          \
 $(O)refcnt.DEP          \
 $(O)resdebug.DEP        \
 $(O)savefcn.DEP         \
+$(O)sc_common.DEP       \
 $(O)sc_copy.DEP         \
 $(O)sc_drop.DEP         \
 $(O)sc_erase.DEP        \
@@ -707,6 +711,9 @@ $(O)yyfns.DEP
 !if exist ($(O)savefcn.DEP)
 !       include $(O)savefcn.DEP
 !endif
+!if exist ($(O)sc_common.DEP)
+!       include $(O)sc_common.DEP
+!endif
 !if exist ($(O)sc_copy.DEP)
 !       include $(O)sc_copy.DEP
 !endif
@@ -912,6 +919,7 @@ $(O)qf_ucs.PRO          \
 $(O)refcnt.PRO          \
 $(O)resdebug.PRO        \
 $(O)savefcn.PRO         \
+$(O)sc_common.PRO       \
 $(O)sc_copy.PRO         \
 $(O)sc_drop.PRO         \
 $(O)sc_erase.PRO        \
@@ -1105,6 +1113,7 @@ $(O)refcnt.OBJ:         $(@B).C         $(REFCNT_DEP)
 $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
 !endif
 $(O)savefcn.OBJ:        $(@B).C         $(SAVEFCN_DEP)
+$(O)sc_common.OBJ:      $(@B).C         $(SC_COMMON_DEP)
 $(O)sc_copy.OBJ:        $(@B).C         $(SC_COPY_DEP)
 $(O)sc_drop.OBJ:        $(@B).C         $(SC_DROP_DEP)
 $(O)sc_erase.OBJ:       $(@B).C         $(SC_ERASE_DEP)
@@ -1265,6 +1274,7 @@ OBJS=                       \
      $(O)resdebug.OBJ       \
 !endif
      $(O)savefcn.OBJ        \
+     $(O)sc_common.OBJ      \
      $(O)sc_copy.OBJ        \
      $(O)sc_drop.OBJ        \
      $(O)sc_erase.OBJ       \

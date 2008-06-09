@@ -43,6 +43,17 @@
 #define FMTSTR_GLBOBJ           FMTSTR_LEAD L"%p"
 #define FMTSTR_DATETIME         L"%08X%08X"
 
+#define SCANFSTR_TIMESTAMP      L"%16I64X"
+#define SCANFSTR_APLINT         L"%I64d"
+#define SCANFSTR_APLUINT        L"%I64u"
+
+// Extensions
+#define WS_WKSEXT               L".ws.nars"
+#define WS_WKSEXT_LEN           ((sizeof (WS_WKSEXT) / sizeof (WS_WKSEXT[0])) - 1)
+
+#define LOADBAK_EXT             L".load.bak" WS_WKSEXT
+#define SAVEBAK_EXT             L".save.bak" WS_WKSEXT
+
 
 typedef struct tagSAVEDWSGLBVARPARM
 {

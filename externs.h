@@ -106,6 +106,8 @@
 #define DEF_NEWTABONCLEAR           TRUE
 #define DEF_NEWTABONLOAD            TRUE
 #define DEF_USELOCALTIME            TRUE
+#define DEF_BACKUPONLOAD            TRUE
+#define DEF_BACKUPONSAVE            TRUE
 #define DEF_DEFAULTPASTE            UNITRANS_NORMAL
 
 
@@ -174,7 +176,7 @@ typedef enum tagIC_INDICES
     ICNDX_PiDIVPi,          // 06:  _ {div} _   (same sign)
     ICNDX_NiDIVPi,          // 07:  _ {div} _   (different sign)
     ICNDX_0EXP0,            // 08:  0   *   0
-    ICNDX_NEXPPi,           // 09:  N   *   _ for N < -1
+    ICNDX_NEXPPi,           // 09:  L   *   _ for L <= -1
     ICNDX_0LOG0,            // 0A:  0 {log} 0
     ICNDX_0LOG1,            // 0B:  0 {log} 1
     ICNDX_1LOG0,            // 0C:  1 {log} 0
@@ -194,7 +196,7 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
     ICVAL_DOMAIN_ERROR,     // 06:  _ {div} _   (same sign)
     ICVAL_DOMAIN_ERROR,     // 07:  _ {div} _   (different sign)
     ICVAL_ONE,              // 08:  0   *   0
-    ICVAL_DOMAIN_ERROR,     // 09:  N   *   _ for N < -1
+    ICVAL_DOMAIN_ERROR,     // 09:  L   *   _ for L <= -1
     ICVAL_DOMAIN_ERROR,     // 0A:  0 {log} 0
     ICVAL_DOMAIN_ERROR,     // 0B:  0 {log} 1
     ICVAL_DOMAIN_ERROR,     // 0C:  1 {log} 0
@@ -459,8 +461,8 @@ typedef struct tagFASTBOOLFNS
     LPFASTBOOLFCN lpScan;               // 04:  ...                 scan      ...
     UINT          NotMarker:1,          // 08:  00000001:  Complement of Marker
                   IdentElem:1,          //      00000002:  Identity element (if it exists)
-                  Suffix   :1;          //      00000004:  Suffix equivalence value
-                                        //      FFFFFFF8:  Available bits
+                  Suffix   :1,          //      00000004:  Suffix equivalence value
+                  Avail    :29;         //      FFFFFFF8:  Available bits
                                         // 0C:  Length
 } FASTBOOLFNS, *LPFASTBOOLFNS;
 
@@ -973,12 +975,15 @@ WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedu
 // Define global option flags
 typedef struct tagOPTIONFLAGS
 {
-    UINT bAdjustPW           :1,    // TRUE iff WM_SIZE changes []PW
-         bUnderbarToLowercase:1,    // ...      Paste of underbar letters translates to lowercase
-         bNewTabOnClear      :1,    // ...      )CLEAR creates a new tab
-         bNewTabOnLoad       :1,    // ...      )LOAD  ...
-         bUseLocalTime       :1,    // ...      LocalTime is used instead of SystemTime (GMT)
-         uDefaultPaste       :4;    // Index of default Paste translation (see UNI_TRANS)
+    UINT bAdjustPW           :1,    // 00000001:  TRUE iff WM_SIZE changes []PW
+         bUnderbarToLowercase:1,    // 00000002:  ...      Paste of underbar letters translates to lowercase
+         bNewTabOnClear      :1,    // 00000004:  ...      )CLEAR creates a new tab
+         bNewTabOnLoad       :1,    // 00000008:  ...      )LOAD  ...
+         bUseLocalTime       :1,    // 00000010:  ...      LocalTime is used instead of SystemTime (GMT)
+         bBackupOnLoad       :1,    // 00000020:  ...      make a backup copy on all )LOADs
+         bBackupOnSave       :1,    // 00000040:  ...      make a backup copy on all )SAVEs
+         uDefaultPaste       :4,    // 00000780:  Index of default Paste translation (see UNI_TRANS)
+         Avail               :22;   // FFFFF800:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 EXTERN
@@ -989,6 +994,8 @@ OPTIONFLAGS OptionFlags
    DEF_NEWTABONCLEAR,
    DEF_NEWTABONLOAD,
    DEF_USELOCALTIME,
+   DEF_BACKUPONLOAD,
+   DEF_BACKUPONSAVE,
    DEF_DEFAULTPASTE}
 #endif
 ;

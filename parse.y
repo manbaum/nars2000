@@ -5287,7 +5287,7 @@ EXIT_TYPES ParseLine
             //   2 = memory exhausted
             uRet = pl_yyparse (&plLocalVars);
         } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                    "ParseLine"))
+                                    L"ParseLine"))
         {} // End __try/__Except
     } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
     {
@@ -5964,6 +5964,7 @@ BOOL LookaheadDyadicOp
         case TKT_LISTSEP:
         case TKT_LABELSEP:
         case TKT_COLON:
+        case TKT_FCNNAMED:
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
         case TKT_OP3IMMED:

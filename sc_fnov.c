@@ -199,10 +199,14 @@ BOOL CmdFNOV_EM
      && (*IzitFVO) (lpSymEntry->stFlags.stNameType))
     {
         // ***FIXME*** -- Make sensitive to [first][-][last] in lpwszTail
-        // ***FIXME*** -- Display global names only
+        LPSYMENTRY lpSymLink = lpSymEntry;
+
+        // Get a ptr to the global SYMENTRY (stSymLink EQ NULL)
+        for (lpSymLink = lpSymEntry; lpSymLink->stSymLink; lpSymLink = lpSymLink->stSymLink)
+            ;
 
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+        lpMemName = MyGlobalLock (lpSymLink->stHshEntry->htGlbName);
 
         // Get the name length
         uNameLen = lstrlenW (lpMemName) + bNMS * 2;
@@ -211,10 +215,10 @@ BOOL CmdFNOV_EM
         uMaxNameLen = max (uMaxNameLen, uNameLen);
 
         // We no longer need this ptr
-        MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+        MyGlobalUnlock (lpSymLink->stHshEntry->htGlbName); lpMemName = NULL;
 
         // Save the LPSYMENTRY ptr for later use
-        lpSymSort[uSymCnt] = lpSymEntry;
+        lpSymSort[uSymCnt] = lpSymLink;
 
         // Count in another matching name
         uSymCnt++;
@@ -256,9 +260,6 @@ BOOL CmdFNOV_EM
 
             // Mark all lines from here on as continuations
             bLineCont = TRUE;
-
-            // Skip to the next line
-            AppendLine (L"", TRUE, TRUE);
 
             // Re-initialize the output area
             for (uLineChar = 0; uLineChar < uQuadPW; uLineChar++)

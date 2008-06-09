@@ -632,7 +632,7 @@ BOOL DisplayGlbArr
          && IsVector (aplRank))
             AppendLine (L"", FALSE, TRUE);// Display the empty line
     } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                "DisplayGlbArr"))
+                                L"DisplayGlbArr"))
     {
         // Split cases based upon the exception code
         switch (MyGetExceptionCode ())

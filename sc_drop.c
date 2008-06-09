@@ -27,6 +27,7 @@
 #include "main.h"
 #include "externs.h"
 #include "aplerrors.h"
+#include "workspace.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

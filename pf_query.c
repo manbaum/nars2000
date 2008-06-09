@@ -51,11 +51,11 @@ PRIMSPEC PrimSpecQuery =
 
 ////               IisB,     // Handled via type promotion (to IisI)
     &PrimFnMonQueryIisI,
-    NULL,   // &PrimFnMonQueryIisF, -- can't happen w/Query
+    &PrimFnMonQueryIisF,
 
 ////               FisB,     // Handled via type promotion (to FisI)
     NULL,   // &PrimFnMonQueryFisI, -- Can't happen w/Query
-    &PrimFnMonQueryFisF,
+    NULL,   // &PrimFnMonQueryFisF, -- can't happen w/Query
 
     // Dyadic functions
     NULL,   // &PrimFnDyd_EM, -- Can't happen w/Query
@@ -179,13 +179,9 @@ APLSTYPE PrimSpecQueryStorageTypeMon
 
     // The storage type of the result is
     //   the same as that of the right arg
-    //   except SimpleInt goes to INT
-    //   and    SimpleFlt goes to FLT
-    if (IsSimpleInt (*lpaplTypeRht))
+    //   except SimpleNum goes to INT
+    if (IsSimpleNum (*lpaplTypeRht))
         aplTypeRes = ARRAY_INT;
-    else
-    if (IsSimpleFlt (*lpaplTypeRht))
-        aplTypeRes = ARRAY_FLOAT;
     else
         aplTypeRes = *lpaplTypeRht;
     return aplTypeRes;
@@ -230,41 +226,26 @@ APLINT PrimFnMonQueryIisI
 
 
 //***************************************************************************
-//  $PrimFnMonQueryFisF
+//  $PrimFnMonQueryIisF
 //
-//  Primitive scalar function monadic Query:  F {is} fn F
+//  Primitive scalar function monadic Query:  I {is} fn F
 //
 //  This algorithm was taken from
 //    "How the Roll Function Works" by E. E. McDonnell,
 //    APL Quote Quad, Vol. 8, Number 3, p. 42.
 //***************************************************************************
 
-APLFLOAT PrimFnMonQueryFisF
+APLINT PrimFnMonQueryIisF
     (APLFLOAT   aplFloatRht,
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLBOOL      bQuadIO;       // []IO
-    APLUINT      uQuadRL;       // []RL
-
-    // Get the current value of []IO & []RL
-    bQuadIO = GetQuadIO ();
-    uQuadRL = lpPrimSpec->QuadRL;
-
     // Check for DOMAIN ERROR
-    if (aplFloatRht < bQuadIO
-     || aplFloatRht NE floor (aplFloatRht))
+    if (aplFloatRht NE floor (aplFloatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-    // Calculate new QuadRL
-    uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
-
-    // Save uQuadRL back into lpPrimSpec
-    lpPrimSpec->QuadRL = uQuadRL;
-
-    // Ye old Linear Congruential Generator
-    return bQuadIO + (((APLINT) uQuadRL) * aplFloatRht) / QUADRL_MODULUS;
-} // End PrimFnMonQueryFisF
+    return PrimFnMonQueryIisI ((APLINT) aplFloatRht, lpPrimSpec);
+} // End PrimFnMonQueryIisF
 
 
 //***************************************************************************

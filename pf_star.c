@@ -260,9 +260,16 @@ APLINT PrimFnDydStarIisIvI
      && aplIntegerRht EQ 0)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
-    // Check for special cases:  1 * N
-    if (aplIntegerLft EQ 1)
-        return aplIntegerLft;
+    // Check for special cases:  (|1) * R
+    if (abs64 (aplIntegerLft) EQ 1)
+    {
+        // If the right arg is odd, return the left arg (1 or -1)
+        if (abs64 (aplIntegerRht) % 2)
+            return aplIntegerLft;
+        else
+        // Otherwise return 1.
+            return 1;
+    } // End IF
 
     // Check for special cases:  L * R for R < 0 or R > 62
     if (aplIntegerRht < 0
@@ -318,8 +325,8 @@ APLFLOAT PrimFnDydStarFisFvF
      && aplFloatRht EQ 0)
         return TranslateQuadICIndex (ICNDX_0EXP0);
 
-    // Check for indeterminates:  N * _ for N < -1
-    if (aplFloatLft < -1
+    // Check for indeterminates:  L * _ for L <= -1
+    if (aplFloatLft <= -1
      && aplFloatRht EQ PosInfinity)
         return TranslateQuadICIndex (ICNDX_NEXPPi);
 

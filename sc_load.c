@@ -39,10 +39,6 @@
 #include "compro.h"
 #endif
 
-#define SCANFSTR_TIMESTAMP      L"%16I64X"
-#define SCANFSTR_APLINT         L"%I64d"
-#define SCANFSTR_APLUINT        L"%I64u"
-
 
 //***************************************************************************
 //  $CmdLoad_EM
@@ -223,6 +219,10 @@ BOOL LoadWorkspace_EM
 
     // We no longer need this handle
     fclose (fStream); fStream = NULL;
+
+    // Make a backup copy of the workspace
+    if (OptionFlags.bBackupOnLoad)
+        MakeWorkspaceBackup (lpwszDPFE, LOADBAK_EXT);
 
 ////// Get the version #
 ////GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
@@ -637,7 +637,7 @@ BOOL LoadWorkspace_EM
             } // End FOR
         } // End FOR
     } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                "LoadWorkspace_EM"))
+                                L"LoadWorkspace_EM"))
     {
         // Display message for unhandled exception
         DisplayException ();
@@ -683,111 +683,6 @@ NORMAL_EXIT:
     return bRet;
 } // End LoadWorkspace_EM
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $DisplayWorkspaceStamp
-//
-//  Display the workspace timestamp
-//***************************************************************************
-
-void DisplayWorkspaceStamp
-    (LPWCHAR lpwszDPFE)                 // Workspace filenam
-
-{
-#define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss"
-
-    WCHAR      wszTimeStamp[16 + 1],    // Output save area for time stamp
-               wszTimeStamp2[16 + 1],   // Output save area for time stamp
-               wszTemp[1 + (sizeof (TIMESTAMP_FMT) / sizeof (WCHAR))];
-    FILETIME   ftCreation,              // Function creation time in UTC
-               ftLocalTime;             // ...                       localtime
-    SYSTEMTIME systemTime;              // Current system (UTC) time
-
-    // Get the current system (UTC) time
-    GetSystemTime (&systemTime);
-
-    // Convert system time to file time and save as creation time
-    SystemTimeToFileTime (&systemTime, &ftCreation);
-
-    // Format the creation time
-    wsprintfW (wszTimeStamp2,
-               FMTSTR_DATETIME,
-               ftCreation.dwHighDateTime,
-               ftCreation.dwLowDateTime);
-    // Read the creation time
-    GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
-                              KEYNAME_CREATIONTIME, // Ptr to the key name
-                              wszTimeStamp2,        // Ptr to the default value
-                              wszTimeStamp,         // Ptr to the output buffer
-                              sizeof (wszTimeStamp),// Byte size of the output buffer
-                              lpwszDPFE);           // Ptr to the file name
-    // Convert the CreationTime string to time
-    swscanf (wszTimeStamp, SCANFSTR_TIMESTAMP, &ftCreation);
-
-    if (OptionFlags.bUseLocalTime)
-        // Convert to local filetime
-        FileTimeToLocalFileTime (&ftCreation, &ftLocalTime);
-    else
-        ftLocalTime = ftCreation;
-
-    // Convert the creation time to system time so we can display it
-    FileTimeToSystemTime (&ftLocalTime, &systemTime);
-
-    lstrcpyW (wszTemp, L"SAVED ");
-
-    // Format it
-    wsprintfW (wszTemp + lstrlenW (wszTemp),
-               DATETIME_FMT,
-               systemTime.wMonth,
-               systemTime.wDay,
-               systemTime.wYear,
-               systemTime.wHour,
-               systemTime.wMinute,
-               systemTime.wSecond);
-    // Display it
-    AppendLine (wszTemp, FALSE, TRUE);
-} // End DisplayWorkspaceStamp
-
-
-//***************************************************************************
-//  $SendMessageLastTab
-//
-//  Send a (constant) message to the previously outgoing tab
-//***************************************************************************
-
-void SendMessageLastTab
-    (const LPWCHAR lpwErrMsg,           // Ptr to constant error message text
-     HGLOBAL       hGlbPTD)             // PerTabData global memory handle
-
-{
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    int          iPrvTabIndex;          // Index of previous tab
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the index of the tab from which we were )LOADed
-    iPrvTabIndex = TranslateTabIDToIndex (lpMemPTD->PrvTabID);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    if (iPrvTabIndex NE -1)
-    {
-        // Get the PerTabData global memory handle for the preceding tab
-        hGlbPTD = GetPerTabHandle (iPrvTabIndex);
-
-        // Lock the memory to get a pre to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
-        // Send this error message to the previous tab's SM
-        SendMessageW (lpMemPTD->hWndSM, MYWM_ERRMSG, 0, (LPARAM) lpwErrMsg);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-    } // End IF
-} // End SendMessageLastTab
 
 
 //***************************************************************************

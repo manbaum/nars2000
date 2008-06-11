@@ -27,6 +27,8 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "pertab.h"
+#include "sis.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -498,7 +500,7 @@ long CheckException
         case EXCEPTION_LIMIT_ERROR:
         case EXCEPTION_FLT_DIVIDE_BY_ZERO:
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
-////    case EXCEPTION_SINGLE_STEP:             // ***DEBUG***
+        case EXCEPTION_SINGLE_STEP:
         case EXCEPTION_GUARD_PAGE:
             return EXCEPTION_EXECUTE_HANDLER;
 
@@ -586,13 +588,17 @@ void DisplayException
                  nearAddress0,  // Offset from closest address
                  nearIndex0,    // Index into StartAddresses
                  nearAddress1,  // Offset from closest address
-                 nearIndex1;    // Index into StartAddresses
+                 nearIndex1,    // Index into StartAddresses
+                 uMem,          // Loop counter
+                 SILevel;       // The current SI level
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPWCHAR      exceptText;    // Ptr to exception text
     LPUCHAR      exceptAddr;    // Exception address
     DWORD        regEBP;        // Stack trace ptr
     LPBYTE       caller;        // Ptr to caller in stack trace
+    LPSIS_HEADER lpSISCur;      // Ptr to current SIS header
+    LPMEMVIRTSTR lpLstMVS;      // Ptr to last MEMVIRTSTR (NULL = none)
 
     // Sort the StartAddresses in ascending order by address
     qsort (StartAddresses,
@@ -615,6 +621,8 @@ void DisplayException
     exceptAddr = lpMemPTD->ExceptionAddr;
     exceptText = lpMemPTD->ExceptionText;
     regEBP     = lpMemPTD->RegisterEBP;
+    lpSISCur   = lpMemPTD->lpSISCur;
+    lpLstMVS   = lpMemPTD->lpLstMVS;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -653,10 +661,14 @@ void DisplayException
 #define NewMsg(a)   SendMessageW (hWndCC, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC)
 
     NewMsg (L"COPY THIS TEXT TO AN EMAIL MESSAGE");
+    NewMsg (L"----------------------------------------------------");
     NewMsg (L"Use Right-click:  Select All, and right-click:  Copy");
-    NewMsg (L"   to copy the entire text to the clipboard.");
+    NewMsg (L"   to copy the entire text to the clipboard."        );
+    NewMsg (L"----------------------------------------------------");
     NewMsg (L"Send the text to <nars2000-discuss@googlegroups.com>");
-    NewMsg (L"   along with a detailed statement of what you were doing just prior to the crash.");
+    NewMsg (L"   along with a detailed statement of what you were" );
+    NewMsg (L"   doing just prior to the crash."                   );
+    NewMsg (L"----------------------------------------------------");
 
     wsprintfW (wszTemp,
                L"Exception code = %08X (%S)",
@@ -714,6 +726,13 @@ void DisplayException
     NewMsg (L"");
     NewMsg (L"== BACKTRACE ==");
 
+    wsprintfW (wszTemp,
+               L"%p (%S + %p)",
+               exceptAddr,
+               StartAddresses[nearIndex].StartAddressName,
+               nearAddress);
+    NewMsg (wszTemp);
+
     // Do a stack trace
     while (TRUE)
     {
@@ -765,6 +784,114 @@ void DisplayException
         // Get the next EBP
         regEBP = *(DWORD *) regEBP;
     } // End WHILE
+
+    // Display the virtual memory ranges
+    NewMsg (L"");
+    NewMsg (L"== MEMVIRTSTR ==");
+    NewMsg (L" IniAddr IncrSize  MaxSize");
+
+    // Check for global VirtualAlloc memory that needs to be expanded
+    for (uMem = 0; uMem < uMemVirtCnt; uMem++)
+    {
+        wsprintfW (wszTemp,
+#ifdef DEBUG
+                   L"%p %08X %08X %S",
+#else
+                   L"%p %08X %08X",
+#endif
+                   memVirtStr[uMem].IniAddr,
+                   memVirtStr[uMem].IncrSize,
+                   memVirtStr[uMem].MaxSize
+#ifdef DEBUG
+                 , memVirtStr[uMem].lpText
+#endif
+                   );
+        NewMsg (wszTemp);
+    } // End FOR
+
+    // Display the local virtual memory ranges
+    NewMsg (L"");
+    NewMsg (L"== LCLMEMVIRTSTR ==");
+    NewMsg (L" IniAddr IncrSize  MaxSize");
+
+    while (lpLstMVS)
+    {
+        wsprintfW (wszTemp,
+#ifdef DEBUG
+                   L"%p %08X %08X %S",
+#else
+                   L"%p %08X %08X",
+#endif
+                   lpLstMVS->IniAddr,
+                   lpLstMVS->IncrSize,
+                   lpLstMVS->MaxSize
+#ifdef DEBUG
+                 , lpLstMVS->lpText
+#endif
+                   );
+        NewMsg (wszTemp);
+
+        // Get the previous ptr in the chain
+        lpLstMVS = lpLstMVS->lpPrvMVS;
+    } // End WHILE
+
+    // Display the SI stack
+    NewMsg (L"");
+    NewMsg (L"== SI STACK ==");
+
+    // Loop backwards through the SI levels
+    for (SILevel = 0;
+         lpSISCur;
+         lpSISCur = lpSISCur->lpSISPrv, SILevel++)
+    {
+        LPAPLCHAR lpMemName;            // Ptr to function name global memory
+
+        // Split cases based upon the caller's function type
+        switch (lpSISCur->DfnType)
+        {
+            case DFNTYPE_IMM:
+#ifdef DEBUG
+                NewMsg (WS_UTF16_IOTA);
+#endif
+                break;
+
+            case DFNTYPE_OP1:
+            case DFNTYPE_OP2:
+            case DFNTYPE_FCN:
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+
+                // Format the Name, Line #, and Suspension marker
+                wsprintfW (wszTemp,
+                           L"%s[%d] %c",
+                           lpMemName,
+                           lpSISCur->CurLineNum,
+                           " *"[lpSISCur->Suspended]);
+                // We no longer need this ptr
+                MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
+
+                // Display the function name & line #
+                NewMsg (wszTemp);
+
+                break;
+
+            case DFNTYPE_EXEC:
+                NewMsg (WS_UTF16_UPTACKJOT);
+
+                break;
+
+            case DFNTYPE_QUAD:
+                NewMsg (WS_UTF16_QUAD);
+
+                break;
+
+            case DFNTYPE_UNK:
+            default:
+                NewMsg (L"***UNKNOWN***");
+
+                break;
+        } // End SWITCH
+    } // End FOR
 
     // Tell the Crash Control window to display a MessageBox
     SendMessageW (hWndCC, MYWM_DISPMB, 0, 0);

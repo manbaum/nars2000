@@ -374,14 +374,12 @@ LPWCHAR lpwNameTypeStr[]
 #endif
 ;
 
-#ifdef DEBUG
-  EXTERN
-  LPWCHAR lpwObjNameStr[]
-  #ifdef DEFINE_VALUES
-   = OBJNAME_WSTRPTR
-  #endif
-  ;
+EXTERN
+LPWCHAR lpwObjNameStr[]
+#ifdef DEFINE_VALUES
+ = OBJNAME_WSTRPTR
 #endif
+;
 
 //***************************************************************************
 //  Primitive function and operator tables

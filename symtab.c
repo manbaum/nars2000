@@ -779,7 +779,22 @@ BOOL HshTabSplitNextEntry_EM
             // Repoint the matching symbol table entry
             //   to the new hash table entry
             if (!lpHshEntrySrc->htFlags.CharIsValid)
-                lpHshEntrySrc->htSymEntry->stHshEntry = lpHshEntryDest;
+            {
+                LPSYMENTRY lpSymEntrySrc;
+
+                // Get a ptr to the SYMENTRY we're changing
+                lpSymEntrySrc = lpHshEntrySrc->htSymEntry;
+
+                // Update the main entry
+                lpSymEntrySrc->stHshEntry = lpHshEntryDest;
+
+                // Loop through all other SYMENTRYs in the same shadow chain
+                while (lpSymEntrySrc->stPrvEntry)
+                {
+                    lpSymEntrySrc = lpSymEntrySrc->stPrvEntry;
+                    lpSymEntrySrc->stHshEntry = lpHshEntryDest;
+                } // End WHILE
+            } // End IF
 
             // Clear the old entry, preserving the .PrinHash flag
             //   and the previous and next hash pointers
@@ -2194,7 +2209,7 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
         lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
-        lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;
+        lpSymEntryDest = lpMemPTD->lpSymTabNext++;
 
         // Save the constant
         lpSymEntryDest->stData.stInteger = aplInteger;
@@ -2210,11 +2225,14 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
         // Link the destination entry into the hash entry
         HshTabLink (lpHshEntryHash, lpHshEntryDest);
 
-        // In the hash table, save ptr to the symbol table
+        // Save ptrs to each other in the symbol and hash tables
         lpHshEntryDest->htSymEntry = lpSymEntryDest;
-
-        // In the symbol table, save ptr to the hash table
         lpSymEntryDest->stHshEntry = lpHshEntryDest;
+
+        // Clear other elements of the SYMENTRY
+        lpSymEntryDest->stPrvEntry =
+        lpSymEntryDest->stSymLink  = NULL;
+        lpSymEntryDest->stSILevel  = 0;
     } // End IF
 ERROR_EXIT:
 NORMAL_EXIT:
@@ -2322,7 +2340,7 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
         lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
-        lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;
+        lpSymEntryDest = lpMemPTD->lpSymTabNext++;
 
         // Save the constant
         lpSymEntryDest->stData.stFloat = aplFloat;
@@ -2338,11 +2356,14 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
         // Link the destination entry into the hash entry
         HshTabLink (lpHshEntryHash, lpHshEntryDest);
 
-        // In the hash table, save ptr to the symbol table
+        // Save ptrs to each other in the symbol and hash tables
         lpHshEntryDest->htSymEntry = lpSymEntryDest;
-
-        // In the symbol table, save ptr to the hash table
         lpSymEntryDest->stHshEntry = lpHshEntryDest;
+
+        // Clear other elements of the SYMENTRY
+        lpSymEntryDest->stPrvEntry =
+        lpSymEntryDest->stSymLink  = NULL;
+        lpSymEntryDest->stSILevel  = 0;
     } // End IF
 ERROR_EXIT:
     Assert (HshTabFrisk (FALSE));
@@ -2449,7 +2470,7 @@ LPSYMENTRY SymTabAppendCharCommon_EM
         lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
-        lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;
+        lpSymEntryDest = lpMemPTD->lpSymTabNext++;
 
         // Save the constant
         lpSymEntryDest->stData.stChar = aplChar;
@@ -2465,11 +2486,14 @@ LPSYMENTRY SymTabAppendCharCommon_EM
         // Link the destination entry into the hash entry
         HshTabLink (lpHshEntryHash, lpHshEntryDest);
 
-        // In the hash table, save ptr to the symbol table
+        // Save ptrs to each other in the symbol and hash tables
         lpHshEntryDest->htSymEntry = lpSymEntryDest;
-
-        // In the symbol table, save ptr to the hash table
         lpSymEntryDest->stHshEntry = lpHshEntryDest;
+
+        // Clear other elements of the SYMENTRY
+        lpSymEntryDest->stPrvEntry =
+        lpSymEntryDest->stSymLink  = NULL;
+        lpSymEntryDest->stSILevel  = 0;
     } // End IF
 ERROR_EXIT:
     Assert (HshTabFrisk (FALSE));
@@ -2590,7 +2614,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     lpHshEntryDest->htFlags.Inuse = TRUE;
 
     // Save as return result
-    lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;
+    lpSymEntryDest = lpMemPTD->lpSymTabNext++;
 
     // Zero the entry
     ZeroMemory (lpSymEntryDest, sizeof (*lpSymEntryDest));
@@ -2635,6 +2659,11 @@ LPSYMENTRY SymTabAppendNewName_EM
     // Save ptrs to each other in the symbol and hash tables
     lpHshEntryDest->htSymEntry = lpSymEntryDest;
     lpSymEntryDest->stHshEntry = lpHshEntryDest;
+
+    // Clear other elements of the SYMENTRY
+    lpSymEntryDest->stPrvEntry =
+    lpSymEntryDest->stSymLink  = NULL;
+    lpSymEntryDest->stSILevel  = 0;
 
     Assert (HshTabFrisk (FALSE));
 ERROR_EXIT:

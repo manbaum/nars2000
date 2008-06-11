@@ -176,7 +176,7 @@ LPSYMENTRY GetGlobalSTE
     (LPSYMENTRY lpSymEntry)         // Ptr to the STE
 
 {
-    // Loop through the chain of previous STEs
+    // Loop through the shadow chain of previous STEs
     while (lpSymEntry->stPrvEntry)
         lpSymEntry = lpSymEntry->stPrvEntry;
     return lpSymEntry;

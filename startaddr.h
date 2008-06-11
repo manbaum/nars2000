@@ -79,6 +79,15 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
   #ifdef DEBUG
     "DisplayHshTab"             , (LPUCHAR) &DisplayHshTab              ,
   #endif
+    "FormatHTE"                 , (LPUCHAR) &FormatHTE                  ,
+  #ifdef DEBUG
+    "DisplaySymTab"             , (LPUCHAR) &DisplaySymTab              ,
+    "UpdateDBWindow"            , (LPUCHAR) &UpdateDBWindow             ,
+    "DisplayGlobals"            , (LPUCHAR) &DisplayGlobals             ,
+    "DisplayTokens"             , (LPUCHAR) &DisplayTokens              ,
+  #endif
+    "FormatSTE"                 , (LPUCHAR) &FormatSTE                  ,
+
     // display.c
     "DisplayGlbArr"             , (LPUCHAR) &DisplayGlbArr              ,
 
@@ -111,14 +120,36 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "_DisplayException"         , (LPUCHAR) &DisplayException           ,
 
     // execdfn.c
+    "ExecDfnGlbProto_EM_YY"     , (LPUCHAR) &ExecDfnGlbProto_EM_YY      ,
+    "ExecDfnGlb_EM_YY"          , (LPUCHAR) &ExecDfnGlb_EM_YY           ,
+    "ExecDfnOprGlb_EM_YY"       , (LPUCHAR) &ExecDfnOprGlb_EM_YY        ,
+    "LocalizeAll"               , (LPUCHAR) &LocalizeAll                ,
+    "_CheckSymEntries"          , (LPUCHAR) &_CheckSymEntries           ,
+    "ExecuteFunction_EM_YY"     , (LPUCHAR) &ExecuteFunction_EM_YY      ,
+    "DisplayFcnLine"            , (LPUCHAR) &DisplayFcnLine             ,
+    "CheckDfnExitError_EM"      , (LPUCHAR) &CheckDfnExitError_EM       ,
+    "Unlocalize"                , (LPUCHAR) &Unlocalize                 ,
+    "LocalizeLabels"            , (LPUCHAR) &LocalizeLabels             ,
+    "InitVarSTEs"               , (LPUCHAR) &InitVarSTEs                ,
+    "InitFcnSTEs"               , (LPUCHAR) &InitFcnSTEs                ,
+    "LocalizeSymEntries"        , (LPUCHAR) &LocalizeSymEntries         ,
 
     // execfns.c
+    "ExecuteFn0"                , (LPUCHAR) &ExecuteFn0                 ,
+    "ExecFunc_EM_YY"            , (LPUCHAR) &ExecFunc_EM_YY             ,
+    "ExecFcnGlb_EM_YY"          , (LPUCHAR) &ExecFcnGlb_EM_YY           ,
+    "ExecFuncStr_EM_YY"         , (LPUCHAR) &ExecFuncStr_EM_YY          ,
+    "ExecOp1_EM_YY"             , (LPUCHAR) &ExecOp1_EM_YY              ,
+    "ExecOp2_EM_YY"             , (LPUCHAR) &ExecOp2_EM_YY              ,
 
     // execmfn.c
+    "ExecuteMagicFunction_EM_YY", (LPUCHAR) &ExecuteMagicFunction_EM_YY ,
 
     // fastbool.c
+    "FastBoolScan"              , (LPUCHAR) &FastBoolScan               ,
 
     // free.c
+    "FreeResultName"            , (LPUCHAR) &FreeResultName             ,
 
     // g_fmt.c
 
@@ -211,6 +242,15 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // po_slash.c
     "PrimOpSlash_EM_YY"         , (LPUCHAR) &PrimOpSlash_EM_YY          ,
+    "PrimProtoOpSlash_EM_YY"    , (LPUCHAR) &PrimProtoOpSlash_EM_YY     ,
+    "PrimOpMonSlash_EM_YY"      , (LPUCHAR) &PrimOpMonSlash_EM_YY       ,
+    "PrimOpMonSlashCommon_EM_YY", (LPUCHAR) &PrimOpMonSlashCommon_EM_YY ,
+    "PrimOpMonSlashScalar_EM_YY", (LPUCHAR) &PrimOpMonSlashScalar_EM_YY ,
+    "SymGlbToToken"             , (LPUCHAR) &SymGlbToToken              ,
+    "PrimOpDydSlash_EM_YY"      , (LPUCHAR) &PrimOpDydSlash_EM_YY       ,
+    "PrimOpDydSlashCommon_EM_YY", (LPUCHAR) &PrimOpDydSlashCommon_EM_YY ,
+    "PrimOpDydSlashInsertDim_EM", (LPUCHAR) &PrimOpDydSlashInsertDim_EM ,
+    "PrimOpDydSlashAllocate_EM" , (LPUCHAR) &PrimOpDydSlashAllocate_EM  ,
 
     // po_slope.c
     "PrimOpSlope_EM_YY"         , (LPUCHAR) &PrimOpSlope_EM_YY          ,
@@ -286,6 +326,14 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
   #ifdef DEBUG
     "HshTabFrisk"               , (LPUCHAR) &HshTabFrisk                ,
   #endif
+    "MaskTheHash"               , (LPUCHAR) &MaskTheHash               ,
+    "HshTabDelink"              , (LPUCHAR) &HshTabDelink              ,
+    "HshTabLink"                , (LPUCHAR) &HshTabLink                ,
+    "HshTabResize_EM"           , (LPUCHAR) &HshTabResize_EM           ,
+    "SymTabResize_EM"           , (LPUCHAR) &SymTabResize_EM           ,
+    "HshTabSplitNextEntry_EM"   , (LPUCHAR) &HshTabSplitNextEntry_EM   ,
+    "FindNextFreeUsingHash_SPLIT_EM", (LPUCHAR) FindNextFreeUsingHash_SPLIT_EM ,
+    "FindNextFreeUsingHTE_EM"   , (LPUCHAR) &FindNextFreeUsingHTE_EM   ,
 
     // symtrans.c
     "FcnTrans"                  , (LPUCHAR) &FcnTrans                   ,
@@ -303,6 +351,8 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // tokenize.c
     "UTLockAndSet"              , (LPUCHAR) &UTLockAndSet               ,
+    "Tokenize_EM"               , (LPUCHAR) &Tokenize_EM                ,
+    "Untokenize"                , (LPUCHAR) &Untokenize                 ,
 
     // translate.c
     "TranslateTknTypeToTknTypeNamed", (LPUCHAR) &TranslateTknTypeToTknTypeNamed,
@@ -316,13 +366,16 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // ver.c
     "LclFileVersionStrW"        , (LPUCHAR) &LclFileVersionStrW         ,
+    "AboutDlgProc"              , (LPUCHAR) &AboutDlgProc               ,
     "LclStaticWndProc"          , (LPUCHAR) &LclStaticWndProc           ,
 
     // yyfns.c
-    "YYAlloc"                   , (LPUCHAR) &_YYAlloc                   ,
+    "_YYAlloc"                  , (LPUCHAR) &_YYAlloc                   ,
     "YYCopy"                    , (LPUCHAR) &YYCopy                     ,
     "YYCopyFreeDst"             , (LPUCHAR) &YYCopyFreeDst              ,
     "YYFree"                    , (LPUCHAR) &YYFree                     ,
+    "YYCountFcnStr"             , (LPUCHAR) &YYCountFcnStr              ,
+    "YYIsFcnStrAxis"            , (LPUCHAR) &YYIsFcnStrAxis             ,
   #ifdef DEBUG
     "YYResIsEmpty"              , (LPUCHAR) YYResIsEmpty                ,
   #endif

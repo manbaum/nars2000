@@ -269,7 +269,9 @@ BOOL CmdSave_EM
              lpSymTabNext++)
         if (lpSymTabNext->stFlags.Inuse)        // Must be Inuse
         // Handle different SI levels
-        for (lpSymEntry = lpSymTabNext; lpSymEntry; lpSymEntry = lpSymEntry->stPrvEntry)
+        for (lpSymEntry = lpSymTabNext;
+             lpSymEntry;
+             lpSymEntry = lpSymEntry->stPrvEntry)
         if (lpSymEntry->stHshEntry->htGlbName           // Must have a name (not steZero, etc.)
          && lpSymEntry->stFlags.ObjName NE OBJNAME_MF   // and not be a Magic Function
          && lpSymEntry->stFlags.ObjName NE OBJNAME_LOD) // and not be a )LOAD HGLOBAL

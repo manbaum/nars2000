@@ -947,7 +947,6 @@ HGLOBAL DbgGlobalAllocSub
 #endif
 
 
-#ifdef DEBUG
 //***************************************************************************
 //  $FileNameOnly
 //
@@ -968,7 +967,6 @@ LPCHAR FileNameOnly
         ;
     return p;
 } // End FileNameOnly
-#endif
 
 
 //***************************************************************************

@@ -52,6 +52,8 @@
 #define LOSHORT(l)  ((short)((DWORD)(l) & 0xffff))
 #define HISHORT(l)  ((short)((DWORD)(l) >> 16))
 
+#define CheckSymEntries()   _CheckSymEntries (FNLN)
+
 #ifdef DEBUG
   #define YYAlloc()     _YYAlloc(FNLN)
 

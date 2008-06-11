@@ -199,14 +199,16 @@ BOOL CmdFNOV_EM
      && (*IzitFVO) (lpSymEntry->stFlags.stNameType))
     {
         // ***FIXME*** -- Make sensitive to [first][-][last] in lpwszTail
-        LPSYMENTRY lpSymLink = lpSymEntry;
+        LPSYMENTRY lpGlbEntry;
 
-        // Get a ptr to the global SYMENTRY (stSymLink EQ NULL)
-        for (lpSymLink = lpSymEntry; lpSymLink->stSymLink; lpSymLink = lpSymLink->stSymLink)
+        // Find a ptr to the global SYMENTRY (stPrvEntry EQ NULL)
+        for (lpGlbEntry = lpSymEntry;
+             lpGlbEntry->stPrvEntry;
+             lpGlbEntry = lpGlbEntry->stPrvEntry)
             ;
 
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (lpSymLink->stHshEntry->htGlbName);
+        lpMemName = MyGlobalLock (lpGlbEntry->stHshEntry->htGlbName);
 
         // Get the name length
         uNameLen = lstrlenW (lpMemName) + bNMS * 2;
@@ -215,10 +217,10 @@ BOOL CmdFNOV_EM
         uMaxNameLen = max (uMaxNameLen, uNameLen);
 
         // We no longer need this ptr
-        MyGlobalUnlock (lpSymLink->stHshEntry->htGlbName); lpMemName = NULL;
+        MyGlobalUnlock (lpGlbEntry->stHshEntry->htGlbName); lpMemName = NULL;
 
         // Save the LPSYMENTRY ptr for later use
-        lpSymSort[uSymCnt] = lpSymLink;
+        lpSymSort[uSymCnt] = lpGlbEntry;
 
         // Count in another matching name
         uSymCnt++;

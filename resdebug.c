@@ -20,6 +20,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#if RESDEBUG
 #define WINVER       0x0501 // Needed for WINUSER.H definitions
 #define _WIN32_WINNT 0x0501 // ...
 
@@ -1235,6 +1236,7 @@ void _CheckMemStat
     if (!HeapValidate (GetProcessHeap (), 0, NULL))
         DbgBrk ();
 } // End _CheckMemStat
+#endif
 #endif
 
 

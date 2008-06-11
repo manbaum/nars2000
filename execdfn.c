@@ -560,9 +560,96 @@ void LocalizeAll
     // Save the # LPSYMENTRYs localized
     lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
 
+    Assert (lpMemPTD->lpSISNxt->numSymEntries EQ
+            (lpMemDfnHdr->numResultSTE
+           + lpMemDfnHdr->numLftArgSTE
+           + (lpMemDfnHdr->steLftOpr NE NULL)
+           + (lpMemDfnHdr->steAxisOpr NE NULL)
+           + (lpMemDfnHdr->steRhtOpr NE NULL)
+           + lpMemDfnHdr->numRhtArgSTE
+           + lpMemDfnHdr->numLocalsSTE
+           + lpMemPTD->lpSISNxt->numLabels));
     // Save as new SISNxt ptr
     lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
 } // End LocalizeAll
+
+
+//***************************************************************************
+//  $_CheckSymEntries
+//
+//  Debug routine to checck on localized SYMENTRYs
+//***************************************************************************
+
+void _CheckSymEntries
+    (LPSTR   lpFileName,            // Ptr to our caller's filename
+     UINT    uLineNum)              // Caller's line #
+
+{
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+    LPSYMENTRY   lpSymEntryNxt;     // Ptr to next localized LPSYMENTRY on the SIS
+    UINT         numSymEntries,     // # LPSYMENTRYs localized
+                 numSym;            // Loop counter
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); // Assert (hGlbPTD NE NULL);
+    if (hGlbPTD EQ NULL)
+        return;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get a ptr to the current SIS header
+    lpSISCur = lpMemPTD->lpSISCur;
+
+    while (lpSISCur)
+    {
+        // Get # LPSYMENTRYs on the stack
+        numSymEntries = lpSISCur->numSymEntries;
+
+        // Point to the start of the localized LPSYMENTRYs
+        lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpSISCur, sizeof (SIS_HEADER));
+
+        // Point to the end of the localize LPSYMENTRYs
+        lpSymEntryNxt = &lpSymEntryNxt[numSymEntries - 1];
+
+        // Loop through the LPSYMENTRYs on the stack
+        for (numSym = 0; numSym < numSymEntries; numSym++, lpSymEntryNxt--)
+        if (lpSymEntryNxt->stFlags.ObjName NE OBJNAME_LOD)
+        {
+            __try
+            {
+                if (lpSymEntryNxt->stHshEntry EQ NULL)
+                    DbgBrk ();
+                if (lpSymEntryNxt->stHshEntry->htSymEntry EQ NULL)
+                    DbgBrk ();
+            } __except (CheckException (GetExceptionInformation (), L"CheckSymEntries"))
+            {
+                wsprintfW (lpMemPTD->lpwszTemp,
+                           L"CheckSymEntries was called from <%S> line #%d",
+                           lpFileName,
+                           uLineNum);
+                AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
+
+                FormatSTE (lpSymEntryNxt, lpMemPTD->lpwszTemp);
+                AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
+
+                FormatHTE (lpSymEntryNxt->stHshEntry, lpMemPTD->lpwszTemp, 0);
+                AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
+
+                // Display message for unhandled exception
+                DisplayException ();
+            } // End __try/__except
+        } // End FOR/IF
+
+        // Get a ptr to the previous (if any) entry
+        lpSISCur = lpSISCur->lpSISPrv;
+    } // End WHILE
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End _CheckSymEntries
 
 
 //***************************************************************************
@@ -1153,12 +1240,12 @@ BOOL Unlocalize
         lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISCur, sizeof (SIS_HEADER));
 
         // Point to the end of the localize LPSYMENTRYs
-        lpSymEntryNxt = &lpSymEntryNxt[numSymEntries];
+        lpSymEntryNxt = &lpSymEntryNxt[numSymEntries - 1];
 
-        // Loop through the # LPSYMENTRYs
-        for (numSym = 0; numSym < numSymEntries; numSym++)
+        // Loop through the LPSYMENTRYs on the stack
+        for (numSym = 0; numSym < numSymEntries; numSym++, lpSymEntryNxt--)
         // If the hash entry is valid, ...
-        if ((--lpSymEntryNxt)->stHshEntry)
+        if (lpSymEntryNxt->stHshEntry)
         {
             LPSYMENTRY lpSymEntryCur;       // Ptr to SYMENTRY to release & unlocalize
 
@@ -1211,7 +1298,7 @@ BOOL Unlocalize
 
             // Restore the previous STE
             *lpSymEntryCur = *lpSymEntryNxt;
-        } // End FOR
+        } // End FOR/IF
 
         // Strip the level from the stack
         lpMemPTD->lpSISNxt = lpMemPTD->lpSISCur;
@@ -1224,7 +1311,7 @@ BOOL Unlocalize
             lpMemPTD->lpSISCur->ResetFlag = resetFlag;
         } // End IF
 #ifdef DEBUG
-        // Zero the old entry
+        // Zero the old entries
         ZeroMemory (lpMemPTD->lpSISNxt,
                     sizeof (*lpMemPTD->lpSISNxt)
                   + numSymEntries * sizeof (lpSymEntryNxt));
@@ -1232,7 +1319,7 @@ BOOL Unlocalize
         // Back off the SI Level
         lpMemPTD->SILevel--;
     } // End IF
-///NORMAL_EXIT:
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1302,7 +1389,7 @@ LPSYMENTRY LocalizeLabels
                 Assert (GetPtrTypeDir (lpSymEntrySrc) EQ PTRTYPE_STCONST);
 
                 // Copy the old SYMENTRY to the SIS
-                *lpSymEntryNxt++ = *lpSymEntrySrc;
+                *lpSymEntryNxt = *lpSymEntrySrc;
 
                 // Clear the STE flags & data
                 *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
@@ -1318,15 +1405,18 @@ LPSYMENTRY LocalizeLabels
                 lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
                 lpSymEntrySrc->stData.stInteger   = uLineNum + 1;
 
-                // Set the ptr to the previous entry to the STE on the stack
-                lpSymEntrySrc->stPrvEntry       = &lpSymEntryNxt[-1];
+                // Set the ptr to the previous entry to the STE in its shadow chain
+                lpSymEntrySrc->stPrvEntry         = lpSymEntryNxt;
 
                 // Save the SI level for this SYMENTRY
                 Assert (lpMemPTD->SILevel);
-                lpSymEntrySrc->stSILevel        = lpMemPTD->SILevel - 1;
+                lpSymEntrySrc->stSILevel          = lpMemPTD->SILevel - 1;
 
                 // Count in another label
                 (*lpNumLabels)++;
+
+                // Skip to the next SYMENTRY
+                lpSymEntryNxt++;
             } // End IF
         } // End IF
 
@@ -1747,7 +1837,7 @@ LPSYMENTRY LocalizeSymEntries
         // Erase the Symbol Table Entry
         EraseSTE (*lplpSymEntrySrc);
 
-        // Set the ptr to the previous entry to the STE on the stack
+        // Set the ptr to the previous entry to the STE in the shadow chain
         (*lplpSymEntrySrc)->stPrvEntry = lpSymEntryNxt;
 
         // Save the SI level for this SYMENTRY

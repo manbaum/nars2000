@@ -56,29 +56,11 @@ void DisplayHshTab
 
 {
     LPHSHENTRY   lpHshEntry;        // Ptr to current HshTab entry
-    int          i, j;              // Loop counters
+    int          i;                 // Loop counter
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;             // Ptr to hshTab struc
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
-
-    typedef struct tagHT_FLAGNAMES
-    {
-        UINT    uMask;
-        LPWCHAR lpwszName;
-    } HT_FLAGNAMES, *LPHT_FLAGNAMES;
-
-    // Hash Table flag names
-    static HT_FLAGNAMES ahtFlagNames[] =
-    {
-     {0x00001,  L" Inuse"      },
-     {0x00002,  L" PrinHash"   },
-     {0x00004,  L" CharIsValid"},
-     {0x00008,  L" Temp"       },
-    };
-
-// The # rows in the above table
-#define HT_FLAGNAMES_NROWS  (sizeof (ahtFlagNames) / sizeof (ahtFlagNames[0]))
 
     if (bUseGlbHsh)
     {
@@ -110,68 +92,9 @@ void DisplayHshTab
          i < lpHTS->iHshTabTotalSize;
          lpHshEntry++, i++)
     {
-        WCHAR wszFlags[128] = {L'\0'};
-        UINT  htFlags;
+        // Format the HTE
+        FormatHTE (lpHshEntry, wszTemp, i);
 
-        // Format the flags
-        htFlags = *(LPUINT) &lpHshEntry->htFlags;
-        for (j = 0;
-             j < HT_FLAGNAMES_NROWS;
-             j++)
-        if (htFlags & ahtFlagNames[j].uMask)
-            lstrcatW (wszFlags, ahtFlagNames[j].lpwszName);
-
-        // In case we didn't find any matching flags,
-        //   set the second byte to zero as well as
-        //   when we do find flags, we skip over the
-        //   leading blank.
-        if (wszFlags[0] EQ L'\0')
-            wszFlags[1] =  L'\0';
-
-        if (lpHshEntry->htFlags.Inuse
-         && lpHshEntry->htSymEntry)
-        {
-            LPSYMENTRY lpSymEntry;
-
-            lpSymEntry = lpHshEntry->htSymEntry;
-            if (lpSymEntry->stFlags.Imm)
-                wsprintfW (wszTemp,
-                           L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p",
-                           i,
-                           lpHshEntry->uHash,
-                           lpHshEntry->uHashAndMask,
-                          &wszFlags[1],
-                           lpSymEntry->stData.stInteger,
-                           lpSymEntry);
-            else
-            if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
-            {
-                LPCHAR lpGlbName;
-
-                // Lock the memory to get a ptr to it
-                lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
-
-                wsprintfW (wszTemp,
-                           L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
-                           i,
-                           lpHshEntry->uHash,
-                           lpHshEntry->uHashAndMask,
-                          &wszFlags[1],
-                           lpGlbName,
-                           lpSymEntry,
-                           lpHshEntry->NextSameHash,
-                           lpHshEntry->PrevSameHash);
-                // We no longer need this ptr
-                GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
-            } // End IF/ELSE/IF
-        } else
-            wsprintfW (wszTemp,
-                       L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>",
-                       i,
-                      &wszFlags[1],
-                       lpHshEntry->htSymEntry,
-                       lpHshEntry->NextSameHash,
-                       lpHshEntry->PrevSameHash);
         DbgMsgW (wszTemp);
     } // End FOR
 
@@ -186,6 +109,111 @@ void DisplayHshTab
     } // End IF
 } // End DisplayHshTab
 #endif
+
+
+//***************************************************************************
+//  $FormatHTE
+//
+//  Format a HTE
+//***************************************************************************
+
+void FormatHTE
+    (LPHSHENTRY lpHshEntry,
+     LPWCHAR    wszTemp,
+     UINT       i)
+
+{
+    WCHAR wszFlags[128] = {L'\0'};
+    UINT  htFlags,
+          j;
+
+    typedef struct tagHT_FLAGNAMES
+    {
+        UINT    uMask;
+        LPWCHAR lpwszName;
+    } HT_FLAGNAMES, *LPHT_FLAGNAMES;
+
+    // Hash Table flag names
+    static HT_FLAGNAMES ahtFlagNames[] =
+    {
+     {0x00001,  L" Inuse"      },
+     {0x00002,  L" PrinHash"   },
+     {0x00004,  L" CharIsValid"},
+     {0x00008,  L" Temp"       },
+    };
+
+// The # rows in the above table
+#define HT_FLAGNAMES_NROWS  (sizeof (ahtFlagNames) / sizeof (ahtFlagNames[0]))
+
+    // Check for invalid HshEntry
+    if (lpHshEntry EQ NULL)
+    {
+        wsprintfW (wszTemp,
+                   L"HT:%3d ***INVALID HSHENTRY (NULL)***",
+                   i);
+        return;
+    } // End IF
+
+    // Format the flags
+    htFlags = *(LPUINT) &lpHshEntry->htFlags;
+    for (j = 0;
+         j < HT_FLAGNAMES_NROWS;
+         j++)
+    if (htFlags & ahtFlagNames[j].uMask)
+        lstrcatW (wszFlags, ahtFlagNames[j].lpwszName);
+
+    // In case we didn't find any matching flags,
+    //   set the second byte to zero as well as
+    //   when we do find flags, we skip over the
+    //   leading blank.
+    if (wszFlags[0] EQ L'\0')
+        wszFlags[1] =  L'\0';
+
+    if (lpHshEntry->htFlags.Inuse
+     && lpHshEntry->htSymEntry)
+    {
+        LPSYMENTRY lpSymEntry;
+
+        lpSymEntry = lpHshEntry->htSymEntry;
+        if (lpSymEntry->stFlags.Imm)
+            wsprintfW (wszTemp,
+                       L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p",
+                       i,
+                       lpHshEntry->uHash,
+                       lpHshEntry->uHashAndMask,
+                      &wszFlags[1],
+                       lpSymEntry->stData.stInteger,
+                       lpSymEntry);
+        else
+        if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
+        {
+            LPCHAR lpGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
+
+            wsprintfW (wszTemp,
+                       L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
+                       i,
+                       lpHshEntry->uHash,
+                       lpHshEntry->uHashAndMask,
+                      &wszFlags[1],
+                       lpGlbName,
+                       lpSymEntry,
+                       lpHshEntry->NextSameHash,
+                       lpHshEntry->PrevSameHash);
+            // We no longer need this ptr
+            GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
+        } // End IF/ELSE/IF
+    } else
+        wsprintfW (wszTemp,
+                   L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>",
+                   i,
+                  &wszFlags[1],
+                   lpHshEntry->htSymEntry,
+                   lpHshEntry->NextSameHash,
+                   lpHshEntry->PrevSameHash);
+} // End FormatHTE
 
 
 #ifdef DEBUG
@@ -203,10 +231,66 @@ void DisplaySymTab
 
 {
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
-    int          i, j;              // Loop counters
+    int          i;                 // Loop counter
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    if (bDispAll)
+        DbgMsg ("********** Symbol Table ********************************");
+    else
+        DbgMsg ("********** Symbol Table Referenced Non-SysNames ********");
+
+    wsprintfW (wszTemp,
+               L"lpSymTab = %p, Last = %p",
+               lpMemPTD->lpSymTab,
+              &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize]);
+    DbgMsgW (wszTemp);
+
+    // Display the symbol table
+    for (lpSymEntry = lpMemPTD->lpSymTab, i = 0;
+         lpSymEntry NE lpMemPTD->lpSymTabNext;
+         lpSymEntry++, i++)
+    if (bDispAll ||
+        lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
+    {
+        // Format the STE
+        FormatSTE (lpSymEntry, wszTemp);
+
+        DbgMsgW (wszTemp);
+    } // End FOR
+
+    DbgMsg ("********** End Symbol Table ****************************");
+
+    UpdateDBWindow ();
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End DisplaySymTab
+#endif
+
+
+//***************************************************************************
+//  $FormatSTE
+//
+//  Format a STE
+//***************************************************************************
+
+void FormatSTE
+    (LPSYMENTRY lpSymEntry,             // Ptr to the SYMENTRY to format
+     LPWCHAR    wszTemp)                // Ptr to output save area
+
+{
+    WCHAR   wszFlags[128] = {L'\0'};
+    STFLAGS stFlags;
+    LPWCHAR lpGlbName;
+    int     j;                  // Loop counter
 
     typedef struct tagST_FLAGNAMES
     {
@@ -235,138 +319,108 @@ void DisplaySymTab
 // The # rows in the above table
 #define ST_FLAGNAMES_NROWS  (sizeof (astFlagNames) / sizeof (astFlagNames[0]))
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Format the flags
+    stFlags = lpSymEntry->stFlags;
+    if (stFlags.Imm)
+        wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+                   L" Imm/Type=%d",
+                   stFlags.ImmType);
+    if (stFlags.ObjName NE OBJNAME_NONE)
+        wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+                   L" ObjName=%s",
+                   lpwObjNameStr[stFlags.ObjName]);
+    if (stFlags.stNameType NE NAMETYPE_UNK)
+        wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+                   L" stNameType=%s",
+                   lpwNameTypeStr[stFlags.stNameType]);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    for (j = 0;
+         j < ST_FLAGNAMES_NROWS;
+         j++)
+    if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
+        lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
-    if (bDispAll)
-        DbgMsg ("********** Symbol Table ********************************");
-    else
-        DbgMsg ("********** Symbol Table Referenced Non-SysNames ********");
+    if (IsNameTypeVar (stFlags.stNameType)
+     && !stFlags.DfnSysLabel)
+        wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+                   L" SysVarValid=%d",
+                   stFlags.SysVarValid);
 
-    wsprintfW (wszTemp,
-               L"lpSymTab = %p, Last = %p",
-               lpMemPTD->lpSymTab,
-              &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize]);
-    DbgMsgW (wszTemp);
+    // In case we didn't find any matching flags,
+    //   set the second WCHAR to zero as well --
+    //   when we do find flags, we skip over the
+    //   leading blank.
+    if (wszFlags[0] EQ L'\0')
+        wszFlags[1] =  L'\0';
 
-    // Display the symbol table
-    for (lpSymEntry = lpMemPTD->lpSymTab, i = 0;
-         lpSymEntry NE lpMemPTD->lpSymTabNext;
-         lpSymEntry++, i++)
-    if (bDispAll ||
-        lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
+    if (lpSymEntry->stFlags.Inuse)
     {
-        WCHAR   wszFlags[128] = {L'\0'};
-        STFLAGS stFlags;
-        LPWCHAR lpGlbName;
-
-        // Format the flags
-        stFlags = lpSymEntry->stFlags;
-        if (stFlags.Imm)
-            wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                       L" Imm/Type=%d",
-                       stFlags.ImmType);
-        if (stFlags.ObjName NE OBJNAME_NONE)
-            wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                       L" ObjName=%s",
-                       lpwObjNameStr[stFlags.ObjName]);
-        if (stFlags.stNameType NE NAMETYPE_UNK)
-            wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                       L" stNameType=%s",
-                       lpwNameTypeStr[stFlags.stNameType]);
-
-        for (j = 0;
-             j < ST_FLAGNAMES_NROWS;
-             j++)
-        if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
-            lstrcatW (wszFlags, astFlagNames[j].lpwszName);
-
-        if (IsNameTypeVar (stFlags.stNameType)
-         && !stFlags.DfnSysLabel)
-            wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                       L" SysVarValid=%d",
-                       stFlags.SysVarValid);
-
-        // In case we didn't find any matching flags,
-        //   set the second WCHAR to zero as well --
-        //   when we do find flags, we skip over the
-        //   leading blank.
-        if (wszFlags[0] EQ L'\0')
-            wszFlags[1] =  L'\0';
-
-        if (lpSymEntry->stFlags.Inuse)
-        {
 #define WSZNAME_LEN     128
-            WCHAR wszName[WSZNAME_LEN] = {'\0'};
+        WCHAR wszName[WSZNAME_LEN] = {'\0'};
+        LPSYMENTRY lpPrvEntry;
 
-            if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
+        if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
+        {
+            LPHSHENTRY lpHshEntry;
+
+            lpHshEntry = lpSymEntry->stHshEntry;
+
+            if (lpHshEntry)
             {
-                LPHSHENTRY lpHshEntry;
+                lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
 
-                lpHshEntry = lpSymEntry->stHshEntry;
+                lstrcpynW (wszName, lpGlbName, WSZNAME_LEN);
 
-                if (lpHshEntry)
-                {
-                    lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
-
-                    lstrcpynW (wszName, lpGlbName, WSZNAME_LEN);
-
-                    // We no longer need this ptr
-                    GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
-                } // End IF
+                // We no longer need this ptr
+                GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
             } // End IF
+        } // End IF
 
-            if (lpSymEntry->stFlags.Imm)
+        // Get the previous (shadowed) entry (if any)
+        lpPrvEntry = lpSymEntry->stPrvEntry;
+
+        if (lpSymEntry->stFlags.Imm)
+        {
+            wsprintfW (wszTemp,
+                       L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p, Prv=%p",
+                       lpSymEntry,
+                       wszName,
+                      &wszFlags[1],
+                       lpSymEntry->stData.stInteger,
+                       lpSymEntry->stHshEntry,
+                       lpPrvEntry);
+        } else
+        if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
+        {
+            LPHSHENTRY lpHshEntry;
+
+            lpHshEntry = lpSymEntry->stHshEntry;
+
+            if (lpHshEntry)
             {
                 wsprintfW (wszTemp,
-                           L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p",
+                           L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p, Prv=%p",
                            lpSymEntry,
                            wszName,
                           &wszFlags[1],
-                           lpSymEntry->stData.stInteger,
-                           lpSymEntry->stHshEntry);
+                           lpSymEntry->stData.stVoid,
+                           lpHshEntry,
+                           lpPrvEntry);
             } else
-            if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
-            {
-                LPHSHENTRY lpHshEntry;
-
-                lpHshEntry = lpSymEntry->stHshEntry;
-
-                if (lpHshEntry)
-                {
-                    wsprintfW (wszTemp,
-                               L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p",
-                               lpSymEntry,
-                               wszName,
-                              &wszFlags[1],
-                               lpSymEntry->stData.stVoid,
-                               lpHshEntry);
-                } else
-                    wsprintfW (wszTemp,
-                               L"ST:%p <******>, <%s>, Hsh=0",
-                               lpSymEntry,
-                              &wszFlags[1]);
-            } // End IF/ELSE/IF
-        } else
-            wsprintfW (wszTemp,
-                       L"ST:%p (EMPTY) <%s>, Hsh=%p",
-                       lpSymEntry,
-                      &wszFlags[1],
-                       lpSymEntry->stHshEntry);
-        DbgMsgW (wszTemp);
-    } // End FOR
-
-    DbgMsg ("********** End Symbol Table ****************************");
-
-    UpdateDBWindow ();
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End DisplaySymTab
-#endif
+                wsprintfW (wszTemp,
+                           L"ST:%p <******>, <%s>, Hsh=0, Prv=%p",
+                           lpSymEntry,
+                          &wszFlags[1],
+                           lpPrvEntry);
+        } // End IF/ELSE/IF
+    } else
+        wsprintfW (wszTemp,
+                   L"ST:%p (EMPTY) <%s>, Hsh=%p, Prv=%p",
+                   lpSymEntry,
+                  &wszFlags[1],
+                   lpSymEntry->stHshEntry,
+                   lpSymEntry->stPrvEntry);
+} // End FormatSTE
 
 
 #ifdef DEBUG

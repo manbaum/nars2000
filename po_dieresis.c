@@ -635,6 +635,7 @@ BOOL ExecFuncOnToken_EM
 
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+    LPSYMENTRY   lpSymTmp;              // Ptr to temporary LPSYMENTRY
 
     // Execute the function on the arg token
     if (lpPrimProto)
@@ -661,9 +662,12 @@ BOOL ExecFuncOnToken_EM
                 // Convert the immediate value into a symbol table constant,
                 //   and save into the result
                 *((LPAPLNESTED) *lplpMemRes)++ =
+                lpSymTmp =
                   MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
                                   &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
                                   &lpYYFcnStr->tkToken);                // Ptr to function token
+                if (!lpSymTmp)
+                    goto ERROR_EXIT;
                 break;
 
             case TKT_VARARRAY:
@@ -681,6 +685,12 @@ BOOL ExecFuncOnToken_EM
         FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 
         return TRUE;
+    } // End IF
+ERROR_EXIT:
+    if (lpYYRes)
+    {
+        // Free the result of the function execution
+        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
     } // End IF
 
     return FALSE;

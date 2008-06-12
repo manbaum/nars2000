@@ -590,12 +590,14 @@ void DisplayException
                  nearAddress1,  // Offset from closest address
                  nearIndex1,    // Index into StartAddresses
                  uMem,          // Loop counter
+                 uCnt,          // ...
                  SILevel;       // The current SI level
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPWCHAR      exceptText;    // Ptr to exception text
     LPUCHAR      exceptAddr;    // Exception address
-    DWORD        regEBP;        // Stack trace ptr
+    DWORD        regEBP,        // Stack trace ptr
+                 regEIP;        // Instruction ptr
     LPBYTE       caller;        // Ptr to caller in stack trace
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS header
     LPMEMVIRTSTR lpLstMVS;      // Ptr to last MEMVIRTSTR (NULL = none)
@@ -661,14 +663,18 @@ void DisplayException
 #define NewMsg(a)   SendMessageW (hWndCC, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC)
 
     NewMsg (L"COPY THIS TEXT TO AN EMAIL MESSAGE");
-    NewMsg (L"----------------------------------------------------");
-    NewMsg (L"Use Right-click:  Select All, and right-click:  Copy");
-    NewMsg (L"   to copy the entire text to the clipboard."        );
-    NewMsg (L"----------------------------------------------------");
-    NewMsg (L"Send the text to <nars2000-discuss@googlegroups.com>");
-    NewMsg (L"   along with a detailed statement of what you were" );
-    NewMsg (L"   doing just prior to the crash."                   );
-    NewMsg (L"----------------------------------------------------");
+    NewMsg (L"----------------------------------------------------"  );
+    NewMsg (L"Use Right-click:  Select All, and"                     );
+    NewMsg (L"    Right-click:  Copy"                                );
+    NewMsg (L"   to copy the entire text to the clipboard."          );
+    NewMsg (L"----------------------------------------------------"  );
+    NewMsg (L"Send the text to <nars2000-discuss@googlegroups.com>"  );
+    NewMsg (L"   along with a detailed statement of what you were"   );
+    NewMsg (L"   doing just prior to the crash."                     );
+    NewMsg (L"Also, if at all possible, it would be great if you"    );
+    NewMsg (L"   could send along a copy of the last saved workspace");
+    NewMsg (L"   (the one with an extension of .save.bak.ws.nars)."  );
+    NewMsg (L"----------------------------------------------------"  );
 
     wsprintfW (wszTemp,
                L"Exception code = %08X (%S)",
@@ -721,6 +727,29 @@ void DisplayException
                ContextRecord.SegSs,
                ExceptionRecord.ExceptionInformation[1]);
     NewMsg (wszTemp);
+
+    // Display the instruction stream
+    NewMsg (L"");
+    NewMsg (L"== INSTRUCTIONS ==");
+
+    // Start instruction display three rows before the actual fault instruction
+    regEIP = ContextRecord.Eip - 3 * 16;
+
+    if (IsGoodReadPtr ((LPUCHAR) regEIP, 48))
+    {
+        for (uCnt = 0; uCnt < 7; uCnt++, regEIP += 16)
+        {
+            wsprintfW (wszTemp,
+                       L"%08X: ",
+                       regEIP);
+
+            for (uMem = 0; uMem < 16; uMem++)
+                wsprintfW (&wszTemp[lstrlenW (wszTemp)],
+                           L" %02X",
+                           *(LPBYTE) (regEIP + uMem));
+            NewMsg (wszTemp);
+        } // End FOR
+    } // End IF
 
     // Display the backtrace
     NewMsg (L"");

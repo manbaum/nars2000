@@ -988,6 +988,7 @@ ERROR_EXIT:
 #undef  APPEND_NAME
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  $DisplayFcnLine
 //
@@ -1021,7 +1022,7 @@ void DisplayFcnLine
                    uLineNum,
                    lpMemFcnName,
                   &lpMemTxtLine->C);
-    DbgMsgW (lpMemPTD->lpwszTemp);
+    DbgMsgW2 (lpMemPTD->lpwszTemp);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemFcnName = NULL;
@@ -1031,6 +1032,7 @@ void DisplayFcnLine
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 } // End DisplayFcnline
+#endif
 
 
 //***************************************************************************

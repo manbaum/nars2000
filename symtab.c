@@ -1937,55 +1937,55 @@ LPSYMENTRY SymTabLookupNameLength
 } // End SymTabLookupNameLength
 
 
-//***************************************************************************
-//  $MakePermSymEntry_EM
-//
-//  Make a permanent SYMENTRY with a given type and value
-//***************************************************************************
-
-LPSYMENTRY MakePermSymEntry_EM
-    (IMM_TYPES    immType,          // ImmType to use (see IMM_TYPES)
-     LPAPLLONGEST lpVal,            // Value to use
-     LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
-
-{
-    LPSYMENTRY lpSymDst;
-
-    // Split cases based upon the immediate type
-    switch (immType)
-    {
-        case IMMTYPE_BOOL:
-            lpSymDst = SymTabAppendPermInteger_EM (*(LPAPLBOOL)  lpVal);
-
-            break;
-
-        case IMMTYPE_INT:
-            lpSymDst = SymTabAppendPermInteger_EM (*(LPAPLINT)   lpVal);
-
-            break;
-
-        case IMMTYPE_CHAR:
-            lpSymDst = SymTabAppendPermChar_EM    (*(LPAPLCHAR)  lpVal);
-
-            break;
-
-        case IMMTYPE_FLOAT:
-            lpSymDst = SymTabAppendPermFloat_EM   (*(LPAPLFLOAT) lpVal);
-
-            break;
-
-        defstop
-            lpSymDst = NULL;
-
-            break;
-    } // End SWITCH
-
-    // If it failed, set the error token
-    if (!lpSymDst)
-        ErrorMessageSetToken (lptkFunc);
-
-    return lpSymDst;
-} // End MakePermSymEntry_EM
+//// //***************************************************************************
+//// //  $MakePermSymEntry_EM
+//// //
+//// //  Make a permanent SYMENTRY with a given type and value
+//// //***************************************************************************
+////
+//// LPSYMENTRY MakePermSymEntry_EM
+////     (IMM_TYPES    immType,          // ImmType to use (see IMM_TYPES)
+////      LPAPLLONGEST lpVal,            // Value to use
+////      LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
+////
+//// {
+////     LPSYMENTRY lpSymDst;
+////
+////     // Split cases based upon the immediate type
+////     switch (immType)
+////     {
+////         case IMMTYPE_BOOL:
+////             lpSymDst = SymTabAppendPermInteger_EM (*(LPAPLBOOL)  lpVal);
+////
+////             break;
+////
+////         case IMMTYPE_INT:
+////             lpSymDst = SymTabAppendPermInteger_EM (*(LPAPLINT)   lpVal);
+////
+////             break;
+////
+////         case IMMTYPE_CHAR:
+////             lpSymDst = SymTabAppendPermChar_EM    (*(LPAPLCHAR)  lpVal);
+////
+////             break;
+////
+////         case IMMTYPE_FLOAT:
+////             lpSymDst = SymTabAppendPermFloat_EM   (*(LPAPLFLOAT) lpVal);
+////
+////             break;
+////
+////         defstop
+////             lpSymDst = NULL;
+////
+////             break;
+////     } // End SWITCH
+////
+////     // If it failed, set the error token
+////     if (!lpSymDst)
+////         ErrorMessageSetToken (lptkFunc);
+////
+////     return lpSymDst;
+//// } // End MakePermSymEntry_EM
 
 
 //***************************************************************************

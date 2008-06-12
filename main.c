@@ -2138,7 +2138,7 @@ BOOL InitInstance
     if (!memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  GuardAlloc for <lpwszGlbTemp> failed");
+        DbgMsgW (L"InitInstance:  GuardAlloc for <lpwszGlbTemp> failed");
 
         return FALSE;       // Mark as failed
     } // End IF
@@ -2166,7 +2166,7 @@ BOOL InitInstance
     if (!memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("InitInstance:  GuardAlloc for <lpGlbHshTab> failed");
+        DbgMsgW (L"InitInstance:  GuardAlloc for <lpGlbHshTab> failed");
 
         return FALSE;       // Mark as failed
     } // End IF

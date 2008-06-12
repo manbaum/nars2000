@@ -285,7 +285,6 @@ BOOL LoadWorkspace_EM
                                 FALSE,                  // Suspended
                                 FALSE,                  // Restartable
                                 TRUE);                  // LinkIntoChain
-
                 // Save ptr & maximum size
                 lpwSrc   = lpMemPTD->lpwszTemp;
                 uMaxSize = lpMemPTD->uTempMaxSize;
@@ -469,6 +468,8 @@ BOOL LoadWorkspace_EM
                 {
                     // Append the name to get a new LPSYMENTRY
                     lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
+                    if (!lpSymEntry)
+                        goto ERROR_EXIT;
 
                     // Mark the SYMENTRY as immediate so we don't free the
                     //   (non-existant) stGlbData
@@ -618,6 +619,8 @@ BOOL LoadWorkspace_EM
                 {
                     // Append the name to get a new LPSYMENTRY
                     lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
+                    if (!lpSymEntry)
+                        goto ERROR_EXIT;
 
                     // Set stFlags as appropriate
                     lpSymEntry->stFlags.ObjName    = OBJNAME_USR;
@@ -833,7 +836,8 @@ LPWCHAR ParseSavedWsVar_EM
     LPWCHAR      lpwCharEnd,            // Temporary ptr
                  lpwDataEnd;            // ...
     STFLAGS      stFlags = {0};         // SymTab flags
-    LPSYMENTRY   lpSymEntry;            // Ptr to STE for HGLOBAL
+    LPSYMENTRY   lpSymEntry,            // Ptr to STE for HGLOBAL
+                 lpSymTmp;              // Ptr to temporary LPSYMENTRY
     APLINT       aplInteger;            // Temporary integer
     APLSTYPE     aplTypeObj;            // Object storage type
     HGLOBAL      hGlbObj;               // Object global memory handle
@@ -972,10 +976,14 @@ LPWCHAR ParseSavedWsVar_EM
 
                 // If we're to save the SymTab, ...
                 if (bSymTab)
+                {
                     // Save in the result and skip over it
                     *((LPAPLHETERO) *lplpMemObj)++ =
+                    lpSymTmp =
                       SymTabAppendInteger_EM (aplInteger);
-                else
+                    if (!lpSymTmp)
+                        goto ERROR_EXIT;
+                } else
                     // Save the result directly
                     *((LPAPLINT) *lplpMemObj) = aplInteger;
                 break;
@@ -998,10 +1006,14 @@ LPWCHAR ParseSavedWsVar_EM
 
                 // If we're to save the SymTab, ...
                 if (bSymTab)
+                {
                     // Save in the result and skip over it
                     *((LPAPLHETERO) *lplpMemObj)++ =
+                    lpSymTmp =
                       SymTabAppendChar_EM (wcTmp);
-                else
+                    if (!lpSymTmp)
+                        goto ERROR_EXIT;
+                } else
                     // Save the result directly
                     *((LPAPLCHAR) *lplpMemObj) = wcTmp;
                 break;
@@ -1021,10 +1033,14 @@ LPWCHAR ParseSavedWsVar_EM
 
                 // If we're to save the SymTab, ...
                 if (bSymTab)
+                {
                     // Save in the result and skip over it
                     *((LPAPLHETERO) *lplpMemObj)++ =
+                    lpSymTmp =
                       SymTabAppendFloat_EM (strtod ((LPCHAR) lpwszFormat, NULL));
-                else
+                    if (!lpSymTmp)
+                        goto ERROR_EXIT;
+                } else
                     // Save the result directly
                     *((LPAPLFLOAT) *lplpMemObj) = strtod ((LPCHAR) lpwszFormat, NULL);
 
@@ -1575,6 +1591,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
     // Create a symbol table entry for the )LOAD HGLOBAL
     lpSymEntry =
       SymTabAppendName_EM (lpwGlbName, &stFlags);
+    if (!lpSymEntry)
+        goto ERROR_EXIT;
 
     // Set the handle
     lpSymEntry->stData.stGlbData = hGlbObj;

@@ -150,7 +150,7 @@ void ImmExecLine
     if (!lpwszCompLine)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("ImmExecLine:  VirtualAlloc for <lpwszCompLine> failed");
+        DbgMsgW (L"ImmExecLine:  VirtualAlloc for <lpwszCompLine> failed");
 
         return;                 // Mark as failed
     } // End IF
@@ -198,7 +198,7 @@ void ImmExecLine
         case L']':          // User commands
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
             // ***FIXME***
-            DbgMsg ("User command");
+            DbgMsgW (L"User command");
 #endif
             AppendLine (ERRMSG_NONCE_ERROR, FALSE, TRUE);
 

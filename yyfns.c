@@ -247,17 +247,17 @@ BOOL YYResIsEmpty
      && lpMemPTD->SILevel EQ lpMemPTD->lpYYRes[u].SILevel)
     {
 #ifdef DEBUG
-        char szTemp[1024];
+        WCHAR wszTemp[1024];
 
-        wsprintf (szTemp,
-                  "The YYRes at %p TknType %s index %04X SI(%d) was allocated at %s#%d",
-                 &lpMemPTD->lpYYRes[u],
-                  GetTokenTypeName (lpMemPTD->lpYYRes[u].tkToken.tkFlags.TknType),
-                  lpMemPTD->lpYYRes[u].YYIndex,
-                  lpMemPTD->lpYYRes[u].SILevel,
-                  lpMemPTD->lpYYRes[u].lpFileName,
-                  lpMemPTD->lpYYRes[u].uLineNum);
-        DbgMsg (szTemp);
+        wsprintfW (wszTemp,
+                   L"The YYRes at %p TknType %S index %04X SI(%d) was allocated at %S#%d",
+                  &lpMemPTD->lpYYRes[u],
+                   GetTokenTypeName (lpMemPTD->lpYYRes[u].tkToken.tkFlags.TknType),
+                   lpMemPTD->lpYYRes[u].YYIndex,
+                   lpMemPTD->lpYYRes[u].SILevel,
+                   lpMemPTD->lpYYRes[u].lpFileName,
+                   lpMemPTD->lpYYRes[u].uLineNum);
+        DbgMsgW (wszTemp);
 #endif
         bRet = FALSE;
 

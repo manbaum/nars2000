@@ -1880,13 +1880,13 @@ LPPL_YYSTYPE MakeList_EM_YY
 {
     LPPL_YYSTYPE  lpYYStrand,       // Ptr to strand base
                   lpYYToken;        // Ptr to current strand token
-    int           iLen;             // # items in the list
+    int           iLen,             // # items in the list
+                  iCnt;             // Loop counter
     APLUINT       ByteRes;          // # bytes in the result
-    HGLOBAL       hGlbLst;          // List global memory handle
-    LPVOID        lpMemLst;         // Ptr to list global memory
+    HGLOBAL       hGlbLst = NULL;   // List global memory handle
+    LPVOID        lpMemLst = NULL;  // Ptr to list global memory
     LPSYMENTRY    lpSymEntry;       // Ptr to SYMENTRY for immediate values
-    BOOL          bRet = TRUE;      // TRUE iff the result is valid
-    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -1894,14 +1894,10 @@ LPPL_YYSTYPE MakeList_EM_YY
 
     DBGENTER;
 
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
     // The list needs to be saved to global memory
 
     // Save the base of this strand
-    lpYYStrand              =
-    lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
+    lpYYStrand = lpYYArg->lpYYStrandBase;
 
     // Get the # elements in the strand
     iLen = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand);
@@ -1913,14 +1909,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbLst = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbLst)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYArg->tkToken);
-        DBGLEAVE;
-
-        // Mark as in error
-        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemLst = MyGlobalLock (hGlbLst);
@@ -1942,13 +1931,18 @@ LPPL_YYSTYPE MakeList_EM_YY
     // Skip over the header and one dimension (it's a vector)
     lpMemLst = VarArrayBaseToData (lpMemLst, 1);
 
+    // Fill list with PTR_REUSED
+    //   in case we fail part way through
+    for (iCnt = 0; iCnt < iLen; iCnt++)
+        ((LPAPLNESTED) lpMemLst)[iCnt] = PTR_REUSED;
+
     // Copy the elements to the global memory
     // Note we copy the elements in the reverse
     //   order they are on the stack because
     //   we parsed the tokenization from right
     //   to left.
     for (lpYYToken = &lpYYStrand[iLen - 1];
-         bRet && lpYYToken NE &lpYYStrand[-1];
+         lpYYToken NE &lpYYStrand[-1];
          lpYYToken--)
     {
         // Split cases based upon the token type
@@ -1965,7 +1959,7 @@ LPPL_YYSTYPE MakeList_EM_YY
                     if (lpSymEntry)
                         *((LPAPLLIST) lpMemLst)++ = lpSymEntry;
                     else
-                        bRet = FALSE;
+                        goto ERROR_EXIT;
                 } else
                     *((LPAPLLIST) lpMemLst)++ = CopySymGlbDirAsGlb (lpSymEntry->stData.stGlbData);
                 break;
@@ -1976,7 +1970,7 @@ LPPL_YYSTYPE MakeList_EM_YY
                 if (lpSymEntry)
                     *((LPAPLLIST) lpMemLst)++ = lpSymEntry;
                 else
-                    bRet = FALSE;
+                    goto ERROR_EXIT;
                 break;
 
             case TKT_VARARRAY:  // 1('ab')
@@ -2000,6 +1994,12 @@ LPPL_YYSTYPE MakeList_EM_YY
     // Unlock the handle
     MyGlobalUnlock (hGlbLst); lpMemLst = NULL;
 
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Save the base of this strand
+    lpYYRes->lpYYStrandBase = lpYYStrand;
+
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = bBrackets ? TKT_LISTBR : TKT_LISTPAR;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
@@ -2007,6 +2007,24 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLst);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYArg->tkToken);
+ERROR_EXIT:
+    if (hGlbLst)
+    {
+        if (lpMemLst)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLst); lpMemLst = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbLst); hGlbLst = NULL;
+    } // End IF
+NORMAL_EXIT:
     // Free the tokens on this portion of the strand stack
     FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandBase[STRAND_VAR]);
 

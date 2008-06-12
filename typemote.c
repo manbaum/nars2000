@@ -555,8 +555,8 @@ void DemoteData
      LPVOID   lpMemRht)             // Ptr to right arg global memory
 
 {
-    APLUINT uRht;
-    UINT    uBitIndex;
+    APLUINT uRht;                   // Loop counter
+    UINT    uBitIndex;              // Bit index for looping through Booleans
 
     // Split cases based upon the result's storage type
     // Note that the result is always of lower type than
@@ -859,15 +859,16 @@ BOOL TypePromoteGlb_EM
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    HGLOBAL  hGlbArg,               // Arg    ...
-             hGlbRes = NULL;        // Result global memory handle
-    BOOL     bRet = TRUE;           // TRUE iff the result is valid
-    LPVOID   lpMemArg,              // Ptr to global memory
-             lpMemRes = NULL;       // Ptr to result global memory
-    APLSTYPE aplTypeArg;            // Arg storage type of HGLOBAL
-    APLNELM  aplNELMArg;            // Arg NELM         ...
-    APLRANK  aplRankArg;            // Arg Rank         ...
-    APLUINT  ByteRes;               // # bytes in the result
+    HGLOBAL    hGlbArg,             // Arg    ...
+               hGlbRes = NULL;      // Result global memory handle
+    BOOL       bRet = TRUE;         // TRUE iff the result is valid
+    LPVOID     lpMemArg,            // Ptr to global memory
+               lpMemRes = NULL;     // Ptr to result global memory
+    APLSTYPE   aplTypeArg;          // Arg storage type of HGLOBAL
+    APLNELM    aplNELMArg;          // Arg NELM         ...
+    APLRANK    aplRankArg;          // Arg Rank         ...
+    APLUINT    ByteRes;             // # bytes in the result
+    LPSYMENTRY lpSymTmp;            // Ptr to temporary LPSYMENTRY
 
     // Clear the type bits
     hGlbArg = ClrPtrTypeDirAsGlb (*lphGlbArg);
@@ -1063,22 +1064,40 @@ BOOL TypePromoteGlb_EM
                 case ARRAY_INT:
                     // Loop through the arg converting values to the result
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
+                    {
                         *((LPAPLHETERO) lpMemRes)++ =
+                        lpSymTmp =
                           SymTabAppendInteger_EM (*((LPAPLINT) lpMemArg)++);
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
+                    } // End FOR
+
                     break;
 
                 case ARRAY_FLOAT:
                     // Loop through the arg converting values to the result
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
+                    {
                         *((LPAPLHETERO) lpMemRes)++ =
+                        lpSymTmp =
                           SymTabAppendFloat_EM (*((LPAPLFLOAT) lpMemArg)++);
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
+                    } // End FOR
+
                     break;
 
                 case ARRAY_CHAR:
                     // Loop through the arg converting values to the result
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
+                    {
                         *((LPAPLHETERO) lpMemRes)++ =
+                        lpSymTmp =
                           SymTabAppendChar_EM (*((LPAPLCHAR) lpMemArg)++);
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
+                    } // End FOR
+
                     break;
 
                 case ARRAY_APA:
@@ -1089,8 +1108,14 @@ BOOL TypePromoteGlb_EM
 #undef  lpAPA
                     // Loop through the arg converting values to the result
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
+                    {
                         *((LPAPLHETERO) lpMemRes)++ =
+                        lpSymTmp =
                           SymTabAppendInteger_EM (apaOff + apaMul * uRes);
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
+                    } // End FOR
+
                     break;
 
                 case ARRAY_HETERO:

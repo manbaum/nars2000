@@ -119,13 +119,13 @@ int PASCAL WinMain
                         lpTmpFile,
                         lpEndLine;
     SECURITY_ATTRIBUTES secAttr = {sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
-    HANDLE              hOutFile,
-                        hSrcFile,
-                        hTmpFile,
-                        hTmpMap,
-                        hOutMap,
-                        hTmpView,
-                        hOutView;
+    HANDLE              hOutFile = NULL,
+                        hSrcFile = NULL,
+                        hTmpFile = NULL,
+                        hTmpMap = NULL,
+                        hOutMap = NULL,
+                        hTmpView = NULL,
+                        hOutView = NULL;
     STARTUPINFO         siBlk;
     PROCESS_INFORMATION piBlk;
     DWORD               dwTmpFileSize,
@@ -261,6 +261,8 @@ int PASCAL WinMain
 
     // Get the file size (it always fits in a DWORD)
     dwTmpFileSize = GetFileSize (hTmpFile, NULL);
+    if (dwTmpFileSize EQ 0)
+        goto NORMAL_EXIT;
 
     // Now launder the output file to remove anomalies of some MS compilers
 
@@ -496,18 +498,27 @@ int PASCAL WinMain
         // We no longer need this resource
         CloseHandle (hOutFile); hOutFile = NULL;
     } // End IF
+NORMAL_EXIT:
+    if (hTmpView)
+    {
+        // We no longer need this resource
+        UnmapViewOfFile (hTmpView); hTmpView = NULL;
+    } // End IF
 
-    // We no longer need this resource
-    UnmapViewOfFile (hTmpView); hTmpView = NULL;
+    if (hTmpMap)
+    {
+        // We no longer need this resource
+        CloseHandle (hTmpMap); hTmpMap = NULL;
+    } // End IF
 
-    // We no longer need this resource
-    CloseHandle (hTmpMap); hTmpMap = NULL;
+    if (hTmpFile)
+    {
+        // We no longer need this resource
+        CloseHandle (hTmpFile); hTmpFile = NULL;
 
-    // We no longer need this resource
-    CloseHandle (hTmpFile); hTmpFile = NULL;
-
-    // We no longer need this resource
-    DeleteFile (lpTmpFile);
+        // We no longer need this resource
+        DeleteFile (lpTmpFile);
+    } // End IF
 
     return 0;
 } // End WinMain

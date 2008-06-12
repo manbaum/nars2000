@@ -2932,7 +2932,7 @@ LPSYMENTRY ParseFunctionName
     if (!lclMemVirtStr[0].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("ParseFunctionName:  VirtualAlloc for <fhLocalVars.lpYYStrandStart> failed");
+        DbgMsgW (L"ParseFunctionName:  VirtualAlloc for <fhLocalVars.lpYYStrandStart> failed");
 
         goto ERROR_EXIT;        // Mark as failed
     } // End IF

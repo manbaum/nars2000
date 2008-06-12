@@ -261,7 +261,7 @@ BOOL DisplayGlbArr
     if (!lclMemVirtStr[0].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("DisplayGlbArr:  GuardAlloc for <lpaplCharIni> failed");
+        DbgMsgW (L"DisplayGlbArr:  GuardAlloc for <lpaplCharIni> failed");
 
         goto ERROR_EXIT;    // Mark as failed
     } // End IF

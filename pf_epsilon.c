@@ -311,13 +311,13 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     APLSTYPE     aplTypeRes,        // Result storage type
                  aplTypePro;        // Prototype ...
     APLNELM      aplNELMRes;        // # elements in the result
-    HGLOBAL      hGlbRes;           // Result global memory handle
-    LPVOID       lpMemRes;          // Ptr to result global memory
+    HGLOBAL      hGlbRes = NULL;    // Result global memory handle
+    LPVOID       lpMemRes = NULL;   // Ptr to result global memory
     APLUINT      ByteRes;           // # bytes in the result
     UINT         uBitMask = 0x01,   // Bit mask for marching through Booleans
                  uBitIndex = 0;     // Bit index ...
     BOOL         bRet = TRUE;       // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Traverse the array counting the # simple scalars
     //   and keeping track of the common storage type --
@@ -361,11 +361,12 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the data from the right arg to the result
-    PrimFnMonEpsilonGlbCopy (aplTypeRes,
-                            &lpMemRes,
-                            &uBitIndex,
-                             ClrPtrTypeDirAsGlb (hGlbRht),
-                             lptkFunc);
+    if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                    &lpMemRes,
+                                    &uBitIndex,
+                                     ClrPtrTypeDirAsGlb (hGlbRht),
+                                     lptkFunc))
+        goto ERROR_EXIT;
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
@@ -387,6 +388,19 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+
     return NULL;
 } // End PrimFnMonEpsilonGlb_EM_YY
 #undef  APPEND_NAME
@@ -499,12 +513,12 @@ void PrimFnMonEpsilonGlbCount
 
 
 //***************************************************************************
-//  $PrimFnMonEpsilonGlbCopy
+//  $PrimFnMonEpsilonGlbCopy_EM
 //
 //  Copy the data from the right arg to the result
 //***************************************************************************
 
-void PrimFnMonEpsilonGlbCopy
+BOOL PrimFnMonEpsilonGlbCopy_EM
     (APLSTYPE aplTypeRes,           // Result type
      LPVOID  *lplpMemRes,           // Ptr to ptr to result memory
      LPUINT   lpuBitIndex,          // Ptr to uBitIndex
@@ -522,6 +536,8 @@ void PrimFnMonEpsilonGlbCopy
     APLINT     apaOffRht,           // Right arg APA offset
                apaMulRht;           // ...           multiplier
     APLLONGEST aplVal;              // Temporary value
+    BOOL       bRet = FALSE;        // TRUE iff the result is valid
+    LPSYMENTRY lpSymTmp;            // Ptr to temporary LPSYMENTRY
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -637,11 +653,12 @@ void PrimFnMonEpsilonGlbCopy
                             Assert (IsGlbTypeVarInd (lpMemRht));
 
                             // Copy the data to the result
-                            PrimFnMonEpsilonGlbCopy (aplTypeRes,
-                                                     lplpMemRes,
-                                                     lpuBitIndex,
-                                                     ClrPtrTypeIndAsGlb (lpMemRht),
-                                                     lptkFunc);
+                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                             lplpMemRes,
+                                                             lpuBitIndex,
+                                                             ClrPtrTypeIndAsGlb (lpMemRht),
+                                                             lptkFunc))
+                                goto ERROR_EXIT;
                             break;
 
                         defstop
@@ -734,11 +751,12 @@ void PrimFnMonEpsilonGlbCopy
                             Assert (IsGlbTypeVarInd (lpMemRht));
 
                             // Copy the data to the result
-                            PrimFnMonEpsilonGlbCopy (aplTypeRes,
-                                                     lplpMemRes,
-                                                     lpuBitIndex,
-                                                     ClrPtrTypeIndAsGlb (lpMemRht),
-                                                     lptkFunc);
+                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                             lplpMemRes,
+                                                             lpuBitIndex,
+                                                             ClrPtrTypeIndAsGlb (lpMemRht),
+                                                             lptkFunc))
+                                goto ERROR_EXIT;
                             break;
 
                         defstop
@@ -839,11 +857,12 @@ void PrimFnMonEpsilonGlbCopy
                             Assert (IsGlbTypeVarInd (lpMemRht));
 
                             // Copy the data to the result
-                            PrimFnMonEpsilonGlbCopy (aplTypeRes,
-                                                     lplpMemRes,
-                                                     lpuBitIndex,
-                                                     ClrPtrTypeIndAsGlb (lpMemRht),
-                                                     lptkFunc);
+                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                             lplpMemRes,
+                                                             lpuBitIndex,
+                                                             ClrPtrTypeIndAsGlb (lpMemRht),
+                                                             lptkFunc))
+                                goto ERROR_EXIT;
                             break;
 
                         defstop
@@ -904,11 +923,12 @@ void PrimFnMonEpsilonGlbCopy
                             Assert (IsGlbTypeVarInd (lpMemRht));
 
                             // Copy the data to the result
-                            PrimFnMonEpsilonGlbCopy (aplTypeRes,
-                                                     lplpMemRes,
-                                                     lpuBitIndex,
-                                                     ClrPtrTypeIndAsGlb (lpMemRht),
-                                                     lptkFunc);
+                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                             lplpMemRes,
+                                                             lpuBitIndex,
+                                                             ClrPtrTypeIndAsGlb (lpMemRht),
+                                                             lptkFunc))
+                                goto ERROR_EXIT;
                             break;
 
                         defstop
@@ -937,10 +957,12 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         aplVal = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
+                        lpSymTmp =
                           MakeSymEntry_EM (IMMTYPE_BOOL,            // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
-
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                         // Shift over the bit mask
                         uBitMask <<= 1;
 
@@ -960,9 +982,12 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         aplVal = *((LPAPLINT) lpMemRht)++;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
+                        lpSymTmp =
                           MakeSymEntry_EM (IMMTYPE_INT,             // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                     } // End FOR
 
                     break;
@@ -973,9 +998,12 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         aplVal = *(LPAPLLONGEST) ((LPAPLFLOAT) lpMemRht)++;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
+                        lpSymTmp =
                           MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                     } // End FOR
 
                     break;
@@ -986,9 +1014,12 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         aplVal = apaOffRht + apaMulRht * uRht;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
+                        lpSymTmp =
                           MakeSymEntry_EM (IMMTYPE_INT,             // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                     } // End FOR
 
                     break;
@@ -999,9 +1030,12 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         aplVal = *((LPAPLCHAR) lpMemRht)++;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
+                        lpSymTmp =
                           MakeSymEntry_EM (IMMTYPE_CHAR,            // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                     } // End FOR
 
                     break;
@@ -1030,34 +1064,46 @@ void PrimFnMonEpsilonGlbCopy
                                 case IMMTYPE_BOOL:  // Res = HETERO, Rht = NESTED:BOOL
                                     aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
                                     *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                    lpSymTmp =
                                       MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
                                                       &aplVal,          // Ptr to immediate value
                                                        lptkFunc);       // Ptr to function token
+                                    if (!lpSymTmp)
+                                        goto ERROR_EXIT;
                                     break;
 
                                 case IMMTYPE_INT:   // Res = HETERO, Rht = NESTED:INT
                                     aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
                                     *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                    lpSymTmp =
                                       MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
                                                       &aplVal,          // Ptr to immediate value
                                                        lptkFunc);       // Ptr to function token
+                                    if (!lpSymTmp)
+                                        goto ERROR_EXIT;
                                     break;
 
                                 case IMMTYPE_FLOAT: // Res = HETERO, Rht = NESTED:FLOAT
                                     aplVal = *(LPAPLLONGEST) &(*(LPAPLHETERO) lpMemRht)->stData.stFloat;
                                     *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                    lpSymTmp =
                                       MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
                                                       &aplVal,          // Ptr to immediate value
                                                        lptkFunc);       // Ptr to function token
+                                    if (!lpSymTmp)
+                                        goto ERROR_EXIT;
                                     break;
 
 
                                 case IMMTYPE_CHAR:  // Res = HETERO, Rht = NESTED:CHAR
                                     aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stChar;
                                     *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                    lpSymTmp =
                                       MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
                                                       &aplVal,          // Ptr to immediate value
                                                       lptkFunc);        // Ptr to function token
+                                    if (!lpSymTmp)
+                                        goto ERROR_EXIT;
                                     break;
 
                                 defstop
@@ -1071,11 +1117,12 @@ void PrimFnMonEpsilonGlbCopy
                             Assert (IsGlbTypeVarInd (lpMemRht));
 
                             // Copy the data to the result
-                            PrimFnMonEpsilonGlbCopy (aplTypeRes,
-                                                     lplpMemRes,
-                                                     lpuBitIndex,
-                                                     ClrPtrTypeIndAsGlb (lpMemRht),
-                                                     lptkFunc);
+                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                             lplpMemRes,
+                                                             lpuBitIndex,
+                                                             ClrPtrTypeIndAsGlb (lpMemRht),
+                                                             lptkFunc))
+                                goto ERROR_EXIT;
                             break;
 
                         defstop
@@ -1096,9 +1143,14 @@ void PrimFnMonEpsilonGlbCopy
             break;
     } // End SWITCH
 
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-} // End PrimFnMonEpsilonGlbCopy
+
+    return bRet;
+} // End PrimFnMonEpsilonGlbCopy_EM
 
 
 //***************************************************************************

@@ -209,6 +209,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                  tkItmRht = {0},        // Right ...
                  tkItmRed;              // Reduction ...
     IMM_TYPES    immTypeItm;            // Arg item immediate type
+    LPSYMENTRY   lpSymTmp;              // Ptr to temporary LPSYMENTRY
 
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
@@ -586,11 +587,15 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         {
             // If the result is an immediate, ...
             if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
+            {
                 *((LPAPLNESTED) lpMemRes)++ =
+                lpSymTmp =
                   MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
                                   &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
                                   &lpYYRes->tkToken);                   // Ptr to function token
-            else
+                if (!lpSymTmp)
+                    goto ERROR_EXIT;
+            } else
                 *((LPAPLNESTED) lpMemRes)++ =
                   CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
 
@@ -757,11 +762,15 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
 
         // If the accumulated reduction is an immediate, ...
         if (tkItmRed.tkFlags.TknType EQ TKT_VARIMMED)
+        {
             *((LPAPLNESTED) lpMemRes)++ =
+            lpSymTmp =
               MakeSymEntry_EM (tkItmRed.tkFlags.ImmType,    // Immediate type
                               &tkItmRed.tkData.tkLongest,   // Ptr to immediate value
                               &tkItmRed);                   // Ptr to function token
-        else
+            if (!lpSymTmp)
+                goto ERROR_EXIT;
+        } else
             *((LPAPLNESTED) lpMemRes)++ =
               CopySymGlbDir (tkItmRed.tkData.tkGlbData);
         // Free the accumulated reduction token

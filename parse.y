@@ -76,9 +76,10 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 #define yy_reduce_print         pl_yy_reduce_print
 #define yydestruct              pl_yydestruct
 
-////#define DbgMsgW2(a) if (gDbgLvl > 2) DbgMsgW(lpplLocalVars->bLookAhead ? L"==" a : a)
-////#define DbgMsgW2(a)                  DbgMsgW(lpplLocalVars->bLookAhead ? L"==" a : a); DbgBrk ()
-    #define DbgMsgW2(a)                  DbgMsgW(lpplLocalVars->bLookAhead ? L"==" a : a)
+////#define DbgMsgWP(a)         DbgMsgW2 (lpplLocalVars->bLookAhead ? L"==" a : a)
+////#define DbgMsgWP(a)         DbgMsgW  (lpplLocalVars->bLookAhead ? L"==" a : a); DbgBrk ()
+////#define DbgMsgWP(a)         DbgMsgW  (lpplLocalVars->bLookAhead ? L"==" a : a)
+    #define DbgMsgWP(a)
 
 #ifdef DEBUG
 #define APPEND_NAME     L" -- pl_yyparse"
@@ -132,7 +133,7 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 StmtMult:
       // All errors propagate up to this point where we ABORT -- this ensures
       //   that the call to pl_yyparse terminates with a non-zero error code.
-      error                             {DbgMsgW2 (L"%%StmtMult:  error");
+      error                             {DbgMsgWP (L"%%StmtMult:  error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -156,7 +157,7 @@ StmtMult:
                                          } else
                                              YYABORT;
                                         }
-    |                  StmtSing         {DbgMsgW2 (L"%%StmtMult:  StmtSing");
+    |                  StmtSing         {DbgMsgWP (L"%%StmtMult:  StmtSing");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -165,7 +166,7 @@ StmtMult:
                                              Assert (YYResIsEmpty ());
                                          } // End IF
                                         }
-    | StmtMult DIAMOND StmtSing         {DbgMsgW2 (L"%%StmtMult:  StmtSing " WS_UTF16_DIAMOND L" StmtMult");
+    | StmtMult DIAMOND StmtSing         {DbgMsgWP (L"%%StmtMult:  StmtSing " WS_UTF16_DIAMOND L" StmtMult");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -178,12 +179,12 @@ StmtMult:
 
 // Single statement
 StmtSing:
-      /* Empty */                       {DbgMsgW2 (L"%%StmtSing:  <empty>");
+      /* Empty */                       {DbgMsgWP (L"%%StmtSing:  <empty>");
                                          if (!lpplLocalVars->bLookAhead)
                                              lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
                                         }
 ////| error                             //--Conflicts
-    | ArrExpr                           {DbgMsgW2 (L"%%StmtSing:  ArrExpr");
+    | ArrExpr                           {DbgMsgWP (L"%%StmtSing:  ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -253,7 +254,7 @@ StmtSing:
                                                  lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
                                          } // End IF/ELSE
                                         }
-    | error   GOTO                      {DbgMsgW2 (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"error");
+    | error   GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"error");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -264,7 +265,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr GOTO                      {DbgMsgW2 (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"ArrExpr");
+    | ArrExpr GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -314,7 +315,7 @@ StmtSing:
                                              } // End SWITCH
                                          } // End IF/ELSE/IF
                                         }
-    |         GOTO                      {DbgMsgW2 (L"%%StmtSing:  " WS_UTF16_RIGHTARROW);
+    |         GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW);
                                          if (lpplLocalVars->bCtrlBreak || lpplLocalVars->bLookAhead)
                                              YYERROR;
                                          else
@@ -360,7 +361,7 @@ StmtSing:
                                              YYACCEPT;              // Stop executing this line
                                          } // End IF/ELSE
                                         }
-    | error   ASSIGN                    {DbgMsgW2 (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"error");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -371,7 +372,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN                    {DbgMsgW2 (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -383,7 +384,7 @@ StmtSing:
                                              lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
                                          } // End IF/ELSE/IF
                                         }
-////     | ArrExpr NAMEOP3                   {DbgMsgW2 (L"%%StmtSing:  NAMEOP3 ArrExpr");
+////     | ArrExpr NAMEOP3                   {DbgMsgWP (L"%%StmtSing:  NAMEOP3 ArrExpr");
 ////                                              DbgBrk ();
 ////
 ////                                              lpplLocalVars->lpYYMak =
@@ -433,7 +434,7 @@ StmtSing:
 ////
 ////                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
 ////                                         }
-    | FcnSpec                           {DbgMsgW2 (L"%%StmtSing:  FcnSpec");
+    | FcnSpec                           {DbgMsgWP (L"%%StmtSing:  FcnSpec");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -456,7 +457,7 @@ StmtSing:
                                              $$ = $1;
                                          } // End IF/ELSE/IF
                                         }
-    | Op1Spec                           {DbgMsgW2 (L"%%StmtSing:  Op1Spec");
+    | Op1Spec                           {DbgMsgWP (L"%%StmtSing:  Op1Spec");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -479,7 +480,7 @@ StmtSing:
                                              $$ = $1;
                                          }
                                         }
-    | Op2Spec                           {DbgMsgW2 (L"%%StmtSing:  Op2Spec");
+    | Op2Spec                           {DbgMsgWP (L"%%StmtSing:  Op2Spec");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -502,7 +503,7 @@ StmtSing:
                                              $$ = $1;
                                          }
                                         }
-    | Op3Spec                           {DbgMsgW2 (L"%%StmtSing:  Op3Spec");
+    | Op3Spec                           {DbgMsgWP (L"%%StmtSing:  Op3Spec");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -526,13 +527,13 @@ StmtSing:
                                          }
                                         }
 // The following productions ending in EOL are for bLookAhead only
-    |     error   EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL error");
+    |     error   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL error");
                                          if (lpplLocalVars->bLookAhead)
                                              YYERROR;
                                          else
                                              YYERROR;
                                         }
-////|     IndexListWE EOL               {DbgMsgW2 (L"%%StmtSing:  EOL IndexListWE");
+////|     IndexListWE EOL               {DbgMsgWP (L"%%StmtSing:  EOL IndexListWE");
 ////                                     if (lpplLocalVars->bLookAhead)
 ////                                     {
 ////                                         lpplLocalVars->plNameType = NAMETYPE_LST;
@@ -540,7 +541,7 @@ StmtSing:
 ////                                     } else
 ////                                         YYERROR;
 ////                                    }
-    |     ArrExpr EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL ArrExpr");
+    |     ArrExpr EOL                   {DbgMsgWP (L"%%StmtSing:  EOL ArrExpr");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_VAR;
@@ -548,7 +549,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     FcnSpec EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL FcnSpec");
+    |     FcnSpec EOL                   {DbgMsgWP (L"%%StmtSing:  EOL FcnSpec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
@@ -556,7 +557,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     Op1Spec EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL Op1Spec");
+    |     Op1Spec EOL                   {DbgMsgWP (L"%%StmtSing:  EOL Op1Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
@@ -564,7 +565,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     Op1Spec LeftOper EOL          {DbgMsgW2 (L"%%StmtSing:  EOL LeftOper Op1Spec");
+    |     Op1Spec LeftOper EOL          {DbgMsgWP (L"%%StmtSing:  EOL LeftOper Op1Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
@@ -572,7 +573,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     Op2Spec EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL Op2Spec");
+    |     Op2Spec EOL                   {DbgMsgWP (L"%%StmtSing:  EOL Op2Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP2;
@@ -580,7 +581,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     Op3Spec EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL Op3Spec");
+    |     Op3Spec EOL                   {DbgMsgWP (L"%%StmtSing:  EOL Op3Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
@@ -588,7 +589,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     MonOp   EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL MonOp");
+    |     MonOp   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL MonOp");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
@@ -596,7 +597,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     DydOp   EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL DydOp");
+    |     DydOp   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL DydOp");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP2;
@@ -604,7 +605,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     AmbOp   EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL AmbOp");
+    |     AmbOp   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL AmbOp");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP3;
@@ -612,7 +613,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     LeftOper EOL                  {DbgMsgW2 (L"%%StmtSing:  EOL LeftOper");
+    |     LeftOper EOL                  {DbgMsgWP (L"%%StmtSing:  EOL LeftOper");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
@@ -620,7 +621,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     AxisFunc EOL                  {DbgMsgW2 (L"%%StmtSing:  EOL AxisFunc");
+    |     AxisFunc EOL                  {DbgMsgWP (L"%%StmtSing:  EOL AxisFunc");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
@@ -628,7 +629,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     Drv1Func EOL                  {DbgMsgW2 (L"%%StmtSing:  EOL Drv1Func");
+    |     Drv1Func EOL                  {DbgMsgWP (L"%%StmtSing:  EOL Drv1Func");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
@@ -636,7 +637,7 @@ StmtSing:
                                          } else
                                              YYERROR;
                                         }
-    |     Drv2Func EOL                  {DbgMsgW2 (L"%%StmtSing:  EOL Drv2Func");
+    |     Drv2Func EOL                  {DbgMsgWP (L"%%StmtSing:  EOL Drv2Func");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
@@ -647,34 +648,34 @@ StmtSing:
     ;
 
 NameAnyVar:
-      NAMEUNK                           {DbgMsgW2 (L"%%NameAnyVar:  NAMEUNK");
+      NAMEUNK                           {DbgMsgWP (L"%%NameAnyVar:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | NAMEVAR                           {DbgMsgW2 (L"%%NameAnyVar:  NAMEVAR");
+    | NAMEVAR                           {DbgMsgWP (L"%%NameAnyVar:  NAMEVAR");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
     ;
 
 NameAnyOpN:
-      NAMEUNK                           {DbgMsgW2 (L"%%NameAnyOpN:  NAMEUNK");
+      NAMEUNK                           {DbgMsgWP (L"%%NameAnyOpN:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | NAMEFCN                           {DbgMsgW2 (L"%%NameAnyOpN:  NAMEFCN");
+    | NAMEFCN                           {DbgMsgWP (L"%%NameAnyOpN:  NAMEFCN");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | NAMEOP1                           {DbgMsgW2 (L"%%NameAnyOpN:  NAMEOP1");
+    | NAMEOP1                           {DbgMsgWP (L"%%NameAnyOpN:  NAMEOP1");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | NAMEOP2                           {DbgMsgW2 (L"%%NameAnyOpN:  NAMEOP2");
+    | NAMEOP2                           {DbgMsgWP (L"%%NameAnyOpN:  NAMEOP2");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | NAMEOP3                           {DbgMsgW2 (L"%%NameAnyOpN:  NAMEOP3");
+    | NAMEOP3                           {DbgMsgWP (L"%%NameAnyOpN:  NAMEOP3");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
@@ -683,7 +684,7 @@ NameAnyOpN:
 // Function specification
 FcnSpec:
 ////  error    ASSIGN NameAnyOpN        //--Conflicts
-      LeftOper ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"LeftOper");
+      LeftOper ASSIGN NameAnyOpN        {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"LeftOper");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -718,7 +719,7 @@ FcnSpec:
                                          } // End IF
                                         }
 ////| error    ASSIGN NameAnyOpN        //--Conflicts
-    | Drv1Func ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func");
+    | Drv1Func ASSIGN NameAnyOpN        {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -753,7 +754,7 @@ FcnSpec:
                                          } // End IF
                                         }
 ////| error    ASSIGN NameAnyOpN        //--Conflicts
-    | Drv2Func ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func");
+    | Drv2Func ASSIGN NameAnyOpN        {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -788,7 +789,7 @@ FcnSpec:
                                          } // End IF
                                         }
 ////| error    ASSIGN NameAnyOpN        //--Conflicts
-    | AxisFunc ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"AxisFunc");
+    | AxisFunc ASSIGN NameAnyOpN        {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"AxisFunc");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -822,7 +823,7 @@ FcnSpec:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | MonOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func MonOp");
+    | MonOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func MonOp");
 
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -882,7 +883,7 @@ FcnSpec:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | MonOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func MonOp");
+    | MonOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func MonOp");
 
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -942,7 +943,7 @@ FcnSpec:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | AmbOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func AmbOp");
+    | AmbOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func AmbOp");
 
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -1006,7 +1007,7 @@ FcnSpec:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | AmbOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func AmbOp");
+    | AmbOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func AmbOp");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Change the first token in the function strand
@@ -1072,7 +1073,7 @@ FcnSpec:
     ;
 
 Op1Spec:
-      MonOp    ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%Op1Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"MonOp");
+      MonOp    ASSIGN NameAnyOpN        {DbgMsgWP (L"%%Op1Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"MonOp");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1111,7 +1112,7 @@ Op1Spec:
 // The following assignment can be made to work if we switch the order of the arguments
 //   to a dyadic operator in a function strand from D L R to D R L and make all corresponding
 //   changes elsewhere such as whenever parsing a function strand.
-////| RightOper DydOp ASSIGN NameAnyOpN {DbgMsgW2 (L"%%Op1Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"DydOp RightOper");
+////| RightOper DydOp ASSIGN NameAnyOpN {DbgMsgWP (L"%%Op1Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"DydOp RightOper");
 ////                                     if (lpplLocalVars->bCtrlBreak)
 ////                                     {
 ////                                         FreeResult (&$1.tkToken);
@@ -1176,7 +1177,7 @@ Op1Spec:
 
 // Dyadic operator specification
 Op2Spec:
-      DydOp    ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%Op2Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"DydOp");
+      DydOp    ASSIGN NameAnyOpN        {DbgMsgWP (L"%%Op2Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"DydOp");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1215,7 +1216,7 @@ Op2Spec:
 
 // Ambiguous operator assignment
 AmbOpAssign:
-      OP3ASSIGN                         {DbgMsgW2 (L"%%AmbOpAssign:  OP3ASSIGN");
+      OP3ASSIGN                         {DbgMsgWP (L"%%AmbOpAssign:  OP3ASSIGN");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -1243,7 +1244,7 @@ AmbOpAssign:
 
                                          } // End IF
                                         }
-    | NAMEOP3ASSIGN                     {DbgMsgW2 (L"%%AmbOpAssign:  NAMEOP3ASSIGN");
+    | NAMEOP3ASSIGN                     {DbgMsgWP (L"%%AmbOpAssign:  NAMEOP3ASSIGN");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -1270,7 +1271,7 @@ AmbOpAssign:
                                              $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
-    | AmbOp                             {DbgMsgW2 (L"%%AmbOpAssign:  (AmbOp)");
+    | AmbOp                             {DbgMsgWP (L"%%AmbOpAssign:  (AmbOp)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp3 =
@@ -1287,7 +1288,7 @@ AmbOpAssign:
                                              $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
-    | AmbOpAssign OP3ASSIGN             {DbgMsgW2 (L"%%AmbOpAssign:  OP3ASSIGN AmbOpAssign");
+    | AmbOpAssign OP3ASSIGN             {DbgMsgWP (L"%%AmbOpAssign:  OP3ASSIGN AmbOpAssign");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -1328,7 +1329,7 @@ AmbOpAssign:
                                              YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
-    | AmbOpAssign NAMEOP3ASSIGN         {DbgMsgW2 (L"%%AmbOpAssign:  NAMEOP3ASSIGN AmbOpAssign");
+    | AmbOpAssign NAMEOP3ASSIGN         {DbgMsgWP (L"%%AmbOpAssign:  NAMEOP3ASSIGN AmbOpAssign");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -1375,7 +1376,7 @@ AmbOpAssign:
 
 // Ambiguous operator specification
 Op3Spec:
-      AmbOpAssign   ASSIGN NameAnyOpN   {DbgMsgW2 (L"%%Op3Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"AmbOp");
+      AmbOpAssign   ASSIGN NameAnyOpN   {DbgMsgWP (L"%%Op3Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"AmbOp");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1416,15 +1417,15 @@ Op3Spec:
 // Array expression
 ArrExpr:
 //////error                             //--Conflicts
-      SimpExpr                          {DbgMsgW2 (L"%%ArrExpr:  SimpExpr");
+      SimpExpr                          {DbgMsgWP (L"%%ArrExpr:  SimpExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | StrandInst                        {DbgMsgW2 (L"%%ArrExpr:  StrandInst");
+    | StrandInst                        {DbgMsgWP (L"%%ArrExpr:  StrandInst");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | error   LeftOper                  {DbgMsgW2 (L"%%ArrExpr:  LeftOper error");
+    | error   LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -1434,7 +1435,7 @@ ArrExpr:
                                              YYERROR;
                                         }
 ////| ArrExpr error                     //--Conflicts
-    | ArrExpr LeftOper                  {DbgMsgW2 (L"%%ArrExpr:  LeftOper ArrExpr");
+    | ArrExpr LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1464,7 +1465,7 @@ ArrExpr:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | error   Drv1Func                  {DbgMsgW2 (L"%%ArrExpr:  Drv1Func error");
+    | error   Drv1Func                  {DbgMsgWP (L"%%ArrExpr:  Drv1Func error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -1474,7 +1475,7 @@ ArrExpr:
                                              YYERROR;
                                         }
 ////| ArrExpr error                     //--Conflicts
-    | ArrExpr Drv1Func                  {DbgMsgW2 (L"%%ArrExpr:  Drv1Func ArrExpr");
+    | ArrExpr Drv1Func                  {DbgMsgWP (L"%%ArrExpr:  Drv1Func ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1504,7 +1505,7 @@ ArrExpr:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | error   AxisFunc                  {DbgMsgW2 (L"%%ArrExpr:  AxisFunc error");
+    | error   AxisFunc                  {DbgMsgWP (L"%%ArrExpr:  AxisFunc error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -1514,7 +1515,7 @@ ArrExpr:
                                              YYERROR;
                                         }
 ////| ArrExpr error                     //--Conflicts
-    | ArrExpr AxisFunc                  {DbgMsgW2 (L"%%ArrExpr:  AxisFunc ArrExpr");
+    | ArrExpr AxisFunc                  {DbgMsgWP (L"%%ArrExpr:  AxisFunc ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1544,7 +1545,7 @@ ArrExpr:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr LeftOper error            {DbgMsgW2 (L"%%ArrExpr:  error LeftOper ArrExpr");
+    | ArrExpr LeftOper error            {DbgMsgWP (L"%%ArrExpr:  error LeftOper ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1554,7 +1555,7 @@ ArrExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error   LeftOper StrandInst       {DbgMsgW2 (L"%%ArrExpr:  StrandInst LeftOper error");
+    | error   LeftOper StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst LeftOper error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -1566,7 +1567,7 @@ ArrExpr:
                                         }
 ////| ArrExpr LeftOper error            //--Conflicts
 ////| ArrExpr error    StrandInst       //--Conflicts
-    | ArrExpr LeftOper StrandInst       {DbgMsgW2 (L"%%ArrExpr:  StrandInst LeftOper ArrExpr");
+    | ArrExpr LeftOper StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst LeftOper ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1599,7 +1600,7 @@ ArrExpr:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AmbOp    error            {DbgMsgW2 (L"%%ArrExpr:  error AmbOp ArrExpr");
+    | ArrExpr AmbOp    error            {DbgMsgWP (L"%%ArrExpr:  error AmbOp ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1609,7 +1610,7 @@ ArrExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error   AmbOp StrandInst          {DbgMsgW2 (L"%%ArrExpr:  StrandInst AmbOp error");
+    | error   AmbOp StrandInst          {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOp error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -1619,13 +1620,13 @@ ArrExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr AmbOp NAMEOP3ASSIGN       {DbgMsgW2 (L"%%ArrExpr:  OP3ASSIGN AmbOp ArrExpr");
+    | ArrExpr AmbOp NAMEOP3ASSIGN       {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOp ArrExpr");
                                          DbgBrk ();     // ***FIXME*** -- Can we ever get here??
 
 
 
                                         }
-    | ArrExpr AmbOp OP3ASSIGN           {DbgMsgW2 (L"%%ArrExpr:  OP3ASSIGN AmbOp ArrExpr");
+    | ArrExpr AmbOp OP3ASSIGN           {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOp ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -1694,7 +1695,7 @@ ArrExpr:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AmbOp StrandInst          {DbgMsgW2 (L"%%ArrExpr:  StrandInst AmbOp ArrExpr");
+    | ArrExpr AmbOp StrandInst          {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOp ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1744,7 +1745,7 @@ ArrExpr:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AxisFunc error            {DbgMsgW2 (L"%%ArrExpr:  error AxisFunc ArrExpr");
+    | ArrExpr AxisFunc error            {DbgMsgWP (L"%%ArrExpr:  error AxisFunc ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1754,7 +1755,7 @@ ArrExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error   AxisFunc StrandInst       {DbgMsgW2 (L"%%ArrExpr:  StrandInst AxisFunc error");
+    | error   AxisFunc StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst AxisFunc error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -1766,7 +1767,7 @@ ArrExpr:
                                         }
 ////| ArrExpr AxisFunc error            //--Conflicts
 ////| ArrExpr error    StrandInst       //--Conflicts
-    | ArrExpr AxisFunc StrandInst       {DbgMsgW2 (L"%%ArrExpr:  StrandInst AxisFunc ArrExpr");
+    | ArrExpr AxisFunc StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst AxisFunc ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1804,14 +1805,14 @@ ArrExpr:
 
 // Single var (including single names)
 SingVar:
-                  NAMEUNK               {DbgMsgW2 (L"%%SingVar:  NAMEUNK");
+                  NAMEUNK               {DbgMsgWP (L"%%SingVar:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              PrimFnValueError_EM (&$1.tkToken);
                                              YYERROR;
                                          } // End IF
                                         }
-    |             QUAD                  {DbgMsgW2 (L"%%SingVar:  QUAD");
+    |             QUAD                  {DbgMsgWP (L"%%SingVar:  QUAD");
                                          if (lpplLocalVars->bCtrlBreak || lpplLocalVars->bLookAhead)
                                              YYERROR;
                                          else
@@ -1826,7 +1827,7 @@ SingVar:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |             QUOTEQUAD             {DbgMsgW2 (L"%%SingVar:  QUOTEQUAD");
+    |             QUOTEQUAD             {DbgMsgWP (L"%%SingVar:  QUOTEQUAD");
                                          if (lpplLocalVars->bCtrlBreak || lpplLocalVars->bLookAhead)
                                              YYERROR;
                                          else
@@ -1841,11 +1842,11 @@ SingVar:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |             SingTokn              {DbgMsgW2 (L"%%SingVar:  SingTokn");
+    |             SingTokn              {DbgMsgWP (L"%%SingVar:  SingTokn");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    |         ')' error   '('           {DbgMsgW2 (L"%%SingVar:  error");
+    |         ')' error   '('           {DbgMsgWP (L"%%SingVar:  error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -1853,7 +1854,7 @@ SingVar:
                                          } else
                                              YYERROR;
                                         }
-    |         ')' ArrExpr '('           {DbgMsgW2 (L"%%SingVar:  (ArrExpr)");
+    |         ')' ArrExpr '('           {DbgMsgWP (L"%%SingVar:  (ArrExpr)");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
                                         }
@@ -1862,7 +1863,7 @@ SingVar:
 // Strand Recursion
 StrandRec:
 ////  error                             //--Conflicts
-      SingVar                           {DbgMsgW2 (L"%%StrandRec:  SingVar -- InitVarStrand/PushVarStrand_YY");
+      SingVar                           {DbgMsgWP (L"%%StrandRec:  SingVar -- InitVarStrand/PushVarStrand_YY");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1885,7 +1886,7 @@ StrandRec:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | StrandRec   error                 {DbgMsgW2 (L"%%StrandRec:  error StrandRec");
+    | StrandRec   error                 {DbgMsgWP (L"%%StrandRec:  error StrandRec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYStr =
@@ -1902,7 +1903,7 @@ StrandRec:
                                          } else
                                              YYERROR;
                                         }
-    | StrandRec   SingVar               {DbgMsgW2 (L"%%StrandRec:  SingVar StrandRec -- PushVarStrand_YY");
+    | StrandRec   SingVar               {DbgMsgWP (L"%%StrandRec:  SingVar StrandRec -- PushVarStrand_YY");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1927,7 +1928,7 @@ StrandRec:
 // Strand instance
 StrandInst:
 ////  error                             //--Conflicts
-      StrandRec                         {DbgMsgW2 (L"%%StrandInst:  StrandRec -- MakeVarStrand_EM_YY");
+      StrandRec                         {DbgMsgWP (L"%%StrandInst:  StrandRec -- MakeVarStrand_EM_YY");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1945,7 +1946,7 @@ StrandInst:
                                              $$ = *lpplLocalVars->lpYYStr; YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
                                          } // End IF
                                         }
-    | IndexListBR     error             {DbgMsgW2 (L"%%StrandInst:  error IndexListBR");
+    | IndexListBR     error             {DbgMsgWP (L"%%StrandInst:  error IndexListBR");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1954,7 +1955,7 @@ StrandInst:
                                          } else
                                              YYERROR;
                                         }
-    | IndexListBR     StrandRec         {DbgMsgW2 (L"%%StrandInst:  StrandRec IndexListBR");
+    | IndexListBR     StrandRec         {DbgMsgWP (L"%%StrandInst:  StrandRec IndexListBR");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1984,7 +1985,7 @@ StrandInst:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | error           StrandRec         {DbgMsgW2 (L"%%StrandInst:  StrandRec error");
+    | error           StrandRec         {DbgMsgWP (L"%%StrandInst:  StrandRec error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYStr =
@@ -2001,7 +2002,7 @@ StrandInst:
                                          } else
                                              YYERROR;
                                         }
-    | CONSTANT   ':'                    {DbgMsgW2 (L"%%StrandInst:  :CONSTANT");
+    | CONSTANT   ':'                    {DbgMsgWP (L"%%StrandInst:  :CONSTANT");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              HGLOBAL            hGlbPTD,                 // PerTabData global memory handle
@@ -2050,7 +2051,7 @@ StrandInst:
 
 // Simple array expression
 SimpExpr:
-      error   ASSIGN       QUAD         {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"error");
+      error   ASSIGN       QUAD         {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -2058,7 +2059,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN       QUAD         {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN       QUAD         {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2080,7 +2081,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN       QUOTEQUAD    {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN       QUOTEQUAD    {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -2088,7 +2089,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN       QUOTEQUAD    {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN       QUOTEQUAD    {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2110,7 +2111,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN       NameAnyVar   {DbgMsgW2 (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2119,7 +2120,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN       NameAnyVar   {DbgMsgW2 (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2142,7 +2143,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN IndexListBR  NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN IndexListBR  NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2152,7 +2153,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN IndexListBR NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN IndexListBR NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2179,7 +2180,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN error        NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN error        NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2189,7 +2190,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error ASSIGN IndexListBR  NAMEUNK {DbgMsgW2 (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"error");
+    | error ASSIGN IndexListBR  NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2199,7 +2200,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN IndexListBR  NAMEUNK {DbgMsgW2 (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN IndexListBR  NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2217,7 +2218,7 @@ SimpExpr:
                                              YYERROR;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN error      NAMEUNK {DbgMsgW2 (L"%%SimpExpr:  NAMEUNK error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN error      NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2227,7 +2228,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error   ASSIGN   ')' SelectSpec '(' {DbgMsgW2 (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN   ')' SelectSpec '(' {DbgMsgWP (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -2236,7 +2237,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN   ')' error    '(' {DbgMsgW2 (L"%%SimpExpr:  (error)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN   ')' error    '(' {DbgMsgWP (L"%%SimpExpr:  (error)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2246,7 +2247,7 @@ SimpExpr:
                                              YYERROR;
                                         }
     | ArrExpr ASSIGN   ')' SelectSpec '('
-                                        {DbgMsgW2 (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"ArrExpr");
+                                        {DbgMsgWP (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2269,7 +2270,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN   ')' IndexListBR NAMEVAR '(' {DbgMsgW2 (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN   ')' IndexListBR NAMEVAR '(' {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -2280,7 +2281,7 @@ SimpExpr:
                                              YYERROR;
                                         }
     | ArrExpr ASSIGN   ')' IndexListBR NAMEVAR '('
-                                        {DbgMsgW2 (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"ArrExpr");
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2307,7 +2308,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN   ')' error NAMEVAR '(' {DbgMsgW2 (L"%%SimpExpr:  (NAMEVAR error)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN   ')' error NAMEVAR '(' {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR error)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2317,7 +2318,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error   ASSIGN   ')' IndexListBR NAMEUNK '(' {DbgMsgW2 (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN   ')' IndexListBR NAMEUNK '(' {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -2328,7 +2329,7 @@ SimpExpr:
                                              YYERROR;
                                         }
     | ArrExpr ASSIGN   ')' IndexListBR NAMEUNK '('
-                                        {DbgMsgW2 (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"ArrExpr");
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2347,7 +2348,7 @@ SimpExpr:
                                              YYERROR;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN   ')' error       NAMEUNK '(' {DbgMsgW2 (L"%%SimpExpr:  (NAMEUNK error)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN   ')' error       NAMEUNK '(' {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK error)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2357,7 +2358,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error   ASSIGN LeftOper  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN LeftOper  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2368,7 +2369,7 @@ SimpExpr:
                                              YYERROR;
                                         }
 ////| ArrExpr ASSIGN error     NAMEVAR  //--Conflicts
-    | ArrExpr ASSIGN LeftOper  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftOper  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2418,7 +2419,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN AxisFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN AxisFunc  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2429,7 +2430,7 @@ SimpExpr:
                                              YYERROR;
                                         }
 ////| ArrExpr ASSIGN error     NAMEVAR  //--Conflicts
-    | ArrExpr ASSIGN AxisFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN AxisFunc  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2479,7 +2480,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN LeftOper ')' NameVals '(' {DbgMsgW2 (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN LeftOper ')' NameVals '(' {DbgMsgWP (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2489,7 +2490,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN LeftOper ')' error '(' {DbgMsgW2 (L"%%SimpExpr:  (error) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftOper ')' error '(' {DbgMsgWP (L"%%SimpExpr:  (error) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2499,7 +2500,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN error    ')' NameVals '(' {DbgMsgW2 (L"%%SimpExpr:  (NameVals) error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN error    ')' NameVals '(' {DbgMsgWP (L"%%SimpExpr:  (NameVals) error" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2510,7 +2511,7 @@ SimpExpr:
                                              YYERROR;
                                         }
     | ArrExpr ASSIGN LeftOper ')' NameVals '('
-                                        {DbgMsgW2 (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2560,7 +2561,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN AxisFunc ')' NameVals '(' {DbgMsgW2 (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN AxisFunc ')' NameVals '(' {DbgMsgWP (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2570,7 +2571,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN AxisFunc ')' error '(' {DbgMsgW2 (L"%%SimpExpr:  (error) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN AxisFunc ')' error '(' {DbgMsgWP (L"%%SimpExpr:  (error) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2582,7 +2583,7 @@ SimpExpr:
                                         }
 ////| ArrExpr ASSIGN error ')' NameVals '(' //--Conflicts
     | ArrExpr ASSIGN AxisFunc ')' NameVals '('
-                                        {DbgMsgW2 (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2632,7 +2633,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN LeftOper IndexListBR NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN LeftOper IndexListBR NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2643,7 +2644,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN error    IndexListBR NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR IndexListBR error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN error    IndexListBR NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR error" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2655,7 +2656,7 @@ SimpExpr:
                                              YYERROR;
                                         }
     | ArrExpr ASSIGN LeftOper IndexListBR NAMEVAR
-                                        {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2697,7 +2698,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN LeftOper error NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftOper error NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2708,7 +2709,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | ArrExpr ASSIGN LeftOper error NAMEUNK {DbgMsgW2 (L"%%SimpExpr:  NAMEUNK error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftOper error NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2719,7 +2720,7 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error   ASSIGN AxisFunc IndexListBR NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN AxisFunc IndexListBR NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -2732,7 +2733,7 @@ SimpExpr:
                                         }
 ////| ArrExpr ASSIGN error    IndexListBR NAMEVAR -- Conflicts
     | ArrExpr ASSIGN AxisFunc IndexListBR NAMEVAR
-                                        {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2774,7 +2775,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN AxisFunc error NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR error AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN AxisFunc error NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2789,7 +2790,7 @@ SimpExpr:
 
 // Selective specification
 SelectSpec:
-      NameVars                          {DbgMsgW2 (L"%%SelectSpec:  NameVars");
+      NameVars                          {DbgMsgWP (L"%%SelectSpec:  NameVars");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2808,7 +2809,7 @@ SelectSpec:
                                          } // End IF
                                         }
 ////| SelectSpec error                  //--Conflicts
-    | SelectSpec LeftOper               {DbgMsgW2 (L"%%SelectSpec:  LeftOper SelectSpec");
+    | SelectSpec LeftOper               {DbgMsgWP (L"%%SelectSpec:  LeftOper SelectSpec");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2835,7 +2836,7 @@ SelectSpec:
                                          } // End IF
                                         }
 ////| SelectSpec error                  //--Conflicts
-    | SelectSpec AxisFunc               {DbgMsgW2 (L"%%SelectSpec:  AxisFunc SelectSpec");
+    | SelectSpec AxisFunc               {DbgMsgWP (L"%%SelectSpec:  AxisFunc SelectSpec");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2861,7 +2862,7 @@ SelectSpec:
                                              YYERROR;
                                          } // End IF
                                         }
-    | SelectSpec LeftOper error         {DbgMsgW2 (L"%%SelectSpec:  error LeftOper SelectSpec");
+    | SelectSpec LeftOper error         {DbgMsgWP (L"%%SelectSpec:  error LeftOper SelectSpec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2872,7 +2873,7 @@ SelectSpec:
                                              YYERROR;
                                         }
 ////| SelectSpec error    StrandInst    //--Conflicts
-    | SelectSpec LeftOper StrandInst    {DbgMsgW2 (L"%%SelectSpec:  StrandInst LeftOper SelectSpec");
+    | SelectSpec LeftOper StrandInst    {DbgMsgWP (L"%%SelectSpec:  StrandInst LeftOper SelectSpec");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2901,7 +2902,7 @@ SelectSpec:
                                              YYERROR;
                                          } // End IF
                                         }
-    | SelectSpec AxisFunc error         {DbgMsgW2 (L"%%SelectSpec:  error AxisFunc SelectSpec");
+    | SelectSpec AxisFunc error         {DbgMsgWP (L"%%SelectSpec:  error AxisFunc SelectSpec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2912,7 +2913,7 @@ SelectSpec:
                                              YYERROR;
                                         }
 ////| SelectSpec error    StrandInst    //--Conflicts
-    | SelectSpec AxisFunc StrandInst    {DbgMsgW2 (L"%%SelectSpec:  StrandInst AxisFunc SelectSpec");
+    | SelectSpec AxisFunc StrandInst    {DbgMsgWP (L"%%SelectSpec:  StrandInst AxisFunc SelectSpec");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2946,7 +2947,7 @@ SelectSpec:
 // Named Variables Strand w/Value
 // Skip Ctrl-Break checking here so the Name Strand processing isn't interrupted
 NameVals:
-      NAMEVAR                           {DbgMsgW2 (L"%%NameVals:  NAMEVAR");
+      NAMEVAR                           {DbgMsgWP (L"%%NameVals:  NAMEVAR");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -2961,7 +2962,7 @@ NameVals:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | NAMEUNK                           {DbgMsgW2 (L"%%NameVals:  NAMEUNK");
+    | NAMEUNK                           {DbgMsgWP (L"%%NameVals:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              PrimFnValueError_EM (&$1.tkToken);
@@ -2970,7 +2971,7 @@ NameVals:
                                              YYERROR;
                                          } // End IF
                                         }
-    | NameVals       NAMEVAR            {DbgMsgW2 (L"%%NameVals:  NAMEVAR NameVals");
+    | NameVals       NAMEVAR            {DbgMsgWP (L"%%NameVals:  NAMEVAR NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -2984,7 +2985,7 @@ NameVals:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | NameVals       NAMEUNK            {DbgMsgW2 (L"%%NameVals:  NAMEUNK NameVals");
+    | NameVals       NAMEUNK            {DbgMsgWP (L"%%NameVals:  NAMEUNK NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              PrimFnValueError_EM (&$2.tkToken);
@@ -2995,7 +2996,7 @@ NameVals:
                                          } // End IF
                                         }
     |       ')' IndexListBR NAMEVAR '('
-                                        {DbgMsgW2 (L"%%NameVals:  (NAMEVAR IndexListBR)");
+                                        {DbgMsgWP (L"%%NameVals:  (NAMEVAR IndexListBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $3.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -3009,7 +3010,7 @@ NameVals:
                                              YYERROR;
                                          } // End IF
                                         }
-    |       ')' error       NAMEVAR '(' {DbgMsgW2 (L"%%NameVals:  (NAMEVAR error)");
+    |       ')' error       NAMEVAR '(' {DbgMsgWP (L"%%NameVals:  (NAMEVAR error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -3020,7 +3021,7 @@ NameVals:
                                              YYERROR;
                                         }
     |       ')' IndexListBR NAMEUNK '('
-                                        {DbgMsgW2 (L"%%NameVals:  (NAMEUNK IndexListBR)");
+                                        {DbgMsgWP (L"%%NameVals:  (NAMEUNK IndexListBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              PrimFnValueError_EM (&$2.tkToken);
@@ -3029,7 +3030,7 @@ NameVals:
                                              YYERROR;
                                          } // End IF
                                         }
-    |       ')' error       NAMEUNK '(' {DbgMsgW2 (L"%%NameVals:  (NAMEUNK error)");
+    |       ')' error       NAMEUNK '(' {DbgMsgWP (L"%%NameVals:  (NAMEUNK error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -3040,7 +3041,7 @@ NameVals:
                                              YYERROR;
                                         }
     | NameVals ')' IndexListBR NAMEVAR '('
-                                        {DbgMsgW2 (L"%%NameVals:  (NAMEVAR IndexListBR) NameVals");
+                                        {DbgMsgWP (L"%%NameVals:  (NAMEVAR IndexListBR) NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -3055,7 +3056,7 @@ NameVals:
                                              YYERROR;
                                          } // End IF
                                         }
-    | NameVals ')' error    NAMEVAR '(' {DbgMsgW2 (L"%%NameVals:  (NAMEVAR error) NameVals");
+    | NameVals ')' error    NAMEVAR '(' {DbgMsgWP (L"%%NameVals:  (NAMEVAR error) NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3066,7 +3067,7 @@ NameVals:
                                              YYERROR;
                                         }
     | NameVals ')' IndexListBR NAMEUNK '('
-                                        {DbgMsgW2 (L"%%NameVals:  (NAMEUNK IndexListBR) NameVals");
+                                        {DbgMsgWP (L"%%NameVals:  (NAMEUNK IndexListBR) NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              PrimFnValueError_EM (&$4.tkToken);
@@ -3077,7 +3078,7 @@ NameVals:
                                              YYERROR;
                                          } // End IF
                                         }
-    | NameVals ')' error    NAMEUNK '(' {DbgMsgW2 (L"%%NameVals:  (NAMEUNK error) NameVals");
+    | NameVals ')' error    NAMEUNK '(' {DbgMsgWP (L"%%NameVals:  (NAMEUNK error) NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3091,7 +3092,7 @@ NameVals:
 // Named Variables Strand with or w/o Value
 // Skip Ctrl-Break checking here so the Name Strand processing isn't interrupted
 NameVars:
-      NAMEVAR                           {DbgMsgW2 (L"%%NameVars:  NAMEVAR");
+      NAMEVAR                           {DbgMsgWP (L"%%NameVars:  NAMEVAR");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -3106,7 +3107,7 @@ NameVars:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | NAMEUNK                           {DbgMsgW2 (L"%%NameVars:  NAMEUNK");
+    | NAMEUNK                           {DbgMsgWP (L"%%NameVars:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              InitNameStrand (&$1);
@@ -3120,7 +3121,7 @@ NameVars:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ')' IndexListBR NAMEVAR '('       {DbgMsgW2 (L"%%NameVars:  (NAMEVAR IndexListBR)");
+    | ')' IndexListBR NAMEVAR '('       {DbgMsgWP (L"%%NameVars:  (NAMEVAR IndexListBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $3.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -3132,7 +3133,7 @@ NameVars:
                                              YYERROR;
                                          } // End IF
                                         }
-    | ')' error       NAMEVAR '('       {DbgMsgW2 (L"%%NameVars:  (NAMEVAR error)");
+    | ')' error       NAMEVAR '('       {DbgMsgWP (L"%%NameVars:  (NAMEVAR error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);               // Validation only
@@ -3141,7 +3142,7 @@ NameVars:
                                          } else
                                              YYERROR;
                                         }
-    | ')' IndexListBR NAMEUNK '('       {DbgMsgW2 (L"%%NameVars:  (NAMEUNK IndexListBR)");
+    | ')' IndexListBR NAMEUNK '('       {DbgMsgWP (L"%%NameVars:  (NAMEUNK IndexListBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              PrimFnValueError_EM (&$3.tkToken);
@@ -3150,7 +3151,7 @@ NameVars:
                                              YYERROR;
                                          } // End IF
                                         }
-    | ')' error       NAMEUNK '('       {DbgMsgW2 (L"%%NameVars:  (NAMEUNK error)");
+    | ')' error       NAMEUNK '('       {DbgMsgWP (L"%%NameVars:  (NAMEUNK error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);               // Validation only
@@ -3159,7 +3160,7 @@ NameVars:
                                          } else
                                              YYERROR;
                                         }
-    | NameVars       NAMEVAR            {DbgMsgW2 (L"%%NameVars:  NameVars NAMEVAR");
+    | NameVars       NAMEVAR            {DbgMsgWP (L"%%NameVars:  NameVars NAMEVAR");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -3173,7 +3174,7 @@ NameVars:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | NameVars       NAMEUNK            {DbgMsgW2 (L"%%NameVars:  NameVars NAMEUNK");
+    | NameVars       NAMEUNK            {DbgMsgWP (L"%%NameVars:  NameVars NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes = PushNameStrand_YY (&$2);
@@ -3190,7 +3191,7 @@ NameVars:
 // Derived left function expression, Type 1 (Valid in ArrExpr: and FcnSpec:)
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 Drv1Func:
-      RightOper DydOp error             {DbgMsgW2 (L"%%Drv1Func:  error DydOp RightOper");
+      RightOper DydOp error             {DbgMsgWP (L"%%Drv1Func:  error DydOp RightOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3200,7 +3201,7 @@ Drv1Func:
                                          } else
                                              YYERROR;
                                         }
-    | RightOper DydOp StrandInst        {DbgMsgW2 (L"%%Drv1Func:  StrandInst DydOp RightOper");
+    | RightOper DydOp StrandInst        {DbgMsgWP (L"%%Drv1Func:  StrandInst DydOp RightOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
@@ -3245,7 +3246,7 @@ Drv1Func:
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                          } // End IF
                                         }
-    |           MonOp error             {DbgMsgW2 (L"%%Drv1Func:  error MonOp");
+    |           MonOp error             {DbgMsgWP (L"%%Drv1Func:  error MonOp");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3254,7 +3255,7 @@ Drv1Func:
                                          } else
                                              YYERROR;
                                         }
-    |           MonOp StrandInst        {DbgMsgW2 (L"%%Drv1Func:  StrandInst MonOp");
+    |           MonOp StrandInst        {DbgMsgWP (L"%%Drv1Func:  StrandInst MonOp");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
@@ -3290,7 +3291,7 @@ Drv1Func:
 // Derived left function expression, Type 2 (valid in FcnSpec: but not ArrExpr: because of Strand on the right)
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 Drv2Func:
-      StrandInst DydOp error            {DbgMsgW2 (L"%%Drv2Func:  error DydOp StrandInst");
+      StrandInst DydOp error            {DbgMsgWP (L"%%Drv2Func:  error DydOp StrandInst");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3299,7 +3300,7 @@ Drv2Func:
                                          } else
                                              YYERROR;
                                         }
-    | error      DydOp LeftOper         {DbgMsgW2 (L"%%Drv2Func:  LeftOper DydOp error");
+    | error      DydOp LeftOper         {DbgMsgWP (L"%%Drv2Func:  LeftOper DydOp error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -3308,7 +3309,7 @@ Drv2Func:
                                          } else
                                              YYERROR;
                                         }
-    | StrandInst DydOp LeftOper         {DbgMsgW2 (L"%%Drv2Func:  LeftOper DydOp StrandInst");
+    | StrandInst DydOp LeftOper         {DbgMsgWP (L"%%Drv2Func:  LeftOper DydOp StrandInst");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
@@ -3355,7 +3356,7 @@ Drv2Func:
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                          } // End IF
                                         }
-    | error      DydOp AxisFunc         {DbgMsgW2 (L"%%Drv2Func:  AxisFunc DydOp error");
+    | error      DydOp AxisFunc         {DbgMsgWP (L"%%Drv2Func:  AxisFunc DydOp error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -3365,7 +3366,7 @@ Drv2Func:
                                          } else
                                              YYERROR;
                                         }
-    | StrandInst DydOp AxisFunc         {DbgMsgW2 (L"%%Drv2Func:  AxisFunc DydOp StrandInst");
+    | StrandInst DydOp AxisFunc         {DbgMsgWP (L"%%Drv2Func:  AxisFunc DydOp StrandInst");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
@@ -3412,7 +3413,7 @@ Drv2Func:
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                          } // End IF
                                         }
-    | error      DydOp StrandInst       {DbgMsgW2 (L"%%Drv2Func:  StrandInst DydOp error");
+    | error      DydOp StrandInst       {DbgMsgWP (L"%%Drv2Func:  StrandInst DydOp error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -3423,7 +3424,7 @@ Drv2Func:
                                              YYERROR;
                                         }
 ////| StrandInst DydOp error            --See above
-    | StrandInst DydOp StrandInst       {DbgMsgW2 (L"%%Drv2Func:  StrandInst DydOp StrandInst");
+    | StrandInst DydOp StrandInst       {DbgMsgWP (L"%%Drv2Func:  StrandInst DydOp StrandInst");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
@@ -3476,7 +3477,7 @@ Drv2Func:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 ParenFunc:
 ////  '>' error    '('                  //--Conflicts
-      '>' Drv2Func                 '('  {DbgMsgW2 (L"%%ParenFunc:  (Drv2Func)");
+      '>' Drv2Func                 '('  {DbgMsgWP (L"%%ParenFunc:  (Drv2Func)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
@@ -3490,7 +3491,7 @@ ParenFunc:
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    | '>' LeftOper '('                  {DbgMsgW2 (L"%%ParenFunc:  (LeftOper)");
+    | '>' LeftOper '('                  {DbgMsgWP (L"%%ParenFunc:  (LeftOper)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $$ = $2;
@@ -3509,7 +3510,7 @@ ParenFunc:
                                          } // End IF
                                         }
 ////| '>' error    '('                  //--Conflicts
-    | '>' AxisFunc '('                  {DbgMsgW2 (L"%%ParenFunc:  (AxisFunc)");
+    | '>' AxisFunc '('                  {DbgMsgWP (L"%%ParenFunc:  (AxisFunc)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $$ = $2;
@@ -3524,7 +3525,7 @@ ParenFunc:
 ////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    | '>' FcnSpec '('                   {DbgMsgW2 (L"%%ParenFunc:  (FcnSpec)");
+    | '>' FcnSpec '('                   {DbgMsgWP (L"%%ParenFunc:  (FcnSpec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
@@ -3538,7 +3539,7 @@ ParenFunc:
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     '>' Op1Spec error    '('      {DbgMsgW2 (L"%%ParenFunc:  (error Op1Spec)");
+    |     '>' Op1Spec error    '('      {DbgMsgWP (L"%%ParenFunc:  (error Op1Spec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -3547,7 +3548,7 @@ ParenFunc:
                                          } else
                                              YYERROR;
                                         }
-    |     '>' Op1Spec LeftOper '('      {DbgMsgW2 (L"%%ParenFunc:  (LeftOper Op1Spec)");
+    |     '>' Op1Spec LeftOper '('      {DbgMsgWP (L"%%ParenFunc:  (LeftOper Op1Spec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
@@ -3582,7 +3583,7 @@ ParenFunc:
 // Left operand function
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 LeftOper:
-          PRIMFCN                       {DbgMsgW2 (L"%%LeftOper:  PRIMFCN");
+          PRIMFCN                       {DbgMsgWP (L"%%LeftOper:  PRIMFCN");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -3609,7 +3610,7 @@ LeftOper:
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     NAMEFCN                       {DbgMsgW2 (L"%%LeftOper:  NAMEFCN");
+    |     NAMEFCN                       {DbgMsgWP (L"%%LeftOper:  NAMEFCN");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -3630,7 +3631,7 @@ LeftOper:
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     SYSFN12                       {DbgMsgW2 (L"%%LeftOper:  SYSFN12");
+    |     SYSFN12                       {DbgMsgWP (L"%%LeftOper:  SYSFN12");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -3651,7 +3652,7 @@ LeftOper:
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     ParenFunc                     {DbgMsgW2 (L"%%LeftOper:  ParenFunc");
+    |     ParenFunc                     {DbgMsgWP (L"%%LeftOper:  ParenFunc");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $$ = $1;
@@ -3666,7 +3667,7 @@ LeftOper:
 ////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    | '>' error                    '('  {DbgMsgW2 (L"%%LeftOper:  (error)");
+    | '>' error                    '('  {DbgMsgWP (L"%%LeftOper:  (error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -3674,7 +3675,7 @@ LeftOper:
                                          } else
                                              YYERROR;
                                         }
-    | '>' Drv1Func                 '('  {DbgMsgW2 (L"%%LeftOper:  (Drv1Func)");
+    | '>' Drv1Func                 '('  {DbgMsgWP (L"%%LeftOper:  (Drv1Func)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $$ = $2;
@@ -3689,7 +3690,7 @@ LeftOper:
 ////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     RightOper    JOTDOT           {DbgMsgW2 (L"%%LeftOper:  " WS_UTF16_JOT L". RightOper");
+    |     RightOper    JOTDOT           {DbgMsgWP (L"%%LeftOper:  " WS_UTF16_JOT L". RightOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
@@ -3720,7 +3721,7 @@ LeftOper:
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                          } // End IF
                                         }
-    | NULLOP OP3                        {DbgMsgW2 (L"%%LeftOper:  OP3 NULLOP");
+    | NULLOP OP3                        {DbgMsgWP (L"%%LeftOper:  OP3 NULLOP");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Change the first token in the function strand
@@ -3757,7 +3758,7 @@ LeftOper:
                                          } // End IF
                                         }
 ////|                  MonOp error      //--Conflicts
-    |                  MonOp LeftOper   {DbgMsgW2 (L"%%LeftOper:  LeftOper MonOp");
+    |                  MonOp LeftOper   {DbgMsgWP (L"%%LeftOper:  LeftOper MonOp");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
@@ -3789,7 +3790,7 @@ LeftOper:
                                          } // End IF
                                         }
 ////|                  MonOp error      //--Conflicts
-    |                  MonOp AxisFunc   {DbgMsgW2 (L"%%LeftOper:  AxisFunc MonOp");
+    |                  MonOp AxisFunc   {DbgMsgWP (L"%%LeftOper:  AxisFunc MonOp");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
@@ -3821,7 +3822,7 @@ LeftOper:
                                          } // End IF
                                         }
 ////|                  AmbOp error      //--Conflicts
-    |                  AmbOp LeftOper   {DbgMsgW2 (L"%%LeftOper:  LeftOper AmbOp"); //***FIXME***
+    |                  AmbOp LeftOper   {DbgMsgWP (L"%%LeftOper:  LeftOper AmbOp"); //***FIXME***
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Change the first token in the function strand
@@ -3857,7 +3858,7 @@ LeftOper:
                                          } // End IF
                                         }
 ////|     RightOper DydOp error         //--Conflicts
-    |     RightOper DydOp LeftOper      {DbgMsgW2 (L"%%LeftOper:  LeftOper DydOp RightOper");
+    |     RightOper DydOp LeftOper      {DbgMsgWP (L"%%LeftOper:  LeftOper DydOp RightOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
@@ -3900,7 +3901,7 @@ LeftOper:
                                          } // End IF
                                         }
 ////|     RightOper DydOp error         //--Conflicts
-    |     RightOper DydOp AxisFunc      {DbgMsgW2 (L"%%LeftOper:  AxisFunc DydOp RightOper");
+    |     RightOper DydOp AxisFunc      {DbgMsgWP (L"%%LeftOper:  AxisFunc DydOp RightOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
@@ -3952,7 +3953,7 @@ LeftOper:
 // Right operand function (short right scope)
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 RightOper:
-          PRIMFCN                       {DbgMsgW2 (L"%%RightOper:  PRIMFCN");
+          PRIMFCN                       {DbgMsgWP (L"%%RightOper:  PRIMFCN");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -3979,7 +3980,7 @@ RightOper:
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     NAMEFCN                       {DbgMsgW2 (L"%%RightOper:  NAMEFCN");
+    |     NAMEFCN                       {DbgMsgWP (L"%%RightOper:  NAMEFCN");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4006,7 +4007,7 @@ RightOper:
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     SYSFN12                       {DbgMsgW2 (L"%%RightOper:  SYSFN12");
+    |     SYSFN12                       {DbgMsgWP (L"%%RightOper:  SYSFN12");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4033,7 +4034,7 @@ RightOper:
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     ParenFunc                     {DbgMsgW2 (L"%%RightOper:  ParenFunc");
+    |     ParenFunc                     {DbgMsgWP (L"%%RightOper:  ParenFunc");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $$ = $1;
@@ -4056,7 +4057,7 @@ RightOper:
 // Axis function expression
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 AxisFunc:
-      '}' error   '['  PRIMFCN          {DbgMsgW2 (L"%%AxisFunc:  PRIMFCN[error]");
+      '}' error   '['  PRIMFCN          {DbgMsgWP (L"%%AxisFunc:  PRIMFCN[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -4065,7 +4066,7 @@ AxisFunc:
                                          } else
                                              YYERROR;
                                         }
-    | '}' ArrExpr '['  PRIMFCN          {DbgMsgW2 (L"%%AxisFunc:  PRIMFCN[ArrExpr]");
+    | '}' ArrExpr '['  PRIMFCN          {DbgMsgWP (L"%%AxisFunc:  PRIMFCN[ArrExpr]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4116,7 +4117,7 @@ AxisFunc:
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
                                          } // End IF
                                         }
-    | '}' error   '['  NAMEFCN          {DbgMsgW2 (L"%%AxisFunc:  NAMEFCN[error]");
+    | '}' error   '['  NAMEFCN          {DbgMsgWP (L"%%AxisFunc:  NAMEFCN[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -4125,7 +4126,7 @@ AxisFunc:
                                          } else
                                              YYERROR;
                                         }
-    | '}' ArrExpr '['  NAMEFCN          {DbgMsgW2 (L"%%AxisFunc:  NAMEFCN[ArrExpr]");
+    | '}' ArrExpr '['  NAMEFCN          {DbgMsgWP (L"%%AxisFunc:  NAMEFCN[ArrExpr]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4176,7 +4177,7 @@ AxisFunc:
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
                                          } // End IF
                                         }
-    | '}' error   '['  SYSFN12          {DbgMsgW2 (L"%%AxisFunc:  SYSFN12[error]");
+    | '}' error   '['  SYSFN12          {DbgMsgWP (L"%%AxisFunc:  SYSFN12[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -4185,7 +4186,7 @@ AxisFunc:
                                          } else
                                              YYERROR;
                                         }
-    | '}' ArrExpr '['  SYSFN12          {DbgMsgW2 (L"%%AxisFunc:  SYSFN12[ArrExpr]");
+    | '}' ArrExpr '['  SYSFN12          {DbgMsgWP (L"%%AxisFunc:  SYSFN12[ArrExpr]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4236,7 +4237,7 @@ AxisFunc:
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
                                          } // End IF
                                         }
-    | '}' error   '['  ParenFunc        {DbgMsgW2 (L"%%AxisFunc:  ParenFunc[error]");
+    | '}' error   '['  ParenFunc        {DbgMsgWP (L"%%AxisFunc:  ParenFunc[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -4245,7 +4246,7 @@ AxisFunc:
                                          } else
                                              YYERROR;
                                         }
-    | '}' ArrExpr '['  ParenFunc        {DbgMsgW2 (L"%%AxisFunc:  ParenFunc[ArrExpr]");
+    | '}' ArrExpr '['  ParenFunc        {DbgMsgWP (L"%%AxisFunc:  ParenFunc[ArrExpr]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
@@ -4282,7 +4283,7 @@ AxisFunc:
 // Ambiguous operator
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 AmbOp:
-          OP3                           {DbgMsgW2 (L"%%AmbOp:  OP3");
+          OP3                           {DbgMsgWP (L"%%AmbOp:  OP3");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4309,7 +4310,7 @@ AmbOp:
                                              $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
-    | NAMEOP3                           {DbgMsgW2 (L"%%AmbOp:  NAMEOP3");
+    | NAMEOP3                           {DbgMsgWP (L"%%AmbOp:  NAMEOP3");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4337,7 +4338,7 @@ AmbOp:
                                          } // End IF
                                         }
 ////|              error                //--Conflicts
-    |              AmbOpAxis            {DbgMsgW2 (L"%%AmbOp:  AmbOpAxis");
+    |              AmbOpAxis            {DbgMsgWP (L"%%AmbOp:  AmbOpAxis");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
 ////                                          {
@@ -4352,7 +4353,7 @@ AmbOp:
 ////                                              $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
 ////                                          } // End IF
                                         }
-    |              '>' AmbOp '('        {DbgMsgW2 (L"%%AmbOp:  (AmbOp)");
+    |              '>' AmbOp '('        {DbgMsgWP (L"%%AmbOp:  (AmbOp)");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
 ////                                          {
@@ -4367,7 +4368,7 @@ AmbOp:
 ////                                              $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
 ////                                          } // End IF
                                         }
-    | '>' Op3Spec '('                   {DbgMsgW2 (L"%%AmbOp:  (Op3Spec)");
+    | '>' Op3Spec '('                   {DbgMsgWP (L"%%AmbOp:  (Op3Spec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
@@ -4386,7 +4387,7 @@ AmbOp:
 // Ambiguous operator w/axis
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 AmbOpAxis:
-      '}' error   '['  AmbOp            {DbgMsgW2 (L"%%AmbOpAxis:  AmbOp[error]");
+      '}' error   '['  AmbOp            {DbgMsgWP (L"%%AmbOpAxis:  AmbOp[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -4395,7 +4396,7 @@ AmbOpAxis:
                                          } else
                                              YYERROR;
                                         }
-    | '}' ArrExpr '['  AmbOp            {DbgMsgW2 (L"%%AmbOpAxis:  AmbOp[ArrExpr]");
+    | '}' ArrExpr '['  AmbOp            {DbgMsgWP (L"%%AmbOpAxis:  AmbOp[ArrExpr]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4449,7 +4450,7 @@ AmbOpAxis:
 // Monadic operator
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 MonOp:
-                       OP1              {DbgMsgW2 (L"%%MonOp:  OP1");
+                       OP1              {DbgMsgWP (L"%%MonOp:  OP1");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4470,7 +4471,7 @@ MonOp:
                                              $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    |                  NULLOP           {DbgMsgW2 (L"%%MonOp:  NULLOP");
+    |                  NULLOP           {DbgMsgWP (L"%%MonOp:  NULLOP");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4491,7 +4492,7 @@ MonOp:
                                              $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    |                  NAMEOP1          {DbgMsgW2 (L"%%MonOp:  NAMEOP1");
+    |                  NAMEOP1          {DbgMsgWP (L"%%MonOp:  NAMEOP1");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4513,11 +4514,11 @@ MonOp:
                                          } // End IF
                                         }
 ////|              error                //--Conflicts
-    |              MonOpAxis            {DbgMsgW2 (L"%%MonOp:  MonOpAxis");
+    |              MonOpAxis            {DbgMsgWP (L"%%MonOp:  MonOpAxis");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    |              '>' MonOp '('        {DbgMsgW2 (L"%%MonOp:  (MonOp)");
+    |              '>' MonOp '('        {DbgMsgWP (L"%%MonOp:  (MonOp)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $$ = $2;
@@ -4532,7 +4533,7 @@ MonOp:
 ////                                              $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                               } // End IF
                                         }
-    |              '>' Op1Spec '('      {DbgMsgW2 (L"%%MonOp:  (Op1Spec)");
+    |              '>' Op1Spec '('      {DbgMsgWP (L"%%MonOp:  (Op1Spec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
@@ -4551,7 +4552,7 @@ MonOp:
 // Monadic operator w/axis
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 MonOpAxis:
-      '}' error   '['  MonOp            {DbgMsgW2 (L"%%MonOpAxis:  MonOp[error]");
+      '}' error   '['  MonOp            {DbgMsgWP (L"%%MonOpAxis:  MonOp[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -4560,7 +4561,7 @@ MonOpAxis:
                                          } else
                                              YYERROR;
                                         }
-    | '}' ArrExpr '['  MonOp            {DbgMsgW2 (L"%%MonOpAxis:  MonOp[ArrExpr]");
+    | '}' ArrExpr '['  MonOp            {DbgMsgWP (L"%%MonOpAxis:  MonOp[ArrExpr]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
@@ -4604,7 +4605,7 @@ MonOpAxis:
 // Dyadic operator
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 DydOp:
-                       OP2              {DbgMsgW2 (L"%%DydOp:  OP2");
+                       OP2              {DbgMsgWP (L"%%DydOp:  OP2");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4625,7 +4626,7 @@ DydOp:
                                              $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
-    |                  NAMEOP2          {DbgMsgW2 (L"%%DydOp:  NAMEOP2");
+    |                  NAMEOP2          {DbgMsgWP (L"%%DydOp:  NAMEOP2");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
@@ -4647,7 +4648,7 @@ DydOp:
                                          } // End IF
                                         }
 ////|                  error            //--Conflicts
-    |                  DydOpAxis        {DbgMsgW2 (L"%%DydOp:  DydOpAxis");
+    |                  DydOpAxis        {DbgMsgWP (L"%%DydOp:  DydOpAxis");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $$ = $1;
@@ -4662,7 +4663,7 @@ DydOp:
 ////                                              $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
-    |              '#' DydOp '('        {DbgMsgW2 (L"%%DydOp:  (DydOp)");
+    |              '#' DydOp '('        {DbgMsgWP (L"%%DydOp:  (DydOp)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $$ = $2;
@@ -4677,7 +4678,7 @@ DydOp:
 ////                                              $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
-    |              '#' Op2Spec '('      {DbgMsgW2 (L"%%DydOp:  (Op2Spec)");
+    |              '#' Op2Spec '('      {DbgMsgWP (L"%%DydOp:  (Op2Spec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
@@ -4696,7 +4697,7 @@ DydOp:
 // Dyadic operator w/axis
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 DydOpAxis:
-      '?' error   '['  DydOp            {DbgMsgW2 (L"%%DydOpAxis:  DydOp[error]");
+      '?' error   '['  DydOp            {DbgMsgWP (L"%%DydOpAxis:  DydOp[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
@@ -4705,7 +4706,7 @@ DydOpAxis:
                                          } else
                                              YYERROR;
                                         }
-    | '?' ArrExpr '['  DydOp            {DbgMsgW2 (L"%%DydOpAxis:  DydOp[ArrExpr]");
+    | '?' ArrExpr '['  DydOp            {DbgMsgWP (L"%%DydOpAxis:  DydOp[ArrExpr]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
@@ -4748,7 +4749,7 @@ DydOpAxis:
 
 // Index list w/brackets, allowing for A[A][A]...
 IndexListBR:
-           ']'      '['                 {DbgMsgW2 (L"%%IndexListBR:  []");
+           ']'      '['                 {DbgMsgWP (L"%%IndexListBR:  []");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -4769,7 +4770,7 @@ IndexListBR:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |      ']' error       '['          {DbgMsgW2 (L"%%IndexListBR:  [error]");
+    |      ']' error       '['          {DbgMsgWP (L"%%IndexListBR:  [error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -4777,7 +4778,7 @@ IndexListBR:
                                          } else
                                              YYERROR;
                                         }
-    |      ']' IndexListWE '['          {DbgMsgW2 (L"%%IndexListBR:  [IndexListWE]");
+    |      ']' IndexListWE '['          {DbgMsgWP (L"%%IndexListBR:  [IndexListWE]");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$2.tkToken);               // ***FIXME*** -- Do we need to free the list stack??
@@ -4795,7 +4796,7 @@ IndexListBR:
                                              $$ = *lpplLocalVars->lpYYLst; YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
                                          } // End IF
                                         }
-    | IndexListBR ']'      '['          {DbgMsgW2 (L"%%IndexListBR:  [] IndexListBR ");
+    | IndexListBR ']'      '['          {DbgMsgWP (L"%%IndexListBR:  [] IndexListBR ");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);               // ***FIXME*** -- Do we need to free the list stack??
@@ -4804,7 +4805,7 @@ IndexListBR:
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | IndexListBR ']' error       '['   {DbgMsgW2 (L"%%IndexListBR:  [error] IndexListBR ");
+    | IndexListBR ']' error       '['   {DbgMsgWP (L"%%IndexListBR:  [error] IndexListBR ");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -4812,7 +4813,7 @@ IndexListBR:
                                          } else
                                              YYERROR;
                                         }
-    | IndexListBR ']' IndexListWE '['   {DbgMsgW2 (L"%%IndexListBR:  [IndexListWE] IndexListBR ");
+    | IndexListBR ']' IndexListWE '['   {DbgMsgWP (L"%%IndexListBR:  [IndexListWE] IndexListBR ");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -4847,16 +4848,16 @@ IndexListBR:
 // Index list, with empties (meaning no ArrExpr between semicolons)
 // Skip Ctrl-Break checking here so the List processing isn't interrupted
 IndexListWE:
-      IndexListWE1                      {DbgMsgW2 (L"%%IndexListWE:  IndexListWE1");
+      IndexListWE1                      {DbgMsgWP (L"%%IndexListWE:  IndexListWE1");
                                          $$ = $1;
                                         }
-    | IndexListWE2                      {DbgMsgW2 (L"%%IndexListWE:  IndexListWE2");
+    | IndexListWE2                      {DbgMsgWP (L"%%IndexListWE:  IndexListWE2");
                                          $$ = $1;
                                         }
     ;
 
 IndexListWE1:
-                   ';'                  {DbgMsgW2 (L"%%IndexListWE1:  ;");
+                   ';'                  {DbgMsgWP (L"%%IndexListWE1:  ;");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with an empty item
@@ -4877,7 +4878,7 @@ IndexListWE1:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |              ';' error            {DbgMsgW2 (L"%%IndexListWE1:  error;");
+    |              ';' error            {DbgMsgWP (L"%%IndexListWE1:  error;");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -4885,7 +4886,7 @@ IndexListWE1:
                                          } else
                                              YYERROR;
                                         }
-    |              ';' ArrExpr          {DbgMsgW2 (L"%%IndexListWE1:  ArrExpr;");
+    |              ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE1:  ArrExpr;");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with an empty item
@@ -4913,7 +4914,7 @@ IndexListWE1:
 
 
 
-    | IndexListWE1 ';'                  {DbgMsgW2 (L"%%IndexListWE1:  ;IndexListWE1");
+    | IndexListWE1 ';'                  {DbgMsgWP (L"%%IndexListWE1:  ;IndexListWE1");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Push an empty item onto the list
@@ -4929,7 +4930,7 @@ IndexListWE1:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | IndexListWE1 ';' error            {DbgMsgW2 (L"%%IndexListWE1:  error;IndexListWE1");
+    | IndexListWE1 ';' error            {DbgMsgWP (L"%%IndexListWE1:  error;IndexListWE1");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -4938,7 +4939,7 @@ IndexListWE1:
                                          } else
                                              YYERROR;
                                         }
-    | IndexListWE1 ';' ArrExpr          {DbgMsgW2 (L"%%IndexListWE1:  ArrExpr;IndexListWE1");
+    | IndexListWE1 ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE1:  ArrExpr;IndexListWE1");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
@@ -4957,7 +4958,7 @@ IndexListWE1:
     ;
 
 IndexListWE2:
-                       ArrExpr          {DbgMsgW2 (L"%%IndexListWE2:  ArrExpr");
+                       ArrExpr          {DbgMsgWP (L"%%IndexListWE2:  ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with the arg
@@ -4974,7 +4975,7 @@ IndexListWE2:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | IndexListWE2 ';'                  {DbgMsgW2 (L"%%IndexListWE2:  ;IndexListWE2");
+    | IndexListWE2 ';'                  {DbgMsgWP (L"%%IndexListWE2:  ;IndexListWE2");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Push an empty item onto the list
@@ -4991,7 +4992,7 @@ IndexListWE2:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | IndexListWE2 ';' error            {DbgMsgW2 (L"%%IndexListWE2:  error;IndexListWE2");
+    | IndexListWE2 ';' error            {DbgMsgWP (L"%%IndexListWE2:  error;IndexListWE2");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -5000,7 +5001,7 @@ IndexListWE2:
                                          } else
                                              YYERROR;
                                         }
-    | IndexListWE2 ';' ArrExpr          {DbgMsgW2 (L"%%IndexListWE2:  ArrExpr;IndexListWE2");
+    | IndexListWE2 ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE2:  ArrExpr;IndexListWE2");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Push an item onto the list
@@ -5021,19 +5022,19 @@ IndexListWE2:
 
 // A data expression which has a single token
 SingTokn:
-      CONSTANT                          {DbgMsgW2 (L"%%SingTokn:  CONSTANT");
+      CONSTANT                          {DbgMsgWP (L"%%SingTokn:  CONSTANT");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | NAMEVAR                           {DbgMsgW2 (L"%%SingTokn:  NAMEVAR");
+    | NAMEVAR                           {DbgMsgWP (L"%%SingTokn:  NAMEVAR");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | SYSLBL                            {DbgMsgW2 (L"%%SingTokn:  SYSLBL");
+    | SYSLBL                            {DbgMsgWP (L"%%SingTokn:  SYSLBL");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    | USRFN0                            {DbgMsgW2 (L"%%SingTokn:  USRFN0");
+    | USRFN0                            {DbgMsgWP (L"%%SingTokn:  USRFN0");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -5048,7 +5049,7 @@ SingTokn:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | SYSFN0                            {DbgMsgW2 (L"%%SingTokn:  SYSFN0");
+    | SYSFN0                            {DbgMsgWP (L"%%SingTokn:  SYSFN0");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -5063,7 +5064,7 @@ SingTokn:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | STRING                            {DbgMsgW2 (L"%%SingTokn:  STRING");
+    | STRING                            {DbgMsgWP (L"%%SingTokn:  STRING");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -5210,7 +5211,7 @@ EXIT_TYPES ParseLine
                   PAGE_READWRITE);
     if (!lclMemVirtStr[0].IniAddr)
     {
-        DbgMsg ("ParseLine:  GuardAlloc for <plLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
+        DbgMsgW2 (L"ParseLine:  GuardAlloc for <plLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
 
         goto ERROR_EXIT;
     } // End IF
@@ -5237,7 +5238,7 @@ EXIT_TYPES ParseLine
                   PAGE_READWRITE);
     if (!lclMemVirtStr[1].IniAddr)
     {
-        DbgMsg ("ParseLine:  GuardAlloc for <pLocalVars.lpYYStrandStart[STRAND_FCN]> failed");
+        DbgMsgW2 (L"ParseLine:  GuardAlloc for <pLocalVars.lpYYStrandStart[STRAND_FCN]> failed");
 
         goto ERROR_EXIT;
     } // End IF
@@ -5556,13 +5557,18 @@ NORMAL_EXIT:
 
 #ifdef DEBUG
         if (uError EQ ERRORCODE_ELX)
-            DbgMsgW (L"~~Start []ELX on");
-        else
-            DbgMsgW (L"~~Start []ALX on");
+        {
+            DbgMsgW2 (L"~~Start []ELX on");
+        } else
+        {
+            DbgMsgW2 (L"~~Start []ALX on");
+        } // End IF/ELSE -- DO NOT REMOVE as the DbgMsgW2 macro needs
+        //                  this because of the trailing semicolon
 
         if (lpwszLine)
-            DbgMsgW (lpwszLine);
-        else
+        {
+            DbgMsgW2 (lpwszLine);
+        } else
         {
             LPMEMTXT_UNION lpMemTxtLine;
 
@@ -5570,7 +5576,7 @@ NORMAL_EXIT:
             lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
             // Display the function line
-            DbgMsgW (&lpMemTxtLine->C);
+            DbgMsgW2 (&lpMemTxtLine->C);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -5715,7 +5721,7 @@ char LookaheadSurround
     UINT        uRet;               // The result from pl_yyparse
 
 #ifdef DEBUG
-    DbgMsgW (L"==Entering LookaheadSurround");
+    DbgMsgW2 (L"==Entering LookaheadSurround");
 #endif
     // Copy outer lpplLocalVars
     plLocalVars = *lpplLocalVars;
@@ -5776,10 +5782,10 @@ char LookaheadAdjacent
 
     if (bSkipBrackets)
     {
-        DbgMsgW (L"==Entering LookaheadAdjacent:  TRUE");
+        DbgMsgW2 (L"==Entering LookaheadAdjacent:  TRUE");
     } else
     {
-        DbgMsgW (L"==Entering LookaheadAdjacent:  FALSE");
+        DbgMsgW2 (L"==Entering LookaheadAdjacent:  FALSE");
     } // End IF/ELSE
 
     // Copy outer lpplLocalVars
@@ -5946,7 +5952,7 @@ BOOL LookaheadDyadicOp
 {
     BOOL bRet;          // The result
 
-    DbgMsgW (L"==Entering LookaheadDyadicOp");
+    DbgMsgW2 (L"==Entering LookaheadDyadicOp");
 
     while (TRUE)
     // Split cases based upon the token type
@@ -6764,7 +6770,7 @@ BOOL AmbOpSwap_EM
     (LPPL_YYSTYPE lpYYFcn)              // Ptr to function strand
 
 {
-    DbgMsgW (L"==Entering AmbOpSwap");
+    DbgMsgW2 (L"==Entering AmbOpSwap");
 
     // Change the first token in the function strand
     //   from ambiguous operator to a function
@@ -6813,7 +6819,7 @@ void AmbOpToFcn
     HGLOBAL      hGlbFcn;               // Function array global memory handle
     LPPL_YYSTYPE lpMemFcn;              // Ptr to function array global memory
 
-    DbgMsgW (L"==Entering AmbOpToFcn");
+    DbgMsgW2 (L"==Entering AmbOpToFcn");
 
     // Split cases based upon token type
     switch (lpYYFcn->tkToken.tkFlags.TknType)

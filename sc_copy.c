@@ -453,6 +453,8 @@ int CopyWsVars
             {
                 // Append the name to get a new LPSYMENTRY
                 lpSymEntry = SymTabAppendName_EM (lpwNameInWrk, &stFlags);
+                if (!lpSymEntry)
+                    goto ERROR_EXIT;
 
                 // Mark the SYMENTRY as immediate so we don't free the
                 //   (non-existant) stGlbData
@@ -545,6 +547,7 @@ int CopyWsVars
     else
         // Mark as successful (we copied all the vars)
         return 0;
+ERROR_EXIT:
 ERRMSG_EXIT:
     // Mark as in error
     return -1;
@@ -631,6 +634,8 @@ int CopyWsFcns
             {
                 // Append the name to get a new LPSYMENTRY
                 lpSymEntry = SymTabAppendName_EM (lpwNameInWrk, &stFlags);
+                if (!lpSymEntry)
+                    goto ERROR_EXIT;
 
                 // Set stFlags as appropriate
                 lpSymEntry->stFlags.ObjName    = OBJNAME_USR;
@@ -660,6 +665,7 @@ int CopyWsFcns
     else
         // Mark as successful (we copied all the vars)
         return 0;
+ERROR_EXIT:
 ERRMSG_EXIT:
     // Mark as in error
     return -1;

@@ -334,6 +334,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     BOOL         bRet = TRUE;       // TRUE iff result is valid
     APLBOOL      bQuadIO;           // []IO
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPSYMENTRY   lpSymTmp;          // Ptr to temporary LPSYMENTRY
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -955,9 +956,12 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     case ARRAY_NESTED:
                         // Save in result
                         *((LPAPLNESTED) lpMemRes)++ =
+                        lpSymTmp =
                           MakeSymEntry_EM (immTypeSub,      // Immediate type
                                           &aplLongestSub,   // Ptr to immediate value
                                            lptkFunc);       // Ptr to function token
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                         break;
 
                     defstop
@@ -975,13 +979,14 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                &aplLongestSet);
             // Replace the <aplIntAcc> element in hGlbRht
             //   with <aplLongestSet> or <hGlbSubSet> depending upon <aplTypeRht>
-            ArrayIndexReplace (aplTypeRht,      // Right arg storage type
-                               lpMemRht,        // Ptr to right arg global memory
-                               aplIntAcc,       // Index into right arg
-                               aplTypeSet,      // Set arg storage type
-                               aplLongestSet,   // Set arg immediate value
-                               hGlbSubSet,      // Set arg global memory handle
-                               lptkFunc);       // Ptr to function token
+            if (!ArrayIndexReplace_EM (aplTypeRht,      // Right arg storage type
+                                       lpMemRht,        // Ptr to right arg global memory
+                                       aplIntAcc,       // Index into right arg
+                                       aplTypeSet,      // Set arg storage type
+                                       aplLongestSet,   // Set arg immediate value
+                                       hGlbSubSet,      // Set arg global memory handle
+                                       lptkFunc))       // Ptr to function token
+                goto ERROR_EXIT;
         } // End IF/ELSE
 
         // Increment the odometer in lpMemOdo subject to

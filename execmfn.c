@@ -518,6 +518,9 @@ HGLOBAL Init1MagicFunction
         lpSymEntry =
           SymTabAppendNewName_EM (lpwszName, &stFlags);
 
+        if (!lpSymEntry)
+            goto ERROR_EXIT;
+
         // Set the handle
         lpSymEntry->stData.stGlbData = MakePtrTypeGlb (hGlbDfnHdr);
 

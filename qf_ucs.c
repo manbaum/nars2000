@@ -114,6 +114,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                    uRht;                // Loop counter
     UINT           uBitMask;            // Bit mask for marching through Booleans
     APLHETERO      aplHeteroRht;        // Right arg value as APLHETERO
+    LPSYMENTRY     lpSymTmp;            // Ptr to temporary LPSYMENTRY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -337,8 +338,12 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                 switch (aplHeteroRht->stFlags.ImmType)
                 {
                     case IMMTYPE_BOOL:
-                        *((LPAPLHETERO) lpMemRes)++ = SymTabAppendChar_EM    ((APLBOOL) aplLongestRht);
+                        *((LPAPLHETERO) lpMemRes)++ =
+                        lpSymTmp =
+                          SymTabAppendChar_EM    ((APLBOOL) aplLongestRht);
 
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                         break;
 
                     case IMMTYPE_FLOAT:
@@ -363,13 +368,19 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                             goto ERROR_EXIT;
                         } // End IF
 
-                        *((LPAPLHETERO) lpMemRes)++ = SymTabAppendChar_EM    ((APLCHAR) aplLongestRht);
-
+                        *((LPAPLHETERO) lpMemRes)++ =
+                        lpSymTmp =
+                          SymTabAppendChar_EM    ((APLCHAR) aplLongestRht);
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                         break;
 
                     case IMMTYPE_CHAR:
-                        *((LPAPLHETERO) lpMemRes)++ = SymTabAppendInteger_EM ((APLCHAR) aplLongestRht);
-
+                        *((LPAPLHETERO) lpMemRes)++ =
+                        lpSymTmp =
+                          SymTabAppendInteger_EM ((APLCHAR) aplLongestRht);
+                        if (!lpSymTmp)
+                            goto ERROR_EXIT;
                         break;
 
                     defstop

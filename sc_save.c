@@ -331,7 +331,7 @@ BOOL CmdSave_EM
                                                  0,                                 // Object rank
                                                  NULL);                             // Ptr to object dimensions
                             // If it's char, ...
-                            if (stFlags.ImmType EQ IMMTYPE_CHAR)
+                            if (IsImmChr (stFlags.ImmType))
                             {
                                 // Append a leading single quote
                                 *lpaplChar++ = L'\'';

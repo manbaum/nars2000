@@ -764,7 +764,7 @@ LRESULT APIENTRY SMWndProc
             if (!lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_NCCREATE:  VirtualAlloc for <lpwszQuadErrorMsg> failed");
+                DbgMsgW (L"WM_NCCREATE:  VirtualAlloc for <lpwszQuadErrorMsg> failed");
 
                 goto WM_NCCREATE_FAIL;  // Mark as failed
             } // End IF
@@ -832,7 +832,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
+                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -879,7 +879,7 @@ WM_NCCREATE_FAIL:
 ////////////if (!???)
 ////////////{
 ////////////    // ***FIXME*** -- WS FULL before we got started???
-////////////    DbgMsg ("WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
+////////////    DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
 ////////////
 ////////////    goto WM_CREATE_FAIL;    // Mark as failed
 ////////////} // End IF
@@ -951,7 +951,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpHshTab> failed");
+                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpHshTab> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1010,7 +1010,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSymTab> failed");
+                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSymTab> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1035,6 +1035,17 @@ WM_NCCREATE_FAIL:
             lpMemPTD->steOne     = SymTabAppendPermInteger_EM (1);
             lpMemPTD->steBlank   = SymTabAppendPermChar_EM    (L' ');
             lpMemPTD->steNoValue = lpMemPTD->lpSymTabNext++;
+
+            if (lpMemPTD->steZero    EQ NULL
+             || lpMemPTD->steOne     EQ NULL
+             || lpMemPTD->steBlank   EQ NULL
+             || lpMemPTD->steNoValue EQ NULL)
+            {
+                // ***FIXME*** -- SYMBOL TABLE FULL before we got started???
+                DbgMsgW (L"WM_CREATE:  SymTabAppendPermXXX failed");
+
+                goto WM_CREATE_FAIL;    // Mark as failed
+            } // End IF
 
             // Set the flags for the NoValue entry
             lpMemPTD->steNoValue->stFlags.Perm       = TRUE;
@@ -1068,7 +1079,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpStateInd> failed");
+                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpStateInd> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1104,7 +1115,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpYYRes> failed");
+                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpYYRes> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1140,7 +1151,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandVar> failed");
+                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandVar> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1174,7 +1185,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandFcn> failed");
+                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandFcn> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1210,7 +1221,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("InitInstance:  GuardAlloc for <lpwszFormat> failed");
+                DbgMsgW (L"InitInstance:  GuardAlloc for <lpwszFormat> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1249,7 +1260,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("InitInstance:  GuardAlloc for <lpwszTemp> failed");
+                DbgMsgW (L"InitInstance:  GuardAlloc for <lpwszTemp> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1286,7 +1297,7 @@ WM_NCCREATE_FAIL:
             // Initialize all system names (functions and variables) as reserved
             if (!InitSystemNames_EM ())
             {
-                DbgMsg ("WM_CREATE:  InitSystemNames_EM failed");
+                DbgMsgW (L"WM_CREATE:  InitSystemNames_EM failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1296,7 +1307,7 @@ WM_NCCREATE_FAIL:
             // Initialize all system vars
             if (!InitSystemVars ())
             {
-                DbgMsg ("WM_CREATE:  InitSystemVars failed");
+                DbgMsgW (L"WM_CREATE:  InitSystemVars failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1361,7 +1372,7 @@ WM_NCCREATE_FAIL:
             // Initialize all magic functions
             if (!InitMagicFunctions (hGlbPTD, hWndEC))
             {
-                DbgMsg ("WM_CREATE:  InitMagicFunctions failed");
+                DbgMsgW (L"WM_CREATE:  InitMagicFunctions failed");
 
                 goto WM_CREATE_FAIL_UNHOOK;
             } // End IF

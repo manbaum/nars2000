@@ -887,6 +887,9 @@ int dprintfW
     int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
     WCHAR   wszTemp[1024];
 
+    if (gDbgLvl < 9)
+        return 0;
+
     // We hope that no one calls us with more than
     //   eight arguments.
     // Note we must grab them separately this way

@@ -3548,7 +3548,7 @@ RESTART_EXCEPTION:
                         // Tell the header about it
                         lpMemHdrRes->ArrType = aplTypeRes;
 
-                        // Restart the pointers
+                        // Restart the pointer
                         lpMemRes = lpMemHdrRes;
                     } // End IF/ELSE
 

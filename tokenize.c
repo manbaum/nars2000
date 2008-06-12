@@ -1069,7 +1069,7 @@ BOOL fnIntAccum
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnIntAccum");
+    DbgMsgW (L"fnIntAccum");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1091,7 +1091,7 @@ BOOL fnIntAccum
     if (!bRet)
     {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-        DbgMsg ("Integer overflow!");
+        DbgMsgW (L"Integer overflow!");
 #endif
         lptkLocalVars->State = FSA_BIGINT;
     } else
@@ -1133,7 +1133,7 @@ BOOL fnIntDone
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnIntDone");
+    DbgMsgW (L"fnIntDone");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1193,7 +1193,7 @@ BOOL fnFPAccum
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnFPAccum");
+    DbgMsgW (L"fnFPAccum");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1251,7 +1251,7 @@ BOOL fnNegInit
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnNegInit");
+    DbgMsgW (L"fnNegInit");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1312,7 +1312,7 @@ BOOL fnNegExp
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnNegExp");
+    DbgMsgW (L"fnNegExp");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1369,7 +1369,7 @@ BOOL fnFPDone
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnFPDone");
+    DbgMsgW (L"fnFPDone");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1435,7 +1435,7 @@ BOOL fnAlpha
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnAlpha");
+    DbgMsgW (L"fnAlpha");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1491,7 +1491,7 @@ BOOL fnAlpDone
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnAlpDone");
+    DbgMsgW (L"fnAlpDone");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1582,7 +1582,7 @@ BOOL fnDirIdent
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnDirIdent");
+    DbgMsgW (L"fnDirIdent");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1649,7 +1649,7 @@ BOOL fnAsnDone
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnAsnDone");
+    DbgMsgW (L"fnAsnDone");
 #endif
 
     // Copy current WCHAR
@@ -1681,7 +1681,7 @@ BOOL fnLstDone
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnLstDone");
+    DbgMsgW (l"fnLstDone");
 #endif
 
     // Copy current WCHAR
@@ -1713,7 +1713,7 @@ BOOL fnClnDone
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnClnDone");
+    DbgMsgW (L"fnClnDone");
 #endif
 
     // Copy current WCHAR
@@ -1753,7 +1753,7 @@ BOOL fnPrmDone
     APLINT  aplInteger;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnPrmDone");
+    DbgMsgW (L"fnPrmDone");
 #endif
 
     // Copy current WCHAR
@@ -1801,7 +1801,7 @@ BOOL fnInfinity
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnInfinity");
+    DbgMsgW (L"fnInfinity");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -1849,7 +1849,7 @@ BOOL fnOp1Done
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnOp1Done");
+    DbgMsgW (L"fnOp1Done");
 #endif
 
     // Copy current WCHAR
@@ -1894,7 +1894,7 @@ BOOL fnOp2Done
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnOp2Done");
+    DbgMsgW (L"fnOp2Done");
 #endif
 
     // Mark the data as a dyadic primitive operator
@@ -1925,7 +1925,7 @@ BOOL fnDotDone
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnDotDone");
+    DbgMsgW (L"fnDotDone");
 #endif
 
     // Mark the data as a dyadic primitive operator
@@ -1956,7 +1956,7 @@ BOOL fnJotDone
     APLINT  aplInteger;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnJotDone");
+    DbgMsgW (L"fnJotDone");
 #endif
 
     // Mark the data as a dyadic primitive operator
@@ -1988,7 +1988,7 @@ BOOL fnOutDone
     APLINT  aplInteger;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnOutDone");
+    DbgMsgW (L"fnOutDone");
 #endif
 
     // Mark the data as an outer product monadic primitive operator (with right scope)
@@ -2027,7 +2027,7 @@ BOOL fnComDone
     LPWCHAR lpwch;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnComDone");
+    DbgMsgW (L"fnComDone");
 #endif
 
     // Get the length of the comment (up to but not including any '\n')
@@ -2079,7 +2079,7 @@ BOOL fnQuoAccum
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnQuoAccum");
+    DbgMsgW (L"fnQuoAccum");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -2140,7 +2140,7 @@ BOOL fnQuoDone
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnQuoDone");
+    DbgMsgW (L"fnQuoDone");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -2286,7 +2286,7 @@ BOOL fnParInit
 {
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnParInit");
+    DbgMsgW (L"fnParInit");
 #endif
 
     return GroupInitCom (lptkLocalVars, TKT_LPAREN);
@@ -2304,7 +2304,7 @@ BOOL fnBrkInit
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnBrkInit");
+    DbgMsgW (L"fnBrkInit");
 #endif
 
     return GroupInitCom (lptkLocalVars, TKT_LBRACKET);
@@ -2322,7 +2322,7 @@ BOOL fnBrcInit
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnBrcInit");
+    DbgMsgW (L"fnBrcInit");
 #endif
 
     return GroupInitCom (lptkLocalVars, TKT_LBRACE);
@@ -2381,7 +2381,7 @@ BOOL fnParDone
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnParDone");
+    DbgMsgW (L"fnParDone");
 #endif
 
     return GroupDoneCom (lptkLocalVars, TKT_RPAREN, TKT_LPAREN);
@@ -2399,7 +2399,7 @@ BOOL fnBrkDone
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnBrkDone");
+    DbgMsgW (L"fnBrkDone");
 #endif
 
     return GroupDoneCom (lptkLocalVars, TKT_RBRACKET, TKT_LBRACKET);
@@ -2417,7 +2417,7 @@ BOOL fnBrcDone
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnBrcDone");
+    DbgMsgW (L"fnBrcDone");
 #endif
 
     return GroupDoneCom (lptkLocalVars, TKT_RBRACE, TKT_LBRACE);
@@ -2528,7 +2528,7 @@ BOOL fnDiaDone
     APLINT  aplInteger;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("fnDiaDone");
+    DbgMsgW (L"fnDiaDone");
 #endif
 
     // Test for mismatched or improperly nested grouping symbols
@@ -2633,7 +2633,7 @@ HGLOBAL Tokenize_EM
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     // Display the tokens so far
-    DbgMsg ("*** Tokenize_EM Start");
+    DbgMsgW (L"*** Tokenize_EM Start");
     DisplayTokens (tkLocalVars.hGlbToken);
 #endif
 
@@ -2851,7 +2851,7 @@ UNLOCKED_EXIT:
 #endif
 FREED_EXIT:
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsg ("*** Tokenize_EM End");
+    DbgMsgW (L"*** Tokenize_EM End");
 #endif
 
     return tkLocalVars.hGlbToken;

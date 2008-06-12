@@ -78,14 +78,14 @@ void DisplayHshTab
         lpHTS = &lpMemPTD->htsPTD;
     } // End IF/ELSE
 
-    DbgMsg ("********** Hash Table **********************************");
+    DbgMsgW2 (L"********** Hash Table **********************************");
 
     wsprintfW (wszTemp,
                L"lpHshTab = %p, SplitNext = %p, Last = %p",
                lpHTS->lpHshTab,
                lpHTS->lpHshTabSplitNext,
               &lpHTS->lpHshTab[lpHTS->iHshTabTotalSize]);
-    DbgMsgW (wszTemp);
+    DbgMsgW2 (wszTemp);
 
     // Display the hash table
     for (lpHshEntry = lpHTS->lpHshTab, i = 0;
@@ -95,10 +95,10 @@ void DisplayHshTab
         // Format the HTE
         FormatHTE (lpHshEntry, wszTemp, i);
 
-        DbgMsgW (wszTemp);
+        DbgMsgW2 (wszTemp);
     } // End FOR
 
-    DbgMsg ("********** End Hash Table ******************************");
+    DbgMsgW2 (L"********** End Hash Table ******************************");
 
     UpdateDBWindow ();
 
@@ -243,15 +243,19 @@ void DisplaySymTab
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     if (bDispAll)
-        DbgMsg ("********** Symbol Table ********************************");
-    else
-        DbgMsg ("********** Symbol Table Referenced Non-SysNames ********");
+    {
+        DbgMsgW2 (L"********** Symbol Table ********************************");
+    } else
+    {
+        DbgMsgW2 (L"********** Symbol Table Referenced Non-SysNames ********");
+    } // End IF/ELSE -- DO NOT REMOVE as the DbgMsgW2 macro needs
+    //                  this because of the trailing semicolon
 
     wsprintfW (wszTemp,
                L"lpSymTab = %p, Last = %p",
                lpMemPTD->lpSymTab,
               &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize]);
-    DbgMsgW (wszTemp);
+    DbgMsgW2 (wszTemp);
 
     // Display the symbol table
     for (lpSymEntry = lpMemPTD->lpSymTab, i = 0;
@@ -263,10 +267,10 @@ void DisplaySymTab
         // Format the STE
         FormatSTE (lpSymEntry, wszTemp);
 
-        DbgMsgW (wszTemp);
+        DbgMsgW2 (wszTemp);
     } // End FOR
 
-    DbgMsg ("********** End Symbol Table ****************************");
+    DbgMsgW2 (L"********** End Symbol Table ****************************");
 
     UpdateDBWindow ();
 
@@ -483,7 +487,7 @@ void DisplayGlobals
     //   MyGlobalLock/Unlock so as not to pollute the result
     lpMemPTD = GlobalLock (hGlbPTD);
 
-    DbgMsg ("********** Globals *************************************");
+    DbgMsgW2 (L"********** Globals *************************************");
 
     for (i = 0; i < MAXOBJ; i++)
     if (hGlb = ahGLOBAL[i])
@@ -498,7 +502,7 @@ void DisplayGlobals
             wsprintfW (wszTemp,
                        L"hGlb=%p *** INVALID ***",
                        hGlb);
-            DbgMsgW (wszTemp);
+            DbgMsgW2 (wszTemp);
 
             continue;
         } // End IF
@@ -580,7 +584,7 @@ void DisplayGlobals
                                (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
                                auLinNumGLOBAL[i],
                                aplArrChar);
-                    DbgMsgW (wszTemp);
+                    DbgMsgW2 (wszTemp);
                 } // End IF
             } // End IF
         } else
@@ -599,7 +603,7 @@ void DisplayGlobals
                        lpHeader->RefCnt,
                        (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
                        auLinNumGLOBAL[i]);
-            DbgMsgW (wszTemp);
+            DbgMsgW2 (wszTemp);
         } else
 #undef  lpHeader
         if (uDispGlb EQ 2)
@@ -607,14 +611,14 @@ void DisplayGlobals
             wsprintfW (wszTemp,
                        L"hGlb=%p -- No NARS/FCNS Signature",
                        hGlb);
-            DbgMsgW (wszTemp);
+            DbgMsgW2 (wszTemp);
         } // End IF/ELSE
 
         // We no longer need this ptr
         GlobalUnlock (hGlb); lpMem = NULL;
     } // End FOR/IF
 
-    DbgMsg ("********** End Globals *********************************");
+    DbgMsgW2 (L"********** End Globals *********************************");
 
     UpdateDBWindow ();
 
@@ -645,12 +649,12 @@ void DisplayTokens
     if (gDbgLvl <= 2)
         return;
 
-    DbgMsg ("********** Tokens **************************************");
+    DbgMsgW2 (L"********** Tokens **************************************");
 
     // Ensure it's valid
     if (!hGlbToken)
     {
-        DbgMsg ("DisplayTokens:  ***INAVLID HANDLE***:  hGlbToken == 0");
+        DbgMsgW2 (L"DisplayTokens:  ***INAVLID HANDLE***:  hGlbToken == 0");
         return;
     } // End IF
 
@@ -670,7 +674,7 @@ void DisplayTokens
                lpHeader->Version,
                lpHeader->TokenCnt,
                lpHeader->PrevGroup);
-    DbgMsgW (wszTemp);
+    DbgMsgW2 (wszTemp);
 
     iLen = lpHeader->TokenCnt;
 #undef  lpHeader
@@ -685,10 +689,10 @@ void DisplayTokens
                    *(LPAPLINT) &lpToken->tkData.tkFloat,
                    lpToken->tkCharIndex,
                    GetTokenTypeName (lpToken->tkFlags.TknType));
-        DbgMsgW (wszTemp);
+        DbgMsgW2 (wszTemp);
     } // End FOR
 
-    DbgMsg ("********** End Tokens **********************************");
+    DbgMsgW2 (L"********** End Tokens **********************************");
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbToken); lpToken = NULL;
@@ -901,7 +905,7 @@ void DisplayFcnStrand
     *lpaplChar = L'\0';
 
     // Display the line in the debugging window
-    DbgMsgW (wszTemp);
+    DbgMsgW2 (wszTemp);
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1332,16 +1336,16 @@ void DisplayFcnArr
 
     Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbStr)));
 
-    DbgMsgW (L"********** Function Array ******************************");
+    DbgMsgW2 (L"********** Function Array ******************************");
 
     DisplayFcnGlb (wszTemp,         // Ptr to output save area
                    hGlbStr,         // Function array global memory handle
                    TRUE,            // TRUE iff we're to display the header
                    NULL,            // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
                    NULL);           // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
-    DbgMsgW (wszTemp);
+    DbgMsgW2 (wszTemp);
 
-    DbgMsgW (L"********** End Function Array **************************");
+    DbgMsgW2 (L"********** End Function Array **************************");
 } // End DisplayFcnArr
 #endif
 
@@ -1380,12 +1384,12 @@ void DisplayStrand
     switch (strType)
     {
         case STRAND_VAR:
-            DbgMsg ("********** Variable Strands ****************************");
+            DbgMsgW2 (L"********** Variable Strands ****************************");
 
             break;
 
         case STRAND_FCN:
-            DbgMsg ("********** Function Strands ****************************");
+            DbgMsgW2 (L"********** Function Strands ****************************");
 
             break;
 
@@ -1398,7 +1402,7 @@ void DisplayStrand
                lpplLocalVars->lpYYStrandStart[strType],
                lpplLocalVars->lpYYStrandBase[strType],
                lpplLocalVars->lpYYStrandNext[strType]);
-    DbgMsgW (wszTemp);
+    DbgMsgW2 (wszTemp);
 
     for (lp = lpplLocalVars->lpYYStrandStart[strType], lpLast = NULL;
          lp NE lpplLocalVars->lpYYStrandNext[strType];
@@ -1406,7 +1410,7 @@ void DisplayStrand
     {
         if (lpLast NE lp->lpYYStrandBase)
         {
-            DbgMsg ("--------------------------------------------------------");
+            DbgMsgW2 (L"--------------------------------------------------------");
             lpLast  = lp->lpYYStrandBase;
         } // End IF
 
@@ -1420,10 +1424,10 @@ void DisplayStrand
                    lp->YYIndirect,
                    lp->lpYYFcnBase,
                    lpLast);
-        DbgMsgW (wszTemp);
+        DbgMsgW2 (wszTemp);
     } // End FOR
 
-    DbgMsg ("********** End Strands *********************************");
+    DbgMsgW2 (L"********** End Strands *********************************");
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1467,7 +1471,7 @@ void DisplayUndo
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    DbgMsg ("********** Undo Buffer *********************************");
+    DbgMsgW2 (L"********** Undo Buffer *********************************");
 
     // Get the shift key state
     bShift = (GetKeyState (VK_SHIFT) & 0x8000);
@@ -1545,10 +1549,10 @@ void DisplayUndo
                    lpUndoBeg->CharPosEnd,
                    lpUndoBeg->Group,
                    lpUndoBeg->Char);
-        DbgMsgW (wszTemp);
+        DbgMsgW2 (wszTemp);
     } // End FOR
 
-    DbgMsg ("********** End Undo Buffer *****************************");
+    DbgMsgW2 (L"********** End Undo Buffer *****************************");
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1776,7 +1780,7 @@ void DisplayFnHdr
     } // End IF
 
     // Display it in the debug window
-    DbgMsgW (wszTemp);
+    DbgMsgW2 (wszTemp);
 } // End DisplayFnHdr
 #endif
 

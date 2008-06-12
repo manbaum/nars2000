@@ -126,7 +126,9 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "LocalizeAll"               , (LPUCHAR) &LocalizeAll                ,
     "_CheckSymEntries"          , (LPUCHAR) &_CheckSymEntries           ,
     "ExecuteFunction_EM_YY"     , (LPUCHAR) &ExecuteFunction_EM_YY      ,
+  #ifdef DEBUG
     "DisplayFcnLine"            , (LPUCHAR) &DisplayFcnLine             ,
+  #endif
     "CheckDfnExitError_EM"      , (LPUCHAR) &CheckDfnExitError_EM       ,
     "Unlocalize"                , (LPUCHAR) &Unlocalize                 ,
     "LocalizeLabels"            , (LPUCHAR) &LocalizeLabels             ,

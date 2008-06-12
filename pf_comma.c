@@ -990,6 +990,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                  aplCharRht;
     APLLONGEST   aplVal;
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPSYMENTRY   lpSymTmp;          // Ptr to temporary LPSYMENTRY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1781,6 +1782,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                   MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeLft),    // Immediate type
                                   &aplVal,                                      // Ptr to immediate value
                                    lptkFunc);                                   // Ptr to function token
+                if (!lpSymGlbLft)
+                    goto ERROR_EXIT;
             } // End IF
 
             // If the right arg is a simple scalar, ...
@@ -1815,6 +1818,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                   MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRht),    // Immediate type
                                   &aplVal,                                      // Ptr to immediate value
                                    lptkFunc);                                   // Ptr to function token
+                if (!lpSymGlbRht)
+                    goto ERROR_EXIT;
             } // End IF
 
             // If the result is empty, use the prototype of the right arg
@@ -1839,10 +1844,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             {
                                 aplVal = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? 1 : 0;
                                 *((LPAPLNESTED) lpMemRes)++ =
+                                lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
-
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                                 // Shift over the bit mask
                                 uBitMaskLft <<= 1;
 
@@ -1867,9 +1874,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             {
                                 aplVal = *((LPAPLINT) lpMemLft)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
+                                lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                   lptkFunc);        // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                             } // End FOR
                         break;
 
@@ -1885,9 +1895,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             {
                                 aplVal = *((LPAPLINT) lpMemLft)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
+                                lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                   lptkFunc);        // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                             } // End FOR
                         break;
 
@@ -1903,9 +1916,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             {
                                 aplVal = *((LPAPLCHAR) lpMemLft)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
+                                lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                             } // End FOR
                         break;
 
@@ -1915,9 +1931,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         {
                             aplVal = apaOffLft + apaMulLft * uEndLft++;
                             *((LPAPLNESTED) lpMemRes)++ =
+                            lpSymTmp =
                               MakeSymEntry_EM (IMMTYPE_INT,         // Immediate type
                                               &aplVal,              // Ptr to immediate value
                                                lptkFunc);           // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                         } // End FOR
 
                         break;
@@ -1954,9 +1973,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             {
                                 aplVal = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
                                 *((LPAPLNESTED) lpMemRes)++ =
+                                lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
 
                                 // Shift over the bit mask
                                 uBitMaskRht <<= 1;
@@ -1982,9 +2004,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             {
                                 aplVal = *((LPAPLINT) lpMemRht)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
+                                lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                             } // End FOR
                         break;
 
@@ -2000,9 +2025,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             {
                                 aplVal = *((LPAPLINT) lpMemRht)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
+                                lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                             } // End FOR
                         break;
 
@@ -2018,9 +2046,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             {
                                 aplVal = *((LPAPLCHAR) lpMemRht)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
+                                lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                             } // End FOR
                         break;
 
@@ -2030,9 +2061,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         {
                             aplVal = apaOffRht + apaMulRht * uEndRht++;
                             *((LPAPLNESTED) lpMemRes)++ =
+                            lpSymTmp =
                               MakeSymEntry_EM (IMMTYPE_INT,         // Immediate type
                                               &aplVal,              // Ptr to immediate value
                                                lptkFunc);           // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
                         } // End FOR
 
                         break;

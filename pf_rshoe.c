@@ -270,7 +270,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     LPSYMENTRY   lpSymProto,        // Right arg item prototype as Symbol Table Entry
                  lpSym0,            // LPSYMENTRY for constant zero
                  lpSym1,            // ...                     one
-                 lpSymB;            // ...                     ' '
+                 lpSymB,            // ...                     ' '
+                 lpSymTmp;          // Ptr to temporary LPSYMENTRY
     APLUINT      uSubRest,          // Loop counter
                  uSubLast;          // ...
     APLNELM      aplNELMSubRest,    // Right arg item NELM except for last coordinate
@@ -666,8 +667,13 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         //   copying them to the result
                         for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
                         for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                        {
                             ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                            lpSymTmp =
                               SymTabAppendInteger_EM (*((LPAPLINT) lpMemSub)++);
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } // End FOR/FOR
 
                         // Loop through the missing elements in the result (right arg item's cols)
                         //   copying the prototype
@@ -697,8 +703,13 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         //   copying them to the result
                         for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
                         for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                        {
                             ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                            lpSymTmp =
                               SymTabAppendInteger_EM (apaOffSub + apaMulSub * (uSubLast + (uSubRest * aplNELMSubLast)));
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } // End FOR/FOR
 
                         // Loop through the missing elements in the result (right arg item's cols)
                         //   copying the prototype
@@ -723,8 +734,13 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         //   copying them to the result
                         for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
                         for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                        {
                             ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                            lpSymTmp =
                               SymTabAppendFloat_EM (*((LPAPLFLOAT) lpMemSub)++);
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } // End FOR/FOR
 
                         // Loop through the missing elements in the result (right arg item's cols)
                         //   copying the prototype
@@ -749,8 +765,13 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         //   copying them to the result
                         for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
                         for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                        {
                             ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                            lpSymTmp =
                               SymTabAppendChar_EM (*((LPAPLCHAR) lpMemSub)++);
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } // End FOR/FOR
 
                         // Loop through the missing elements in the result (right arg item's cols)
                         //   copying the prototype
@@ -1492,6 +1513,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     APLUINT      uLft;                  // Loop counter
     BOOL         bRet = TRUE;           // TRUE iff result is valid
     APLBOOL      bQuadIO;               // []IO
+    LPSYMENTRY   lpSymTmp;              // Ptr to temporary LPSYMENTRY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg global
@@ -1801,11 +1823,15 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
                 // If the set arg is simple non-heterogeneous, ...
                 if (IsSimpleNH (aplTypeSet))
+                {
                     ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
+                    lpSymTmp =
                       MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),    // Immediate type
                                       &aplLongestSet,                               // Ptr to immediate value
                                        lptkFunc);                                   // Ptr to function token
-                else
+                    if (!lpSymTmp)
+                        goto ERROR_EXIT;
+                } else
                     ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
                       CopySymGlbDir (hGlbSet);
 
@@ -1895,13 +1921,14 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
                 // Replace the <aplLongestSubLft> element in hGlbRht
                 //   with <aplLongestSet> or <hGlbSet> depending upon <aplTypeRht>
-                ArrayIndexReplace (aplTypeRht,      // Right arg storage type
-                                   lpMemRht,        // Ptr to right arg global memory
-                                   aplLongestSubLft,// Index into right arg
-                                   aplTypeSet,      // Set arg storage type
-                                   aplLongestSet,   // Set arg immediate value
-                                   hGlbSet,         // Set arg global memory handle
-                                   lptkFunc);       // Ptr to function token
+                if (!ArrayIndexReplace_EM (aplTypeRht,      // Right arg storage type
+                                           lpMemRht,        // Ptr to right arg global memory
+                                           aplLongestSubLft,// Index into right arg
+                                           aplTypeSet,      // Set arg storage type
+                                           aplLongestSet,   // Set arg immediate value
+                                           hGlbSet,         // Set arg global memory handle
+                                           lptkFunc))       // Ptr to function token
+                    goto ERROR_EXIT;
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 

@@ -102,9 +102,11 @@
     DecrRefCntInd (hGlbData)
   #endif
 
+  #define DbgMsgW2(a) {if (gDbgLvl > 2) {DbgMsgW(a);}}
+
   #define CheckMemStat()      _CheckMemStat ()
 
-  #define Assert(a)     ((a) || (DbgBrk (), DbgBrk (), 0))
+  #define Assert(a)     ((a) || (DbgBrk (), nop (), 0))
 #else
   #define YYAlloc()     _YYAlloc()
 
@@ -122,6 +124,7 @@
 
   #define DbgMsg(a)
   #define DbgMsgW(a)
+  #define DbgMsgW2(a)
 
   #define CheckMemStat()
 
@@ -239,9 +242,16 @@
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.
-#define GetPtrTypeDir(lpMem)          (BYTE)       (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem))
-#define GetPtrTypeInd(lpMem)          (BYTE)       (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem))
-
+// NOTE:  THIS MACRO CALLS ITS ARGUMENT *TWICE*, HENCE IT WILL WORK DIFFERENTLY
+//        IN THE DEBUG VERSION FROM THE NON-DEBUG VERSION IF THE ARGUMENT HAS
+//        ANY SIDE EFFECTS SUCH AS PRE- OR POST-INCREMENT/DECREMENT, OR THE LIKE.
+#ifdef DEBUG
+  #define GetPtrTypeDir(lpMem)        (BYTE) ((lpMem EQ NULL) ? PTRTYPE_AVAIL : (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem)))
+  #define GetPtrTypeInd(lpMem)        (BYTE) ((lpMem EQ NULL) ? PTRTYPE_AVAIL : (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem)))
+#else
+  #define GetPtrTypeDir(lpMem)        (BYTE)       (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem))
+  #define GetPtrTypeInd(lpMem)        (BYTE)       (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem))
+#endif
 // Macro to create a masked LPSYMENTRY
 #define MakePtrTypeSym(lpMem)         (LPSYMENTRY) (PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
 
@@ -254,6 +264,7 @@
 
 // Note that the following macros depend upon
 //   the ordering of the enum IMM_TYPES in <symtab.h>
+#define IsImmBool(a)    ((a) EQ IMMTYPE_BOOL)
 #define IsImmInt(a)     ((a) < IMMTYPE_FLOAT)
 #define IsImmNum(a)     ((a) < IMMTYPE_CHAR)
 #define IsImmFlt(a)     ((a) EQ IMMTYPE_FLOAT)

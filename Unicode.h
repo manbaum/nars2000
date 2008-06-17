@@ -60,6 +60,7 @@
 #define UTF16_RIGHTSINGLEQUOTE   0x2019         // Right ...
 #define UTF16_DELTILDE           0x236B         // Del-tilde
 #define UTF16_HORIZELLIPSIS      0x2026         // Horizontal ellipsis
+#define UTF16_REPLACEMENTCHAR    0xFFFD         // Replacement char for unknown
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha
@@ -73,7 +74,7 @@
 #define UTF16_IOTA               0x2373         // Alt-'i' - iota
 #define UTF16_JOT                0x2218         // Alt-'j' - jot
 #define UTF16_APOSTROPHE         0x0027         // Alt-'k' - single quote
-#define UTF16_QUAD               0x2395         // Alt-'l' - quad (was 0x25AF)
+#define UTF16_QUAD               0x2395         // Alt-'l' - quad (not 0x25AF)
 #define UTF16_STILE              0x2223         // Alt-'m' - modulus
 #define UTF16_DOWNTACK           0x22A4         // Alt-'n' - representation
 #define UTF16_CIRCLE             0x25CB         // Alt-'o' - circle
@@ -118,7 +119,7 @@
 //efine UTF16_                                  // Alt-'Z' - (none)
 
 // Top row, unshifted
-#define UTF16_DIAMOND            0x22C4         // Alt-'`' - diamond (9674??)
+#define UTF16_DIAMOND            0x22C4         // Alt-'`' - diamond (not 0x25CA)
 #define UTF16_DIERESIS           0x00A8         // Alt-'1' - dieresis
 #define UTF16_OVERBAR            0x00AF         // Alt-'2' - high minus
 #define UTF16_LEFTCARET          0x003C         // Alt-'3' - less
@@ -128,7 +129,7 @@
 #define UTF16_RIGHTCARET         0x003E         // Alt-'7' - more
 #define UTF16_NOTEQUAL           0x2260         // Alt-'8' - not equal
 #define UTF16_DOWNCARET          0x2228         // Alt-'9' - or
-#define UTF16_UPCARET            0x2227         // Alt-'0' - and (94??)
+#define UTF16_UPCARET            0x2227         // Alt-'0' - and (not 0x005E)
 #define UTF16_TIMES              0x00D7         // Alt-'-' - times
 #define UTF16_COLONBAR           0x00F7         // Alt-'=' - divide
 
@@ -302,7 +303,7 @@
 //efine WS_UTF16_                               // Alt-'Z' - (none)
 
 // Top row, unshifted
-#define WS_UTF16_DIAMOND            L"\x22C4"   // Alt-'`' - diamond (9674??)
+#define WS_UTF16_DIAMOND            L"\x22C4"   // Alt-'`' - diamond (not \x25CA)
 #define WS_UTF16_DIERESIS           L"\x00A8"   // Alt-'1' - dieresis
 #define WS_UTF16_OVERBAR            L"\x00AF"   // Alt-'2' - high minus
 #define WS_UTF16_LEFTCARET          L"\x003C"   // Alt-'3' - less
@@ -312,7 +313,7 @@
 #define WS_UTF16_RIGHTCARET         L"\x003E"   // Alt-'7' - more
 #define WS_UTF16_NOTEQUAL           L"\x2260"   // Alt-'8' - not equal
 #define WS_UTF16_DOWNCARET          L"\x2228"   // Alt-'9' - or
-#define WS_UTF16_UPCARET            L"\x2227"   // Alt-'0' - and (94??)
+#define WS_UTF16_UPCARET            L"\x2227"   // Alt-'0' - and (not \x005E)
 #define WS_UTF16_TIMES              L"\x00D7"   // Alt-'-' - times
 #define WS_UTF16_COLONBAR           L"\x00F7"   // Alt-'=' - divide
 
@@ -384,7 +385,7 @@
 #define WS_UTF16_UNDERBAR           L"\x005F"   // Underbar
 #define WS_UTF16_BACKTICK           L"\x0060"   // Backtick
 #define WS_UTF16_LBRACE             L"\x007B"   // Left brace
-#define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. 0x2223)
+#define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. \x2223)
 #define WS_UTF16_RBRACE             L"\x007D"   // Right brace
 
 #define WS_UTF16_A_                 L"\xE036"   // A underbar

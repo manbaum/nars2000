@@ -27,6 +27,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "limits.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -63,17 +64,17 @@ LPPL_YYSTYPE SysFnUCS_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonUCS_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydUCS_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnUCS_EM_YY
 #undef  APPEND_NAME
 
@@ -122,11 +123,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
     // Check for DOMAIN ERROR
     if (!IsSimple (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Get right arg's global ptrs
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -143,20 +140,17 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                 // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                 if (!bRet)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto DOMAIN_EXIT;
             } // End IF
 
-            // Check for out of range
+            // Check for out of range for Unicode
+            //   as an APLUINT so we don't have to deal with negatives
+            if (INT_MAX < aplLongestRht)
+                goto DOMAIN_EXIT;
+
+            // Check for out of range for UCS-2
             if (APLCHAR_SIZE <= aplLongestRht)
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                aplLongestRht = UTF16_REPLACEMENTCHAR;
 
             // Set the result immediate type
             immTypeRes = IMMTYPE_CHAR;
@@ -210,11 +204,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -264,16 +254,19 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
         case ARRAY_INT:
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Check for out of range as an APLUINT
-                //   so we don't have to deal with negatives
-                if (APLCHAR_SIZE <= *(LPAPLUINT) lpMemRht)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
+                // Get the next element
+                aplLongestRht = *((LPAPLUINT) lpMemRht)++;
 
-                *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) *((LPAPLINT) lpMemRht)++;
+                // Check for out of range for Unicode
+                //   as an APLUINT so we don't have to deal with negatives
+                if (INT_MAX < aplLongestRht)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for UCS-2
+                if (APLCHAR_SIZE <= aplLongestRht)
+                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                else
+                    *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End IF
 
             break;
@@ -284,22 +277,18 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                 // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++, &bRet);
                 if (!bRet)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto DOMAIN_EXIT;
 
-                // Check for out of range as an APLUINT
-                //   so we don't have to deal with negatives
+                // Check for out of range for Unicode
+                //   as an APLUINT so we don't have to deal with negatives
+                if (INT_MAX < aplLongestRht)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for UCS-2
                 if (APLCHAR_SIZE <= aplLongestRht)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
-
-                *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
+                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                else
+                    *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End FOR
 
             break;
@@ -318,11 +307,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
             // Check for out of range
             if (0 > (apaOffRht + apaMulRht * 0)
              ||     (apaOffRht + apaMulRht * (aplNELMRht - 1)) >= 64*1024)
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto DOMAIN_EXIT;
 
             for (uRht = 0; uRht < aplNELMRht; uRht++)
                 *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) (apaOffRht + apaMulRht * uRht);
@@ -341,7 +326,6 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
                           SymTabAppendChar_EM    ((APLBOOL) aplLongestRht);
-
                         if (!lpSymTmp)
                             goto ERROR_EXIT;
                         break;
@@ -350,23 +334,19 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                         // Attempt to convert the float to an integer using System CT
                         aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                         if (!bRet)
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                       lptkFunc);
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto DOMAIN_EXIT;
 
                         // Fall through to common code
 
                     case IMMTYPE_INT:
-                        // Check for out of range as an APLUINT
-                        //   so we don't have to deal with negatives
-                        if (64*1024 <= aplLongestRht)
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                       lptkFunc);
-                            goto ERROR_EXIT;
-                        } // End IF
+                        // Check for out of range for Unicode
+                        //   as an APLUINT so we don't have to deal with negatives
+                        if (INT_MAX < aplLongestRht)
+                            goto DOMAIN_EXIT;
+
+                        // Check for out of range for UCS-2
+                        if (APLCHAR_SIZE <= aplLongestRht)
+                            aplLongestRht = UTF16_REPLACEMENTCHAR;
 
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
@@ -411,6 +391,16 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes)

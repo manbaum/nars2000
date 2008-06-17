@@ -154,7 +154,7 @@ BOOL CmdWsid_EM
             // Because the global memory has a zero terminator,
             //   we don't need to copy the data to a temporary location and then
             //   append a zero terminator
-            AppendLine (lpMemWSID, FALSE, TRUE);
+            AppendLine (ShortenWSID (lpMemWSID), FALSE, TRUE);
 
         // We no longer need this ptr
         MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
@@ -183,7 +183,7 @@ BOOL CmdWsid_EM
             // Because the global memory has a zero terminator,
             //   we don't need to copy the data to a temporary location and then
             //   append a zero terminator
-            AppendLine (lpMemWSID, FALSE, TRUE);
+            AppendLine (ShortenWSID (lpMemWSID), FALSE, TRUE);
         } // End IF/ELSE
 
         // We no longer need this ptr

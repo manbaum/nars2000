@@ -1568,7 +1568,7 @@ RESTART_EXCEPTION:
 
                     case TKT_VARARRAY:
                         // Save in the result as an HGLOBAL
-                        *((LPAPLNESTED) lpMemRes)++ = tkRhtArg.tkData.tkGlbData;
+                        ((LPAPLNESTED) lpMemRes)[uRht] = tkRhtArg.tkData.tkGlbData;
 
                         break;
 

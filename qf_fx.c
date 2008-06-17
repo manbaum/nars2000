@@ -29,6 +29,7 @@
 #include "externs.h"
 #include "dfnhdr.h"
 #include "savefcn.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -98,6 +99,8 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     HGLOBAL      hGlbRes = NULL;    // Result global memory handle
     LPVOID       lpMemRes = NULL;   // Ptr to result global memory
     APLSTYPE     aplTypeRht,        // Right arg storage type
@@ -113,6 +116,17 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
     SF_FCNS      SF_Fcns = {0};     // Common struc for SaveFunction
     FX_PARAMS    FX_Params = {0};   // Local struc for  ...
 
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // In case we're called by )IN, zap the error line #
+    lpMemPTD->uErrLine = NEG1U;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &FX_Params.aplRankRht, &FX_Params.aplColsRht);
@@ -144,6 +158,9 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
 
             if (IsNested (aplTypeRht))
             {
+                // Skip over the header to the data
+                lpMemRht = VarArrayBaseToData (lpMemRht, FX_Params.aplRankRht);
+
                 // Ensure that each item is a char scalar/vector
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
@@ -178,11 +195,11 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             lpMemItmRht = MyGlobalLock (hGlbItmRht);
 
                             // Get the array NELM
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRht)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemItmRht)
                             aplNELMItmRht = lpHeader->NELM;
 
                             // Skip over the header to the data
-                            lpMemItmRht = VarArrayBaseToData (lpMemRht, lpHeader->Rank);
+                            lpMemItmRht = VarArrayBaseToData (lpMemItmRht, lpHeader->Rank);
 #undef  lpHeader
                             // Check for all blanks
                             for (; aplNELMItmRht; aplNELMItmRht--)
@@ -389,6 +406,15 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkInteger  = GetQuadIO () + SF_Fcns.uErrLine;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // In case we're called by )IN, save the error line # for later use
+        lpMemPTD->uErrLine = SF_Fcns.uErrLine;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
 ERROR_EXIT:
     if (FX_Params.hGlbRht && lpMemRht)

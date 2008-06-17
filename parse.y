@@ -5108,7 +5108,8 @@ EXIT_TYPES ParseLine
      HGLOBAL hGlbTxtLine,           // Line text global memory handle
      HGLOBAL hGlbToken,             // Tokenized line global memory handle (may be NULL)
      LPWCHAR lpwszLine,             // Ptr to the line text (may be NULL)
-     HGLOBAL hGlbPTD)               // PerTabData global memory handle
+     HGLOBAL hGlbPTD,               // PerTabData global memory handle
+     BOOL    bActOnErrors)          // TRUE iff errors are acted upon
 
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -5478,10 +5479,6 @@ EXIT_TYPES ParseLine
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    // ***FIXME*** -- At some point we should link together MEMVIRT_STRs
-    //                so we can look at how much address space is allocated
-    //                when we encounter an error such as this.
-
     // Set the stop in motion
     plLocalVars.ExitType = EXITTYPE_STOP;
 
@@ -5551,7 +5548,8 @@ NORMAL_EXIT:
     TlsSetValue (dwTlsType, ULongToPtr (oldTlsType));
 
     // If there's an error to be signalled, ...
-    if (uError NE ERRORCODE_NONE)
+    if (uError NE ERRORCODE_NONE
+     && bActOnErrors)
     {
         EXIT_TYPES exitType;    // Return code from ImmExecStmt
 
@@ -5593,7 +5591,8 @@ NORMAL_EXIT:
           ImmExecStmt (lpwszLine,   // Ptr to line to execute
                        FALSE,       // TRUE iff free the lpwszLine on completion
                        TRUE,        // TRUE iff wait until finished
-                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Control window handle
+                       TRUE);       // TRUE iff errors are acted upon
         // Split cases based upon the exit type
         switch (exitType)
         {

@@ -309,6 +309,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                             NULL,           // Ptr to lpSym/Glb ...
                             NULL,           // Ptr to ...immediate type ...
                             NULL);          // Ptr to array type ...
+__try
+{
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
@@ -425,6 +427,18 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
         defstop
             break;
     } // End SWITCH
+} __except (CheckVirtAlloc (GetExceptionInformation (), L"PrimFnMonDownTackJot_EM_YY"))
+{
+    // Split cases based upon the exception code
+    switch (MyGetExceptionCode ())
+    {
+        case EXCEPTION_LIMIT_ERROR:
+            goto LIMIT_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End __try/__Except
 
     // Propagate the row & col count up the line
     PropagateRowColCount (lpFmtHeader);
@@ -575,6 +589,11 @@ NORMAL_EXIT:
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LIMIT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

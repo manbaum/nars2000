@@ -240,9 +240,10 @@ void ImmExecLine
         default:
             // Execute the statement
             ImmExecStmt (lpwszCompLine,     // Ptr to line to execute
-                         TRUE,              // Free lpwszCompLine on completion
+                         TRUE,              // TRUE iff free lpwszCompLine on completion
                          FALSE,             // TRUE iff wait until finished
-                         hWndEC);           // Edit Control window handle
+                         hWndEC,            // Edit Control window handle
+                         TRUE);             // TRUE iff errors are acted upon
             return;
     } // End SWITCH
 
@@ -281,7 +282,8 @@ EXIT_TYPES ImmExecStmt
     (LPWCHAR lpwszCompLine,     // Ptr to line to execute
      BOOL    bFreeLine,         // TRUE iff free lpwszCompLine on completion
      BOOL    bWaitUntilFini,    // TRUE iff wait until finished
-     HWND    hWndEC)            // Edit Control window handle
+     HWND    hWndEC,            // Edit Control window handle
+     BOOL    bActOnErrors)      // TRUE iff errors are acted upon
 
 {
     HANDLE     hThread;         // Thread handle
@@ -301,6 +303,7 @@ EXIT_TYPES ImmExecStmt
     ieThread.hGlbWFSO       = hGlbWFSO;
     ieThread.bFreeLine      = bFreeLine;
     ieThread.bWaitUntilFini = bWaitUntilFini;
+    ieThread.bActOnErrors   = bActOnErrors;
 
     // Lock the memory to get a ptr to it
     lpMemWFSO = MyGlobalLock (hGlbWFSO);
@@ -392,8 +395,9 @@ DWORD WINAPI ImmExecStmtInThread
     HGLOBAL       hGlbPTD;              // Handle to this window's PerTabData
     LPPERTABDATA  lpMemPTD;             // Ptr to ...
     RESET_FLAGS   resetFlag;            // Reset flag (see RESET_FLAGS)
-    UINT          bFreeLine,            // TRUE iff we should free lpszCompLine on completion
+    BOOL          bFreeLine,            // TRUE iff we should free lpszCompLine on completion
                   bWaitUntilFini,       // TRUE iff wait until finished
+                  bActOnErrors,         // TRUE iff errors are acted upon
                   bQuadPrompt = FALSE;  // TRUE iff Quad Prompt has been displayed
     EXIT_TYPES    exitType;             // Return code from ParseLine
     LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
@@ -411,6 +415,7 @@ DWORD WINAPI ImmExecStmtInThread
         hGlbWFSO       = lpieThread->hGlbWFSO;
         bFreeLine      = lpieThread->bFreeLine;
         bWaitUntilFini = lpieThread->bWaitUntilFini;
+        bActOnErrors   = lpieThread->bActOnErrors;
 
         // Save the thread's PerTabData global memory handle
         TlsSetValue (dwTlsPerTabData, hGlbPTD);
@@ -434,34 +439,39 @@ DWORD WINAPI ImmExecStmtInThread
         // If it's invalid, ...
         if (hGlbToken EQ NULL)
         {
-            // Execute the statement in immediate execution mode
-            exitType =
-              ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
-                           FALSE,               // TRUE iff free the lpwszLine on completion
-                           TRUE,                // TRUE iff wait until finished
-                           (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
-            // Split cases based upon the exit type
-            switch (exitType)
+            if (bActOnErrors)
             {
-                case EXITTYPE_GOTO_LINE:        // Pass on to caller
-                case EXITTYPE_RESET_ALL:        // ...
-                case EXITTYPE_RESET_ONE:        // ...
-                case EXITTYPE_RESET_ONE_INIT:   // ...
-                    break;
+                // Execute the statement in immediate execution mode
+                exitType =
+                  ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                               FALSE,               // TRUE iff free the line on completion
+                               TRUE,                // TRUE iff wait until finished
+                               (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),  // Edit Control window handle
+                               TRUE);               // TRUE iff errors are acted upon
+                // Split cases based upon the exit type
+                switch (exitType)
+                {
+                    case EXITTYPE_GOTO_LINE:        // Pass on to caller
+                    case EXITTYPE_RESET_ALL:        // ...
+                    case EXITTYPE_RESET_ONE:        // ...
+                    case EXITTYPE_RESET_ONE_INIT:   // ...
+                        break;
 
-                case EXITTYPE_ERROR:            // Mark as in error (from the error in Tokenize_EM)
-                case EXITTYPE_DISPLAY:          // ...
-                case EXITTYPE_NODISPLAY:        // ...
-                case EXITTYPE_NOVALUE:          // ...
-                case EXITTYPE_GOTO_ZILDE:       // ...
-                    exitType = EXITTYPE_ERROR;
+                    case EXITTYPE_ERROR:            // Mark as in error (from the error in Tokenize_EM)
+                    case EXITTYPE_DISPLAY:          // ...
+                    case EXITTYPE_NODISPLAY:        // ...
+                    case EXITTYPE_NOVALUE:          // ...
+                    case EXITTYPE_GOTO_ZILDE:       // ...
+                        exitType = EXITTYPE_ERROR;
 
-                    break;
+                        break;
 
-                case EXITTYPE_NONE:
-                defstop
-                    break;
-            } // End SWITCH
+                    case EXITTYPE_NONE:
+                    defstop
+                        break;
+                } // End SWITCH
+            } else
+                exitType = EXITTYPE_ERROR;
 
             goto ERROR_EXIT;
         } // End IF
@@ -486,7 +496,8 @@ DWORD WINAPI ImmExecStmtInThread
                      NULL,                  // Line text global memory handle
                      hGlbToken,             // Tokenized line global memory handle
                      lpwszCompLine,         // Ptr to the complete line
-                     hGlbPTD);              // PerTabData global memory handle
+                     hGlbPTD,               // PerTabData global memory handle
+                     bActOnErrors);         // TRUE iff errors are acted upon
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -507,12 +518,14 @@ DWORD WINAPI ImmExecStmtInThread
                                         lpwszCompLine,                  // Ptr to the line which generated the error
                                         lpMemPTD->tkErrorCharIndex,     // Position of caret (origin-0)
                                         hWndSM);                        // Window handle to the Session Manager
-                    // Execute []ELX in immediate execution mode
-////////////////////exitType =
-                      ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
-                                   FALSE,           // TRUE iff free the lpwszLine on completion
-                                   TRUE,            // TRUE iff wait until finished
-                                   (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
+                    if (bActOnErrors)
+                        // Execute []ELX in immediate execution mode
+////////////////////////exitType =
+                          ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                                       FALSE,           // TRUE iff free the line on completion
+                                       TRUE,            // TRUE iff wait until finished
+                                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Control window handle
+                                       TRUE);           // TRUE iff errors are acted upon
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
@@ -545,12 +558,14 @@ DWORD WINAPI ImmExecStmtInThread
                 break;
 
             case EXITTYPE_QUADERROR_EXEC:
-                // Execute []ELX in immediate execution mode
-////////////////exitType =
-                  ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
-                               FALSE,           // TRUE iff free the lpwszLine on completion
-                               TRUE,            // TRUE iff wait until finished
-                               (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
+                if (bActOnErrors)
+                    // Execute []ELX in immediate execution mode
+////////////////////exitType =
+                      ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                                   FALSE,           // TRUE iff free the line on completion
+                                   TRUE,            // TRUE iff wait until finished
+                                   (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Control window handle
+                                   TRUE);           // TRUE iff errors are acted upon
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
@@ -561,7 +576,8 @@ DWORD WINAPI ImmExecStmtInThread
             case EXITTYPE_ERROR:
                 // If from Quad Input, tell SM to redisplay the prompt
                 if (lpSISPrv
-                 &&lpSISPrv->DfnType EQ DFNTYPE_QUAD)
+                 && lpSISPrv->DfnType EQ DFNTYPE_QUAD
+                 && bActOnErrors)
                 {
                     // Tell SM to display the Quad Prompt
                     PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
@@ -611,7 +627,8 @@ DWORD WINAPI ImmExecStmtInThread
 
             case EXITTYPE_RESET_ALL:        // Continue resetting if more layers
                 // If there are no more SI layers, ...
-                if (lpSISPrv EQ NULL)
+                if (lpSISPrv EQ NULL
+                 && bActOnErrors)
                 {
                     // Display the default prompt
                     DisplayPrompt (hWndEC, 6);
@@ -691,6 +708,7 @@ ERROR_EXIT:
          && !bWaitUntilFini
 /////////&& exitType NE EXITTYPE_ERROR
          && !bQuadPrompt
+         && bActOnErrors
          && hSigaphore EQ NULL)
             DisplayPrompt (hWndEC, 3);
         return exitType;

@@ -362,7 +362,7 @@ int CheckPTDVirtStr
          &&              lpInvalidAddr < (lpIniAddr + lpLstMVS->MaxSize))
         {
             // Allocate more memory
-            if (VirtualAlloc (lpInvalidAddr,
+            if (VirtualAlloc ((LPVOID) (((HANDLE_PTR) lpInvalidAddr) & 0xFFFFF000),
                               lpLstMVS->IncrSize,
                               MEM_COMMIT,
                               PAGE_READWRITE) NE NULL)
@@ -374,7 +374,9 @@ int CheckPTDVirtStr
                              L"Not enough memory for <VirtualAlloc> in <CheckPTDVirtStr>",
                              lpwszAppName,
                              MB_OK | MB_ICONERROR);
-                RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+                MySetExceptionCode (EXCEPTION_LIMIT_ERROR);
+
+                return EXCEPTION_EXECUTE_HANDLER;
             } // End IF/ELSE
         } else
         {
@@ -386,10 +388,7 @@ int CheckPTDVirtStr
              &&              lpInvalidAddr <  (lpIniAddr + PAGESIZE))
             {
                 MySetExceptionCode (EXCEPTION_LIMIT_ERROR);
-#ifdef DEBUG
-                MBC ("LIMIT ERROR encountered");
-                DbgBrk ();
-#endif
+
                 return EXCEPTION_EXECUTE_HANDLER;
             } // End IF
         } // End IF/ELSE
@@ -439,9 +438,24 @@ int CheckMemVirtStr
                              L"Not enough memory for <VirtualAlloc> in <CheckMemVirtStr>",
                              lpwszAppName,
                              MB_OK | MB_ICONERROR);
-                RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+                MySetExceptionCode (EXCEPTION_LIMIT_ERROR);
+
+                return EXCEPTION_EXECUTE_HANDLER;
             } // End IF/ELSE
-        } // End IF
+        } else
+        {
+            // Skip to the guard page address
+            lpIniAddr += memVirtStr[uMem].MaxSize;
+
+            // Check for the guard page
+            if (lpIniAddr <= lpInvalidAddr
+             &&              lpInvalidAddr <  (lpIniAddr + PAGESIZE))
+            {
+                MySetExceptionCode (EXCEPTION_LIMIT_ERROR);
+
+                return EXCEPTION_EXECUTE_HANDLER;
+            } // End IF
+        } // End IF/ELSE
     } // End FOR
 
     // Mark as no match
@@ -817,20 +831,21 @@ void DisplayException
     // Display the virtual memory ranges
     NewMsg (L"");
     NewMsg (L"== MEMVIRTSTR ==");
-    NewMsg (L" IniAddr IncrSize  MaxSize");
+    NewMsg (L" IniAddr IncrSize  MaxSize GuardPage");
 
     // Check for global VirtualAlloc memory that needs to be expanded
     for (uMem = 0; uMem < uMemVirtCnt; uMem++)
     {
         wsprintfW (wszTemp,
 #ifdef DEBUG
-                   L"%p %08X %08X %S",
+                   L"%p %08X %08X %p %S",
 #else
-                   L"%p %08X %08X",
+                   L"%p %08X %08X %p",
 #endif
                    memVirtStr[uMem].IniAddr,
                    memVirtStr[uMem].IncrSize,
-                   memVirtStr[uMem].MaxSize
+                   memVirtStr[uMem].MaxSize,
+                   memVirtStr[uMem].IniAddr + memVirtStr[uMem].MaxSize
 #ifdef DEBUG
                  , memVirtStr[uMem].lpText
 #endif
@@ -841,19 +856,20 @@ void DisplayException
     // Display the local virtual memory ranges
     NewMsg (L"");
     NewMsg (L"== LCLMEMVIRTSTR ==");
-    NewMsg (L" IniAddr IncrSize  MaxSize");
+    NewMsg (L" IniAddr IncrSize  MaxSize GuardPage");
 
     while (lpLstMVS)
     {
         wsprintfW (wszTemp,
 #ifdef DEBUG
-                   L"%p %08X %08X %S",
+                   L"%p %08X %08X %p %S",
 #else
-                   L"%p %08X %08X",
+                   L"%p %08X %08X %p",
 #endif
                    lpLstMVS->IniAddr,
                    lpLstMVS->IncrSize,
-                   lpLstMVS->MaxSize
+                   lpLstMVS->MaxSize,
+                   lpLstMVS->IniAddr + lpLstMVS->MaxSize
 #ifdef DEBUG
                  , lpLstMVS->lpText
 #endif
@@ -1000,7 +1016,7 @@ LPVOID GuardAlloc
 
     lpRetAddr =
       MyVirtualAlloc (lpvAddress,
-                      cbSize + PAGESIZE,// Size of region with an extra guard page
+                      cbSize + PAGESIZE,    // Size of region with an extra guard page
                       fdwAllocationType,
                       fdwProtect);
     return lpRetAddr;

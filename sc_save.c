@@ -533,17 +533,9 @@ BOOL CmdSave_EM
     Assert (lpMemSaveWSID[iCmp] EQ L'.');
     lpMemSaveWSID[iCmp] = L'\0';
 
-    // Get the length of the workspace dir
-    iCmp = lstrlenW (lpwszWorkDir);
+    // Copy the (possibly shortened WSID)
+    lstrcpyW (lpwszTemp, ShortenWSID (lpMemSaveWSID));
 
-    // If the workspace is saved into the default location,
-    //   omit the leading portion of the text
-    if (wcsncmp (lpwszWorkDir, lpMemSaveWSID, iCmp) EQ 0)
-        // Copy the WSID
-        lstrcpyW (lpwszTemp, &lpMemSaveWSID[iCmp]);
-    else
-        // Copy the WSID
-        lstrcpyW (lpwszTemp, lpMemSaveWSID);
     // Copy the " SAVED " text
     lstrcatW (lpwszTemp, L" SAVED ");
 

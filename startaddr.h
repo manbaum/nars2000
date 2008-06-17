@@ -89,7 +89,7 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "FormatSTE"                 , (LPUCHAR) &FormatSTE                  ,
 
     // display.c
-    "DisplayGlbArr"             , (LPUCHAR) &DisplayGlbArr              ,
+    "DisplayGlbArr_EM"          , (LPUCHAR) &DisplayGlbArr_EM           ,
 
     // dtoa.c
 
@@ -191,8 +191,29 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // pf_*.c
 
+    // pf_dtack.c
+    "PrimFnDownTack_EM_YY"      , (LPUCHAR) &PrimFnDownTack_EM_YY       ,
+    "PrimProtoFnDownTack_EM_YY" , (LPUCHAR) &PrimProtoFnDownTack_EM_YY  ,
+    "PrimFnMonDownTack_EM_YY"   , (LPUCHAR) &PrimFnMonDownTack_EM_YY    ,
+    "PrimFnDydDownTack_EM_YY"   , (LPUCHAR) &PrimFnDydDownTack_EM_YY    ,
+
     // pf_dtackjot.c
     "PrimFnDownTackJot_EM_YY"   , (LPUCHAR) &PrimFnDownTackJot_EM_YY    ,
+    "PrimProtoFnDownTackJot_EM_YY",(LPUCHAR) &PrimProtoFnDownTackJot_EM_YY,
+    "PrimFnMonDownTackJot_EM_YY", (LPUCHAR) &PrimFnMonDownTackJot_EM_YY ,
+    "CompileArrBool"            , (LPUCHAR) &CompileArrBool             ,
+    "CompileArrInteger"         , (LPUCHAR) &CompileArrInteger          ,
+    "CompileArrFloat"           , (LPUCHAR) &CompileArrFloat            ,
+    "CompileArrChar"            , (LPUCHAR) &CompileArrChar             ,
+    "CompileArrAPA"             , (LPUCHAR) &CompileArrAPA              ,
+    "CompileArrHetero"          , (LPUCHAR) &CompileArrHetero           ,
+    "CompileArrNested"          , (LPUCHAR) &CompileArrNested           ,
+    "CompileArrNestedCon"       , (LPUCHAR) &CompileArrNestedCon        ,
+    "CompileArrNestedGlb"       , (LPUCHAR) &CompileArrNestedGlb        ,
+    "FormatArrSimple"           , (LPUCHAR) &FormatArrSimple            ,
+    "FormatArrNested"           , (LPUCHAR) &FormatArrNested            ,
+    "FormatArrNestedCon"        , (LPUCHAR) &FormatArrNestedCon         ,
+    "FormatArrNestedGlb"        , (LPUCHAR) &FormatArrNestedGlb         ,
 
     // pf_equalund.c
     "PrimFnEqualUnderbar_EM_YY" , (LPUCHAR) &PrimFnEqualUnderbar_EM_YY  ,
@@ -263,6 +284,12 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     // primspec.c
 
     // qf_*.c
+
+
+    // qf_ucs.c
+    "SysFnUCS_EM_YY"            , (LPUCHAR) &SysFnUCS_EM_YY             ,
+    "SysFnMonUCS_EM_YY"         , (LPUCHAR) &SysFnMonUCS_EM_YY          ,
+    "SysFnDydUCS_EM_YY"         , (LPUCHAR) &SysFnDydUCS_EM_YY          ,
 
     // refcnt.c
 

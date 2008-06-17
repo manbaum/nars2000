@@ -272,7 +272,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     } else
     {
-        aplRowsLft = 1;
+        aplRowsLft = aplRestLft = 1;
         lpMemLft = &aplLongestLft;
     } // End IF/ELSE
 

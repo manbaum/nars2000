@@ -456,7 +456,8 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
                  NULL,              // Line text global memory handle
                  hGlbToken,         // Tokenized line global memory handle
                  lpwszCompLine,     // Ptr to the complete line
-                 hGlbPTD);          // PerTabData global memory handle
+                 hGlbPTD,           // PerTabData global memory handle
+                 TRUE);             // TRUE iff errors are acted upon
     // Split cases based upon the exit type
     switch (exitType)
     {

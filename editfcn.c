@@ -2910,10 +2910,10 @@ LPSYMENTRY ParseFunctionName
 
     // Tokenize the line
     hGlbTknHdr =
-      Tokenize_EM (lpaplChar,
-                   lstrlenW (lpaplChar),
-                   NULL,
-                   NULL);
+      Tokenize_EM (lpaplChar,               // The line to tokenize (not necessarily zero-terminated)
+                   lstrlenW (lpaplChar),    // The length of the above line
+                   NULL,                    // Window handle for Edit Control (may be NULL if lpErrHandFn is NULL)
+                   NULL);                   // Ptr to error handling function (may be NULL)
     if (!hGlbTknHdr)
         goto ERROR_EXIT;
 

@@ -1551,9 +1551,10 @@ NORMAL_EXIT:
 
                 // Execute the statement in immediate execution mode
                 ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"LX",    // Ptr to line to execute
-                             FALSE,                                     // TRUE iff free the lpwszLine on completion
+                             FALSE,                                     // TRUE iff free the line on completion
                              FALSE,                                     // TRUE iff wait until finished
-                             hWndEC);                                   // Edit Control window handle
+                             hWndEC,                                    // Edit Control window handle
+                             TRUE);                                     // TRUE iff errors are acted upon
             } else
             // If the SI level is for Quad Input
             if (lpMemPTD->lpSISCur && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)

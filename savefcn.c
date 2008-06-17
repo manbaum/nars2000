@@ -385,7 +385,7 @@ void SF_ReadLineN
 #undef  lpHeader
 
             // Copy the data to the result
-            CopyMemory (lpMemLine, lpMemItmRht, (uLineLen + 1) * sizeof (APLCHAR));
+            CopyMemory (lpMemLine, lpMemItmRht, uLineLen * sizeof (APLCHAR));
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
@@ -1274,7 +1274,7 @@ BOOL SaveFunctionCom
             //   and the "+ 1" is for the terminating zero
             //   as well as to handle GlobalLock's aversion to locking
             //   zero-length arrays
-            hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (uLineLen) + (uLineLen + 1) * sizeof (APLCHAR));
+            hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (APLCHAR));
             if (!hGlbTxtLine)
             {
                 if (hWndFE)
@@ -1309,7 +1309,7 @@ BOOL SaveFunctionCom
                 lpMemTxtLine->W = (WORD) uLineLen;
 
                 // Read in the line text
-                (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, (uLineNum + 1), &lpMemTxtLine->C);
+                (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1, &lpMemTxtLine->C);
 
                 // Tokenize the line
                 lpFcnLines->hGlbTknLine =

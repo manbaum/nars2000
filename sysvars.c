@@ -121,6 +121,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM_YY     , 0          },  // Time Stamp
 ////{WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
 
+    {WS_UTF16_QUAD L"af"       ,      1,      FALSE, SysFnUCS_EM_YY    , 0          },  // Atomic Function
 ////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM_YY   , 0          },  // Call Assembler Code
     {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM_YY     , 0          },  // Canonical Representation
 ////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM_YY    , 0          },  // Canonical Representation, Line
@@ -2158,9 +2159,9 @@ BOOL ValidSetFC_EM
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // If the right arg is an empty simple vector, convert the result to
-    //   the default values
-    if ((IsSimpleChar (aplTypeRht) || IsSimpleNum (aplTypeRht))
+    // If the right arg is an empty simple non-heterogeneous vector,
+    //   convert the result to the default values
+    if (IsSimpleNH (aplTypeRht)
      && IsEmpty (aplNELMRht)
      && IsVector (aplRankRht))
     {
@@ -2202,9 +2203,9 @@ BOOL ValidSetIC_EM
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // If the right arg is an empty simple vector, convert the result to
-    //   the default values
-    if ((IsSimpleChar (aplTypeRht) || IsSimpleNum (aplTypeRht))
+    // If the right arg is an empty simple non-heterogeneous vector,
+    //   convert the result to the default values
+    if (IsSimpleNH (aplTypeRht)
      && IsEmpty (aplNELMRht)
      && IsVector (aplRankRht))
     {
@@ -2563,9 +2564,6 @@ BOOL ValidSetPR_EM
     lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-    // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpHeader, lpHeader->Rank);
-
     // Check for scalar or vector
     if (IsMultiRank (lpHeader->Rank))
     {
@@ -2597,7 +2595,7 @@ BOOL ValidSetPR_EM
             if (IsVector (lpHeader->Rank) && IsEmpty (lpHeader->NELM))
                 lpMemPTD->cQuadPR = 0;
             else
-                lpMemPTD->cQuadPR = *(LPAPLCHAR) lpMemRht;
+                lpMemPTD->cQuadPR = *(LPAPLCHAR) VarArrayBaseToData (lpHeader, lpHeader->Rank);
             break;
 
         defstop

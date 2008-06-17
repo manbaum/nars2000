@@ -741,7 +741,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                      hGlbTxtLine,           // Line text global memory handle
                      hGlbTknLine,           // Tokenixed line global memory handle
                      NULL,                  // Ptr to line text global memory
-                     hGlbPTD);              // PerTabData global memory handle
+                     hGlbPTD,               // PerTabData global memory handle
+                     TRUE);                 // TRUE iff errors are acted upon
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 

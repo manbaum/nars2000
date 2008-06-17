@@ -1545,9 +1545,10 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 exitType =
 #endif
                   ImmExecStmt (lpwLine,         // Ptr to line to execute
-                               FALSE,           // Free lpwszCompLine on completion
+                               FALSE,           // Free lpwLine on completion
                                TRUE,            // TRUE iff wait until finished
-                               hWndEC);         // Edit Control window handle
+                               hWndEC,          // Edit Control window handle
+                               FALSE);          // TRUE iff errors are acted upon
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 
                 // Lock the memory to get a ptr to it

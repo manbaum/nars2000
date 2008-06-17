@@ -910,7 +910,7 @@ BOOL CheckResizeNum_EM
         {
             // Attempt to realloc to that size
             hGlbNum =
-              MyGlobalReAlloc (lpMemPTD->hGlbNum, iNumLim, GMEM_MOVEABLE);
+              MyGlobalReAlloc (lpMemPTD->hGlbNum, iNumLim * sizeof (char), GMEM_MOVEABLE);
             if (!hGlbNum)
             {
                 // Save the error message
@@ -971,7 +971,7 @@ BOOL CheckResizeStr_EM
         {
             // Attempt to realloc to that size
             hGlbStr =
-              MyGlobalReAlloc (lpMemPTD->hGlbStr, iStrLim, GMEM_MOVEABLE);
+              MyGlobalReAlloc (lpMemPTD->hGlbStr, iStrLim * sizeof (APLCHAR), GMEM_MOVEABLE);
             if (!hGlbStr)
             {
                 // Save the error message
@@ -2032,10 +2032,10 @@ BOOL fnComDone
 
     // Get the length of the comment (up to but not including any '\n')
     iLen  = lstrlenW (lptkLocalVars->lpwsz); // Including the comment symbol
-    lpwch = strchrW (lptkLocalVars->lpwsz, L'\n');
+    lpwch = wcspbrk (&lptkLocalVars->lpwsz[1], L"\n" WS_UTF16_LAMP);
     if (lpwch)
     {
-        iLen2 = (UINT) (lpwch - lptkLocalVars->lpwsz);
+        iLen2 = (UINT) (&lpwch[*lpwch EQ UTF16_LAMP] - lptkLocalVars->lpwsz);
         iLen  = min (iLen2, iLen);
     } // End IF
 
@@ -2799,10 +2799,7 @@ HGLOBAL Tokenize_EM
     // We should never get here as we process the
     //   trailing zero in the input line which should
     //   exit from one of the actions with FSA_EXIT.
-    Assert (FALSE);
-
-    goto NORMAL_EXIT;
-
+    DbgStop ();
 ERROR_EXIT:
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -2833,17 +2830,6 @@ ERROR_EXIT:
 
     goto FREED_EXIT;
 
-NORMAL_EXIT:
-    if (tkLocalVars.hGlbToken)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (tkLocalVars.hGlbToken);
-        tkLocalVars.t2.lpBase   = NULL;
-////////tkLocalVars.t2.lpHeader = NULL;
-        tkLocalVars.lpStart     = NULL;
-        tkLocalVars.lpNext      = NULL;
-        tkLocalVars.lpLastEOS   = NULL;
-    } // End IF
 UNLOCKED_EXIT:
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     // Display the tokens so far

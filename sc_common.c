@@ -395,5 +395,29 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $ShortenWSID
+//
+//  Shorten a WSID if it's in the default workspace dir
+//***************************************************************************
+
+LPWCHAR ShortenWSID
+    (LPWCHAR lpMemWSID)
+
+{
+    UINT uLen;
+
+    // Get the length of the default workspace dir
+    uLen = lstrlenW (lpwszWorkDir);
+
+    // If the workspace is saved into the default location,
+    //   omit the leading portion of the text
+    if (wcsncmp (lpwszWorkDir, lpMemWSID, uLen) EQ 0)
+        return &lpMemWSID[uLen];
+    else
+        return lpMemWSID;
+} // End ShortenWSID
+
+
+//***************************************************************************
 //  End of File: sc_common.c
 //***************************************************************************

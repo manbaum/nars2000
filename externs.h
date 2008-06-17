@@ -52,12 +52,12 @@
 #define DEF_TEXT_BG_COLOR   COLOR_WHITE
 
 // Size of storage areas
-#define DEF_NUM_INITSIZE        (      256)                 // Initial size for lpszNum
-#define DEF_NUM_INCRSIZE        (      256)                 // Incremental ...
+#define DEF_NUM_INITSIZE        (     1024)                 // Initial size for lpszNum
+#define DEF_NUM_INCRSIZE        (     1024)                 // Incremental ...
 #define DEF_NUM_MAXSIZE         (   4*1024)                 // Maximum ...
-#define DEF_STR_INITSIZE        (      256)                 // Initial size for lpwszStr
-#define DEF_STR_INCRSIZE        (      256)                 // Incremental ...
-#define DEF_STR_MAXSIZE         (   4*1024)                 // Maximum ...
+#define DEF_STR_INITSIZE        (     1024)                 // Initial size for lpwszStr
+#define DEF_STR_INCRSIZE        (     1024)                 // Incremental ...
+#define DEF_STR_MAXSIZE         (  64*1024)                 // Maximum ...
 ////ine DEF_TOKENSTACK_INITSIZE (   4*1024)                 // Initial size of token stack
 ////ine DEF_TOKENSTACK_INCRSIZE (   4*1024)                 // Incremental ...
 ////ine DEF_TOKENSTACK_MAXSIZE  (  64*1024)                 // Maximum ...
@@ -1121,13 +1121,16 @@ typedef enum tagMEMVIRTENUM
 
 typedef struct tagMEMVIRTSTR
 {
-    MVS     *lpPrvMVS,                  // Ptr to previous link (NULL = none)
-            *lpNxtMVS;                  // Ptr to next     ...
-    LPUCHAR IniAddr;                    // Initial address
-    UINT    IncrSize,                   // Incremental size in bytes
-            MaxSize;                    // Maximum     ...
+    MVS     *lpPrvMVS,                  // 00:  Ptr to previous link (NULL = none)
+            *lpNxtMVS;                  // 04:  Ptr to next     ...
+    LPUCHAR IniAddr;                    // 08:  Initial address
+    UINT    IncrSize,                   // 0C:  Incremental size in bytes
+            MaxSize;                    // 10:  Maximum     ...
 #ifdef DEBUG
-    LPCHAR  lpText;                     // Ptr to (const) description of this item
+    LPCHAR  lpText;                     // 14:  Ptr to (const) description of this item
+                                        // 18:  Length
+#else
+                                        // 14:  Length
 #endif
 } MEMVIRTSTR, *LPMEMVIRTSTR;
 
@@ -1343,7 +1346,7 @@ typedef struct tagSYMBOLNAMES
 } SYMBOLNAMES, *LPSYMBOLNAMES;
 
 // The # rows in the below table
-#define ASYMBOLNAMES_NROWS  91
+#define ASYMBOLNAMES_NROWS  (91+26)
 
 // Translate table for symbols to names
 EXTERN
@@ -1361,6 +1364,34 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
   {UTF16_QUADRIGHTARROW       , L"{quadrightarrow}"     },
   {UTF16_QUADUPARROW          , L"{quaduparrow}"        },
   {UTF16_QUADDOWNARROW        , L"{quaddownarrow}"      },
+
+// _alpbahet_ characters
+  {UTF16_A_                   , L"{A underbar}"         },
+  {UTF16_B_                   , L"{B underbar}"         },
+  {UTF16_C_                   , L"{C underbar}"         },
+  {UTF16_D_                   , L"{D underbar}"         },
+  {UTF16_E_                   , L"{E underbar}"         },
+  {UTF16_F_                   , L"{F underbar}"         },
+  {UTF16_G_                   , L"{G underbar}"         },
+  {UTF16_H_                   , L"{H underbar}"         },
+  {UTF16_I_                   , L"{I underbar}"         },
+  {UTF16_J_                   , L"{J underbar}"         },
+  {UTF16_K_                   , L"{K underbar}"         },
+  {UTF16_L_                   , L"{L underbar}"         },
+  {UTF16_M_                   , L"{M underbar}"         },
+  {UTF16_N_                   , L"{N underbar}"         },
+  {UTF16_O_                   , L"{O underbar}"         },
+  {UTF16_P_                   , L"{P underbar}"         },
+  {UTF16_Q_                   , L"{Q underbar}"         },
+  {UTF16_R_                   , L"{R underbar}"         },
+  {UTF16_S_                   , L"{S underbar}"         },
+  {UTF16_T_                   , L"{T underbar}"         },
+  {UTF16_U_                   , L"{U underbar}"         },
+  {UTF16_V_                   , L"{V underbar}"         },
+  {UTF16_W_                   , L"{W underbar}"         },
+  {UTF16_X_                   , L"{X underbar}"         },
+  {UTF16_Y_                   , L"{Y underbar}"         },
+  {UTF16_Z_                   , L"{Z underbar}"         },
 
 // The alphabet, unshifted
   {UTF16_ALPHA                , L"{alpha}"              },  // Alt-'a' - alpha

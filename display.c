@@ -94,10 +94,10 @@ BOOL ArrayDisplay_EM
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
                     return
-                      DisplayGlbArr (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkSym->stData.stGlbData),
-                                     bEndingCR,         // TRUE iff last line has CR
-                                     lpbCtrlBreak,      // Ptr to Ctrl-Break flag
-                                     lptkRes);          // Ptr to function token
+                      DisplayGlbArr_EM (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkSym->stData.stGlbData),
+                                        bEndingCR,          // TRUE iff last line has CR
+                                        lpbCtrlBreak,       // Ptr to Ctrl-Break flag
+                                        lptkRes);           // Ptr to function token
             } // End IF
 
             // Check for NoDisplay flag
@@ -146,10 +146,10 @@ BOOL ArrayDisplay_EM
 
                 case PTRTYPE_HGLOBAL:
                     return
-                      DisplayGlbArr (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkGlbData),
-                                     bEndingCR,         // TRUE iff last line has CR
-                                     lpbCtrlBreak,      // Ptr to Ctrl-Break flag
-                                     lptkRes);          // Ptr to function token
+                      DisplayGlbArr_EM (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkGlbData),
+                                        bEndingCR,          // TRUE iff last line has CR
+                                        lpbCtrlBreak,       // Ptr to Ctrl-Break flag
+                                        lptkRes);           // Ptr to function token
 
                 defstop
                     return FALSE;
@@ -183,18 +183,18 @@ SYNTAX_EXIT:
 
 
 //***************************************************************************
-//  $DisplayGlbArr
+//  $DisplayGlbArr_EM
 //
 //  Display a global array
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- DisplayGlbArr"
+#define APPEND_NAME     L" -- DisplayGlbArr_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL DisplayGlbArr
+BOOL DisplayGlbArr_EM
     (HGLOBAL hGlb,                  // Global memory handle to display
      BOOL    bEndingCR,             // TRUE iff last line has CR
      LPBOOL  lpbCtrlBreak,          // Ptr to Ctrl-Break flag
@@ -248,7 +248,7 @@ BOOL DisplayGlbArr
 
     // Allocate space for the display
 #ifdef DEBUG
-    lclMemVirtStr[0].lpText   = "lpaplCharIni in <DisplayGlbArr>";
+    lclMemVirtStr[0].lpText   = "lpaplCharIni in <DisplayGlbArr_EM>";
 #endif
     lclMemVirtStr[0].IncrSize = DEF_DISPLAY_INCRSIZE * sizeof (APLCHAR);
     lclMemVirtStr[0].MaxSize  = DEF_DISPLAY_MAXSIZE  * sizeof (APLCHAR);
@@ -261,7 +261,7 @@ BOOL DisplayGlbArr
     if (!lclMemVirtStr[0].IniAddr)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsgW (L"DisplayGlbArr:  GuardAlloc for <lpaplCharIni> failed");
+        DbgMsgW (L"DisplayGlbArr_EM:  GuardAlloc for <lpaplCharIni> failed");
 
         goto ERROR_EXIT;    // Mark as failed
     } // End IF
@@ -306,7 +306,7 @@ BOOL DisplayGlbArr
             // If there are no columns and the rank is > 1, ignore this
             if (IsZeroDim (aplDimNCols)
              && IsMultiRank (aplRank))
-                goto NORMAL_EXIT;
+                goto EMPTY_EXIT;
 
             // Get the # rows (across all planes)
             if (IsVector (aplRank))
@@ -632,24 +632,31 @@ BOOL DisplayGlbArr
          && IsVector (aplRank))
             AppendLine (L"", FALSE, TRUE);// Display the empty line
     } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                L"DisplayGlbArr"))
+                                L"DisplayGlbArr_EM"))
     {
         // Split cases based upon the exception code
         switch (MyGetExceptionCode ())
         {
             case EXCEPTION_LIMIT_ERROR:
-                ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
+                goto LIMIT_EXIT;
 
             defstop
                 break;
         } // End SWITCH
     } // End __try/__except
-NORMAL_EXIT:
+EMPTY_EXIT:
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+LIMIT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // If we allocated virtual storage, ...
     if (lclMemVirtStr[0].IniAddr)
     {
@@ -668,7 +675,7 @@ ERROR_EXIT:
     } // End IF
 
     return bRet;
-} // End DisplayGlbArr
+} // End DisplayGlbArr_EM
 #undef  APPEND_NAME
 
 

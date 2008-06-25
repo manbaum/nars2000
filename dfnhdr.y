@@ -670,7 +670,7 @@ int fh_yylex
             else
             {
                 // If the next token is a left bracket, return NAMEOPR
-                if (lpfhLocalVars->lpNext->tkFlags.TknType EQ TKT_LBRACKET)
+                if (lpfhLocalVars->lpNext->tkFlags.TknType EQ TKT_LEFTBRACKET)
                     return NAMEOPR;
                 else
                     return NAMEUNK;
@@ -682,22 +682,22 @@ int fh_yylex
         case TKT_LISTSEP:
             return ';';
 
-        case TKT_LPAREN:
+        case TKT_LEFTPAREN:
             return '(';
 
-        case TKT_RPAREN:
+        case TKT_RIGHTPAREN:
             return ')';
 
-        case TKT_LBRACKET:
+        case TKT_LEFTBRACKET:
             return '[';
 
-        case TKT_RBRACKET:
+        case TKT_RIGHTBRACKET:
             return ']';
 
-        case TKT_LBRACE:
+        case TKT_LEFTBRACE:
             return '{';
 
-        case TKT_RBRACE:
+        case TKT_RIGHTBRACE:
             return '}';
 
         case TKT_COMMENT:

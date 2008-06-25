@@ -96,11 +96,7 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
     //   to the axis operator, so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
@@ -118,6 +114,10 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
                                                  lpYYFcnStrOpr,     // Ptr to operator function strand
                                                  lptkRhtArg,        // Ptr to right arg token
                                                  TRUE);             // TRUE iff prototyping
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimProtoOpDieresisJot_EM_YY
 #undef  APPEND_NAME
 
@@ -211,11 +211,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
         //   to the axis operator, so signal a syntax error if present
         //***************************************************************
         if (lptkAxis NE NULL)
-        {
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkAxis);
-            return NULL;
-        } // End IF
+            goto SYNTAX_EXIT;
     } // End IF
 
     // Ensure the left operand is a function
@@ -241,7 +237,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get right operand global ptrs
-    GetGlbPtrs_LOCK (&lpYYFcnStrRht->tkToken, &hGlbOprRht, NULL);
+    hGlbOprRht = GetGlbHandle (&lpYYFcnStrRht->tkToken);
 
     // If the right operand is not immediate, ...
     if (hGlbOprRht NE NULL)
@@ -293,7 +289,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
         APLRANK     aplRankRes;             // Result rank
 
         // Get result global ptrs
-        GetGlbPtrs_LOCK (&lpYYRes->tkToken, &hGlbRes, NULL);
+        hGlbRes = GetGlbHandle (&lpYYRes->tkToken);
 
         // Get the attributes (Type, NELM, and Rank)
         //   of the result global
@@ -357,7 +353,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                 // Fill in the left arg token
                 tkLftArg.tkFlags.TknType   = TKT_VARIMMED;
                 tkLftArg.tkFlags.ImmType   = IMMTYPE_INT;
-////////////////tkLftArg.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////////////tkLftArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
                 tkLftArg.tkData.tkInteger  = uMaxRank;
 ////////////////tkLftArg.tkCharIndex       = 0;     // Already zero from = {0}
 #ifdef DEBUG
@@ -392,6 +388,11 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
     } // End IF
 
     return lpYYRes;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,

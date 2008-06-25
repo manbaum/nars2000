@@ -116,7 +116,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeNam);
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkLongest  = aplLongestNam;
             lpYYRes->tkToken.tkCharIndex       = lptkLstArg->tkCharIndex;
         } else
@@ -124,7 +124,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbNam);
             lpYYRes->tkToken.tkCharIndex       = lptkLstArg->tkCharIndex;
         } // End IF/ELSE
@@ -249,7 +249,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             ByteRes = CalcArraySize (aplTypeRes, aplNELMSub, aplRankSub);
 
             // Allocate space for the result
-            hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+            hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;
 
@@ -261,7 +261,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeRes;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMSub;
             lpHeader->Rank       = aplRankSub;
@@ -272,7 +272,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             lpMemSub = VarArrayBaseToDim (lpMemSub);
 
             // Fill in the result dimensions
-            CopyMemory (lpMemRes, lpMemSub, (UINT) aplRankSub * sizeof (APLDIM));
+            CopyMemory (lpMemRes, lpMemSub, (__int3264) aplRankSub * sizeof (APLDIM));
 
             // Skip over the dimensions to the data
             lpMemRes = VarArrayDimToData (lpMemRes, aplRankSub);
@@ -417,7 +417,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                         // Fill in the list arg token
                         tkLstArg.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////tkLstArg.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////////////////////tkLstArg.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////////////////////tkLstArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
                         tkLstArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbItm);
                         tkLstArg.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -524,7 +524,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -688,7 +688,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = immTypeNam;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkLongest  = aplLongestNam;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -701,7 +701,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
         ByteRes = CalcArraySize (aplTypeRes, 1, aplRankRes);
 
         // Allocate space for the result
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -713,7 +713,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = 1;
         lpHeader->Rank       = aplRankRes;
@@ -742,7 +742,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE
@@ -823,7 +823,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     ByteRes = CalcArraySize (aplTypeRes, aplNELMLst, aplRankLst);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -836,7 +836,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMLst;
     lpHeader->Rank       = aplRankLst;
@@ -847,7 +847,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     lpMemLst = VarArrayBaseToDim (lpMemLst);
 
     // Copy the dimensions to the result
-    CopyMemory (lpMemRes, lpMemLst, (UINT) aplRankLst * sizeof (APLDIM));
+    CopyMemory (lpMemRes, lpMemLst, (__int3264) aplRankLst * sizeof (APLDIM));
 
     // Skip over the dimensions to the data
     lpMemRes = VarArrayDimToData (lpMemRes, aplRankLst);
@@ -983,7 +983,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1096,7 +1096,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     ByteRes = CalcArraySize (aplTypeNam, aplNELMRes, aplRankLst);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -1108,7 +1108,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeNam;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMLst;
     lpHeader->Rank       = aplRankLst;
@@ -1118,7 +1118,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     lpMemRes = VarArrayBaseToDim (lpMemRes);
 
     // Copy the list arg dimensions to the result
-    CopyMemory (lpMemRes, lpMemDimLst, (UINT) aplRankLst * sizeof (APLDIM));
+    CopyMemory (lpMemRes, lpMemDimLst, (__int3264) aplRankLst * sizeof (APLDIM));
 
     // Skip over the dimensions to the data
     lpMemRes = VarArrayDimToData (lpMemRes, aplRankLst);
@@ -1130,7 +1130,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     {
         case ARRAY_BOOL:
             if ((APLBOOL) aplLongestNam)
-                FillMemory (lpMemRes, (UINT) RoundUpBits8 (aplNELMLst), 0xFF);
+                FillMemory (lpMemRes, (__int3264) RoundUpBits8 (aplNELMLst), 0xFF);
             break;
 
         case ARRAY_INT:
@@ -1184,7 +1184,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1359,7 +1359,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         ByteRes = CalcArraySize (ARRAY_NESTED, uCount, 1);
 
         // Allocate space for the new list arg
-        hGlbLstNew = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        hGlbLstNew = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbLstNew)
             goto WSFULL_EXIT;
 
@@ -1371,7 +1371,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_NESTED;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uCount;
         lpHeader->Rank       = 1;
@@ -1399,7 +1399,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         // Fill in the new list arg token
         tkLstArg.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkLstArg.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////tkLstArg.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////tkLstArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
         tkLstArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLstNew);
         tkLstArg.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1407,7 +1407,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         ByteRes = CalcArraySize (ARRAY_INT, uCount, 1);
 
         // Allocate space for the axis operator
-        hGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        hGlbAxis = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbAxis)
             goto WSFULL_EXIT;
 
@@ -1419,7 +1419,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uCount;
         lpHeader->Rank       = 1;
@@ -1445,7 +1445,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         // Fill in the axis token
         tkAxis.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkAxis.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////tkAxis.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////tkAxis.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
         tkAxis.tkData.tkGlbData  = MakePtrTypeGlb (hGlbAxis);
         tkAxis.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1555,7 +1555,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
                 // Fill in the new left arg token
                 tkLftArg.tkFlags.TknType   = TKT_VARIMMED;
                 tkLftArg.tkFlags.ImmType   = (*(LPAPLHETERO) lpMemLft)->stFlags.ImmType;
-////////////////tkLftArg.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////////////tkLftArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
                 tkLftArg.tkData.tkLongest  = (*(LPAPLHETERO) lpMemLft)->stData.stLongest;
                 tkLftArg.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1565,7 +1565,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
                 // Fill in the new left arg token
                 tkLftArg.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkLftArg.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////////////tkLftArg.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////////////tkLftArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
                 tkLftArg.tkData.tkGlbData  = *(LPAPLNESTED) lpMemLft;
                 tkLftArg.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1590,7 +1590,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
             ByteRes = CalcArraySize (ARRAY_LIST, 1, 1);
 
             // Allocate space for the result
-            hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+            hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;
             else
@@ -1603,7 +1603,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
                 lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                 lpHeader->ArrType    = ARRAY_LIST;
 ////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
                 lpHeader->RefCnt     = 1;
                 lpHeader->NELM       = 1;
                 lpHeader->Rank       = 1;
@@ -1641,7 +1641,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_LISTBR;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
             } // End IF/ELSE
@@ -1808,7 +1808,7 @@ BOOL ArrayIndexSet_EM
         } // End IF/ELSE/...
 
         // Get name arg global ptr
-        GetGlbPtrs_LOCK (lptkNamArg, &hGlbNam, NULL);
+        hGlbNam = GetGlbHandle (lptkNamArg);
 
         // Free the original global memory handle
         FreeResultGlobalVar (hGlbNam); hGlbNam = NULL;
@@ -2008,7 +2008,7 @@ BOOL ArrayIndexSetNamScalar_EM
         ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
 
         // Wrap the global in a scalar
-        hGlbRes = MyGlobalAlloc (GHND, (UINT) ByteRes);
+        hGlbRes = MyGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -2020,7 +2020,7 @@ BOOL ArrayIndexSetNamScalar_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_NESTED;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = 1;
         lpHeader->Rank       = 0;
@@ -3196,7 +3196,7 @@ BOOL ArrayIndexSetRect_EM
     AttrsOfToken (lptkLstArg, NULL, &aplNELMLst, NULL,        NULL);
 
     // Get name and list arg's global ptrs
-    GetGlbPtrs_LOCK (lptkNamArg, &hGlbNam, NULL);
+    hGlbNam = GetGlbHandle (lptkNamArg);
     GetGlbPtrs_LOCK (lptkLstArg, &hGlbLst, &(LPVOID) lpMemLst);
 
     // Skip over the header and dimension
@@ -3232,7 +3232,7 @@ BOOL ArrayIndexSetRect_EM
         ByteRes = CalcArraySize (ARRAY_NESTED, uCount, 1);
 
         // Allocate space for the new list arg
-        hGlbLstNew = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        hGlbLstNew = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbLstNew)
             goto WSFULL_EXIT;
 
@@ -3244,7 +3244,7 @@ BOOL ArrayIndexSetRect_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_NESTED;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uCount;
         lpHeader->Rank       = 1;
@@ -3272,7 +3272,7 @@ BOOL ArrayIndexSetRect_EM
         // Fill in the new list arg token
         tkLstArg.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkLstArg.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////tkLstArg.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////tkLstArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
         tkLstArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLstNew);
         tkLstArg.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -3280,7 +3280,7 @@ BOOL ArrayIndexSetRect_EM
         ByteRes = CalcArraySize (ARRAY_INT, uCount, 1);
 
         // Allocate space for the axis operator
-        hGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        hGlbAxis = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbAxis)
             goto WSFULL_EXIT;
 
@@ -3292,7 +3292,7 @@ BOOL ArrayIndexSetRect_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uCount;
         lpHeader->Rank       = 1;
@@ -3318,7 +3318,7 @@ BOOL ArrayIndexSetRect_EM
         // Fill in the axis token
         tkAxis.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkAxis.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////tkAxis.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////tkAxis.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
         tkAxis.tkData.tkGlbData  = MakePtrTypeGlb (hGlbAxis);
         tkAxis.tkCharIndex       = lptkFunc->tkCharIndex;
 

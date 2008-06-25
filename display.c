@@ -32,6 +32,7 @@
 #include "display.h"
 #include "sysvars.h"
 #include "pertab.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -344,8 +345,8 @@ BOOL DisplayGlbArr_EM
         // Create <aplChrNCols> FMTCOLSTRs in the output
         lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
         lpFmtHeader->lpFmtCol1st = lpFmtColStr;
-        Assert (aplChrNCols EQ (UINT) aplChrNCols);
-        ZeroMemory (lpFmtColStr, (UINT) aplChrNCols * sizeof (FMTCOLSTR));
+        Assert (aplChrNCols EQ (__int3264) aplChrNCols);
+        ZeroMemory (lpFmtColStr, (__int3264) aplChrNCols * sizeof (FMTCOLSTR));
 #ifdef DEBUG
         {
             APLDIM uCol;
@@ -493,12 +494,12 @@ BOOL DisplayGlbArr_EM
         // Fill the output area with all zeros
         // Ensure at least one value filled in case the char array is empty
         if (IsSimpleChar (aplType))
-            ZeroMemory (lpaplChar, (UINT) max (aplNELMRes, 1) * sizeof (APLCHAR));
+            ZeroMemory (lpaplChar, (__int3264) max (aplNELMRes, 1) * sizeof (APLCHAR));
         else
         {
             // Fill the output area with all blanks
-            Assert (aplNELMRes EQ (UINT) aplNELMRes);
-            FillMemoryW (lpaplChar, (UINT) aplNELMRes, L' ');
+            Assert (aplNELMRes EQ (__int3264) aplNELMRes);
+            FillMemoryW (lpaplChar, (__int3264) aplNELMRes, L' ');
         } // End IF/ELSE
 #endif
         // Run through the array again processing the
@@ -783,7 +784,7 @@ LPAPLCHAR FormatImmedFC
      UINT         uPrecision,       // Precision to use
      APLCHAR      aplCharDecimal,   // Char to use as decimal separator
      APLCHAR      aplCharOverbar,   // Char to use as overbar
-     UINT         dtoaMode)         // DTOA mode
+     UINT         dtoaMode)         // DTOA mode (Mode 2: max (ndigits, 1))
 
 {
     WCHAR wc;
@@ -793,16 +794,16 @@ LPAPLCHAR FormatImmedFC
     {
         case IMMTYPE_BOOL:
             lpaplChar =
-              FormatAplintFC (lpaplChar,
-                              BIT0 & *(LPAPLBOOL) lpaplLongest,
-                              aplCharOverbar);
+              FormatAplintFC (lpaplChar,                        // Ptr to output save area
+                              BIT0 & *(LPAPLBOOL) lpaplLongest, // The value to format
+                              aplCharOverbar);                  // Char to use as overbar
             break;
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplintFC (lpaplChar,
-                              *(LPAPLINT) lpaplLongest,
-                              aplCharOverbar);
+              FormatAplintFC (lpaplChar,                        // Ptr to output save area
+                              *(LPAPLINT) lpaplLongest,         // The value to format
+                              aplCharOverbar);                  // Char to use as overbar
             break;
 
         case IMMTYPE_CHAR:
@@ -859,7 +860,7 @@ LPAPLCHAR FormatImmedFC
                              uPrecision,                // Precision to use
                              aplCharDecimal,            // Char to use as decimal separator
                              aplCharOverbar,            // Char to use as overbar
-                             dtoaMode);                 // DTOA mode
+                             dtoaMode);                 // DTOA mode (Mode 2: max (ndigits, 1))
             break;
 
         defstop
@@ -881,9 +882,9 @@ LPAPLCHAR FormatAplint
      APLINT    aplInt)              // Integer to format
 
 {
-    return FormatAplintFC (lpaplChar,
-                           aplInt,
-                           UTF16_OVERBAR);
+    return FormatAplintFC (lpaplChar,       // Ptr to output save area
+                           aplInt,          // The value to format
+                           UTF16_OVERBAR);  // Char to use as overbar
 } // End FormatAplint
 
 
@@ -968,7 +969,7 @@ LPAPLCHAR FormatFloat
                           (uPrecision EQ 0) ? GetQuadPP () : uPrecision, // Precision to use
                           L'.',             // Char to use as decimal separator
                           UTF16_OVERBAR,    // Char to use as overbar
-                          2);               // DTOA mode (Mode 2: max (ndigits, 1))
+                          DEF_DTOA_MODE);   // DTOA mode (Mode 2: max (ndigits, 1))
 } // End FormatFloat
 
 
@@ -984,7 +985,7 @@ LPAPLCHAR FormatFloatFC
      APLUINT  uPrecision,       // Precision to use
      APLCHAR  aplCharDecimal,   // Char to use as decimal separator
      APLCHAR  aplCharOverbar,   // Char to use as overbar
-     UINT     dtoaMode)         // DTOA mode
+     UINT     dtoaMode)         // DTOA mode (Mode 2: max (ndigits, 1))
 
 {
     char szTemp[1024];          // Ptr to temporary output area
@@ -1002,7 +1003,7 @@ LPAPLCHAR FormatFloatFC
         // Use David Gay's routines
         g_fmt (szTemp,          // Output save area
                fFloat,          // # to convert to ASCII
-               dtoaMode,        // DTOA mode
+               dtoaMode,        // DTOA mode (Mode 2: max (ndigits, 1))
          (int) uPrecision);     // ndigits
 
         // Convert from one-byte ASCII to two-byte UTF16
@@ -1047,9 +1048,9 @@ LPAPLCHAR FormatFloatFC
 
             p[uPrecision + 1] = L'E';
             ep = &p[uPrecision + 1];
-            p = FormatAplintFC (&p[uPrecision + 2],
-                                 lstrlenW (p) - 2,
-                                 aplCharOverbar);
+            p = FormatAplintFC (&p[uPrecision + 2], // Ptr to output save area
+                                 lstrlenW (p) - 2,  // The value to format
+                                 aplCharOverbar);   // Char to use as overbar
             p[-1] = L'\0';
         } // End IF/ELSE
 
@@ -1134,6 +1135,459 @@ LPAPLCHAR FormatSymTabConst
                         lpSymEntry->stFlags.ImmType,
                        &lpSymEntry->stData.stLongest);
 } // End FormatSymTabConst
+
+
+//***************************************************************************
+//  $DisplayTransferVar2
+//
+//  Create the Type 2 transfer form of a variable
+//***************************************************************************
+
+LPWCHAR DisplayTransferVar2
+    (LPWCHAR    lpwszTemp,                  // Ptr to output save area
+     LPSYMENTRY lpSymEntry)                 // Ptr to SYMENTRY of the var to display
+
+{
+    // Copy the var's name
+    lpwszTemp =
+      CopySteName (lpwszTemp,               // Ptr to result global memory
+                   lpSymEntry,              // Ptr to function symbol table entry
+                   NULL);                   // Ptr to name length (may be NULL)
+    // Append a left arrow
+    *lpwszTemp++ = UTF16_LEFTARROW;
+
+    // If the var is an immediate, ...
+    if (lpSymEntry->stFlags.Imm)
+        // Display the immediate value
+        lpwszTemp =
+          DisplayTransferImm2 (lpwszTemp,   // Ptr to output save area
+                               lpSymEntry); // Ptr to SYMENTRY of the immediate to display
+    else
+        // Display the global memory value
+        lpwszTemp =
+          DisplayTransferGlb2 (lpwszTemp,                       // Ptr to output save area
+                               lpSymEntry->stData.stGlbData,    // Arg global memory handle
+                               0,                               // Outer NELM (if not at top level)
+                               0,                               // Outer rank (if not at top level)
+                               TRUE);                           // TRUE iff this call is at the top level
+    // Delete the last blank in case it matters,
+    //   and ensure properly terminated
+    if (lpwszTemp[-1] EQ L' ')
+        *--lpwszTemp = L'\0';
+    else
+        *lpwszTemp = L'\0';
+
+    return lpwszTemp;
+} // End DisplayTransferVar2
+
+
+//***************************************************************************
+//  $DisplayTransferChr2
+//
+//  Create the Type 2 transfer form of a character scalar or vector
+//***************************************************************************
+
+LPWCHAR DisplayTransferChr2
+    (LPWCHAR    lpwszTemp,                  // Ptr to output save area
+     LPAPLCHAR  lpMemArg,                   // Ptr to character scalar/vector
+     APLNELM    aplNELMArg,                 // Arg NELM
+     APLRANK    aplRankArg)                 // Arg rank
+
+{
+    APLUINT uCnt;                           // Loop counter
+
+    // Start with a leading quote
+    *lpwszTemp++ = L'\'';
+
+    // Loop through the elements
+    for (uCnt = 0; uCnt < aplNELMArg; uCnt++, ((LPAPLCHAR) lpMemArg)++)
+    // If the data is a single quote, ...
+    if ((*(LPAPLCHAR) lpMemArg) EQ L'\'')
+    {
+        // The data is ''
+        *lpwszTemp++ = L'\'';
+        *lpwszTemp++ = L'\'';
+    } else
+        // ***FIXME*** -- Use []AF to handle chars outside APL2's charset
+        *lpwszTemp++ = *(LPAPLCHAR) lpMemArg;
+
+    // End with a trailing quote
+    *lpwszTemp++ = L'\'';
+
+    // and a trailing blank
+    *lpwszTemp++ = L' ';
+
+    return lpwszTemp;
+} // End DisplayTransferChr2
+
+
+//***************************************************************************
+//  $DisplayTransferImm2
+//
+//  Create the Type 2 transfer form of an immediate
+//***************************************************************************
+
+LPWCHAR DisplayTransferImm2
+    (LPWCHAR    lpwszTemp,                  // Ptr to output save area
+     LPSYMENTRY lpSymEntry)                 // Ptr to SYMENTRY of the immediate to display
+
+{
+    // If the immediate is a char, ...
+    if (lpSymEntry->stFlags.ImmType EQ IMMTYPE_CHAR)
+        // Display the char immediate
+        lpwszTemp =
+          DisplayTransferChr2 (lpwszTemp,   // Ptr to output save area
+                              &lpSymEntry->stData.stChar,   // Ptr to character scalar/vector
+                               1,           // Arg NELM
+                               0);          // Arg rank
+    else
+        lpwszTemp =
+          FormatImmedFC (lpwszTemp,                         // Ptr to input string
+                         lpSymEntry->stFlags.ImmType,       // Immediate type
+                        &lpSymEntry->stData.stLongest,      // Ptr to value to format
+                         DEF_MAX_QUADPP,                    // Precision to use
+                         UTF16_DOT,                         // Char to use as decimal separator
+                         UTF16_BAR,                         // Char to use as overbar
+                         DEF_DTOA_MODE);                    // DTOA mode (Mode 2: max (ndigits, 1))
+    return lpwszTemp;
+} // End DisplayTransferImm2
+
+
+//***************************************************************************
+//  $DisplayTransferGlb2
+//
+//  Create the Type 2 transfer form of a global
+//***************************************************************************
+
+LPWCHAR DisplayTransferGlb2
+    (LPWCHAR    lpwszTemp,                  // Ptr to output save area
+     HGLOBAL    hGlbArg,                    // Arg global memory handle
+     APLNELM    aplNELMOut,                 // Outer NELM (if not at top level)
+     APLRANK    aplRankOut,                 // Outer rank (if not at top level)
+     BOOL       bTopLevel)                  // TRUE iff this call is at the top level
+
+{
+    LPVOID   lpMemArg;                      // Ptr to arg item global memory
+    APLSTYPE aplTypeArg;                    // Arg item storage type
+    APLNELM  aplNELMArg,                    // Arg item NELM
+             aplNELMNst;                    // Arg item NELM if nested
+    APLRANK  aplRankArg;                    // Arg item rank
+    APLUINT  uCnt;                          // Loop counter
+    BOOL     bNeedParens;                   // TRUE iff this level needs surrounding parens
+
+    // Clear the type bits
+    hGlbArg = ClrPtrTypeDirAsGlb (hGlbArg),
+
+    // Lock the memory to get a ptr to it
+    lpMemArg = MyGlobalLock (hGlbArg);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
+    // Get the Array Type, NELM, and Rank
+    aplTypeArg = lpHeader->ArrType;
+    aplNELMArg = lpHeader->NELM;
+    aplRankArg = lpHeader->Rank;
+#undef  lpHeader
+
+    // If not at the top level, ...
+    if (!bTopLevel)
+    {
+        // If the inner item is not a char vector,
+        // ***FIXME*** -- If the char vector has a non-APL2 char, use []AF
+        //   and the outer item is not a scalar,
+        //   and the outer item is not empty, we need parens
+        bNeedParens = (!(IsSimpleChar (aplTypeArg) && IsVector (aplRankArg))
+                    && !IsScalar (aplRankOut)
+                    && !IsEmpty (aplNELMOut));
+        if (bNeedParens)
+            *lpwszTemp++ = L'(';
+
+        // If the outer shell is a scalar or empty, append an {enclose} symbol
+        if (IsScalar (aplRankOut)
+         || IsEmpty (aplNELMOut))
+            *lpwszTemp++ = UTF16_LEFTSHOE;
+    } // End IF
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
+    // Get the storage type, NELM & Rank
+    aplTypeArg = lpHeader->ArrType;
+    aplNELMArg = lpHeader->NELM;
+    aplRankArg = lpHeader->Rank;
+#undef  lpHeader
+
+    // Skip over the header to the dimensions
+    lpMemArg = VarArrayBaseToDim (lpMemArg);
+
+    // If the array is a matrix
+    //   or a non-scalar singleton,
+    //   or an empty nested array, ...
+    if (IsMatrix (aplRankArg)
+     || (IsSingleton (aplNELMArg) && !IsScalar (aplRankArg))
+     || (IsEmpty (aplNELMArg) && IsNested (aplTypeArg)))
+    {
+        // Format & save the shape
+        for (uCnt = 0; uCnt < aplRankArg; uCnt++)
+            lpwszTemp =
+              FormatAplintFC (lpwszTemp,                // Ptr to output save area
+                              *((LPAPLDIM) lpMemArg)++, // The value to format
+                              UTF16_OVERBAR);           // Char to use as overbar
+        // lpMemArg now points to the data
+
+        // If the array is not a scalar, ...
+        if (!IsScalar (aplRankArg))
+            // Append a {rho}, zapping the trailing blank
+            lpwszTemp[-1] = UTF16_RHO;
+    } else
+        // Skip over the dimension(s)
+        ((LPAPLDIM) lpMemArg) += aplRankArg;
+
+    // Split cases based upon the arg storage type
+    switch (aplTypeArg)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplintFC (lpwszTemp,        // Ptr to output save area
+                                  GetNextInteger (lpMemArg, aplTypeArg, uCnt),  // The value to format
+                                  UTF16_OVERBAR);   // Char to use as overbar
+            break;
+
+        case ARRAY_APA:
+            // APAs are displayed as Off-Mulx[]IO-{iota}Len
+            //   unless it's {zilde} in which case we use 0{rho}0
+
+#define lpAPA           ((LPAPLAPA) lpMemArg)
+            // If it's {zilde}, ...
+            if (IsEmpty (aplNELMArg))
+            {
+                *lpwszTemp++ = L'0';
+                *lpwszTemp++ = UTF16_RHO;
+                *lpwszTemp++ = L'0';
+            } else
+            {
+                // Append the offset
+                lpwszTemp =
+                  FormatAplintFC (lpwszTemp,            // Ptr to output save area
+                                  lpAPA->Off,           // The value to format
+                                  UTF16_OVERBAR);       // Char to use as overbar
+                // Append a minus sign, zapping the trailing blank
+                lpwszTemp[-1] = L'-';
+
+                // Append the multiplier
+                lpwszTemp =
+                  FormatAplintFC (lpwszTemp,            // Ptr to output save area
+                                  lpAPA->Mul,           // The value to format
+                                  UTF16_OVERBAR);       // Char to use as overbar
+#undef  lpAPA
+                // Append {times}[]IO-{iota}, zapping the trailing blank
+                lstrcpyW (&lpwszTemp[-1], WS_UTF16_TIMES WS_UTF16_QUAD L"IO-" WS_UTF16_IOTA);
+                lpwszTemp = &lpwszTemp[lstrlenW (lpwszTemp)];
+
+                // Format the length
+                lpwszTemp =
+                  FormatAplintFC (lpwszTemp,            // Ptr to output save area
+                                  aplNELMArg,           // The value to format
+                                  UTF16_OVERBAR);       // Char to use as overbar
+            } // End IF/ELSE
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatFloatFC (lpwszTemp,         // Ptr to output save area
+                                 *((LPAPLFLOAT) lpMemArg)++, // Ptr to float value
+                                 DEF_MAX_QUADPP,    // Precision to use
+                                 L'.',              // Char to use as decimal separator
+                                 UTF16_OVERBAR,     // Char to use as overbar
+                                 DEF_DTOA_MODE);    // DTOA mode (Mode 2: max (ndigits, 1))
+            break;
+
+        case ARRAY_CHAR:
+            // Display the char vector
+            lpwszTemp =
+              DisplayTransferChr2 (lpwszTemp,       // Ptr to output save area
+                                   lpMemArg,        // Ptr to character scalar/vector
+                                   aplNELMArg,      // Arg NELM
+                                   1);              // Arg rank
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            // If it's an empty nested array, ...
+            if (IsEmpty (aplNELMArg) && IsNested (aplTypeArg))
+                aplNELMNst = 1;
+            else
+                aplNELMNst = aplNELMArg;
+
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMNst; uCnt++, ((LPAPLHETERO) lpMemArg)++)
+            {
+                // Split cases based upon the ptr type
+                switch (GetPtrTypeInd (lpMemArg))
+                {
+                    case PTRTYPE_STCONST:
+                        // Display the immediate value
+                        lpwszTemp =
+                          DisplayTransferImm2 (lpwszTemp,                   // Ptr to output save area
+                                               *(LPAPLHETERO) lpMemArg);    // Ptr to SYMENTRY of the immediate to display
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        // Display the global memory value
+                        lpwszTemp =
+                          DisplayTransferGlb2 (lpwszTemp,               // Ptr to output save area
+                                               *(LPAPLHETERO) lpMemArg, // Arg global memory handle
+                                               aplNELMArg,              // Outer NELM (if not at top level)
+                                               aplRankArg,              // Outer rank (if not at top level)
+                                               FALSE);                  // TRUE iff this call is at the top level
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Delete the last blank in case it matters,
+    //   and ensure properly terminated
+    if (lpwszTemp[-1] EQ L' ')
+        *--lpwszTemp = L'\0';
+    else
+        *lpwszTemp = L'\0';
+
+    // If not at the top level, ...
+    if (!bTopLevel)
+    {
+        // If we need parens, ...
+        if (bNeedParens)
+            *lpwszTemp++ = L')';
+    } // End IF
+
+    // We no longer this ptr
+    MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+
+    return lpwszTemp;
+} // End DisplayTansferGlb2
+
+
+//***************************************************************************
+//  $DisplayTransferFcn2
+//
+//  Create the Type 2 transfer form of a function
+//***************************************************************************
+
+LPWCHAR DisplayTransferFcn2
+    (LPWCHAR    lpwszTemp,                  // Ptr to output save area
+     LPSYMENTRY lpSymEntry)                 // Ptr to SYMENTRY of the var to display
+
+{
+    HGLOBAL           hGlbDfnHdr = NULL;        // User-defined function operator global memory handle
+    LPDFN_HEADER      lpMemDfnHdr = NULL;       // Ptr to user-defined function/operator global memory
+    LPMEMTXT_UNION    lpMemTxtLine;             // Ptr to header/line text global memory
+    HGLOBAL           hGlbTxtLine;              // Line text global memory handle
+    LPFCNLINE         lpFcnLines;               // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    UINT              uNumLines,                // # function lines
+                      uLine;                    // Loop counter
+
+    // If the function is user-defined, ...
+    if (lpSymEntry->stFlags.UsrDfn)
+    {
+        // Append "[]FX "
+        lstrcpyW (lpwszTemp, WS_UTF16_QUAD L"FX ");
+        lpwszTemp = &lpwszTemp[lstrlenW (lpwszTemp)];
+
+        // Get the user-defined function/operator global memory handle
+        hGlbDfnHdr = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // Lock the memory to get a ptr to it
+        lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+
+        // Display the function header
+        lpwszTemp =
+          DisplayTransferChr2 (lpwszTemp,
+                              &lpMemTxtLine->C,
+                               lpMemTxtLine->U,
+                               1);
+        // We no longer need this ptr
+        MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine = NULL;
+
+        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+        // Get # function lines
+        uNumLines = lpMemDfnHdr->numFcnLines;
+
+        // Run through the function lines looking for the longest
+        for (uLine = 0; uLine < uNumLines; uLine++)
+        {
+            // Get the line text global memory handle
+            hGlbTxtLine = lpFcnLines->hGlbTxtLine;
+
+            if (hGlbTxtLine)
+            {
+                // Lock the memory to get a ptr to it
+                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+
+                // Display the function line
+                lpwszTemp =
+                  DisplayTransferChr2 (lpwszTemp,
+                                      &lpMemTxtLine->C,
+                                       lpMemTxtLine->U,
+                                       1);
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+            } // End IF
+
+            // Skip to the next struct
+            lpFcnLines++;
+        } // End FOR
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } else
+    {
+        // Copy the var's name
+        lpwszTemp =
+          CopySteName (lpwszTemp,               // Ptr to result global memory
+                       lpSymEntry,              // Ptr to function symbol table entry
+                       NULL);                   // Ptr to name length (may be NULL)
+        // Append a left arrow
+        *lpwszTemp++ = UTF16_LEFTARROW;
+
+        // If the function is immediate, ...
+        if (lpSymEntry->stFlags.Imm)
+            // Append the function/operator
+            *lpwszTemp++ = lpSymEntry->stData.stChar;
+        else
+            // Append the function strand
+            lpwszTemp =
+              DisplayFcnGlb (lpwszTemp,
+                             lpSymEntry->stData.stGlbData,
+                             FALSE,
+                             NULL,
+                             NULL);
+    } // End IF/ELSE
+
+    // Delete the last blank in case it matters,
+    //   and ensure properly terminated
+    if (lpwszTemp[-1] EQ L' ')
+        *--lpwszTemp = L'\0';
+    else
+        *lpwszTemp = L'\0';
+
+    return lpwszTemp;
+} // End DisplayTransferFcn2
 
 
 //***************************************************************************

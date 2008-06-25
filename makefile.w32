@@ -80,6 +80,7 @@ LIBS_WEXE = GDI32.LIB           \
             OLDNAMES.LIB        \
             OLE32.LIB           \
             UUID.LIB            \
+            WINSPOOL.LIB        \
 !if "$(DEBUG)" == "1"
             QDEBUG32.LIB        \
 !endif

@@ -180,7 +180,7 @@ LPPL_YYSTYPE PrimFnDydTackCommon_YY
     AttrsOfToken (lptkArg, &aplType, NULL, NULL, NULL);
 
     // Get arg global ptr
-    aplLongest = GetGlbPtrs_LOCK (lptkArg, &hGlbArg, NULL);
+    aplLongest = GetGlbPtrs (lptkArg, &hGlbArg);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -192,7 +192,7 @@ LPPL_YYSTYPE PrimFnDydTackCommon_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbArg);
 ////////lpYYRes->tkToken.tkCharIndex       =           // Already set
     } else
@@ -200,7 +200,7 @@ LPPL_YYSTYPE PrimFnDydTackCommon_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplType);
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
 ////////lpYYRes->tkToken.tkCharIndex       =           // Already set
     } // End IF/ELSE

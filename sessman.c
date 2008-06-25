@@ -543,8 +543,8 @@ void FormatQQuadInput
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -1246,6 +1246,7 @@ WM_NCCREATE_FAIL:
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IncrSize = DEF_WPTDTEMP_INCRSIZE * sizeof (WCHAR);
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize  = DEF_WPTDTEMP_MAXSIZE  * sizeof (WCHAR);
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr  = (LPVOID)
+            lpMemPTD->lpwszBaseTemp =
             lpMemPTD->lpwszTemp =
               GuardAlloc (NULL,             // Any address
                           lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize,
@@ -1273,24 +1274,6 @@ WM_NCCREATE_FAIL:
                             DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR),
                             MEM_COMMIT,
                             PAGE_READWRITE);
-
-////////////// *************** Fonts ***********************************
-////////////
-////////////// Get the text metrics for this font
-////////////hDC = MyGetDC (hWnd);
-////////////hFontOld = SelectObject (hDC, hFontTC);
-////////////GetTextMetrics (hDC, &tm);
-////////////SelectObject (hDC, hFontOld);
-////////////MyReleaseDC (hWnd, hDC); hDC = NULL;
-////////////
-////////////// New height
-////////////cyAveCharSM = MulDiv (cfSM.iPointSize / 10, iLogPixelsY, 72);
-////////////cyAveCharSM = -lfSM.lfHeight;
-////////////
-////////////lfSM.lfWidth = (tm.tmAveCharWidth + tm.tmMaxCharWidth) / 2;
-////////////
-////////////// New width (same aspect ratio as old)
-////////////cxAveCharSM = MulDiv (lfSM.lfWidth, cyAveCharSM, -lfSM.lfHeight);
 
             // *************** System Names ****************************
 

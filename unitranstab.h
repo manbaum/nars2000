@@ -92,7 +92,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x00BC, 0x00B0,   NA  ,   NA  , 0x00A5,   NA  , UTF16_IOTA              }, // Iota
     {0x00B0, 0x00B1,   NA  ,   NA  , 0x00AE,   NA  , UTF16_JOT               }, // Jot
     {0x00A9, 0x00DD,   NA  ,   NA  , 0x00FF,   NA  , UTF16_LAMP              }, // Lamp
-    {  NA  ,   NA  ,   NA  ,   NA  , 0x00DD,   NA  , UTF16_LBRACKET          }, // Left bracket
+    {  NA  ,   NA  ,   NA  ,   NA  , 0x00DD,   NA  , UTF16_LEFTBRACKET       }, // Left bracket
     {0x201E, 0x00BC,   NA  ,   NA  , 0x00A4,   NA  , UTF16_LEFTARROW         }, // Left arrow
     {0x02C6, 0x00A2,   NA  ,   NA  , 0x00F0,   NA  , UTF16_LEFTCARETUNDERBAR }, // Left caret underbar
     {0x203A, 0x00BB,   NA  ,   NA  , 0x00BA,   NA  , UTF16_LEFTSHOE          }, // Left shoe
@@ -106,7 +106,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {  NA  ,   NA  ,   NA  ,   NA  , 0x00F3,   NA  , UTF16_QUADSLOPE         }, // Quad slope
     {  NA  ,   NA  ,   NA  ,   NA  , 0x00FB,   NA  , UTF16_QUOTEDOT          }, // Quote dot
     {0x008D, 0x00E4,   NA  ,   NA  , 0x00FA,   NA  , UTF16_QUOTEQUAD         }, // Quote-quad
-    {  NA  ,   NA  ,   NA  ,   NA  , 0x00A8,   NA  , UTF16_RBRACKET          }, // Right bracket
+    {  NA  ,   NA  ,   NA  ,   NA  , 0x00A8,   NA  , UTF16_RIGHTBRACKET      }, // Right bracket
     {0x00BD, 0x00B5, 0x03C1,   NA  , 0x00B7,   NA  , UTF16_RHO               }, // Rho
 //  APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
     {0x2026, 0x00BE,   NA  ,   NA  , 0x00B1,   NA  , UTF16_RIGHTARROW        }, // Right arrow

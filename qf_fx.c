@@ -66,17 +66,17 @@ LPPL_YYSTYPE SysFnFX_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonFX_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydFX_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnFX_EM_YY
 #undef  APPEND_NAME
 
@@ -113,7 +113,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLLONGEST   aplLongestItmRht;  // Right arg item immediate value
     IMM_TYPES    immTypeItmRht;     // Right arg item immediate type
-    SF_FCNS      SF_Fcns = {0};     // Common struc for SaveFunction
+    SF_FCNS      SF_Fcns = {0};     // Common struc for SaveFunctionCom
     FX_PARAMS    FX_Params = {0};   // Local struc for  ...
 
     // Get the PerTabData global memory handle
@@ -127,17 +127,14 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &FX_Params.aplRankRht, &FX_Params.aplColsRht);
 
     // Check for empty right arg
     if (IsEmpty (aplNELMRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RIGHT_DOMAIN_EXIT;
 
     // Get right arg's global ptrs
     FX_Params.aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &FX_Params.hGlbRht, &lpMemRht);
@@ -179,11 +176,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
 
                         // Ensure the item is a scalar/vector
                         if (IsMultiRank (aplRankItmRht))
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                                       lptkFunc);
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto RIGHT_RANK_EXIT;
 
                         // If this is the function header, ensure that it's not all blank
                         if (uRht EQ 0)
@@ -210,20 +203,12 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
 
                             if (IsEmpty (aplNELMItmRht))
-                            {
-                                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                           lptkFunc);
-                                goto ERROR_EXIT;
-                            } // End IF
+                                goto RIGHT_DOMAIN_EXIT;
                         } // End IF
 
                         // Ensure the item is simple char
                         if (!IsSimpleChar (aplTypeItmRht))
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                       lptkFunc);
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto RIGHT_DOMAIN_EXIT;
                     } else
                     {
                         // The right arg item is an immediate scalar
@@ -231,19 +216,11 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                         // If this is the function header, ensure that it's not empty
                         if (uRht EQ 0
                          && ((APLCHAR) FX_Params.aplLongestRht) EQ L' ')
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                       lptkFunc);
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto RIGHT_DOMAIN_EXIT;
 
                         // Ensure the item is simple char
                         if (!IsSimpleChar (aplTypeItmRht))
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                       lptkFunc);
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto RIGHT_DOMAIN_EXIT;
                     } // End IF/ELSE
                 } // End FOR
 
@@ -259,21 +236,14 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                 SF_Fcns.SF_UndoBuffer   = SF_UndoBufferN;   // Ptr to get function Undo Buffer global memory handle
             } else
             if (!IsSimpleChar (aplTypeRht))
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } else
+                goto RIGHT_DOMAIN_EXIT;
+            else
             {
                 // Simple character scalar or vector
 
                 // Check for DOMAIN ERROR
                 if (IsEmpty (aplNELMRht))
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto RIGHT_DOMAIN_EXIT;
 
                 // Fill in common values
                 SF_Fcns.SF_LineLen      = SF_LineLenSV;     // Ptr to line length function
@@ -288,11 +258,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
 
         case 2:                     // Right arg matrix
             if (!IsSimpleChar (aplTypeRht))
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto RIGHT_DOMAIN_EXIT;
 
             // Fill in common values
             if (FX_Params.aplColsRht)
@@ -343,14 +309,10 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         // Now we can allocate the storage for the result
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (__int3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbRes)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
@@ -360,7 +322,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uNameLen;
         lpHeader->Rank       = 1;
@@ -384,7 +346,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
@@ -403,7 +365,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkInteger  = GetQuadIO () + SF_Fcns.uErrLine;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -416,7 +378,26 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
+
+    goto NORMAL_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (FX_Params.hGlbRht && lpMemRht)
     {
         // We no longer need this ptr

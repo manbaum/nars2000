@@ -1804,7 +1804,7 @@ uint32_t hashlittleConv
     // Allocate virtual memory to hold the converted name
     lpwConv =
       MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
-                      (UINT) length * sizeof (WCHAR),
+                      (__int3264) length * sizeof (WCHAR),
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
     if (lpwConv EQ NULL)        // ***FIXME*** -- Better error handling needed
@@ -1861,7 +1861,7 @@ LPSYMENTRY SymTabLookupNameLength
         iLen--;
 
     if (iLen EQ 0)
-        return NULL;
+        goto ERROR_EXIT;
 
     // Hash the name
     uHash = hashlittleConv
@@ -1929,7 +1929,7 @@ LPSYMENTRY SymTabLookupNameLength
             } // End IF
         } // End IF
     } // End FOR
-
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 

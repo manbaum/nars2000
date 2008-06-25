@@ -1084,9 +1084,26 @@ HGLOBAL GetGlbHandle
 
 
 //***************************************************************************
+//  $GetGlbPtrs
+//
+//  Return the HGLOBAL and LPVOID from a token if it's an HGLOBAL,
+//    NULL otherwise.
+//  If the arg is immediate, return the APLLONGEST value.
+//***************************************************************************
+
+APLLONGEST GetGlbPtrs
+    (LPTOKEN  lpToken,          // Ptr to token
+     HGLOBAL *lphGlb)           // Ptr to ptr to HGLOBAL
+
+{
+    return GetGlbPtrs_LOCK (lpToken, lphGlb, NULL);
+} // End GetGlbPtrs
+
+
+//***************************************************************************
 //  $GetGlbPtrs_LOCK
 //
-//  Return the HGLOBAL and LPVOID from a token if it's an HGLOBAL
+//  Return the HGLOBAL and LPVOID from a token if it's an HGLOBAL,
 //    NULL otherwise.
 //  If the arg is immediate, return the APLLONGEST value.
 //
@@ -1100,6 +1117,9 @@ APLLONGEST GetGlbPtrs_LOCK
      LPVOID  *lplpMem)          // Ptr to ptr to memory (may be NULL)
 
 {
+    LPVARARRAY_HEADER lpMem;        // Ptr to locked memory header
+    APLLONGEST        aplLongest;   // First value in the data (unless empty)
+
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
@@ -1150,16 +1170,35 @@ APLLONGEST GetGlbPtrs_LOCK
     } // End SWITCH
 
     // Handle the HGLOBAL case
-    if (*lphGlb)
-    {
-        *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
+    *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
 
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (*lphGlb);
+
+    // If the arg is non-empty, ...
+    if (!IsEmpty (lpMem->NELM))
+        GetFirstValueGlb (*lphGlb,          // The global memory handle
+                          NULL,             // Ptr to integer (or Boolean) (may be NULL)
+                          NULL,             // ...    float (may be NULL)
+                          NULL,             // ...    char (may be NULL)
+                         &aplLongest,       // ...    longest (may be NULL)
+                          NULL,             // ...    LPSYMENTRY or HGLOBAL (may be NULL)
+                          NULL,             // ...    immediate type (see IMM_TYPES) (may be NULL)
+                          NULL,             // ...    array type -- ARRAY_TYPES (may be NULL)
+                          TRUE);            // TRUE iff we should expand LPSYMENTRY into immediate value
+    else
+        aplLongest = 0;
+
+    // If the caller wants the locked memory ptr, ...
+    if (lplpMem)
         // Lock the memory to get a ptr to it
-        if (lplpMem)
-            *lplpMem = MyGlobalLock (*lphGlb);
-    } // End IF
+        *lplpMem = lpMem;
+    else
+    {
+        MyGlobalUnlock (*lphGlb); lpMem = NULL;
+    } // End IF/ELSE
 
-    return (APLLONGEST) 0;
+    return aplLongest;
 } // End GetGlbPtrs_LOCK
 
 

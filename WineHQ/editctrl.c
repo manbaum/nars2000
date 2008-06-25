@@ -228,8 +228,8 @@ static void EDIT_MoveForward(EDITSTATE *es, BOOL extend);
 static void EDIT_MoveHome(EDITSTATE *es, BOOL extend);
 static void EDIT_MoveWordBackward(EDITSTATE *es, BOOL extend);
 static void EDIT_MoveWordForward(EDITSTATE *es, BOOL extend);
-static void EDIT_PaintLine(EDITSTATE *es, HDC hdc, INT line, BOOL rev);
-static INT  EDIT_PaintText(EDITSTATE *es, HDC hdc, INT x, INT y, INT line, INT col, INT count, BOOL rev);
+static void EDIT_PaintLine(EDITSTATE *es, HDC hdc, INT line, BOOL rev, long lFlags, INT yLine);
+static INT  EDIT_PaintText(EDITSTATE *es, HDC hdc, INT x, INT y, INT line, INT col, INT count, BOOL rev, long lFlags);
 static void EDIT_SetCaretPos(EDITSTATE *es, INT pos, BOOL after_wrap);
 static void EDIT_AdjustFormatRect(EDITSTATE *es);
 static void EDIT_SetRectNP(EDITSTATE *es, LPRECT lprc);
@@ -294,8 +294,10 @@ static LRESULT  EDIT_WM_LButtonUp(EDITSTATE *es);
 static LRESULT  EDIT_WM_MButtonDown(EDITSTATE *es);
 static LRESULT  EDIT_WM_MouseMove(EDITSTATE *es, INT x, INT y);
 static LRESULT  EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode);
-static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc);
-static void EDIT_WM_Paint2(EDITSTATE *es, HDC hdc, HDC hdcbg);
+static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags);
+static void EDIT_WM_Paint2(EDITSTATE *es, HDC hdc, HDC hdcbg, long lFlags);
+static BOOL LineHasSelection(EDITSTATE *es, INT line);
+static BOOL LineOnCurrentPage(EDITSTATE *es, INT line, INT nLOP);
 static void EDIT_WM_Paste(EDITSTATE *es);
 static void EDIT_WM_SetFocus(EDITSTATE *es);
 static void EDIT_WM_SetFont(EDITSTATE *es, HFONT font, BOOL redraw);
@@ -646,14 +648,16 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         result = (LRESULT)(HANDLE_PTR)EDIT_EM_GetHandle(es);
         break;
 
+#ifdef _WIN16
     case EM_GETTHUMB16:
+#endif
     case EM_GETTHUMB:
         result = EDIT_EM_GetThumb(es);
         break;
 
     case EM_SETPAINTHOOK:
         result = GetWindowLongPtrW (hwnd, GWLEC_PAINTHOOK);
-        SetWindowLongW (hwnd, GWLEC_PAINTHOOK, (long) lParam);
+        SetWindowLongPtrW (hwnd, GWLEC_PAINTHOOK, (long) lParam);
         break;
 
     /* these messages missing from specs */
@@ -1042,9 +1046,10 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         result = EDIT_WM_MouseMove(es, (short)LOWORD(lParam), (short)HIWORD(lParam));
         break;
 
-    case WM_PRINTCLIENT:
     case WM_PAINT:
-            EDIT_WM_Paint(es, *(HDC *)&wParam);
+        lParam = 0;
+    case WM_PRINTCLIENT:
+            EDIT_WM_Paint(es, *(HDC *)&wParam, (long) lParam);
         break;
 
     case WM_PASTE:
@@ -2365,7 +2370,7 @@ static void EDIT_MoveWordForward(EDITSTATE *es, BOOL extend)
  *  EDIT_PaintLine
  *
  */
-static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
+static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev, long lFlags, INT yLine)
 {
     INT s = es->selection_start;
     INT e = es->selection_end;
@@ -2388,7 +2393,7 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
 
     pos = EDIT_EM_PosFromChar(es, EDIT_EM_LineIndex(es, line), FALSE);
     x = (short)LOWORD(pos);
-    y = (short)HIWORD(pos);
+    y = (yLine EQ -1) ? (short)HIWORD(pos) : yLine * es->line_height;
     li = EDIT_EM_LineIndex(es, line);
     ll = EDIT_EM_LineLength(es, li);
     s = min(es->selection_start, es->selection_end);
@@ -2397,22 +2402,31 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
     e = min(li + ll, max(li, e));
     if (rev && (s != e) &&
             ((es->flags & EF_FOCUSED) || (es->style & ES_NOHIDESEL))) {
-        x += EDIT_PaintText(es, dc, x, y, line, 0, s - li, FALSE);
-        x += EDIT_PaintText(es, dc, x, y, line, s - li, e - s, TRUE);
-        x += EDIT_PaintText(es, dc, x, y, line, e - li, li + ll - e, FALSE);
+        if (!(lFlags & PRF_SELECTION))
+            x += EDIT_PaintText(es, dc, x, y, line, 0, s - li, FALSE, lFlags);
+        else
+            x += (s - li) * es->char_width;
+        x += EDIT_PaintText(es, dc, x, y, line, s - li, e - s, !(lFlags & PRF_SELECTION), lFlags);
+        if (!(lFlags & PRF_SELECTION))
+            x += EDIT_PaintText(es, dc, x, y, line, e - li, li + ll - e, FALSE, lFlags);
     } else
-        x += EDIT_PaintText(es, dc, x, y, line, 0, ll, FALSE);
+    if (!(lFlags & PRF_SELECTION))
+        x += EDIT_PaintText(es, dc, x, y, line, 0, ll, FALSE, lFlags);
 
-    // Get the background brush
-    hBrush = EDIT_NotifyCtlColor(es, dc);
+    // If we're not printing, ...
+    if (!(lFlags & PRF_PRINTCLIENT))
+    {
+        // Get the background brush
+        hBrush = EDIT_NotifyCtlColor(es, dc);
 
-    // Fill out the rest of the line
-    rc2.left   = x;
-    rc2.top    = y;
-    rc2.right  = 0x7FFFFFFF;    // Largest positive #
-    rc2.bottom = y + es->line_height;
-    IntersectRect (&rc1, &rc2, &es->format_rect);
-    FillRect (dc, &rc1, hBrush);
+        // Fill out the rest of the line
+        rc2.left   = x;
+        rc2.top    = y;
+        rc2.right  = 0x7FFFFFFF;    // Largest positive #
+        rc2.bottom = y + es->line_height;
+        IntersectRect (&rc1, &rc2, &es->format_rect);
+        FillRect (dc, &rc1, hBrush);
+    } // End IF
 } // End EDIT_PaintLine
 
 
@@ -2421,7 +2435,7 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
  *  EDIT_PaintText
  *
  */
-static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col, INT count, BOOL rev)
+static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col, INT count, BOOL rev, long lFlags)
 {
     COLORREF BkColor;
     COLORREF TextColor;
@@ -2466,7 +2480,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
 
         (HANDLE_PTR) lpPaintHook = GetWindowLongPtrW (es->hwndSelf, GWLEC_PAINTHOOK);
         if (lpPaintHook)
-            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, es->text + li, col, count));
+            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, es->text + li, col, count, lFlags, es->line_height, es->char_width));
         else
             ret = (INT)LOWORD(TabbedTextOutW(dc, x, y, es->text + li + col, count,
                         es->tabs_count, es->tabs, es->format_rect.left - es->x_offset));
@@ -4653,8 +4667,10 @@ static LRESULT EDIT_WM_HScroll(EDITSTATE *es, INT action, INT pos)
      *  At least Win 3.1 Notepad makes use of EM_GETTHUMB this way,
      *  although it's also a regular control message.
      */
-    case EM_GETTHUMB: /* this one is used by NT notepad */
+#ifdef _WIN16
     case EM_GETTHUMB16:
+#endif
+    case EM_GETTHUMB: /* this one is used by NT notepad */
     {
         LRESULT ret;
         if(GetWindowLongW( es->hwndSelf, GWL_STYLE ) & WS_HSCROLL)
@@ -5128,7 +5144,7 @@ static LRESULT EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode)
  *  WM_PAINT
  *
  */
-static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
+static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
 {
     HDC         hDCInc;
     HDC         hDCMem;
@@ -5166,7 +5182,7 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     SetTextColor (hDCMem, GetTextColor (hDCInc));
 
     // Call the original handler
-    EDIT_WM_Paint2 (es, hDCSub, hDCInc);
+    EDIT_WM_Paint2 (es, hDCSub, hDCInc, lFlags);
 
 #undef  hDCSub
 
@@ -5193,7 +5209,7 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
 } // End EDIT_WM_Paint
 
 
-static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg)
+static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg, long lFlags)
 {
     INT i;
     HFONT old_font = 0;
@@ -5201,55 +5217,63 @@ static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg)
     RECT rcClient;
     RECT rcLine;
     RECT rcRgn;
-    HBRUSH brush;
+////HBRUSH brush;
     HBRUSH old_brush;
     INT bw, bh;
+    INT yLine = 0;
     BOOL rev = es->bEnableState &&
                 ((es->flags & EF_FOCUSED) ||
                     (es->style & ES_NOHIDESEL));
 
     GetClientRect(es->hwndSelf, &rcClient);
 
-    /* get the background brush */
-    brush = EDIT_NotifyCtlColor(es, dcbg);
+/////* get the background brush */
+////brush = EDIT_NotifyCtlColor(es, dcbg);
 
-    /* paint the border and the background */
-    IntersectClipRect(dcbg, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom);
+    // If we're not printing, ...
+    if (!(lFlags & PRF_PRINTCLIENT))
+    {
+        /* paint the border and the background */
+        IntersectClipRect(dcbg, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom);
 
-    if(es->style & WS_BORDER) {
-        bw = GetSystemMetrics(SM_CXBORDER);
-        bh = GetSystemMetrics(SM_CYBORDER);
-        rc = rcClient;
-        if(es->style & ES_MULTILINE) {
-            if(es->style & WS_HSCROLL) rc.bottom+=bh;
-            if(es->style & WS_VSCROLL) rc.right+=bw;
+        if(es->style & WS_BORDER) {
+            bw = GetSystemMetrics(SM_CXBORDER);
+            bh = GetSystemMetrics(SM_CYBORDER);
+            rc = rcClient;
+            if(es->style & ES_MULTILINE) {
+                if(es->style & WS_HSCROLL) rc.bottom+=bh;
+                if(es->style & WS_VSCROLL) rc.right+=bw;
+            }
+
+            /* Draw the frame. Same code as in nonclient.c */
+            old_brush = SelectObject(dcbg, GetSysColorBrush(COLOR_WINDOWFRAME));
+            PatBlt(dcbg, rc.left, rc.top, rc.right - rc.left, bh, PATCOPY);
+            PatBlt(dcbg, rc.left, rc.top, bw, rc.bottom - rc.top, PATCOPY);
+            PatBlt(dcbg, rc.left, rc.bottom - 1, rc.right - rc.left, -bw, PATCOPY);
+            PatBlt(dcbg, rc.right - 1, rc.top, -bw, rc.bottom - rc.top, PATCOPY);
+            SelectObject(dcbg, old_brush);
+
+            /* Keep the border clean */
+            IntersectClipRect(dcbg, rc.left+bw, rc.top+bh,
+                max(rc.right-bw, rc.left+bw), max(rc.bottom-bh, rc.top+bh));
         }
-
-        /* Draw the frame. Same code as in nonclient.c */
-        old_brush = SelectObject(dcbg, GetSysColorBrush(COLOR_WINDOWFRAME));
-        PatBlt(dcbg, rc.left, rc.top, rc.right - rc.left, bh, PATCOPY);
-        PatBlt(dcbg, rc.left, rc.top, bw, rc.bottom - rc.top, PATCOPY);
-        PatBlt(dcbg, rc.left, rc.bottom - 1, rc.right - rc.left, -bw, PATCOPY);
-        PatBlt(dcbg, rc.right - 1, rc.top, -bw, rc.bottom - rc.top, PATCOPY);
-        SelectObject(dcbg, old_brush);
-
-        /* Keep the border clean */
-        IntersectClipRect(dcbg, rc.left+bw, rc.top+bh,
-            max(rc.right-bw, rc.left+bw), max(rc.bottom-bh, rc.top+bh));
-    }
+    } // End IF
 
     // The following two lines were deleted to reduce screen flicker
 ////GetClipBox(dc, &rc);
 ////FillRect(dc, &rc, brush);
 
-    IntersectClipRect(dc, es->format_rect.left,
-                es->format_rect.top,
-                es->format_rect.right,
-                es->format_rect.bottom);
-    if (es->style & ES_MULTILINE) {
-        rc = rcClient;
-        IntersectClipRect(dc, rc.left, rc.top, rc.right, rc.bottom);
-    }
+    // If we're not printing, ...
+    if (!(lFlags & PRF_PRINTCLIENT))
+    {
+        IntersectClipRect(dc, es->format_rect.left,
+                    es->format_rect.top,
+                    es->format_rect.right,
+                    es->format_rect.bottom);
+        if (es->style & ES_MULTILINE)
+            IntersectClipRect(dc, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom);
+    } // End IF
+
     if (es->font)
         old_font = SelectObject(dc, es->font);
 
@@ -5258,19 +5282,75 @@ static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg)
     GetClipBox(dc, &rcRgn);
     if (es->style & ES_MULTILINE) {
         INT vlc = (es->format_rect.bottom - es->format_rect.top) / es->line_height;
+        INT nLOP = (rcClient.bottom - rcClient.top) / es->line_height;
         for (i = es->y_offset ; i <= min(es->y_offset + vlc, es->y_offset + es->line_count - 1) ; i++) {
             EDIT_GetLineRect(es, i, 0, -1, &rcLine);
+            // ***FIXME*** -- Handle printing Selection only    (lFlags & PRF_SELECTION)
+            // ***FIXME*** -- Handle printing Current Page only (lFlags & PRF_CURRENTPAGE)
+            if (lFlags & PRF_SELECTION  )
+            {
+                if (LineHasSelection (es, i))
+                    EDIT_PaintLine(es, dc, i, rev, lFlags, yLine++);
+            } else
+            if (lFlags & PRF_CURRENTPAGE)
+            {
+                if (LineOnCurrentPage (es, i, nLOP))
+                    EDIT_PaintLine(es, dc, i, rev, lFlags, yLine++);
+            } else
             if (IntersectRect(&rc, &rcRgn, &rcLine))
-                EDIT_PaintLine(es, dc, i, rev);
+                EDIT_PaintLine(es, dc, i, rev, lFlags, -1);
         }
     } else {
         EDIT_GetLineRect(es, 0, 0, -1, &rcLine);
         if (IntersectRect(&rc, &rcRgn, &rcLine))
-            EDIT_PaintLine(es, dc, 0, rev);
+            EDIT_PaintLine(es, dc, 0, rev, lFlags, -1);
     }
     if (es->font)
         SelectObject(dc, old_font);
 } // End EDIT_WM_Paint2
+
+
+/*********************************************************************
+ *
+ * LineHasSelection
+ *
+ */
+
+static BOOL LineHasSelection (EDITSTATE *es, INT line)
+{
+    INT s = es->selection_start;
+    INT e = es->selection_end;
+    INT li;
+    INT ll;
+    INT x;
+    INT y;
+    LRESULT pos;
+
+    pos = EDIT_EM_PosFromChar(es, EDIT_EM_LineIndex(es, line), FALSE);
+    x = (short)LOWORD(pos);
+    y = (short)HIWORD(pos);
+    li = EDIT_EM_LineIndex(es, line);
+    ll = EDIT_EM_LineLength(es, li);
+    s = min(es->selection_start, es->selection_end);
+    e = max(es->selection_start, es->selection_end);
+    s = min(li + ll, max(li, s));
+    e = min(li + ll, max(li, e));
+
+    return (s != e);
+} // End LineHasSelection
+
+
+/*********************************************************************
+ *
+ * LineOnCurrentPage
+ *
+ */
+
+static BOOL LineOnCurrentPage (EDITSTATE *es, INT line, INT nLOP)
+{
+    return (es->y_offset <= line
+         &&                 line < (es->y_offset + nLOP));
+} // End LineOnCurrentPage
 
 
 /*********************************************************************
@@ -5325,7 +5405,7 @@ static void EDIT_WM_SetFocus(EDITSTATE *es)
         if (!(es->style & ES_MULTILINE))
         {
             HDC hdc = GetDC(es->hwndSelf);
-            EDIT_WM_Paint(es, hdc);
+            EDIT_WM_Paint(es, hdc, 0);
             ReleaseDC(es->hwndSelf, hdc); hdc = NULL;
         }
 
@@ -5405,9 +5485,7 @@ static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
 
     // Ask the parent how wide the caret should be
     SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) (HANDLE_PTR) &nmEC);
-#ifdef DEBUG
-////dprintfW (L">>CreateCaret (%p, %p, %d, %d)", hWnd, hBitMap, nWidth, nHeight);
-#endif DEBUG
+
     return CreateCaret (hWnd, hBitMap, nWidth, nHeight);
 } // End MyCreateCaret
 
@@ -5522,7 +5600,7 @@ static void EDIT_WM_Size(EDITSTATE *es, UINT action, INT width, INT height)
         // The following line is replaced by a call to WM_PAINT
         //   in order to reduce screen flicker
 ////    EDIT_UpdateText(es, NULL, TRUE);
-        EDIT_WM_Paint2 (es, hDCMem, hDC);
+        EDIT_WM_Paint2 (es, hDCMem, hDC, 0);
 
         // Restore the old resources
         SelectObject (hDCMem, hFontOld);
@@ -5718,8 +5796,10 @@ static LRESULT EDIT_WM_VScroll(EDITSTATE *es, INT action, INT pos)
      *  At least Win 3.1 Notepad makes use of EM_GETTHUMB this way,
      *  although it's also a regular control message.
      */
-    case EM_GETTHUMB: /* this one is used by NT notepad */
+#ifdef _WIN16
     case EM_GETTHUMB16:
+#endif
+    case EM_GETTHUMB: /* this one is used by NT notepad */
     {
         LRESULT ret;
         if(GetWindowLongW( es->hwndSelf, GWL_STYLE ) & WS_VSCROLL)

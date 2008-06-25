@@ -82,6 +82,7 @@ IDR_ACCEL ACCELERATORS MOVEABLE PURE
 BEGIN
     "^A",       IDM_SELECTALL
     "^C",       IDM_COPY
+    "^P",       IDM_PRINT_WS
     "^V",       IDM_PASTE
     "^X",       IDM_CUT
     "^Y",       IDM_REDO
@@ -98,14 +99,17 @@ IDR_SMMENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Load",                       IDM_LOAD_WS
-        MENUITEM "&Xload",                      IDM_XLOAD_WS
-        MENUITEM "&Copy",                       IDM_COPY_WS
-        MENUITEM "&Pcopy",                      IDM_PCOPY_WS
+        MENUITEM "&Load",                       IDM_LOAD_WS     , INACTIVE GRAYED
+        MENUITEM "&Xload",                      IDM_XLOAD_WS    , INACTIVE GRAYED
+        MENUITEM "&Copy",                       IDM_COPY_WS     , INACTIVE GRAYED
+        MENUITEM "Pcopy",                       IDM_PCOPY_WS    , INACTIVE GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&Save",                       IDM_SAVE_WS
-        MENUITEM "Save &As",                    IDM_SAVE_AS_WS
-        MENUITEM "&Drop",                       IDM_DROP_WS
+        MENUITEM "Save &As",                    IDM_SAVE_AS_WS  , INACTIVE GRAYED
+        MENUITEM "&Drop",                       IDM_DROP_WS     , INACTIVE GRAYED
+        MENUITEM "D&uplicate",                  IDM_DUP_WS      , INACTIVE GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Print\tCtrl+P",              IDM_PRINT_WS
         MENUITEM SEPARATOR
         MENUITEM "&Exit",                       IDM_EXIT
     END
@@ -123,6 +127,7 @@ BEGIN
     POPUP "&Options"
     BEGIN
         MENUITEM "&Screen Font",                IDM_SMFONT
+        MENUITEM "&Printer Font",               IDM_PRFONT
         MENUITEM "&Tab Font",                   IDM_TCFONT
         MENUITEM "&Function Edit Font",         IDM_FEFONT
         MENUITEM "&Matrix Edit Font",           IDM_MEFONT

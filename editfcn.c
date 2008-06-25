@@ -777,20 +777,24 @@ LRESULT APIENTRY FEWndProc
 //***************************************************************************
 
 int LclECPaintHook
-    (HWND    hWndEC,    // Window handle of Edit Control
-     HDC     hDC,       // The Device Context
-     int     x,         // The x-coordinate (Client Area)
-     int     y,         // ... y- ...
-     LPWCHAR lpwsz,     // Ptr to start of line
-     UINT    uCol,      // Starting column in the line
-     UINT    uLen)      // Length of text to display
+    (HWND    hWndEC,        // Window handle of Edit Control
+     HDC     hDC,           // The Device Context
+     int     x,             // The x-coordinate (Client Area)
+     int     y,             // ... y- ...
+     LPWCHAR lpwsz,         // Ptr to start of line
+     UINT    uCol,          // Starting column in the line
+     UINT    uLen,          // Length of text to display
+     long    lFlags,        // PRF_ flags
+     int     line_height,   // Line height in screen coordinates
+     int     char_width)    // Average char width in screen coordinates
 
 {
-    RECT             rc;                // Rect for actual width/height
+    RECT             rcScr,             // Rect for actual width/height in screen coordinates
+                     rcAct;             // ...                             printer/screen ...
+    HFONT            hFontOld;          // Old font from the incoming screen/printer DC
 #ifndef UNISCRIBE
     HGLOBAL          hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
-    int              iRes;              // The result
     long             cxAveChar;         // Width of average char in given screen
 
     // Get the thread's PerTabData global memory handle
@@ -805,55 +809,90 @@ int LclECPaintHook
     //   through the last char to display
     // ***FINISHME*** -- Syntax coloring
 
-    rc.top    = y;
-    rc.left   = x;
-    rc.right  =
-    rc.bottom = 0;
+    rcScr.top    = y;
+    rcScr.left   = x;
+    rcScr.right  =
+    rcScr.bottom = 0;
 
     // Skip to the starting col
     lpwsz += uCol;
 
     // Calculate the width & height of the line
+    //   in screen coordinates
     DrawTextW (hDC,
                lpwsz,
                uLen,
-              &rc,
+              &rcScr,
                0
              | DT_CALCRECT
              | DT_NOPREFIX
              | DT_NOCLIP);
+    // Copy the screen coordinates
+    //   in case we're not printing, or
+    //   if we are, to initialize the struc
+    rcAct = rcScr;
+
+    if (lFlags & PRF_PRINTCLIENT)
+    {
+        // Get the current font to restore later
+        hFontOld = GetCurrentObject (hDC, OBJ_FONT);
+
+        // Use the printer font
+        SelectObject (hDC, hFontPR);
+
+        // Respecify the horizontal & vertical positions in printer coordinates
+        rcAct.top  = cyAveCharPR * (rcAct.top  / line_height);
+        rcAct.left = cxAveCharPR * (rcAct.left / char_width);
+
+        // Calculate the width & height of the line
+        //   in printer coordinates
+        DrawTextW (hDC,
+                   lpwsz,
+                   uLen,
+                  &rcAct,
+                   0
+                 | DT_CALCRECT
+                 | DT_NOPREFIX
+                 | DT_NOCLIP);
+    } // End IF
 #ifndef UNISCRIBE
+    // Get the appropriate cxAveChar
+    if (lFlags & PRF_PRINTCLIENT)
+        cxAveChar = cxAveCharPR;
+    else
+    if (IzitSM (GetParent (hWndEC)))
+        cxAveChar = cxAveCharSM;
+    else
+        cxAveChar = cxAveCharFE;
+
     // On some systems when the alternate font isn't the same
     //   width as the SM font, the width calculated by DT_CALCRECT
     //   is too small, so we recalculate it here
-    rc.right = rc.left + cxAveCharSM * uLen;
-
-    // Calculate the result
-    iRes = MAKELONG (rc.right - rc.left, rc.bottom - rc.top);
-
-    // Get the appropriate cxAveChar
-    cxAveChar = IzitSM (GetParent (hWndEC)) ? cxAveCharSM : cxAveCharFE;
+    rcScr.right = rcScr.left + cxAveChar * uLen;
+    rcAct.right = rcAct.left + cxAveChar * uLen;
 
     if (!lpMemPTD->lpFontLink
-     || FAILED (DrawTextFL (lpMemPTD->lpFontLink, hDC, &rc, lpwsz, uLen, cxAveChar)))
-        OneDrawTextW (hDC, &rc, &lpwsz, uLen, cxAveChar);
+     || FAILED (DrawTextFL (lpMemPTD->lpFontLink, hDC, &rcAct, lpwsz, uLen, cxAveChar)))
+        OneDrawTextW (hDC, &rcAct, &lpwsz, uLen, cxAveChar);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return iRes;
 #else
     // Draw the line for real
     DrawTextW (hDC,
                lpwsz,
                uLen,
-              &rc,
+              &rcAct,
                0
              | DT_SINGLELINE
              | DT_NOPREFIX
              | DT_NOCLIP);
-    return MAKELONG (rc.right - rc.left, rc.bottom - rc.top);
 #endif
+    if (lFlags & PRF_PRINTCLIENT)
+        SelectObject (hDC, hFontOld);
+
+    // Calculate the result
+    return MAKELONG (rcScr.right - rcScr.left, rcScr.bottom - rcScr.top);
 } // End LclECPaintHook
 
 
@@ -1298,22 +1337,11 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Ensure the name is properly terminated
             lpwszTemp[uCharPosEnd] = L'\0';
 
-            // Start one char to the left
-            uCharPosBeg = uCharPos - 1;
-
-            // Check the chars to the left of the specified char pos
-            if (uCharPos)
-            {
-                while (IzitNameChar (lpwszTemp[uCharPosBeg]))
-                if (uCharPosBeg)
-                    uCharPosBeg--;
-                else
-                    break;
-            } // End IF
-
-            // Back up to the next position
-            //   as we started one back
-            uCharPosBeg++;
+            // Check the chars to the left
+            for (uCharPosBeg = uCharPos;
+                 uCharPosBeg && IzitNameChar (lpwszTemp[uCharPosBeg - 1]);
+                 uCharPosBeg--)
+            ;
 
             // The name spans [uCharPosBeg, uCharPosEnd)
             // Check the whole name now

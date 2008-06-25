@@ -138,7 +138,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     APLRANK      aplRankRht;        // Right arg rank
     HGLOBAL      hGlbRht,           // Right arg global memory handle
                  hGlbRes;           // Result    ...
-    UINT         ByteRes;           // # bytes in the result
+    APLUINT      ByteRes;           // # bytes in the result
     LPVOID       lpMemRes;          // Ptr to result global memory
     BOOL         bRet;              // TRUE iff result is valid
     APLLONGEST   aplLongestRht;     // Right arg iommediate value
@@ -170,7 +170,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                                           lptkRhtArg,   // Ptr to right arg token
                                           lptkAxis);    // Ptr to axis token (may be NULL)
     // Get right arg global ptrs
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, NULL);
+    aplLongestRht = GetGlbPtrs (lptkRhtArg, &hGlbRht);
 
     // If it's a global, get the first value
     if (hGlbRht)
@@ -196,10 +196,10 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     } // End IF
 
     // Calculate space needed for the result
-    ByteRes = (UINT) CalcArraySize (ARRAY_APA, abs64 (aplLongestRht), 1);
+    ByteRes = CalcArraySize (ARRAY_APA, abs64 (aplLongestRht), 1);
 
     // Allocate space for an APA
-    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -211,7 +211,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_APA;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = abs64 (aplLongestRht);
     lpHeader->Rank       = 1;
@@ -243,7 +243,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -441,8 +441,8 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -454,7 +454,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
@@ -470,7 +470,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
         lpMemRht = VarArrayBaseToDim (lpMemRht);
 
         // Copy the left arg dimensions to the result
-        CopyMemory (lpMemRes, lpMemRht, (UINT) aplRankRht * sizeof (APLDIM));
+        CopyMemory (lpMemRes, lpMemRht, (__int3264) aplRankRht * sizeof (APLDIM));
 
         // Skip over the dimensions to the data
         lpMemRes = VarArrayDimToData (lpMemRes, aplRankRht);
@@ -568,7 +568,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -906,7 +906,7 @@ void PrimFnDydIotaOther
         // Fill in the right arg item token
         tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkSubRht.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////tkSubRht.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////tkSubRht.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
         tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
         tkSubRht.tkCharIndex       = NEG1U;
 
@@ -928,7 +928,7 @@ void PrimFnDydIotaOther
                 // Fill in the left arg item token
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubLft.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////////////tkSubLft.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////////////tkSubLft.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
                 tkSubLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubLft);
                 tkSubLft.tkCharIndex       = NEG1U;
 

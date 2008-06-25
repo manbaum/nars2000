@@ -184,8 +184,8 @@
 #define UTF16_PERCENT            0x0025         // Percent
 #define UTF16_AMPERSAND          0x0026         // Ampersand
 #define UTF16_SINGLEQUOTE        0x0027         // Single quote (a.k.a. Apostrophe)
-#define UTF16_LPAREN             0x0028         // Left paren
-#define UTF16_RPAREN             0x0029         // Right paren
+#define UTF16_LEFTPAREN          0x0028         // Left paren
+#define UTF16_RIGHTPAREN         0x0029         // Right paren
 #define UTF16_PLUS               0x002B         // Plus
 #define UTF16_COMMA              0x002C         // Comma
 #define UTF16_BAR                0x002D         // Bar
@@ -194,15 +194,15 @@
 #define UTF16_COLON              0x003A         // Colon
 #define UTF16_SEMICOLON          0x003B         // Semicolon
 #define UTF16_ATSIGN             0x0040         // At sign
-#define UTF16_LBRACKET           0x005B         // Left bracket
+#define UTF16_LEFTBRACKET        0x005B         // Left bracket
 #define UTF16_SLOPE              0x005C         // Slope
-#define UTF16_RBRACKET           0x005D         // Right bracket
+#define UTF16_RIGHTBRACKET       0x005D         // Right bracket
 #define UTF16_CIRCUMFLEX         0x005E         // Circumflex
 #define UTF16_UNDERBAR           0x005F         // Underbar
 #define UTF16_BACKTICK           0x0060         // Backtick
-#define UTF16_LBRACE             0x007B         // Left brace
+#define UTF16_LEFTBRACE          0x007B         // Left brace
 #define UTF16_STILE2             0x007C         // Stile (a.k.a. 0x2223)
-#define UTF16_RBRACE             0x007D         // Right brace
+#define UTF16_RIGHTBRACE         0x007D         // Right brace
 
 #define UTF16_A_                 0xE036         // A underbar
 #define UTF16_B_                 0xE037         // B underbar
@@ -368,8 +368,8 @@
 #define WS_UTF16_PERCENT            L"\x0025"   // Percent
 #define WS_UTF16_AMPERSAND          L"\x0026"   // Ampersand
 #define WS_UTF16_SINGLEQUOTE        L"\x0027"   // Single quote (a.k.a. Apostrophe)
-#define WS_UTF16_LPAREN             L"\x0028"   // Left paren
-#define WS_UTF16_RPAREN             L"\x0029"   // Right paren
+#define WS_UTF16_LEFTPAREN          L"\x0028"   // Left paren
+#define WS_UTF16_RIGHTPAREN         L"\x0029"   // Right paren
 #define WS_UTF16_PLUS               L"\x002B"   // Plus
 #define WS_UTF16_COMMA              L"\x002C"   // Comma
 #define WS_UTF16_BAR                L"\x002D"   // Bar
@@ -378,15 +378,15 @@
 #define WS_UTF16_COLON              L"\x003A"   // Colon
 #define WS_UTF16_SEMICOLON          L"\x003B"   // Semicolon
 #define WS_UTF16_ATSIGN             L"\x0040"   // At sign
-#define WS_UTF16_LBRACKET           L"\x005B"   // Left bracket
+#define WS_UTF16_LEFTBRACKET        L"\x005B"   // Left bracket
 #define WS_UTF16_SLOPE              L"\x005C"   // Slope
-#define WS_UTF16_RBRACKET           L"\x005D"   // Right bracket
+#define WS_UTF16_RIGHTBRACKET       L"\x005D"   // Right bracket
 #define WS_UTF16_CIRCUMFLEX         L"\x005E"   // Circumflex
 #define WS_UTF16_UNDERBAR           L"\x005F"   // Underbar
 #define WS_UTF16_BACKTICK           L"\x0060"   // Backtick
-#define WS_UTF16_LBRACE             L"\x007B"   // Left brace
+#define WS_UTF16_LEFTBRACE          L"\x007B"   // Left brace
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. \x2223)
-#define WS_UTF16_RBRACE             L"\x007D"   // Right brace
+#define WS_UTF16_RIGHTBRACE         L"\x007D"   // Right brace
 
 #define WS_UTF16_A_                 L"\xE036"   // A underbar
 #define WS_UTF16_B_                 L"\xE037"   // B underbar

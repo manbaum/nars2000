@@ -43,12 +43,15 @@ typedef struct tagSF_FCNS
 #define SF_CreationTimeM    SF_CreationTimeCom
 #define SF_CreationTimeN    SF_CreationTimeCom
 #define SF_CreationTimeSV   SF_CreationTimeCom
+#define SF_CreationTimeTF1  SF_CreationTimeCom
 #define SF_LastModTimeM     SF_LastModTimeCom
 #define SF_LastModTimeN     SF_LastModTimeCom
 #define SF_LastModTimeSV    SF_LastModTimeCom
+#define SF_LastModTimeTF1   SF_LastModTimeCom
 #define SF_UndoBufferM      SF_UndoBufferCom
 #define SF_UndoBufferN      SF_UndoBufferCom
 #define SF_UndoBufferSV     SF_UndoBufferCom
+#define SF_UndoBufferTF1    SF_UndoBufferCom
 
 
 typedef struct tagFX_PARAMS
@@ -73,6 +76,14 @@ typedef struct tagLW_PARAMS
                ftLastMod;           // 18:  Function Last Modification Time
                                     // 1C:  Length
 } LW_PARAMS, *LPLW_PARAMS;
+
+
+typedef struct tagTF1_PARAMS
+{
+    LPAPLCHAR lpMemRht;             // 00:  Ptr to right arg global memory
+    APLDIM    aplRowsRht,           // 04:  Right arg # rows
+              aplColsRht;           // 08:  Right arg # cols
+} TF1_PARAMS, *LPTF1_PARAMS;
 
 
 //***************************************************************************

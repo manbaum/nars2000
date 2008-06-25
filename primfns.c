@@ -119,12 +119,12 @@ char TokenTypeFV
         case TKT_LISTSEP:
         case TKT_LABELSEP:
         case TKT_COLON:
-        case TKT_LPAREN:
-        case TKT_RPAREN:
-        case TKT_LBRACKET:
-        case TKT_RBRACKET:
-        case TKT_LBRACE:
-        case TKT_RBRACE:
+        case TKT_LEFTPAREN:
+        case TKT_RIGHTPAREN:
+        case TKT_LEFTBRACKET:
+        case TKT_RIGHTBRACKET:
+        case TKT_LEFTBRACE:
+        case TKT_RIGHTBRACE:
         case TKT_EOS:
         case TKT_EOL:
         case TKT_SOS:
@@ -498,14 +498,10 @@ BOOL PrimScalarFnDydAllocate_EM
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    *lphGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    *lphGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!*lphGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -573,6 +569,11 @@ BOOL PrimScalarFnDydAllocate_EM
     MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End PrimScalarFnDydAllocate_EM
 #undef  APPEND_NAME
 
@@ -676,14 +677,10 @@ HGLOBAL MakeMonPrototype_EM
 
                     // Allocate space for the result.
                     // N.B. Conversion from APLUINT to UINT.
-                    Assert (ByteRes EQ (UINT) ByteRes);
-                    hGlbTmp = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+                    Assert (ByteRes EQ (__int3264) ByteRes);
+                    hGlbTmp = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
                     if (!hGlbTmp)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
+                        goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
                     lpMemRes = MyGlobalLock (hGlbTmp);
@@ -702,7 +699,7 @@ HGLOBAL MakeMonPrototype_EM
                     // Copy the dimensions to the result
                     CopyMemory (VarArrayBaseToDim (lpMemRes),
                                 VarArrayBaseToDim (lpHeader),
-                                (UINT) aplRank * sizeof (APLDIM));
+                                (__int3264) aplRank * sizeof (APLDIM));
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
@@ -720,8 +717,8 @@ HGLOBAL MakeMonPrototype_EM
             } // End SWITCH
 
             // Convert the chars to blanks
-            Assert (aplNELM EQ (UINT) aplNELM);
-            FillMemoryW (lpMemArr, (UINT) aplNELM, L' ');
+            Assert (aplNELM EQ (__int3264) aplNELM);
+            FillMemoryW (lpMemArr, (__int3264) aplNELM, L' ');
 
             break;
 
@@ -835,12 +832,18 @@ HGLOBAL MakeMonPrototype_EM
 DOMAIN_ERROR_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkFunc);
-
     goto ERROR_EXIT;
 
 SYMTAB_ERROR_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
@@ -999,11 +1002,7 @@ HGLOBAL MakeDydPrototype_EM
                                                 aplNELMRht,
                                                &aplTypeRht);
     if (aplTypeRes EQ ARRAY_ERROR)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     Assert (IsSimpleNum (aplTypeRes)
          || IsNested (aplTypeRes));
@@ -1044,14 +1043,10 @@ HGLOBAL MakeDydPrototype_EM
 
         // Allocate space for the result.
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (__int3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbRes)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
@@ -1071,11 +1066,11 @@ HGLOBAL MakeDydPrototype_EM
         if (aplRankRes EQ aplRankLft)
             CopyMemory (VarArrayBaseToDim (lpMemRes),
                         VarArrayBaseToDim (lpMemLft),
-                        (UINT) aplNELMRes * sizeof (APLDIM));
+                        (__int3264) aplNELMRes * sizeof (APLDIM));
         else
             CopyMemory (VarArrayBaseToDim (lpMemRes),
                         VarArrayBaseToDim (lpMemRht),
-                        (UINT) aplNELMRes * sizeof (APLDIM));
+                        (__int3264) aplNELMRes * sizeof (APLDIM));
         // Skip over the header and dimensions to the data
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
@@ -1184,14 +1179,10 @@ HGLOBAL MakeDydPrototype_EM
                     // N.B.  Conversion from APLUINT to UINT.
                     //***************************************************************
                     ByteRes = aplRankRes * sizeof (APLUINT);
-                    Assert (ByteRes EQ (UINT) ByteRes);
-                    hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+                    Assert (ByteRes EQ (__int3264) ByteRes);
+                    hGlbWVec = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
                     if (!hGlbWVec)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
+                        goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
                     lpMemWVec = MyGlobalLock (hGlbWVec);
@@ -1214,14 +1205,10 @@ HGLOBAL MakeDydPrototype_EM
                     // N.B.  Conversion from APLUINT to UINT.
                     //***************************************************************
                     ByteRes = aplRankRes * sizeof (APLUINT);
-                    Assert (ByteRes EQ (UINT) ByteRes);
-                    hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+                    Assert (ByteRes EQ (__int3264) ByteRes);
+                    hGlbOdo = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
                     if (!hGlbOdo)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
+                        goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
                     lpMemOdo = MyGlobalLock (hGlbOdo);
@@ -1304,6 +1291,16 @@ HGLOBAL MakeDydPrototype_EM
     } // End IF/ELSE/...
 
     goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes)
@@ -1700,8 +1697,8 @@ HGLOBAL CopyGlbAsType
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
         goto ERROR_EXIT;
 
@@ -1722,7 +1719,7 @@ HGLOBAL CopyGlbAsType
     // Copy the dimensions
     CopyMemory (VarArrayBaseToDim (lpMemRes),
                 VarArrayBaseToDim (lpMemArg),
-                (UINT) aplRankArg * sizeof (APLDIM));
+                (__int3264) aplRankArg * sizeof (APLDIM));
     // Skip over the header to the data
     lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankArg);
@@ -1737,7 +1734,7 @@ HGLOBAL CopyGlbAsType
             {
                 case ARRAY_BOOL:            // Res = INT, Arg = BOOL
                     // Copy the arg elements to the result
-                    CopyMemory (lpMemRes, lpMemArg, (UINT) RoundUpBits8 (aplNELMArg));
+                    CopyMemory (lpMemRes, lpMemArg, (__int3264) RoundUpBits8 (aplNELMArg));
 
                     break;
 
@@ -1776,7 +1773,7 @@ HGLOBAL CopyGlbAsType
 
                 case ARRAY_INT:             // Res = INT, Arg = INT
                     // Copy the arg elements to the result
-                    CopyMemory (lpMemRes, lpMemArg, (UINT) aplNELMArg * sizeof (APLINT));
+                    CopyMemory (lpMemRes, lpMemArg, (__int3264) aplNELMArg * sizeof (APLINT));
 
                     break;
 
@@ -1821,7 +1818,7 @@ HGLOBAL CopyGlbAsType
 
                 case ARRAY_FLOAT:           // Res = FLOAT, Arg = FLOAT
                     // Copy the arg elements to the result
-                    CopyMemory (lpMemRes, lpMemArg, (UINT) aplNELMArg * sizeof (APLFLOAT));
+                    CopyMemory (lpMemRes, lpMemArg, (__int3264) aplNELMArg * sizeof (APLFLOAT));
 
                     break;
 
@@ -1833,7 +1830,7 @@ HGLOBAL CopyGlbAsType
 
         case ARRAY_CHAR:
             // Copy the memory to the result
-            CopyMemory (lpMemRes, lpMemArg, (UINT) aplNELMArg * sizeof (APLCHAR));
+            CopyMemory (lpMemRes, lpMemArg, (__int3264) aplNELMArg * sizeof (APLCHAR));
 
             break;
 
@@ -1967,11 +1964,7 @@ BOOL CheckRankLengthError_EM
         // Check for OUTER RANK ERROR
         if ((aplRankLft <  aplRankRht && (aplRankLft NE aplNELMAxis))
          || (aplRankLft >  aplRankRht && (aplRankRht NE aplNELMAxis)))
-        {
-            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return FALSE;
-        } // End IF
+            goto RANK_EXIT;
 
         // If axis not full, ...
         if (aplNELMAxis NE aplRankRes)
@@ -2019,14 +2012,20 @@ BOOL CheckRankLengthError_EM
 
         // Check for error
         if (uRes EQ (APLINT) -1)
-        {
-            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return FALSE;
-        } // End IF
+            goto LENGTH_EXIT;
     } // End IF
 
     return TRUE;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End CheckRankLengthError_EM
 #undef  APPEND_NAME
 

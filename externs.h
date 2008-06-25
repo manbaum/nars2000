@@ -24,6 +24,7 @@
 #define DEF_TCFONTNAME      "Tahoma"            // Default TabCtrl font
 #define DEF_ASFONTNAME      "Arial Unicode MS"  // Default Alternate SM font
 #define DEF_SMFONTNAME      "SImPL"             // Or "APL385 Unicode"
+#define DEF_PRFONTNAME      "SImPL"             // Or "APL385 Unicode"
 #define DEF_CCFONTNAME      "SImPL"             // Or "APL385 Unicode"
 #define DEF_FEFONTNAME      "SImPL"             // Or "APL385 Unicode"
 #define DEF_MEFONTNAME      "SImPL"             // Or "APL385 Unicode"
@@ -31,6 +32,7 @@
 
 #define DEF_TCLOGFONT       0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,DEF_TCFONTNAME
 #define DEF_SMLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_SMFONTNAME
+#define DEF_PRLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_PRFONTNAME
 #define DEF_CCLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_CCFONTNAME
 #define DEF_FELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_FEFONTNAME
 #define DEF_MELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_MEFONTNAME
@@ -38,6 +40,7 @@
 
 #define DEF_TCPTSIZE       10           // Point size for TC font
 #define DEF_SMPTSIZE       13           // ...            SM ...
+#define DEF_PRPTSIZE       13           // ...            PR ...
 #define DEF_CCPTSIZE       13           // ...            CC ...
 #define DEF_FEPTSIZE       13           // ...            FE ...
 #define DEF_MEPTSIZE       13           // ...            ME ...
@@ -849,8 +852,9 @@ typedef enum tagSYS_VARS
     SYSVAR_RL  ,                // 0B:  []RL
     SYSVAR_SA  ,                // 0C:  []SA
     SYSVAR_WSID,                // 0D:  []WSID
-    SYSVAR_LENGTH               // 0E:  # entries in the enum
-                                // 0F-1F:  Available entries (5 bits)
+    SYSVAR_Z   ,                // 0E:  []Z
+    SYSVAR_LENGTH               // 0F:  # entries in the enum
+                                // 10-1F:  Available entries (5 bits)
 } SYS_VARS;
 
 typedef BOOL (*ASYSVARVALIDSET) (LPTOKEN, LPTOKEN);
@@ -879,9 +883,6 @@ EXTERN
 SIZE  MFSize;                           // Size of Master Frame Window window rectangle
 
 EXTERN
-int iLogPixelsY;                        // # logical pixels/inch in screen Y-dimension
-
-EXTERN
 HBITMAP hBitMapLineCont;                // Bitmap for the line continuation char
 
 EXTERN
@@ -895,6 +896,11 @@ EXTERN
 LOGFONT lfSM                            // LOGFONT for the SM
 #ifdef DEFINE_VALUES
  = {DEF_SMLOGFONT}
+#endif
+,
+        lfPR                            // LOGFONT for the Printer
+#ifdef DEFINE_VALUES
+ = {DEF_PRLOGFONT}
 #endif
 ,
         lfCC                            // LOGFONT for the CC
@@ -931,6 +937,7 @@ HFONT hFontTC,                          // Handle to font for the TC
       hFontAlt,                         // ...                    Alternate SM
 #endif
       hFontSM,                          // ...                    SM
+      hFontPR,                          // ...                    Printer
       hFontCC,                          // ...                    CC
       hFontFE,                          // ...                    FE
       hFontME,                          // ...                    ME
@@ -939,6 +946,7 @@ HFONT hFontTC,                          // Handle to font for the TC
 EXTERN
 CHOOSEFONT cfTC,                        // Global for ChooseFont for the TC
            cfSM,                        // ...                           SM
+           cfPR,                        // ...                           Printer
            cfCC,                        // ...                           CC
            cfFE,                        // ...                           FE
            cfME,                        // ...                           ME
@@ -947,6 +955,7 @@ CHOOSEFONT cfTC,                        // Global for ChooseFont for the TC
 EXTERN
 TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
            tmSM,                        // ...                           SM
+           tmPR,                        // ...                           Printer
            tmCC,                        // ...                           CC
            tmFE,                        // ...                           FE
            tmME,                        // ...                           ME
@@ -955,6 +964,7 @@ TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
 EXTERN
 long cxAveCharTC, cyAveCharTC,          // Size of an average character in the TC font
      cxAveCharSM, cyAveCharSM,          // ...                                 SM ...
+     cxAveCharPR, cyAveCharPR,          // ...                                 PR ...
      cxAveCharFE, cyAveCharFE,          // ...                                 FE ...
      cxAveCharME, cyAveCharME,          // ...                                 ME ...
      cxAveCharVE, cyAveCharVE;          // ...                                 VE ...
@@ -1513,12 +1523,64 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
   {UTF16_COMMA                , L"{comma}"              },  // 2C:  Comma
   {UTF16_SLOPE                , L"{slope}"              },  // 5C:  Slope
   {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // 5E:  Circumflex
-  {UTF16_LBRACE               , L"{leftbrace}"          },  // 7B:  Left brace
+  {UTF16_LEFTBRACE            , L"{leftbrace}"          },  // 7B:  Left brace
   {UTF16_STILE2               , L"{stile2}"             },  // 7C:  Stile (a.k.a. 0x2223)
-  {UTF16_RBRACE               , L"{rightbrace}"         },  // 7D:  Right brace
+  {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 7D:  Right brace
 }
 #endif
 ;
+
+// Translate tables between APL2 and NARS charsets
+WCHAR APL2_ASCIItoNARS[257]
+#ifdef DEFINE_VALUES
+=
+{
+//     x0         x1         x2         x3         x4         x5         x6         x7         x8         x9         xA         xB         xC         xD         xE         xF
+    L'\x0000', L'\x0001', L'\x0002', L'\x0003', L'\x0004', L'\x0005', L'\x0006', L'\x0007', L'\x0008', L'\x0009', L'\x000A', L'\x000B', L'\x000C', L'\x000D', L'\x000E', L'\x000F', // 0x
+    L'\x0010', L'\x0011', L'\x0012', L'\x0013', L'\x0014', L'\x0015', L'\x0016', L'\x0017', L'\x0018', L'\x0019', L'\x001A', L'\x001B', L'\x001C', L'\x001D', L'\x001E', L'\x001F', // 1x
+    L' '     , L'!'     , L'"'     , L'#'     , L'$'     , L'%'     , L'&'     , L'\''    , L'('     , L')'     , L'*'     , L'+'     , L','     , L'-'     , L'.'     , L'/'     , // 2x
+    L'0'     , L'1'     , L'2'     , L'3'     , L'4'     , L'5'     , L'6'     , L'7'     , L'8'     , L'9'     , L':'     , L';'     , L'<'     , L'='     , L'>'     , L'?'     , // 3x
+    L'@'     , L'A'     , L'B'     , L'C'     , L'D'     , L'E'     , L'F'     , L'G'     , L'H'     , L'I'     , L'J'     , L'K'     , L'L'     , L'M'     , L'N'     , L'O'     , // 4x
+    L'P'     , L'Q'     , L'R'     , L'S'     , L'T'     , L'U'     , L'V'     , L'W'     , L'X'     , L'Y'     , L'Z'     , L'['     , L'\\'    , L']'     , L'^'     , L'_'     , // 5x
+    L'`'     , L'a'     , L'b'     , L'c'     , L'd'     , L'e'     , L'f'     , L'g'     , L'h'     , L'i'     , L'j'     , L'k'     , L'l'     , L'm'     , L'n'     , L'o'     , // 6x
+    L'p'     , L'q'     , L'r'     , L's'     , L't'     , L'u'     , L'v'     , L'w'     , L'x'     , L'y'     , L'z'     , L'{'     , L'|'     , L'}'     , L'~'     , L'\x007F', // 7x
+    L'\x00C7', L'\x00FC', L'\x00E9', L'\x00E2', L'\x00E4', L'\x00E0', L'\x00E5', L'\x00E7', L'\x00EA', L'\x00EB', L'\x00E8', L'\x00EF', L'\x00EE', L'\x00EC', L'\x00C4', L'\x00C5', // 8x
+    L'\x2395', L'\x235E', L'\x2339', L'\x00F4', L'\x00F6', L'\x00F2', L'\x00FB', L'\x00F9', L'\x22A4', L'\x00D6', L'\x00DC', L'\x00F8', L'\x00A3', L'\x22A5', L'\x20A7', L'\x2336', // 9x
+    L'\x00E1', L'\x00ED', L'\x00F3', L'\x00FA', L'\x00F1', L'\x00D1', L'\x00AA', L'\x00BA', L'\x00BF', L'\x2308', L'\x00AC', L'\x00BD', L'\x222A', L'\x00A1', L'\x2355', L'\x234E', // Ax
+    L'\x2591', L'\x2592', L'\x2593', L'\x2502', L'\x2524', L'\x235F', L'\x2206', L'\x2207', L'\x2192', L'\x2563', L'\x2551', L'\x2557', L'\x255D', L'\x2190', L'\x230A', L'\x2510', // Bx
+    L'\x2514', L'\x2534', L'\x252C', L'\x251C', L'\x2500', L'\x253C', L'\x2191', L'\x2193', L'\x255A', L'\x2554', L'\x2569', L'\x2566', L'\x2560', L'\x2550', L'\x256C', L'\x2261', // Cx
+    L'\x2378', L'\x2377', L'\x2235', L'\x2337', L'\x2342', L'\x233B', L'\x22A2', L'\x22A3', L'\x22C4', L'\x2518', L'\x250C', L'\x2588', L'\x2584', L'\x00A6', L'\x00CC', L'\x2580', // Dx
+    L'\x237A', L'\x2379', L'\x2282', L'\x2283', L'\x235D', L'\x2372', L'\x2374', L'\x2371', L'\x233D', L'\x2296', L'\x25CB', L'\x2228', L'\x2373', L'\x2349', L'\x220A', L'\x2229', // Ex
+    L'\x233F', L'\x2340', L'\x2265', L'\x2264', L'\x2260', L'\x00D7', L'\x00F7', L'\x2359', L'\x2218', L'\x2375', L'\x236B', L'\x234B', L'\x2352', L'\x00AF', L'\x00A8', L'\x00A0', // Fx
+}
+#endif
+,
+
+      APL2_EBCDICtoNARS[257]
+#ifdef DEFINE_VALUES
+=
+{
+//     x0         x1         x2         x3         x4         x5         x6         x7         x8         x9         xA         xB         xC         xD         xE         xF
+    L'\x0000', L'\x0001', L'\x0002', L'\x0003', L'\x0004', L'\x0005', L'\x0006', L'\x0007', L'\x0008', L'\x0009', L'\x000A', L'\x000B', L'\x000C', L'\x000D', L'\x000E', L'\x000F', // 0x
+    L'\x0010', L'\x0011', L'\x0012', L'\x0013', L'\x0014', L'\x0015', L'\x0016', L'\x0017', L'\x0018', L'\x0019', L'\x001A', L'\x001B', L'\x001C', L'\x001D', L'\x001E', L'\x001F', // 1x
+    L' '     , L'!'     , L'"'     , L'#'     , L'$'     , L'%'     , L'&'     , L'\''    , L'('     , L')'     , L'*'     , L'+'     , L','     , L'-'     , L'.'     , L'/'     , // 2x
+    L'0'     , L'1'     , L'2'     , L'3'     , L'4'     , L'5'     , L'6'     , L'7'     , L'8'     , L'9'     , L':'     , L';'     , L'<'     , L'='     , L'>'     , L'?'     , // 3x
+    L'@'     , L'A'     , L'B'     , L'C'     , L'D'     , L'E'     , L'F'     , L'G'     , L'H'     , L'I'     , L'J'     , L'K'     , L'L'     , L'M'     , L'N'     , L'O'     , // 4x
+    L'P'     , L'Q'     , L'R'     , L'S'     , L'T'     , L'U'     , L'V'     , L'W'     , L'X'     , L'Y'     , L'Z'     , L'['     , L'\\'    , L']'     , L'^'     , L'_'     , // 5x
+    L'`'     , L'a'     , L'b'     , L'c'     , L'd'     , L'e'     , L'f'     , L'g'     , L'h'     , L'i'     , L'j'     , L'k'     , L'l'     , L'm'     , L'n'     , L'o'     , // 6x
+    L'p'     , L'q'     , L'r'     , L's'     , L't'     , L'u'     , L'v'     , L'w'     , L'x'     , L'y'     , L'z'     , L'{'     , L'|'     , L'}'     , L'~'     , L'\xE036', // 7x
+    L'\xE037', L'\xE038', L'\xE039', L'\xE03A', L'\xE03B', L'\xE03C', L'\xE03D', L'\xE03E', L'\xE03F', L'\xE040', L'\xE041', L'\xE042', L'\xE043', L'\xE044', L'\xE045', L'\xE046', // 8x
+    L'\x2395', L'\x235E', L'\x2339', L'\xE047', L'\xE048', L'\xE049', L'\xE04A', L'\xE04B', L'\x22A4', L'\xE04C', L'\xE04D', L'\x00F8', L'\xE04E', L'\x22A5', L'\xE04F', L'\x2336', // 9x
+    L'\x00E1', L'\x00ED', L'\x00F3', L'\x00FA', L'\x00F1', L'\x00D1', L'\x00AA', L'\x00BA', L'\x00BF', L'\x2308', L'\x00AC', L'\x00BD', L'\x222A', L'\x00A1', L'\x2355', L'\x234E', // Ax
+    L'\x2591', L'\x2592', L'\x2593', L'\x2502', L'\x2524', L'\x235F', L'\x2206', L'\x2207', L'\x2192', L'\x2563', L'\x2551', L'\x2557', L'\x255D', L'\x2190', L'\x230A', L'\x2510', // Bx
+    L'\x2514', L'\x2534', L'\x252C', L'\x251C', L'\x2500', L'\x253C', L'\x2191', L'\x2193', L'\x255A', L'\x2554', L'\x2569', L'\x2566', L'\x2560', L'\x2550', L'\x256C', L'\x2261', // Cx
+    L'\x2378', L'\x2377', L'\x2235', L'\x2337', L'\x2342', L'\x233B', L'\x22A2', L'\x22A3', L'\x22C4', L'\x2518', L'\x250C', L'\x2588', L'\x2584', L'\x00A6', L'\x00CC', L'\x2580', // Dx
+    L'\x237A', L'\x2379', L'\x2282', L'\x2283', L'\x235D', L'\x2372', L'\x2374', L'\x2371', L'\x233D', L'\x2296', L'\x25CB', L'\x2228', L'\x2373', L'\x2349', L'\x220A', L'\x2229', // Ex
+    L'\x233F', L'\x2340', L'\x2265', L'\x2264', L'\x2260', L'\x00D7', L'\x00F7', L'\x2359', L'\x2218', L'\x2375', L'\x236B', L'\x234B', L'\x2352', L'\x00AF', L'\x00A8', L'\x00A0', // Fx
+}
+#endif
+;
+
 
 typedef enum tagUNDO_ACTS
 {

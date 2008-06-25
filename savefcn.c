@@ -233,6 +233,23 @@ UINT SF_LineLenSV
 
 
 //***************************************************************************
+//  $SF_LineLenTF1
+//
+//  Return the length of a function text header/line
+//    when called from []TF with a simple char matrix arg
+//***************************************************************************
+
+UINT SF_LineLenTF1
+    (HWND         hWndEC,           // Edit Control window handle (FE only)
+     LPTF1_PARAMS lpTF1_Params,     // Ptr to common struc
+     UINT         uLineNum)         // Function line #
+
+{
+    return (UINT) lpTF1_Params->aplColsRht;
+} // End SF_LineLenTF1
+
+
+//***************************************************************************
 //  $SF_ReadLineFE
 //
 //  Read in a header/function line
@@ -442,6 +459,26 @@ void SF_ReadLineSV
 
 
 //***************************************************************************
+//  $SF_ReadLineTF1
+//
+//  Read in a header/function line
+//    when called from []TF with a simple char matrix arg
+//***************************************************************************
+
+void SF_ReadLineTF1
+    (HWND         hWndEC,           // Edit Control window handle (FE only)
+     LPTF1_PARAMS lpTF1_Params,     // Ptr to common struc
+     UINT         uLineNum,         // Function line #
+     LPAPLCHAR    lpMemLine)        // Ptr to header/line global memory
+
+{
+    CopyMemory (lpMemLine,
+                lpTF1_Params->lpMemRht + uLineNum * lpTF1_Params->aplColsRht,
+                (__int3264) lpTF1_Params->aplColsRht * sizeof (APLCHAR));
+} // End SF_ReadLineTF1
+
+
+//***************************************************************************
 //  $SF_NumLinesCom
 //
 //  Return the # lines in the function (excluding the header line)
@@ -516,6 +553,24 @@ UINT SF_NumLinesM
 
 
 //***************************************************************************
+//  $SF_NumLinesTF1
+//
+//  Return the # lines in the function (excluding the header line)
+//    when called from []TF with a simple char matrix arg
+//***************************************************************************
+
+UINT SF_NumLinesTF1
+    (HWND         hWndEC,           // Edit Control window handle (FE only)
+     LPTF1_PARAMS lpTF1_Params)     // Ptr to common struc
+
+{
+    // The # function lines
+    return -1 +
+      (UINT) lpTF1_Params->aplRowsRht;
+} // End SF_NumLinesTF1
+
+
+//***************************************************************************
 //  $SF_CreationTimeCom
 //
 //  Return the creation time
@@ -523,6 +578,7 @@ UINT SF_NumLinesM
 //    when called from []FX with a simple char scalar or vector arg, or
 //    when called from []FX with a simple char matrix arg, or
 //    when called from []FX with a nested arg
+//    when called from []TF with a simple char matrix arg
 //***************************************************************************
 
 void SF_CreationTimeCom
@@ -562,6 +618,7 @@ void SF_CreationTimeLW
 //    when called from []FX with a simple char scalar or vector arg
 //    when called from []FX with a simple char matrix arg
 //    when called from []FX with a nested arg
+//    when called from []TF with a simple char matrix arg
 //***************************************************************************
 
 void SF_LastModTimeCom
@@ -600,6 +657,7 @@ void SF_LastModTimeLW
 //    when called from []FX with a simple char scalar or vector arg
 //    when called from []FX with a simple char matrix arg
 //    when called from []FX with a nested arg
+//    when called from []TF with a simple char matrix arg
 //***************************************************************************
 
 HGLOBAL SF_UndoBufferCom

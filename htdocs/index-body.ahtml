@@ -155,6 +155,9 @@ Welcome to NARS2000</h1>
         <li>Monadic and dyadic domino (<span class="APL">{domino}</span>) &mdash; matrix inverse/divide extended to
           use Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
         <li>Prototypes for all primitive functions and operators</li>
+        <li>The comment symbol (<span class="APL">{lamp}</span>) may be used to close a comment as well as start one.
+          Thus one may write code with a comment inside a statement such as
+          <span class="APL">Payments {lamp} Global var {lamp} {is}{times}/M[;2 3]</span>.</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
@@ -312,17 +315,16 @@ Welcome to NARS2000</h1>
 </div>
 
 <div class="section">
-  <h2 id="Currently_Unimplemented">Currently Unimplemented Features</h2>
+  <h2 id="Currently_Unimplemented">Currently Unimplemented Feature</h2>
 
-  <p>The following features are required by the Extended APL Standard, but
-    are not, as yet, implemented:</p>
+  <p>The following feature is required by the Extended APL Standard, but
+    is not, as yet, implemented:</p>
 
-  <h3>System Functions</h3>
+  <h3>System Function</h3>
   <ul>
     <li>Dyadic
       <ul>
         <li class="TBD"><span class="APL">{quad}EA</span> (Execute Alternate)</li>
-        <li class="TBD"><span class="APL">{quad}TF</span> (Transfer Form)</li>
       </ul>
     </li>
   </ul>

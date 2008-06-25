@@ -5699,8 +5699,8 @@ char SymbTypeVFO
 //
 //  Lookahead (backwards) in the token stream to see if
 //    the next non-grouping symbol is a function or a var.
-//  Used for TKT_RPARENs to see if it and the matching
-//    TKT_LPAREN surrounds a function, variable, monadic or dyadic
+//  Used for TKT_RIGHTPARENs to see if it and the matching
+//    TKT_LEFTPAREN surrounds a function, variable, monadic or dyadic
 //    operator, or for / & \ to see if the next non-grouping
 //    symbol is a function, variable, or dyadic operator.
 //***************************************************************************
@@ -5762,7 +5762,7 @@ char LookaheadSurround
 //  Lookahead (backwards) in the token stream to see if
 //    the matching grouping symbol is adjacent to a function, variable,
 //    monadic or dyadic operator.
-//  Used for TKT_RBRACKETs to see if this is indexing or axis.
+//  Used for TKT_RIGHTBRACKETs to see if this is indexing or axis.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -5860,7 +5860,7 @@ char LookaheadAdjacent
 
             goto NORMAL_EXIT;
 
-        case TKT_RBRACKET:
+        case TKT_RIGHTBRACKET:
             // Each right grouping symbol has the index of the matching
             //   left grouping symbol in its tkData.tkIndex
             // Get a ptr to the token adjacent to ("-1") the matching left
@@ -5869,7 +5869,7 @@ char LookaheadAdjacent
 
             break;                  // Go around again
 
-        case TKT_RPAREN:
+        case TKT_RIGHTPAREN:
             cRes = LookaheadSurround (&plLocalVars);
 
             goto NORMAL_EXIT;
@@ -5886,7 +5886,7 @@ char LookaheadAdjacent
 
             goto NORMAL_EXIT;
 
-        case TKT_LPAREN:            // To allow (//R)
+        case TKT_LEFTPAREN:         // To allow (//R)
             if (!bSkipBrackets)
             {
                 cRes = '(';         // Left paren
@@ -5906,15 +5906,15 @@ char LookaheadAdjacent
         case TKT_LISTSEP:
         case TKT_LABELSEP:
         case TKT_COLON:
-        case TKT_LBRACKET:
+        case TKT_LEFTBRACKET:
         case TKT_STRAND:
         case TKT_AXISIMMED:
         case TKT_AXISARRAY:
         case TKT_LISTINT:
         case TKT_LISTPAR:
         case TKT_LISTBR:
-        case TKT_LBRACE:
-        case TKT_RBRACE:
+        case TKT_LEFTBRACE:
+        case TKT_RIGHTBRACE:
         case TKT_SOS:
             cRes = '?';             // SYNTAX ERROR
 
@@ -5960,7 +5960,7 @@ BOOL LookaheadDyadicOp
         case TKT_STRING:
         case TKT_VARIMMED:
         case TKT_COMMENT:
-        case TKT_LPAREN:
+        case TKT_LEFTPAREN:
         case TKT_FCNIMMED:
         case TKT_EOS:
         case TKT_EOL:
@@ -5974,9 +5974,9 @@ BOOL LookaheadDyadicOp
         case TKT_OP1NAMED:
         case TKT_OP3IMMED:
         case TKT_OP3NAMED:
-        case TKT_LBRACKET:
-        case TKT_LBRACE:
-        case TKT_RBRACE:
+        case TKT_LEFTBRACKET:
+        case TKT_LEFTBRACE:
+        case TKT_RIGHTBRACE:
         case TKT_VARARRAY:
         case TKT_INPOUT:
             bRet = FALSE;
@@ -5996,8 +5996,8 @@ BOOL LookaheadDyadicOp
 
             goto NORMAL_EXIT;
 
-        case TKT_RPAREN:
-        case TKT_RBRACKET:
+        case TKT_RIGHTPAREN:
+        case TKT_RIGHTBRACKET:
             // Each right grouping symbol has the index of the matching
             //   left grouping symbol in its tkData.tkIndex
             // Get a ptr to the token adjacent to ("-1") the matching left
@@ -6318,7 +6318,7 @@ PL_YYLEX_START:
         case TKT_OPJOTDOT:
             return JOTDOT;
 
-        case TKT_LPAREN:
+        case TKT_LEFTPAREN:
             // If we're in LookaheadSurround and this is the stop token, mark as EOL
             if (lpplLocalVars->bLookAhead
              && lpplLocalVars->lptkStop EQ lpplLocalVars->lptkNext)
@@ -6326,7 +6326,7 @@ PL_YYLEX_START:
             else
                 return '(';
 
-        case TKT_RPAREN:
+        case TKT_RIGHTPAREN:
             // Lookahead to see if this right grouping symbol surrounds
             //   a dyadic operator              (return '#'), or
             //   a function or monadic operator (return '>'), or
@@ -6355,10 +6355,10 @@ PL_YYLEX_START:
                     return UNK;
             } // End SWITCH
 
-        case TKT_LBRACKET:
+        case TKT_LEFTBRACKET:
             return '[';
 
-        case TKT_RBRACKET:
+        case TKT_RIGHTBRACKET:
             // Lookahead to see if this right grouping symbol is adjacent to
             //   a dyadic operator              (return '?'), or
             //   a function or monadic operator (return '}'), or
@@ -6410,10 +6410,10 @@ PL_YYLEX_START:
         case TKT_COLON:
             return ':';
 
-        case TKT_LBRACE:
+        case TKT_LEFTBRACE:
             return '{';
 
-        case TKT_RBRACE:
+        case TKT_RIGHTBRACE:
             return '}';
 
         defstop
@@ -6465,17 +6465,17 @@ BOOL CheckNullOp3
         lptkNext = &lpplLocalVars->lptkNext[-2];
     else
     // or the next four tokens are /[I] or /[A]
-    if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_RBRACKET
+    if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_RIGHTBRACKET
      && (lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARIMMED
       || lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARNAMED
       || lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARARRAY)
-     && lpplLocalVars->lptkNext[-3].tkFlags.TknType EQ TKT_LBRACKET
+     && lpplLocalVars->lptkNext[-3].tkFlags.TknType EQ TKT_LEFTBRACKET
      && lpplLocalVars->lptkNext[-4].tkFlags.TknType EQ TKT_OP3IMMED)
         lptkNext = &lpplLocalVars->lptkNext[-5];
     else
         return FALSE;
 
-    if (lptkNext->tkFlags.TknType EQ TKT_LPAREN
+    if (lptkNext->tkFlags.TknType EQ TKT_LEFTPAREN
      || lptkNext->tkFlags.TknType EQ TKT_EOS
      || lptkNext->tkFlags.TknType EQ TKT_EOL
      || lptkNext->tkFlags.TknType EQ TKT_ASSIGN

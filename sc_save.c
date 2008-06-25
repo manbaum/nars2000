@@ -117,7 +117,7 @@ BOOL CmdSave_EM
     // Because the global memory doesn't have a zero terminator,
     //   we must copy the data to a temporary location and then
     //   append a zero terminator
-    lstrcpynW (wszTempDPFE, lpMemSaveWSID, (UINT) aplNELMWSID + 1);
+    lstrcpynW (wszTempDPFE, lpMemSaveWSID, (__int3264) aplNELMWSID + 1);
 ////wszTempDPFE[aplNELMWSID] = L'\0';   // Already done via "+ 1" in lstrcpynW
 
     // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
@@ -161,7 +161,7 @@ BOOL CmdSave_EM
                     lstrcpyW (lpwszTemp, ERRMSG_NOT_SAVED);
 
                     // Followed by the old []WSID
-                    lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpMemSaveWSID, (UINT) aplNELMWSID + 1);
+                    lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpMemSaveWSID, (__int3264) aplNELMWSID + 1);
                 } // End IF/ELSE
 
                 // Display the error message
@@ -206,8 +206,7 @@ BOOL CmdSave_EM
         MakeWorkspaceBackup (lpMemSaveWSID, SAVEBAK_EXT);
 
     // Allocate space for two counters (Vars & Fcns) per SI level
-    hGlbCnt = MyGlobalAlloc (GHND, 2 *
-    sizeof (UINT) * (lpMemPTD->SILevel + 1));
+    hGlbCnt = MyGlobalAlloc (GHND, 2 * sizeof (UINT) * (lpMemPTD->SILevel + 1));
     if (!hGlbCnt)
         goto WSFULL_EXIT;
 
@@ -358,7 +357,7 @@ BOOL CmdSave_EM
                                                  DEF_MAX_QUADPP,                    // Precision to use
                                                  UTF16_DOT,                         // Char to use as decimal separator
                                                  UTF16_BAR,                         // Char to use as overbar
-                                                 2);                                // DTOA mode
+                                                 DEF_DTOA_MODE);                    // DTOA mode (Mode 2: max (ndigits, 1))
                                 // Delete the last blank in case it matters,
                                 //   and ensure properly terminated
                                 if (lpaplChar[-1] EQ L' ')
@@ -1176,9 +1175,9 @@ LPAPLCHAR SavedWsFormGlbVar
             {
                 // Format the value
                 lpaplChar =
-                  FormatAplintFC (lpaplChar,
-                                  BIT0 & ((*(LPAPLBOOL) lpMemObj) >> uBitIndex),
-                                  UTF16_BAR);
+                  FormatAplintFC (lpaplChar,                                        // Ptr to output save area
+                                  BIT0 & ((*(LPAPLBOOL) lpMemObj) >> uBitIndex),    // The value to format
+                                  UTF16_BAR);                                       // Char to use as overbar
                 // Check for end-of-byte
                 if (++uBitIndex EQ NBIB)
                 {
@@ -1194,9 +1193,9 @@ LPAPLCHAR SavedWsFormGlbVar
             for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLINT) lpMemObj)++)
                 // Format the value
                 lpaplChar =
-                  FormatAplintFC (lpaplChar,
-                                  *(LPAPLINT) lpMemObj,
-                                  UTF16_BAR);
+                  FormatAplintFC (lpaplChar,            // Ptr to output save area
+                                  *(LPAPLINT) lpMemObj, // The value to format
+                                  UTF16_BAR);           // Char to use as overbar
             break;
 
         case ARRAY_FLOAT:
@@ -1209,7 +1208,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                  DEF_MAX_QUADPP,                                // Precision to use
                                  UTF16_DOT,                                     // Char to use as decimal separator
                                  UTF16_BAR,                                     // Char to use as overbar
-                                 2);                                            // DTOA mode
+                                 DEF_DTOA_MODE);                                // DTOA mode (Mode 2: max (ndigits, 1))
             break;
 
         case ARRAY_CHAR:
@@ -1240,14 +1239,14 @@ LPAPLCHAR SavedWsFormGlbVar
 
             // Append the offset
             lpaplChar =
-              FormatAplintFC (lpaplChar,
-                              apaOff,
-                              UTF16_BAR);
+              FormatAplintFC (lpaplChar,        // Ptr to output save area
+                              apaOff,           // The value to format
+                              UTF16_BAR);       // Char to use as overbar
             // Append the multiplier
             lpaplChar =
-              FormatAplintFC (lpaplChar,
-                              apaMul,
-                              UTF16_BAR);
+              FormatAplintFC (lpaplChar,        // Ptr to output save area
+                              apaMul,           // The value to format
+                              UTF16_BAR);       // Char to use as overbar
             break;
 
         case ARRAY_HETERO:
@@ -1258,16 +1257,16 @@ LPAPLCHAR SavedWsFormGlbVar
             {
                 case IMMTYPE_BOOL:
                     lpaplChar =
-                      FormatAplintFC (lpaplChar,
-                                      (*(LPAPLHETERO) lpMemObj)->stData.stBoolean,
-                                      UTF16_BAR);
+                      FormatAplintFC (lpaplChar,                                    // Ptr to output save area
+                                      (*(LPAPLHETERO) lpMemObj)->stData.stBoolean,  // The value to format
+                                      UTF16_BAR);                                   // Char to use as overbar
                     break;
 
                 case IMMTYPE_INT:
                     lpaplChar =
-                      FormatAplintFC (lpaplChar,
-                                      (*(LPAPLHETERO) lpMemObj)->stData.stInteger,
-                                      UTF16_BAR);
+                      FormatAplintFC (lpaplChar,                                    // Ptr to output save area
+                                      (*(LPAPLHETERO) lpMemObj)->stData.stInteger,  // The value to format
+                                      UTF16_BAR);                                   // Char to use as overbar
                     break;
 
                 case IMMTYPE_CHAR:
@@ -1297,7 +1296,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                      DEF_MAX_QUADPP,                            // Precision to use
                                      UTF16_DOT,                                 // Char to use as decimal separator
                                      UTF16_BAR,                                 // Char to use as overbar
-                                     2);                                        // DTOA mode
+                                     DEF_DTOA_MODE);                            // DTOA mode (Mode 2: max (ndigits, 1))
                     break;
 
                 defstop
@@ -1341,7 +1340,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                      DEF_MAX_QUADPP,                        // Precision to use
                                      UTF16_DOT,                             // Char to use as decimal separator
                                      UTF16_BAR,                             // Char to use as overbar
-                                     2);                                    // DTOA mode
+                                     DEF_DTOA_MODE);                        // DTOA mode (Mode 2: max (ndigits, 1))
 #undef  lpSymEntry
                     // Restore user's precision
                     lpMemPTD->lpSymQuadPP->stData.stInteger = uQuadPP;
@@ -1468,22 +1467,22 @@ LPAPLCHAR AppendArrayHeader
 
     // Append the NELM (with a trailing blank)
     lpaplChar =
-      FormatAplintFC (lpaplChar,
-                      aplNELMObj,
-                      UTF16_BAR);
+      FormatAplintFC (lpaplChar,                // Ptr to output save area
+                      aplNELMObj,               // The value to format
+                      UTF16_BAR);               // Char to use as overbar
     // Append the rank (with a trailing blank)
     lpaplChar =
-      FormatAplintFC (lpaplChar,
-                      aplRankObj,
-                      UTF16_BAR);
+      FormatAplintFC (lpaplChar,                // Ptr to output save area
+                      aplRankObj,               // The value to format
+                      UTF16_BAR);               // Char to use as overbar
 
     // Append the shape (each with a trailing blank)
     for (uObj = 0; uObj < aplRankObj; uObj++)
         // Format the dimension
         lpaplChar =
-          FormatAplintFC (lpaplChar,
-                          lpaplDimObj[uObj],
-                          UTF16_BAR);
+          FormatAplintFC (lpaplChar,            // Ptr to output save area
+                          lpaplDimObj[uObj],    // The value to format
+                          UTF16_BAR);           // Char to use as overbar
     return lpaplChar;
 } // End AppendArrayHeader
 

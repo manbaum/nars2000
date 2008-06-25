@@ -286,6 +286,14 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     // qf_*.c
 
 
+    // qf_tf.c
+    "SysFnTF_EM_YY"             , (LPUCHAR) &SysFnTF_EM_YY              ,
+    "SysFnMonTF_EM_YY"          , (LPUCHAR) &SysFnMonTF_EM_YY           ,
+    "SysFnDydTF_EM_YY"          , (LPUCHAR) &SysFnDydTF_EM_YY           ,
+    "SysFnDydTF1_EM_YY"         , (LPUCHAR) &SysFnDydTF1_EM_YY          ,
+    "SysFnDydTF2_EM_YY"         , (LPUCHAR) &SysFnDydTF2_EM_YY          ,
+    "TransferInverseFcn1_EM"    , (LPUCHAR) &TransferInverseFcn1_EM     ,
+
     // qf_ucs.c
     "SysFnUCS_EM_YY"            , (LPUCHAR) &SysFnUCS_EM_YY             ,
     "SysFnMonUCS_EM_YY"         , (LPUCHAR) &SysFnMonUCS_EM_YY          ,
@@ -312,6 +320,13 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     // sc_fnov.c
     "CmdFns_EM"                 , (LPUCHAR) &CmdFns_EM                  ,
 
+    // sc_in.c
+    "CmdIn_EM"                  , (LPUCHAR) &CmdIn_EM                   ,
+    "TransferInverseChr1_EM"    , (LPUCHAR) &TransferInverseChr1_EM     ,
+    "TransferInverseNum1_EM"    , (LPUCHAR) &TransferInverseNum1_EM     ,
+    "CmdInCopyAndTranslate_EM"  , (LPUCHAR) &CmdInCopyAndTranslate_EM   ,
+    "CmdInEBCDIC2ASCII"         , (LPUCHAR) &CmdInEBCDIC2ASCII          ,
+
     // sc_lib.c
     "CmdLib_EM"                 , (LPUCHAR) &CmdLib_EM                  ,
 
@@ -326,6 +341,9 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "ParseSavedWsVar_EM"        , (LPUCHAR) &ParseSavedWsVar_EM         ,
     "LoadWorkspaceGlobal_EM"    , (LPUCHAR) &LoadWorkspaceGlobal_EM     ,
     "LoadWsGlbVarConv"          , (LPUCHAR) &LoadWsGlbVarConv           ,
+
+    // sc_out.c
+    "CmdOut_EM"                 , (LPUCHAR) &CmdOut_EM                  ,
 
     // sc_reset.c
     "CmdReset_EM"               , (LPUCHAR) &CmdReset_EM                ,

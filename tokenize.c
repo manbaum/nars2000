@@ -70,41 +70,41 @@ ToDo
 #define COL_FIRST 0             // It's origin-0
 
 enum COL_INDICES
-{COL_DIGIT = COL_FIRST, // 00: Digit
- COL_DOT       ,        // 01: Decimal number, inner & outer product separator
- COL_FPEXP     ,        // 02: Floating point exponent separator
- COL_ALPHA     ,        // 03: Alphabetic
- COL_DIRIDENT  ,        // 04: Alpha or Omega
- COL_Q_QQ      ,        // 05: Quad
- COL_UNDERBAR  ,        // 06: Underbar
- COL_INFINITY  ,        // 07: Infinity
- COL_OVERBAR   ,        // 08: Overbar
- COL_COMPLEX   ,        // 09: Complex number separator
- COL_RATIONAL  ,        // 0A: Rational number separator
- COL_ASSIGN    ,        // 0B: Assignment symbol
- COL_SEMICOLON ,        // 0C: Semicolon symbol
- COL_COLON     ,        // 0D: Colon symbol
- COL_PRIM_FN   ,        // 0E: Primitive monadic or dyadic function
- COL_PRIM_FN0  ,        // 0F: ...       niladic function
- COL_PRIM_OP1  ,        // 10: ...       monadic/ambiguous operator
- COL_PRIM_OP2  ,        // 11: ...       dyadic  ...
- COL_JOT       ,        // 12: Jot symbol
- COL_LPAREN    ,        // 13: Left paren
- COL_RPAREN    ,        // 14: Right ...
- COL_LBRACKET  ,        // 15: Left bracket
- COL_RBRACKET  ,        // 16: Right ...
- COL_LBRACE    ,        // 17: Left brace
- COL_RBRACE    ,        // 18: Right ...
- COL_SPACE     ,        // 19: White space (' ' or '\t')
- COL_QUOTE1    ,        // 1A: Single quote symbol
- COL_QUOTE2    ,        // 1B: Double ...
- COL_DIAMOND   ,        // 1C: Diamond symbol
- COL_LAMP      ,        // 1D: Comment symbol
- COL_EOL       ,        // 1E: End-Of-Line
- COL_UNK       ,        // 1F: Unknown symbols
+{COL_DIGIT = COL_FIRST,     // 00: Digit
+ COL_DOT         ,          // 01: Decimal number, inner & outer product separator
+ COL_FPEXP       ,          // 02: Floating point exponent separator
+ COL_ALPHA       ,          // 03: Alphabetic
+ COL_DIRIDENT    ,          // 04: Alpha or Omega
+ COL_Q_QQ        ,          // 05: Quad
+ COL_UNDERBAR    ,          // 06: Underbar
+ COL_INFINITY    ,          // 07: Infinity
+ COL_OVERBAR     ,          // 08: Overbar
+ COL_COMPLEX     ,          // 09: Complex number separator
+ COL_RATIONAL    ,          // 0A: Rational number separator
+ COL_ASSIGN      ,          // 0B: Assignment symbol
+ COL_SEMICOLON   ,          // 0C: Semicolon symbol
+ COL_COLON       ,          // 0D: Colon symbol
+ COL_PRIM_FN     ,          // 0E: Primitive monadic or dyadic function
+ COL_PRIM_FN0    ,          // 0F: ...       niladic function
+ COL_PRIM_OP1    ,          // 10: ...       monadic/ambiguous operator
+ COL_PRIM_OP2    ,          // 11: ...       dyadic  ...
+ COL_JOT         ,          // 12: Jot symbol
+ COL_LEFTPAREN   ,          // 13: Left paren
+ COL_RIGHTPAREN  ,          // 14: Right ...
+ COL_LEFTBRACKET ,          // 15: Left bracket
+ COL_RIGHTBRACKET,          // 16: Right ...
+ COL_LEFTBRACE   ,          // 17: Left brace
+ COL_RIGHTBRACE  ,          // 18: Right ...
+ COL_SPACE       ,          // 19: White space (' ' or '\t')
+ COL_QUOTE1      ,          // 1A: Single quote symbol
+ COL_QUOTE2      ,          // 1B: Double ...
+ COL_DIAMOND     ,          // 1C: Diamond symbol
+ COL_LAMP        ,          // 1D: Comment symbol
+ COL_EOL         ,          // 1E: End-Of-Line
+ COL_UNK         ,          // 1F: Unknown symbols
 
- COL_LENGTH    ,        // 20: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
-                        // Because these enums are origin-0, this value is the # valid columns.
+ COL_LENGTH      ,          // 20: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
+                            // Because these enums are origin-0, this value is the # valid columns.
 };
 
 // Whenever you add a new COL_*** entry,
@@ -139,7 +139,7 @@ enum FSA_TOKENS
                 // Because these enums are origin-0, this value is the # valid FSA states.
 };
 
-char cComplexSep = 'j';             // Complex number separator (as well as uppercase)
+WCHAR cComplexSep = L'j';           // Complex number separator (as well as uppercase)
                                     //   stored in var in case the user prefers 'i'
 
 // Defined constant for ...
@@ -1528,7 +1528,7 @@ BOOL fnAlpDone
                                       -lpMemPTD->iStrLen);
             goto NORMAL_EXIT;
         } else
-            CharLowerW (&lpwszStr[1]);
+            CharLowerBuffW (lpwszStr, lpMemPTD->iStrLen);
     } // End IF
 
     // Lookup in or append to the symbol table
@@ -2211,8 +2211,8 @@ BOOL fnQuoDone
         //   excluding the terminating zero.
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlb = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (__int3264) ByteRes);
+        hGlb = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlb)
         {
             // Save the error message
@@ -2289,7 +2289,7 @@ BOOL fnParInit
     DbgMsgW (L"fnParInit");
 #endif
 
-    return GroupInitCom (lptkLocalVars, TKT_LPAREN);
+    return GroupInitCom (lptkLocalVars, TKT_LEFTPAREN);
 } // End fnParInit
 
 
@@ -2307,7 +2307,7 @@ BOOL fnBrkInit
     DbgMsgW (L"fnBrkInit");
 #endif
 
-    return GroupInitCom (lptkLocalVars, TKT_LBRACKET);
+    return GroupInitCom (lptkLocalVars, TKT_LEFTBRACKET);
 } // End fnBrkInit
 
 
@@ -2325,7 +2325,7 @@ BOOL fnBrcInit
     DbgMsgW (L"fnBrcInit");
 #endif
 
-    return GroupInitCom (lptkLocalVars, TKT_LBRACE);
+    return GroupInitCom (lptkLocalVars, TKT_LEFTBRACE);
 } // End fnBrcInit
 
 
@@ -2384,7 +2384,7 @@ BOOL fnParDone
     DbgMsgW (L"fnParDone");
 #endif
 
-    return GroupDoneCom (lptkLocalVars, TKT_RPAREN, TKT_LPAREN);
+    return GroupDoneCom (lptkLocalVars, TKT_RIGHTPAREN, TKT_LEFTPAREN);
 } // End fnParDone
 
 
@@ -2402,7 +2402,7 @@ BOOL fnBrkDone
     DbgMsgW (L"fnBrkDone");
 #endif
 
-    return GroupDoneCom (lptkLocalVars, TKT_RBRACKET, TKT_LBRACKET);
+    return GroupDoneCom (lptkLocalVars, TKT_RIGHTBRACKET, TKT_LEFTBRACKET);
 } // End fnBrkDone
 
 
@@ -2420,7 +2420,7 @@ BOOL fnBrcDone
     DbgMsgW (L"fnBrcDone");
 #endif
 
-    return GroupDoneCom (lptkLocalVars, TKT_RBRACE, TKT_LBRACE);
+    return GroupDoneCom (lptkLocalVars, TKT_RIGHTBRACE, TKT_LEFTBRACE);
 } // End fnBrcDone
 
 
@@ -2970,12 +2970,12 @@ void Untokenize
             case TKT_OP2IMMED:          // ...       Dyadic  ...
             case TKT_OP3IMMED:          // ...       Ambiguous  ...
             case TKT_OPJOTDOT:          // Outer product (data is NULL)
-            case TKT_LPAREN:            // Left paren (data is TKT_***)
-            case TKT_RPAREN:            // Right ...   ...
-            case TKT_LBRACKET:          // Left bracket ...
-            case TKT_RBRACKET:          // Right ...   ...
-            case TKT_LBRACE:            // Left brace  ...
-            case TKT_RBRACE:            // Right ...   ...
+            case TKT_LEFTPAREN:         // Left paren (data is TKT_***)
+            case TKT_RIGHTPAREN:        // Right ...   ...
+            case TKT_LEFTBRACKET:       // Left bracket ...
+            case TKT_RIGHTBRACKET:      // Right ...   ...
+            case TKT_LEFTBRACE:         // Left brace  ...
+            case TKT_RIGHTBRACE:        // Right ...   ...
             case TKT_EOS:               // End-of-Stmt (data is length of stmt including this token)
             case TKT_EOL:               // End-of-Line (data is NULL)
             case TKT_SOS:               // Start-of-Stmt (data is NULL)
@@ -3264,7 +3264,7 @@ WCHAR CharTrans
             //   as it can be either 'i', 'I', 'j', or 'J'
             //   and as such doesn't fit into a switch
             //   statement easily.
-            if (cComplexSep EQ *CharLowerW (&wchOrig))
+            if (cComplexSep EQ (WCHAR) CharLowerW ((LPWCHAR) wchOrig))
                 return COL_COMPLEX;
             else
                 return COL_ALPHA;
@@ -3458,17 +3458,17 @@ WCHAR CharTrans
         case UTF16_ZILDE:               // Alt-'}' - zilde
             return COL_PRIM_FN0;
 
-        case UTF16_LPAREN:              //     '(' - left paren
-            return COL_LPAREN;
+        case UTF16_LEFTPAREN:           //     '(' - left paren
+            return COL_LEFTPAREN;
 
-        case UTF16_RPAREN:              //     ')' - right paren
-            return COL_RPAREN;
+        case UTF16_RIGHTPAREN:          //     ')' - right paren
+            return COL_RIGHTPAREN;
 
-        case UTF16_LBRACKET:            //     '[' - left bracket
-            return COL_LBRACKET;
+        case UTF16_LEFTBRACKET:         //     '[' - left bracket
+            return COL_LEFTBRACKET;
 
-        case UTF16_RBRACKET:            //     ']' - right bracket
-            return COL_RBRACKET;
+        case UTF16_RIGHTBRACKET:        //     ']' - right bracket
+            return COL_RIGHTBRACKET;
 
         case UTF16_SEMICOLON:           // Lists (bracketed and otherwise)
             return COL_SEMICOLON;
@@ -3477,11 +3477,11 @@ WCHAR CharTrans
                                         // Control structures ***FIXME***
             return COL_COLON;
 
-        case UTF16_LBRACE:              //     '{' - left brace
-            return COL_LBRACE;
+        case UTF16_LEFTBRACE:           //     '{' - left brace
+            return COL_LEFTBRACE;
 
-        case UTF16_RBRACE:              //     '}' - right brace
-            return COL_RBRACE;
+        case UTF16_RIGHTBRACE:          //     '}' - right brace
+            return COL_RIGHTBRACE;
 
         case UTF16_DEL:                 // Alt-'g' - del
         case L'`':
@@ -3527,38 +3527,38 @@ typedef struct tagCOLNAMES
 } COLNAMES, *LPCOLNAMES;
 
 static COLNAMES colNames[] =
-{{L"DIGIT"     , COL_DIGIT     },   // 00: Digit
- {L"DOT"       , COL_DOT       },   // 01: Decimal number, inner & outer product separator
- {L"FPEXP"     , COL_FPEXP     },   // 02: Floating point exponent separator
- {L"ALPHA"     , COL_ALPHA     },   // 03: Alphabetic
- {L"DIRIDENT"  , COL_DIRIDENT  },   // 04: Alpha or Omega
- {L"Q_QQ"      , COL_Q_QQ      },   // 05: Quad
- {L"UNDERBAR"  , COL_UNDERBAR  },   // 06: Underbar
- {L"INFINITY"  , COL_INFINITY  },   // 07: Infinity
- {L"OVERBAR"   , COL_OVERBAR   },   // 08: Overbar
- {L"COMPLEX"   , COL_COMPLEX   },   // 09: Complex number separator
- {L"RATIONAL"  , COL_RATIONAL  },   // 0A: Rational number separator
- {L"ASSIGN"    , COL_ASSIGN    },   // 0B: Assignment symbol
- {L"SEMICOLON" , COL_SEMICOLON },   // 0C: Semicolon symbol
- {L"COLON"     , COL_COLON     },   // 0D: Colon symbol
- {L"PRIM_FN"   , COL_PRIM_FN   },   // 0E: Primitive monadic or dyadic function
- {L"PRIM_FN0"  , COL_PRIM_FN0  },   // 0F: ...       niladic function
- {L"PRIM_OP1"  , COL_PRIM_OP1  },   // 10: ...       monadic operator
- {L"PRIM_OP2"  , COL_PRIM_OP2  },   // 11: ...       dyadic  ...
- {L"JOT"       , COL_JOT       },   // 12: Jot symbol
- {L"LPAREN"    , COL_LPAREN    },   // 13: Left paren
- {L"RPAREN"    , COL_RPAREN    },   // 14: Right ...
- {L"LBRACKET"  , COL_LBRACKET  },   // 15: Left bracket
- {L"RBRACKET"  , COL_RBRACKET  },   // 16: Right ...
- {L"LBRACE"    , COL_LBRACE    },   // 17: Left brace
- {L"RBRACE"    , COL_RBRACE    },   // 18: Right ...
- {L"SPACE"     , COL_SPACE     },   // 19: White space (' ' or '\t')
- {L"QUOTE1"    , COL_QUOTE1    },   // 1A: Single quote symbol
- {L"QUOTE2"    , COL_QUOTE2    },   // 1B: Double ...
- {L"DIAMOND"   , COL_DIAMOND   },   // 1C: Diamond symbol
- {L"LAMP"      , COL_LAMP      },   // 1D: Comment symbol
- {L"EOL"       , COL_EOL       },   // 1E: End-Of-Line
- {L"UNK"       , COL_UNK       },   // 1F: Unknown symbols
+{{L"DIGIT"       , COL_DIGIT       },   // 00: Digit
+ {L"DOT"         , COL_DOT         },   // 01: Decimal number, inner & outer product separator
+ {L"FPEXP"       , COL_FPEXP       },   // 02: Floating point exponent separator
+ {L"ALPHA"       , COL_ALPHA       },   // 03: Alphabetic
+ {L"DIRIDENT"    , COL_DIRIDENT    },   // 04: Alpha or Omega
+ {L"Q_QQ"        , COL_Q_QQ        },   // 05: Quad
+ {L"UNDERBAR"    , COL_UNDERBAR    },   // 06: Underbar
+ {L"INFINITY"    , COL_INFINITY    },   // 07: Infinity
+ {L"OVERBAR"     , COL_OVERBAR     },   // 08: Overbar
+ {L"COMPLEX"     , COL_COMPLEX     },   // 09: Complex number separator
+ {L"RATIONAL"    , COL_RATIONAL    },   // 0A: Rational number separator
+ {L"ASSIGN"      , COL_ASSIGN      },   // 0B: Assignment symbol
+ {L"SEMICOLON"   , COL_SEMICOLON   },   // 0C: Semicolon symbol
+ {L"COLON"       , COL_COLON       },   // 0D: Colon symbol
+ {L"PRIM_FN"     , COL_PRIM_FN     },   // 0E: Primitive monadic or dyadic function
+ {L"PRIM_FN0"    , COL_PRIM_FN0    },   // 0F: ...       niladic function
+ {L"PRIM_OP1"    , COL_PRIM_OP1    },   // 10: ...       monadic operator
+ {L"PRIM_OP2"    , COL_PRIM_OP2    },   // 11: ...       dyadic  ...
+ {L"JOT"         , COL_JOT         },   // 12: Jot symbol
+ {L"LEFTPAREN"   , COL_LEFTPAREN   },   // 13: Left paren
+ {L"RIGHTPAREN"  , COL_RIGHTPAREN  },   // 14: Right ...
+ {L"LEFTBRACKET" , COL_LEFTBRACKET },   // 15: Left bracket
+ {L"RIGHTBRACKET", COL_RIGHTBRACKET},   // 16: Right ...
+ {L"LEFTBRACE"   , COL_LEFTBRACE   },   // 17: Left brace
+ {L"RIGHTBRACE"  , COL_RIGHTBRACE  },   // 18: Right ...
+ {L"SPACE"       , COL_SPACE       },   // 19: White space (' ' or '\t')
+ {L"QUOTE1"      , COL_QUOTE1      },   // 1A: Single quote symbol
+ {L"QUOTE2"      , COL_QUOTE2      },   // 1B: Double ...
+ {L"DIAMOND"     , COL_DIAMOND     },   // 1C: Diamond symbol
+ {L"LAMP"        , COL_LAMP        },   // 1D: Comment symbol
+ {L"EOL"         , COL_EOL         },   // 1E: End-Of-Line
+ {L"UNK"         , COL_UNK         },   // 1F: Unknown symbols
 };
     if (COL_LENGTH > (uType - COL_FIRST))
         return colNames[uType - COL_FIRST].lpwsz;

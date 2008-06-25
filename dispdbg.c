@@ -553,7 +553,7 @@ void DisplayGlobals
                         break;
 
                     case ARRAY_CHAR:
-                        lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (6, lpHeader->NELM));
+                        lstrcpynW (aplArrChar, lpData, 1 + (__int3264) min (6, lpHeader->NELM));
                         aplArrChar[min (6, lpHeader->NELM)] = L'\0';
 
                         break;
@@ -721,43 +721,43 @@ typedef struct tagTOKENNAMES
 } TOKENNAMES, *LPTOKENNAMES;
 
 static TOKENNAMES tokenNames[] =
-{{"VARNAMED"  , TKT_VARNAMED }, // 01: Symbol table entry for a named var (data is LPSYMENTRY)
- {"STRING"    , TKT_STRING   }, // 02: String  (data is HGLOBAL)
- {"VARIMMED"  , TKT_VARIMMED }, // 03: Immediate data (data is immediate)
- {"COMMENT"   , TKT_COMMENT  }, // 04: Comment (data is NULL)
- {"ASSIGN"    , TKT_ASSIGN   }, // 05: Assignment symbol (data is UTF16_LEFTARROW)
- {"LISTSEP"   , TKT_LISTSEP  }, // 06: List separator    (data is ';')
- {"LABELSEP"  , TKT_LABELSEP }, // 07: Label ...         (data is ':')
- {"COLON"     , TKT_COLON    }, // 08: Colon             (data is ':')
- {"FCNIMMED"  , TKT_FCNIMMED }, // 09: Primitive function (any valence) (data is UTF16_***)
- {"OP1IMMED"  , TKT_OP1IMMED }, // 0A: Monadic primitive operator (data is UTF16_***)
- {"OP2IMMED"  , TKT_OP2IMMED }, // 0B: Dyadic  ...
- {"OP3IMMED"  , TKT_OP3IMMED }, // 0C: Ambiguous ...
- {"OPJOTDOT"  , TKT_OPJOTDOT }, // 0D: Outer product monadic operator (with right scope) (data is NULL)
- {"LPAREN"    , TKT_LPAREN   }, // 0E: Left paren (data is TKT_LPAREN)
- {"RPAREN"    , TKT_RPAREN   }, // 0F: Right ...   ...         RPAREN
- {"LBRACKET"  , TKT_LBRACKET }, // 10: Left bracket ...        LBRACKET
- {"RBRACKET"  , TKT_RBRACKET }, // 11: Right ...   ...         RBRACKET
- {"LBRACE"    , TKT_LBRACE   }, // 12: Left bracket ...        LBRACKET
- {"RBRACE"    , TKT_RBRACE   }, // 13: Right ...   ...         RBRACKET
- {"EOS"       , TKT_EOS      }, // 14: End-of-Stmt (data is length of stmt including this token)
- {"EOL"       , TKT_EOL      }, // 15: End-of-Line  ...
- {"SOS"       , TKT_SOS      }, // 16: Start-of-Stmt (data is NULL)
- {"LINECONT"  , TKT_LINECONT }, // 17: Line continuation (data is NULL)
- {"INPOUT"    , TKT_INPOUT   }, // 18: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
- {"STRAND"    , TKT_STRAND   }, // 19: Strand accumulating (data is LPTOKEN)
- {"LISTINT"   , TKT_LISTINT  }, // 1A: List in parens    (data is HGLOBAL)
- {"LISTPAR"   , TKT_LISTPAR  }, // 1B: List in parens    (data is HGLOBAL)
- {"LISTBR"    , TKT_LISTBR   }, // 1C: List in brackets  (data is HGLOBAL)
- {"VARARRAY"  , TKT_VARARRAY }, // 1D: Array of data (data is HGLOBAL)
- {"FCNARRAY"  , TKT_FCNARRAY }, // 1E: Array of functions (data is HGLOBAL)
- {"FCNNAMED"  , TKT_FCNNAMED }, // 1F: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED" , TKT_AXISIMMED}, // 20: An immediate axis specification (data is immediate)
- {"AXISARRAY" , TKT_AXISARRAY}, // 21: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"  , TKT_OP1NAMED }, // 22: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"  , TKT_OP2NAMED }, // 23: ...     dyadic  ...
- {"OP3NAMED"  , TKT_OP3NAMED }, // 24: ...     ambiguous ...
- {"STRNAMED"  , TKT_STRNAMED }, // 25: ...     strand  ...
+{{"VARNAMED"    , TKT_VARNAMED      },  // 01: Symbol table entry for a named var (data is LPSYMENTRY)
+ {"STRING"      , TKT_STRING        },  // 02: String  (data is HGLOBAL)
+ {"VARIMMED"    , TKT_VARIMMED      },  // 03: Immediate data (data is immediate)
+ {"COMMENT"     , TKT_COMMENT       },  // 04: Comment (data is NULL)
+ {"ASSIGN"      , TKT_ASSIGN        },  // 05: Assignment symbol (data is UTF16_LEFTARROW)
+ {"LISTSEP"     , TKT_LISTSEP       },  // 06: List separator    (data is ';')
+ {"LABELSEP"    , TKT_LABELSEP      },  // 07: Label ...         (data is ':')
+ {"COLON"       , TKT_COLON         },  // 08: Colon             (data is ':')
+ {"FCNIMMED"    , TKT_FCNIMMED      },  // 09: Primitive function (any valence) (data is UTF16_***)
+ {"OP1IMMED"    , TKT_OP1IMMED      },  // 0A: Monadic primitive operator (data is UTF16_***)
+ {"OP2IMMED"    , TKT_OP2IMMED      },  // 0B: Dyadic  ...
+ {"OP3IMMED"    , TKT_OP3IMMED      },  // 0C: Ambiguous ...
+ {"OPJOTDOT"    , TKT_OPJOTDOT      },  // 0D: Outer product monadic operator (with right scope) (data is NULL)
+ {"LEFTPAREN"   , TKT_LEFTPAREN     },  // 0E: Left paren (data is TKT_LEFTPAREN)
+ {"RIGHTPAREN"  , TKT_RIGHTPAREN    },  // 0F: Right ...   ...         RIGHTPAREN
+ {"LEFTBRACKET" , TKT_LEFTBRACKET   },  // 10: Left bracket ...        LEFTBRACKET
+ {"RIGHTBRACKET", TKT_RIGHTBRACKET  },  // 11: Right ...   ...         RIGHTBRACKET
+ {"LEFTBRACE"   , TKT_LEFTBRACE     },  // 12: Left bracket ...        LEFTBRACKET
+ {"RIGHTBRACE"  , TKT_RIGHTBRACE    },  // 13: Right ...   ...         RIGHTBRACKET
+ {"EOS"         , TKT_EOS           },  // 14: End-of-Stmt (data is length of stmt including this token)
+ {"EOL"         , TKT_EOL           },  // 15: End-of-Line  ...
+ {"SOS"         , TKT_SOS           },  // 16: Start-of-Stmt (data is NULL)
+ {"LINECONT"    , TKT_LINECONT      },  // 17: Line continuation (data is NULL)
+ {"INPOUT"      , TKT_INPOUT        },  // 18: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+ {"STRAND"      , TKT_STRAND        },  // 19: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"     , TKT_LISTINT       },  // 1A: List in parens    (data is HGLOBAL)
+ {"LISTPAR"     , TKT_LISTPAR       },  // 1B: List in parens    (data is HGLOBAL)
+ {"LISTBR"      , TKT_LISTBR        },  // 1C: List in brackets  (data is HGLOBAL)
+ {"VARARRAY"    , TKT_VARARRAY      },  // 1D: Array of data (data is HGLOBAL)
+ {"FCNARRAY"    , TKT_FCNARRAY      },  // 1E: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"    , TKT_FCNNAMED      },  // 1F: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED"   , TKT_AXISIMMED     },  // 20: An immediate axis specification (data is immediate)
+ {"AXISARRAY"   , TKT_AXISARRAY     },  // 21: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"    , TKT_OP1NAMED      },  // 22: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"    , TKT_OP2NAMED      },  // 23: ...     dyadic  ...
+ {"OP3NAMED"    , TKT_OP3NAMED      },  // 24: ...     ambiguous ...
+ {"STRNAMED"    , TKT_STRNAMED      },  // 25: ...     strand  ...
 };
 
 // The # rows in the above table
@@ -859,9 +859,10 @@ void DisplayFcnStrand
                                             1,              // LODWORD (lpHeader->NELM),
                                             0);             // lpHeader->RefCnt);
                     // Display the function name from the symbol table
-                    lpaplChar = CopySteName (lpaplChar,
-                                             lptkFunc->tkData.tkSym,
-                                             NULL);
+                    lpaplChar =
+                      CopySteName (lpaplChar,               // Ptr to result global memory
+                                   lptkFunc->tkData.tkSym,  // Ptr to function symbol table entry
+                                   NULL);                   // Ptr to name length (may be NULL)
                 } else
                 if (!lptkFunc->tkData.tkSym->stFlags.UsrDfn)
                     lpaplChar =
@@ -1099,9 +1100,9 @@ LPWCHAR DisplayFcnSub
                 if (lpYYMem->tkToken.tkData.tkSym->stFlags.FcnDir)
                     // Copy the internal function name
                     lpaplChar =
-                      CopySteName (lpaplChar,
-                                   lpYYMem->tkToken.tkData.tkSym,
-                                   NULL);
+                      CopySteName (lpaplChar,                       // Ptr to result global memory
+                                   lpYYMem->tkToken.tkData.tkSym,   // Ptr to function symbol table entry
+                                   NULL);                           // Ptr to name length (may be NULL)
                 else
                 {
                     // Get the function array global memory handle
@@ -1264,9 +1265,9 @@ LPWCHAR DisplayFcnSub
                     else
                         // Copy the user-defined function/operator name
                         lpaplChar =
-                          CopySteName (lpaplChar,
-                                       ((LPDFN_HEADER) lpMemData)->steFcnName,
-                                       NULL);
+                          CopySteName (lpaplChar,                               // Ptr to result global memory
+                                       ((LPDFN_HEADER) lpMemData)->steFcnName,  // Ptr to function symbol table entry
+                                       NULL);                                   // Ptr to name length (may be NULL)
                     break;
 
                 defstop
@@ -1303,9 +1304,9 @@ LPWCHAR DisplayFcnSub
             else
                 // Copy the STE name
                 lpaplChar =
-                  CopySteName (lpaplChar,
-                               lpYYMem->tkToken.tkData.tkSym,
-                               NULL);
+                  CopySteName (lpaplChar,                           // Ptr to result global memory
+                               lpYYMem->tkToken.tkData.tkSym,       // Ptr to function symbol table entry
+                               NULL);                               // Ptr to name length (may be NULL)
             if (lpaplChar[-1] EQ L' ')
                 *--lpaplChar = L'\0';   // Overwrite the trailing blank
             break;

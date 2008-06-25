@@ -644,5 +644,61 @@ int TranslateTabIndexToID
 
 
 //***************************************************************************
+//  $TranslateAPL2ToNARS
+//
+//  Translate from the APL2 charset to NARS
+//***************************************************************************
+
+void TranslateAPL2ToNARS
+    (LPWCHAR lpMemRht,                  // Ptr to data to translate
+     APLNELM aplNELMRht,                // Length of ...
+     BOOL    bIsEBCDIC)                 // TRUE iff the input is in EBCDIC format
+
+{
+    LPWCHAR lpwTranslate;               // Ptr to either APL2_ASCIItoNARS or APL2_EBCDICtoNARS
+
+    // Set the translate table
+    lpwTranslate = (bIsEBCDIC ? APL2_EBCDICtoNARS : APL2_ASCIItoNARS);
+
+    // Loop through the elements
+    while (aplNELMRht--)
+        *lpMemRht++ = lpwTranslate[*lpMemRht];
+} // End TranslateAPL2ToNARS
+
+
+//***************************************************************************
+//  $TranslateNARSToAPL2
+//
+//  Translate from the NARS charset to APL2
+//***************************************************************************
+
+void TranslateNARSToAPL2
+    (LPWCHAR lpMemRht,                  // Ptr to data to translate
+     APLNELM aplNELMRht,                // Length of ...
+     BOOL    bIsEBCDIC)                 // TRUE iff the input is in EBCDIC format
+
+{
+    LPWCHAR lpwTranslate,               // Ptr to either APL2_ASCIItoNARS or APL2_EBCDICtoNARS
+            lpwTemp;
+
+    // Set the translate table
+    lpwTranslate = (bIsEBCDIC ? APL2_EBCDICtoNARS : APL2_ASCIItoNARS);
+
+    // Skip over the first char as it's always zero
+    lpwTranslate++;
+
+    // Loop through the elements
+    while (aplNELMRht--)
+    {
+        lpwTemp = strchrW (lpwTranslate, *lpMemRht);
+        if (lpwTemp)
+            *lpMemRht++ = *lpwTemp;
+        else
+            *lpMemRht++ = L'\xFF';
+    } // End WHILE
+} // End TranslateNARSToAPL2
+
+
+//***************************************************************************
 //  End of File: translate.c
 //***************************************************************************

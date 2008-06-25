@@ -1,7 +1,7 @@
 
 #define GCL_HBRBACKGROUND   (-10)
 
-#define strlenW         (UINT) lstrlenW
+#define strlenW         (__int3264) lstrlenW
 #define strcpyW         lstrcpyW
 
 #define WINAPI          __stdcall

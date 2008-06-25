@@ -24,6 +24,7 @@ PARSE.Y:
 PF_UTACKJOT.C:
 SC_LOAD.C:
 SESSMAN.C:
+THREADS.H:
   Pass <bActOnErrors> flag to <ParseLine> and <ImmExecStmt>.
 
 EXTERNS.H:
@@ -70,15 +71,23 @@ STARTADDR.H:
   Include more addresses for debugging purposes.
 
 SYSVARS.C:
-
-THREADS.H:
+  Define []AF as synonym for []UCS.
+  Simplify macro calls.
+  Fix bug:  In <ValidSetPR_EM>, when demoting a one-element vector to a scalar, the code
+    moves a pointer before it should.
 
 TOKENIZE.C:
+  Fix bug:  In <CheckResizeStr_EM>, the reallocate fails to take into consideration the
+    unit size (APLCHAR) of the allocation.  The same change is made to <CheckResizeNum_EM>,
+    but there the unit size is (char) so there's no problem.  This bug shows itself when
+    tokenizing a long string.
+  Implement {lamp} as a closing comment marker thus allowing within line comments such as
+    code {lamp} Any comment {lamp} more code.
+  Remove <NORMAL_EXIT> code and reference as it's no longer used.
 
 UNICODE.H:
-
-
-
+  Define replacement char for UTF-16 values outside UCS-2.
+  Improve comments.
 
 
 Directory trunk\htdocs:

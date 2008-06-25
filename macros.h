@@ -39,7 +39,7 @@
 #define IsTokenNoValue(a)   ((a)                                    \
                           && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
                           && IsSymNoValue ((a)->tkData.tkSym))
-#define IsSysName(a)        ((a)[0] EQ UTF16_QUAD || (a)[1] EQ UTF16_QUOTEQUAD)
+#define IsSysName(a)        ((a)[0] EQ UTF16_QUAD || (a)[0] EQ UTF16_QUOTEQUAD)
 
 #define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
 

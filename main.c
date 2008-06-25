@@ -202,17 +202,29 @@ BOOL CALLBACK EnumCallbackSetFontW
 void InitChooseFont
     (LPCHOOSEFONT lpcf,
      LPLOGFONT    lplf,
-     int          iPtSize)
+     int          iPtSize,
+     BOOL         bPrinter)                 // TRUE iff this is a printer font
 {
     HDC hDC;
+    int iLogPixelsY;
 
     // Zero the struc
-    memset (lpcf, 0, sizeof (CHOOSEFONT));
+    ZeroMemory (lpcf, sizeof (CHOOSEFONT));
 
-    hDC = MyGetDC (HWND_DESKTOP);
+    if (bPrinter)
+        // Create a printer device context
+        hDC = GetPrinterDC ();
+    else
+        // Create a screen device context
+        hDC = MyGetDC (HWND_DESKTOP);
+
     iLogPixelsY = GetDeviceCaps (hDC, LOGPIXELSY);
     lplf->lfHeight = -MulDiv (iPtSize, iLogPixelsY, 72);
-    MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
+
+    if (bPrinter)
+        DeleteDC (hDC);
+    else
+        MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
 
     lpcf->lStructSize = sizeof (CHOOSEFONT);
 ////lpcf->hDC =                     // Only w/CF_PRINTERFONTS
@@ -266,29 +278,46 @@ void CreateNewFontCom
      LPCHOOSEFONT lpcf,                 // Ptr to in CHOOSEFONT with iPointSize
      LPTEXTMETRIC lptm,                 // Ptr to in TEXTMETRICs
      long        *lpcxAveChar,          // Ptr to out avg width (may be NULL)
-     long        *lpcyAveChar)          // Ptr to out avg height (may be NULL)
+     long        *lpcyAveChar,          // Ptr to out avg height (may be NULL)
+     HDC          hDC)                  // Handle to device context if not default (may be NULL)
 
 {
-    HDC   hDC;
+    HDC   hDCTmp;
     HFONT hFontOld;
     long  cyAveChar;
+    int   iLogPixelsY;
 
     // Delete the previous handle (if any)
     if (*lphFont)
     {
-        // Delete the SM font handle
+        // Delete the font handle
         MyDeleteObject (*lphFont); *lphFont = NULL;
     } // End IF
 
     // Create the font
     *lphFont = MyCreateFontIndirect (lplf);
 
+    // Get a new device context or use the give one
+    hDCTmp = hDC ? hDC : MyGetDC (HWND_DESKTOP);
+
+    // Get the # pixels per vertical inch
+    iLogPixelsY = GetDeviceCaps (hDCTmp, LOGPIXELSY);
+
+    // Select the enwly created font
+    hFontOld = SelectObject (hDCTmp, *lphFont);
+
     // Get the text metrics for this font
-    hDC = MyGetDC (HWND_DESKTOP);
-    hFontOld = SelectObject (hDC, *lphFont);
-    GetTextMetrics (hDC, lptm);
-    SelectObject (hDC, hFontOld);
-    MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
+    GetTextMetrics (hDCTmp, lptm);
+
+    // Restore the old font
+    SelectObject (hDCTmp, hFontOld);
+
+    // If no given device context, ...
+    if (hDC EQ NULL)
+    {
+        // Release the one we created
+        MyReleaseDC (HWND_DESKTOP, hDCTmp); hDCTmp = NULL;
+    } // End IF
 
     // New height
     cyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
@@ -308,7 +337,7 @@ void CreateNewFontCom
 
     // Now that we've caclulated the correct height & width,
     //   delete the font and re-create it
-    DeleteObject (*lphFont);
+    DeleteObject (*lphFont); *lphFont = NULL;
 
     // Re-create the font
     *lphFont = MyCreateFontIndirect (lplf);
@@ -331,7 +360,8 @@ void CreateNewFontTC
                       &cfTC,
                       &tmTC,
                       &cxAveCharTC,
-                      &cyAveCharTC);
+                      &cyAveCharTC,
+                       NULL);
     // Tell the TC about the new font
     SendMessageW (hWndTC, WM_SETFONT, (WPARAM) hFontTC, MAKELPARAM (TRUE, 0));
 
@@ -355,6 +385,7 @@ void CreateNewFontCC
                       &lfCC,
                       &cfCC,
                       &tmCC,
+                       NULL,
                        NULL,
                        NULL);
     // Tell the CC about the new font
@@ -387,7 +418,8 @@ void CreateNewFontSM
                       &cfSM,
                       &tmSM,
                       &cxAveCharSM,
-                      &cyAveCharSM);
+                      &cyAveCharSM,
+                       NULL);
     // Initialize the struct
     enumSetFontW.lpwClassName = LSMWNDCLASS;
     enumSetFontW.hFont        = hFontSM;
@@ -409,6 +441,7 @@ void CreateNewFontSM
                       &cfSM,
                       &tmAlt,
                        NULL,
+                       NULL,
                        NULL);
 #endif
 #ifdef DEBUG
@@ -420,6 +453,55 @@ void CreateNewFontSM
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
 #endif
 } // End CreateNewFontSM
+
+
+//***************************************************************************
+//  $CreateNewFontPR
+//
+//  Create a new font for the Printer
+//***************************************************************************
+
+void CreateNewFontPR
+    (void)
+
+{
+    HDC hDC;                    // Handle to the printer device context
+
+    // Create a printer device context
+    hDC = GetPrinterDC ();
+
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontPR,
+                      &lfPR,
+                      &cfPR,
+                      &tmPR,
+                      &cxAveCharPR,
+                      &cyAveCharPR,
+                       hDC);
+    // We no longer need this resource
+    DeleteDC (hDC);
+} // End CreateNewFontPR
+
+
+//***************************************************************************
+//  $GetPrinterDC
+//
+//  Create a printer Device Context
+//***************************************************************************
+
+HDC GetPrinterDC
+    (void)
+
+{
+    char  szTemp[1024];         // Buffer for printer name
+    DWORD dwLen = sizeof (szTemp);
+
+    // Get info about the default printer
+    GetDefaultPrinter (szTemp, &dwLen);
+
+    // Create a printer device context
+    return CreateDC ("WINSPOOL", szTemp, NULL, NULL);
+} // End GetPrinterDC
 
 
 //***************************************************************************
@@ -440,7 +522,8 @@ void CreateNewFontFE
                       &cfFE,
                       &tmFE,
                       &cxAveCharFE,
-                      &cyAveCharFE);
+                      &cyAveCharFE,
+                       NULL);
     // Initialize the struct
     enumSetFontW.lpwClassName = LFEWNDCLASS;
     enumSetFontW.hFont        = hFontFE;
@@ -468,7 +551,8 @@ void CreateNewFontME
                       &cfME,
                       &tmME,
                       &cxAveCharME,
-                      &cyAveCharME);
+                      &cyAveCharME,
+                       NULL);
     // Initialize the struct
     enumSetFontW.lpwClassName = LMEWNDCLASS;
     enumSetFontW.hFont        = hFontME;
@@ -496,7 +580,8 @@ void CreateNewFontVE
                       &cfVE,
                       &tmVE,
                       &cxAveCharVE,
-                      &cyAveCharVE);
+                      &cyAveCharVE,
+                       NULL);
     // Initialize the struct
     enumSetFontW.lpwClassName = LVEWNDCLASS;
     enumSetFontW.hFont        = hFontVE;
@@ -810,6 +895,7 @@ LRESULT APIENTRY MFWndProc
             // Create a new font for various windows
             CreateNewFontTC ();
             CreateNewFontSM ();
+            CreateNewFontPR ();
             CreateNewFontCC ();
             CreateNewFontFE ();
             CreateNewFontME ();
@@ -1190,6 +1276,13 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;       // We handled the msg
 
+                case IDM_PRFONT:
+                    // Display a Font Dialog so the user can choose
+                    //   a new font for the Printer
+                    MyChooseFont (&cfPR, &CreateNewFontPR);
+
+                    return FALSE;       // We handled the msg
+
                 case IDM_FEFONT:
                     // Display a Font Dialog so the user can choose
                     //   a new font for the Function Editor
@@ -1318,6 +1411,141 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;   // We handled the msg
 
+                case IDM_PRINT_WS:
+                {
+                    PRINTDLGEX pdex;        // Struc used when printing
+                    HWND       hWndMC,      // Active hWndMC
+                               hWndAct,     // Active window handle
+                               hWndEC;      // Edit Control window handle
+                    DWORD      dwSelBeg,    // Selection beginning
+                               dwSelEnd;    // ...       end
+                    HRESULT    hResult;     // Result from PrintDlgEx
+
+                    // Determine whether or not the Edit Control has a selection
+                    hWndMC  = GetActiveMC (hWndTC);
+                    hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
+       (HANDLE_PTR) hWndEC = (GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC));
+                    SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &dwSelBeg, (LPARAM) &dwSelEnd);
+
+                    // Fill in the PRINTDLG struc
+                    ZeroMemory (&pdex, sizeof (pdex));
+                    pdex.lStructSize         = sizeof (pdex);
+                    pdex.hwndOwner           = hWndEC;
+////////////////////pdex.hDevMode            = NULL;    // Output only
+////////////////////pdex.hDevNames           = NULL;    // Output only
+////////////////////pdex.hDC                 = NULL;    // Output only
+                    pdex.Flags               = 0
+                                           | ((dwSelBeg EQ dwSelEnd) ? PD_CURRENTPAGE | PD_NOSELECTION
+                                                                     : PD_SELECTION)
+                                           | PD_RETURNDC
+                                           | PD_NOPAGENUMS
+                                           ;
+////////////////////pdex.Flags2              = 0;       // Unused
+////////////////////pdex.Exclusion Flags     = 0;       // Unused
+////////////////////pdex.nPageRanges         = 0;       // Not with PD_NOPAGENUMS
+////////////////////pdex.nMaxPageRanges      = 0;       // Not with PD_NOPAGENUMS
+////////////////////pdex.lpPageRanges        = NULL;    // Not with PD_NOPAGENUMS
+////////////////////pdex.nMinPage            =          // Not with PD_NOPAGENUMS
+////////////////////pdex.nMaxPage            =          // Not with PD_NOPAGENUMS
+                    pdex.nCopies             = 1;       // Input/output
+////////////////////pdex.hInstance           = NULL;    // Used for PD_ENABLEPRINTTEMPLATE only
+////////////////////pdex.lpPrintTemplateName = NULL;    // Unused
+////////////////////pdex.lpCallback          = NULL;    // Unused
+////////////////////pdex.nPropertyPages      = 0;       // Used for lphPropertyPages only
+////////////////////pdex.lphPropertyPages    = NULL;    // Unused
+                    pdex.nStartPage          = START_PAGE_GENERAL;
+////////////////////pdex.dwResultAction      = 0;       // Output only
+
+                    // Ask the user what to do
+                    hResult = PrintDlgEx (&pdex);
+
+                    // Split cases based upon the result code
+                    if (hResult EQ S_OK)
+                    switch (pdex.dwResultAction)
+                    {
+                        case PD_RESULT_APPLY:
+#ifdef DEBUG
+                            DbgBrk ();          // ***FINISHME*** -- PD_RESULT_APPLY
+#endif
+
+                            break;
+
+                        case PD_RESULT_PRINT:
+                        {
+#ifdef DEBUG
+                            DEVMODE  *lpDevMode;
+                            DEVNAMES *lpDevNames;
+#endif
+                            DOCINFOW docInfo = {0};
+
+////////////////////////////// If the user said print-to-file, get the filename
+////////////////////////////if (pdex.Flags & PD_PRINTTOFILE)
+////////////////////////////{
+////////////////////////////    DbgBrk ();          // ***FINISHME*** -- Print-to-file
+////////////////////////////
+////////////////////////////
+////////////////////////////
+////////////////////////////} // End IF
+#ifdef DEBUG
+                            lpDevMode  = MyGlobalLock (pdex.hDevMode);
+                            lpDevNames = MyGlobalLock (pdex.hDevNames);
+#endif
+                            // Create a new font for the printer
+                            CreateNewFontCom (&hFontPR,
+                                              &lfPR,
+                                              &cfPR,
+                                              &tmPR,
+                                              &cxAveCharPR,
+                                              &cyAveCharPR,
+                                               pdex.hDC);
+                            // Setup the DOCINFO struc for the print job
+                            docInfo.cbSize       = sizeof (docInfo);
+                            docInfo.lpszDocName  = WS_APPNAME;
+                            docInfo.lpszOutput   = NULL;        // ***FIXME*** -- Insert filename
+////////////////////////////docInfo.lpszDatatype = NULL;
+////////////////////////////docInfo.fwType       = 0;
+
+                            // Start the print job
+                            StartDocW (pdex.hDC, &docInfo);
+
+                            // Tell the Edit Control to print the client area
+                            SendMessageW (hWndEC,
+                                          WM_PRINTCLIENT,
+                                          (WPARAM) pdex.hDC,
+                                          PRF_PRINTCLIENT
+                                        | ((pdex.Flags & PD_SELECTION) ? PRF_SELECTION
+                                                                       : (pdex.Flags & PD_CURRENTPAGE) ? PRF_CURRENTPAGE
+                                                                                                      : 0));
+                            // End the print job
+                            EndDoc (pdex.hDC);
+#ifdef DEBUG
+                            MyGlobalUnlock (pdex.hDevNames); lpDevNames = NULL;
+                            MyGlobalUnlock (pdex.hDevMode);  lpDevMode  = NULL;
+#endif
+                            break;
+                        } // End PD_RESULT_PRINT
+
+                        case PD_RESULT_CANCEL:
+                        case E_OUTOFMEMORY:
+                        case E_INVALIDARG:
+                        case E_POINTER:
+                        case E_HANDLE:
+                        case E_FAIL:
+                            break;
+                    } // End SWITCH
+
+                    // Free allocated resources
+                    if (pdex.hDC)
+                        DeleteDC (pdex.hDC);
+                    if (pdex.hDevMode)
+                        GlobalFree (pdex.hDevMode);
+                    if (pdex.hDevNames)
+                        GlobalFree (pdex.hDevNames);
+
+                    return FALSE;   // We handled the msg
+                } // End IDM_PRINT_WS
+
+                // The following messages are signalled from right-click on a Tab
                 case IDM_SAVECLOSE_WS:
                     if (SendMessageW (hWnd, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVE_WS, NULL, 0)))
                         // Close the tab
@@ -1337,6 +1565,8 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;   // We handled the msg
 
+                // The following messages are signalled from the Objects Menu
+                //   when a function window is open
                 case IDM_SAVE_FN:
                     // Tell the active window to handle it
                     PostMessageW (hWndActive, MYWM_SAVE_FN, wParam, lParam);
@@ -2371,11 +2601,12 @@ int PASCAL WinMain
     //   so its settings will be present
     //   for the second and subsequent time
     //   the common dialog is called.
-    InitChooseFont (&cfSM, &lfSM, DEF_SMPTSIZE);
-    InitChooseFont (&cfTC, &lfTC, DEF_TCPTSIZE);
-    InitChooseFont (&cfFE, &lfFE, DEF_FEPTSIZE);
-    InitChooseFont (&cfME, &lfME, DEF_MEPTSIZE);
-    InitChooseFont (&cfVE, &lfVE, DEF_VEPTSIZE);
+    InitChooseFont (&cfSM, &lfSM, DEF_SMPTSIZE, FALSE);
+    InitChooseFont (&cfPR, &lfPR, DEF_PRPTSIZE, TRUE );
+    InitChooseFont (&cfTC, &lfTC, DEF_TCPTSIZE, FALSE);
+    InitChooseFont (&cfFE, &lfFE, DEF_FEPTSIZE, FALSE);
+    InitChooseFont (&cfME, &lfME, DEF_MEPTSIZE, FALSE);
+    InitChooseFont (&cfVE, &lfVE, DEF_VEPTSIZE, FALSE);
 
     // Initialize tables for Primitive Fns, Operators, etc.
     InitPrimTabs ();

@@ -97,12 +97,14 @@
 #define IDM_SAVE_WS                     508
 #define IDM_SAVE_AS_WS                  509
 #define IDM_DROP_WS                     510
+#define IDM_PRINT_WS                    511
 
 #define IDM_SMFONT                      600
 #define IDM_TCFONT                      602
 #define IDM_FEFONT                      603
 #define IDM_MEFONT                      604
 #define IDM_VEFONT                      605
+#define IDM_PRFONT                      606
 
 #define IDM_UNDO                        700
 #define IDM_REDO                        701

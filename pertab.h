@@ -116,51 +116,53 @@ typedef struct tagPERTABDATA
                  lpSymQuadPW  ,     // C8:  ...            []PW
                  lpSymQuadRL  ,     // CC:  ...            []RL
                  lpSymQuadSA  ,     // D0:  ...            []SA
-                 lpSymQuadWSID;     // D4:  ...            []WSID
+                 lpSymQuadWSID,     // D4:  ...            []WSID
+                 lpSymQuadZ   ;     // D8:  ...            []Z
     struct tagSIS_HEADER
-                *lpSISBeg,          // D8:  Ptr to State Indicator Stack beginning
-                *lpSISCur,          // DC:  ...                          current (may be NULL if SI is empty)
-                *lpSISNxt;          // E0:  ...                          next
+                *lpSISBeg,          // DC:  Ptr to State Indicator Stack beginning
+                *lpSISCur,          // E0:  ...                          current (may be NULL if SI is empty)
+                *lpSISNxt;          // E4:  ...                          next
     struct tagPLLOCALVARS
-                *lpPLCur;           // E4:  Ptr to current plLocalVars struct
+                *lpPLCur;           // E8:  Ptr to current plLocalVars struct
                                     //      in thread creation order (NULL = none)
-    WNDPROC lpfnOldListboxWndProc,  // E8:  Save area for old Listbox procedure
-            lpfnOldEditCtrlWndProc; // EC:  Save area for old Edit Control procedure
+    WNDPROC lpfnOldListboxWndProc,  // EC:  Save area for old Listbox procedure
+            lpfnOldEditCtrlWndProc; // F0:  Save area for old Edit Control procedure
 
     // Magic function global memory handles
-    HGLOBAL      hGlbMF_MonIota,    // F0:  Extended Monadic Iota
-                 hGlbMF_DydIota,    // F4:  Extended Dyadic Iota
-                 hGlbMF_MonUpShoe,  // F8:  Monadic UpShoe
-                 hGlbMF_DydTilde,   // FC:  Dyadic Tilde
-                 hGlbMF_MonRank,    //100:  Monadic Rank
-                 hGlbMF_DydRank,    //104:  Dyadic Rank
-                 hGlbMF_Conform;    //108:  Conform for Rank operator
+    HGLOBAL      hGlbMF_MonIota,    // F4:  Extended Monadic Iota
+                 hGlbMF_DydIota,    // F8:  Extended Dyadic Iota
+                 hGlbMF_MonUpShoe,  // FC:  Monadic UpShoe
+                 hGlbMF_DydTilde,   //100:  Dyadic Tilde
+                 hGlbMF_MonRank,    //104:  Monadic Rank
+                 hGlbMF_DydRank,    //108:  Dyadic Rank
+                 hGlbMF_Conform;    //10C:  Conform for Rank operator
 
-    UINT         SILevel,           //10C:  Current State Indicator level
-                 CurTabID,          //110:  ID of the corresponding tab
-                 PrvTabID;          //114:  ID of the preceding tab (from which we were loaded)
-    HANDLE       hSemaDelay;        //118:  Delay semaphore (NULL if no delay active)
-    EXIT_TYPES   ImmExecExitType;   //11C:  ImmExec exit type (see EXIT_TYPES)
-    PL_YYSTYPE   YYResExec;         //120:  Result from execute primitive
+    UINT         SILevel,           //110:  Current State Indicator level
+                 CurTabID,          //114:  ID of the corresponding tab
+                 PrvTabID;          //118:  ID of the preceding tab (from which we were loaded)
+    HANDLE       hSemaDelay;        //11C:  Delay semaphore (NULL if no delay active)
+    EXIT_TYPES   ImmExecExitType;   //120:  ImmExec exit type (see EXIT_TYPES)
+    PL_YYSTYPE   YYResExec;         //124:  Result from execute primitive
                                     //      Size = 2Ch for DEBUG, 20h otherwise
-    LPPL_YYSTYPE lpStrand[STRAND_LEN];//14C:  Ptrs to strand accumulators in parser (4 bytes each)
+    LPPL_YYSTYPE lpStrand[STRAND_LEN];//150:  Ptrs to strand accumulators in parser (4 bytes each)
     LPLOADWSGLBVARCONV
-                 lpLoadWsGlbVarConv;//154:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
+                 lpLoadWsGlbVarConv;//158:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
     LPLOADWSGLBVARPARM
-                 lpLoadWsGlbVarParm;//158:  Ptr to extra parms for LoadWsGlbVarConv
-    LPMEMVIRTSTR lpLstMVS;          //164:  Ptr to last MEMVIRTSTR (NULL = none)
-    LPWCHAR      lpwszFormat,       //168:  Ptr to formatting save area
-                 lpwszTemp;         //16C:  Ptr to temporary  ...
-    UINT         uTempMaxSize,      //170:  Maximum size of lpwszTemp
-                 RegisterEBP,       //174:  Register EBP from an exception
-                 uErrLine;          //178:  Error line # from []FX for )IN
+                 lpLoadWsGlbVarParm;//15C:  Ptr to extra parms for LoadWsGlbVarConv
+    LPMEMVIRTSTR lpLstMVS;          //168:  Ptr to last MEMVIRTSTR (NULL = none)
+    LPWCHAR      lpwszFormat,       //16C:  Ptr to formatting save area
+                 lpwszBaseTemp,     //170:  Ptr to base of lpwszTemp
+                 lpwszTemp;         //174:  Ptr to temporary  ...
+    UINT         uTempMaxSize,      //178:  Maximum size of lpwszTemp
+                 RegisterEBP,       //17C:  Register EBP from an exception
+                 uErrLine;          //180:  Error line # from []FX for )IN
 #ifndef UNISCRIBE
     IMLangFontLink
-                *lpFontLink;        //17C:  Ptr to FontLink struc
+                *lpFontLink;        //184:  Ptr to FontLink struc
 #endif
-    APLCHAR      cQuadPR,           //180:  []PR     (' ') (When a char scalar)
-                 cQuadxSA;          //182:  []SA     (0)   (in its index form as an integer)
-                                    //184:  Length
+    APLCHAR      cQuadPR,           //188:  []PR     (' ') (When a char scalar)
+                 cQuadxSA;          //18A:  []SA     (0)   (in its index form as an integer)
+                                    //18C:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

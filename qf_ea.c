@@ -93,7 +93,7 @@ LPPL_YYSTYPE SysFnMonEA_EM_YY
 
 {
     return PrimFnValenceError_EM (lptkFunc);
-} // End SysMonEA_EM_YY
+} // End SysFnMonEA_EM_YY
 #undef  APPEND_NAME
 
 
@@ -130,7 +130,7 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
 
 
 
-} // End SysDydEA_EM_YY
+} // End SysFnDydEA_EM_YY
 #undef  APPEND_NAME
 
 

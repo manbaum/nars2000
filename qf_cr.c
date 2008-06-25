@@ -136,11 +136,11 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     APLRANK        aplRankRht;          // Right arg rank
     HGLOBAL        hGlbRht = NULL,      // Right arg global memory handle
                    hGlbRes = NULL,      // Result    ...
-                   hGlbData,            // Data      ...
+                   hGlbData = NULL,     // Data      ...
                    hGlbTxtLine;         // Line text ...
     LPVOID         lpMemRht = NULL,     // Ptr to right arg global memory
                    lpMemRes = NULL,     // Ptr to result    ...
-                   lpMemData;           // Ptr to function data ...
+                   lpMemData = NULL;    // Ptr to function data ...
     LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
     UINT           uRes;                // Loop counter
     APLLONGEST     aplLongestRht;       // Right arg longest if immediate
@@ -195,7 +195,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         //   and the .Inuse flag
         lpSymEntry =
           SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
-                                  (UINT) aplNELMRht,
+                                  (__int3264) aplNELMRht,
                                  &stFlags);
     else
     {
@@ -207,7 +207,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         //   and the .Inuse flag
         lpSymEntry =
           SymTabLookupNameLength ((LPAPLCHAR) lpMemRht,
-                                  (UINT) aplNELMRht,
+                                  (__int3264) aplNELMRht,
                                  &stFlags);
     } // End IF/ELSE
 
@@ -264,7 +264,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     aplNELMRes = lpMemTxtLine->U;
 
                     // Copy the function line text to global memory
-                    CopyMemory (lpwszTemp, &lpMemTxtLine->C, (UINT) aplNELMRes * sizeof (lpMemTxtLine->C));
+                    MoveMemory (lpwszTemp, &lpMemTxtLine->C, (__int3264) aplNELMRes * sizeof (lpMemTxtLine->C));
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -301,9 +301,10 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     // Get # function lines
                     uNumLines = lpMemDfnHdr->numFcnLines;
 
-                    // Run through the function lines looking for the longest
+                    // If the result is a matrix, ...
                     if (IsMatrix (aplRankRes))
                     {
+                        // Run through the function lines looking for the longest
                         for (uLine = 0; uLine < uNumLines; uLine++)
                         {
                             // Get the line text global memory handle
@@ -337,11 +338,10 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                     // Allocate space for the result
                     // N.B.:  Conversion from APLUINT to UINT
-                    Assert (ByteRes EQ (UINT) ByteRes);
-                    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+                    Assert (ByteRes EQ (__int3264) ByteRes);
+                    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
                     if (!hGlbRes)
-                        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                   lptkFunc);
+                        goto WSFULL_EXIT;
                     else
                     {
                         // Lock the memory to get a ptr to it
@@ -352,7 +352,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                         lpHeader->ArrType    = aplTypeRes;
 ////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
                         lpHeader->RefCnt     = 1;
                         lpHeader->NELM       = aplNELMRes;
                         lpHeader->Rank       = aplRankRes;
@@ -388,10 +388,12 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                             hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
                             if (hGlbTxtLine)
+                            {
                                 // Copy the header to the result as either a row or as an allocated HGLOBAL
                                 lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, hGlbTxtLine, uMaxLineLen, lptkFunc);
                                 if (lpMemResChar EQ NULL)
                                     goto ERROR_EXIT;
+                            } // End IF
 #undef  lpMemResChar
                             // Skip to the next struct
                             lpFcnLines++;
@@ -425,7 +427,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -447,6 +449,11 @@ RIGHT_DOMAIN_EXIT:
                                lptkRhtArg);
     goto ERROR_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (hGlbRes)
     {
@@ -460,6 +467,12 @@ ERROR_EXIT:
         FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    if (hGlbData && lpMemData)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbData); lpMemData = NULL;
+    } // End IF
+
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
@@ -508,16 +521,14 @@ LPVOID SysFnCR_Copy_EM
 
         // Allocate space for the result.
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbCpy = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (__int3264) ByteRes);
+        hGlbCpy = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbCpy)
         {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
             // Mark as in error
             lpMemRes = NULL;
 
-            goto ERROR_EXIT;
+            goto WSFULL_EXIT;
         } // End IF
 
         // Lock the memory to get a ptr to it
@@ -528,7 +539,7 @@ LPVOID SysFnCR_Copy_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = lpMemTxtLine->U;
         lpHeader->Rank       = 1;
@@ -541,7 +552,7 @@ LPVOID SysFnCR_Copy_EM
         lpMemCpy = VarArrayBaseToData (lpMemCpy, 1);
 
         // Copy the text
-        CopyMemory (lpMemCpy, &lpMemTxtLine->C, lpMemTxtLine->U * sizeof (APLCHAR));
+        MoveMemory (lpMemCpy, &lpMemTxtLine->C, lpMemTxtLine->U * sizeof (APLCHAR));
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbCpy); lpMemCpy = NULL;
@@ -554,7 +565,7 @@ LPVOID SysFnCR_Copy_EM
         uLineLen = lpMemTxtLine->U;
 #define lpMemResChar        ((LPAPLCHAR) lpMemRes)
         // Copy the function header text to the result
-        CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
+        MoveMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
 
         // Fill the remainder of the line with blanks
         // Could use FillMemoryW ??
@@ -565,7 +576,16 @@ LPVOID SysFnCR_Copy_EM
             *lpMemResChar++ = L' ';
 #undef  lpMemResChar
     } // End IF/ELSE
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbTxt); lpMemTxtLine = NULL;
 
@@ -603,14 +623,10 @@ HGLOBAL SysFnMonCR_ALLOC_EM
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -620,7 +636,7 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -647,13 +663,18 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     if (lpw)
     {
         // Copy the function text to the result
-        CopyMemory (lpMemRes, lpw, (UINT) aplNELMRes * sizeof (APLCHAR));
+        MoveMemory (lpMemRes, lpw, (__int3264) aplNELMRes * sizeof (APLCHAR));
     } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     return hGlbRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnMonCR_ALLOC_EM
 #undef  APPEND_NAME
 
@@ -680,7 +701,7 @@ LPAPLCHAR CopySteName
     uNameLen = lstrlenW (lpMemName);
 
     // Copy the name to the output area
-    CopyMemory (lpMemRes, lpMemName, uNameLen * sizeof (APLCHAR));
+    MoveMemory (lpMemRes, lpMemName, uNameLen * sizeof (APLCHAR));
 
     // Skip over the name
     lpMemRes += uNameLen;
@@ -723,7 +744,8 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     APLNELM    aplNELMLft;          // Left arg NELM
     APLRANK    aplRankLft;          // Left arg rank
     HGLOBAL    hGlbLft = NULL;      // Left arg global memory handle
-    APLLONGEST aplLongestLft;       // Left arg immediate value
+    APLLONGEST aplLongestLft,       // Left arg immediate value
+               aplLongestTmp;       // Temporary immediate value
     BOOL       bRet = TRUE;         // TRUE iff result is valid
 
     // Get the attributes (Type, NELM, and Rank)
@@ -740,14 +762,10 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
 
     // Check for LEFT DOMAIN ERROR
     if (!IsSimpleNum (aplTypeLft))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto LEFT_DOMAIN_EXIT;
 
     // Get left arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, NULL);
+    aplLongestLft = GetGlbPtrs (lptkLftArg, &hGlbLft);
 
     //Split cases based upon the left arg storage type
     switch (aplTypeLft)
@@ -761,19 +779,14 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
         case ARRAY_BOOL:
         case ARRAY_INT:
         case ARRAY_APA:
-            if (!bRet)
-            {
-                APLLONGEST aplLongestTmp;       // Temporary immediate value
+            // Calc the absolute value so we can compare against valid values
+            aplLongestTmp = abs64 (aplLongestLft);
 
-                // Calc the absolute value so we can compare against valid values
-                aplLongestTmp = abs64 (aplLongestLft);
-
-                // Check for LEFT DOMAIN ERROR
-                if (aplLongestTmp NE 1
-                 && aplLongestTmp NE 2)
-                    goto LEFT_DOMAIN_EXIT;
-            } // End IF
-
+            // Check for LEFT DOMAIN ERROR
+            if (!bRet
+             || (aplLongestTmp NE 1
+              && aplLongestTmp NE 2))
+                goto LEFT_DOMAIN_EXIT;
             break;
 
         defstop

@@ -65,6 +65,7 @@
 
 #define KEYNAME_LOGFONTFE       L"LogFontFE"
 #define KEYNAME_LOGFONTME       L"LogFontME"
+#define KEYNAME_LOGFONTPR       L"LogFontPR"
 #define KEYNAME_LOGFONTSM       L"LogFontSM"
 #define KEYNAME_LOGFONTTC       L"LogFontTC"
 #define KEYNAME_LOGFONTVE       L"LogFontVE"
@@ -208,6 +209,7 @@ void ReadIniFileGlb
     // Read in the LOGFONT strucs
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTFE, &lfFE);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTME, &lfME);
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTPR, &lfPR);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTSM, &lfSM);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC, &lfTC);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTVE, &lfVE);
@@ -558,7 +560,7 @@ HGLOBAL GetPrivateProfileGlbComW
 {
     WCHAR   wszTemp[1024];                          // Temporary storage for string results
     APLNELM aplNELMRes;                             // Result NELM
-    UINT    ByteRes;                                // # bytes in the result
+    APLUINT ByteRes;                                // # bytes in the result
     HGLOBAL hGlbRes;                                // Result global memory handle
     LPVOID  lpMemRes,                               // Ptr to result global memory
             lpMemInp;                               // Ptr to input global memory
@@ -588,12 +590,12 @@ HGLOBAL GetPrivateProfileGlbComW
     aplNELMRes = ScanNELM (lpMemInp, aplTypeRes);
 
     // Calculate space needed for the result
-    ByteRes = (UINT) CalcArraySize (aplTypeRes, aplNELMRes, 1);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, 1);
 
     // Allocate space for the data
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbRes = MyGlobalAlloc (GHND, ByteRes);
+    hGlbRes = MyGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
         return hGlbRes;
 
@@ -886,6 +888,11 @@ void SaveIniFile
                                  KEYNAME_LOGFONTME, // Ptr to the key name
                                 &lfME,              // Ptr to LOGFONT
                                  lpwszIniFile);     // Ptr to the file name
+    // Write out the LOGFONT struc for PR
+    WritePrivateProfileLogfontW (SECTNAME_FONTS,    // Ptr to the section name
+                                 KEYNAME_LOGFONTPR, // Ptr to the key name
+                                &lfPR,              // Ptr to LOGFONT
+                                 lpwszIniFile);     // Ptr to the file name
     // Write out the LOGFONT struc for SM
     WritePrivateProfileLogfontW (SECTNAME_FONTS,    // Ptr to the section name
                                  KEYNAME_LOGFONTSM, // Ptr to the key name
@@ -991,12 +998,12 @@ void SaveIniFile
     //************************ []CT ***************************
     // Format []CT
     lpaplChar =
-     FormatFloatFC (wszTemp,                       // Ptr to output save area
-                    fQuadCT_CWS,                   // The value to format
-                    DEF_MAX_QUADPP,                // Precision to use
-                    L'.',                          // Char to use as decimal separator
-                    L'-',                          // Char to use as overbar
-                    2);                            // DTOA mode
+     FormatFloatFC (wszTemp,                        // Ptr to output save area
+                    fQuadCT_CWS,                    // The value to format
+                    DEF_MAX_QUADPP,                 // Precision to use
+                    L'.',                           // Char to use as decimal separator
+                    L'-',                           // Char to use as overbar
+                    DEF_DTOA_MODE);                 // DTOA mode (Mode 2: max (ndigits, 1))
     // Zap the trailing blank
     lpaplChar[-1] = L'\0';
 

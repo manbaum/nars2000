@@ -95,6 +95,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , NULL              , SYSVAR_RL  },  // Random Link
     {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL              , SYSVAR_SA  },  // Stop Action
     {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL              , SYSVAR_WSID},  // Workspace Identifier
+    {WS_UTF16_QUAD L"z"        , SYSVAR,      TRUE , NULL              , SYSVAR_Z   },  // Temporary result
     {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL              , 0          },  // User-defined function/operator entry point for Prototype
     {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            Inverse
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            Singleton
@@ -181,7 +182,7 @@ void MakePermVars
     //***************************************************************
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbZilde = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_BOOL, 0, 1));
+    hGlbZilde = MyGlobalAlloc (GHND, (__int3264) CalcArraySize (ARRAY_BOOL, 0, 1));
     if (!hGlbZilde)
     {
         DbgStop ();         // We should never get here
@@ -208,7 +209,7 @@ void MakePermVars
     //***************************************************************
     // Create initial value for []EM (3 x 0 char matrix)
     //***************************************************************
-    hGlbM3x0Char = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, 0, 2));
+    hGlbM3x0Char = MyGlobalAlloc (GHND, (__int3264) CalcArraySize (ARRAY_CHAR, 0, 2));
     if (!hGlbM3x0Char)
     {
         DbgStop ();         // We should never get here
@@ -317,7 +318,7 @@ HGLOBAL MakePermVectorCom
 
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbRes = MyGlobalAlloc (GHND, (UINT) CalcArraySize (aplTypeCom, uLen, 1));
+    hGlbRes = MyGlobalAlloc (GHND, (__int3264) CalcArraySize (aplTypeCom, uLen, 1));
     if (!hGlbRes)
     {
         DbgStop ();         // We should never get here
@@ -440,6 +441,7 @@ BOOL InitSystemNames_EM
     ptdSysVarSym[SYSVAR_RL  ] = &lpMemPTD->lpSymQuadRL  ;
     ptdSysVarSym[SYSVAR_SA  ] = &lpMemPTD->lpSymQuadSA  ;
     ptdSysVarSym[SYSVAR_WSID] = &lpMemPTD->lpSymQuadWSID;
+    ptdSysVarSym[SYSVAR_Z   ] = &lpMemPTD->lpSymQuadZ   ;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -638,10 +640,9 @@ BOOL ValidateInteger_EM
     APLSTYPE aplTypeRht;            // Right arg storage type
     APLNELM  aplNELMRht;            // Right arg NELM
     APLRANK  aplRankRht;            // Right arg rank
-    HGLOBAL  hGlbRht;               // Right arg global memory handle
-    LPVOID   lpMemRht;              // Ptr to right arg global memory
-    BOOL     bRet = TRUE;
-    LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
+    HGLOBAL  hGlbRht = NULL;        // Right arg global memory handle
+    LPVOID   lpMemRht = NULL;       // Ptr to right arg global memory
+    BOOL     bRet = FALSE;          // TRUE iff the result is valid
     APLINT   aplInteger;
 
     // Split cases based upon the token type
@@ -702,12 +703,13 @@ BOOL ValidateInteger_EM
                     break;
 
                 case IMMTYPE_CHAR:
-                    bRet = FALSE;
-
                     break;
             } // End SWITCH
 
-            goto NORMAL_EXIT;
+            if (bRet)
+                goto NORMAL_EXIT;
+            else
+                goto DOMAIN_EXIT;
 
         case TKT_VARIMMED:
             // Split cases based upon the token immediate type
@@ -748,17 +750,16 @@ BOOL ValidateInteger_EM
                     break;
 
                 case IMMTYPE_CHAR:
-                    bRet = FALSE;
-
                     break;
             } // End SWITCH
 
-            goto NORMAL_EXIT;
+            if (bRet)
+                goto NORMAL_EXIT;
+            else
+                goto DOMAIN_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkExpr);
-            return FALSE;
+            goto SYNTAX_EXIT;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
@@ -768,14 +769,17 @@ BOOL ValidateInteger_EM
             break;          // Continue with HGLOBAL processing
 
         defstop
-            return FALSE;
+            goto DOMAIN_EXIT;
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbRht));
 
+    // Clear the type bits
+    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
+    lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type, NELM, and Rank
@@ -789,18 +793,12 @@ BOOL ValidateInteger_EM
 
     // Check for scalar or vector
     if (IsMultiRank (aplRankRht))
-    {
-        lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto RANK_EXIT;
+    else
     // Check for singleton or empty
     if (IsMultiNELM (aplNELMRht))
-    {
-        lpwErrMsg = ERRMSG_LENGTH_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto LENGTH_EXIT;
+    else
     if (IsEmpty (aplNELMRht))
     {
         // Must be simple to be valid
@@ -837,8 +835,6 @@ BOOL ValidateInteger_EM
         case ARRAY_CHAR:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            bRet = FALSE;
-
             break;
 
         case ARRAY_FLOAT:
@@ -857,18 +853,41 @@ BOOL ValidateInteger_EM
             break;
     } // End IF/ELSE/SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
-NORMAL_EXIT:
-    // If in error, set error message;
-    //   otherwise, save the value in the name
     if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg,
-                                   lptkExpr);
-    else
+        goto DOMAIN_EXIT;
+NORMAL_EXIT:
+    // Save the value in the name
+    lptkNamArg->tkData.tkSym->stData.stInteger = aplInteger;
+    lptkNamArg->tkFlags.NoDisplay = TRUE;
+
+    goto UNLOCK_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkExpr);
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkExpr);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkExpr);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkExpr);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+UNLOCK_EXIT:
+    if (hGlbRht && lpMemRht)
     {
-        lptkNamArg->tkData.tkSym->stData.stInteger = aplInteger;
-        lptkNamArg->tkFlags.NoDisplay = TRUE;
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
     return bRet;
@@ -966,14 +985,13 @@ BOOL ValidateFloat_EM
                                     //   is adjusted to be the closer range limit
 
 {
-    HGLOBAL  hGlbRht;               // Right arg global memory handle
-    LPVOID   lpMemRht;              // Ptr to right arg global memory
+    HGLOBAL  hGlbRht = NULL;        // Right arg global memory handle
+    LPVOID   lpMemRht = NULL;       // Ptr to right arg global memory
     APLSTYPE aplTypeRht;            // Right arg storage type
     APLNELM  aplNELMRht;            // Right arg NELM
     APLRANK  aplRankRht;            // Right arg rank
-    BOOL     bRet = TRUE;           // TRUE iff result is valid
-    LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
-    APLFLOAT aplFloat;
+    BOOL     bRet = FALSE;          // TRUE iff result is valid
+    APLFLOAT aplFloat;              // Temporary float
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -1026,12 +1044,13 @@ BOOL ValidateFloat_EM
                     break;
 
                 case IMMTYPE_CHAR:
-                    bRet = FALSE;
-
                     break;
             } // End SWITCH
 
-            goto NORMAL_EXIT;
+            if (bRet)
+                goto NORMAL_EXIT;
+            else
+                goto DOMAIN_EXIT;
 
         case TKT_VARIMMED:
             // Split cases based upon the token immediate type
@@ -1065,17 +1084,16 @@ BOOL ValidateFloat_EM
                     break;
 
                 case IMMTYPE_CHAR:
-                    bRet = FALSE;
-
                     break;
             } // End SWITCH
 
-            goto NORMAL_EXIT;
+            if (bRet)
+                goto NORMAL_EXIT;
+            else
+                goto DOMAIN_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lpToken);
-            return FALSE;
+            goto SYNTAX_EXIT;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
@@ -1085,14 +1103,17 @@ BOOL ValidateFloat_EM
             break;          // Continue with HGLOBAL processing
 
         defstop
-            return FALSE;
+            goto DOMAIN_EXIT;
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbRht));
 
+    // Clear the type bits
+    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
+    lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type, NELM, and Rank
@@ -1106,18 +1127,12 @@ BOOL ValidateFloat_EM
 
     // Check for scalar or vector
     if (IsMultiRank (aplRankRht))
-    {
-        lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto RANK_EXIT;
+    else
     // Check for singleton or empty
     if (IsMultiNELM (aplNELMRht))
-    {
-        lpwErrMsg = ERRMSG_LENGTH_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto LENGTH_EXIT;
+    else
     if (IsEmpty (aplNELMRht))
     {
         // Must be simple to be valid
@@ -1150,8 +1165,6 @@ BOOL ValidateFloat_EM
         case ARRAY_CHAR:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            bRet = FALSE;
-
             break;
 
         case ARRAY_FLOAT:
@@ -1167,18 +1180,41 @@ BOOL ValidateFloat_EM
             break;
     } // End IF/ELSE/SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
-NORMAL_EXIT:
-    // If in error, set error message;
-    //   otherwise, save the value in the name
     if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg,
-                                   lpToken);
-    else
+        goto NORMAL_EXIT;
+NORMAL_EXIT:
+    // Save the value in the name
+    lptkNamArg->tkData.tkSym->stData.stFloat = aplFloat;
+    lptkNamArg->tkFlags.NoDisplay = TRUE;
+
+    goto UNLOCK_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lpToken);
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lpToken);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lpToken);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lpToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+UNLOCK_EXIT:
+    if (hGlbRht && lpMemRht)
     {
-        lptkNamArg->tkData.tkSym->stData.stFloat = aplFloat;
-        lptkNamArg->tkFlags.NoDisplay = TRUE;
+        // We no longer need this ptr
+        MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
     } // End IF
 
     return bRet;
@@ -1208,19 +1244,17 @@ BOOL ValidateCharVector_EM
      BOOL     bWSID)                // TRUE iff this is []WSID
 
 {
-    LPVOID       lpMemRht,          // Ptr to right arg global memory
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes;           // Result    ...
+    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
                  lpMemRes;          // Ptr to result    ...
-    BOOL         bRet = TRUE,       // TRUE iff result is valid
+    BOOL         bRet = FALSE,      // TRUE iff result is valid
                  bScalar = FALSE;   // TRUE iff right arg is scalar
-    LPWCHAR      lpwErrMsg =
-                   ERRMSG_DOMAIN_ERROR APPEND_NAME;
     APLCHAR      aplChar;           // Right arg first char
     APLSTYPE     aplTypeRht;        // Right arg storage type
     APLNELM      aplNELMRht,        // Right arg NELM
                  aplNELMRes;        // Result    ...
     APLRANK      aplRankRht;        // Right arg rank
-    HGLOBAL      hGlbRht,           // Right arg global memory handle
-                 hGlbRes;           // Result    ...
     APLUINT      ByteRes;           // # bytes in the result
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -1265,9 +1299,7 @@ BOOL ValidateCharVector_EM
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
-                    bRet = FALSE;
-
-                    break;
+                    goto DOMAIN_EXIT;
 
                 case IMMTYPE_CHAR:
                     aplChar = lpToken->tkData.tkSym->stData.stChar;
@@ -1286,9 +1318,7 @@ BOOL ValidateCharVector_EM
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
-                    bRet = FALSE;
-
-                    break;
+                    goto DOMAIN_EXIT;
 
                 case IMMTYPE_CHAR:
                     aplChar = lpToken->tkData.tkChar;
@@ -1301,9 +1331,7 @@ BOOL ValidateCharVector_EM
             goto NORMAL_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lpToken);
-            return FALSE;
+            goto SYNTAX_EXIT;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
@@ -1313,14 +1341,17 @@ BOOL ValidateCharVector_EM
             break;          // Continue with HGLOBAL processing
 
         defstop
-            return FALSE;
+            goto DOMAIN_EXIT;
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbRht));
 
+    // Clear the type bits
+    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
+    lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the right arg Type, NELM, and Rank
@@ -1334,11 +1365,8 @@ BOOL ValidateCharVector_EM
 
     // Check for scalar or vector
     if (IsMultiRank (aplRankRht))
-    {
-        lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto RANK_EXIT;
+    else
     // Split cases based upon the array type
     switch (aplTypeRht)
     {
@@ -1347,9 +1375,7 @@ BOOL ValidateCharVector_EM
         case ARRAY_FLOAT:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            bRet = FALSE;
-
-            break;
+            goto DOMAIN_EXIT;
 
         case ARRAY_CHAR:
             aplChar = *(LPAPLCHAR) lpMemRht;
@@ -1359,14 +1385,8 @@ BOOL ValidateCharVector_EM
             break;
 
         defstop
-            break;
+            goto DOMAIN_EXIT;
     } // End IF/ELSE/SWITCH
-
-    // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
-
-    if (!bRet)
-        goto ERROR_EXIT;
 
     // If the argument is a scalar, make a vector out of it
     if (bScalar)
@@ -1375,12 +1395,6 @@ BOOL ValidateCharVector_EM
     // If this is []WSID, expand the name
     if (bWSID)
     {
-        // Lock the memory to get a ptr to it
-        lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
-
-        // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, 1);
-
 #define lpMemChar       ((LPAPLCHAR) lpMemRht)
 
         // Delete leading blanks
@@ -1401,7 +1415,7 @@ BOOL ValidateCharVector_EM
         if (aplNELMRes)
         {
             // Copy the right arg to a location with a terminating zero
-            CopyMemory (lpwszTemp, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
+            CopyMemory (lpwszTemp, lpMemRht, (__int3264) aplNELMRht * sizeof (APLCHAR));
             lpwszTemp[aplNELMRht] = L'\0';
 
             // Convert the []WSID workspace name into a canonical form
@@ -1410,30 +1424,22 @@ BOOL ValidateCharVector_EM
             // Get length of the name as the NELM
             aplNELMRes = lstrlenW (lpwszTemp);
 
-            // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
-
             goto ALLOC_VECTOR;
         } else
         {
             // The result is an empry char vector
             hGlbRes = hGlbV0Char;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
-
             goto NORMAL_EXIT;
         } // End IF/ELSE
     } // End IF
 
     // Copy the right arg global as the result
-    hGlbRes = CopySymGlbDir (hGlbRht);
+    hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
 
     goto NORMAL_EXIT;
 
 MAKE_VECTOR:
-    aplNELMRes = 1;
-
     // If the []var is []WSID, expand the name to be fully-qualified
     if (bWSID)
     {
@@ -1448,7 +1454,8 @@ MAKE_VECTOR:
 
         // Get length of the name as the NELM
         aplNELMRes = lstrlenW (lpwszTemp);
-    } // End IF
+    } else
+        aplNELMRes = 1;
 ALLOC_VECTOR:
     // Calculate space needed for the result
     //   (a character vector)
@@ -1456,53 +1463,71 @@ ALLOC_VECTOR:
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes + bWSID, 1);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-    if (hGlbRes NE NULL)
-    {
-        // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    if (hGlbRes EQ NULL)
+        goto DOMAIN_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-        // Fill in the header values
-        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeader->ArrType    = ARRAY_CHAR;
-////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-        lpHeader->RefCnt     = 1;
-        lpHeader->NELM       = aplNELMRes;
-        lpHeader->Rank       = 1;
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
 #undef  lpHeader
 
-        // Save the dimension
-        *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    // Save the dimension
+    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
-        // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-        if (bWSID)
-            CopyMemory (lpMemRes, lpwszTemp, (UINT) aplNELMRes * sizeof (APLCHAR));
-        else
-            *((LPAPLCHAR) lpMemRes) = aplChar;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-    } else
-        bRet = FALSE;
-ERROR_EXIT:
-NORMAL_EXIT:
-    // If in error, set error message;
-    //   otherwise, save the value in the name
-    if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg,
-                                   lpToken);
+    if (bWSID)
+        CopyMemory (lpMemRes, lpwszTemp, (__int3264) aplNELMRes * sizeof (APLCHAR));
     else
-    {
-        // Free the old value
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
+        *((LPAPLCHAR) lpMemRes) = aplChar;
 
-        // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
-        lptkNamArg->tkFlags.NoDisplay = TRUE;
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+NORMAL_EXIT:
+    // Free the old value
+    FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
+
+    // Save as new value
+    lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
+    lptkNamArg->tkFlags.NoDisplay = TRUE;
+
+    // Mark as successful
+    bRet = TRUE;
+
+    goto UNLOCK_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lpToken);
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lpToken);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lpToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+UNLOCK_EXIT:
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
     return bRet;
@@ -1536,12 +1561,13 @@ BOOL ValidateIntegerVector_EM
                                     //   is adjusted to be the closer range limit
 
 {
-    LPVOID   lpMemRht,              // Ptr to right arg global memory
+    HGLOBAL  hGlbRht = NULL,        // Right arg global memory handle
+             hGlbRes;               // Result    ...
+    LPVOID   lpMemRht = NULL,       // Ptr to right arg global memory
              lpMemIniRht,           // ...
              lpMemRes;              // Ptr to result    ...
-    BOOL     bRet = TRUE,           // TRUE iff result is valid
+    BOOL     bRet = FALSE,          // TRUE iff result is valid
              bScalar = FALSE;       // TRUE iff right arg is a scalar
-    LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     APLINT   aplInteger,            // Right arg first integer
              apaOffRht,             // Right arg APA offset
              apaMulRht;             // Right arg APA multiplier
@@ -1549,8 +1575,6 @@ BOOL ValidateIntegerVector_EM
     APLNELM  aplNELMRht,            // Right arg NELM
              aplNELMRes;            // Result    ...
     APLRANK  aplRankRht;            // Right arg rank
-    HGLOBAL  hGlbRht,               // Right arg global memory handle
-             hGlbRes;               // Result    ...
     APLUINT  ByteRes,               // # bytes in the result
              uRht;                  // Loop counter
     UINT     uBitMask;              // Bit mask for looping through Booleans
@@ -1593,8 +1617,7 @@ BOOL ValidateIntegerVector_EM
                         bScalar = TRUE;
 
                         goto MAKE_VECTOR;
-                    } else
-                        goto ERROR_EXIT;
+                    } // End IF
 
                     break;
 
@@ -1614,20 +1637,19 @@ BOOL ValidateIntegerVector_EM
                             bScalar = TRUE;
 
                             goto MAKE_VECTOR;
-                        } else
-                            goto ERROR_EXIT;
+                        } // End IF
                     } // End IF
 
                     break;
 
                 case IMMTYPE_CHAR:
-                    bRet = FALSE;
-
                     break;
 
+                defstop
+                    break;
             } // End SWITCH
 
-            break;
+            goto DOMAIN_EXIT;
 
         case TKT_VARIMMED:
             // Split cases based upon the token immediate type
@@ -1647,8 +1669,7 @@ BOOL ValidateIntegerVector_EM
                         bScalar = TRUE;
 
                         goto MAKE_VECTOR;
-                    } else
-                        goto ERROR_EXIT;
+                    } // End IF
 
                     break;
 
@@ -1668,24 +1689,22 @@ BOOL ValidateIntegerVector_EM
                             bScalar = TRUE;
 
                             goto MAKE_VECTOR;
-                        } else
-                            goto ERROR_EXIT;
+                        } // End IF
                     } // End IF
 
                     break;
 
                 case IMMTYPE_CHAR:
-                    bRet = FALSE;
+                    break;
 
+                defstop
                     break;
             } // End SWITCH
 
-            goto NORMAL_EXIT;
+            goto DOMAIN_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkRhtArg);
-            return FALSE;
+            goto SYNTAX_EXIT;
 
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
@@ -1694,14 +1713,17 @@ BOOL ValidateIntegerVector_EM
             break;          // Continue with HGLOBAL processing
 
         defstop
-            return FALSE;
+            goto DOMAIN_EXIT;
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbRht));
 
+    // Clear the type bits
+    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+
     // Lock the memory to get a ptr to it
-    lpMemIniRht = lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
+    lpMemIniRht = lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type, NELM, and Rank
@@ -1715,11 +1737,8 @@ BOOL ValidateIntegerVector_EM
 
     // Ensure scalar or vector
     if (IsMultiRank (aplRankRht))
-    {
-        lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto RANK_EXIT;
+    else
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
     {
@@ -1738,7 +1757,7 @@ BOOL ValidateIntegerVector_EM
                                              uValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
-                    goto ERROR_EXIT;
+                    goto DOMAIN_EXIT;
 
                 // Shift over the bit mask
                 uBitMask <<= 1;
@@ -1768,7 +1787,7 @@ BOOL ValidateIntegerVector_EM
                                              uValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
-                    goto ERROR_EXIT;
+                    goto DOMAIN_EXIT;
             } // End FOR
 
             bScalar = IsScalar (aplRankRht);
@@ -1788,7 +1807,7 @@ BOOL ValidateIntegerVector_EM
                                              uValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
-                    goto ERROR_EXIT;
+                    goto DOMAIN_EXIT;
             } // End FOR
 
             bScalar = IsScalar (aplRankRht);
@@ -1813,7 +1832,7 @@ BOOL ValidateIntegerVector_EM
                                              uValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
-                    goto ERROR_EXIT;
+                    goto DOMAIN_EXIT;
             } // End FOR
 
             bScalar = IsScalar (aplRankRht);
@@ -1823,16 +1842,11 @@ BOOL ValidateIntegerVector_EM
         case ARRAY_CHAR:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            bRet = FALSE;
-
-            break;
+            goto DOMAIN_EXIT;
 
         defstop
             break;
     } // End IF/ELSE/SWITCH
-
-    if (!bRet)
-        goto ERROR_EXIT;
 
     // If the argument is a scalar, make a vector out of it
     if (bScalar)
@@ -1843,7 +1857,7 @@ BOOL ValidateIntegerVector_EM
     {
         case ARRAY_INT:
             // Copy the right arg global as the result
-            hGlbRes = CopySymGlbDir (hGlbRht);
+            hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
 
             break;
 
@@ -1854,7 +1868,7 @@ BOOL ValidateIntegerVector_EM
             ByteRes = CalcArraySize (ARRAY_INT, aplNELMRht, 1);
 
             // Allocate space for the result
-            hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+            hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
             if (hGlbRes NE NULL)
             {
                 // Lock the memory to get a ptr to it
@@ -1912,7 +1926,7 @@ BOOL ValidateIntegerVector_EM
                         if (bRet)
                             *((LPAPLINT) lpMemRes)++ = aplInteger;
                         else
-                            break;
+                            goto DOMAIN_EXIT;
 
                     case ARRAY_APA:
                         *((LPAPLINT) lpMemRes)++ = apaOffRht + apaMulRht * uRht;
@@ -1926,7 +1940,7 @@ BOOL ValidateIntegerVector_EM
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
             } else
-                bRet = FALSE;
+                goto DOMAIN_EXIT;
             break;
 
         defstop
@@ -1943,56 +1957,72 @@ MAKE_VECTOR:
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-    if (hGlbRes NE NULL)
-    {
-        // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-        // Fill in the header values
-        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeader->ArrType    = ARRAY_INT;
-////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-        lpHeader->RefCnt     = 1;
-        lpHeader->NELM       = aplNELMRes;
-        lpHeader->Rank       = 1;
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
 #undef  lpHeader
 
-        // Save the dimension
-        *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    // Save the dimension
+    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
-        // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-        *((LPAPLINT) lpMemRes) = aplInteger;
+    *((LPAPLINT) lpMemRes) = aplInteger;
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-    } else
-        bRet = FALSE;
-ERROR_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 NORMAL_EXIT:
+    // Free the old value
+    FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
+
+    // Save as new value
+    lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
+    lptkNamArg->tkFlags.NoDisplay = TRUE;
+
+    // Mark as successful
+    bRet = TRUE;
+
+    goto UNLOCK_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+UNLOCK_EXIT:
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
         MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
-    } // End IF
-
-    // If in error, set error message;
-    //   otherwise, save the value in the name
-    if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg,
-                                   lptkRhtArg);
-    else
-    {
-        // Free the old value
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
-
-        // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
-        lptkNamArg->tkFlags.NoDisplay = TRUE;
     } // End IF
 
     return bRet;
@@ -2467,12 +2497,11 @@ BOOL ValidSetPR_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    HGLOBAL      hGlbRht;       // Right arg global memory handle
-    LPVOID       lpMemRht;      // Ptr to right arg global memory
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
-    LPWCHAR      lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
+    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    BOOL         bRet = FALSE;      // TRUE iff result is valid
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -2510,9 +2539,7 @@ BOOL ValidSetPR_EM
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
-                    bRet = FALSE;
-
-                    break;
+                    goto DOMAIN_EXIT;
 
                 case IMMTYPE_CHAR:
                     lpMemPTD->cQuadPR = lptkRhtArg->tkData.tkSym->stData.stChar;
@@ -2529,9 +2556,7 @@ BOOL ValidSetPR_EM
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
-                    bRet = FALSE;
-
-                    break;
+                    goto DOMAIN_EXIT;
 
                 case IMMTYPE_CHAR:
                     lpMemPTD->cQuadPR = lptkRhtArg->tkData.tkChar;
@@ -2542,9 +2567,7 @@ BOOL ValidSetPR_EM
             break;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkNamArg);
-            return FALSE;
+            goto SYNTAX_EXIT;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
@@ -2554,30 +2577,27 @@ BOOL ValidSetPR_EM
             break;          // Continue with HGLOBAL processing
 
         defstop
-            return FALSE;
+            goto DOMAIN_EXIT;
     } // End SWITCH
 
     // tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbRht));
 
+    // Clear the type bits
+    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
+    lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Check for scalar or vector
     if (IsMultiRank (lpHeader->Rank))
-    {
-        lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto RANK_EXIT;
+    else
     // Check for empty or singleton
     if (IsMultiNELM (lpHeader->NELM))
-    {
-        lpwErrMsg = ERRMSG_LENGTH_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto LENGTH_EXIT;
+    else
     // Split cases based upon the array type
     switch (lpHeader->ArrType)
     {
@@ -2586,9 +2606,7 @@ BOOL ValidSetPR_EM
         case ARRAY_FLOAT:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            bRet = FALSE;
-
-            break;
+            goto DOMAIN_EXIT;
 
         case ARRAY_CHAR:
             // Izit an empty vector?
@@ -2602,29 +2620,51 @@ BOOL ValidSetPR_EM
             break;
     } // End IF/ELSE/SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
-
 #undef  lpHeader
 
 MAKE_SCALAR:
-    // If in error, set error message;
-    //   otherwise, save the value in the name
-    if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg,
-                                   lptkRhtArg);
+    lptkNamArg->tkData.tkSym->stFlags.Imm = (lpMemPTD->cQuadPR NE 0);
+    if (lpMemPTD->cQuadPR EQ 0)
+        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
     else
-    {
-        lptkNamArg->tkData.tkSym->stFlags.Imm = (lpMemPTD->cQuadPR NE 0);
-        if (lpMemPTD->cQuadPR EQ 0)
-            lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
-        else
-            lptkNamArg->tkData.tkSym->stData.stChar = lpMemPTD->cQuadPR;
-        lptkNamArg->tkFlags.NoDisplay = TRUE;
-    } // End IF
+        lptkNamArg->tkData.tkSym->stData.stChar = lpMemPTD->cQuadPR;
+    lptkNamArg->tkFlags.NoDisplay = TRUE;
 
+    // Mark as successful
+    bRet = TRUE;
+
+    goto UNLOCK_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkNamArg);
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkNamArg);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkNamArg);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkNamArg);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+UNLOCK_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
 
     return bRet;
 } // End ValidSetPR_EM
@@ -2798,16 +2838,15 @@ BOOL ValidSetSA_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    APLSTYPE     aplTypeRht;    // Right arg storage type
-    APLNELM      aplNELMRht;    // Right arg NELM
-    APLRANK      aplRankRht;    // Right arg rank
-    HGLOBAL      hGlbRht,       // Right arg global memory handle
-                 hGlbRes;       // Result    ...
-    LPVOID       lpMemRht;      // Ptr to right arg global memory
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
-    LPWCHAR      lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht;        // Right arg NELM
+    APLRANK      aplRankRht;        // Right arg rank
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes;           // Result    ...
+    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    BOOL         bRet = FALSE;      // TRUE iff result is valid
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -2842,14 +2881,10 @@ BOOL ValidSetSA_EM
             // Fall through to common error code
 
         case TKT_VARIMMED:
-            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkNamArg);
-            return FALSE;
+            goto RANK_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkNamArg);
-            return FALSE;
+            goto SYNTAX_EXIT;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
@@ -2865,8 +2900,11 @@ BOOL ValidSetSA_EM
     // tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbRht));
 
+    // Clear the type bits
+    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
+    lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type, NELM, and Rank
@@ -2880,11 +2918,8 @@ BOOL ValidSetSA_EM
 
     // Check for vector
     if (!IsVector (aplRankRht))
-    {
-        lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
-
-        bRet = FALSE;
-    } else
+        goto RANK_EXIT;
+    else
     // Split cases based upon the array type
     switch (aplTypeRht)
     {
@@ -2904,7 +2939,7 @@ BOOL ValidSetSA_EM
                         hGlbRes = hGlbSAOff;
                         lpMemPTD->cQuadxSA = SAVAL_Off;
                     } else
-                        bRet = FALSE;
+                        goto DOMAIN_EXIT;
                     break;
 
                 case 4:     // "EXIT"
@@ -2913,7 +2948,7 @@ BOOL ValidSetSA_EM
                         hGlbRes = hGlbSAExit;
                         lpMemPTD->cQuadxSA = SAVAL_Exit;
                     } else
-                        bRet = FALSE;
+                        goto DOMAIN_EXIT;
                     break;
 
                 case 5:     // "CLEAR", "ERROR"
@@ -2927,13 +2962,11 @@ BOOL ValidSetSA_EM
                         hGlbRes = hGlbSAError;
                         lpMemPTD->cQuadxSA = SAVAL_Error;
                     } else
-                        bRet = FALSE;
+                        goto DOMAIN_EXIT;
                     break;
 
                 default:
-                    bRet = FALSE;
-
-                    break;
+                    goto DOMAIN_EXIT;
             } // End SWITCH
 
             break;
@@ -2944,34 +2977,49 @@ BOOL ValidSetSA_EM
         case ARRAY_FLOAT:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            bRet = FALSE;
-
-            break;
+            goto DOMAIN_EXIT;
 
         defstop
             break;
     } // End IF/ELSE/SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
+    // Free the old value
+    FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
-    // If in error, set error message;
-    //   otherwise, save the value in the name
-    if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg,
-                                   lptkRhtArg);
-    else
-    {
-        // Free the old value
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
+    // Save as new value
+    lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
+    lptkNamArg->tkFlags.NoDisplay = TRUE;
 
-        // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
-        lptkNamArg->tkFlags.NoDisplay = TRUE;
-    } // End IF
+    // Mark as successful
+    bRet = TRUE;
 
+    goto UNLOCK_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                              lptkNamArg);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkNamArg);
+    goto ERROR_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkNamArg);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+UNLOCK_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
 
     return bRet;
 } // End ValidSetSA_EM
@@ -3000,6 +3048,67 @@ BOOL ValidSetWSID_EM
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, TRUE);
 } // End ValidSetWSID_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ValidSetZ_EM
+//
+//  Validate a value before assigning it to []Z
+//***************************************************************************
+
+BOOL ValidSetZ_EM
+    (LPTOKEN lptkNamArg,            // Ptr to name arg token
+     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+
+{
+    HGLOBAL    hGlbRht;             // Right arg global memory handle
+    APLLONGEST aplLongestRht;       // Right arg immediate value
+
+    // Get right arg's global ptrs
+    aplLongestRht = GetGlbPtrs (lptkRhtArg, &hGlbRht);
+
+    // Free the old value (if there is one)
+    if (lptkNamArg->tkData.tkSym->stFlags.Value)
+    {
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
+    } // End IF
+
+    // If the right arg is a global, ...
+    if (hGlbRht)
+        // Save as new value
+        lptkNamArg->tkData.tkSym->stData.stGlbData = CopySymGlbDirAsGlb (hGlbRht);
+    else
+    {
+        // Save as new value
+        lptkNamArg->tkData.tkSym->stFlags.Imm      = TRUE;
+        lptkNamArg->tkData.tkSym->stFlags.ImmType  = lptkRhtArg->tkFlags.ImmType;
+        lptkNamArg->tkData.tkSym->stData.stLongest = aplLongestRht;
+    } // End IF/ELSE
+
+    // Set common flags
+    lptkNamArg->tkFlags.NoDisplay = TRUE;
+    lptkNamArg->tkData.tkSym->stFlags.Value = TRUE;
+
+    return TRUE;
+} // End ValidSetZ_EM
+
+
+//***************************************************************************
+//  $ValidNdxAny
+//
+//  Validate a single value before assigning it to
+//    a position in a SysVar.
+//***************************************************************************
+
+BOOL ValidNdxAny
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+
+{
+    return TRUE;
+} // End ValidNdxAny
 
 
 //***************************************************************************
@@ -3035,6 +3144,7 @@ BOOL InitSystemVars
     aSysVarValidSet[SYSVAR_RL  ] = ValidSetRL_EM  ;
     aSysVarValidSet[SYSVAR_SA  ] = ValidSetSA_EM  ;
     aSysVarValidSet[SYSVAR_WSID] = ValidSetWSID_EM;
+    aSysVarValidSet[SYSVAR_Z   ] = ValidSetZ_EM   ;
 
     // Set the array index validation routine
     aSysVarValidNdx[SYSVAR_ALX ] = ValidNdxChar   ;
@@ -3050,6 +3160,7 @@ BOOL InitSystemVars
     aSysVarValidNdx[SYSVAR_RL  ] = ValidNdxRL     ;
     aSysVarValidNdx[SYSVAR_SA  ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_WSID] = ValidNdxChar   ;
+    aSysVarValidNdx[SYSVAR_Z   ] = ValidNdxAny    ;
 
     // Assign default values to the system vars
     if (!AssignGlobalCWS     (hGlbQuadALX_CWS   , SYSVAR_ALX , lpMemPTD->lpSymQuadALX      )) return FALSE;   // Attention Latent Expression
@@ -3071,6 +3182,9 @@ BOOL InitSystemVars
     if (!AssignIntScalarCWS  (uQuadRL_CWS       , SYSVAR_RL  , lpMemPTD->lpSymQuadRL       )) return FALSE;   // Random Link
     if (!AssignGlobalCWS     (hGlbQuadSA_CWS    , SYSVAR_SA  , lpMemPTD->lpSymQuadSA       )) return FALSE;   // Stop Action
     if (!AssignGlobalCWS     (hGlbQuadWSID_CWS  , SYSVAR_WSID, lpMemPTD->lpSymQuadWSID     )) return FALSE;   // Workspace Identifier
+
+    // Set the values for []Z
+    lpMemPTD->lpSymQuadZ->stFlags.SysVarValid = SYSVAR_Z;
 
     // Save the index value
     lpMemPTD->cQuadxSA = cQuadxSA_CWS;

@@ -414,9 +414,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         break;
                     } // End IF
 
-                    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
-                                              &lpYYToken->tkToken);
-                    goto ERROR_EXIT;
+                    goto VALUE_EXIT;
                 } // End IF
 
                 if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
@@ -495,9 +493,7 @@ static char tabConvert[][STRAND_LENGTH] =
 
             case TKT_LISTPAR:
             case TKT_LISTBR:
-                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                          &lpYYArg->tkToken);
-                goto ERROR_EXIT;
+                goto SYNTAX_EXIT;
 
             case TKT_ASSIGN:
             case TKT_LISTSEP:
@@ -509,12 +505,12 @@ static char tabConvert[][STRAND_LENGTH] =
             case TKT_OP2IMMED:
             case TKT_OP3IMMED:
             case TKT_OPJOTDOT:
-            case TKT_LPAREN:
-            case TKT_RPAREN:
-            case TKT_LBRACKET:
-            case TKT_RBRACKET:
-            case TKT_LBRACE:
-            case TKT_RBRACE:
+            case TKT_LEFTPAREN:
+            case TKT_RIGHTPAREN:
+            case TKT_LEFTBRACKET:
+            case TKT_RIGHTBRACKET:
+            case TKT_LEFTBRACE:
+            case TKT_RIGHTBRACE:
             case TKT_EOS:
             case TKT_EOL:
             case TKT_SOS:
@@ -666,14 +662,10 @@ static char tabConvert[][STRAND_LENGTH] =
     ByteRes = CalcArraySize (aplType, iLen, 1);
 
     // Allocate global memory for a length <iLen> vector of type <cState>
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbStr = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbStr)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYArg->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -1047,6 +1039,21 @@ NORMAL_EXIT:
 
     return lpYYRes;
 
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYToken->tkToken);
+    goto ERROR_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYArg->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYArg->tkToken);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     // Free the entire strand stack
     FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandStart[STRAND_VAR]);
@@ -1146,14 +1153,10 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     // Allocate global memory for the function array
     // N.B.: Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbStr = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbStr)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYArg->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
@@ -1287,6 +1290,11 @@ NORMAL_EXIT:
     DBGLEAVE;
 
     return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYArg->tkToken);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     // Free the entire function strand stack
@@ -1694,14 +1702,10 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
             + sizeof (lpYYStrand[0]) * iLen;    // For the data
 
     // Allocate global memory for a length <iLen> vector of type <cState>
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbStr = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbStr)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYArg->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRNAMED;
@@ -1737,6 +1741,11 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     DBGLEAVE;
 
     return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYArg->tkToken);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     // Free the entire strand stack
@@ -1906,8 +1915,8 @@ LPPL_YYSTYPE MakeList_EM_YY
     ByteRes = CalcArraySize (ARRAY_NESTED, iLen, 1);
 
     // Allocate global memory for a length <iLen> vector of type <cState>
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbLst = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbLst = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbLst)
         goto WSFULL_EXIT;
 

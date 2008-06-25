@@ -205,7 +205,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeCon_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = immType;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -395,8 +395,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
     // Allocate space for the max shape of the items
     // N.B.:  Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbDimCom = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbDimCom = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbDimCom)
         goto WSFULL_EXIT;
 
@@ -467,8 +467,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -480,7 +480,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_NESTED;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -856,7 +856,7 @@ NORMAL_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -872,8 +872,8 @@ NORMAL_EXIT:
 
         // Allocate space for the max shape of the items
         // N.B.:  Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbLft = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (__int3264) ByteRes);
+        hGlbLft = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbLft)
             goto WSFULL_EXIT;
 
@@ -885,7 +885,7 @@ NORMAL_EXIT:
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplRankRes;
         lpHeader->Rank       = 1;
@@ -901,7 +901,7 @@ NORMAL_EXIT:
         lpMemAxis = MyGlobalLock (hGlbAxis);
 
         // Copy the values from lpMemAxis
-        CopyMemory (lpMemLft, lpMemAxis, (UINT) aplRankRes * sizeof (APLUINT));
+        CopyMemory (lpMemLft, lpMemAxis, (__int3264) aplRankRes * sizeof (APLUINT));
 
         // Get the current value of []IO
         bQuadIO = GetQuadIO ();
@@ -923,7 +923,7 @@ NORMAL_EXIT:
         // Fill in the left arg token
         lpYYRes2->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes2->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes2->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes2->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes2->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLft);
         lpYYRes2->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1144,7 +1144,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     // Get left arg global ptr
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
 
-    // Skip over the herader and dimensions
+    // Skip over the header and dimensions
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
     if (!PrimFnDydRightShoeGlbImm_EM (aplNELMLft,           // Left arg NELM
@@ -1162,7 +1162,7 @@ YYALLOC_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = immTypeRht;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1438,7 +1438,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (MakePtrTypeGlb (hGlbRes));
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
             } else
@@ -1446,7 +1446,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
                 lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkLongest  = aplLongestRes;
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
             } // End IF/ELSE
@@ -1942,7 +1942,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
                 lpYYRes->tkToken.tkFlags.ImmType   = immTypeSubRht;
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkLongest  = aplLongestSubRht;
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
             } // End IF/ELSE
@@ -1960,7 +1960,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbRht);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE

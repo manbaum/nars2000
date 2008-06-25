@@ -27,7 +27,6 @@ TO DO:  General:  Less Important (post-alpha)
 * Check for 64-bit compile
 * Check for updates from the web:  nars2000.org/CurrentRelease.php
 * Need an installation program which also sets up file associations for (ws.nars)
-* Implement File | Print
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -64,7 +63,6 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       L []SS R
 * ...         []STOP R  (Query Stop) (EAS--Optional)
 * ...       L []STOP R  (Set Stop) (EAS--Optional)
-* ...       L []TF R    (Transfer Form) (EAS)
 * ...         []TRACE R (Query Trace) (EAS--Optional)
 * ...       L []TRACE R (Set Trace) (EAS--Optional)
 * ...         []VI R
@@ -101,14 +99,16 @@ TO DO:  Session Manager
 * Support different keyboard layouts
 *
 
+
 TO DO:  Options Menu
 --------------------
 * Fonts
-* Syntax Colors
-* Tab Colors
+* Syntax Colors         (.ini file, too)
+* Tab Colors            (.ini file, too)
 * CLEAR WS values
 * Directory preferences
 * User preferences
+* Range limited []vars  (.ini file, too)
 *
 
 
@@ -207,6 +207,8 @@ DONE:  General
 * ...       []IC                        (Indeterminate Control)
 * ...       dieresis-jot                (dyadic op  -- rank) (via an internal magic function)
 * ...       dieresis-circle             (monadic op -- rank w/Axis)
+* ...       []Z as a system var
+* ...       L []TF R    (Transfer Form) (EAS)
 * []SysVar indexed assignment with range limiting validation
 * []SysVar {is} '' assigns the system default to the system var
 * When adding two empty vectors whose prototypes are
@@ -235,6 +237,9 @@ DONE:  General
 * Unlocalize in reverse order
 * Implement )IN to enable users to import data easily
 * Implement trailing {lamp} as comment end
+* Use structured exception handling to change storage
+  type on the fly (such as {floor} {infinity})
+* Function/operator assignment
 
 
 DONE:  Session Manager
@@ -244,26 +249,7 @@ DONE:  Session Manager
 * Tabs for workspaces
 * Implement Undo
 * )SAVE as ASCII plain text file
-*
-
-
-DONE:  Bugs
------------
-* Fix error caret position
-*
-
-
-DONE:  Features
----------------
-* Function/operator assignment
-* Monadic and dyadic rho
-* Monadic left shoe (enclose w/axis)
-* Monadic and dyadic plus/minus/etc. (w/axis)
-* Session manager
-* Compose operator
-* ± infinity
-* Use structured exception handling to change storage
-  type on the fly (such as {floor} {infinity})
+* Implement File | Print
 * Icons at size 48x48 are at point size 32 using typeface Saltino
 *
 
@@ -314,7 +300,14 @@ QUESTIONS
   and the Extended APL Standard's Evaluation Sequence has a bug which
   causes it to signal a LENGTH ERROR.
 * What letters of Unicode should be allowed in var/fcn names?
+* Should []TS be a system variable?
+* How to produce )OUT for a variable with non-ASCII chars in its name?
 *
+
+ATF File Questions
+------------------
+* How to represent the name of a var with non-ASCII chars?
+* How to represent a function line with non-APL2 symbols?
 
 
 File Extensions

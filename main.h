@@ -217,8 +217,16 @@ typedef enum tagEXIT_TYPES
 #define IMAGE_CX        16
 #define IMAGE_CY        16
 
-// From
+// From <string.h>
 #define strchrW         wcschr
+
+// Default DTOA mode    // ***FIXME*** -- use different modes at different points
+#define DEF_DTOA_MODE   2
+
+// Extra flags for WM_PRINTCLIENT to indicate ...
+#define PRF_PRINTCLIENT 0x80000000L     // called from WM_PRINTCLIENT
+#define PRF_SELECTION   0x40000000L     // to print the selection
+#define PRF_CURRENTPAGE 0x20000000L     // to print the current page
 
 
 //***************************************************************************

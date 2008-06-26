@@ -157,7 +157,7 @@ ERROR_EXIT:
 //  Set the event type and message
 //***************************************************************************
 
-BOOL SetEventTypeMessage
+UBOOL SetEventTypeMessage
     (EVENT_TYPES EventType,         // Event type (see EVENT_TYPES)
      LPAPLCHAR   lpMemMsg,          // Ptr to event message (maybe NULL)
      LPTOKEN     lptkFunc)          // Ptr to function token

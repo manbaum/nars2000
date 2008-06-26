@@ -169,8 +169,8 @@ HWND GetThreadSMEC
 
 void AppendLine
     (LPWCHAR lpwszLine,         // Ptr to the line to append
-     BOOL    bLineCont,         // TRUE iff this is a line continuation
-     BOOL    bEndingCRLF)       // TRUE iff this line should end with a CR/LF
+     UBOOL   bLineCont,         // TRUE iff this is a line continuation
+     UBOOL   bEndingCRLF)       // TRUE iff this line should end with a CR/LF
 
 {
     HWND hWndEC;                // Window handle to Edit Control
@@ -300,7 +300,7 @@ void ReplaceLastLineCRPmt
 //  Return TRUE iff the cursor is on the last line
 //***************************************************************************
 
-BOOL IzitLastLine
+UBOOL IzitLastLine
     (HWND hWndEC)           // Window handle of the Edit Control
 
 {
@@ -468,7 +468,7 @@ void MoveCaretEOB
 
 void DisplayPrompt
     (HWND hWndEC,       // Window handle of the Edit Control
-/////BOOL bSetFocusSM,  // TRUE iff we're to set the focus to the Session Manager
+/////UBOOL bSetFocusSM, // TRUE iff we're to set the focus to the Session Manager
      UINT uCaller)      // ***DEBUG***
 
 {
@@ -695,7 +695,7 @@ LRESULT APIENTRY SMWndProc
 ////HDC          hDC;
 ////HFONT        hFontOld;
 ////TEXTMETRIC   tm;
-    static BOOL  bLoadMsgDisp = FALSE;  // TRUE iff )LOAD message has been displayed
+    static UBOOL bLoadMsgDisp = FALSE;  // TRUE iff )LOAD message has been displayed
     LPMEMVIRTSTR lpLclMemVirtStr;       // Ptr to local MemVirtStr
 
     // Get the handle to the edit control
@@ -1651,7 +1651,7 @@ NORMAL_EXIT:
         {
             UINT uLineLen,
                  uLineCnt;
-            BOOL bRet;
+            UBOOL bRet;
 
             // Special cases for SM windows:
             //   * Up/Dn arrows:

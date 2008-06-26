@@ -196,7 +196,7 @@ APLFLOAT PrimFnMonPlusFisF
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnMonPlusAPA_EM
+UBOOL PrimFnMonPlusAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // The result token (may be NULL)
      LPTOKEN      lptkFunc,         // Ptr to function token
      HGLOBAL      hGlbRht,          // Right arg handle
@@ -334,7 +334,7 @@ APLFLOAT PrimFnDydPlusFisFvF
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydPlusAPA_EM
+UBOOL PrimFnDydPlusAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // The result token (may be NULL)
 
      LPTOKEN      lptkFunc,         // Ptr to function token
@@ -355,7 +355,7 @@ BOOL PrimFnDydPlusAPA_EM
 {
     APLRANK aplRankRes;         // Result rank
     LPVOID  lpMemRes;           // Ptr to result global memory
-    BOOL    bRet = FALSE;       // TRUE iff the result is valid
+    UBOOL   bRet = FALSE;       // TRUE iff the result is valid
 
     DBGENTER;
 

@@ -235,7 +235,7 @@ APLBOOL PrimFnMonTildeBisF
 
 {
     APLINT aplIntRht;
-    BOOL   bRet;
+    UBOOL  bRet;
 
     // Attempt to convert the float to an integer using System CT
     aplIntRht = FloatToAplint_SCT (aplFloatRht, &bRet);

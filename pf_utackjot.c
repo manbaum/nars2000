@@ -330,7 +330,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
 
 LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     (LPAPLCHAR lpwszCompLine,
-     BOOL      bFreeCompLine,
+     UBOOL     bFreeCompLine,
      LPTOKEN   lptkFunc)
 
 {

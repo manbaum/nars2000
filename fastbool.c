@@ -363,7 +363,7 @@ void FastBoolScanQual
               uBitsInMask,          // # bits in the mask
               apaByte;              // If right arg is an APA, then 0xFF if lpAPA->Off, else 0x00
     LPAPLBOOL lpaplBool;            // Ptr to Booleans to reduce
-    BOOL      bAPA;                 // TRUE iff right arg is an APA
+    UBOOL     bAPA;                 // TRUE iff right arg is an APA
 
     // If the right arg is an APA, handle it specially
     bAPA = IsSimpleAPA (aplTypeRht);

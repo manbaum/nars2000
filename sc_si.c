@@ -45,7 +45,7 @@
 //  Execute the system command:  )SI [n]
 //***************************************************************************
 
-BOOL CmdSi_EM
+UBOOL CmdSi_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {
@@ -59,7 +59,7 @@ BOOL CmdSi_EM
 //  Execute the system command:  )SINL [n]
 //***************************************************************************
 
-BOOL CmdSinl_EM
+UBOOL CmdSinl_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {
@@ -73,9 +73,9 @@ BOOL CmdSinl_EM
 //  Execute the system command:  )SI or )SINL
 //***************************************************************************
 
-BOOL CmdSiSinlCom_EM
+UBOOL CmdSiSinlCom_EM
     (LPWCHAR   lpwszTail,       // Ptr to command line tail
-     BOOL      bSINL,           // TRUE iff )SINL
+     UBOOL     bSINL,           // TRUE iff )SINL
      LPAPLCHAR lpMemSaveWSID)   // Ptr to the file name (NULL = not called from CmdSave_EM)
 
 {

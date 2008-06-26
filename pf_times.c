@@ -269,7 +269,7 @@ APLFLOAT PrimFnDydTimesFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    BOOL   bRet = TRUE;
+    UBOOL  bRet = TRUE;
     APLINT aplRes;
 
     aplRes = imul64 (aplIntegerLft, aplIntegerRht, &bRet);
@@ -322,7 +322,7 @@ APLFLOAT PrimFnDydTimesFisFvF
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydTimesAPA_EM
+UBOOL PrimFnDydTimesAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to result token (may be NULL)
 
      LPTOKEN      lptkFunc,         // Ptr to function token

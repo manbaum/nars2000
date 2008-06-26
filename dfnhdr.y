@@ -544,18 +544,18 @@ BOOL ParseHeader
     (HWND          hWndEC,          // Window handle of Edit Control
      HGLOBAL       hGlbTknHdr,      // Tokenized header global memory handle
      LPFHLOCALVARS lpfhLocalVars,   // Ptr to Local vars
-     BOOL          DisplayErr)      // TRUE iff want error messages displayed
+     UBOOL         bDisplayErr)     // TRUE iff want error messages displayed
 
 {
-    BOOL bRet = FALSE,              // TRUE iff result is valid
-         OldDisplayErr;             // Save area for old DisplayErr
+    UBOOL bRet = FALSE,             // TRUE iff result is valid
+          OldDisplayErr;            // Save area for old DisplayErr
 
     // Save the window handle
     lpfhLocalVars->hWndEC = hWndEC;
 
     // Save the error display flag
     OldDisplayErr = lpfhLocalVars->DisplayErr;
-    lpfhLocalVars->DisplayErr = DisplayErr;
+    lpfhLocalVars->DisplayErr = bDisplayErr;
 
     // Save the thread's ptr to local vars
     TlsSetValue (dwTlsFhLocalVars, (LPVOID) lpfhLocalVars);

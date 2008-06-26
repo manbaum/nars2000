@@ -873,7 +873,7 @@ HGLOBAL PrimFnMonGlb_EM
              apaOffRht,         // Right arg APA offset
              apaMulRht;         // ...           multiplier
     APLUINT  ByteRes;           // # bytes in the result
-    BOOL     bRet = TRUE;       // TRUE iff result is valid
+    UBOOL    bRet = TRUE;       // TRUE iff result is valid
     UINT     uBitIndex;         // Bit index when marching through Booleans
 
     DBGENTER;
@@ -1453,7 +1453,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
                  lpMemRht = NULL;       // Ptr to right ...
     APLINT       aplInteger;            // Temporary integer value
-    BOOL         bRet = TRUE;           // TRUE iff result is valid
+    UBOOL        bRet = TRUE;           // TRUE iff result is valid
     LPPRIMFN_DYD_SNvSN lpPrimFn;        // Ptr to dyadic scalar SimpNest vs. SimpNest function
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
 
@@ -1702,7 +1702,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydSimpNest_EM
+UBOOL PrimFnDydSimpNest_EM
     (LPPL_YYSTYPE  lpYYRes,         // Ptr to the result
 
      LPTOKEN       lptkLftArg,      // Ptr to left arg token
@@ -1735,7 +1735,7 @@ BOOL PrimFnDydSimpNest_EM
 
 {
     LPVOID     lpMemRes = NULL;     // Ptr to result global memory
-    BOOL       bRet = TRUE;         // TRUE iff result is valid
+    UBOOL      bRet = TRUE;         // TRUE iff result is valid
     APLINT     uRes;                // Loop counter
     APLINT     aplIntegerLft,
                aplIntegerRht,
@@ -2043,7 +2043,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydNestSimp_EM
+UBOOL PrimFnDydNestSimp_EM
     (LPPL_YYSTYPE  lpYYRes,         // Ptr to the result
 
      LPTOKEN       lptkLftArg,      // Ptr to left arg token
@@ -2076,7 +2076,7 @@ BOOL PrimFnDydNestSimp_EM
 
 {
     LPVOID     lpMemRes = NULL;     // Ptr to result global memory
-    BOOL       bRet = TRUE;         // TRUE iff result is valid
+    UBOOL      bRet = TRUE;         // TRUE iff result is valid
     APLINT     uRes;                // Loop counter
     APLINT     aplIntegerLft,
                aplIntegerRht,
@@ -2394,7 +2394,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    BOOL              bRet = TRUE;
+    UBOOL             bRet = TRUE;
     HGLOBAL           hGlbLft = NULL,
                       hGlbRes = NULL,
                       hGlbSub;
@@ -2679,7 +2679,7 @@ void FillToken
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydNestNest_EM
+UBOOL PrimFnDydNestNest_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to the result
 
      LPTOKEN      lptkLftArg,       // Ptr to left arg token
@@ -2711,7 +2711,7 @@ BOOL PrimFnDydNestNest_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-    BOOL   bRet = TRUE;             // TRUE iff result is valid
+    UBOOL  bRet = TRUE;             // TRUE iff result is valid
     APLINT uRes;                    // Loop counter
     LPVOID lpMemRes = NULL;         // Ptr to result global memory
 
@@ -2800,7 +2800,7 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydSingMult_EM
+UBOOL PrimFnDydSingMult_EM
     (HGLOBAL          *lphGlbRes,           // Ptr to result handle
      APLSTYPE          aplTypeRes,          // Result type
      LPVARARRAY_HEADER lpMemHdrRes,         // Ptr to result header (in case we blow up)
@@ -2820,7 +2820,7 @@ BOOL PrimFnDydSingMult_EM
 
 {
     APLINT   uRes;
-    BOOL     bRet = FALSE;                  // TRUE iff the result is valid
+    UBOOL    bRet = FALSE;                  // TRUE iff the result is valid
     APLRANK  aplRankRes;                    // Temp var for DydAllocate
     UINT     uBitIndex = 0;
     LPVOID   lpMemRhtStart,
@@ -3594,7 +3594,7 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydMultSing_EM
+UBOOL PrimFnDydMultSing_EM
     (HGLOBAL          *lphGlbRes,           // Ptr to result handle
      APLSTYPE          aplTypeRes,          // Result type
      LPVARARRAY_HEADER lpMemHdrRes,         // Ptr to result header (in case we blow up)
@@ -3614,7 +3614,7 @@ BOOL PrimFnDydMultSing_EM
 
 {
     APLINT   uRes;
-    BOOL     bRet = FALSE;                  // TRUE iff the result is valid
+    UBOOL    bRet = FALSE;                  // TRUE iff the result is valid
     APLRANK  aplRankRes;                    // Temp var for DydAllocate
     UINT     uBitIndex = 0;
     LPVOID   lpMemLftStart,
@@ -4397,7 +4397,7 @@ HGLOBAL PrimFnDydSiScNest_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    BOOL              bRet = TRUE;
+    UBOOL             bRet = TRUE;
     HGLOBAL           hGlbRht = NULL,
                       hGlbRes = NULL,
                       hGlbSub;
@@ -4703,7 +4703,7 @@ HGLOBAL PrimFnDydSiScSiSc_EM
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydSiScSiScSub_EM
+UBOOL PrimFnDydSiScSiScSub_EM
     (LPTOKEN    lptkRes,            // Ptr to result token
      LPTOKEN    lptkFunc,           // Ptr to function token
      APLSTYPE   aplTypeRes,         // Result storage type
@@ -4719,7 +4719,7 @@ BOOL PrimFnDydSiScSiScSub_EM
 
 {
     UINT immType;               // Result immediate type
-    BOOL bRet = TRUE;           // TRUE iff result is valid
+    UBOOL bRet = TRUE;          // TRUE iff result is valid
 RESTART_EXCEPTION_IMMED:
     // Get the immediate type for the token
     immType = TranslateArrayTypeToImmType (aplTypeRes);
@@ -4898,7 +4898,7 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydSimpSimp_EM
+UBOOL PrimFnDydSimpSimp_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to the result
 
      LPTOKEN      lptkLftArg,       // Ptr to left arg token
@@ -4935,7 +4935,7 @@ BOOL PrimFnDydSimpSimp_EM
                       lpMemHdrLft,      // Ptr to left arg ...
                       lpMemHdrRht,      // Ptr to right ...
                       lpMemHdrArg;      // Ptr to left/right ...
-    BOOL              bRet = TRUE;      // TRUE iff result is valid
+    UBOOL             bRet = TRUE;      // TRUE iff result is valid
     APLSTYPE          aplTypeArg;
     APLINT            aplIntegerLft,
                       aplIntegerRht;
@@ -6516,11 +6516,11 @@ APLFLOAT TranslateQuadICIndex
 //  Return TRUE iff the token is a Boolean APA
 //***************************************************************************
 
-BOOL IsBooleanAPA
+UBOOL IsBooleanAPA
     (LPTOKEN lptkArg)               // Ptr to token arg
 
 {
-    BOOL     bRet = FALSE;          // TRUE iff the result is valid
+    UBOOL    bRet = FALSE;          // TRUE iff the result is valid
     APLSTYPE aplTypeArg;            // Arg storage type
     APLRANK  aplRankArg;            // Arg rank
     HGLOBAL  hGlbArg = NULL;        // Arg global memory handle

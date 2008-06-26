@@ -556,12 +556,12 @@ HBRUSH _MyCreateSolidBrush
 //  Delete a memory DC
 //***************************************************************************
 
-BOOL _MyDeleteDC
+UBOOL _MyDeleteDC
     (HDC  hMEMDC,               // Handle to memory device context
      UINT uLine)                // Line #
 
 {
-    BOOL bRet;
+    UBOOL bRet;
 
     bRet = DeleteDC (hMEMDC);
 
@@ -590,12 +590,12 @@ BOOL _MyDeleteDC
 //  Delete an object
 //***************************************************************************
 
-BOOL _MyDeleteObject
+UBOOL _MyDeleteObject
     (HGDIOBJ hObject,       // Handle to graphic object
      UINT    uLine)         // Line #
 
 {
-    BOOL bRet;
+    UBOOL bRet;
     DWORD dwType;
 
     // See what kind of object we're deleting
@@ -776,13 +776,13 @@ HANDLE _MyLoadImage
 //  Release a DC
 //***************************************************************************
 
-BOOL _MyReleaseDC
+UBOOL _MyReleaseDC
     (HWND hWnd,                 // Handle of window
      HDC  hDC,                  // Handle of device context
      UINT uLine)                // Line #
 
 {
-    BOOL bRet;
+    UBOOL bRet;
 
     bRet = ReleaseDC (hWnd, hDC);
 
@@ -883,7 +883,7 @@ LPVOID _MyGlobalLockNS
 
 LPVOID _MyGlobalLockSub
     (HGLOBAL hMem,          // Address of the global memory object
-     BOOL    bSaveFileName, // TRUE iff we should save the filename
+     UBOOL   bSaveFileName, // TRUE iff we should save the filename
      char   *lpFileName,    // Ptr to filename
      UINT    uLine)         // Line #
 
@@ -924,12 +924,12 @@ LPVOID _MyGlobalLockSub
 //  Unlock a global variable
 //***************************************************************************
 
-BOOL _MyGlobalUnlock
+UBOOL _MyGlobalUnlock
     (HGLOBAL hMem,      // Address of the global memory object
      UINT    uLine)     // Line #
 
 {
-    BOOL  bRet;
+    UBOOL bRet;
 
     CheckMemStat ();
 
@@ -1156,14 +1156,14 @@ LPVOID _MyVirtualAlloc
 //  My VirtualFree function which checks for FALSE results
 //***************************************************************************
 
-BOOL _MyVirtualFree
+UBOOL _MyVirtualFree
     (LPVOID lpAddress,          // Address of region of committed pages
      DWORD  dwSize,             // Size of region
      DWORD  dwFreeType,         // Type of free operation
      UINT   uLine)              // Line #
 
 {
-    BOOL bRet;                  // TRUE iff the result is valid
+    UBOOL bRet;                 // TRUE iff the result is valid
 
     // Call the original function
     bRet =

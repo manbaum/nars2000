@@ -570,7 +570,7 @@ NORMAL_EXIT:
 //  Initialize all magic functions
 //***************************************************************************
 
-BOOL InitMagicFunctions
+UBOOL InitMagicFunctions
     (HGLOBAL hGlbPTD,           // PerTabData global memory handle
      HWND    hWndEC)            // Session Manager window handle
 

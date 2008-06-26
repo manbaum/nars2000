@@ -98,7 +98,7 @@ EXIT_TYPES GotoLine_EM
 
     if (IsImmFlt (immType))
     {
-        BOOL bRet;
+        UBOOL bRet;
 
         // Attempt to convert the float to an integer using System CT
         aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);

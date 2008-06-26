@@ -43,7 +43,7 @@
 //  Execute system command:  )FNS [first][-][last]
 //***************************************************************************
 
-BOOL CmdFns_EM
+UBOOL CmdFns_EM
     (LPWCHAR lpwszTail)             // Ptr to command line tail
 
 {
@@ -57,7 +57,7 @@ BOOL CmdFns_EM
 //  Return TRUE iff the object name type is that of a function
 //***************************************************************************
 
-BOOL IzitFNS
+UBOOL IzitFNS
     (UINT stNameType)
 
 {
@@ -71,7 +71,7 @@ BOOL IzitFNS
 //  Execute system command:  )NMS [first][-][last]
 //***************************************************************************
 
-BOOL CmdNms_EM
+UBOOL CmdNms_EM
     (LPWCHAR lpwszTail)             // Ptr to command line tail
 
 {
@@ -85,7 +85,7 @@ BOOL CmdNms_EM
 //  Return TRUE iff the object type is that of a variable/function/operator
 //***************************************************************************
 
-BOOL IzitNMS
+UBOOL IzitNMS
     (UINT stNameType)
 
 {
@@ -99,7 +99,7 @@ BOOL IzitNMS
 //  Execute system command:  )OPS [first][-][last]
 //***************************************************************************
 
-BOOL CmdOps_EM
+UBOOL CmdOps_EM
     (LPWCHAR lpwszTail)             // Ptr to command line tail
 
 {
@@ -113,7 +113,7 @@ BOOL CmdOps_EM
 //  Return TRUE iff the object type is that of an operator
 //***************************************************************************
 
-BOOL IzitOPS
+UBOOL IzitOPS
     (UINT stNameType)
 
 {
@@ -127,7 +127,7 @@ BOOL IzitOPS
 //  Execute system command:  )VARS [first][-][last]
 //***************************************************************************
 
-BOOL CmdVars_EM
+UBOOL CmdVars_EM
     (LPWCHAR lpwszTail)             // Ptr to command line tail
 
 {
@@ -141,7 +141,7 @@ BOOL CmdVars_EM
 //  Return TRUE iff the object type is that of a variable
 //***************************************************************************
 
-BOOL IzitVARS
+UBOOL IzitVARS
     (UINT stNameType)
 
 {
@@ -155,10 +155,10 @@ BOOL IzitVARS
 //  Execute system command:  )FNS, )NMS, )OPS, or )VARS
 //***************************************************************************
 
-BOOL CmdFNOV_EM
+UBOOL CmdFNOV_EM
     (LPWCHAR lpwszTail,             // Ptr to command line tail
-     BOOL  (*IzitFVO) (UINT),       // Ptr to function to determine name type
-     BOOL    bNMS)                  // TRUE iff the command is )NMS
+     UBOOL (*IzitFVO) (UINT),       // Ptr to function to determine name type
+     UBOOL   bNMS)                  // TRUE iff the command is )NMS
 
 {
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
@@ -173,7 +173,7 @@ BOOL CmdFNOV_EM
                  uNameLen,          // Length of the current name
                  uQuadPW,           // Current value of []PW
                  uMaxNameLen = 0;   // Length of longest name
-    BOOL         bLineCont;         // TRUE iff this line is a continuation
+    UBOOL        bLineCont;         // TRUE iff this line is a continuation
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);

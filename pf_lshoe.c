@@ -262,7 +262,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                  aplNELMSub;
     APLRANK      aplRankRht,
                  aplRankRes;
-    BOOL         bRet = TRUE;
+    UBOOL        bRet = TRUE;
     APLNELM      uRes, uRht, uSub, uOdo, uRhtOff;
     APLSTYPE     aplTypeRht;
     APLNELMSIGN  iRht;
@@ -1081,7 +1081,7 @@ QUICK_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnMonLeftShoeProto_EM
+UBOOL PrimFnMonLeftShoeProto_EM
     (HGLOBAL *lphGlbProto,          // Ptr to handle to prototype result
      HGLOBAL  hGlbMT,               // Handle to empty (zilde or '')
      APLSTYPE aplTypeProto,         // Prototype type
@@ -1159,7 +1159,7 @@ WSFULL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnMonLeftShoeGlbSub_EM
+UBOOL PrimFnMonLeftShoeGlbSub_EM
     (APLUINT     ByteRes,           // # bytes in the result
      APLSTYPE    aplTypeSub,        // Subarray type
      APLNELM     aplNELMSub,        // Subarray NELM
@@ -1310,7 +1310,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 {
     APLINT       aplAxis;           // The (one and only) axis value
     APLRANK      aplRankRht;        // The rank of the right arg
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the rank of the right arg

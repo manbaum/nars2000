@@ -132,7 +132,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
 LPPL_YYSTYPE PrimOpMonDieresisCircleCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff protoyping
+     UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
@@ -207,7 +207,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCircleCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand

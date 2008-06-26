@@ -132,7 +132,7 @@ LPPL_YYSTYPE PrimOpMonDieresis_EM_YY
 LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff protoyping
+     UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
     APLUINT      ByteRes;               // # bytes in the result
@@ -152,7 +152,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                  apaMul;                // ...           multiplier
     TOKEN        tkRhtArg = {0};        // Right arg token
     UINT         uBitMask;              // Bit mask for marching through Booleans
-    BOOL         bRet = TRUE;           // TRUE iff result is valid
+    UBOOL        bRet = TRUE;           // TRUE iff result is valid
     LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
     LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function (may be NULL if not prototyping)
@@ -625,7 +625,7 @@ NORMAL_EXIT:
 //    on a token or between tokens
 //***************************************************************************
 
-BOOL ExecFuncOnToken_EM
+UBOOL ExecFuncOnToken_EM
     (LPVOID      *lplpMemRes,           // Ptr to ptr to result memory
      LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStr,           // Ptr to function strand
@@ -732,7 +732,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     APLSTYPE     aplTypeLft,            // Left arg storage type
@@ -759,7 +759,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                  lpMemRht = NULL,       // Ptr to right ...
                  lpMemRes = NULL;       // Ptr to result   ...
     LPAPLDIM     lpMemDimRes;           // Ptr to result dimensions
-    BOOL         bRet = TRUE;           // TRUE iff result is valid
+    UBOOL        bRet = TRUE;           // TRUE iff result is valid
     APLUINT      uLft,                  // Left arg loop counter
                  uRht,                  // Right ...
                  uRes,                  // Result   ...

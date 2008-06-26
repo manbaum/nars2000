@@ -73,7 +73,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                  lpMemRes = NULL;   // Ptr to result     ...
     APLUINT      ByteRes,           // # bytes in the result
                  uSub;              // Loop counter
-    BOOL         bRet = TRUE,       // TRUE iff result is valid
+    UBOOL        bRet = TRUE,       // TRUE iff result is valid
                  bQuadIO;           // []IO
     LPPL_YYSTYPE lpYYRes = NULL,    // Ptr to the result
                  lpYYItm;           // Ptr to temporary result
@@ -640,7 +640,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
                  hGlbRes;           // Result global memory handle
     LPVOID       lpMemRes;          // Ptr to result global memory
     IMM_TYPES    immTypeNam;        // Name arg immediate type
-    BOOL         bRet,              // TRUE iff result is valid
+    UBOOL        bRet,              // TRUE iff result is valid
                  bQuadIO;           // []IO
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLUINT      ByteRes;           // # bytes in the result
@@ -805,7 +805,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
                  hGlbRes = NULL;    // Result global memory handle
     LPVOID       lpMemLst = NULL,   // Ptr to list arg global memory
                  lpMemRes = NULL;   // Ptr to result    ...
-    BOOL         bRet,              // TRUE iff result is valid
+    UBOOL        bRet,              // TRUE iff result is valid
                  bQuadIO;           // []IO
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLUINT      ByteRes,           // # bytes in the result
@@ -1233,7 +1233,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ArrayIndexValidZilde_EM
+UBOOL ArrayIndexValidZilde_EM
     (LPVOID  lpMemNdx,              // Ptr to index arg global memory
      APLNELM aplNELMNdx,            // Index arg NELM
      LPTOKEN lptkFunc)              // Ptr to function token
@@ -1323,7 +1323,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
                  hGlbAxis = NULL;       // Axis operator global memory handle
     LPAPLNESTED  lpMemLstNew = NULL;    // Ptr to new list arg global memory
     LPAPLUINT    lpMemAxis = NULL;      // Ptr to axis operator global memory
-    BOOL         bQuadIO;               // []IO
+    UBOOL        bQuadIO;               // []IO
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
     TOKEN        tkLstArg = {0},        // New list arg token
                  tkAxis = {0};          // Axis token
@@ -1700,7 +1700,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ArrayIndexSet_EM
+UBOOL ArrayIndexSet_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkLstArg,            // Ptr to list arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
@@ -1710,7 +1710,7 @@ BOOL ArrayIndexSet_EM
             hGlbRes = NULL;         // Result   ...
     APLNELM aplNELMLst;             // List NELM
     APLRANK aplRankNam;             // Name arg rank
-    BOOL    bRet = TRUE,            // TRUE iff the result is valid
+    UBOOL   bRet = TRUE,            // TRUE iff the result is valid
             bSysVar;                // TRUE iff indexed assignment into a SysVar
 
 #define lptkFunc        lptkNamArg
@@ -1862,11 +1862,11 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ArrayIndexSetNamScalar_EM
+UBOOL ArrayIndexSetNamScalar_EM
     (LPTOKEN    lptkNamArg,         // Ptr to name arg token
      LPTOKEN    lptkLstArg,         // Ptr to list ...
      LPTOKEN    lptkRhtArg,         // Ptr to right ...
-     BOOL       bSysVar,            // TRUE iff indexed assignment into a SysVar
+     UBOOL      bSysVar,            // TRUE iff indexed assignment into a SysVar
      LPTOKEN    lptkFunc)           // Ptr to function token
 
 {
@@ -1881,7 +1881,7 @@ BOOL ArrayIndexSetNamScalar_EM
                lpMemSubLst = NULL,  // Ptr to list arg item global memory
                lpMemRht = NULL,     // Ptr to right arg global memory
                lpMemRes = NULL;     // Ptr to result        ...
-    BOOL       bRet = TRUE;         // TRUE iff the result is valid
+    UBOOL      bRet = TRUE;         // TRUE iff the result is valid
     APLSTYPE   aplTypeSubLst,       // List arg subitem storage type
                aplTypeRht;          // Right arg storage type
     APLNELM    aplNELMLst,          // List arg NELM
@@ -2170,7 +2170,7 @@ NORMAL_EXIT:
 HGLOBAL ArrayIndexSetNoLst_EM
     (LPTOKEN    lptkNamArg,         // Ptr to name arg token
      LPTOKEN    lptkRhtArg,         // Ptr to right ...
-     BOOL       bSysVar,            // TRUE iff indexed assignment into a SysVar
+     UBOOL      bSysVar,            // TRUE iff indexed assignment into a SysVar
      LPTOKEN    lptkFunc)           // Ptr to function token
 
 {
@@ -2385,12 +2385,12 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ArrayIndexSetSingLst_EM
+UBOOL ArrayIndexSetSingLst_EM
     (LPTOKEN    lptkNamArg,             // Ptr to name arg token
      LPTOKEN    lptkLstArg,             // Ptr to list ...
      LPTOKEN    lptkRhtArg,             // Ptr to right ...
      HGLOBAL   *lphGlbRes,              // Ptr to result global memory handle
-     BOOL       bSysVar,                // TRUE iff indexed assignment into a SysVar
+     UBOOL      bSysVar,                // TRUE iff indexed assignment into a SysVar
      LPTOKEN    lptkFunc)               // Ptr to function token
 
 {
@@ -2423,7 +2423,7 @@ BOOL ArrayIndexSetSingLst_EM
                     uRes;               // Loop counter
     UINT            uBitMask,           // Bit mask for when looping through Booleans
                     bRet = TRUE;        // TRUE iff result is valid
-    BOOL            bQuadIO;            // []IO
+    UBOOL           bQuadIO;            // []IO
     ASYSVARVALIDNDX SysVarValid;        // Ptr to the SysVar validation routine
     LPSYMENTRY      lpSymTmp;           // Ptr to temporary LPSYMENTRY
 
@@ -2978,7 +2978,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ArrayIndexSetVector_EM
+UBOOL ArrayIndexSetVector_EM
     (APLNELM         aplNELMNam,        // Name arg NELM
      LPVOID          lpMemSubLst,       // Ptr to list arg subitem
      APLSTYPE        aplTypeSubLst,     // List arg subitem storage type
@@ -2988,13 +2988,13 @@ BOOL ArrayIndexSetVector_EM
      HGLOBAL         hGlbSubRht,        // Right arg item global memory handle
      APLSTYPE        aplTypeRht,        // Right arg storage type
      APLLONGEST      aplLongestRht,     // Right arg immediate value
-     BOOL            bQuadIO,           // []IO
-     BOOL            bSysVar,           // TRUE iff indexed assignment into a SysVar
+     UBOOL           bQuadIO,           // []IO
+     UBOOL           bSysVar,           // TRUE iff indexed assignment into a SysVar
      ASYSVARVALIDNDX SysVarValid,       // Ptr to the SysVar validation routine
      LPTOKEN         lptkFunc)          // Ptr to function token
 
 {
-    BOOL       bRet = TRUE;             // TRUE iff the result is valid
+    UBOOL      bRet = TRUE;             // TRUE iff the result is valid
     APLLONGEST aplLongestSubLst;        // List arg subitem immediate value
     HGLOBAL    hGlbSubLst;              // Ptr to list arg subitem global memory handle
     IMM_TYPES  immTypeRht;              // Right arg item immediate type
@@ -3162,12 +3162,12 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ArrayIndexSetRect_EM
+UBOOL ArrayIndexSetRect_EM
     (LPTOKEN    lptkNamArg,             // Ptr to name arg token
      LPTOKEN    lptkLstArg,             // Ptr to list ...
      LPTOKEN    lptkRhtArg,             // Ptr to right ...
      HGLOBAL   *lphGlbRes,              // Ptr to result global memory handle
-     BOOL       bSysVar,                // TRUE iff indexed assignment into a SysVar
+     UBOOL      bSysVar,                // TRUE iff indexed assignment into a SysVar
      LPTOKEN    lptkFunc)               // Ptr to function token
 
 {
@@ -3183,7 +3183,7 @@ BOOL ArrayIndexSetRect_EM
                  hGlbAxis = NULL;       // Axis operator global memory handle
     LPAPLNESTED  lpMemLstNew = NULL;    // Ptr to new list arg global memory
     LPAPLUINT    lpMemAxis = NULL;      // Ptr to axis operator global memory
-    BOOL         bRet = FALSE,          // TRUE iff result is valid
+    UBOOL        bRet = FALSE,          // TRUE iff result is valid
                  bQuadIO;               // []IO
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
     TOKEN        tkLstArg = {0},        // New list arg token
@@ -3392,7 +3392,7 @@ NORMAL_EXIT:
 //  Replace a value in an array
 //***************************************************************************
 
-BOOL ArrayIndexReplace_EM
+UBOOL ArrayIndexReplace_EM
     (APLSTYPE   aplTypeRht,             // Right arg storage type
      LPVOID     lpMemRht,               // Ptr to right arg global memory
      APLUINT    aplIndex,               // Index into right arg
@@ -3404,7 +3404,7 @@ BOOL ArrayIndexReplace_EM
 {
     HGLOBAL    hGlbSubRht;
     UINT       uBitMask;
-    BOOL       bRet = FALSE;            // TRUE iff the result is valid
+    UBOOL      bRet = FALSE;            // TRUE iff the result is valid
     LPSYMENTRY lpSymTmp;                // Ptr to temporary LPSYMENTRY
 
     // Split cases based upon the right arg storage type
@@ -3485,7 +3485,7 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ArrayIndexFcnSet_EM
+UBOOL ArrayIndexFcnSet_EM
     (LPTOKEN      lptkNamArg,           // Ptr to name arg token
      LPTOKEN      lptkLstArg,           // Ptr to list arg token
      LPPL_YYSTYPE lpYYFcnStr,           // Ptr to operator function strand
@@ -3494,7 +3494,7 @@ BOOL ArrayIndexFcnSet_EM
 {
     LPPL_YYSTYPE lpYYRes1,              // Ptr to temporary resuilt
                  lpYYRes2;              // ...
-    BOOL         bRet;                  // TRUE iff result is valid
+    UBOOL        bRet;                  // TRUE iff result is valid
 
     // Compute A[L]
     lpYYRes1 = ArrayIndexRef_EM_YY (lptkNamArg,         // Ptr to name arg token

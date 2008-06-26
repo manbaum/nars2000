@@ -162,8 +162,8 @@ typedef struct tagTKLOCALVARS
 typedef struct tagFSA_ACTION
 {
     int  iNewState;
-    BOOL (*fnAction1) (LPTKLOCALVARS);
-    BOOL (*fnAction2) (LPTKLOCALVARS);
+    UBOOL (*fnAction1) (LPTKLOCALVARS);
+    UBOOL (*fnAction2) (LPTKLOCALVARS);
 } FSA_ACTION;
 
 #define fnIntInit   fnIntAccum
@@ -884,11 +884,11 @@ void InitAccumVars
 #define APPEND_NAME
 #endif
 
-BOOL CheckResizeNum_EM
+UBOOL CheckResizeNum_EM
     (LPPERTABDATA lpMemPTD)     // Ptr to PerTabData global memory
 
 {
-    BOOL    bRet = FALSE;       // TRUE iff result is valid
+    UBOOL   bRet = FALSE;       // TRUE iff result is valid
     int     iNumLim;            // Temporary iNumLim
     HGLOBAL hGlbNum;            // Temporary hGlbNum
 
@@ -945,11 +945,11 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL CheckResizeStr_EM
+UBOOL CheckResizeStr_EM
     (LPPERTABDATA lpMemPTD)     // Ptr to PerTabData global memory
 
 {
-    BOOL    bRet = FALSE;       // TRUE iff result is valid
+    UBOOL   bRet = FALSE;       // TRUE iff result is valid
     int     iStrLim;            // Temporary iStrLim
     HGLOBAL hGlbStr;            // Temporary hGlbStr
 
@@ -1009,13 +1009,13 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL NumAccum_EM
+UBOOL NumAccum_EM
     (WCHAR wch)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
     // Get the thread's PerTabData global memory handle
@@ -1058,13 +1058,13 @@ ERROR_EXIT:
 //  Start of or next digit in integer number
 //***************************************************************************
 
-BOOL fnIntAccum
+UBOOL fnIntAccum
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     WCHAR        wch;
     APLINT       aplInt;
-    BOOL         bRet = TRUE;
+    UBOOL        bRet = TRUE;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
@@ -1123,11 +1123,11 @@ BOOL fnIntAccum
 //  Integer constant -- save as token
 //***************************************************************************
 
-BOOL fnIntDone
+UBOOL fnIntDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    BOOL         bRet = TRUE;
+    UBOOL        bRet = TRUE;
     TKFLAGS      tkFlags = {0};
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -1183,13 +1183,13 @@ BOOL fnIntDone
 #define APPEND_NAME
 #endif
 
-BOOL fnFPAccum
+UBOOL fnFPAccum
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1241,13 +1241,13 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL fnNegInit
+UBOOL fnNegInit
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1302,13 +1302,13 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL fnNegExp
+UBOOL fnNegExp
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1357,7 +1357,7 @@ ERROR_EXIT:
 //  Floating point constant -- save as token
 //***************************************************************************
 
-BOOL fnFPDone
+UBOOL fnFPDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1365,7 +1365,7 @@ BOOL fnFPDone
     TKFLAGS      tkFlags = {0};
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1425,13 +1425,13 @@ BOOL fnFPDone
 #define APPEND_NAME
 #endif
 
-BOOL fnAlpha
+UBOOL fnAlpha
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1478,12 +1478,12 @@ ERROR_EXIT:
 //  End of name
 //***************************************************************************
 
-BOOL fnAlpDone
+UBOOL fnAlpDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     LPSYMENTRY   lpSymEntry;
-    BOOL         bRet;
+    UBOOL        bRet;
     APLINT       aplInteger;
     TKFLAGS      tkFlags = {0};
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -1569,12 +1569,12 @@ NORMAL_EXIT:
 //  End of direct identifier
 //***************************************************************************
 
-BOOL fnDirIdent
+UBOOL fnDirIdent
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     LPSYMENTRY   lpSymEntry;
-    BOOL         bRet;
+    UBOOL        bRet;
     APLINT       aplInteger;
     TKFLAGS      tkFlags = {0};
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -1641,7 +1641,7 @@ BOOL fnDirIdent
 //  Start and end of an assignment (monadic or dyadic)
 //***************************************************************************
 
-BOOL fnAsnDone
+UBOOL fnAsnDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1673,7 +1673,7 @@ BOOL fnAsnDone
 //  Start and end of a list
 //***************************************************************************
 
-BOOL fnLstDone
+UBOOL fnLstDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1705,7 +1705,7 @@ BOOL fnLstDone
 //  Start and end of a label or control structure
 //***************************************************************************
 
-BOOL fnClnDone
+UBOOL fnClnDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1745,7 +1745,7 @@ BOOL fnClnDone
 //  Start and end of a primitive function (niladic, monadic, or dyadic)
 //***************************************************************************
 
-BOOL fnPrmDone
+UBOOL fnPrmDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1790,12 +1790,12 @@ BOOL fnPrmDone
 //  Infinity symbol (_ or 0x221E)
 //***************************************************************************
 
-BOOL fnInfinity
+UBOOL fnInfinity
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     TKFLAGS      tkFlags = {0};
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     APLFLOAT     aplFloat;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -1840,7 +1840,7 @@ BOOL fnInfinity
 //  End of a monadic primitive operator
 //***************************************************************************
 
-BOOL fnOp1Done
+UBOOL fnOp1Done
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1886,7 +1886,7 @@ BOOL fnOp1Done
 //  End of a dyadic primitive operator
 //***************************************************************************
 
-BOOL fnOp2Done
+UBOOL fnOp2Done
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1917,7 +1917,7 @@ BOOL fnOp2Done
 //  End of a dot as a dyadic primitive operator
 //***************************************************************************
 
-BOOL fnDotDone
+UBOOL fnDotDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1948,7 +1948,7 @@ BOOL fnDotDone
 //  End of a jot as a dyadic primitive operator
 //***************************************************************************
 
-BOOL fnJotDone
+UBOOL fnJotDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -1980,7 +1980,7 @@ BOOL fnJotDone
 //  End of a jot dot as an outer product monadic primitive operator
 //***************************************************************************
 
-BOOL fnOutDone
+UBOOL fnOutDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2018,7 +2018,7 @@ BOOL fnOutDone
 #define APPEND_NAME
 #endif
 
-BOOL fnComDone
+UBOOL fnComDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2031,8 +2031,8 @@ BOOL fnComDone
 #endif
 
     // Get the length of the comment (up to but not including any '\n')
-    iLen  = lstrlenW (lptkLocalVars->lpwsz); // Including the comment symbol
-    lpwch = wcspbrk (&lptkLocalVars->lpwsz[1], L"\n" WS_UTF16_LAMP);
+    iLen  = lstrlenW (lptkLocalVars->lpwsz); // Including the leading comment symbol
+    lpwch = wcspbrk (&lptkLocalVars->lpwsz[1], OptionFlags.bClosingLamp ? L"\n" WS_UTF16_LAMP : L"\n");
     if (lpwch)
     {
         iLen2 = (UINT) (&lpwch[*lpwch EQ UTF16_LAMP] - lptkLocalVars->lpwsz);
@@ -2069,13 +2069,13 @@ BOOL fnComDone
 #define APPEND_NAME
 #endif
 
-BOOL fnQuoAccum
+UBOOL fnQuoAccum
     (LPTKLOCALVARS lptkLocalVars)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2127,7 +2127,7 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL fnQuoDone
+UBOOL fnQuoDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2136,7 +2136,7 @@ BOOL fnQuoDone
     APLINT       aplInteger;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2280,7 +2280,7 @@ BOOL fnQuoDone
 //  Left end (start) of a parenthetical expression
 //***************************************************************************
 
-BOOL fnParInit
+UBOOL fnParInit
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2299,7 +2299,7 @@ BOOL fnParInit
 //  Left end (start) of a bracketed expression
 //***************************************************************************
 
-BOOL fnBrkInit
+UBOOL fnBrkInit
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2317,7 +2317,7 @@ BOOL fnBrkInit
 //  Left end (start) of a braced expression
 //***************************************************************************
 
-BOOL fnBrcInit
+UBOOL fnBrcInit
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2340,13 +2340,13 @@ BOOL fnBrcInit
 //    (say, left/right vanes), if needed.
 //***************************************************************************
 
-BOOL GroupInitCom
+UBOOL GroupInitCom
     (LPTKLOCALVARS lptkLocalVars,
      UINT          uType)
 
 {
     TKFLAGS     tkFlags = {0};
-    BOOL        bRet = TRUE;
+    UBOOL       bRet = TRUE;
     LPTOKEN     lpNext;
     APLLONGEST  aplLongest;
 
@@ -2376,7 +2376,7 @@ BOOL GroupInitCom
 //  Right end (stop) of a parenthetical expression
 //***************************************************************************
 
-BOOL fnParDone
+UBOOL fnParDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2394,7 +2394,7 @@ BOOL fnParDone
 //  Right end (stop) of a bracketed expression
 //***************************************************************************
 
-BOOL fnBrkDone
+UBOOL fnBrkDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2412,7 +2412,7 @@ BOOL fnBrkDone
 //  Right end (stop) of a braced expression
 //***************************************************************************
 
-BOOL fnBrcDone
+UBOOL fnBrcDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2463,14 +2463,14 @@ void SaveErrorPosition
 #define APPEND_NAME
 #endif
 
-BOOL GroupDoneCom
+UBOOL GroupDoneCom
     (LPTKLOCALVARS lptkLocalVars,
      TOKEN_TYPES   uTypeCurr,
      TOKEN_TYPES   uTypePrev)
 
 {
     UINT        uPrevGroup;
-    BOOL        bRet = TRUE;
+    UBOOL       bRet = TRUE;
     APLLONGEST  aplLongest;
 
     // Get the index of the previous grouping symbol
@@ -2520,7 +2520,7 @@ BOOL GroupDoneCom
 //  Done with this stmt
 //***************************************************************************
 
-BOOL fnDiaDone
+UBOOL fnDiaDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -2587,8 +2587,8 @@ HGLOBAL Tokenize_EM
     UINT         uChar;         // Loop counter
     WCHAR        wchOrig,       // The original char
                  wchColNum;     // The translated char for tokenization as a COL_*** value
-    BOOL         (*fnAction1_EM) (LPTKLOCALVARS);
-    BOOL         (*fnAction2_EM) (LPTKLOCALVARS);
+    UBOOL        (*fnAction1_EM) (LPTKLOCALVARS);
+    UBOOL        (*fnAction2_EM) (LPTKLOCALVARS);
     TKLOCALVARS  tkLocalVars;   // Local vars
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -2857,7 +2857,7 @@ FREED_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL CheckGroupSymbols_EM
+UBOOL CheckGroupSymbols_EM
     (LPTKLOCALVARS lptkLocalVars)
 
 {
@@ -3034,9 +3034,9 @@ void Untokenize
 //  Append an EOS Token
 //***************************************************************************
 
-BOOL AppendEOSToken
+UBOOL AppendEOSToken
     (LPTKLOCALVARS lptkLocalVars,
-     BOOL          bAppend)
+     UBOOL         bAppend)
 
 {
     APLINT aplInteger;
@@ -3095,7 +3095,7 @@ BOOL AppendEOSToken
 #define APPEND_NAME
 #endif
 
-BOOL AppendNewToken_EM
+UBOOL AppendNewToken_EM
     (LPTKLOCALVARS lptkLocalVars,
      LPTKFLAGS     lptkFlags,
      LPAPLLONGEST  lptkData,            // Ptr to token data (may be NULL)

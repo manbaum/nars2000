@@ -575,7 +575,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     APLFLOAT     aplFloatLft,       //
                  aplFloatRht,       //
                  aplFloatRes;       //
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     UINT         uBitMask;          // Bit mask for marching through Booleans
     gsl_matrix  *lpGslMatrixU = NULL,

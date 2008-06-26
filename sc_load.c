@@ -46,7 +46,7 @@
 //  Execute the system command:  )LOAD wsid
 //***************************************************************************
 
-BOOL CmdLoad_EM
+UBOOL CmdLoad_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
@@ -60,7 +60,7 @@ BOOL CmdLoad_EM
 //  Execute the system command:  )XLOAD wsid
 //***************************************************************************
 
-BOOL CmdXload_EM
+UBOOL CmdXload_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
@@ -80,9 +80,9 @@ BOOL CmdXload_EM
 #define APPEND_NAME
 #endif
 
-BOOL CmdLoadCom_EM
+UBOOL CmdLoadCom_EM
     (LPWCHAR lpwszTail,                 // Ptr to command line tail
-     BOOL    bExecLX)                   // TRUE iff execute []LX after successful load
+     UBOOL   bExecLX)                   // TRUE iff execute []LX after successful load
 
 {
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
@@ -160,7 +160,7 @@ WSNOTFOUND_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL LoadWorkspace_EM
+UBOOL LoadWorkspace_EM
     (HGLOBAL hGlbDPFE,                  // Workspace DPFE global memory handle (NULL = CLEAR WS)
      HWND    hWndEC)                    // Edit control window handle
 
@@ -177,7 +177,7 @@ BOOL LoadWorkspace_EM
     WCHAR        wszCount[8],           // Save area for formatted uSymVar/Fcn counter
 ////             wszVersion[8],         // ...                     version info
                  wszSectName[15];       // ...                     section name (e.g., [Vars.nnn])
-    BOOL         bRet = FALSE,          // TRUE iff the result is valid
+    UBOOL        bRet = FALSE,          // TRUE iff the result is valid
                  bImmed,                // TRUE iff the result of ParseSavedWsVar_EM is immediate
                  bSuspended;            // TRUE iff the function is suspended
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
@@ -256,7 +256,7 @@ BOOL LoadWorkspace_EM
                              lpwFcnLine;            // Ptr to function line #
                 UINT         uMaxSize,              // Maximum size of lpwSrc
                              uLineNum;              // Function line #
-                BOOL         bSuspended;            // TRUE iff the function is suspended
+                UBOOL        bSuspended;            // TRUE iff the function is suspended
                 LPSYMENTRY   lpSymEntry;            // Ptr to function SYMENTRY
                 HGLOBAL      hGlbDfnHdr;            // Defined function global memory handle
                 LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
@@ -700,7 +700,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ParseSavedWsFcn_EM
+UBOOL ParseSavedWsFcn_EM
     (LPWCHAR     lpwSrc,                // Ptr to input buffer
      UINT        uMaxSize,              // Maximum size of lpwSrc
      LPSYMENTRY  lpSymObj,              // Ptr to STE for the object
@@ -718,7 +718,7 @@ BOOL ParseSavedWsFcn_EM
     LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
     HGLOBAL    hGlbObj,                 // Object global memory handle
                hGlbOld;                 // Old ...
-    BOOL       bRet = FALSE;            // TRUE iff result is valid
+    UBOOL      bRet = FALSE;            // TRUE iff result is valid
 
     // Tell 'em we're looking for )LOAD objects
 ////ZeroMemory (&stFlags, sizeof (stFlags));
@@ -824,8 +824,8 @@ LPWCHAR ParseSavedWsVar_EM
      UINT        uMaxSize,              // Maximum size of lpwSrc
      LPVOID     *lplpMemObj,            // Ptr to ptr to output element
      LPAPLSTYPE  lpaplTypeObj,          // Ptr to storage type (may be NULL)
-     LPBOOL      lpbImmed,              // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
-     BOOL        bSymTab,               // TRUE iff to save SymTabAppend values, FALSE to save values directly
+     LPUBOOL     lpbImmed,              // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
+     UBOOL       bSymTab,               // TRUE iff to save SymTabAppend values, FALSE to save values directly
      HWND        hWndEC,                // Edit Control window handle
      LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
      LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
@@ -1110,7 +1110,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     FILETIME     ftCreation,                // Function creation time
                  ftLastMod;                 // ...      last modification time
     SYSTEMTIME   systemTime;                // Current system (UTC) time
-    BOOL         bUserDefined;              // TRUE iff the durrent function is User-Defined
+    UBOOL        bUserDefined;              // TRUE iff the durrent function is User-Defined
     LPVOID       lpMemObj;                  // Ptr to object global memory
     APLINT       aplInteger;                // Temporary integer
     HGLOBAL      hGlbPTD;                   // PerTabData global memory handle

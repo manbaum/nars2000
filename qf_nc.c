@@ -116,7 +116,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     LPSYMENTRY   lpSymEntry;        // Ptr to SYMENTRY
     STFLAGS      stFlags;           // STE flags
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
 
     // The right arg may be of three forms:
     //   1.  a scalar    name  as in 'a'
@@ -354,7 +354,7 @@ NORMAL_EXIT:
 //
 //***************************************************************************
 
-BOOL ValidName
+UBOOL ValidName
     (LPAPLCHAR lpaplChar,
      UINT      uLen)
 
@@ -490,11 +490,11 @@ LPPL_YYSTYPE SysFnDydNC_EM_YY
 //  Calculate the # identifiers in an arg
 //***************************************************************************
 
-BOOL CalcNumIDs
+UBOOL CalcNumIDs
     (APLNELM    aplNELMRht,         // Right arg NELM
      APLRANK    aplRankRht,         // Right arg rank
      APLLONGEST aplLongestRht,      // Right arg longest
-     BOOL       bVectorOfNames,     // TRUE iff we allow multiple names in a vector (e.g., 'a b c')
+     UBOOL      bVectorOfNames,     // TRUE iff we allow multiple names in a vector (e.g., 'a b c')
      LPAPLCHAR  lpMemRht,           // Ptr to right arg global memory
      LPAPLNELM  lpaplNELMRes,       // Ptr to # right arg IDs
      LPAPLNELM  lpaplNELMCol)       // Ptr to # right arg cols (matrix only)

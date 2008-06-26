@@ -33,7 +33,7 @@
 #include "compro.h"
 #endif
 
-typedef void (*LPCONVERTTOCHAR) (LPAPLCHAR, APLSTYPE, APLLONGEST, LPBOOL);
+typedef void (*LPCONVERTTOCHAR) (LPAPLCHAR, APLSTYPE, APLLONGEST, LPUBOOL);
 
 
 //***************************************************************************
@@ -214,7 +214,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     APLINT       aplIntegerLft;     // Left arg as integer
     APLFLOAT     aplFloatLft;       // Left arg as float
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    BOOL         bScalar = FALSE;   // TRUE if the result si a simple scalar
+    UBOOL        bScalar = FALSE;   // TRUE if the result si a simple scalar
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg
@@ -245,7 +245,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     // If it's a float, ...
     if (IsSimpleFlt (aplTypeLft))
     {
-        BOOL bRet;
+        UBOOL bRet;
 
         // Attempt to convert the float to an integer using System CT
         aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
@@ -479,7 +479,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
         for (uCnt = 2, aplNELMRes = 1; uCnt < uLim; uCnt++)
         {
             APLINT iAccum;                  // Accumulator for result NELM
-            BOOL   bRet;                    // TRUE iff the result is valid
+            UBOOL  bRet;                    // TRUE iff the result is valid
 
             // Get the next value as an integer
             iAccum = lpMemDataRht[uCnt];
@@ -885,7 +885,7 @@ void SysFnDR_ConvertFloatToChar
     (LPAPLCHAR  lpMemRes,               // Ptr to result global memory
      APLSTYPE   aplTypeRht,             // Right arg storage type
      APLLONGEST aplLongestRht,          // Right arg immediate value
-     LPBOOL     lpbRet)                 // Ptr to TRUE iff the result is valid
+     LPUBOOL    lpbRet)                 // Ptr to TRUE iff the result is valid
 
 {
     APLFLOAT aplFloatRht;               // Temporary float
@@ -929,7 +929,7 @@ void SysFnDR_ConvertIntToChar
     (LPAPLCHAR  lpMemRes,               // Ptr to result global memory
      APLSTYPE   aplTypeRht,             // Right arg storage type
      APLLONGEST aplLongestRht,          // Right arg immediate value
-     LPBOOL     lpbRet)                 // Ptr to TRUE iff the result is valid
+     LPUBOOL    lpbRet)                 // Ptr to TRUE iff the result is valid
 
 {
     APLINT aplIntRht;                   // Temporary integer
@@ -982,7 +982,7 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
     LPVOID     lpMemRht = NULL,         // Ptr to right arg global memory
                lpMemRes = NULL;         // Ptr to result    ...
     APLLONGEST aplLongestRht;           // Immediate value
-    BOOL       bRet = TRUE;             // TRUE iff the result is valid
+    UBOOL      bRet = TRUE;             // TRUE iff the result is valid
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right args
@@ -1112,7 +1112,7 @@ NORMAL_EXIT:
 HGLOBAL SysFnDR_CharToFloat_EM
     (LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkFunc,              // Ptr to error function token
-     LPBOOL  lpbScalar)             // Ptr to TRUE iff result is a simple scalar
+     LPUBOOL lpbScalar)             // Ptr to TRUE iff result is a simple scalar
 
 {
     return SysFnDR_CharToIntFloat_EM (lptkRhtArg,
@@ -1131,7 +1131,7 @@ HGLOBAL SysFnDR_CharToFloat_EM
 HGLOBAL SysFnDR_CharToInt_EM
     (LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkFunc,              // Ptr to error function token
-     LPBOOL  lpbScalar)             // Ptr to TRUE iff result is a simple scalar
+     LPUBOOL lpbScalar)             // Ptr to TRUE iff result is a simple scalar
 
 {
     return SysFnDR_CharToIntFloat_EM (lptkRhtArg,
@@ -1158,7 +1158,7 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
     (LPTOKEN  lptkRhtArg,                   // Ptr to right arg token
      LPTOKEN  lptkFunc,                     // Ptr to error function token
      APLSTYPE aplTypeRes,                   // Result storage type
-     LPBOOL   lpbScalar)                    // Ptr to TRUE iff result is a simple scalar
+     LPUBOOL  lpbScalar)                    // Ptr to TRUE iff result is a simple scalar
 
 {
     APLSTYPE   aplTypeRht;                  // Right arg storage type

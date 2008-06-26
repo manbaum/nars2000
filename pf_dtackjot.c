@@ -189,11 +189,11 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     LPAPLCHAR     lpaplChar,            // Ptr to output save area
                   lpaplCharStart;       // Ptr to start of output save area
     APLUINT       ByteRes;              // # bytes in the result
-    BOOL          bRet = TRUE,          // TRUE iff result is valid
+    UBOOL         bRet = TRUE,          // TRUE iff result is valid
                   bSimpleScalar;        // TRUE if right arg is a simple scalar
     LPPL_YYSTYPE  lpYYRes;              // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPBOOL        lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     HGLOBAL       hGlbPTD;              // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
     LPWCHAR       lpwszFormat;          // Ptr to formatting save area
@@ -636,7 +636,7 @@ LPAPLCHAR CompileArrBool
      APLDIM      aplDimNCols,   // # cols to format
      APLRANK     aplRank,       // Rank of data to format
      LPAPLDIM    lpMemDim,      // Ptr to dimension vector
-     BOOL        bTopLevel)     // TRUE iff top level array
+     UBOOL       bTopLevel)     // TRUE iff top level array
 
 {
     UINT        uBitMask,
@@ -761,7 +761,7 @@ LPAPLCHAR CompileArrInteger
      APLDIM      aplDimNCols,   // # cols to format
      APLRANK     aplRank,       // Rank of data to format
      LPAPLDIM    lpMemDim,      // Ptr to dimension vector
-     BOOL        bTopLevel)     // TRUE iff top level array
+     UBOOL       bTopLevel)     // TRUE iff top level array
 
 {
     UINT        uLen;               // Length of integer part
@@ -870,7 +870,7 @@ LPAPLCHAR CompileArrFloat
      APLDIM      aplDimNCols,   // # cols to format
      APLRANK     aplRank,       // Rank of data to format
      LPAPLDIM    lpMemDim,      // Ptr to dimension vector
-     BOOL        bTopLevel)     // TRUE iff top level array
+     UBOOL       bTopLevel)     // TRUE iff top level array
 
 {
     UINT        uLen;
@@ -1007,7 +1007,7 @@ LPAPLCHAR CompileArrChar
      APLDIM      aplDimNCols,   // # cols to format
      APLRANK     aplRank,       // Rank of data to format
      LPAPLDIM    lpMemDim,      // Ptr to dimension vector
-     BOOL        bTopLevel)     // TRUE iff top level array
+     UBOOL       bTopLevel)     // TRUE iff top level array
 
 {
     APLDIM      aplDimRow,      // Loop counter
@@ -1194,7 +1194,7 @@ LPAPLCHAR CompileArrAPA
      APLDIM      aplDimNCols,   // # cols to format
      APLRANK     aplRank,       // Rank of data to format
      LPAPLDIM    lpMemDim,      // Ptr to dimension vector
-     BOOL        bTopLevel)     // TRUE iff top level array
+     UBOOL       bTopLevel)     // TRUE iff top level array
 
 {
     APLINT      apaOff,
@@ -1307,8 +1307,8 @@ LPAPLCHAR CompileArrHetero
      APLDIM      aplDimNCols,   // # cols to format
      APLRANK     aplRank,       // Rank of data to format
      LPAPLDIM    lpMemDim,      // Ptr to dimension vector
-     BOOL        bTopLevel,     // TRUE iff top level array
-     BOOL        bTCLF)         // TRUE iff handle []TCLF specially
+     UBOOL       bTopLevel,     // TRUE iff top level array
+     UBOOL       bTCLF)         // TRUE iff handle []TCLF specially
 
 {
     UINT        uLen;           // Length of integer or fractional part
@@ -1351,7 +1351,7 @@ LPAPLCHAR CompileArrHetero
         // Loop through the cols
         for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
         {
-            BOOL bZapBlank = TRUE;          // TRUE iff we should zap the trailing
+            UBOOL bZapBlank = TRUE;         // TRUE iff we should zap the trailing
                                             //   blank from FormatImmed
 
 #define lpSymEntry      ((LPAPLHETERO) lpMem)
@@ -1522,9 +1522,9 @@ LPAPLCHAR CompileArrNested
      APLDIM      aplDimNCols,   // # cols to format
      APLRANK     aplRank,       // Rank of data to format
      LPAPLDIM    lpMemDim,      // Ptr to dimension vector
-     BOOL        bTopLevel,     // TRUE iff top level array
-     BOOL        b1stCol,       // TRUE iff first (leftmost) col
-     BOOL        bLstCol)       // TRUE iff last (rightmost) col
+     UBOOL       bTopLevel,     // TRUE iff top level array
+     UBOOL       b1stCol,       // TRUE iff first (leftmost) col
+     UBOOL       bLstCol)       // TRUE iff last (rightmost) col
 
 {
     APLDIM      aplDimCol,          // Loop counter
@@ -1788,8 +1788,8 @@ LPAPLCHAR CompileArrNestedGlb
      LPFMTCOLSTR lpFmtColStr,   // This col's FMTCOLSTR
      LPUINT      lpNotCharPlus, // Ptr to NOTCHAR+ var
      LPAPLCHAR   lpaplChar,     // Ptr to next available position
-     BOOL        b1stCol,       // TRUE iff first (leftmost) col
-     BOOL        bLstCol)       // TRUE iff last (rightmost) col
+     UBOOL       b1stCol,       // TRUE iff first (leftmost) col
+     UBOOL       bLstCol)       // TRUE iff last (rightmost) col
 
 {
     LPFMTHEADER lpFmtHeader2;   // Ptr to format header struc
@@ -1801,7 +1801,7 @@ LPAPLCHAR CompileArrNestedGlb
     APLDIM      aplDimNRows,    // # rows
                 aplDimNCols,    // # cols
                 aplChrNCols;    // # cols for char arrays
-    BOOL        bSimpleScalar;
+    UBOOL       bSimpleScalar;
     APLINT      aplInteger;
     APLFLOAT    aplFloat;
     APLCHAR     aplChar;
@@ -2236,7 +2236,7 @@ void AppendBlankRows
     (APLRANK  aplRank,          // Arg rank
      APLDIM   aplDimRow,        // Arg row count
      LPAPLDIM lpMemDim,         // Ptr to arg dimensions
-     LPBOOL   lpbCtrlBreak)     // Ptr to Ctrl-Break flag
+     LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
     APLDIM  aplDimAcc;
@@ -2275,10 +2275,10 @@ LPAPLCHAR FormatArrSimple
      APLRANK     aplRank,           // Rank of this array
      LPAPLDIM    lpMemDim,          // Ptr to this array's dimensions (NULL for scalar)
      APLSTYPE    aplType,           // Storage type of this array
-     BOOL        bNextRow,          // TRUE iff skip to next row after this item
-     BOOL        bRawOutput,        // TRUE iff raw (not {thorn}) output
-     BOOL        bEndingCR,         // TRUE iff last line has CR
-     LPBOOL      lpbCtrlBreak)      // Ptr to Ctrl-Break flag
+     UBOOL       bNextRow,          // TRUE iff skip to next row after this item
+     UBOOL       bRawOutput,        // TRUE iff raw (not {thorn}) output
+     UBOOL       bEndingCR,         // TRUE iff last line has CR
+     LPUBOOL     lpbCtrlBreak)      // Ptr to Ctrl-Break flag
 
 {
     APLDIM      aplDimRow,          // Loop counter
@@ -2315,7 +2315,7 @@ LPAPLCHAR FormatArrSimple
          aplDimRow < aplDimNRows;
          aplDimRow++)
     {
-        BOOL bRealRow;          // TRUE iff this is a real row
+        UBOOL bRealRow;         // TRUE iff this is a real row
 
         // Point to the FMTROWSTR
         lpFmtRowStr = (LPFMTROWSTR) lpaplChar;
@@ -2523,9 +2523,9 @@ LPAPLCHAR FormatArrNested
      APLRANK     aplRank,           // Rank of this array
      LPAPLDIM    lpMemDim,          // Ptr to this array's dimensions (NULL for scalar)
      APLDIM      aplLastDim,        // Length of the last dimension in the result
-     BOOL        bRawOutput,        // TRUE iff raw (not {thorn}) output
-     BOOL        bEndingCR,         // TRUE iff last line has CR
-     LPBOOL      lpbCtrlBreak)      // Ptr to Ctrl-Break flag
+     UBOOL       bRawOutput,        // TRUE iff raw (not {thorn}) output
+     UBOOL       bEndingCR,         // TRUE iff last line has CR
+     LPUBOOL     lpbCtrlBreak)      // Ptr to Ctrl-Break flag
 
 {
     LPFMTROWSTR lpFmtRowStr;        // Ptr to current FMTROWSTR
@@ -2659,7 +2659,7 @@ LPAPLCHAR FormatArrNestedCon
      LPAPLCHAR  *lplpwszOut,    // Ptr to ptr to output string
      LPFMTCOLSTR lpFmtColStr,   // Ptr to the FMTCOLSTR for this column
      APLDIM      aplLastDim,    // Length of the last dimension in the result
-     LPBOOL      lpbCtrlBreak)  // Ptr to Ctrl-Break flag
+     LPUBOOL     lpbCtrlBreak)  // Ptr to Ctrl-Break flag
 
 {
     APLDIM   aplDimNRows,       // # formatted rows
@@ -2729,7 +2729,7 @@ LPAPLCHAR FormatArrNestedGlb
      LPAPLCHAR  *lplpwszOut,    // Ptr to ptr to output string
      LPFMTCOLSTR lpFmtColStr,   // Ptr to the FMTCOLSTR for this column
      APLDIM      aplLastDim,    // Length of the last dimension in the result
-     LPBOOL      lpbCtrlBreak)  // Ptr to Ctrl-Break flag
+     LPUBOOL     lpbCtrlBreak)  // Ptr to Ctrl-Break flag
 
 {
     APLSTYPE    aplType;        // This item's storage type
@@ -2924,7 +2924,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                  aplCharOverbar;    // []FC[FCNDX_OVERBAR]
     UINT         uBitMask,          // Bit mask for looping through Booleans
                  uLen;              // Length of formatted number
-    BOOL         bRet = TRUE,       // TRUE iff result is valid
+    UBOOL        bRet = TRUE,       // TRUE iff result is valid
                  Auto;              // TRUE iff the col is automatic width
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle

@@ -259,7 +259,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                  aplRankRes,        // Result rank
                  aplRankCom,        // Right arg common item rank
                  aplRankSub;        // Right arg item rank
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
     UINT         uBitMask;          // Bit mask for looping through Booleans
     APLNELM      uRht,              // Loop counter
                  uCom,              // ...
@@ -1209,7 +1209,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydRightShoeGlbImm_EM
+UBOOL PrimFnDydRightShoeGlbImm_EM
     (APLNELM    aplNELMLft,     // Left arg NELM
      LPVOID     lpMemLft,       // Ptr to left arg global memory
      APLUINT    uLft,           // Left arg starting index
@@ -1383,7 +1383,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
     IMM_TYPES    immTypeRes;        // Result immediate type (see IMM_TYPES)
     APLLONGEST   aplLongestRes;     // Result immediate value
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    BOOL         bRet;              // TRUE iff FloatToAplint_SCT is valid
+    UBOOL        bRet;              // TRUE iff FloatToAplint_SCT is valid
     APLBOOL      bQuadIO;           // []IO
     HGLOBAL      hGlbRes = NULL;    // Result global memory handle
 
@@ -1492,7 +1492,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     (HGLOBAL    hGlbLft,                // Left  arg global memory handle
      HGLOBAL    hGlbRht,                // Right ...
      LPTOKEN    lptkFunc,               // Ptr to function token
-     BOOL       bArraySet,              // TRUE iff in array assignment
+     UBOOL      bArraySet,              // TRUE iff in array assignment
      APLSTYPE   aplTypeSet,             // Set arg storage type
      HGLOBAL    hGlbSet,                // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
      APLLONGEST aplLongestSet)          // Set arg immediate value
@@ -1511,7 +1511,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                  lpMemRht = NULL;       // Ptr to right ...
     LPAPLDIM     lpMemDimRht;           // Ptr to right arg dimensions
     APLUINT      uLft;                  // Loop counter
-    BOOL         bRet = TRUE;           // TRUE iff result is valid
+    UBOOL        bRet = TRUE;           // TRUE iff result is valid
     APLBOOL      bQuadIO;               // []IO
     LPSYMENTRY   lpSymTmp;              // Ptr to temporary LPSYMENTRY
 

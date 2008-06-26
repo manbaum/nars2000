@@ -180,7 +180,7 @@ static BYTE aTT2[] = {
          len2 = lstrlenW (s2);
 
     int MinLen, MaxLen, i, j;
-    BOOL bRet, bSame;
+    UBOOL bRet, bSame;
     BYTE t32, t1j, t2j;
     BYTE (*pTT)[256];
 
@@ -190,7 +190,7 @@ static BYTE aTT2[] = {
     // <bRet> is true or false depending upon
     //   whether or not s1 < s2.
     bRet = (len1 <= len2);      // Shorter before longer
-    bSame = (len1 == len2);     // If you prefer to consider
+    bSame = (len1 EQ len2);     // If you prefer to consider
                                 //   "foo" the same as "foo   ",
                                 //   change this to bSame = 1;
     // Loop through the array of translate tables
@@ -211,10 +211,10 @@ static BYTE aTT2[] = {
             for (j = MaxLen - 1; j >= MinLen; j--)
             {
                 t2j = (*pTT)[(BYTE) s2[j]];
-                bSame &= (t32 == t2j);
+                bSame &= (t32 EQ t2j);
 
-                if (t32 != t2j
-                 && bRet == (t32 > t2j))
+                if (t32 NE t2j
+                 && bRet EQ (UBOOL) (t32 > t2j))
                 {
                     bRet = !bRet;
                     break;
@@ -226,10 +226,10 @@ static BYTE aTT2[] = {
             for (j = MaxLen - 1; j >= MinLen; j--)
             {
                 t1j = (*pTT)[(BYTE) s1[j]];
-                bSame &= (t32 == t1j);
+                bSame &= (t32 EQ t1j);
 
-                if (t1j != t32
-                 && bRet == (t1j > t32))
+                if (t1j NE t32
+                 && bRet EQ (UBOOL) (t1j > t32))
                 {
                     bRet = !bRet;
                     break;
@@ -244,10 +244,10 @@ static BYTE aTT2[] = {
         {
             t1j = (*pTT)[(BYTE) s1[j]];
             t2j = (*pTT)[(BYTE) s2[j]];
-            bSame &= (t1j == t2j);
+            bSame &= (t1j EQ t2j);
 
-            if (t1j != t2j
-             && bRet == (t1j > t2j))
+            if (t1j NE t2j
+             && bRet EQ (UBOOL) (t1j > t2j))
             {
                 bRet = !bRet;
             } // End IF

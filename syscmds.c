@@ -33,7 +33,7 @@
 #include "compro.h"
 #endif
 
-typedef BOOL (SYSCMD) (LPWCHAR);
+typedef UBOOL (SYSCMD) (LPWCHAR);
 typedef SYSCMD *LPSYSCMD;
 
 typedef struct tagSYSCMDSTAB
@@ -107,7 +107,7 @@ void IncorrectCommand
 //  Execute a system command
 //***************************************************************************
 
-BOOL ExecSysCmd
+UBOOL ExecSysCmd
     (LPWCHAR lpwszLine)
 
 {
@@ -150,7 +150,7 @@ BOOL ExecSysCmd
 //  Execute the system command:  )CLEAR
 //***************************************************************************
 
-BOOL CmdClear_EM
+UBOOL CmdClear_EM
     (LPWCHAR lpwszTail)
 
 {
@@ -170,7 +170,7 @@ BOOL CmdClear_EM
 //  Execute the system command:  )CLOSE
 //***************************************************************************
 
-BOOL CmdClose_EM
+UBOOL CmdClose_EM
     (LPWCHAR lpwszTail)
 
 {
@@ -191,7 +191,7 @@ BOOL CmdClose_EM
 //  Execute the system command:  )EDIT
 //***************************************************************************
 
-BOOL CmdEdit_EM
+UBOOL CmdEdit_EM
     (LPWCHAR lpwszTail)
 
 {
@@ -209,7 +209,7 @@ BOOL CmdEdit_EM
 //  Execute the system command:  )EXIT
 //***************************************************************************
 
-BOOL CmdExit_EM
+UBOOL CmdExit_EM
     (LPWCHAR lpwszTail)
 
 {
@@ -225,7 +225,7 @@ BOOL CmdExit_EM
 //  Execute the system command:  )NEWTAB
 //***************************************************************************
 
-BOOL CmdNewTab_EM
+UBOOL CmdNewTab_EM
     (LPWCHAR lpwszTail)
 
 {

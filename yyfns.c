@@ -223,14 +223,14 @@ void YYFree
 //  Ensure that YYRes has no Inuse entries
 //***************************************************************************
 
-BOOL YYResIsEmpty
+UBOOL YYResIsEmpty
     (void)
 
 {
     UINT         u;             // Loop counter
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
+    UBOOL        bRet = TRUE;   // TRUE iff result is valid
 
     CheckMemStat ();
 
@@ -342,11 +342,11 @@ UINT YYCountFcnStr
 //  Check for an axis operator in a function strand
 //***************************************************************************
 
-BOOL YYIsFcnStrAxis
+UBOOL YYIsFcnStrAxis
     (LPPL_YYSTYPE lpYYArg)          // Ptr to function strand
 
 {
-    BOOL              bRet;         // TRUE iff the result is valid
+    UBOOL             bRet;         // TRUE iff the result is valid
     HGLOBAL           hGlbFcn;      // Function array global memory handle
     LPFCNARRAY_HEADER lpMemFcn;     // Ptr to function array global memory
 
@@ -438,7 +438,7 @@ LPPL_YYSTYPE YYCopyFcn
      LPPL_YYSTYPE  lpYYArg,             // Ptr to function arg
      LPPL_YYSTYPE *lpYYBase,            // Ptr to ptr to YY base address
      LPINT         lpTknCount,          // Ptr to resulting token count
-     BOOL          bResUsed)            // TRUE iff the result is used
+     UBOOL         bResUsed)            // TRUE iff the result is used
 
 {
     int          i,
@@ -648,13 +648,13 @@ LPPL_YYSTYPE YYCopyFcn
 //  Debug routine to check YYInuse flag
 //***************************************************************************
 
-BOOL YYCheckInuse
+UBOOL YYCheckInuse
     (LPPL_YYSTYPE lpYYRes)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // Return value
+    UBOOL        bRet;          // Return value
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);

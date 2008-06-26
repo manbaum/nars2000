@@ -43,7 +43,7 @@
 //  Execute the system command:  )LIB [dir] [[first][-][last]]
 //***************************************************************************
 
-BOOL CmdLib_EM
+UBOOL CmdLib_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {

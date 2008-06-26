@@ -41,6 +41,8 @@
 #define SECTNAME_SYSVARS        L"SysVars"
 #define SECTNAME_FONTS          L"Fonts"
 #define SECTNAME_OPTIONS        L"Options"
+#define SECTNAME_RANGELIMITS    L"RangeLimits"
+#define SECTNAME_SETEMPTYCWS    L"SetEmptyCWS"
 
 // Key names
 #define KEYNAME_VERSION         L"Version"
@@ -77,6 +79,7 @@
 #define KEYNAME_USELOCALTIME            L"UseLocalTime"
 #define KEYNAME_BACKUPONLOAD            L"BackupOnLoad"
 #define KEYNAME_BACKUPONSAVE            L"BackupOnSave"
+#define KEYNAME_CLOSINGLAMP             L"ClosingLamp"
 #define KEYNAME_DEFAULTPASTE            L"DefaultPaste"
 
 // Format string for [Fonts] section LOGFONT
@@ -91,7 +94,7 @@
 //    directories are present
 //***************************************************************************
 
-BOOL CreateAppDataDirs
+UBOOL CreateAppDataDirs
     (void)
 
 {
@@ -204,7 +207,9 @@ void ReadIniFileGlb
          *lpwszTemp;                // Temporary ptr into wszTemp
     UINT  uCnt;                     // Loop counter
 
+    //***************************************************************
     // Read in the [Fonts] section
+    //***************************************************************
 
     // Read in the LOGFONT strucs
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTFE, &lfFE);
@@ -214,7 +219,9 @@ void ReadIniFileGlb
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC, &lfTC);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTVE, &lfVE);
 
+    //***************************************************************
     // Read in the [Options] section
+    //***************************************************************
 
     // Read in bAdjustPW
     OptionFlags.bAdjustPW =
@@ -222,57 +229,58 @@ void ReadIniFileGlb
                              KEYNAME_ADJUSTPW,      // Ptr to the key name
                              DEF_ADJUSTPW,          // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-
     // Read in bUnderbarToLowercase
     OptionFlags.bUnderbarToLowercase =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_UNDERBARTOLOWERCASE,// Ptr to the key name
                              DEF_UNDERBARTOLOWERCASE,// Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-
     // Read in bNewTabOnClear
     OptionFlags.bNewTabOnClear =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_NEWTABONCLEAR, // Ptr to the key name
                              DEF_NEWTABONCLEAR,     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-
     // Read in bNewTabOnLoad
     OptionFlags.bNewTabOnLoad =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_NEWTABONLOAD,  // Ptr to the key name
                              DEF_NEWTABONLOAD,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-
     // Read in bUseLocalTime
     OptionFlags.bNewTabOnLoad =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_USELOCALTIME,  // Ptr to the key name
                              DEF_USELOCALTIME,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-
     // Read in bBackupOnLoad
     OptionFlags.bBackupOnLoad =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_BACKUPONLOAD,  // Ptr to the key name
                              DEF_USELOCALTIME,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-
     // Read in bBackupOnSave
     OptionFlags.bBackupOnLoad =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_BACKUPONSAVE,  // Ptr to the key name
                              DEF_USELOCALTIME,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-
+    // Read in bClosingLamp
+    OptionFlags.bClosingLamp =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_CLOSINGLAMP,   // Ptr to the key name
+                             DEF_CLOSINGLAMP,       // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
     // Read in uDefaultPaste
     OptionFlags.uDefaultPaste =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_DEFAULTPASTE,  // Ptr to the key name
                              DEF_DEFAULTPASTE,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-
-    // Read in default values for system variables in a CLEAR WS
+    //***************************************************************
+    // Read in the [SysVars] section -- default values for system
+    //                                  variables in a CLEAR WS
+    //***************************************************************
 
     // Read in []ALX
     hGlbQuadALX_CWS =
@@ -391,6 +399,94 @@ void ReadIniFileGlb
         defstop
             break;
     } // End SWITCH
+
+    //***************************************************************
+    // Read in the [RangeLimits] section
+    //***************************************************************
+
+    // Read in bRangeLimit.CT
+    bRangeLimit.CT =
+      GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
+                             KEYNAME_QUADCT,        // Ptr to the key name
+                             DEF_RANGELIMIT_CT,     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bRangeLimit.IC
+    bRangeLimit.IC =
+      GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
+                             KEYNAME_QUADIC,        // Ptr to the key name
+                             DEF_RANGELIMIT_IC,     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bRangeLimit.IO
+    bRangeLimit.IO =
+      GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
+                             KEYNAME_QUADIO,        // Ptr to the key name
+                             DEF_RANGELIMIT_IO,     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bRangeLimit.PP
+    bRangeLimit.PP =
+      GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
+                             KEYNAME_QUADPP,        // Ptr to the key name
+                             DEF_RANGELIMIT_PP,     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bRangeLimit.PW
+    bRangeLimit.PW =
+      GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
+                             KEYNAME_QUADPW,        // Ptr to the key name
+                             DEF_RANGELIMIT_PW,     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bRangeLimit.RL
+    bRangeLimit.RL =
+      GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
+                             KEYNAME_QUADRL,        // Ptr to the key name
+                             DEF_RANGELIMIT_RL,     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+
+    //***************************************************************
+    // Read in the [SetEmptyCWS] section
+    //***************************************************************
+
+    // Read in bSysOrIni.CT
+    bSysOrIni.CT =
+      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+                             KEYNAME_QUADCT,        // Ptr to the key name
+                             DEF_SETEMPTYCWS_CT,    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bSysOrIni.FC
+    bSysOrIni.FC =
+      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+                             KEYNAME_QUADFC,        // Ptr to the key name
+                             DEF_SETEMPTYCWS_FC,    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bSysOrIni.IC
+    bSysOrIni.IC =
+      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+                             KEYNAME_QUADIC,        // Ptr to the key name
+                             DEF_SETEMPTYCWS_IC,    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bSysOrIni.IO
+    bSysOrIni.IO =
+      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+                             KEYNAME_QUADIO,        // Ptr to the key name
+                             DEF_SETEMPTYCWS_IO,    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bSysOrIni.PP
+    bSysOrIni.PP =
+      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+                             KEYNAME_QUADPP,        // Ptr to the key name
+                             DEF_SETEMPTYCWS_PP,    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bSysOrIni.PW
+    bSysOrIni.PW =
+      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+                             KEYNAME_QUADPW,        // Ptr to the key name
+                             DEF_SETEMPTYCWS_PW,    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bSysOrIni.RL
+    bSysOrIni.RL =
+      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+                             KEYNAME_QUADRL,        // Ptr to the key name
+                             DEF_SETEMPTYCWS_RL,    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
 } // End ReadIniFileGlb
 
 
@@ -975,6 +1071,15 @@ void SaveIniFile
                                 KEYNAME_BACKUPONSAVE, // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
+    //******************* bClosingLamp ************************
+    wszTemp[0] = L'0' + OptionFlags.bClosingLamp;
+    wszTemp[1] = L'\0';
+
+    // Write out bClosingLamp
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_CLOSINGLAMP,// Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
     //******************* uDefaultPaste ***********************
     wsprintfW (wszTemp,
                L"%u",
@@ -1121,6 +1226,131 @@ void SaveIniFile
     WritePrivateProfileStringW (SECTNAME_SYSVARS,   // Ptr to the section name
                                 KEYNAME_QUADSA,     // Ptr to the key name
                                 L"0" + cQuadxSA_CWS,// Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //*********************************************************
+    // Write out [RangeLimits] section entries
+    //*********************************************************
+
+    //******************* bRangeLimit.CT **********************
+    wszTemp[0] = L'0' + bRangeLimit.CT;
+    wszTemp[1] = L'\0';
+
+    // Write out bRangeLimit.CT
+    WritePrivateProfileStringW (SECTNAME_RANGELIMITS, // Ptr to the section name
+                                KEYNAME_QUADCT,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bRangeLimit.IC **********************
+    wszTemp[0] = L'0' + bRangeLimit.IC;
+    wszTemp[1] = L'\0';
+
+    // Write out bRangeLimit.IC
+    WritePrivateProfileStringW (SECTNAME_RANGELIMITS, // Ptr to the section name
+                                KEYNAME_QUADIC,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bRangeLimit.IO **********************
+    wszTemp[0] = L'0' + bRangeLimit.IO;
+    wszTemp[1] = L'\0';
+
+    // Write out bRangeLimit.IO
+    WritePrivateProfileStringW (SECTNAME_RANGELIMITS, // Ptr to the section name
+                                KEYNAME_QUADIO,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bRangeLimit.PP **********************
+    wszTemp[0] = L'0' + bRangeLimit.PP;
+    wszTemp[1] = L'\0';
+
+    // Write out bRangeLimit.PP
+    WritePrivateProfileStringW (SECTNAME_RANGELIMITS, // Ptr to the section name
+                                KEYNAME_QUADPP,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bRangeLimit.PW **********************
+    wszTemp[0] = L'0' + bRangeLimit.PW;
+    wszTemp[1] = L'\0';
+
+    // Write out bRangeLimit.PW
+    WritePrivateProfileStringW (SECTNAME_RANGELIMITS, // Ptr to the section name
+                                KEYNAME_QUADPW,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bRangeLimit.RL **********************
+    wszTemp[0] = L'0' + bRangeLimit.RL;
+    wszTemp[1] = L'\0';
+
+    // Write out bRangeLimit.RL
+    WritePrivateProfileStringW (SECTNAME_RANGELIMITS, // Ptr to the section name
+                                KEYNAME_QUADRL,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //*********************************************************
+    // Write out [SetEmptyCWS] section entries
+    //*********************************************************
+
+    //******************* bSysOrIni.CT **********************
+    wszTemp[0] = L'0' + bSysOrIni.CT;
+    wszTemp[1] = L'\0';
+
+    // Write out bSysOrIni.CT
+    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+                                KEYNAME_QUADCT,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bSysOrIni.FC **********************
+    wszTemp[0] = L'0' + bSysOrIni.FC;
+    wszTemp[1] = L'\0';
+
+    // Write out bSysOrIni.FC
+    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+                                KEYNAME_QUADFC,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bSysOrIni.IC **********************
+    wszTemp[0] = L'0' + bSysOrIni.IC;
+    wszTemp[1] = L'\0';
+
+    // Write out bSysOrIni.IC
+    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+                                KEYNAME_QUADIC,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bSysOrIni.IO **********************
+    wszTemp[0] = L'0' + bSysOrIni.IO;
+    wszTemp[1] = L'\0';
+
+    // Write out bSysOrIni.IO
+    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+                                KEYNAME_QUADIO,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bSysOrIni.PP **********************
+    wszTemp[0] = L'0' + bSysOrIni.PP;
+    wszTemp[1] = L'\0';
+
+    // Write out bSysOrIni.PP
+    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+                                KEYNAME_QUADPP,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bSysOrIni.PW **********************
+    wszTemp[0] = L'0' + bSysOrIni.PW;
+    wszTemp[1] = L'\0';
+
+    // Write out bSysOrIni.PW
+    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+                                KEYNAME_QUADPW,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* bSysOrIni.RL **********************
+    wszTemp[0] = L'0' + bSysOrIni.RL;
+    wszTemp[1] = L'\0';
+
+    // Write out bSysOrIni.RL
+    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+                                KEYNAME_QUADRL,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
 } // End SaveIniFile
 

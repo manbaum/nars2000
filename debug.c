@@ -101,7 +101,7 @@ void CreateDebuggerWindow
 //  Create debugger window in thread
 //***************************************************************************
 
-BOOL WINAPI CreateDebuggerInThread
+UBOOL WINAPI CreateDebuggerInThread
     (LPCDB_THREAD lpcdbThread)
 
 {

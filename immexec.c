@@ -280,10 +280,10 @@ void ImmExecLine
 
 EXIT_TYPES ImmExecStmt
     (LPWCHAR lpwszCompLine,     // Ptr to line to execute
-     BOOL    bFreeLine,         // TRUE iff free lpwszCompLine on completion
-     BOOL    bWaitUntilFini,    // TRUE iff wait until finished
+     UBOOL   bFreeLine,         // TRUE iff free lpwszCompLine on completion
+     UBOOL   bWaitUntilFini,    // TRUE iff wait until finished
      HWND    hWndEC,            // Edit Control window handle
-     BOOL    bActOnErrors)      // TRUE iff errors are acted upon
+     UBOOL   bActOnErrors)      // TRUE iff errors are acted upon
 
 {
     HANDLE     hThread;         // Thread handle
@@ -395,7 +395,7 @@ DWORD WINAPI ImmExecStmtInThread
     HGLOBAL       hGlbPTD;              // Handle to this window's PerTabData
     LPPERTABDATA  lpMemPTD;             // Ptr to ...
     RESET_FLAGS   resetFlag;            // Reset flag (see RESET_FLAGS)
-    BOOL          bFreeLine,            // TRUE iff we should free lpszCompLine on completion
+    UBOOL         bFreeLine,            // TRUE iff we should free lpszCompLine on completion
                   bWaitUntilFini,       // TRUE iff wait until finished
                   bActOnErrors,         // TRUE iff errors are acted upon
                   bQuadPrompt = FALSE;  // TRUE iff Quad Prompt has been displayed

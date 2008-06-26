@@ -171,7 +171,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  symLftFcn,         // ...               left  operand
                  symRhtFcn,         // ...               right operand
                  symRhtArg;         // ...               right arg
-    BOOL         bNamedLftFcn,      // TRUE iff the left operand is a named function
+    UBOOL        bNamedLftFcn,      // TRUE iff the left operand is a named function
                  bNamedRhtFcn;      // ...          right ...
 
     // Get the thread's PerTabData global memory handle
@@ -683,7 +683,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                    numRes;          // Loop counter
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
-    BOOL           bRet;            // TRUE iff result is valid
+    UBOOL          bRet;            // TRUE iff result is valid
     EXIT_TYPES     exitType;        // Return code from ParseLine
 
     // Get the thread's PerTabData global memory handle
@@ -1048,13 +1048,13 @@ void DisplayFcnLine
 #define APPEND_NAME
 #endif
 
-BOOL CheckDfnExitError_EM
+UBOOL CheckDfnExitError_EM
     (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
     LPSIS_HEADER   lpSISCur;            // Ptr to current SIS header
     LPDFN_HEADER   lpMemDfnHdr = NULL;  // Ptr to user-defined function/operator header
-    BOOL           bRet = FALSE;        // TRUE iff error on exit
+    UBOOL          bRet = FALSE;        // TRUE iff error on exit
     UINT           numResultSTE,        // # result STEs (may be zero if no result)
                    numRes;              // Loop counter
     LPSYMENTRY    *lplpSymEntry;        // Ptr to 1st result STE
@@ -1204,7 +1204,7 @@ NORMAL_EXIT:
 //    and strip off one level
 //***************************************************************************
 
-BOOL Unlocalize
+UBOOL Unlocalize
     (void)
 
 {
@@ -1214,7 +1214,7 @@ BOOL Unlocalize
     UINT         numSymEntries,     // # LPSYMENTRYs localized
                  numSym;            // Loop counter
     LPSYMENTRY   lpSymEntryNxt;     // Ptr to next localized LPSYMENTRY on the SIS
-    BOOL         bRet = TRUE;       // TRUE iff the result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
 
     // Get the thread's PerTabData global memory handle
@@ -1701,7 +1701,7 @@ void InitVarSTEs
 #define APPEND_NAME
 #endif
 
-BOOL InitFcnSTEs
+UBOOL InitFcnSTEs
     (LPPL_YYSTYPE lpYYArg,      // Ptr to arg PL_YYSTYPE
      UINT         numArgSTE,    // # STEs to initialize
      LPSYMENTRY  *lplpSymEntry) // Ptr to LPSYMENTRYs

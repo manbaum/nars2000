@@ -331,7 +331,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     APLLONGEST   aplLongestLft,     // Left arg as immediate value
                  aplLongestSet;     // Set  ...
     UINT         uBitMask;          // Bit mask when looping through Booleans
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
     APLBOOL      bQuadIO;           // []IO
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     LPSYMENTRY   lpSymTmp;          // Ptr to temporary LPSYMENTRY

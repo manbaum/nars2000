@@ -140,7 +140,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                  hGlbRes;           // Result    ...
     APLUINT      ByteRes;           // # bytes in the result
     LPVOID       lpMemRes;          // Ptr to result global memory
-    BOOL         bRet;              // TRUE iff result is valid
+    UBOOL        bRet;              // TRUE iff result is valid
     APLLONGEST   aplLongestRht;     // Right arg iommediate value
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLBOOL      bQuadIO;           // []IO
@@ -378,7 +378,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     LPVOID       lpMemLft,          // Ptr to left arg global memory
                  lpMemRht;          // Ptr to right ...
     LPAPLUINT    lpMemRes = NULL;   // Ptr to result   ...
-    BOOL         bQuadIO;           // []IO
+    UBOOL        bQuadIO;           // []IO
     APLUINT      NotFound;          // Not found value
     APLUINT      ByteRes;           // # bytes in the result
     APLLONGEST   aplLongestLft,     // Left arg immediate value
@@ -626,11 +626,11 @@ void PrimFnDydIotaBvB
      LPAPLBOOL lpMemLft,            // Ptr to left arg global memory data
      APLNELM   aplNELMRht,          // Right arg (and result) NELM
      LPAPLBOOL lpMemRht,            // Ptr to right arg global memory data
-     BOOL      bQuadIO,             // []IO
+     UBOOL     bQuadIO,             // []IO
      APLUINT   NotFound)            // Not found value
 
 {
-    BOOL    Found0,                 // TRUE iff there is at least one 0 in the right arg
+    UBOOL   Found0,                 // TRUE iff there is at least one 0 in the right arg
             Found1;                 // ...                            1 ...
     APLUINT Index0,                 // Index of the first 0 in the left arg
             Index1,                 // ...                1 ...
@@ -725,7 +725,7 @@ void PrimFnDydIotaBvB
 //  Dyadic iota between simple ints (APLBOOL/APLINT/APLAPA)
 //***************************************************************************
 
-BOOL PrimFnDydIotaIvI_EM
+UBOOL PrimFnDydIotaIvI_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
      APLSTYPE  aplTypeLft,          // Left arg storage type
      APLNELM   aplNELMLft,          // Left arg NELM
@@ -733,7 +733,7 @@ BOOL PrimFnDydIotaIvI_EM
      APLSTYPE  aplTypeRht,          // Right arg storage type
      APLNELM   aplNELMRht,          // Right arg NELM
      LPVOID    lpMemRht,            // Ptr to right arg global memory data
-     BOOL      bQuadIO,             // []IO
+     UBOOL     bQuadIO,             // []IO
      APLUINT   NotFound,            // Not found value
      LPTOKEN   lptkFunc)            // Ptr to function token
 
@@ -794,13 +794,13 @@ BOOL PrimFnDydIotaIvI_EM
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydIotaCvC_EM
+UBOOL PrimFnDydIotaCvC_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
      APLNELM   aplNELMLft,          // Left arg (and result) NELM
      LPAPLCHAR lpMemLft,            // Ptr to left arg global memory data
      APLNELM   aplNELMRht,          // Right arg NELM
      LPAPLCHAR lpMemRht,            // Ptr to right arg global memory data
-     BOOL      bQuadIO,             // []IO
+     UBOOL     bQuadIO,             // []IO
      APLUINT   NotFound,            // Not found value
      LPTOKEN   lptkFunc)            // Ptr to function token
 
@@ -863,7 +863,7 @@ void PrimFnDydIotaOther
      APLSTYPE  aplTypeRht,          // Right arg storage type
      APLNELM   aplNELMRht,          // Right arg NELM
      LPVOID    lpMemRht,            // Ptr to right arg global memory data
-     BOOL      bQuadIO,             // []IO
+     UBOOL     bQuadIO,             // []IO
      APLUINT   NotFound,            // Not found value
      LPTOKEN   lptkFunc)            // Ptr to function token
 
@@ -878,7 +878,7 @@ void PrimFnDydIotaOther
     APLUINT      uLft,              // Loop counter
                  uRht;              // ...
     LPPL_YYSTYPE lpYYTmp;           // Ptr to the temporary result
-    BOOL         bCmp;              // TRUE iff the comparison is TRUE
+    UBOOL        bCmp;              // TRUE iff the comparison is TRUE
 
     // This leaves:  Left vs. Right
     //                B   vs.    FHN

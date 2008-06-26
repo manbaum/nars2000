@@ -148,7 +148,7 @@ LPPL_YYSTYPE PrimOpMonDieresisJot_EM_YY
 LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff protoyping
+     UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
@@ -189,8 +189,8 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bCheckAxis,           // TRUE iff check for axis operator
-     BOOL         bPrototyping)         // TRUE iff protoyping
+     UBOOL        bCheckAxis,           // TRUE iff check for axis operator
+     UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
     HGLOBAL      hGlbPTD,               // PerTabData global memory handle
@@ -509,7 +509,7 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff protoyping
+     UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand

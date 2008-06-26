@@ -96,7 +96,7 @@ TABCOLORS crTab[] =
 //  Enum child proc for ShowChildWindows
 //***************************************************************************
 
-BOOL CALLBACK EnumCallbackShowHide
+UBOOL CALLBACK EnumCallbackShowHide
     (HWND   hWnd,           // Handle to child window
      LPARAM lParam)         // Application-defined value
 
@@ -123,7 +123,7 @@ BOOL CALLBACK EnumCallbackShowHide
 
 void ShowHideChildWindows
     (HWND hWndMC,       // Window handle to MDI Client
-     BOOL bShow)        // TRUE iff showing the window, FALSE if hiding it
+     UBOOL bShow)       // TRUE iff showing the window, FALSE if hiding it
 
 {
     if (!hWndMC)
@@ -186,11 +186,11 @@ void ShowHideChildWindows
 #define APPEND_NAME
 #endif
 
-BOOL CreateNewTab
+UBOOL CreateNewTab
     (HWND    hWndParent,        // Window handle of the parent
      LPWCHAR lpwsz,             // Drive, Path, Filename, Ext of the workspace
      int     iTabIndex,         // Insert the new tab to the left of this one
-     BOOL    bExecLX)           // TRUE iff execute []LX after successful load
+     UBOOL   bExecLX)           // TRUE iff execute []LX after successful load
 
 {
     DWORD   dwThreadId;         // Thread ID
@@ -259,7 +259,7 @@ BOOL CreateNewTab
 #define APPEND_NAME
 #endif
 
-BOOL WINAPI CreateNewTabInThread
+UBOOL WINAPI CreateNewTabInThread
     (LPCNT_THREAD lpcntThread)
 
 {
@@ -268,7 +268,7 @@ BOOL WINAPI CreateNewTabInThread
     HGLOBAL      hGlbPTD,           // PerTabData global memory handle
                  hGlbDPFE = NULL;   // Workspace DPFE global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
-    BOOL         bRet = FALSE;      // TR$UE iff the result is valid
+    UBOOL        bRet = FALSE;      // TR$UE iff the result is valid
     RECT         rc;                // Rectangle for setting size of window
     int          rcLeft, rcRight, rcBottom;
     CLIENTCREATESTRUCT ccs;         // For MDI Client window
@@ -281,7 +281,7 @@ BOOL WINAPI CreateNewTabInThread
     MSG          Msg;               // Message for GetMessageW loop
     int          nThreads;
     WCHAR        wszTemp[32];       // Temporary storage
-    BOOL         bExecLX;           // TRUE iff execute []LX after successful load
+    UBOOL        bExecLX;           // TRUE iff execute []LX after successful load
 
     // Store the thread type ('TC')
     TlsSetValue (dwTlsType, (LPVOID) 'TC');
@@ -612,7 +612,7 @@ LRESULT WINAPI LclTabCtrlWndProc
 
 {
     TC_HITTESTINFO tcHit;
-    static BOOL    bCaptured = FALSE;
+    static UBOOL   bCaptured = FALSE;
     POINT          ptScr;
     HMENU          hMenu;
     UINT           uCloseState,
@@ -905,7 +905,7 @@ LRESULT WINAPI LclTabCtrlWndProc
 //  Did the user click on a close button?
 //***************************************************************************
 
-BOOL ClickOnClose
+UBOOL ClickOnClose
     (void)
 
 {
@@ -949,7 +949,7 @@ BOOL ClickOnClose
 //  Close a given tab
 //***************************************************************************
 
-BOOL CloseTab
+UBOOL CloseTab
     (int iTabIndex)             // Tab index
 
 {
@@ -966,7 +966,7 @@ BOOL CloseTab
 
 void SetTabTextState
     (int  iCurTab,      // Index # of current tab
-     BOOL bHighlight)   // TRUE iff to be drawn as highlighted
+     UBOOL bHighlight)  // TRUE iff to be drawn as highlighted
 
 {
     HGLOBAL      hGlbPTD;
@@ -1114,7 +1114,7 @@ void ResetTabColorIndex
 void AdjustTabRect
     (LPRECT lpRect,         // Ptr to rectangle to adjust
      int    iTabIndex,      // Tab index
-     BOOL   bForce)         // TRUE iff we're to force adjustment
+     UBOOL  bForce)         // TRUE iff we're to force adjustment
 
 {
     // If this is the current tab, adjust by one pixel
@@ -1528,7 +1528,7 @@ void NewTabName
 //  Return TRUE iff the current tab is the active tab
 //***************************************************************************
 
-BOOL IsCurTabActive
+UBOOL IsCurTabActive
     (void)
 
 {

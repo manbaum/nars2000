@@ -66,12 +66,12 @@ LPTOKEN CheckAxisOper
 #define APPEND_NAME
 #endif
 
-BOOL CheckAxisImm
+UBOOL CheckAxisImm
     (UINT       immType,        // Type of the immediate value
      APLLONGEST aplLongest,     // The immediate value
      LPTOKEN    lptkAxis,       // The Axis values
      APLRANK    aplRankCmp,     // Comparison rank
-     LPBOOL     lpbFract,       // Return TRUE iff fractional values are present,
+     LPUBOOL    lpbFract,       // Return TRUE iff fractional values are present,
                                 //   (may be NULL if fractional values not allowed)
      LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
                                 //   (may be NULL if caller is not interested)
@@ -89,7 +89,7 @@ BOOL CheckAxisImm
 {
     APLUINT  ByteAxis;          // # bytes for the axis global
     APLRANK  aplRank;           // Maximum rank for comparison
-    BOOL     bRet = TRUE;       // TRUE iff result is valid
+    UBOOL    bRet = TRUE;       // TRUE iff result is valid
     UINT     u;                 // Loop counter
     LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
     APLBOOL  bQuadIO;           // []IO
@@ -226,17 +226,17 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL CheckAxisGlb
+UBOOL CheckAxisGlb
     (HGLOBAL    hGlbData,       // The global handle to check
      LPTOKEN    lptkAxis,       // The Axis values
      APLRANK    aplRankCmp,     // Comparison rank
-     BOOL       bSingleton,     // TRUE iff scalar or one-element vector only
+     UBOOL      bSingleton,     // TRUE iff scalar or one-element vector only
                                 //   is allowed
-     BOOL       bSortAxes,      // TRUE iff the axes should be sorted
+     UBOOL      bSortAxes,      // TRUE iff the axes should be sorted
                                 //   (i.e., the order of the axes is unimportant)
-     BOOL       bContiguous,    // TRUE iff the axes must be contiguous
-     BOOL       bAllowDups,     // TRUE iff duplicate axes are allowed
-     LPBOOL     lpbFract,       // Return TRUE iff fractional values are present,
+     UBOOL      bContiguous,    // TRUE iff the axes must be contiguous
+     UBOOL      bAllowDups,     // TRUE iff duplicate axes are allowed
+     LPUBOOL    lpbFract,       // Return TRUE iff fractional values are present,
                                 //   (may be NULL if fractional values not allowed)
      LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
                                 //   (may be NULL if caller is not interested)
@@ -252,7 +252,7 @@ BOOL CheckAxisGlb
      LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
 
 {
-    BOOL     bRet = TRUE;       // TRUE iff the result is valid
+    UBOOL    bRet = TRUE;       // TRUE iff the result is valid
     LPVOID   lpMem,             // Ptr to incoming data global memory
              lpDup = NULL;      // Ptr to duplciate axes global memory
     HGLOBAL  hGlbDup = NULL;    // Duplicate axes global memory handle
@@ -679,16 +679,16 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL CheckAxis_EM
+UBOOL CheckAxis_EM
     (LPTOKEN    lptkAxis,       // The Axis values
      APLRANK    aplRankCmp,     // Comparison rank
-     BOOL       bSingleton,     // TRUE iff scalar or one-element vector only
+     UBOOL      bSingleton,     // TRUE iff scalar or one-element vector only
                                 //   is allowed
-     BOOL       bSortAxes,      // TRUE iff the axes should be sorted
+     UBOOL      bSortAxes,      // TRUE iff the axes should be sorted
                                 //   (i.e., the order of the axes is unimportant)
-     BOOL       bContiguous,    // TRUE iff the axes must be contiguous
-     BOOL       bAllowDups,     // TRUE iff duplicate axes are allowed
-     LPBOOL     lpbFract,       // Return TRUE iff fractional values are present,
+     UBOOL      bContiguous,    // TRUE iff the axes must be contiguous
+     UBOOL      bAllowDups,     // TRUE iff duplicate axes are allowed
+     LPUBOOL    lpbFract,       // Return TRUE iff fractional values are present,
                                 //   (may be NULL if fractional values not allowed)
      LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
                                 //   (may be NULL if caller is not interested)
@@ -699,7 +699,7 @@ BOOL CheckAxis_EM
                                 //   this ptr must be set to NULL.
                                 //   (may be NULL if caller is not interested)
 {
-    BOOL       bRet = TRUE;     // TRUE iff the result is valid
+    UBOOL      bRet = TRUE;     // TRUE iff the result is valid
     APLNELM    aplNELM;         //
     LPAPLINT   lpAxisStart,     // Ptr to ptr to start of Axis values in *lphGlbAxis
                lpAxisHead;      // ...                    user axis values in *lphGlbAxis
@@ -941,13 +941,13 @@ NORMAL_EXIT:
 //  Test an axis value for duplicates
 //***************************************************************************
 
-BOOL TestDupAxis
+UBOOL TestDupAxis
     (LPVOID  lpDup,
      APLRANK aplRank,
-     BOOL    bAllowDups)
+     UBOOL   bAllowDups)
 
 {
-    BOOL bRet = TRUE;
+    UBOOL bRet = TRUE;
     UINT uBitMask;
 
     // Calculate the bit mask

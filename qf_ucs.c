@@ -107,7 +107,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     LPVOID         lpMemRht = NULL,     // Ptr to right arg global memory
                    lpMemRes = NULL;     // Ptr to result    ...
     LPPL_YYSTYPE   lpYYRes = NULL;      // Ptr to the result
-    BOOL           bRet;                // TRUE iff result if valid
+    UBOOL          bRet;                // TRUE iff result if valid
     IMM_TYPES      immTypeRes;          // Result immediate type
     APLINT         apaOffRht,           // Right arg APA offset
                    apaMulRht;           // ...           multiplier

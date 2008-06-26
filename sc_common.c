@@ -238,7 +238,7 @@ void MakeWorkspaceBackup
     // Append new extensions
     lstrcpyW (&lpwszTemp[uLen], lpwExtType);
 
-    fBackup = _wfopen (lpwszTemp, L"w");
+    fBackup = _wfopen (lpwszTemp, L"wb");
     if (fBackup EQ NULL)
         goto NOT_OPENED_EXIT;
 
@@ -246,8 +246,8 @@ void MakeWorkspaceBackup
     while (feof (fStream) EQ 0
         && ferror (fBackup) EQ 0)
     {
-        uLen = fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR), fStream);
-               fwrite (lpwszTemp, 1, uLen                                  , fBackup);
+        uLen = (UINT) fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR), fStream);
+                      fwrite (lpwszTemp, 1, uLen                                  , fBackup);
     } // End WHILE
 
     // We no longer need this handle
@@ -291,7 +291,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL SaveNewWsid_EM
+UBOOL SaveNewWsid_EM
     (LPAPLCHAR lpMemSaveWSID)           // Ptr to []WSID to save (includes WS_WKSEXT)
 
 {
@@ -302,7 +302,7 @@ BOOL SaveNewWsid_EM
                  iLen2;                 // ...              (w/o  ...)
     APLUINT      ByteWSID;              // # bytes in the []WSID
     LPAPLCHAR    lpMemNewWSID;          // Ptr to new []WSID global memory
-    BOOL         bRet = FALSE;          // TRUE iff result is valid
+    UBOOL        bRet = FALSE;          // TRUE iff result is valid
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);

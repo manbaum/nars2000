@@ -125,7 +125,7 @@ LPPL_YYSTYPE PrimOpMonJotDot_EM_YY
 LPPL_YYSTYPE PrimOpMonJotDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
@@ -167,7 +167,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     APLSTYPE     aplTypeLft,            // Left arg storage type
@@ -189,7 +189,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
                  lpMemRht = NULL,       // Ptr to right ...
                  lpMemRes = NULL;       // Ptr to result   ...
-    BOOL         bRet = TRUE;           // TRUE iff result is valid
+    UBOOL        bRet = TRUE;           // TRUE iff result is valid
     TOKEN        tkLftArg = {0},        // Left arg token
                  tkRhtArg = {0};        // Right ...
     IMM_TYPES    immType;               // Immediate type
@@ -493,7 +493,7 @@ NORMAL_EXIT:
 //  Handle prototypes in dyadic jotdot
 //***************************************************************************
 
-BOOL PrimOpDydJotDotProto_EM
+UBOOL PrimOpDydJotDotProto_EM
     (LPVOID      *lplpMemRes,                       // Ptr to ptr to result global memory
      APLUINT      uLft,                             // Index to use
      LPVOID       lpMemLft,                         // Ptr to global memory object to index

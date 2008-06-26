@@ -44,7 +44,7 @@
 //  Execute the system command:  )RESET [n]
 //***************************************************************************
 
-BOOL CmdReset_EM
+UBOOL CmdReset_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {

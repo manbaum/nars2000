@@ -78,7 +78,7 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                  ExitType:4,        //      000001E0:  Exit Type (see EXIT_TYPES)
                  bRet:1,            //      00000200   Various function results
                  Avail:22;          //      FFFFFC00:  Available bits
-    BOOL         bCtrlBreak;        // 28:  TRUE iff Ctrl-Break pressed
+    UBOOL        bCtrlBreak;        // 28:  TRUE iff Ctrl-Break pressed
     LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 2C:  Strand stack start (static)
                  lpYYStrandBase [STRAND_LEN],   // 34:  ...          base (dynamic)
                  lpYYStrandNext [STRAND_LEN];   // 3C:  ...          next token (dynamic)

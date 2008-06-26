@@ -1,7 +1,6 @@
 TO DO:  General:  Important (pre-alpha)
 ---------------------------------------
 * Document MAKEFILE so others may build the product
-* Implement )OUT to enable users to export data easily
 
 
 TO DO:  General:  Less Important (post-alpha)
@@ -26,7 +25,7 @@ TO DO:  General:  Less Important (post-alpha)
 * Check for overflow on integer addition/multiplication
 * Check for 64-bit compile
 * Check for updates from the web:  nars2000.org/CurrentRelease.php
-* Need an installation program which also sets up file associations for (ws.nars)
+* Need an installation program which also sets up file associations for .ws.nars
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -240,6 +239,7 @@ DONE:  General
 * Use structured exception handling to change storage
   type on the fly (such as {floor} {infinity})
 * Function/operator assignment
+* Implement )OUT to enable users to export data easily
 
 
 DONE:  Session Manager

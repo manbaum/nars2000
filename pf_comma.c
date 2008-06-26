@@ -203,7 +203,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     APLRANK      aplRankRes;        // Result rank
     HGLOBAL      hGlbRes;           // Result global memory handle
     LPVOID       lpMemRes;          // Ptr to result global memory
-    BOOL         bFract = FALSE,    // TRUE iff axis has fractional values
+    UBOOL        bFract = FALSE,    // TRUE iff axis has fractional values
                  bTableRes;         // TRUE iff function is UTF16_COMMABAR
     APLUINT      ByteRes;           // # bytes in the result
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
@@ -383,7 +383,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                  apaMulRht;         // ...           multiplier
     APLUINT      aplFirstAxis,      // First axis value (if contiguous, then lowest)
                  aplLastAxis;       // Last ...                              highest
-    BOOL         bFract = FALSE,    // TRUE iff axis has fractional values
+    UBOOL        bFract = FALSE,    // TRUE iff axis has fractional values
                  bTableRes,         // TRUE iff function is UTF16_COMMABAR
                  bReorder = FALSE;  // TRUE iff result values are reordered
                                     //   from those in the right arg
@@ -974,7 +974,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                  aplDimLftEnd,
                  aplDimRhtEnd,
                  aplDim1 = 1;
-    BOOL         bFract = FALSE;
+    UBOOL        bFract = FALSE;
     UINT         uBitMaskLft,
                  uBitMaskRht,
                  uBitIndexRes;

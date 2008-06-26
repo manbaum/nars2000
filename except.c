@@ -563,7 +563,7 @@ UINT __cdecl CompareStartAddresses
 //  Return TRUE iff the given ptr is valid for reading a given # bytes
 //***************************************************************************
 
-BOOL IsGoodReadPtr
+UBOOL IsGoodReadPtr
     (LPBYTE lpReadPtr,
      DWORD  dwBytes)
 
@@ -749,7 +749,7 @@ void DisplayException
     // Start instruction display three rows before the actual fault instruction
     regEIP = ContextRecord.Eip - 3 * 16;
 
-    if (IsGoodReadPtr ((LPUCHAR) regEIP, 48))
+    if (IsGoodReadPtr (*(LPUCHAR *) &regEIP, 48))
     {
         for (uCnt = 0; uCnt < 7; uCnt++, regEIP += 16)
         {
@@ -760,7 +760,7 @@ void DisplayException
             for (uMem = 0; uMem < 16; uMem++)
                 wsprintfW (&wszTemp[lstrlenW (wszTemp)],
                            L" %02X",
-                           *(LPBYTE) (regEIP + uMem));
+                           *(LPBYTE) UlongToPtr (regEIP + uMem));
             NewMsg (wszTemp);
         } // End FOR
     } // End IF
@@ -781,11 +781,11 @@ void DisplayException
     {
         // If the register is misaligned or a bad ptr, quit
         if (regEBP & 3
-         || !IsGoodReadPtr ((LPVOID) regEBP, 8))
+         || !IsGoodReadPtr (*(LPVOID *) &regEBP, 8))
             break;
 
         // Get the caller's address
-        caller = ((LPBYTE *) regEBP)[1];
+        caller = ((LPBYTE *) UlongToPtr (regEBP))[1];
 
         // Check for all done
         if (caller EQ 0)
@@ -821,11 +821,11 @@ void DisplayException
         NewMsg (wszTemp);
 
         // Handle case where we get stuck
-        if (regEBP EQ *(DWORD *) regEBP)
+        if (regEBP EQ *(DWORD *) UlongToPtr (regEBP))
             break;
 
         // Get the next EBP
-        regEBP = *(DWORD *) regEBP;
+        regEBP = *(DWORD *) UlongToPtr (regEBP);
     } // End WHILE
 
     // Display the virtual memory ranges
@@ -961,7 +961,7 @@ void FindRoutineAddress
     (LPUCHAR exceptAddr,            // Exception address
      LPUINT  lpNearAddress,         // Ptr to offset from closest address
      LPUINT  lpNearIndex,           // Ptr to index into StartAddresses
-     BOOL    bDebugger)             // TRUE iff test for running under debugger
+     UBOOL   bDebugger)             // TRUE iff test for running under debugger
 
 {
     UINT    i;                      // Loop counter

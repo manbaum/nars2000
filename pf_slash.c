@@ -163,7 +163,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                  lpMemRht = NULL,
                  lpMemRes = NULL;
     LPAPLINT     lpMemRep = NULL;
-    BOOL         bRet = TRUE;
+    UBOOL        bRet = TRUE;
     APLUINT      aplAxis,           // The (one and only) axis value
                  ByteRes,
                  uLo,

@@ -652,7 +652,7 @@ int TranslateTabIndexToID
 void TranslateAPL2ToNARS
     (LPWCHAR lpMemRht,                  // Ptr to data to translate
      APLNELM aplNELMRht,                // Length of ...
-     BOOL    bIsEBCDIC)                 // TRUE iff the input is in EBCDIC format
+     UBOOL   bIsEBCDIC)                 // TRUE iff the input is in EBCDIC format
 
 {
     LPWCHAR lpwTranslate;               // Ptr to either APL2_ASCIItoNARS or APL2_EBCDICtoNARS
@@ -675,7 +675,7 @@ void TranslateAPL2ToNARS
 void TranslateNARSToAPL2
     (LPWCHAR lpMemRht,                  // Ptr to data to translate
      APLNELM aplNELMRht,                // Length of ...
-     BOOL    bIsEBCDIC)                 // TRUE iff the input is in EBCDIC format
+     UBOOL   bIsEBCDIC)                 // TRUE iff the input is in EBCDIC format
 
 {
     LPWCHAR lpwTranslate,               // Ptr to either APL2_ASCIItoNARS or APL2_EBCDICtoNARS
@@ -692,7 +692,7 @@ void TranslateNARSToAPL2
     {
         lpwTemp = strchrW (lpwTranslate, *lpMemRht);
         if (lpwTemp)
-            *lpMemRht++ = *lpwTemp;
+            *lpMemRht++ = (WCHAR) (lpwTemp - &lpwTranslate[-1]);
         else
             *lpMemRht++ = L'\xFF';
     } // End WHILE

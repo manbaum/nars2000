@@ -103,7 +103,7 @@ typedef struct tagCLIPFMTS
 #define APPEND_NAME
 #endif
 
-BOOL CreateFcnWindow
+UBOOL CreateFcnWindow
     (LPWCHAR lpwszLine)             // Ptr to text after {del}
 
 {
@@ -1061,7 +1061,7 @@ void OneDrawTextW
 //  Return TRUE iff the given APLCHAR is valid in a variable/function/operator name
 //***************************************************************************
 
-BOOL IzitNameChar
+UBOOL IzitNameChar
     (APLCHAR aplChar)
 
 {
@@ -1112,7 +1112,7 @@ LRESULT WINAPI LclEditCtrlWndProc
     WCHAR        wChar[TABSTOP + 1],
                  uChar;
     LRESULT      lResult;       // Temporary result
-    BOOL         bSelection,    // TRUE iff there's a selection
+    UBOOL        bSelection,    // TRUE iff there's a selection
                  bDrawLineNums = FALSE; // TRUE iff the ending code should draw the
                                 //   line #s after calling the original handler
     HANDLE       hGlbClip;      // Handle to the clipboard
@@ -2427,7 +2427,7 @@ ERROR_EXIT:
 //  Return TRUE iff the caret is at the End-of-Buffer
 //***************************************************************************
 
-BOOL IzitEOB
+UBOOL IzitEOB
     (HWND hWnd)         // Window handle of the Edit Control
 
 {
@@ -2602,7 +2602,7 @@ void InsRepCharStr
             uLinePos,
             uGroupIndex,    // Group index
             uStrLen;        // Incoming string length
-    BOOL    bSelection;     // TRUE iff there is a selection
+    UBOOL   bSelection;     // TRUE iff there is a selection
 
     // Get the handle of the parent window
     hWndParent = GetParent (hWnd);
@@ -2717,7 +2717,7 @@ void InsRepCharStr
 //  Is the window FEWNDCLASS?
 //***************************************************************************
 
-BOOL IzitFE
+UBOOL IzitFE
     (HWND hWnd)
 
 {
@@ -2735,7 +2735,7 @@ BOOL IzitFE
 //  Is the window SMWNDCLASS?
 //***************************************************************************
 
-BOOL IzitSM
+UBOOL IzitSM
     (HWND hWnd)
 
 {
@@ -2851,7 +2851,7 @@ void DrawLineNumsFE
 //  Return a Boolean result on whether we can close
 //***************************************************************************
 
-BOOL QueryCloseFE
+UBOOL QueryCloseFE
     (HWND hWndFE)           // Handle for FE window
 
 {
@@ -3013,7 +3013,7 @@ NORMAL_EXIT:
 //// //  Attempt to save a function to the WS using a different name
 //// //***************************************************************************
 ////
-//// BOOL SaveAsFunction
+//// UBOOL SaveAsFunction
 ////     (HWND hWndFE)
 ////
 //// {
@@ -3037,11 +3037,11 @@ NORMAL_EXIT:
 //  Attempt to close a function
 //***************************************************************************
 
-BOOL CloseFunction
+UBOOL CloseFunction
     (HWND hWndFE)
 
 {
-    BOOL bRet;                  // TRUE iff we're to close
+    UBOOL bRet;                 // TRUE iff we're to close
 
     Assert (IzitFE (hWndFE));
 

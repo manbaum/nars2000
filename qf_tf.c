@@ -126,7 +126,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
     APLRANK           aplRankLft;       // Left arg rank
     HGLOBAL           hGlbLft = NULL;   // Left arg global memory handle
     APLLONGEST        aplLongestLft;    // Left arg immediate value
-    BOOL              bRet = TRUE;      // TRUE iff result is valid
+    UBOOL             bRet = TRUE;      // TRUE iff result is valid
     HGLOBAL           hGlbPTD;          // PerTabData global memory handle
     LPPERTABDATA      lpMemPTD;         // Ptr to PerTabData global memory
     HGLOBAL           hGlbRht = NULL;   // Right arg global memory handle
@@ -301,7 +301,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
      LPTOKEN lptkRhtArg,                        // Ptr to right arg token
      LPWCHAR lpwszTemp,                         // Ptr to right arg memory as temporary storage
      APLNELM aplNELMRht,                        // Right arg NELM
-     BOOL    bTranslateAPL2)                    // TRUE iff input/output shoudl be translated to/from APL2
+     UBOOL   bTranslateAPL2)                    // TRUE iff input/output shoudl be translated to/from APL2
 
 {
     APLNELM           aplNELMRes;               // Result    ...
@@ -849,7 +849,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
      LPTOKEN lptkRhtArg,                    // Ptr to right arg token
      LPWCHAR lpwszTemp,                     // Ptr to right arg memory as temporary storage
      APLNELM aplNELMRht,                    // Right arg NELM
-     BOOL    bTranslateAPL2)                    // TRUE iff input/output shoudl be translated to/from APL2
+     UBOOL   bTranslateAPL2)                    // TRUE iff input/output shoudl be translated to/from APL2
 
 {
     APLUINT       ByteRes;                  // # bytes needed for the result
@@ -870,7 +870,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
     // The three cases (NameToTransferForm2 vs. TransferFormToVar2 vs. TransferFormToFcn2)
     //   are distinguished by the first occurrence of either a blank or a left arrow.
     //   If a left arrow occurs first, then it's a var; if a blank occurs first, it's a fcn;
-    //   if neither occurs, it's NameToTransferForm.
+    //   if neither occurs, it's NameToTransferForm2.
     lpwTemp = wcspbrk (lpwszTemp, WS_UTF16_LEFTARROW L" ");
     if (lpwTemp EQ NULL)
     {
@@ -919,7 +919,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
             case NAMETYPE_OP3:
                 // Display the fcn
                 lpwTemp =
-                  DisplayTransferFcn2 (lpwszTemp, lpSymEntry);
+                  DisplayTransferFcn2 (lpwszTemp, lpSymEntry, NULL);
 
                 break;
 
@@ -1119,12 +1119,12 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL TransferInverseFcn1_EM
+UBOOL TransferInverseFcn1_EM
     (LPWCHAR lpwszTemp,                     // Ptr to incoming data
      UINT    uOldRecNo,                     // Starting record # from .atf file
      UINT    uRecNo,                        // Ending   ...
      LPTOKEN lptkFunc,                      // Ptr to function token (may be NULL if called from )IN)
-     BOOL    bSysCmd)                       // TRUE iff called from a system command
+     UBOOL   bSysCmd)                       // TRUE iff called from a system command
 
 {
 ////HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
@@ -1134,7 +1134,7 @@ BOOL TransferInverseFcn1_EM
                   lpwData;                  // Ptr to data ...
     WCHAR         wch;                      // Temporary character
 ////              lpwszFormat;              // Ptr to format area
-    BOOL          bRet = FALSE;             // TRUE iff result is valid
+    UBOOL         bRet = FALSE;             // TRUE iff result is valid
     STFLAGS       stFlags;                  // ST flags for name lookup
     LPSYMENTRY    lpSymEntry;               // Ptr to SYMENTRY for name lookup
     APLRANK       aplRankRes;               // Result rank
@@ -1193,7 +1193,7 @@ BOOL TransferInverseFcn1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, lpwData - lpwName);
+        CharLowerBuffW (lpwName, (__int3264) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;

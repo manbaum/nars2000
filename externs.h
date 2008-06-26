@@ -111,7 +111,27 @@
 #define DEF_USELOCALTIME            TRUE
 #define DEF_BACKUPONLOAD            TRUE
 #define DEF_BACKUPONSAVE            TRUE
+#define DEF_CLOSINGLAMP             TRUE
 #define DEF_DEFAULTPASTE            UNITRANS_NORMAL
+
+
+// Range limits for []vars
+#define DEF_RANGELIMIT_CT           TRUE
+#define DEF_RANGELIMIT_IC           TRUE
+#define DEF_RANGELIMIT_IO           TRUE
+#define DEF_RANGELIMIT_PP           TRUE
+#define DEF_RANGELIMIT_PW           TRUE
+#define DEF_RANGELIMIT_RL           TRUE
+
+
+// Empty assignment to []vars as _CWS value (TRUE) or .ini file value (FALSE)
+#define DEF_SETEMPTYCWS_CT          FALSE
+#define DEF_SETEMPTYCWS_FC          FALSE
+#define DEF_SETEMPTYCWS_IC          FALSE
+#define DEF_SETEMPTYCWS_IO          FALSE
+#define DEF_SETEMPTYCWS_PP          FALSE
+#define DEF_SETEMPTYCWS_PW          FALSE
+#define DEF_SETEMPTYCWS_RL          FALSE
 
 
 // Date/time formats
@@ -143,7 +163,7 @@
 typedef struct tagSM_CREATESTRUCTW
 {
     HGLOBAL hGlbDPFE;       // 00:  Workspace DPFE global memory handle
-    BOOL    bExecLX;        // 04:  TRUE iff execute []LX after successful load
+    UBOOL    bExecLX;       // 04:  TRUE iff execute []LX after successful load
                             // 08:  Length
 } SM_CREATESTRUCTW, UNALIGNED *LPSM_CREATESTRUCTW;
 
@@ -237,19 +257,24 @@ APLCHAR  cQuadPR_CWS        ,           // []PR     (L' ') (When a char scalar)
 // Struct for whether or a System var is range limited
 typedef struct tagRANGELIMIT
 {
-    BOOL CT:1,
-         IC:1,
-         IO:1,
-         PP:1,
-         PW:1,
-         RL:1;
+    UBOOL CT:1,
+          IC:1,
+          IO:1,
+          PP:1,
+          PW:1,
+          RL:1;
 } RANGELIMIT;
 
 EXTERN
 RANGELIMIT bRangeLimit
 #ifdef DEFINE_VALUES
-//  CT    IC    IO    PP    PW    RL
-= {TRUE, TRUE, TRUE, TRUE, TRUE, TRUE}
+= {DEF_RANGELIMIT_CT,       // []CT
+   DEF_RANGELIMIT_IC,       // []IC
+   DEF_RANGELIMIT_IO,       // []IO
+   DEF_RANGELIMIT_PP,       // []PP
+   DEF_RANGELIMIT_PW,       // []PW
+   DEF_RANGELIMIT_RL,       // []RL
+  }
 #endif
 ;
 
@@ -259,20 +284,26 @@ RANGELIMIT bRangeLimit
 //   in the .ini file (FALSE)
 typedef struct tagSYS_OR_INI
 {
-    BOOL CT:1,
-         FC:1,
-         IC:1,
-         IO:1,
-         PP:1,
-         PW:1,
-         RL:1;
+    UBOOL CT:1,
+          FC:1,
+          IC:1,
+          IO:1,
+          PP:1,
+          PW:1,
+          RL:1;
 } SYS_OR_INI;
 
 EXTERN
 SYS_OR_INI bSysOrIni
 #ifdef DEFINE_VALUES
-//  CT     IC     IO     PP     PW     RL
-= {FALSE, FALSE, FALSE, FALSE, FALSE, FALSE}
+= {DEF_SETEMPTYCWS_CT,      // []CT
+   DEF_SETEMPTYCWS_FC,      // []FC
+   DEF_SETEMPTYCWS_IC,      // []IC
+   DEF_SETEMPTYCWS_IO,      // []IO
+   DEF_SETEMPTYCWS_PP,      // []PP
+   DEF_SETEMPTYCWS_PW,      // []PW
+   DEF_SETEMPTYCWS_RL,      // []RL
+  }
 #endif
 ;
 
@@ -857,13 +888,13 @@ typedef enum tagSYS_VARS
                                 // 10-1F:  Available entries (5 bits)
 } SYS_VARS;
 
-typedef BOOL (*ASYSVARVALIDSET) (LPTOKEN, LPTOKEN);
+typedef UBOOL (*ASYSVARVALIDSET) (LPTOKEN, LPTOKEN);
 
 EXTERN
 // Use as in:  (*aSysVarValidSet[SYSVAR_IO]) (lptkNamArg, lptkRhtArg);
 ASYSVARVALIDSET aSysVarValidSet[SYSVAR_LENGTH];
 
-typedef BOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST, LPIMM_TYPES);
+typedef UBOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST, LPIMM_TYPES);
 
 EXTERN
 // Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht, &immTypeRht);
@@ -990,8 +1021,9 @@ typedef struct tagOPTIONFLAGS
          bUseLocalTime       :1,    // 00000010:  ...      LocalTime is used instead of SystemTime (GMT)
          bBackupOnLoad       :1,    // 00000020:  ...      make a backup copy on all )LOADs
          bBackupOnSave       :1,    // 00000040:  ...      make a backup copy on all )SAVEs
-         uDefaultPaste       :4,    // 00000780:  Index of default Paste translation (see UNI_TRANS)
-         Avail               :22;   // FFFFF800:  Available bits
+         bClosingLamp        :1,    // 00000080:  ...      {lamp} may close a comment
+         uDefaultPaste       :4,    // 00000F00:  Index of default Paste translation (see UNI_TRANS)
+         Avail               :22;   // FFFFF000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 EXTERN
@@ -1004,6 +1036,7 @@ OPTIONFLAGS OptionFlags
    DEF_USELOCALTIME,
    DEF_BACKUPONLOAD,
    DEF_BACKUPONSAVE,
+   DEF_CLOSINGLAMP,
    DEF_DEFAULTPASTE}
 #endif
 ;

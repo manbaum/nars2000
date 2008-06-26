@@ -28,11 +28,36 @@
 #include "main.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "aplerrors.h"
+#include "pertab.h"
+#include "transfer.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
+
+// Instead of sequence numbers, why not ...
+char Trees[] =
+"I think that I shall never see "
+"A poem lovely as a tree. "
+
+"A tree whose hungry mouth is prest "
+"Against the sweet earth's flowing breast; "
+
+"A tree that looks at God all day, "
+"And lifts her leafy arms to pray; "
+
+"A tree that may in summer wear "
+"A nest of robins in her hair; "
+
+"Upon whose bosom snow has lain; "
+"Who intimately lives with rain. "
+
+"Poems are made by fools like me, "
+"But only God can make a tree. "
+
+"-- Joyce Kilmer (1886-1918), published 1914";
 
 
 //***************************************************************************
@@ -41,31 +66,284 @@
 //  Execute the system command:  )OUT filename.ext
 //***************************************************************************
 
-BOOL CmdOut_EM
-    (LPWCHAR lpwszTail)         // Ptr to command line tail
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CmdOut_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL CmdOut_EM
+    (LPWCHAR lpwszTail)                     // Ptr to command line tail
 
 {
-    BOOL          bRet = FALSE;     // TRUE iff the result is valid
+    HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
+    WCHAR        wszDrive[_MAX_DRIVE],
+                 wszDir  [_MAX_DIR],
+                 wszFname[_MAX_FNAME],
+                 wszExt  [_MAX_EXT];
+    LPWCHAR      lpwszTemp,                 // Ptr to temporary storage
+                 lpwTemp,                   // Ptr to temporary
+                 lpwGlbName;                // Ptr to SymEntry's name's global memory
+    char         szTemp[REC_LEN + EOL_LEN]; // Save area for line output
+    UINT         uLen;                      // Current length of szTemp
+    FILE        *fStream;                   // Ptr to file stream
+    UBOOL        bRet = FALSE;              // TRUE iff the result is valid
+    LPSYMENTRY   lpSymEntry,                // Ptr to STE
+                 lpSymTabNext;              // ...
+    APLNELM      aplNELMRes;                // Length of each transfer form
+    FILETIME     ftCreation;                // Save area for function timestamp
+    SYSTEMTIME   systemTime;                // Current system (UTC) time
+    UINT         uCnt;                      // Loop counter
+    LPCHAR       lpTrees;                   // Ptr to Trees poem
 
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Get ptr to temporary format save area
+    lpwszTemp = lpMemPTD->lpwszTemp;
 
+    // Check for empty string
+    if (lpwszTail[0] EQ L'\0')
+        goto INCORRECT_COMMAND_EXIT;
 
+    // Split out the drive and path from the module filename
+    _wsplitpath (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
 
+    // If there's no extension, supply one
+    if (wszExt[0] EQ L'\0')
+        lstrcpyW (wszExt, L".atf");
 
+    // Put it all back together
+    _wmakepath  (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
 
+    // Attempt to open the file (in binary mode)
+    fStream = _wfopen (lpwszTail, L"wb");
 
+    // If not found, ...
+    if (fStream EQ NULL)
+    {
+        ReplaceLastLineCRPmt (ERRMSG_FILE_NOT_FOUND APPEND_NAME);
 
+        goto ERROR_EXIT;
+    } // End IF
 
+    // Initialize the end of szTemp
+    szTemp[REC_LEN + 0] = '\r';
+    szTemp[REC_LEN + 1] = '\n';
 
+    // Copy the poem's starting point so we may
+    //   increment our way through it
+    lpTrees = Trees;
 
+    __try
+    {
+        // Trundle through the Symbol Table
+        for (lpSymTabNext = lpMemPTD->lpSymTab;
+             lpSymTabNext < lpMemPTD->lpSymTabNext;
+             lpSymTabNext++)
+        if (lpSymTabNext->stFlags.Inuse)        // Must be Inuse
+        {
+            // As this is a system command, we write
+            //   out the global entry only
+            lpSymEntry = lpSymTabNext;
+            while (lpSymEntry->stPrvEntry)
+                lpSymEntry = lpSymEntry->stPrvEntry;
 
+            if (lpSymEntry->stHshEntry->htGlbName           // Must have a name (not steZero, etc.),
+             && lpSymEntry->stFlags.Value                   // and have a value,
+             && lpSymEntry->stFlags.ObjName NE OBJNAME_MF   // and not be a Magic Function,
+             && lpSymEntry->stFlags.ObjName NE OBJNAME_LOD) // and not be a )LOAD HGLOBAL
+            {
+                // Copy ptr to increment
+                lpwTemp = lpwszTemp;
 
+                // Split cases based upon the name type
+                switch (lpSymEntry->stFlags.stNameType)
+                {
+                    case NAMETYPE_UNK:      // Unknown -- ignore
+                        break;
 
+                    case NAMETYPE_VAR:
+                        // Check for []WSID and skip it if found
+
+                        // Lock the memory to get a ptr to it
+                        lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+                        // Compare the names
+                        uCnt = lstrcmpiW (lpwGlbName, WS_UTF16_QUAD L"wsid");
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;
+
+                        if (uCnt EQ 0)
+                            continue;
+
+                        // Mark as a variable
+                        *lpwTemp++ = L'A';
+
+                        // Display the var
+                        lpwTemp =
+                          DisplayTransferVar2 (lpwTemp, lpSymEntry);
+
+                        // Clear the timestamp
+                        ZeroMemory (&ftCreation, sizeof (ftCreation));
+
+                        break;
+
+                    case NAMETYPE_FN0:
+                    case NAMETYPE_FN12:
+                    case NAMETYPE_OP1:
+                    case NAMETYPE_OP2:
+                    case NAMETYPE_OP3:
+                        // Mark as a function
+                        *lpwTemp++ = L'F';
+
+                        // Lock the memory to get a ptr to it
+                        lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+                        // Copy the function name
+                        lstrcpyW (lpwTemp, lpwGlbName);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;
+
+                        // Skip over it
+                        lpwTemp += lstrlenW (lpwTemp);
+
+                        // Insert a blank as a separator
+                        *lpwTemp++ = ' ';
+
+                        // Display the fcn
+                        lpwTemp =
+                          DisplayTransferFcn2 (lpwTemp, lpSymEntry, &ftCreation);
+
+                        break;
+
+                    defstop
+                        break;
+                } // End IF/SWITCH
+
+                // Get the string length
+                aplNELMRes = lpwTemp - lpwszTemp;
+
+                // Translate the data from NARS to APL2 charset
+                TranslateNARSToAPL2 (lpwszTemp, aplNELMRes, TRUE);
+
+                // If there's a function timestamp, ...
+                if (ftCreation.dwHighDateTime NE 0
+                 || ftCreation.dwLowDateTime NE 0)
+                {
+                    // Convert the creation time to system time so we can display it
+                    FileTimeToSystemTime (&ftCreation, &systemTime);
+
+                    // Format it
+                    uLen =
+                      wsprintf (szTemp,
+                                "*(%u %u %u %u %u %u %u)",
+                                systemTime.wYear,
+                                systemTime.wMonth,
+                                systemTime.wDay,
+                                systemTime.wHour,
+                                systemTime.wMinute,
+                                systemTime.wSecond,
+                                systemTime.wMilliseconds);
+                    // Fill it out with blanks
+                    FillMemory (&szTemp[uLen], TYP_LEN + INT_LEN - uLen, ' ');
+
+                    // Insert the next part of the poem
+                    lpTrees = InsertNextTrees (szTemp, lpTrees);
+
+                    // Write it out (including the trailing "\r\n")
+                    fwrite (szTemp, sizeof (char), REC_LEN + EOL_LEN, fStream);
+                } // End IF
+
+                // Block the output in lpwszTemp and write
+                //   it out one record at a time
+                for (lpwTemp = lpwszTemp;
+                     aplNELMRes;
+                     aplNELMRes -= uLen)
+                {
+                    // Mark as to whether or not it's the last record
+                    szTemp[0] = (aplNELMRes <= INT_LEN) ? ASCII_X : ASCII_BLANK;
+
+                    // Get the remaining length
+                    uLen = min (INT_LEN, (UINT) aplNELMRes);
+
+                    // Copy the data to szTemp
+                    for (uCnt = 0; uCnt < uLen; uCnt++)
+                        szTemp[uCnt + TYP_LEN] = (char) *lpwTemp++;
+
+                    // Fill the remaining memory with blanks
+                    FillMemory (&szTemp[uCnt + TYP_LEN], INT_LEN - uCnt, ' ');
+
+                    // Insert the next part of the poem
+                    lpTrees = InsertNextTrees (szTemp, lpTrees);
+
+                    // Write it out (including the trailing "\r\n")
+                    fwrite (szTemp, sizeof (char), REC_LEN + EOL_LEN, fStream);
+                } // End FOR
+            } // End IF
+        } // End IF
+    } __except (CheckException (GetExceptionInformation (), L"CmdOut_EM"))
+    {
+        // Display message for unhandled exception
+        DisplayException ();
+    } // End __try/__except
+
+    // Mark as sucessful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+INCORRECT_COMMAND_EXIT:
     IncorrectCommand ();
 
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    if (fStream)
+    {
+        // We no longer need this resource
+        fclose (fStream); fStream = NULL;
+    } // End IF
+
     return bRet;
-} // End CmdIn_EM
+} // End CmdOut_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $InsertNextTrees
+//
+//  Insert into the sequence number field the next chunk
+//    from Kilmer's Trees poem
+//***************************************************************************
+
+LPCHAR InsertNextTrees
+    (LPCHAR szTemp,                     // Ptr to 80-col record
+     LPCHAR lpTrees)                    // Ptr to next chunk from the poem
+
+{
+    UINT uCnt;                          // Loop counter
+
+    // Insert the next chunk
+    for (uCnt = 0; (uCnt < SEQ_LEN) && *lpTrees; uCnt++)
+        szTemp[TYP_LEN + INT_LEN + uCnt] = *lpTrees++;
+
+    // In case we're at the end, fill with blanks
+    for (;uCnt < SEQ_LEN; uCnt++)
+        szTemp[TYP_LEN + INT_LEN + uCnt] = ' ';
+
+    return lpTrees;
+} // End InsertNextTrees
 
 
 //***************************************************************************

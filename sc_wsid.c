@@ -49,7 +49,7 @@
 #define APPEND_NAME
 #endif
 
-BOOL CmdWsid_EM
+UBOOL CmdWsid_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
@@ -63,7 +63,7 @@ BOOL CmdWsid_EM
     APLUINT      ByteWSID;              // # bytes in the []WSID
     HGLOBAL      hGlbWSID;              // []WSID global memory handle
     UINT         uLen;                  // Length of given WSID
-    BOOL         bRet = FALSE;          // TRUE iff result is valid
+    UBOOL        bRet = FALSE;          // TRUE iff result is valid
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);

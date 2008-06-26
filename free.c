@@ -98,11 +98,11 @@ void FreeResult
 
 void FreeResultSub
     (LPTOKEN lptkRes,
-     BOOL    bFreeName)
+     UBOOL   bFreeName)
 
 {
     STFLAGS stFlags = {0};
-    BOOL    bTmp;
+    UBOOL   bTmp;
     HGLOBAL hGlbData;
 
     // Split cases based upon the token type
@@ -288,7 +288,7 @@ void FreeResultSub
 //  Free a global defined function, variable, or function array
 //***************************************************************************
 
-BOOL FreeResultGlobalDFV
+UBOOL FreeResultGlobalDFV
     (HGLOBAL hGlbData)
 
 {
@@ -332,7 +332,7 @@ BOOL FreeResultGlobalDFV
 #define APPEND_NAME
 #endif
 
-BOOL FreeResultGlobalVar
+UBOOL FreeResultGlobalVar
     (HGLOBAL hGlbData)
 
 {
@@ -342,7 +342,7 @@ BOOL FreeResultGlobalVar
     APLNELM   aplNELM;
     UINT      u,
               RefCnt;
-    BOOL      bRet;
+    UBOOL     bRet;
 
     DBGENTER;
 
@@ -468,7 +468,7 @@ BOOL FreeResultGlobalVar
 #define APPEND_NAME
 #endif
 
-BOOL FreeResultGlobalFcn
+UBOOL FreeResultGlobalFcn
     (HGLOBAL hGlbData)
 
 {
@@ -476,7 +476,7 @@ BOOL FreeResultGlobalFcn
     UINT         tknNELM,       // The # tokens in the function array
                  u,             // Loop counter
                  RefCnt;        // Reference count
-    BOOL         bRet;          // TRUE iff result is valid
+    UBOOL        bRet;          // TRUE iff result is valid
     LPPL_YYSTYPE lpYYToken;     // Ptr to function array token
     HGLOBAL      hGlbLcl,       // Global memory handle
                  hGlbTxtLine;   // Line text gobal memory handle
@@ -695,7 +695,7 @@ UINT GetSignatureGlb
 #define APPEND_NAME
 #endif
 
-BOOL FreeResultGlobalDfn
+UBOOL FreeResultGlobalDfn
     (HGLOBAL hGlbData)
 
 {

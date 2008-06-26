@@ -118,7 +118,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
     LPSYMENTRY   lpSymEntry;        // Ptr to SYMENTRY
     STFLAGS      stFlags;           // STE flags
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
     UINT         uBitIndex;         // Bit index for looping through Boolean result
 
     // The right arg may be of three forms:

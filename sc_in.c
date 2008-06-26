@@ -31,27 +31,12 @@
 #include "aplerrors.h"
 #include "pertab.h"
 #include "dfnhdr.h"
+#include "transfer.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
-
-
-#define EBCDIC_BLANK        0x40
-#define EBCDIC_STAR         0x5C
-#define EBCDIC_X            0xE7
-
-#define ASCII_NL            0x0A
-#define ASCII_CR            0x0D
-#define ASCII_BLANK         0x20
-#define ASCII_LEFTPAREN     0x28
-#define ASCII_STAR          0x2A
-#define ASCII_X             0x58
-
-#define REC_LEN               80                        // Overall record length (excluding CR and CRLF)
-#define SEQ_LEN                8                        // Sequence numbers length in the record tail
-#define INT_LEN             (REC_LEN - SEQ_LEN - 1)     // Interior length ("- 1" for the first col)
 
 
 //***************************************************************************
@@ -66,7 +51,7 @@
 #define APPEND_NAME
 #endif
 
-BOOL CmdIn_EM
+UBOOL CmdIn_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
 
 {
@@ -90,7 +75,7 @@ BOOL CmdIn_EM
                   uOldRecNo,                // Starting record # in file (for range display)
                   uRecNo = 0,               // Record # in file
                   uMaxSize;                 // Maximum size of lpwszTemp
-    BOOL          bRet = FALSE,             // TRUE iff the result is valid
+    UBOOL         bRet = FALSE,             // TRUE iff the result is valid
                   bIsEBCDIC;                // TRUE iff the orignial .atf file is in EBCDIC format
     FILETIME      ftCreation;               // Creation timestamp
     HWND          hWndSM,                   // Session Manager Window handle
@@ -318,13 +303,13 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL TransferInverseArr2_EM
+UBOOL TransferInverseArr2_EM
     (LPWCHAR    lpwName,                    // Ptr to incoming data
      UINT       uOldRecNo,                  // Starting record # from .atf file
      UINT       uRecNo,                     // Ending   ...
      LPTOKEN    lptkFunc,                   // Ptr to function token (may be NULL if called from )IN)
      FILETIME  *lpftCreation,               // Ptr to timestamp (if any) (may be NULL)
-     BOOL       bSysCmd)                    // TRUE iff called from a system command
+     UBOOL      bSysCmd)                    // TRUE iff called from a system command
 
 {
     HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
@@ -337,7 +322,7 @@ BOOL TransferInverseArr2_EM
                   hWndEC;                   // Edit Control    ...
     STFLAGS       stFlags;                  // ST flags for name lookup
     LPSYMENTRY    lpSymEntry;               // Ptr to SYMENTRY for name lookup
-    BOOL          bRet = FALSE;             // TRUE iff result is valid
+    UBOOL         bRet = FALSE;             // TRUE iff result is valid
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -388,7 +373,7 @@ BOOL TransferInverseArr2_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, lpwNameEnd - lpwName);
+        CharLowerBuffW (lpwName, (__int3264) (lpwNameEnd - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;
@@ -509,13 +494,13 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL TransferInverseFcn2_EM
+UBOOL TransferInverseFcn2_EM
     (LPWCHAR    lpwName,                    // Ptr to incoming data
      UINT       uOldRecNo,                  // Starting record # from .atf file
      UINT       uRecNo,                     // Ending   ...
      LPTOKEN    lptkFunc,                   // Ptr to function token (may be NULL if called from )IN)
      FILETIME  *lpftCreation,               // Ptr to timestamp (if any) (may be NULL)
-     BOOL       bSysCmd)                    // TRUE iff called from a system command
+     UBOOL      bSysCmd)                    // TRUE iff called from a system command
 
 {
     HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
@@ -527,7 +512,7 @@ BOOL TransferInverseFcn2_EM
     HWND          hWndSM,                   // Session Manager Window handle
                   hWndEC;                   // Edit Control    ...
     WCHAR         wch;                      // Temporary char
-    BOOL          bRet = FALSE;             // TRUE iff the result is valid
+    UBOOL         bRet = FALSE;             // TRUE iff the result is valid
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -625,7 +610,7 @@ BOOL TransferInverseFcn2_EM
         if (IsSysName (lpwName))
         {
             // Convert the name to lowercase
-            CharLowerBuffW (lpwName, lpwData - lpwName);
+            CharLowerBuffW (lpwName, (__int3264) (lpwData - lpwName));
 
             // Tell 'em we're looking for system names
             stFlags.ObjName = OBJNAME_SYS;
@@ -692,12 +677,12 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL TransferInverseChr1_EM
+UBOOL TransferInverseChr1_EM
     (LPWCHAR lpwszTemp,                     // Ptr to incoming data
      UINT    uOldRecNo,                     // Starting record # from .atf file
      UINT    uRecNo,                        // Ending   ...
      LPTOKEN lptkFunc,                      // Ptr to function token (may be NULL if called from )IN)
-     BOOL    bSysCmd)                       // TRUE iff called from a system command
+     UBOOL   bSysCmd)                       // TRUE iff called from a system command
 
 {
     HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
@@ -710,7 +695,7 @@ BOOL TransferInverseChr1_EM
     APLUINT       ByteRes;                  // # bytes needed for the result
     HGLOBAL       hGlbRes;                  // Result global memory handle
     LPVOID        lpMemRes;                 // Ptr to result global memory
-    BOOL          bRet = FALSE;             // TRUE iff result is valid
+    UBOOL         bRet = FALSE;             // TRUE iff result is valid
     STFLAGS       stFlags;                  // ST flags for name lookup
     LPSYMENTRY    lpSymEntry;               // Ptr to SYMENTRY for name lookup
     APLRANK       aplRankRes;               // Result rank
@@ -769,7 +754,7 @@ BOOL TransferInverseChr1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, lpwData - lpwName);
+        CharLowerBuffW (lpwName, (__int3264) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;
@@ -944,12 +929,12 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL TransferInverseNum1_EM
+UBOOL TransferInverseNum1_EM
     (LPWCHAR lpwszTemp,                     // Ptr to incoming data
      UINT    uOldRecNo,                     // Starting record # from .atf file
      UINT    uRecNo,                        // Ending   ...
      LPTOKEN lptkFunc,                      // Ptr to function token (may be NULL if called from )IN)
-     BOOL    bSysCmd)                       // TRUE iff called from a system command
+     UBOOL   bSysCmd)                       // TRUE iff called from a system command
 
 {
     HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
@@ -959,7 +944,7 @@ BOOL TransferInverseNum1_EM
                   lpwData,                  // Ptr to data ...
                   lpwTemp,                  // Ptr to temporary
                   lpwszFormat;              // Ptr to format area
-    BOOL          bRet = FALSE;             // TRUE iff result is valid
+    UBOOL         bRet = FALSE;             // TRUE iff result is valid
     STFLAGS       stFlags;                  // ST flags for name lookup
     LPSYMENTRY    lpSymEntry;               // Ptr to SYMENTRY for name lookup
     APLRANK       aplRankRes;               // Result rank
@@ -1025,7 +1010,7 @@ BOOL TransferInverseNum1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, lpwData - lpwName);
+        CharLowerBuffW (lpwName, (__int3264) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;
@@ -1067,7 +1052,7 @@ BOOL TransferInverseNum1_EM
     lpwData = SkipPastCharW (lpwData, L' ');
 
     // Get the # WCHARs in the rank
-    uLen = lpwData - lpwTemp;
+    uLen = (__int3264) (lpwData - lpwTemp);
 
     // Fill the rank with blanks
     for (uCnt = 0; uCnt < uLen; uCnt++)
@@ -1203,11 +1188,11 @@ LPUCHAR CmdInCopyAndTranslate_EM
      LPUINT     lpuLen,                     // Ptr to length of record in output save area (in WCHARs)
      FILETIME  *lpftCreation,               // Ptr to timestamp (if any)
      LPUINT     lpuRecNo,                   // Ptr to record count so far
-     BOOL       bIsEBCDIC)                  // TRUE iff the orignial .atf file was in EBCDIC format
+     UBOOL      bIsEBCDIC)                  // TRUE iff the orignial .atf file was in EBCDIC format
 
 {
     SYSTEMTIME systemTime;                  // Save area for timestamp
-    BOOL       bContinue = TRUE;            // TRUE iff the WHILE loop should continue
+    UBOOL      bContinue = TRUE;            // TRUE iff the WHILE loop should continue
     UINT       uCnt,                        // Loop counter
                uOldRecNo;                   // Starting record # in file (for range display)
     APLUINT    uLen;                        // Actual length of record

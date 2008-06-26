@@ -72,7 +72,7 @@ typedef struct tagSYSNAME
 {
     LPWCHAR     lpwszName;      // The name
     UINT        uValence;       // For system functions, Niladic(0), All others (1)
-    BOOL        bSysVar;        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
+    UBOOL       bSysVar;        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
     LPPRIMFNS   lpNameFcn;      // Ptr to execution routine
     SYS_VARS    sysVarIndex;    // Value of each System Var (0 = Unknown)
 } SYSNAME, *LPSYSNAME;
@@ -359,7 +359,7 @@ HGLOBAL MakePermVectorCom
 //  Append a system name to the symbol table
 //***************************************************************************
 
-BOOL SymTabAppendSysName_EM
+UBOOL SymTabAppendSysName_EM
     (LPSYSNAME   lpSysName,
      LPSYMENTRY *lplpSysVarSym)
 
@@ -411,14 +411,14 @@ BOOL SymTabAppendSysName_EM
 //  Append all system names to the symbol table
 //***************************************************************************
 
-BOOL InitSystemNames_EM
+UBOOL InitSystemNames_EM
     (void)
 
 {
     int          i;             // Loop counter
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
+    UBOOL        bRet = TRUE;   // TRUE iff result is valid
     LPSYMENTRY  *ptdSysVarSym[SYSVAR_LENGTH];
 
     // Get the thread's PerTabData global memory handle
@@ -469,7 +469,7 @@ BOOL InitSystemNames_EM
 //  Assign a global to a name
 //***************************************************************************
 
-BOOL AssignGlobalCWS
+UBOOL AssignGlobalCWS
     (HGLOBAL    hGlbVal_CWS,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -495,7 +495,7 @@ BOOL AssignGlobalCWS
 //  Assign an Boolean scalar to a name
 //***************************************************************************
 
-BOOL AssignBoolScalarCWS
+UBOOL AssignBoolScalarCWS
     (APLBOOL    aplBoolean,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -525,7 +525,7 @@ BOOL AssignBoolScalarCWS
 //  Assign an integer scalar to a name
 //***************************************************************************
 
-BOOL AssignIntScalarCWS
+UBOOL AssignIntScalarCWS
     (APLINT     aplInteger,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -555,7 +555,7 @@ BOOL AssignIntScalarCWS
 //  Assign a real number scalar to a name
 //***************************************************************************
 
-BOOL AssignRealScalarCWS
+UBOOL AssignRealScalarCWS
     (APLFLOAT   fFloat,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -585,7 +585,7 @@ BOOL AssignRealScalarCWS
 //  Assign a character scalar to a name
 //***************************************************************************
 
-BOOL AssignCharScalarCWS
+UBOOL AssignCharScalarCWS
     (APLCHAR    aplChar,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -626,13 +626,13 @@ BOOL AssignCharScalarCWS
 #define APPEND_NAME
 #endif
 
-BOOL ValidateInteger_EM
+UBOOL ValidateInteger_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
      LPTOKEN  lptkExpr,             // Ptr to value token
      UINT     uValidLo,             // Low range value (inclusive)
      UINT     uDefault,             // Default   ...
      UINT     uValidHi,             // High range ...
-     BOOL     bRangeLimit)          // TRUE iff an incoming value outside
+     UBOOL    bRangeLimit)          // TRUE iff an incoming value outside
                                     //   the given range [uValidLo, uValidHi]
                                     //   is adjusted to be the closer range limit
 
@@ -642,7 +642,7 @@ BOOL ValidateInteger_EM
     APLRANK  aplRankRht;            // Right arg rank
     HGLOBAL  hGlbRht = NULL;        // Right arg global memory handle
     LPVOID   lpMemRht = NULL;       // Ptr to right arg global memory
-    BOOL     bRet = FALSE;          // TRUE iff the result is valid
+    UBOOL    bRet = FALSE;          // TRUE iff the result is valid
     APLINT   aplInteger;
 
     // Split cases based upon the token type
@@ -901,11 +901,11 @@ UNLOCK_EXIT:
 //  Validate an integer within a given range, possibly range limited
 //***************************************************************************
 
-BOOL ValidateIntegerTest
+UBOOL ValidateIntegerTest
     (LPAPLINT lpaplInteger,         // Ptr to the integer to test
      APLINT   uValidLo,             // Low range value (inclusive)
      APLINT   uValidHi,             // High ...
-     BOOL     bRangeLimit)          // TRUE iff an incoming value outside
+     UBOOL    bRangeLimit)          // TRUE iff an incoming value outside
                                     //   the given range [uValidLo, uValidHi]
                                     //   is adjusted to be the closer range limit
 
@@ -932,11 +932,11 @@ BOOL ValidateIntegerTest
 //  Validate a float within a given range, possibly range limited
 //***************************************************************************
 
-BOOL ValidateFloatTest
+UBOOL ValidateFloatTest
     (LPAPLFLOAT lpaplFloat,         // Ptr to the float to test
      APLFLOAT   fValidLo,           // Low range value (inclusive)
      APLFLOAT   fValidHi,           // High ...
-     BOOL       bRangeLimit)        // TRUE iff an incoming value outside
+     UBOOL      bRangeLimit)        // TRUE iff an incoming value outside
                                     //   the given range [uValidLo, uValidHi]
                                     //   is adjusted to be the closer range limit
 
@@ -974,13 +974,13 @@ BOOL ValidateFloatTest
 #define APPEND_NAME
 #endif
 
-BOOL ValidateFloat_EM
+UBOOL ValidateFloat_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
      LPTOKEN  lpToken,              // Ptr to value token
      APLFLOAT fValidLo,             // Low range value (inclusive)
      APLFLOAT fDefault,             // Default   ...
      APLFLOAT fValidHi,             // High range ...
-     BOOL     bRangeLimit)          // TRUE iff an incoming value outside
+     UBOOL    bRangeLimit)          // TRUE iff an incoming value outside
                                     //   the given range [uValidLo, uValidHi]
                                     //   is adjusted to be the closer range limit
 
@@ -990,7 +990,7 @@ BOOL ValidateFloat_EM
     APLSTYPE aplTypeRht;            // Right arg storage type
     APLNELM  aplNELMRht;            // Right arg NELM
     APLRANK  aplRankRht;            // Right arg rank
-    BOOL     bRet = FALSE;          // TRUE iff result is valid
+    UBOOL    bRet = FALSE;          // TRUE iff result is valid
     APLFLOAT aplFloat;              // Temporary float
 
     // Split cases based upon the token type
@@ -1238,17 +1238,17 @@ UNLOCK_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ValidateCharVector_EM
+UBOOL ValidateCharVector_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
      LPTOKEN  lpToken,              // Ptr to value token
-     BOOL     bWSID)                // TRUE iff this is []WSID
+     UBOOL    bWSID)                // TRUE iff this is []WSID
 
 {
     HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
                  hGlbRes;           // Result    ...
     LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
                  lpMemRes;          // Ptr to result    ...
-    BOOL         bRet = FALSE,      // TRUE iff result is valid
+    UBOOL        bRet = FALSE,      // TRUE iff result is valid
                  bScalar = FALSE;   // TRUE iff right arg is scalar
     APLCHAR      aplChar;           // Right arg first char
     APLSTYPE     aplTypeRht;        // Right arg storage type
@@ -1551,12 +1551,12 @@ UNLOCK_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ValidateIntegerVector_EM
+UBOOL ValidateIntegerVector_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
      LPTOKEN  lptkRhtArg,           // Ptr to right arg token
      UINT     uValidLo,             // Low range value (inclusive)
      UINT     uValidHi,             // High ...
-     BOOL     bRangeLimit)          // TRUE iff an incoming value outside
+     UBOOL    bRangeLimit)          // TRUE iff an incoming value outside
                                     //   the given range [uValidLo, uValidHi]
                                     //   is adjusted to be the closer range limit
 
@@ -1566,7 +1566,7 @@ BOOL ValidateIntegerVector_EM
     LPVOID   lpMemRht = NULL,       // Ptr to right arg global memory
              lpMemIniRht,           // ...
              lpMemRes;              // Ptr to result    ...
-    BOOL     bRet = FALSE,          // TRUE iff result is valid
+    UBOOL    bRet = FALSE,          // TRUE iff result is valid
              bScalar = FALSE;       // TRUE iff right arg is a scalar
     APLINT   aplInteger,            // Right arg first integer
              apaOffRht,             // Right arg APA offset
@@ -2036,7 +2036,7 @@ UNLOCK_EXIT:
 //  Validate a value before assigning it to []ALX
 //***************************************************************************
 
-BOOL ValidSetALX_EM
+UBOOL ValidSetALX_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2054,7 +2054,7 @@ BOOL ValidSetALX_EM
 //    a position in a char-only SysVar.
 //***************************************************************************
 
-BOOL ValidNdxChar
+UBOOL ValidNdxChar
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
@@ -2087,7 +2087,7 @@ BOOL ValidNdxChar
 //  Validate a value before assigning it to []CT
 //***************************************************************************
 
-BOOL ValidSetCT_EM
+UBOOL ValidSetCT_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2112,7 +2112,7 @@ BOOL ValidSetCT_EM
 //  We allow any number between DEF_MIN_QUADCT and DEF_MAX_QUADCT inclusive.
 //***************************************************************************
 
-BOOL ValidNdxCT
+UBOOL ValidNdxCT
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
@@ -2159,7 +2159,7 @@ BOOL ValidNdxCT
 //  Validate a value before assigning it to []ELX
 //***************************************************************************
 
-BOOL ValidSetELX_EM
+UBOOL ValidSetELX_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2176,7 +2176,7 @@ BOOL ValidSetELX_EM
 //  Validate a value before assigning it to []FC
 //***************************************************************************
 
-BOOL ValidSetFC_EM
+UBOOL ValidSetFC_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2220,7 +2220,7 @@ BOOL ValidSetFC_EM
 //    DEF_MIN_QUADIC through DEF_MAX_QUADIC.
 //***************************************************************************
 
-BOOL ValidSetIC_EM
+UBOOL ValidSetIC_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2267,14 +2267,14 @@ BOOL ValidSetIC_EM
 //  We allow any number between DEF_MIN_QUADIC and DEF_MAX_QUADIC inclusive.
 //***************************************************************************
 
-BOOL ValidNdxIC
+UBOOL ValidNdxIC
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                              // TRUE iff the result is valid
+    UBOOL bRet;                             // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2319,7 +2319,7 @@ BOOL ValidNdxIC
 //  We allow any numeric singleton whose value is 0 or 1.
 //***************************************************************************
 
-BOOL ValidSetIO_EM
+UBOOL ValidSetIO_EM
     (LPTOKEN lptkNamArg,                // Ptr to name arg token
      LPTOKEN lptkRhtArg)                // Ptr to right arg token
 
@@ -2343,14 +2343,14 @@ BOOL ValidSetIO_EM
 //  We allow any number between DEF_MIN_QUADIO and DEF_MAX_QUADIO inclusive.
 //***************************************************************************
 
-BOOL ValidNdxIO
+UBOOL ValidNdxIO
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                              // TRUE iff the result is valid
+    UBOOL bRet;                             // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2394,7 +2394,7 @@ BOOL ValidNdxIO
 //  Validate a value before assigning it to []LX
 //***************************************************************************
 
-BOOL ValidSetLX_EM
+UBOOL ValidSetLX_EM
     (LPTOKEN lptkNamArg,                // Ptr to name arg token
      LPTOKEN lptkRhtArg)                // Ptr to right arg token
 
@@ -2411,7 +2411,7 @@ BOOL ValidSetLX_EM
 //  Validate a value before assigning it to []PP
 //***************************************************************************
 
-BOOL ValidSetPP_EM
+UBOOL ValidSetPP_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2436,14 +2436,14 @@ BOOL ValidSetPP_EM
 //  We allow any number between DEF_MIN_QUADPP and DEF_MAX_QUADPP inclusive.
 //***************************************************************************
 
-BOOL ValidNdxPP
+UBOOL ValidNdxPP
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                              // TRUE iff the result is valid
+    UBOOL bRet;                             // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2492,14 +2492,14 @@ BOOL ValidNdxPP
 #define APPEND_NAME
 #endif
 
-BOOL ValidSetPR_EM
+UBOOL ValidSetPR_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
     HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
     LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    BOOL         bRet = FALSE;      // TRUE iff result is valid
+    UBOOL        bRet = FALSE;      // TRUE iff result is valid
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
@@ -2677,7 +2677,7 @@ UNLOCK_EXIT:
 //  Validate a value before assigning it to []PW
 //***************************************************************************
 
-BOOL ValidSetPW_EM
+UBOOL ValidSetPW_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2702,14 +2702,14 @@ BOOL ValidSetPW_EM
 //  We allow any number between DEF_MIN_QUADPW and DEF_MAX_QUADPW inclusive.
 //***************************************************************************
 
-BOOL ValidNdxPW
+UBOOL ValidNdxPW
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                              // TRUE iff the result is valid
+    UBOOL bRet;                             // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2752,7 +2752,7 @@ BOOL ValidNdxPW
 //  Validate a value before assigning it to []RL
 //***************************************************************************
 
-BOOL ValidSetRL_EM
+UBOOL ValidSetRL_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2777,14 +2777,14 @@ BOOL ValidSetRL_EM
 //  We allow any number between DEF_MIN_QUADRL and DEF_MAX_QUADRL inclusive.
 //***************************************************************************
 
-BOOL ValidNdxRL
+UBOOL ValidNdxRL
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                              // TRUE iff the result is valid
+    UBOOL bRet;                             // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2833,7 +2833,7 @@ BOOL ValidNdxRL
 #define APPEND_NAME
 #endif
 
-BOOL ValidSetSA_EM
+UBOOL ValidSetSA_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -2844,7 +2844,7 @@ BOOL ValidSetSA_EM
     HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
                  hGlbRes;           // Result    ...
     LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    BOOL         bRet = FALSE;      // TRUE iff result is valid
+    UBOOL        bRet = FALSE;      // TRUE iff result is valid
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
@@ -3038,7 +3038,7 @@ UNLOCK_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ValidSetWSID_EM
+UBOOL ValidSetWSID_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -3056,7 +3056,7 @@ BOOL ValidSetWSID_EM
 //  Validate a value before assigning it to []Z
 //***************************************************************************
 
-BOOL ValidSetZ_EM
+UBOOL ValidSetZ_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -3100,7 +3100,7 @@ BOOL ValidSetZ_EM
 //    a position in a SysVar.
 //***************************************************************************
 
-BOOL ValidNdxAny
+UBOOL ValidNdxAny
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
@@ -3117,7 +3117,7 @@ BOOL ValidNdxAny
 //  Initialize all system vars
 //***************************************************************************
 
-BOOL InitSystemVars
+UBOOL InitSystemVars
     (void)
 
 {

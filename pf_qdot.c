@@ -430,7 +430,7 @@ APLFLOAT PrimFnDydQuoteDotFisIvI
              aplIntegerRes,
              aplIntegerInd,
              aplIntegerTmp2;
-    BOOL     bRet = TRUE;       // Assume the result is valid
+    UBOOL    bRet = TRUE;       // Assume the result is valid
 
     // FYI:  The only way this function can be called is
     //   from an exception raised from IisIvI above.

@@ -193,7 +193,7 @@ APLBOOL PrimFnDydUpCaretTildeBisFvF
 {
     APLINT aplLft,
            aplRht;
-    BOOL   bRet = TRUE;
+    UBOOL  bRet = TRUE;
 
     // Attempt to convert the float to an integer using System CT
     aplLft = FloatToAplint_SCT (aplFloatLft, &bRet);

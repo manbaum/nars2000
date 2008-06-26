@@ -42,7 +42,7 @@ typedef LPPL_YYSTYPE PRIMFN_DYD
 
 typedef PRIMFN_DYD *LPPRIMFN_DYD;
 
-typedef BOOL PRIMFN_DYD_SNvSN
+typedef UBOOL PRIMFN_DYD_SNvSN
     (LPPL_YYSTYPE lpYYRes,                  // Ptr to the result
 
      LPTOKEN      lptkLftArg,               // Ptr to left arg token
@@ -94,7 +94,7 @@ typedef APLSTYPE STORAGE_TYPE_DYD
 typedef STORAGE_TYPE_DYD *LPSTORAGE_TYPE_DYD;
 
 // Call this function if the monadic result is APA
-typedef BOOL APARESULT_MON
+typedef UBOOL APARESULT_MON
         (LPPL_YYSTYPE lpYYRes,              // Ptr to the result (may be NULL)
 
          LPTOKEN      lptkFunc,             // Ptr to function token
@@ -109,7 +109,7 @@ typedef BOOL APARESULT_MON
 typedef APARESULT_MON *LPAPARESULT_MON;
 
 // Call this function if the dyadic result is APA
-typedef BOOL APARESULT_DYD
+typedef UBOOL APARESULT_DYD
         (LPPL_YYSTYPE lpYYRes,              // Ptr to the result (may be NULL)
 
          LPTOKEN      lptkFunc,             // Ptr to function token

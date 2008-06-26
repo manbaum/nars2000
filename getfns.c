@@ -414,7 +414,7 @@ void GetFirstValueGlb
      LPVOID      *lpSymGlb,         // ...        LPSYMENTRY or HGLOBAL (may be NULL)
      LPIMM_TYPES  lpImmType,        // ...        immediate type (see IMM_TYPES) (may be NULL)
      LPAPLSTYPE   lpArrType,        // ...        array type -- ARRAY_TYPES (may be NULL)
-     BOOL         bExpandSym)       // TRUE iff we should expand LPSYMENTRY intoimmediate value
+     UBOOL        bExpandSym)       // TRUE iff we should expand LPSYMENTRY intoimmediate value
 
 {
     LPVOID     lpMem;               // Ptr to global memory
@@ -965,8 +965,8 @@ void GetNextValueMemSub
      HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
      APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
      IMM_TYPES  *lpimmTypeRes,          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-     BOOL        bExpandSym,            // TRUE iff we should expand LPSYMENTRY intoimmediate value
-     BOOL        bGetItem)              // TRUE if we're returning item (not value)
+     UBOOL       bExpandSym,            // TRUE iff we should expand LPSYMENTRY intoimmediate value
+     UBOOL       bGetItem)              // TRUE if we're returning item (not value)
 
 {
     APLHETERO lpSymSub;                 // Item as APLHETERO

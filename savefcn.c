@@ -51,7 +51,7 @@
 #define APPEND_NAME
 #endif
 
-BOOL SaveFunction
+UBOOL SaveFunction
     (HWND hWndFE)                   // Function Editor window handle
 
 {
@@ -925,7 +925,7 @@ HGLOBAL SF_UndoBufferLW
 #define APPEND_NAME
 #endif
 
-BOOL SaveFunctionCom
+UBOOL SaveFunctionCom
     (HWND      hWndFE,                  // Function Editor window handle (FE only, NULL otherwise)
      LPSF_FCNS lpSF_Fcns)               // Ptr to common struc
 

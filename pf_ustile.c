@@ -223,7 +223,7 @@ APLFLOAT PrimFnMonUpStileFisF
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnMonUpStileAPA_EM
+UBOOL PrimFnMonUpStileAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to result token (may be NULL)
 
      LPTOKEN      lptkFunc,         // Ptr to function token

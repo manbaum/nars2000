@@ -151,7 +151,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                  uMaxNameLen = 0,   // Length of longest name
                  uSymCnt,           // Count of # matching STEs
                  uSymNum;           // Loop counter
-    BOOL         bRet;              // TRUE iff result is valid
+    UBOOL        bRet;              // TRUE iff result is valid
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY

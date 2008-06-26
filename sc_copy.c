@@ -51,7 +51,7 @@
 #define APPEND_NAME
 #endif
 
-BOOL CmdCopy_EM
+UBOOL CmdCopy_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
 
 {
@@ -68,7 +68,7 @@ BOOL CmdCopy_EM
                  iSrcTabID,                 // Source tab ID
                  iSrcTabIndex,              // Source tab index
                  iCnt;                      // # fields scanned
-    BOOL         bRet = FALSE;              // TRUE iff result is valid
+    UBOOL        bRet = FALSE;              // TRUE iff result is valid
     FILE        *fStream;                   // Ptr to file stream for the plain text workspace file
     HWND         hWndEC;                    // Edit Control window handle
     LPSYMENTRY   lpSymLink = NULL;          // Anchor of SYMENTRY links for [Globals] values
@@ -374,7 +374,7 @@ int CopyWsVars
      LPWCHAR     lpwCmd,                    // Ptr to command line
      HWND        hWndEC,                    // Edit Control for SM window handle
      LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
-     BOOL        bAllNames,                 // TRUE if we should process all names
+     UBOOL       bAllNames,                 // TRUE if we should process all names
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
      WCHAR       wszTailDPFE[],             // Save area for canonical form of given ws name
      LPWCHAR     lpwszTemp,                 // Ptr to temporary storage
@@ -424,7 +424,7 @@ int CopyWsVars
             APLSTYPE     aplTypeObj;            // Object storage type
             APLLONGEST   aplLongestObj;         // Object immediate value
             LPAPLLONGEST lpaplLongestObj;       // Ptr to ...
-            BOOL         bImmed;                // TRUE iff the result of ParseSavedWsVar_EM is immediate
+            UBOOL        bImmed;                // TRUE iff the result of ParseSavedWsVar_EM is immediate
 
             // Set the flags for what we're looking up/appending
             stFlags.Inuse   = TRUE;
@@ -564,7 +564,7 @@ int CopyWsFcns
     (LPWCHAR     lpwNameInCmd,              // Ptr to name in command line (may be NULL if bAllNames)
      HWND        hWndEC,                    // Edit Control for SM window handle
      LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
-     BOOL        bAllNames,                 // TRUE if we should process all names
+     UBOOL       bAllNames,                 // TRUE if we should process all names
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
      WCHAR       wszTailDPFE[],             // Save area for canonical form of given ws name
      LPWCHAR     lpwszTemp,                 // Ptr to temporary storage

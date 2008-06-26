@@ -22,7 +22,7 @@
 
 typedef struct tagSF_FCNS
 {
-    BOOL       bRet;                // 00:  TRUE iff result is valid
+    UBOOL      bRet;                // 00:  TRUE iff result is valid
     UINT       uErrLine;            // 04:  If (!bRet), the line in error (origin-0) (NEG1U = Error Message valid)
     LPSYMENTRY lpSymName;           // 08:  If (bRet), ptr to SYMENTRY of the function name
     LPTOKEN    lptkFunc;            // 0C:  Ptr to function token

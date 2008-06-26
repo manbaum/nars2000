@@ -83,7 +83,7 @@ typedef struct tagUPDATESDLGSTR
 
 int  nMinState,                         // Minimized state as per WinMain
      iScrollSize;                       // Width of a vertical scrollbar
-BOOL fHelp = FALSE,                     // TRUE iff we displayed help
+UBOOL fHelp = FALSE,                     // TRUE iff we displayed help
      bCommandLine = FALSE;              // ...      there is a filename on the command line
 
 HMODULE user32_module;                  // Needed by WineHQ\EDITCTRL.C
@@ -130,7 +130,7 @@ char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
 //    windows of MDI Clients
 //***************************************************************************
 
-BOOL CALLBACK EnumCallbackPassMsg
+UBOOL CALLBACK EnumCallbackPassMsg
     (HWND   hWndMC,         // Handle to child window (MDI Client)
      LPARAM lParam)         // Application-defined value
 
@@ -164,7 +164,7 @@ BOOL CALLBACK EnumCallbackPassMsg
 //  EnumChildWindows callback to set a window's font
 //***************************************************************************
 
-BOOL CALLBACK EnumCallbackSetFontW
+UBOOL CALLBACK EnumCallbackSetFontW
     (HWND   hWnd,           // Handle to child window
      LPARAM lParam)         // Application-defined value
 
@@ -203,7 +203,7 @@ void InitChooseFont
     (LPCHOOSEFONT lpcf,
      LPLOGFONT    lplf,
      int          iPtSize,
-     BOOL         bPrinter)                 // TRUE iff this is a printer font
+     UBOOL        bPrinter)                 // TRUE iff this is a printer font
 {
     HDC hDC;
     int iLogPixelsY;
@@ -640,7 +640,7 @@ HWND CreateToolTip
 //  Create the child windows under the parent window
 //***************************************************************************
 
-BOOL CreateChildWindows
+UBOOL CreateChildWindows
     (HWND hWnd)
 
 {
@@ -727,7 +727,7 @@ BOOL CreateChildWindows
 //  lParam = unused
 //***************************************************************************
 
-BOOL CALLBACK EnumCallbackRestoreAll
+UBOOL CALLBACK EnumCallbackRestoreAll
     (HWND   hWnd,           // Handle to child window
      LPARAM lParam)         // Application-defined value
 
@@ -1765,7 +1765,7 @@ HWND GetWndMC
 //  EnumChildWindows callback to query whether or not they can close
 //***************************************************************************
 
-BOOL CALLBACK EnumCallbackQueryClose
+UBOOL CALLBACK EnumCallbackQueryClose
     (HWND   hWnd,           // Handle to child window
      LPARAM lParam)         // Application-defined value
 
@@ -1788,7 +1788,7 @@ BOOL CALLBACK EnumCallbackQueryClose
 //// //  EnumChildWindows callback to tell debugger windows to unhook its hooks
 //// //***************************************************************************
 ////
-//// BOOL CALLBACK EnumCallbackUnhookDebugger
+//// UBOOL CALLBACK EnumCallbackUnhookDebugger
 ////     (HWND   hWnd,           // Handle to child window
 ////      LPARAM lParam)         // Application-defined value
 ////
@@ -1817,7 +1817,7 @@ BOOL CALLBACK EnumCallbackQueryClose
 //  Is the window DBWNDCLASS?
 //***************************************************************************
 
-BOOL IzitDB
+UBOOL IzitDB
     (HWND hWnd)
 
 {
@@ -1988,7 +1988,7 @@ NORMAL_EXIT:
 //  Dialog box to handle "Check For Updates"
 //***************************************************************************
 
-BOOL CALLBACK UpdatesDlgProc
+UBOOL CALLBACK UpdatesDlgProc
     (HWND   hDlg,
      UINT   message,
      WPARAM wParam,
@@ -2074,7 +2074,7 @@ BOOL CALLBACK UpdatesDlgProc
 #define hWnd    ((HWND) lParam)
 
 ////        // We handle IDC_LINK static window only
-////        if (hWnd == hWndStatic)
+////        if (hWnd EQ hWndStatic)
 ////        {
 ////            LOGFONT lf;
 ////
@@ -2146,7 +2146,7 @@ BOOL CALLBACK UpdatesDlgProc
 //  Initializes window data and registers window class
 //***************************************************************************
 
-BOOL InitApplication
+UBOOL InitApplication
     (HANDLE hInstance)      // Current instance
 
 {
@@ -2342,7 +2342,7 @@ void UninitApplication
 //  Saves instance handle and creates main window
 //***************************************************************************
 
-BOOL InitInstance
+UBOOL InitInstance
     (HANDLE hInstance)
 
 {
@@ -2492,7 +2492,7 @@ void UninitInstance
 //  Parse any command line
 //***************************************************************************
 
-BOOL ParseCommandLine
+UBOOL ParseCommandLine
     (LPSTR lpCmdLine)
 
 {

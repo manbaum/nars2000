@@ -248,7 +248,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     LPVOID       lpMemRht,          // Ptr to right arg global memory
                  lpMemRes;          // Ptr to result    ...
     LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     APLBOOL      bQuadIO;           // []IO
     GRADE_DATA   gradeData;         // Data passed to GRADE_ROUTINE
@@ -726,7 +726,7 @@ APLINT PrimFnGradeCompare
     APLINT       iRest;             // Loop counter
     APLNELM      aplNELMRest;       // Loop limit
     APLRANK      aplRankLft;        // Loop limit
-    BOOL         bSame,             // TRUE if the two planes are the same
+    UBOOL        bSame,             // TRUE if the two planes are the same
                  bToggle;           // Toggle value between chars
     LPTT_HANDLES lpMemTTHandles;    // Ptr to TT handles global memory
     LPAPLCHAR    lpMemTT;           // Ptr to current TT
@@ -888,7 +888,7 @@ APLINT PrimFnGradeCompare
                         bSame = FALSE;
 
                         // Calculate toggle state
-                        if (bToggle EQ (aplIndLft > aplIndRht))
+                        if (bToggle EQ (UBOOL) (aplIndLft > aplIndRht))
                             bToggle = !bToggle;
                     } // End IF
                 } // End FOR

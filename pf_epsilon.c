@@ -316,7 +316,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     APLUINT      ByteRes;           // # bytes in the result
     UINT         uBitMask = 0x01,   // Bit mask for marching through Booleans
                  uBitIndex = 0;     // Bit index ...
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Traverse the array counting the # simple scalars
@@ -518,7 +518,7 @@ void PrimFnMonEpsilonGlbCount
 //  Copy the data from the right arg to the result
 //***************************************************************************
 
-BOOL PrimFnMonEpsilonGlbCopy_EM
+UBOOL PrimFnMonEpsilonGlbCopy_EM
     (APLSTYPE aplTypeRes,           // Result type
      LPVOID  *lplpMemRes,           // Ptr to ptr to result memory
      LPUINT   lpuBitIndex,          // Ptr to uBitIndex
@@ -536,7 +536,7 @@ BOOL PrimFnMonEpsilonGlbCopy_EM
     APLINT     apaOffRht,           // Right arg APA offset
                apaMulRht;           // ...           multiplier
     APLLONGEST aplVal;              // Temporary value
-    BOOL       bRet = FALSE;        // TRUE iff the result is valid
+    UBOOL      bRet = FALSE;        // TRUE iff the result is valid
     LPSYMENTRY lpSymTmp;            // Ptr to temporary LPSYMENTRY
 
     // Lock the memory to get a ptr to it
@@ -1380,7 +1380,7 @@ void PrimFnDydEpsilonBvB
      LPAPLBOOL lpMemRht)            // Ptr to right arg global memory data
 
 {
-    BOOL    Found0,                 // TRUE iff there is at least one 0 in the right arg
+    UBOOL   Found0,                 // TRUE iff there is at least one 0 in the right arg
             Found1;                 // ...                            1 ...
     APLUINT BytesInLftBits,         // # bytes in the left arg data
             BytesInRhtBits,         // ...            right ...
@@ -1455,7 +1455,7 @@ void PrimFnDydEpsilonBvB
 //  Dyadic epsilon between simple ints (APLBOOL/APLINT/APLAPA)
 //***************************************************************************
 
-BOOL PrimFnDydEpsilonIvI_EM
+UBOOL PrimFnDydEpsilonIvI_EM
     (LPAPLBOOL lpMemRes,            // Ptr to result global memory data
      APLSTYPE  aplTypeLft,          // Left arg storage type
      APLNELM   aplNELMLft,          // Left arg NELM
@@ -1525,7 +1525,7 @@ BOOL PrimFnDydEpsilonIvI_EM
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydEpsilonCvC_EM
+UBOOL PrimFnDydEpsilonCvC_EM
     (LPAPLBOOL lpMemRes,            // Ptr to result global memory data
      APLNELM   aplNELMLft,          // Left arg (and result) NELM
      LPAPLCHAR lpMemLft,            // Ptr to left arg global memory data

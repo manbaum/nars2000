@@ -758,7 +758,7 @@ void DemoteData
 //  Promote the type of the token to a given storage type
 //***************************************************************************
 
-BOOL TypePromote_EM
+UBOOL TypePromote_EM
     (LPTOKEN  lpToken,              // Ptr to the token
      APLSTYPE aplTypeRes,           // The result storage type
      LPTOKEN  lptkFunc)             // Ptr to function token
@@ -853,7 +853,7 @@ BOOL TypePromote_EM
 #define APPEND_NAME
 #endif
 
-BOOL TypePromoteGlb_EM
+UBOOL TypePromoteGlb_EM
     (HGLOBAL *lphGlbArg,            // Ptr to global memory handle
      APLSTYPE aplTypeRes,           // The result storage type
      LPTOKEN  lptkFunc)             // Ptr to function token
@@ -861,7 +861,7 @@ BOOL TypePromoteGlb_EM
 {
     HGLOBAL    hGlbArg,             // Arg    ...
                hGlbRes = NULL;      // Result global memory handle
-    BOOL       bRet = TRUE;         // TRUE iff the result is valid
+    UBOOL      bRet = TRUE;         // TRUE iff the result is valid
     LPVOID     lpMemArg,            // Ptr to global memory
                lpMemRes = NULL;     // Ptr to result global memory
     APLSTYPE   aplTypeArg;          // Arg storage type of HGLOBAL
@@ -1168,7 +1168,7 @@ ERROR_EXIT:
 //  Determine if an arg should be promoted
 //***************************************************************************
 
-BOOL QueryPromote
+UBOOL QueryPromote
     (APLSTYPE  aplTypeNam,          // Name arg storage type
      APLSTYPE  aplTypeSet,          // Set  ...
      APLSTYPE *lpaplTypeRes)        // Result   ...

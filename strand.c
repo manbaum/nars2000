@@ -132,7 +132,7 @@ LPPL_YYSTYPE PushVarStrand_YY
 LPPL_YYSTYPE PushFcnStrand_YY
     (LPPL_YYSTYPE lpYYArg,          // Ptr to the incoming argument
      int          TknCount,         // Token count
-     BOOL         bIndirect)        // TRUE iff lpYYArg is indirect
+     UBOOL        bIndirect)        // TRUE iff lpYYArg is indirect
 
 {
     LPPL_YYSTYPE  lpYYRes,          // Ptr to the result
@@ -361,7 +361,7 @@ static char tabConvert[][STRAND_LENGTH] =
     char          cStrandCurType = STRAND_INIT,
                   cStrandNxtType,
                   aplType;
-    BOOL          bRet = TRUE;
+    UBOOL         bRet = TRUE;
     LPPL_YYSTYPE  lpYYRes;              // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
 
@@ -1080,7 +1080,7 @@ ERROR_EXIT:
 LPPL_YYSTYPE MakeFcnStrand_EM_YY
     (LPPL_YYSTYPE lpYYArg,          // Ptr to incoming token
      NAME_TYPES   fnNameType,       // Type of the strand
-     BOOL         bSaveTxtLine)     // TRUE iff we should save the line text
+     UBOOL        bSaveTxtLine)     // TRUE iff we should save the line text
 
 {
     UINT          uIniLen,          // Initial strand length
@@ -1095,7 +1095,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
                   lpYYMemData,
                   lpYYBase = (LPPL_YYSTYPE) -1,
                   lpYYRes;          // Ptr to the result
-    BOOL          bRet = TRUE;      // TRUE iff the result is valid
+    UBOOL         bRet = TRUE;      // TRUE iff the result is valid
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
     SYSTEMTIME    systemTime;       // Current system (UTC) time
 
@@ -1884,7 +1884,7 @@ LPPL_YYSTYPE PushList_YY
 
 LPPL_YYSTYPE MakeList_EM_YY
     (LPPL_YYSTYPE lpYYArg,          // Ptr to incoming token
-     BOOL         bBrackets)        // TRUE iff surrounding brackets (otherwise parens)
+     UBOOL        bBrackets)        // TRUE iff surrounding brackets (otherwise parens)
 
 {
     LPPL_YYSTYPE  lpYYStrand,       // Ptr to strand base
@@ -2104,7 +2104,7 @@ LPSYMENTRY CopyImmToken_EM
 
 LPTOKEN CopyToken_EM
     (LPTOKEN lpToken,
-     BOOL    bChanging) // TRUE iff we're going to change the HGLOBAL
+     UBOOL   bChanging) // TRUE iff we're going to change the HGLOBAL
 
 {
     LPSYMENTRY lpSymEntry;  // Ptr to SYMENTRY in the token
@@ -2221,7 +2221,7 @@ LPTOKEN CopyToken_EM
 
 LPPL_YYSTYPE CopyPL_YYSTYPE_EM_YY
     (LPPL_YYSTYPE lpYYArg,
-     BOOL         bChanging)    // TRUE iff we're going to change the HGLOBAL
+     UBOOL        bChanging)    // TRUE iff we're going to change the HGLOBAL
 
 {
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result

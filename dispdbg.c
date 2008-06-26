@@ -52,7 +52,7 @@ extern UINT auLinNumGLOBAL[MAXOBJ];
 //***************************************************************************
 
 void DisplayHshTab
-    (BOOL bUseGlbHsh)
+    (UBOOL bUseGlbHsh)
 
 {
     LPHSHENTRY   lpHshEntry;        // Ptr to current HshTab entry
@@ -187,10 +187,10 @@ void FormatHTE
         else
         if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
         {
-            LPCHAR lpGlbName;
+            LPWCHAR lpwGlbName;
 
             // Lock the memory to get a ptr to it
-            lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
+            lpwGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpwGlbName NE NULL);
 
             wsprintfW (wszTemp,
                        L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
@@ -198,12 +198,12 @@ void FormatHTE
                        lpHshEntry->uHash,
                        lpHshEntry->uHashAndMask,
                       &wszFlags[1],
-                       lpGlbName,
+                       lpwGlbName,
                        lpSymEntry,
                        lpHshEntry->NextSameHash,
                        lpHshEntry->PrevSameHash);
             // We no longer need this ptr
-            GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
+            GlobalUnlock (lpHshEntry->htGlbName); lpwGlbName = NULL;
         } // End IF/ELSE/IF
     } else
         wsprintfW (wszTemp,
@@ -227,7 +227,7 @@ void FormatHTE
 //***************************************************************************
 
 void DisplaySymTab
-    (BOOL bDispAll)
+    (UBOOL bDispAll)
 
 {
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
@@ -293,7 +293,7 @@ void FormatSTE
 {
     WCHAR   wszFlags[128] = {L'\0'};
     STFLAGS stFlags;
-    LPWCHAR lpGlbName;
+    LPWCHAR lpwGlbName;
     int     j;                  // Loop counter
 
     typedef struct tagST_FLAGNAMES
@@ -371,12 +371,12 @@ void FormatSTE
 
             if (lpHshEntry)
             {
-                lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
+                lpwGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpwGlbName NE NULL);
 
-                lstrcpynW (wszName, lpGlbName, WSZNAME_LEN);
+                lstrcpynW (wszName, lpwGlbName, WSZNAME_LEN);
 
                 // We no longer need this ptr
-                GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
+                GlobalUnlock (lpHshEntry->htGlbName); lpwGlbName = NULL;
             } // End IF
         } // End IF
 
@@ -654,7 +654,7 @@ void DisplayTokens
     // Ensure it's valid
     if (!hGlbToken)
     {
-        DbgMsgW2 (L"DisplayTokens:  ***INAVLID HANDLE***:  hGlbToken == 0");
+        DbgMsgW2 (L"DisplayTokens:  ***INAVLID HANDLE***:  hGlbToken EQ 0");
         return;
     } // End IF
 
@@ -923,7 +923,7 @@ NORMAL_EXIT:
 LPWCHAR DisplayFcnGlb
     (LPWCHAR             lpaplChar,             // Ptr to output save area
      HGLOBAL             hGlbFcnArr,            // Function array global memory handle
-     BOOL                bDispHeader,           // TRUE iff we're to display the header
+     UBOOL               bDispHeader,           // TRUE iff we're to display the header
      LPSAVEDWSGLBVARCONV lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
      LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
 
@@ -978,7 +978,7 @@ LPWCHAR DisplayFcnSub
     HGLOBAL hGlbData;           // Function array global memory handle
     LPVOID  lpMemData;          // Ptr to function array global memory
     UINT    TknCount;           // Token count
-    BOOL    bIsImmed;           // TRUE if the named var is an immediate
+    UBOOL   bIsImmed;           // TRUE if the named var is an immediate
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1454,7 +1454,7 @@ void DisplayUndo
     HWND         hWndParent;
     LPUNDO_BUF   lpUndoBeg,             // Ptr to start of Undo Buffer
                  lpUndoNxt;             // ...    next available slot in the Undo Buffer
-    BOOL         bShift;
+    UBOOL        bShift;
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];         // Ptr to temporary output area

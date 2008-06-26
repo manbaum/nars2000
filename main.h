@@ -228,6 +228,9 @@ typedef enum tagEXIT_TYPES
 #define PRF_SELECTION   0x40000000L     // to print the selection
 #define PRF_CURRENTPAGE 0x20000000L     // to print the current page
 
+// Define UBOOL as an unsigned int
+typedef unsigned int UBOOL, *LPUBOOL;
+
 
 //***************************************************************************
 //  End of File: main.h

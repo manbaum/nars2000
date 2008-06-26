@@ -46,7 +46,7 @@
 //  Return TRUE iff the given token is a function or operator
 //***************************************************************************
 
-BOOL IsTknFcnOpr
+UBOOL IsTknFcnOpr
     (LPTOKEN lptk)              // Ptr to token
 
 {
@@ -422,7 +422,7 @@ void IncrOdometer
 #define APPEND_NAME
 #endif
 
-BOOL PrimScalarFnDydAllocate_EM
+UBOOL PrimScalarFnDydAllocate_EM
     (LPTOKEN    lptkFunc,       // Ptr to function token
 
      HGLOBAL   *lphGlbRes,      // Return HGLOBAL of the result
@@ -606,7 +606,7 @@ HGLOBAL MakeMonPrototype_EM
     APLNELM     uLen;
     HGLOBAL     hGlbTmp,            // Temporary global memory handle
                 hGlbProto;          // Prototype ...
-    BOOL        bRet = TRUE;        // TRUE iff result is valid
+    UBOOL       bRet = TRUE;        // TRUE iff result is valid
     APLUINT     ByteRes;            // # bytes in the result
     LPSYMENTRY  lpSymArr,
                 lpSymRes;
@@ -920,7 +920,7 @@ HGLOBAL MakeDydPrototype_EM
                 uRht,                   // Loop counter
                 uRes;                   // Loop counter
     APLINT      iDim;                   // Dimension loop counter
-    BOOL        bBoolFn;                // TRUE iff the function is equal or not-equal
+    UBOOL       bBoolFn;                // TRUE iff the function is equal or not-equal
     LPPRIMSPEC  lpPrimSpec;             // Ptr to local PRIMSPEC
     LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis values, fleshed out
                 lpMemAxisTail = NULL,   // Ptr to grade up of AxisHead
@@ -1380,7 +1380,7 @@ NORMAL_EXIT:
 //  Is the first element of a global simple?
 //***************************************************************************
 
-BOOL IsFirstSimpleGlb
+UBOOL IsFirstSimpleGlb
     (HGLOBAL *lphGlbRht,
      LPCHAR   lpaplTypeRes)
 
@@ -1388,7 +1388,7 @@ BOOL IsFirstSimpleGlb
     LPVOID     lpMemRht;
     APLSTYPE   aplTypeRht;
     APLRANK    aplRankRht;
-    BOOL       bRet = TRUE;
+    UBOOL      bRet = TRUE;
     LPSYMENTRY lpSym;
     HGLOBAL    hGlbFirst;
 
@@ -1538,7 +1538,7 @@ HGLOBAL CopyArray_EM
     LPSYMENTRY  lpSymSrc,
                 lpSymDst;
     APLNELM     u;
-    BOOL        bRet = TRUE;
+    UBOOL       bRet = TRUE;
 
     // Get the size of the global memory object
     dwSize = MyGlobalSize (hGlbSrc);
@@ -1862,13 +1862,13 @@ ERROR_EXIT:
 //    user-defined function/operator.
 //***************************************************************************
 
-BOOL IsGlobalTypeArray
+UBOOL IsGlobalTypeArray
     (HGLOBAL hGlb,
      UINT    Signature)
 
 {
     LPVOID lpMem;
-    BOOL   bRet = TRUE;
+    UBOOL  bRet = TRUE;
 
     // It's an HGLOBAL
     switch (GetPtrTypeDir (hGlb))
@@ -1921,7 +1921,7 @@ BOOL IsGlobalTypeArray
 #define APPEND_NAME
 #endif
 
-BOOL CheckRankLengthError_EM
+UBOOL CheckRankLengthError_EM
     (APLRANK  aplRankRes,           // Result rank
      APLRANK  aplRankLft,           // Left arg ...
      APLNELM  aplNELMLft,           // ...      NELM
@@ -2130,11 +2130,11 @@ APLINT abs64
 APLINT iadd64
     (APLINT aplLft,             // Left arg
      APLINT aplRht,             // Right ...
-     LPBOOL lpbRet)             // Is the result valid?? (may be NULL)
+     LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
 
 {
     APLINT aplRes;              // The result
-    BOOL   bRet;                // TRUE iff the result is valid
+    UBOOL  bRet;                // TRUE iff the result is valid
 
     _clear87 ();
 
@@ -2175,11 +2175,11 @@ APLINT iadd64
 APLINT isub64
     (APLINT aplLft,             // Left arg
      APLINT aplRht,             // Right ...
-     LPBOOL lpbRet)             // Is the result valid?? (may be NULL)
+     LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
 
 {
     APLINT aplRes;              // The result
-    BOOL   bRet;                // TRUE iff the result is valid
+    UBOOL  bRet;                // TRUE iff the result is valid
 
     _clear87 ();
 
@@ -2220,11 +2220,11 @@ APLINT isub64
 APLINT imul64
     (APLINT aplLft,             // Left arg
      APLINT aplRht,             // Right ...
-     LPBOOL lpbRet)             // Is the result valid?? (may be NULL)
+     LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
 
 {
     APLINT aplRes;              // The result
-    BOOL   bRet;                // TRUE iff the result is valid
+    UBOOL  bRet;                // TRUE iff the result is valid
 
 #if TRUE
     _clear87 ();
@@ -2442,9 +2442,9 @@ void FillSISNxt
      HANDLE       hSemaphore,           // Semaphore handle
      DFN_TYPES    DfnType,              // DFNTYPE_xxx
      FCN_VALENCES FcnValence,           // FCNVALENCE_xxx
-     BOOL         Suspended,            // TRUE iff starts Suspended
-     BOOL         Restartable,          // TRUE iff restartable
-     BOOL         LinkIntoChain)        // TRUE iff we should link this entry into the SIS chain
+     UBOOL        Suspended,            // TRUE iff starts Suspended
+     UBOOL        Restartable,          // TRUE iff restartable
+     UBOOL        LinkIntoChain)        // TRUE iff we should link this entry into the SIS chain
 
 {
     lpMemPTD->SILevel++;
@@ -2606,7 +2606,7 @@ UINT GetImmTypeFcn
 //  Return TRUE iff the given token is named
 //***************************************************************************
 
-BOOL IsTknNamed
+UBOOL IsTknNamed
     (TOKEN_TYPES tknType)
 
 {
@@ -2631,7 +2631,7 @@ BOOL IsTknNamed
 //  Return TRUE iff the given token is immediate
 //***************************************************************************
 
-BOOL IsTknImmed
+UBOOL IsTknImmed
     (TOKEN_TYPES tknType)
 
 {

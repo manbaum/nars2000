@@ -52,10 +52,10 @@
 #define APPEND_NAME
 #endif
 
-BOOL ArrayDisplay_EM
+UBOOL ArrayDisplay_EM
     (LPTOKEN lptkRes,               // Ptr to value token
-     BOOL    bEndingCR,             // TRUE iff last line has CR
-     LPBOOL  lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+     UBOOL   bEndingCR,             // TRUE iff last line has CR
+     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
 
 {
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
@@ -195,10 +195,10 @@ SYNTAX_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL DisplayGlbArr_EM
+UBOOL DisplayGlbArr_EM
     (HGLOBAL hGlb,                  // Global memory handle to display
-     BOOL    bEndingCR,             // TRUE iff last line has CR
-     LPBOOL  lpbCtrlBreak,          // Ptr to Ctrl-Break flag
+     UBOOL   bEndingCR,             // TRUE iff last line has CR
+     LPUBOOL lpbCtrlBreak,          // Ptr to Ctrl-Break flag
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
@@ -224,7 +224,7 @@ BOOL DisplayGlbArr_EM
     LPFMTCOLSTR  lpFmtColStr;       // Ptr to format col struc
     APLUINT      uQuadPP,           // []PP
                  uQuadPW;           // []PW
-    BOOL         bLineCont = FALSE, // TRUE iff this line is a continuation
+    UBOOL        bLineCont = FALSE, // TRUE iff this line is a continuation
                  bRawOut,           // TRUE iff using raw output
                  bRet = FALSE;      // TRUE iff the result is valid
     APLUINT      uOutLen;           // Output length for this line
@@ -1247,7 +1247,7 @@ LPWCHAR DisplayTransferImm2
                         &lpSymEntry->stData.stLongest,      // Ptr to value to format
                          DEF_MAX_QUADPP,                    // Precision to use
                          UTF16_DOT,                         // Char to use as decimal separator
-                         UTF16_BAR,                         // Char to use as overbar
+                         UTF16_OVERBAR,                     // Char to use as overbar
                          DEF_DTOA_MODE);                    // DTOA mode (Mode 2: max (ndigits, 1))
     return lpwszTemp;
 } // End DisplayTransferImm2
@@ -1264,7 +1264,7 @@ LPWCHAR DisplayTransferGlb2
      HGLOBAL    hGlbArg,                    // Arg global memory handle
      APLNELM    aplNELMOut,                 // Outer NELM (if not at top level)
      APLRANK    aplRankOut,                 // Outer rank (if not at top level)
-     BOOL       bTopLevel)                  // TRUE iff this call is at the top level
+     UBOOL      bTopLevel)                  // TRUE iff this call is at the top level
 
 {
     LPVOID   lpMemArg;                      // Ptr to arg item global memory
@@ -1273,7 +1273,7 @@ LPWCHAR DisplayTransferGlb2
              aplNELMNst;                    // Arg item NELM if nested
     APLRANK  aplRankArg;                    // Arg item rank
     APLUINT  uCnt;                          // Loop counter
-    BOOL     bNeedParens;                   // TRUE iff this level needs surrounding parens
+    UBOOL    bNeedParens;                   // TRUE iff this level needs surrounding parens
 
     // Clear the type bits
     hGlbArg = ClrPtrTypeDirAsGlb (hGlbArg),
@@ -1486,7 +1486,8 @@ LPWCHAR DisplayTransferGlb2
 
 LPWCHAR DisplayTransferFcn2
     (LPWCHAR    lpwszTemp,                  // Ptr to output save area
-     LPSYMENTRY lpSymEntry)                 // Ptr to SYMENTRY of the var to display
+     LPSYMENTRY lpSymEntry,                 // Ptr to SYMENTRY of the var to display
+     FILETIME  *lpftCreation)               // Ptr to output save area for creation time stamp (may be NULL)
 
 {
     HGLOBAL           hGlbDfnHdr = NULL;        // User-defined function operator global memory handle
@@ -1509,6 +1510,10 @@ LPWCHAR DisplayTransferFcn2
 
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // Save creation time if requested
+        if (lpftCreation)
+            *lpftCreation = lpMemDfnHdr->ftCreation;
 
         // Lock the memory to get a ptr to it
         lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);

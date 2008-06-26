@@ -211,7 +211,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
             lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = L'\0';
         } else
         {
-            BOOL        bRet;               // TRUE iff result is valid
+            UBOOL       bRet;               // TRUE iff result is valid
             EVENT_TYPES EventType;          // Event type
 
             // Check for RIGHT LENGTH ERROR

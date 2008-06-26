@@ -242,8 +242,8 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
 
         // Allocate space for one dimension and <aplRankRht> integers
         // N.B.:  Conversion from aplRankRht to UINT
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (__int3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -338,7 +338,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     HGLOBAL      hGlbRes,           // Handle of result's global memory
                  hGlbProto;         // ...                prototype
     LPVOID       lpMemRes;          // Ptr to result's global memory
-    BOOL         bRet = TRUE,       // TRUE iff result is valid
+    UBOOL        bRet = TRUE,       // TRUE iff result is valid
                  bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
                  bPrototype = FALSE; // TRUE iff we're to generate a prototype
     APLUINT      ByteRes;           // # bytes in the result
@@ -462,16 +462,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
             defstop
                 return NULL;
         } // End SWITCH
-
-////////// Add in the header and <aplRankRes> dimensions
-////////ByteRes += sizeof (VARARRAY_HEADER)
-////////         + sizeof (APLDIM) * aplRankRes;
     } // End IF
-
-    //***************************************************************
-    // Now that we know the NELM, rank, and storage type of the result, we can
-    //   calculate the amount of storage needed for the result
-    //***************************************************************
 
     //***************************************************************
     // Handle APAs specially
@@ -492,6 +483,11 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     } // End IF
 
     //***************************************************************
+    // Now that we know the NELM, rank, and storage type of the result, we can
+    //   calculate the amount of storage needed for the result
+    //***************************************************************
+
+    //***************************************************************
     // Calculate space needed for the result
     //***************************************************************
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
@@ -500,8 +496,8 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     // Now we can allocate the storage for the result.
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -629,7 +625,7 @@ WSFULL_EXIT:
 //  Copy data to the result
 //***************************************************************************
 
-BOOL PrimFnDydRhoRhtCopyData
+UBOOL PrimFnDydRhoRhtCopyData
     (LPTOKEN  lptkRhtArg,           // Ptr to right arg token
      APLSTYPE aplTypeRes,           // Result storage type
      APLNELM  aplNELMRes,           // Result NELM
@@ -638,7 +634,7 @@ BOOL PrimFnDydRhoRhtCopyData
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    BOOL   bRet = TRUE;     // TRUE iff result is valid
+    UBOOL  bRet = TRUE;     // TRUE iff result is valid
     UINT   uRes;            // Loop counter
 
     // Skip over the header and dimensions to the data
@@ -975,14 +971,14 @@ void PrimFnDydRhoCopyDim
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydRhoLftValid_EM
+UBOOL PrimFnDydRhoLftValid_EM
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token
      LPAPLRANK lpaplRankRes,        // Ptr to result rank
      LPAPLNELM lpaplNELMRes,        // Ptr to result NELM
      LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
-    BOOL   bRet = TRUE;
+    UBOOL  bRet = TRUE;
     APLINT aplIntTmp;
 
     // All paths through this switch statement should set
@@ -1144,7 +1140,7 @@ DOMAIN_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydRhoLftGlbValid_EM
+UBOOL PrimFnDydRhoLftGlbValid_EM
     (HGLOBAL   hGlbLft,                 // Left arg handle
      LPAPLRANK lpaplRankRes,            // Ptr to result rank
      LPAPLNELM lpaplNELMRes,            // Ptr to result NELM
@@ -1156,7 +1152,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
     APLSTYPE aplTypeLft;
     APLNELM  aplNELMLft;
     APLRANK  aplRankLft;
-    BOOL     bRet = TRUE;
+    UBOOL    bRet = TRUE;
     APLNELM  uNELM;
     UINT     u,
              uBits;
@@ -1469,7 +1465,7 @@ void PrimFnDydRhoLftGlbCopyDim
 //  Dyadic rho right argument copy data to the result
 //***************************************************************************
 
-BOOL PrimFnDydRhoRhtGlbCopyData_EM
+UBOOL PrimFnDydRhoRhtGlbCopyData_EM
     (HGLOBAL   hGlbRht,
      APLSTYPE  aplTypeRes,
      APLNELM   aplNELMRes,
@@ -1484,7 +1480,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             uRht;
     UINT    uBitMaskRes,
             uBitMaskRht;
-    BOOL    bRet = TRUE;
+    UBOOL   bRet = TRUE;
     APLINT  aplNELMRht;
 
     // Lock the memory to get a ptr to it

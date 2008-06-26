@@ -140,7 +140,7 @@ void CenterWindow
 //  Determine if a char is white space
 //****************************************************************************
 
-BOOL IsWhite
+UBOOL IsWhite
     (char c)
 
 {
@@ -154,7 +154,7 @@ BOOL IsWhite
 //  Determine if a char is white space
 //****************************************************************************
 
-BOOL IsWhiteW
+UBOOL IsWhiteW
     (WCHAR wc)
 
 {
@@ -379,7 +379,7 @@ void nop
 //  Callback function to remove all window properties
 //***************************************************************************
 
-BOOL CALLBACK EnumCallbackRemoveProp
+UBOOL CALLBACK EnumCallbackRemoveProp
     (HWND   hWnd,           // Handle of window with property
      LPCSTR lpszString,     // Property string or atom
      HANDLE hData)          // Data handle
@@ -398,7 +398,7 @@ BOOL CALLBACK EnumCallbackRemoveProp
 //  Return TRUE iff the given handle/ptr is valid
 //***************************************************************************
 
-BOOL IsGlbPtr
+UBOOL IsGlbPtr
     (HGLOBAL hGlbSrc)
 
 {

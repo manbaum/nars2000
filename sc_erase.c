@@ -45,7 +45,7 @@
 //  Execute the system command:  )ERASE var[ var]
 //***************************************************************************
 
-BOOL CmdErase_EM
+UBOOL CmdErase_EM
     (LPWCHAR lpwszTail)             // Ptr to command line tail
 
 {
@@ -54,7 +54,7 @@ BOOL CmdErase_EM
     LPAPLCHAR    lpMemDataStart;    // Ptr to start of identifier
     LPSYMENTRY   lpSymEntry;        // Ptr to STE
     STFLAGS      stFlags;           // STE flags
-    BOOL         bNotErasedHeader = FALSE; // TRUE iff the NotErased header
+    UBOOL        bNotErasedHeader = FALSE; // TRUE iff the NotErased header
                                     //   has been displayed
     int          iNotErasedWidth = 0; // Width (so far) of NotErased line
 
@@ -114,12 +114,12 @@ BOOL CmdErase_EM
 
 void ExpungeError
     (LPSYMENTRY lpSymEntry,         // Ptr to the STE
-     LPBOOL     lpbNotErasedHeader, // TRUE iff the NotErased header has been displayed
+     LPUBOOL    lpbNotErasedHeader, // TRUE iff the NotErased header has been displayed
      LPINT      lpiNotErasedWidth)  // Current width of the NotErased line
 
 {
     HGLOBAL   htGlbName;            // STE name global memory handle
-    LPAPLCHAR lpGlbName;            // Ptr to STE name
+    LPAPLCHAR lpwGlbName;           // Ptr to STE name
     int       iLen;                 // Length of the STE name
     APLUINT   uQuadPW;              // []PW
 
@@ -138,10 +138,10 @@ void ExpungeError
     htGlbName = lpSymEntry->stHshEntry->htGlbName;
 
     // Lock the memory to get a ptr to it
-    lpGlbName = MyGlobalLock (htGlbName);
+    lpwGlbName = MyGlobalLock (htGlbName);
 
     // Get the length of the name
-    iLen = lstrlenW (lpGlbName);
+    iLen = lstrlenW (lpwGlbName);
 
     if ((*lpiNotErasedWidth + 2 + iLen) > uQuadPW)
     {
@@ -158,11 +158,11 @@ void ExpungeError
     } // End IF
 
     // Output the STE name
-    AppendLine (lpGlbName, TRUE, FALSE);
+    AppendLine (lpwGlbName, TRUE, FALSE);
     *lpiNotErasedWidth += iLen;
 
     // We no longer need this ptr
-    MyGlobalUnlock (htGlbName); lpGlbName = NULL;
+    MyGlobalUnlock (htGlbName); lpwGlbName = NULL;
 } // End ExpungeError
 
 

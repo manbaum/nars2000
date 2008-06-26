@@ -51,7 +51,7 @@
 #define APPEND_NAME
 #endif
 
-BOOL CmdSave_EM
+UBOOL CmdSave_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
@@ -73,7 +73,7 @@ BOOL CmdSave_EM
                  lpw;                   // Temporary ptr
     APLNELM      aplNELMWSID;           // []WSID NELM
     APLRANK      aplRankWSID;           // ...    rank
-    BOOL         bRet = FALSE;          // TRUE iff result is valid
+    UBOOL        bRet = FALSE;          // TRUE iff result is valid
     UINT         uNameLen;              // Length of the object name in WCHARs
     int          iCmp;                  // Comparison result
     UINT         uGlbCnt=0;             // # entries in [Globals] section

@@ -47,7 +47,7 @@
 #define APPEND_NAME
 #endif
 
-BOOL AssignName_EM
+UBOOL AssignName_EM
     (LPTOKEN lptkNam,               // Ptr to name token
      LPTOKEN lptkSrc)               // Ptr to source token
 
@@ -55,7 +55,7 @@ BOOL AssignName_EM
     STFLAGS stSrcFlags = {0},   // Copy of the source's STE flags
             stNamFlags;         // ...         name's   ...
     HGLOBAL hGlbSrc;            // Source's global memory handle
-    BOOL    bFcnOpr,            // TRUE iff source is a function/operator
+    UBOOL   bFcnOpr,            // TRUE iff source is a function/operator
             bRet = TRUE;        // TRUE iff result is valid
 
     DBGENTER;
@@ -558,12 +558,12 @@ void AssignArrayCommon
 #define APPEND_NAME
 #endif
 
-BOOL AssignSelectSpec_EM
+UBOOL AssignSelectSpec_EM
     (LPTOKEN       lptkStr,         // Ptr to named strand token
      LPTOKEN       lptkVal)         // Ptr to value token
 
 {
-    BOOL       bRet = TRUE;     // TRUE iff result is valid
+    UBOOL      bRet = TRUE;     // TRUE iff result is valid
     HGLOBAL    hGlbStr,         // Name strand global memory handle
                hGlbVal,         // Value       ...
                hGlbSub;         // Subarray    ...
@@ -916,7 +916,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL ModifyAssignNameVals_EM
+UBOOL ModifyAssignNameVals_EM
     (LPTOKEN       lptkStrN,        // Ptr to name strand token
      LPPL_YYSTYPE  lpYYFcnStr,      // Ptr to function strand
      LPTOKEN       lptkVal)         // Ptr to value token
@@ -926,7 +926,7 @@ BOOL ModifyAssignNameVals_EM
     LPPL_YYSTYPE lpMemName;         // Ptr to name strand global memory
     APLNELM      aplNELMNam;        // Name strand NELM
     APLUINT      uName;             // Loop counter
-    BOOL         bRet = FALSE;      // TRUE iff result is valid
+    UBOOL        bRet = FALSE;      // TRUE iff result is valid
 
     // Get the name strand global memory handle
     hGlbName = lptkStrN->tkData.tkGlbData;

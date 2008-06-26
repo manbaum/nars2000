@@ -189,7 +189,7 @@ APLFLOAT PrimFnMonBarFisF
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnMonBarAPA_EM
+UBOOL PrimFnMonBarAPA_EM
     (LPPL_YYSTYPE  lpYYRes,         // Ptr to the result (may be NULL)
      LPTOKEN       lptkFunc,        // Ptr to function token
      HGLOBAL       hGlbRht,         // Handle to right arg
@@ -357,7 +357,7 @@ APLFLOAT PrimFnDydBarFisFvF
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydBarAPA_EM
+UBOOL PrimFnDydBarAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to the result (may be NULL)
 
      LPTOKEN      lptkFunc,         // Ptr to function token

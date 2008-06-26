@@ -674,14 +674,14 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
      LPAPLDIM   lpMemDimRht,            // Ptr to right arg dimensions global memory
      APLRANK    aplRankRht,             // Right arg rank
      LPAPLUINT  lpMemAxisTail,          // Ptr to axis global memory (may be NULL if axis not present)
-     BOOL       bDownArrow,             // TRUE iff it's DownArrow
+     UBOOL      bDownArrow,             // TRUE iff it's DownArrow
      LPTOKEN    lptkFunc)               // Ptr to function token
 
 {
     LPVOID   lpDataLft;                 // Ptr to left arg data
     APLNELM  aplNELMLft;                // Left arg NELM
     APLRANK  aplRankLft;                // Left arg rank
-    BOOL     bRet = TRUE;               // TRUE iff result is valid
+    UBOOL    bRet = TRUE;               // TRUE iff result is valid
     APLUINT  uDim,                      // Loop counter
              uRes;                      // Loop counter
     UINT     uBitMask;                  // Bit mask for looping through Booleans

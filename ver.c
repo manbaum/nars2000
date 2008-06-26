@@ -160,7 +160,7 @@ __int3264 CALLBACK AboutDlgProc
 #define hWnd    ((HWND) lParam)
 
             // We handle IDC_LINK static window only
-            if (hWnd == hWndStatic)
+            if (hWnd EQ hWndStatic)
             {
                 LOGFONT lf;
 

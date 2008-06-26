@@ -136,7 +136,7 @@ LPPL_YYSTYPE PrimOpMonDieresisTilde_EM_YY
 LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE if prototyping
+     UBOOL        bPrototyping)         // TRUE if prototyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to function strand
@@ -236,7 +236,7 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand

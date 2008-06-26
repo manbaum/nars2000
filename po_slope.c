@@ -136,7 +136,7 @@ LPPL_YYSTYPE PrimOpMonSlope_EM_YY
 LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,               // Ptr to right arg token
-     BOOL         bPrototyping)             // TRUE if prototyping
+     UBOOL        bPrototyping)             // TRUE if prototyping
 
 {
     APLSTYPE          aplTypeRht,           // Right arg storage type
@@ -163,7 +163,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     LPVOID            lpMemRht = NULL,      // Ptr to right arg global memory
                       lpMemRes = NULL;      // Ptr to result    ...
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
-    BOOL              bRet = TRUE,          // TRUE iff result is valid
+    UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
     LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
     LPPRIMFLAGS       lpPrimFlags;          // Ptr to corresponding PrimFlags entry
@@ -928,7 +928,7 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE if prototyping
+     UBOOL        bPrototyping)         // TRUE if prototyping
 
 {
     return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);

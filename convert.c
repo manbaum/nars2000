@@ -45,7 +45,7 @@
 
 APLINT FloatToAplint_SCT
     (APLFLOAT fFloat,       // The number to convert
-     LPBOOL   lpbRet)       // TRUE iff successful conversion
+     LPUBOOL  lpbRet)       // TRUE iff successful conversion
                             // (may be NULL if the caller isn't interested)
 {
     APLINT aplInteger;
@@ -114,7 +114,7 @@ APLBOOL _CompareCT
      APLFLOAT   aplFloatRht,        // Right ...
      APLFLOAT   fCompTol,           // Comparison tolerance
      LPPRIMSPEC lpPrimSpec,         // Ptr to local PRIMSPEC
-     BOOL       bIntegerTest)       // TRUE iff this is an integer test
+     UBOOL      bIntegerTest)       // TRUE iff this is an integer test
 
 {
     APLFLOAT aplLftAbs,

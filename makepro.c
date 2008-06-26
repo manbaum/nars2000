@@ -32,6 +32,9 @@ typedef char *LPCHAR;
 #define Assert(a)     ((a) || (DbgBrk (), DbgBrk (), 0))
 void DbgBrk (void);
 
+// Define UBOOL as an unsigned int
+typedef unsigned int UBOOL, *LPUBOOL;
+
 
 //****************************************************************************
 //  $IsWhite
@@ -39,7 +42,7 @@ void DbgBrk (void);
 //  Determine if a char is white space
 //****************************************************************************
 
-BOOL IsWhite
+UBOOL IsWhite
     (char c)
 
 {
@@ -132,7 +135,7 @@ int PASCAL WinMain
                         dwOutFileSize,
                         dwTempPathLen;
     char                szTempPath[1024];
-    BOOL                bFilesEqual = FALSE;
+    UBOOL               bFilesEqual = FALSE;
     FILETIME            CreationTime,
                         LastAccessTime,
                         LastWriteTime;

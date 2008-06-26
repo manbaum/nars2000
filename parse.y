@@ -5109,7 +5109,7 @@ EXIT_TYPES ParseLine
      HGLOBAL hGlbToken,             // Tokenized line global memory handle (may be NULL)
      LPWCHAR lpwszLine,             // Ptr to the line text (may be NULL)
      HGLOBAL hGlbPTD,               // PerTabData global memory handle
-     BOOL    bActOnErrors)          // TRUE iff errors are acted upon
+     UBOOL   bActOnErrors)          // TRUE iff errors are acted upon
 
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -5773,7 +5773,7 @@ char LookaheadSurround
 
 char LookaheadAdjacent
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
-     BOOL          bSkipBrackets)   // TRUE if we're to skip over left/right brackets first
+     UBOOL         bSkipBrackets)   // TRUE if we're to skip over left/right brackets first
 
 {
     PLLOCALVARS plLocalVars;    // Local copy of outer PLLOCALVARS
@@ -5949,7 +5949,7 @@ BOOL LookaheadDyadicOp
      LPTOKEN       lptkNext)
 
 {
-    BOOL bRet;          // The result
+    UBOOL bRet;         // The result
 
     DbgMsgW2 (L"==Entering LookaheadDyadicOp");
 
@@ -6660,7 +6660,7 @@ void pl_yyprint
 
 LPPL_YYSTYPE WaitForInput
     (HWND    hWndSM,                // Window handle to Session Manager
-     BOOL    bQuoteQuad,            // TRUE iff Quote-Quad input (FALSE if Quad input)
+     UBOOL   bQuoteQuad,            // TRUE iff Quote-Quad input (FALSE if Quad input)
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {

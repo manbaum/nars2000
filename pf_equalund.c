@@ -325,7 +325,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     LPVOID       lpMemLft,      // Ptr to left arg global memory
                  lpMemRht;      // Ptr to right ...
     LPTOKEN      lptkTmpArg;    // Ptr to temp arg token
-    BOOL         bNumLft,       // TRUE iff left arg is simple numeric
+    UBOOL        bNumLft,       // TRUE iff left arg is simple numeric
                  bNumRht;       // ...      right ...
     APLINT       aplIntegerLft, // Left arg as integer
                  aplIntegerRht; // Right ...
@@ -483,7 +483,7 @@ SYNTAX_EXIT:
 //  Subroutine to compare two simple arrays
 //***************************************************************************
 
-BOOL PrimFnDydEqualUnderbarSimple
+UBOOL PrimFnDydEqualUnderbarSimple
     (LPVOID   lpMemLft,
      APLSTYPE aplTypeLft,
      APLNELM  aplNELMLft,
@@ -730,7 +730,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
                     return TRUE;
 
-                case ARRAY_BOOL:    // Lft = INT, Rht = BOOL    (Can't happen)
+                case ARRAY_BOOL:    // Lft = INT, Rht = BOOL   (Can't happen)
                 defstop
                     return FALSE;
             } // End SWITCH
@@ -789,7 +789,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
                     return TRUE;
 
-                case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL  (Can't happen)
+                case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL (Can't happen)
                 case ARRAY_INT:     // Lft = FLOAT, Rht = INT   (Can't happen)
                 defstop
                     return FALSE;
@@ -841,7 +841,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
                     return TRUE;
 
-                case ARRAY_BOOL:    // Lft = APA, Rht = BOOL    (Can't happen)
+                case ARRAY_BOOL:    // Lft = APA, Rht = BOOL   (Can't happen)
                 case ARRAY_INT:     // Lft = APA, Rht = INT     (Can't happen)
                 case ARRAY_FLOAT:   // Lft = APA, Rht = FLOAT   (Can't happen)
                 defstop
@@ -883,7 +883,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
                     return TRUE;
 
-                case ARRAY_BOOL:    // Lft = CHAR, Rht = BOOL   (Can't happen)
+                case ARRAY_BOOL:    // Lft = CHAR, Rht = BOOL  (Can't happen)
                 case ARRAY_INT:     // Lft = CHAR, Rht = INT    (Can't happen)
                 case ARRAY_FLOAT:   // Lft = CHAR, Rht = FLOAT  (Can't happen)
                 case ARRAY_APA:     // Lft = CHAR, Rht = APA    (Can't happen)
@@ -998,7 +998,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 //  Subroutine to compare two nested arrays
 //***************************************************************************
 
-BOOL PrimFnDydEqualUnderbarNested
+UBOOL PrimFnDydEqualUnderbarNested
     (LPVOID   lpMemLft,
      APLSTYPE aplTypeLft,
      APLNELM  aplNELMLft,
@@ -1021,7 +1021,7 @@ BOOL PrimFnDydEqualUnderbarNested
     APLCHAR  aplCharLft,
              aplCharRht;
     UINT     ptrType;
-    BOOL     bRet = TRUE;
+    UBOOL    bRet = TRUE;
     APLFLOAT fQuadCT;           // []CT
 
     // Get the current value of []CT

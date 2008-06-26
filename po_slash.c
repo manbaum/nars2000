@@ -137,7 +137,7 @@ LPPL_YYSTYPE PrimOpMonSlash_EM_YY
 LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,               // Ptr to right arg token
-     BOOL         bPrototyping)             // TRUE iff prototyping
+     UBOOL        bPrototyping)             // TRUE iff prototyping
 
 {
     APLSTYPE          aplTypeRht,           // Right arg storage type
@@ -167,7 +167,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       lpMemRes = NULL;      // Ptr to result    ...
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
     APLFLOAT          aplFloatIdent;        // Identity element
-    BOOL              bRet = TRUE,          // TRUE iff result is valid
+    UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
     LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
     LPPRIMFLAGS       lpPrimFlags;          // Ptr to corresponding PrimFlags entry
@@ -767,7 +767,7 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
      HGLOBAL      hGlbRht,              // Right arg global memory handle
      LPVOID       lpMemRht,             // Ptr to right arg global memory
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
@@ -912,7 +912,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,               // Ptr to right arg token
-     BOOL         bPrototyping)             // TRUE iff prototyping
+     UBOOL        bPrototyping)             // TRUE iff prototyping
 
 {
     APLSTYPE          aplTypeLft,           // Left arg storage type
@@ -947,7 +947,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     LPVOID            lpMemRht = NULL,      // Ptr to right arg global memory
                       lpMemRes = NULL;      // Ptr to result    ...
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
-    BOOL              bRet = TRUE;          // TRUE iff result is valid
+    UBOOL             bRet = TRUE;          // TRUE iff result is valid
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
                       lpYYFcnStrLft;        // Ptr to the left operand strand
     TOKEN             tkLftArg = {0},       // Left arg token
@@ -1683,7 +1683,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimOpDydSlashInsertDim_EM
+UBOOL PrimOpDydSlashInsertDim_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to the result
      APLUINT      aplAxis,          // The (one and only) axis value
      APLUINT      uDimAxRes,        // Result axis dimension length
@@ -1850,7 +1850,7 @@ WSFULL_EXIT:
 #define APPEND_NAME
 #endif
 
-BOOL PrimOpDydSlashAllocate_EM
+UBOOL PrimOpDydSlashAllocate_EM
     (APLRANK      aplTypeRht,       // Right arg storage type
      APLRANK      aplRankRht,       // Right arg rank
      APLSTYPE     aplTypeRes,       // Result storage type

@@ -121,7 +121,7 @@ LPPL_YYSTYPE PrimOpMonDot_EM_YY
 LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
@@ -163,7 +163,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     APLSTYPE     aplTypeLft,            // Left arg storage type

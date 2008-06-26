@@ -293,7 +293,7 @@ APLFLOAT PrimFnMonDownStileFisF
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnMonDownStileAPA_EM
+UBOOL PrimFnMonDownStileAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to the result (may be NULL)
      LPTOKEN      lptkFunc,         // Ptr to function token
      HGLOBAL      hGlbRht,          // Right arg handle

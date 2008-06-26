@@ -148,7 +148,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     STFLAGS        stFlags = {0};       // STE flags
     LPPL_YYSTYPE   lpYYRes = NULL;      // Ptr to the result
     LPAPLCHAR      lpw;                 // Ptr to wide chars
-    BOOL           bMF;                 // TRUE iff we're displaying a Magic Function
+    UBOOL          bMF;                 // TRUE iff we're displaying a Magic Function
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -746,7 +746,7 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     HGLOBAL    hGlbLft = NULL;      // Left arg global memory handle
     APLLONGEST aplLongestLft,       // Left arg immediate value
                aplLongestTmp;       // Temporary immediate value
-    BOOL       bRet = TRUE;         // TRUE iff result is valid
+    UBOOL      bRet = TRUE;         // TRUE iff result is valid
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg

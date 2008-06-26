@@ -99,7 +99,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
@@ -107,7 +107,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                  lpYYRes,               // Ptr to the result
                  lpYYRes2,              // Ptr to secondary result
                  lpYYRes3;              // Ptr to tertiary result
-    BOOL         bLftArg,               // TRUE iff left arg is a function/operator
+    UBOOL        bLftArg,               // TRUE iff left arg is a function/operator
                  bRhtArg;               //          right ...
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
     LPPRIMFNS    lpPrimProtoRht;        // Ptr to right ...

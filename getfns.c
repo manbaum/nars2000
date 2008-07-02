@@ -1096,6 +1096,8 @@ APLLONGEST GetGlbPtrs
      HGLOBAL *lphGlb)           // Ptr to ptr to HGLOBAL
 
 {
+
+    // Get the global handle & longest w/o locking it
     return GetGlbPtrs_LOCK (lpToken, lphGlb, NULL);
 } // End GetGlbPtrs
 
@@ -1175,8 +1177,9 @@ APLLONGEST GetGlbPtrs_LOCK
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (*lphGlb);
 
-    // If the arg is non-empty, ...
-    if (!IsEmpty (lpMem->NELM))
+    // If the arg is non-empty & not a list, ...
+    if (!IsEmpty (lpMem->NELM)
+     && !IsList (lpMem->ArrType))
         GetFirstValueGlb (*lphGlb,          // The global memory handle
                           NULL,             // Ptr to integer (or Boolean) (may be NULL)
                           NULL,             // ...    float (may be NULL)

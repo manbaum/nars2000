@@ -176,6 +176,9 @@
 // Define macro for detecting nested array type
 #define IsNested(ArrType)               ((ArrType) EQ ARRAY_NESTED)
 
+// Define macro for detecting list array type
+#define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
+
 // Define macro for detecting scalars
 #define IsScalar(ArrRank)               ((ArrRank) EQ 0)
 

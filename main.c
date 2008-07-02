@@ -1262,6 +1262,15 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;       // We handled the msg
 
+                case IDM_CUSTOMIZE:
+                    // Display a dialog with the choices
+                    DialogBoxParam (_hInstance,
+                                    MAKEINTRESOURCE (IDD_CUSTOMIZE),
+                                    hWndMF,
+                         (DLGPROC) &CustomizeDlgProc,
+                                    0);
+                    return FALSE;       // We handled the msg
+
                 case IDM_TCFONT:
                     // Display a Font Dialog so the user can choose
                     //   a new font for the Tab Control labels

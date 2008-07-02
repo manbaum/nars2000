@@ -107,7 +107,8 @@ TO DO:  Options Menu
 * CLEAR WS values
 * Directory preferences
 * User preferences
-* Range limited []vars  (.ini file, too)
+* Range limited []vars
+* CWS vs. System for empty set
 *
 
 

@@ -1564,6 +1564,7 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
 ;
 
 // Translate tables between APL2 and NARS charsets
+EXTERN
 WCHAR APL2_ASCIItoNARS[257]
 #ifdef DEFINE_VALUES
 =
@@ -1614,6 +1615,61 @@ WCHAR APL2_ASCIItoNARS[257]
 #endif
 ;
 
+
+typedef enum tagSAME_FONT_AS
+{
+    SAMEFONTAS_SCREEN = 0,                      // 00:  Screen font
+    SAMEFONTAS_FUNCTION_EDITOR,                 // 01:  Function Editor
+    SAMEFONTAS_PRINTER,                         // 02:  Printer
+    SAMEFONTAS_CRASH,                           // 03:  Crash window
+    SAMEFONTAS_TAB,                             // 04:  Tab Control
+    SAMEFONTAS_LENGTH,                          // 05:  Length
+
+////SAMEFONTAS_VECTOR_EDITOR,                   // 05:  Vector Editor
+////SAMEFONTAS_MATRIX_EDITOR,                   // 06:  Matrix Editor
+} SAME_FONT_AS, *LPSAME_FONT_AS;
+
+EXTERN
+SAME_FONT_AS glbSameFontAs[SAMEFONTAS_LENGTH];
+
+typedef struct tagCUSTOMIZE
+{
+    LPCHAR lpTitle;
+    UINT   uIDD;
+    UBOOL  bInitialized;
+} CUSTOMIZE, *LPCUSTOMIZE;
+
+EXTERN
+CUSTOMIZE custStruc[]
+#ifdef DEFINE_VALUES
+ =
+{{"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
+ {"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
+ {"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
+ {"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 03
+ {"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 04
+ {"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 05
+ {"Tab Colors"              , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 06
+ {"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 07
+}
+#endif
+;
+
+EXTERN
+UINT custStrucLen
+#ifdef DEFINE_VALUES
+= (sizeof (custStruc) / sizeof (custStruc[0]))
+#endif
+;
+
+#define DEF_INIT_CATEGORY   2       // Fonts
+
+EXTERN
+int gInitCustomizeCategory
+#ifdef DEFINE_VALUES
+= DEF_INIT_CATEGORY
+#endif
+;
 
 typedef enum tagUNDO_ACTS
 {

@@ -1,23 +1,23 @@
 //***************************************************************************
-//  NARS2000 -- Main Resource Scripts
+//	NARS2000 -- Main Resource Scripts
 //***************************************************************************
 
 /***************************************************************************
-    NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+	NARS2000 -- An Experimental APL Interpreter
+	Copyright (C) 2006-2008 Sudley Place Software
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #include "resource.h"
@@ -52,25 +52,25 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE DISCARDABLE
 BEGIN
-    "resource.h\0"
+	"resource.h\0"
 END
 
 2 TEXTINCLUDE DISCARDABLE
 BEGIN
-    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "#include ""windows.h""\r\n"
-    "#include ""dlgs.h""\r\n"
-    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "\0"
+	"#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+	"#include ""windows.h""\r\n"
+	"#include ""dlgs.h""\r\n"
+	"#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+	"\0"
 END
 
 3 TEXTINCLUDE DISCARDABLE
 BEGIN
-    "#include ""ver.rc""\r\n"
-    "\0"
+	"#include ""ver.rc""\r\n"
+	"\0"
 END
 
-#endif    // APSTUDIO_INVOKED
+#endif	  // APSTUDIO_INVOKED
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -80,13 +80,13 @@ END
 
 IDR_ACCEL ACCELERATORS MOVEABLE PURE
 BEGIN
-    "^A",       IDM_SELECTALL
-    "^C",       IDM_COPY
-    "^P",       IDM_PRINT_WS
-    "^V",       IDM_PASTE
-    "^X",       IDM_CUT
-    "^Y",       IDM_REDO
-    "^Z",       IDM_UNDO
+	"^A",       IDM_SELECTALL
+	"^C",       IDM_COPY
+	"^P",       IDM_PRINT_WS
+	"^V",       IDM_PASTE
+	"^X",       IDM_CUT
+	"^Y",       IDM_REDO
+	"^Z",       IDM_UNDO
 END
 
 
@@ -97,90 +97,93 @@ END
 
 IDR_SMMENU MENU DISCARDABLE
 BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&Load",                       IDM_LOAD_WS     , INACTIVE GRAYED
-        MENUITEM "&Xload",                      IDM_XLOAD_WS    , INACTIVE GRAYED
-        MENUITEM "&Copy",                       IDM_COPY_WS     , INACTIVE GRAYED
-        MENUITEM "Pcopy",                       IDM_PCOPY_WS    , INACTIVE GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "&Save",                       IDM_SAVE_WS
-        MENUITEM "Save &As",                    IDM_SAVE_AS_WS  , INACTIVE GRAYED
-        MENUITEM "&Drop",                       IDM_DROP_WS     , INACTIVE GRAYED
-        MENUITEM "D&uplicate",                  IDM_DUP_WS      , INACTIVE GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "&Print\tCtrl+P",              IDM_PRINT_WS
-        MENUITEM SEPARATOR
-        MENUITEM "&Exit",                       IDM_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
+	POPUP "&File"
+	BEGIN
+		MENUITEM "&Load...",                    IDM_LOAD_WS     , INACTIVE GRAYED
+		MENUITEM "&Xload...",                   IDM_XLOAD_WS    , INACTIVE GRAYED
+		MENUITEM "&Copy...",                    IDM_COPY_WS     , INACTIVE GRAYED
+		MENUITEM "Pcopy...",                    IDM_PCOPY_WS    , INACTIVE GRAYED
+		MENUITEM SEPARATOR
+		MENUITEM "&Save",                       IDM_SAVE_WS
+		MENUITEM "Save &As...",                 IDM_SAVE_AS_WS  , INACTIVE GRAYED
+		MENUITEM "&Drop",                       IDM_DROP_WS     , INACTIVE GRAYED
+		MENUITEM "D&uplicate",                  IDM_DUP_WS      , INACTIVE GRAYED
+		MENUITEM SEPARATOR
+		MENUITEM "&Print\tCtrl+P",              IDM_PRINT_WS
+		MENUITEM SEPARATOR
+		MENUITEM "&Exit",                       IDM_EXIT
+	END
+	POPUP "&Edit"
+	BEGIN
 #include "edit.rc"
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
-        MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
-        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
-        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
-    END
-    POPUP "&Options"
-    BEGIN
-        MENUITEM "&Screen Font",                IDM_SMFONT
-        MENUITEM "&Printer Font",               IDM_PRFONT
-        MENUITEM "&Tab Font",                   IDM_TCFONT
-        MENUITEM "&Function Edit Font",         IDM_FEFONT
-        MENUITEM "&Matrix Edit Font",           IDM_MEFONT
-        MENUITEM "&Vector Edit Font",           IDM_VEFONT
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&Contents...",                IDM_HELP_CONTENTS, INACTIVE GRAYED // ***FIXME***
-        MENUITEM "Check for &Updates",          IDM_UPDATES
-        MENUITEM "&About",                      IDM_ABOUT
-    END
+		MENUITEM SEPARATOR
+		MENUITEM "&Customize...",                IDM_CUSTOMIZE   , INACTIVE GRAYED
+	END
+	POPUP "&Window"
+	BEGIN
+		MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
+		MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
+		MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
+		MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
+	END
+	POPUP "&Options"
+	BEGIN
+		MENUITEM "&Screen Font",                IDM_SMFONT
+		MENUITEM "&Printer Font",               IDM_PRFONT
+		MENUITEM "&Tab Font",                   IDM_TCFONT
+		MENUITEM "&Function Edit Font",         IDM_FEFONT
+		MENUITEM "&Matrix Edit Font",           IDM_MEFONT
+		MENUITEM "&Vector Edit Font",           IDM_VEFONT
+	END
+	POPUP "&Help"
+	BEGIN
+		MENUITEM "&Contents...",                IDM_HELP_CONTENTS, INACTIVE GRAYED // ***FIXME***
+		MENUITEM "Check for &Updates",          IDM_UPDATES
+		MENUITEM "&About",                      IDM_ABOUT
+	END
 END
 
 IDR_FEMENU MENU DISCARDABLE
 BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&Exit",                       IDM_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
+	POPUP "&File"
+	BEGIN
+		MENUITEM "&Exit",                       IDM_EXIT
+	END
+	POPUP "&Edit"
+	BEGIN
 #include "edit.rc"
-        MENUITEM SEPARATOR
-        MENUITEM "&Localize",                   IDM_LOCALIZE
-        MENUITEM "Unl&ocalize",                 IDM_UNLOCALIZE
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
-        MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
-        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
-        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
-    END
-    POPUP "&Options"
-    BEGIN
-        MENUITEM "&Screen Font",                IDM_SMFONT
-        MENUITEM "&Tab Font",                   IDM_TCFONT
-        MENUITEM "&Function Edit Font",         IDM_FEFONT
-        MENUITEM "&Matrix Edit Font",           IDM_MEFONT
-        MENUITEM "&Vector Edit Font",           IDM_VEFONT
-    END
-    POPUP "Ob&jects"
-    BEGIN
-        MENUITEM "&Close\tCtrl+Q",              IDM_CLOSE_FN
-        MENUITEM "&Save\tCtrl+S",               IDM_SAVE_FN
-        MENUITEM "Save and &End\tCtrl+E",       IDM_SAVECLOSE_FN
+		MENUITEM SEPARATOR
+		MENUITEM "&Localize",                   IDM_LOCALIZE
+		MENUITEM "Unl&ocalize",                 IDM_UNLOCALIZE
+	END
+	POPUP "&Window"
+	BEGIN
+		MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
+		MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
+		MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
+		MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
+	END
+	POPUP "&Options"
+	BEGIN
+		MENUITEM "&Screen Font",                IDM_SMFONT
+		MENUITEM "&Printer Font",               IDM_PRFONT
+		MENUITEM "&Tab Font",                   IDM_TCFONT
+		MENUITEM "&Function Edit Font",         IDM_FEFONT
+		MENUITEM "&Matrix Edit Font",           IDM_MEFONT
+		MENUITEM "&Vector Edit Font",           IDM_VEFONT
+	END
+	POPUP "Ob&jects"
+	BEGIN
+		MENUITEM "&Close\tCtrl+Q",              IDM_CLOSE_FN
+		MENUITEM "&Save\tCtrl+S",               IDM_SAVE_FN
+		MENUITEM "Save and &End\tCtrl+E",       IDM_SAVECLOSE_FN
 ////////MENUITEM "Save &As\tCtrl+A",            IDM_SAVE_FN_AS      // ***FIXME*** -- Make this work??
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&Contents...",                IDM_HELP_CONTENTS
-        MENUITEM "&About",                      IDM_ABOUT
-    END
+	END
+	POPUP "&Help"
+	BEGIN
+		MENUITEM "&Contents...",                IDM_HELP_CONTENTS
+		MENUITEM "&About",                      IDM_ABOUT
+	END
 END
 
 
@@ -194,31 +197,83 @@ STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "About NARS2000"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "&OK",IDOK,130,5,50,14
-    ICON            IDI_ABOUT,IDC_STATIC,160,30,18,20
-    LTEXT           "NARS2000\nVersion %u.%u%u",IDC_VERSION,10,
-                    5,115,18,NOT WS_GROUP
-    LTEXT           "Copyright © 2006-8 Sudley Place Software\nAll rights reserved.",
-                    IDC_STATIC,10,30,150,18,NOT WS_GROUP
-    LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see",
-                    IDC_STATIC,10,55,170,20
-    LTEXT           "http://www.nars2000.org/License.html",
-                    IDC_LINK,10,75,170,9,SS_NOTIFY
+	DEFPUSHBUTTON	"&OK",IDOK,130,5,50,14
+	ICON			IDI_ABOUT,IDC_STATIC,160,30,18,20
+	LTEXT			"NARS2000\nVersion %u.%u%u",IDC_VERSION,10,
+					5,115,18,NOT WS_GROUP
+	LTEXT			"Copyright © 2006-8 Sudley Place Software\nAll rights reserved.",
+					IDC_STATIC,10,30,150,18,NOT WS_GROUP
+	LTEXT			"This program is released under version 3 of the GNU GPL license or any later version.  For more details, see",
+					IDC_STATIC,10,55,170,20
+	LTEXT			"http://www.nars2000.org/License.html",
+					IDC_LINK,10,75,170,9,SS_NOTIFY
 END
 
-IDD_UPDATES DIALOG DISCARDABLE  0, 0, 236, 154
+IDD_UPDATES DIALOG DISCARDABLE	0, 0, 236, 154
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Check for Updates"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,121,131,50,14
-////PUSHBUTTON      "Cancel",IDCANCEL,178,131,50,14
-    LTEXT           "",IDC_FILEVER,  3,11,225, 8,SS_NOPREFIX
-    LTEXT           "",IDC_WEBVER,   3,25,225, 8,SS_NOPREFIX
-    LTEXT           "",IDC_VERACTION,3,39,225,27,SS_NOPREFIX
-    LTEXT           "As you can see, this is highly preliminary.",IDC_STATIC,3,72,225,8,SS_NOPREFIX
+	DEFPUSHBUTTON	"OK",IDOK,121,131,50,14
+////PUSHBUTTON		"Cancel",IDCANCEL,178,131,50,14
+	LTEXT			"",IDC_FILEVER,  3,11,225, 8,SS_NOPREFIX
+	LTEXT			"",IDC_WEBVER,   3,25,225, 8,SS_NOPREFIX
+	LTEXT			"",IDC_VERACTION,3,39,225,27,SS_NOPREFIX
+	LTEXT			"As you can see, this is highly preliminary.",IDC_STATIC,3,72,225,8,SS_NOPREFIX
 END
 
+IDD_CUSTOMIZE DIALOG DISCARDABLE  0, 0, 299, 223
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Customize"
+FONT 8, "MS Sans Serif"
+BEGIN
+	DEFPUSHBUTTON	"OK",IDOK,15,195,50,14
+	PUSHBUTTON		"Cancel",IDCANCEL,75,195,50,14
+	PUSHBUTTON		"Apply",IDC_APPLY,135,195,50,14,WS_DISABLED
+	LISTBOX 		IDC_CUST_LB,5,15,80,170,LBS_NOINTEGRALHEIGHT |
+					WS_VSCROLL | WS_TABSTOP
+	LTEXT			"&Category",IDC_STATIC,5,5,50,8,WS_TABSTOP
+	GROUPBOX		"",IDC_GROUPBOX,90,11,205,174
+END
+
+IDD_PROPPAGE_FONTS DIALOGEX 0, 0, 195, 127
+STYLE DS_3DLOOK | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+	PUSHBUTTON		"...",IDC_FONT1,5,10,15,14
+	LTEXT			"Screen"         ,IDC_STATIC,25,15,45,8
+	CONTROL 		"",IDC_RADIO1A   ,"Button",BS_AUTORADIOBUTTON, 80,15,16,8
+	PUSHBUTTON		"...",IDC_FONT2,5,25,15,14
+	LTEXT			"Function Editor",IDC_STATIC,25,30,45,8
+	CONTROL 		"",IDC_RADIO2A   ,"Button",BS_AUTORADIOBUTTON, 80,30,16,8
+	CONTROL 		"",IDC_RADIO2B   ,"Button",BS_AUTORADIOBUTTON, 95,30,16,8
+	PUSHBUTTON		"...",IDC_FONT3,5,40,15,14
+	LTEXT			"Printer"        ,IDC_STATIC,25,45,45,8
+	CONTROL 		"",IDC_RADIO3A   ,"Button",BS_AUTORADIOBUTTON, 80,45,16,8
+	CONTROL 		"",IDC_RADIO3B   ,"Button",BS_AUTORADIOBUTTON, 95,45,16,8
+	CONTROL 		"",IDC_RADIO3C   ,"Button",BS_AUTORADIOBUTTON,110,45,16,8
+	PUSHBUTTON		"...",IDC_FONT4,5,55,15,14
+	LTEXT			"Crash Window"   ,IDC_STATIC,25,60,45,8
+	CONTROL 		"",IDC_RADIO4A   ,"Button",BS_AUTORADIOBUTTON, 80,60,16,8
+	CONTROL 		"",IDC_RADIO4B   ,"Button",BS_AUTORADIOBUTTON, 95,60,16,8
+	CONTROL 		"",IDC_RADIO4C   ,"Button",BS_AUTORADIOBUTTON,110,60,16,8
+	CONTROL 		"",IDC_RADIO4D   ,"Button",BS_AUTORADIOBUTTON,125,60,16,8
+	PUSHBUTTON		"...",IDC_FONT5,5,70,15,14
+	LTEXT			"Tab Control"    ,IDC_STATIC,25,75,45,8
+	CONTROL 		"",IDC_RADIO5A   ,"Button",BS_AUTORADIOBUTTON, 80,75,16,8
+	CONTROL 		"",IDC_RADIO5B   ,"Button",BS_AUTORADIOBUTTON, 95,75,16,8
+	CONTROL 		"",IDC_RADIO5C   ,"Button",BS_AUTORADIOBUTTON,110,75,16,8
+	CONTROL 		"",IDC_RADIO5D   ,"Button",BS_AUTORADIOBUTTON,125,75,16,8
+	CONTROL 		"",IDC_RADIO5E   ,"Button",BS_AUTORADIOBUTTON,140,75,16,8
+END
+
+IDD_PROPPAGE_RANGE_LIMITS DIALOGEX 0, 0, 195, 127
+STYLE DS_3DLOOK | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+	LTEXT			"Range Limit"    ,IDC_STATIC,25,15,45,8
+
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -227,28 +282,28 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
-IDI_CLOSE               ICON    DISCARDABLE     "Images\\Close.ico"
-IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF.ico"
-IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF.ico"
-IDI_SM_LARGE            ICON    DISCARDABLE     "Images\\SM.ico"
-IDI_SM_SMALL            ICON    DISCARDABLE     "Images\\SM.ico"
-IDI_DB_LARGE            ICON    DISCARDABLE     "Images\\DB.ico"
-IDI_DB_SMALL            ICON    DISCARDABLE     "Images\\DB.ico"
-IDI_FE_LARGE            ICON    DISCARDABLE     "Images\\FE.ico"
-IDI_FE_SMALL            ICON    DISCARDABLE     "Images\\FE.ico"
-IDI_ME_LARGE            ICON    DISCARDABLE     "Images\\ME.ico"
-IDI_ME_SMALL            ICON    DISCARDABLE     "Images\\ME.ico"
-IDI_VE_LARGE            ICON    DISCARDABLE     "Images\\VE.ico"
-IDI_VE_SMALL            ICON    DISCARDABLE     "Images\\VE.ico"
-IDI_CC_LARGE            ICON    DISCARDABLE     "Images\\CC.ico"
-IDI_CC_SMALL            ICON    DISCARDABLE     "Images\\CC.ico"
+IDI_ABOUT				ICON	DISCARDABLE 	"Images\\About.ico"
+IDI_CLOSE				ICON	DISCARDABLE 	"Images\\Close.ico"
+IDI_MF_LARGE			ICON	DISCARDABLE 	"Images\\MF.ico"
+IDI_MF_SMALL			ICON	DISCARDABLE 	"Images\\MF.ico"
+IDI_SM_LARGE			ICON	DISCARDABLE 	"Images\\SM.ico"
+IDI_SM_SMALL			ICON	DISCARDABLE 	"Images\\SM.ico"
+IDI_DB_LARGE			ICON	DISCARDABLE 	"Images\\DB.ico"
+IDI_DB_SMALL			ICON	DISCARDABLE 	"Images\\DB.ico"
+IDI_FE_LARGE			ICON	DISCARDABLE 	"Images\\FE.ico"
+IDI_FE_SMALL			ICON	DISCARDABLE 	"Images\\FE.ico"
+IDI_ME_LARGE			ICON	DISCARDABLE 	"Images\\ME.ico"
+IDI_ME_SMALL			ICON	DISCARDABLE 	"Images\\ME.ico"
+IDI_VE_LARGE			ICON	DISCARDABLE 	"Images\\VE.ico"
+IDI_VE_SMALL			ICON	DISCARDABLE 	"Images\\VE.ico"
+IDI_CC_LARGE			ICON	DISCARDABLE 	"Images\\CC.ico"
+IDI_CC_SMALL			ICON	DISCARDABLE 	"Images\\CC.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
-IDB_LINECONT    BITMAP  DISCARDABLE "Images\\LineCont.bmp"
+IDB_LINECONT	BITMAP	DISCARDABLE "Images\\LineCont.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -263,21 +318,21 @@ IDB_LINECONT    BITMAP  DISCARDABLE "Images\\LineCont.bmp"
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO DISCARDABLE
 BEGIN
-//  IDD_GOFN, DIALOG
-//  BEGIN
-//      RIGHTMARGIN, 280
-//      BOTTOMMARGIN, 160
-//  END
+//	IDD_GOFN, DIALOG
+//	BEGIN
+//		RIGHTMARGIN, 280
+//		BOTTOMMARGIN, 160
+//	END
 //
-//  IDD_PIECE, DIALOG
-//  BEGIN
-//      RIGHTMARGIN, 264
-//      BOTTOMMARGIN, 240
-//  END
+//	IDD_PIECE, DIALOG
+//	BEGIN
+//		RIGHTMARGIN, 264
+//		BOTTOMMARGIN, 240
+//	END
 END
-#endif    // APSTUDIO_INVOKED
+#endif	  // APSTUDIO_INVOKED
 
-#endif    // English (U.S.) resources
+#endif	  // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -290,8 +345,8 @@ END
 #include "ver.rc"
 
 /////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
+#endif	  // not APSTUDIO_INVOKED
 
 //***************************************************************************
-//  End of File: main.rc
+//	End of File: main.rc
 //***************************************************************************

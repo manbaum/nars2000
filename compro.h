@@ -29,6 +29,7 @@
   #include "common.pro"
   #include "convert.pro"
   #include "crash.pro"
+  #include "customize.pro"
   #include "debug.pro"
   #include "dfnhdr.pro"
   #include "dispdbg.pro"

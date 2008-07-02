@@ -37,40 +37,41 @@
 
 
 // Section names
-#define SECTNAME_GENERAL        L"General"
-#define SECTNAME_SYSVARS        L"SysVars"
-#define SECTNAME_FONTS          L"Fonts"
-#define SECTNAME_OPTIONS        L"Options"
-#define SECTNAME_RANGELIMITS    L"RangeLimits"
-#define SECTNAME_SETEMPTYCWS    L"SetEmptyCWS"
+#define SECTNAME_GENERAL                L"General"
+#define SECTNAME_SYSVARS                L"SysVars"
+#define SECTNAME_FONTS                  L"Fonts"
+#define SECTNAME_OPTIONS                L"Options"
+#define SECTNAME_RANGELIMITS            L"RangeLimits"
+#define SECTNAME_SETEMPTYCWS            L"SetEmptyCWS"
+#define SECTNAME_SAMEFONTAS             L"SameFontAs"
 
 // Key names
-#define KEYNAME_VERSION         L"Version"
-#define KEYNAME_SIZESTATE       L"SizeState"
-#define KEYNAME_XPOS            L"xPos"
-#define KEYNAME_XSIZE           L"xSize"
-#define KEYNAME_YPOS            L"yPos"
-#define KEYNAME_YSIZE           L"ySize"
+#define KEYNAME_VERSION                 L"Version"
+#define KEYNAME_SIZESTATE               L"SizeState"
+#define KEYNAME_XPOS                    L"xPos"
+#define KEYNAME_XSIZE                   L"xSize"
+#define KEYNAME_YPOS                    L"yPos"
+#define KEYNAME_YSIZE                   L"ySize"
 
-#define KEYNAME_QUADALX         L"QuadALX"
-#define KEYNAME_QUADCT          L"QuadCT"
-#define KEYNAME_QUADELX         L"QuadELX"
-#define KEYNAME_QUADFC          L"QuadFC"
-#define KEYNAME_QUADIC          L"QuadIC"
-#define KEYNAME_QUADIO          L"QuadIO"
-#define KEYNAME_QUADLX          L"QuadLX"
-#define KEYNAME_QUADPP          L"QuadPP"
-#define KEYNAME_QUADPR          L"QuadPR"
-#define KEYNAME_QUADPW          L"QuadPW"
-#define KEYNAME_QUADRL          L"QuadRL"
-#define KEYNAME_QUADSA          L"QuadSA"
+#define KEYNAME_QUADALX                 L"QuadALX"
+#define KEYNAME_QUADCT                  L"QuadCT"
+#define KEYNAME_QUADELX                 L"QuadELX"
+#define KEYNAME_QUADFC                  L"QuadFC"
+#define KEYNAME_QUADIC                  L"QuadIC"
+#define KEYNAME_QUADIO                  L"QuadIO"
+#define KEYNAME_QUADLX                  L"QuadLX"
+#define KEYNAME_QUADPP                  L"QuadPP"
+#define KEYNAME_QUADPR                  L"QuadPR"
+#define KEYNAME_QUADPW                  L"QuadPW"
+#define KEYNAME_QUADRL                  L"QuadRL"
+#define KEYNAME_QUADSA                  L"QuadSA"
 
-#define KEYNAME_LOGFONTFE       L"LogFontFE"
-#define KEYNAME_LOGFONTME       L"LogFontME"
-#define KEYNAME_LOGFONTPR       L"LogFontPR"
-#define KEYNAME_LOGFONTSM       L"LogFontSM"
-#define KEYNAME_LOGFONTTC       L"LogFontTC"
-#define KEYNAME_LOGFONTVE       L"LogFontVE"
+#define KEYNAME_LOGFONTFE               L"LogFontFE"
+#define KEYNAME_LOGFONTME               L"LogFontME"
+#define KEYNAME_LOGFONTPR               L"LogFontPR"
+#define KEYNAME_LOGFONTSM               L"LogFontSM"
+#define KEYNAME_LOGFONTTC               L"LogFontTC"
+#define KEYNAME_LOGFONTVE               L"LogFontVE"
 
 #define KEYNAME_ADJUSTPW                L"AdjustPW"
 #define KEYNAME_UNDERBARTOLOWERCASE     L"UnderbarToLowercase"
@@ -218,6 +219,22 @@ void ReadIniFileGlb
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTSM, &lfSM);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC, &lfTC);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTVE, &lfVE);
+
+    //***************************************************************
+    // Read in the [SameFontAs] section
+    //***************************************************************
+
+    for (uCnt = 0; uCnt < SAMEFONTAS_LENGTH; uCnt++)
+    {
+        wsprintfW (wszTemp,
+                   L"%u",
+                   uCnt);
+        glbSameFontAs[uCnt] =
+          GetPrivateProfileIntW (SECTNAME_SAMEFONTAS,   // Ptr to the section name
+                                 wszTemp,               // Ptr to the key name
+                                 uCnt,                  // Default value if not found
+                                 lpwszIniFile);         // Ptr to the file name
+    } // End FOR
 
     //***************************************************************
     // Read in the [Options] section
@@ -911,7 +928,9 @@ void SaveIniFile
     (void)
 
 {
-    WCHAR     wszTemp[1024];                        // Temporary storage
+    WCHAR     wszTemp[1024],                        // Temporary storage
+              wszKey[3];                            // ...
+    UINT      uCnt;                                 // Loop counter
     LPVOID    lpMemObj;                             // Ptr to object global memory
     LPAPLCHAR lpaplChar;                            // Ptr to output save area
     APLNELM   aplNELMObj;                           // Object NELM
@@ -1004,6 +1023,24 @@ void SaveIniFile
                                  KEYNAME_LOGFONTVE, // Ptr to the key name
                                 &lfVE,              // Ptr to LOGFONT
                                  lpwszIniFile);     // Ptr to the file name
+    //*********************************************************
+    // Write out [SameFontAs] section entries
+    //*********************************************************
+
+    for (uCnt = 0; uCnt < SAMEFONTAS_LENGTH; uCnt++)
+    {
+        wsprintfW (wszKey,
+                   L"%u",
+                   uCnt);
+        wsprintfW (wszTemp,
+                   L"%u",
+                   glbSameFontAs[uCnt]);
+        WritePrivateProfileStringW (SECTNAME_SAMEFONTAS,// Pre to the section name
+                                    wszKey,         // Ptr to the key name
+                                    wszTemp,        // Ptr to the SameFontAs value
+                                    lpwszIniFile);  // Ptr to the file name
+    } // End FOR
+
     //*********************************************************
     // Write out [Options] section entries
     //*********************************************************

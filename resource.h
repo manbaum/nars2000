@@ -70,9 +70,17 @@
 #define IDI_ABOUT                       116
 #define IDI_CLOSE                       117
 
-
 #define IDD_ABOUT                       120
 #define IDD_UPDATES                     121
+#define IDD_CUSTOMIZE                   122
+#define IDD_PROPPAGE_CLEARWS_VALUES     123
+#define IDD_PROPPAGE_DIRS               124
+#define IDD_PROPPAGE_FONTS              125
+#define IDD_PROPPAGE_RANGE_LIMITS       126
+#define IDD_PROPPAGE_SYNTAX_COLORING    127
+#define IDD_PROPPAGE_SYSTEM_VAR_RESET   128
+#define IDD_PROPPAGE_TAB_COLORS         129
+#define IDD_PROPPAGE_USER_PREFS         130
 
 #define IDM_EXIT                        102
 
@@ -100,11 +108,11 @@
 #define IDM_PRINT_WS                    511
 
 #define IDM_SMFONT                      600
+#define IDM_PRFONT                      601
 #define IDM_TCFONT                      602
 #define IDM_FEFONT                      603
 #define IDM_MEFONT                      604
 #define IDM_VEFONT                      605
-#define IDM_PRFONT                      606
 
 #define IDM_UNDO                        700
 #define IDM_REDO                        701
@@ -127,11 +135,47 @@
 #define IDM_SAVECLOSE_FN                732
 #define IDM_SAVE_FN_AS                  733
 
+#define IDM_CUSTOMIZE                   740
+
 #define IDC_VERSION                     800
 #define IDC_LINK                        801
 #define IDC_WEBVER                      802
 #define IDC_VERACTION                   803
 #define IDC_FILEVER                     804
+
+#define IDC_APPLY                       820
+#define IDC_TAB_OPTIONS                 821
+
+#define IDC_CUST_LB                     830
+#define IDC_GROUPBOX                    831
+
+#define IDC_FONT1                       840
+#define IDC_FONT2                       841
+#define IDC_FONT3                       842
+#define IDC_FONT4                       843
+#define IDC_FONT5                       844
+
+#define IDC_RADIO1A                     850
+#define IDC_RADIO2A                     851
+#define IDC_RADIO2B                     852
+#define IDC_RADIO3A                     853
+#define IDC_RADIO3B                     854
+#define IDC_RADIO3C                     855
+#define IDC_RADIO4A                     856
+#define IDC_RADIO4B                     857
+#define IDC_RADIO4C                     858
+#define IDC_RADIO4D                     860
+#define IDC_RADIO5A                     861
+#define IDC_RADIO5B                     862
+#define IDC_RADIO5C                     863
+#define IDC_RADIO5D                     864
+#define IDC_RADIO5E                     865
+#define IDC_RADIO6A                     866
+#define IDC_RADIO6B                     867
+#define IDC_RADIO6C                     868
+#define IDC_RADIO6D                     869
+#define IDC_RADIO6E                     870
+#define IDC_RADIO6F                     871
 
 #define IDC_STATIC                       -1
 
@@ -139,9 +183,9 @@
 //
 #ifdef APSTUDIO_INVOKED
   #ifndef APSTUDIO_READONLY_SYMBOLS
-    #define _APS_NEXT_RESOURCE_VALUE          107
+    #define _APS_NEXT_RESOURCE_VALUE          109
     #define _APS_NEXT_COMMAND_VALUE         40001
-    #define _APS_NEXT_CONTROL_VALUE          2000
+    #define _APS_NEXT_CONTROL_VALUE           850
     #define _APS_NEXT_SYMED_VALUE             101
   #endif
 #endif

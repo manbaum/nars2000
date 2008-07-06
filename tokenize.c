@@ -2579,7 +2579,7 @@ The format of a token is defined in tokens.h
 
 HGLOBAL Tokenize_EM
     (LPAPLCHAR   lpwszLine,     // The line to tokenize (not necessarily zero-terminated)
-     UINT        uLen,          // The length of the above line
+     APLNELM     aplNELM,       // NELM of lpwszLine
      HWND        hWndEC,        // Window handle for Edit Control (may be NULL if lpErrHandFn is NULL)
      LPERRHANDFN lpErrHandFn)   // Ptr to error handling function (may be NULL)
 
@@ -2642,11 +2642,11 @@ HGLOBAL Tokenize_EM
 
     // Skip over leading blanks (more to reduce clutter
     //   in the debugging window)
-    for (uChar = 0; uChar < uLen; uChar++)
+    for (uChar = 0; uChar < aplNELM; uChar++)
     if (lpwszLine[uChar] NE L' ')
         break;
 
-    for (     ; uChar <= uLen; uChar++)
+    for (     ; uChar <= aplNELM; uChar++)
     {
         // Use a FSA to tokenize the line
 
@@ -2663,7 +2663,7 @@ HGLOBAL Tokenize_EM
            4.  Repeat until EOL or an error occurs.
          */
 
-        if (uChar EQ uLen)
+        if (uChar EQ aplNELM)
             wchOrig = L'\0';
         else
             wchOrig = lpwszLine[uChar];
@@ -2691,7 +2691,10 @@ HGLOBAL Tokenize_EM
                 goto ERROR_EXIT;
         } // End IF
 
-        wchColNum = CharTrans (wchOrig);
+        if (uChar EQ aplNELM)
+            wchColNum = COL_EOL;
+        else
+            wchColNum = CharTrans (wchOrig);
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         wsprintfW (wszTemp,
@@ -3298,9 +3301,6 @@ WCHAR CharTrans
         case L'\t':
             return COL_SPACE;
 
-        case L'\0':
-            return COL_EOL;
-
         case UTF16_ALPHA:               // Alt-'a' - alpha
         case UTF16_OMEGA:               // Alt-'w' - omega
             return COL_DIRIDENT;
@@ -3490,6 +3490,7 @@ WCHAR CharTrans
         case L'$':
         case L'%':
         case L'&':
+        case L'\0':
             return COL_UNK;
 
         default:

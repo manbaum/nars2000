@@ -583,7 +583,7 @@ void FormatQQuadInput
         SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemRes);
 
         // Replace leading Prompt Replacement chars
-        if (lpMemPTD->cQuadPR NE L'\0')
+        if (lpMemPTD->cQuadPR NE CQUADPR_MT)
         {
             UINT QQPromptLen,   // Length of QQ prompt
                  u;             // Loop counter
@@ -1534,6 +1534,7 @@ NORMAL_EXIT:
 
                 // Execute the statement in immediate execution mode
                 ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"LX",    // Ptr to line to execute
+                             4,                                         // NELM of line to execute
                              FALSE,                                     // TRUE iff free the line on completion
                              FALSE,                                     // TRUE iff wait until finished
                              hWndEC,                                    // Edit Control window handle

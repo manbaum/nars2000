@@ -160,6 +160,9 @@ typedef struct tagPERTABDATA
     IMLangFontLink
                 *lpFontLink;        //184:  Ptr to FontLink struc
 #endif
+
+#define CQUADPR_MT      L'\xFFFF'   // cQuadPR value indicating it's empty
+
     APLCHAR      cQuadPR,           //188:  []PR     (' ') (When a char scalar)
                  cQuadxSA;          //18A:  []SA     (0)   (in its index form as an integer)
                                     //18C:  Length

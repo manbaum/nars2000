@@ -2611,7 +2611,7 @@ UBOOL ValidSetPR_EM
         case ARRAY_CHAR:
             // Izit an empty vector?
             if (IsVector (lpHeader->Rank) && IsEmpty (lpHeader->NELM))
-                lpMemPTD->cQuadPR = 0;
+                lpMemPTD->cQuadPR = CQUADPR_MT;
             else
                 lpMemPTD->cQuadPR = *(LPAPLCHAR) VarArrayBaseToData (lpHeader, lpHeader->Rank);
             break;
@@ -2623,8 +2623,8 @@ UBOOL ValidSetPR_EM
 #undef  lpHeader
 
 MAKE_SCALAR:
-    lptkNamArg->tkData.tkSym->stFlags.Imm = (lpMemPTD->cQuadPR NE 0);
-    if (lpMemPTD->cQuadPR EQ 0)
+    lptkNamArg->tkData.tkSym->stFlags.Imm = (lpMemPTD->cQuadPR NE CQUADPR_MT);
+    if (lpMemPTD->cQuadPR EQ CQUADPR_MT)
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
     else
         lptkNamArg->tkData.tkSym->stData.stChar = lpMemPTD->cQuadPR;
@@ -3171,7 +3171,7 @@ UBOOL InitSystemVars
     if (!AssignBoolScalarCWS (bQuadIO_CWS       , SYSVAR_IO  , lpMemPTD->lpSymQuadIO       )) return FALSE;   // Index Origin
     if (!AssignGlobalCWS     (hGlbQuadLX_CWS    , SYSVAR_LX  , lpMemPTD->lpSymQuadLX       )) return FALSE;   // Latent Expression
     if (!AssignIntScalarCWS  (uQuadPP_CWS       , SYSVAR_PP  , lpMemPTD->lpSymQuadPP       )) return FALSE;   // Print Precision
-    if (cQuadPR_CWS EQ 0)
+    if (cQuadPR_CWS EQ CQUADPR_MT)
     {
         if (!AssignGlobalCWS (hGlbQuadPR_CWS    , SYSVAR_PR  , lpMemPTD->lpSymQuadPR       )) return FALSE;   // Prompt Replacement
     } else

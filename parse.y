@@ -5588,11 +5588,12 @@ NORMAL_EXIT:
 
         // Execute the statement in immediate execution mode
         exitType =
-          ImmExecStmt (lpwszLine,   // Ptr to line to execute
-                       FALSE,       // TRUE iff free the lpwszLine on completion
-                       TRUE,        // TRUE iff wait until finished
+          ImmExecStmt (lpwszLine,           // Ptr to line to execute
+                       lstrlenW (lpwszLine),// NELM of line to execute
+                       FALSE,               // TRUE iff free the lpwszLine on completion
+                       TRUE,                // TRUE iff wait until finished
                        (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Control window handle
-                       TRUE);       // TRUE iff errors are acted upon
+                       TRUE);               // TRUE iff errors are acted upon
         // Split cases based upon the exit type
         switch (exitType)
         {

@@ -239,11 +239,12 @@ void ImmExecLine
 
         default:
             // Execute the statement
-            ImmExecStmt (lpwszCompLine,     // Ptr to line to execute
-                         TRUE,              // TRUE iff free lpwszCompLine on completion
-                         FALSE,             // TRUE iff wait until finished
-                         hWndEC,            // Edit Control window handle
-                         TRUE);             // TRUE iff errors are acted upon
+            ImmExecStmt (lpwszCompLine,             // Ptr to line to execute
+                         lstrlenW (lpwszCompLine),  // NELM of lpwszCompLine
+                         TRUE,                      // TRUE iff free lpwszCompLine on completion
+                         FALSE,                     // TRUE iff wait until finished
+                         hWndEC,                    // Edit Control window handle
+                         TRUE);                     // TRUE iff errors are acted upon
             return;
     } // End SWITCH
 
@@ -280,6 +281,7 @@ void ImmExecLine
 
 EXIT_TYPES ImmExecStmt
     (LPWCHAR lpwszCompLine,     // Ptr to line to execute
+     APLNELM aplNELM,           // NELM of lpwszCompLine
      UBOOL   bFreeLine,         // TRUE iff free lpwszCompLine on completion
      UBOOL   bWaitUntilFini,    // TRUE iff wait until finished
      HWND    hWndEC,            // Edit Control window handle
@@ -300,6 +302,7 @@ EXIT_TYPES ImmExecStmt
     ieThread.hWndEC         = hWndEC;
     ieThread.hGlbPTD        = TlsGetValue (dwTlsPerTabData); Assert (ieThread.hGlbPTD NE NULL);
     ieThread.lpwszCompLine  = lpwszCompLine;
+    ieThread.aplNELM        = aplNELM;
     ieThread.hGlbWFSO       = hGlbWFSO;
     ieThread.bFreeLine      = bFreeLine;
     ieThread.bWaitUntilFini = bWaitUntilFini;
@@ -388,6 +391,7 @@ DWORD WINAPI ImmExecStmtInThread
 {
     HANDLE        hSigaphore = NULL;    // Semaphore handle to signal (NULL if none)
     LPWCHAR       lpwszCompLine;        // Ptr to complete line
+    APLNELM       aplNELM;              // NELM of lpwszCompLine
     HGLOBAL       hGlbToken,            // Handle of tokenized line
                   hGlbWFSO;             // WaitForSingleObject callback global memory handle
     HWND          hWndEC,               // Handle of Edit Control window
@@ -412,6 +416,7 @@ DWORD WINAPI ImmExecStmtInThread
         hWndEC         = lpieThread->hWndEC;
         hGlbPTD        = lpieThread->hGlbPTD;
         lpwszCompLine  = lpieThread->lpwszCompLine;
+        aplNELM        = lpieThread->aplNELM;
         hGlbWFSO       = lpieThread->hGlbWFSO;
         bFreeLine      = lpieThread->bFreeLine;
         bWaitUntilFini = lpieThread->bWaitUntilFini;
@@ -433,7 +438,7 @@ DWORD WINAPI ImmExecStmtInThread
         // Tokenize the line
         hGlbToken =
           Tokenize_EM (lpwszCompLine,
-                       lstrlenW (lpwszCompLine),
+                       aplNELM,
                        hWndEC,
                       &ErrorMessageDirect);
         // If it's invalid, ...
@@ -444,6 +449,7 @@ DWORD WINAPI ImmExecStmtInThread
                 // Execute the statement in immediate execution mode
                 exitType =
                   ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                               5,                   // NELM of line to execute
                                FALSE,               // TRUE iff free the line on completion
                                TRUE,                // TRUE iff wait until finished
                                (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),  // Edit Control window handle
@@ -522,6 +528,7 @@ DWORD WINAPI ImmExecStmtInThread
                         // Execute []ELX in immediate execution mode
 ////////////////////////exitType =
                           ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                                       5,               // NELM of line to execute
                                        FALSE,           // TRUE iff free the line on completion
                                        TRUE,            // TRUE iff wait until finished
                                        (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Control window handle
@@ -562,6 +569,7 @@ DWORD WINAPI ImmExecStmtInThread
                     // Execute []ELX in immediate execution mode
 ////////////////////exitType =
                       ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                                   5,               // NELM of line to execute
                                    FALSE,           // TRUE iff free the line on completion
                                    TRUE,            // TRUE iff wait until finished
                                    (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Control window handle

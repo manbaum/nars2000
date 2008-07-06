@@ -1544,11 +1544,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
 #ifdef DEBUG
                 exitType =
 #endif
-                  ImmExecStmt (lpwLine,         // Ptr to line to execute
-                               FALSE,           // Free lpwLine on completion
-                               TRUE,            // TRUE iff wait until finished
-                               hWndEC,          // Edit Control window handle
-                               FALSE);          // TRUE iff errors are acted upon
+                  ImmExecStmt (lpwLine,             // Ptr to line to execute
+                               lstrlenW (lpwLine),  // NELM of lpwLine
+                               FALSE,               // Free lpwLine on completion
+                               TRUE,                // TRUE iff wait until finished
+                               hWndEC,              // Edit Control window handle
+                               FALSE);              // TRUE iff errors are acted upon
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 
                 // Lock the memory to get a ptr to it

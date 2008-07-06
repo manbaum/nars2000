@@ -45,11 +45,12 @@ typedef struct tagIE_THREAD     // Thread struct for ImmExecStmtInThread
     HWND    hWndEC;             // 00:  Handle of Edit Control window
     HGLOBAL hGlbPTD;            // 04:  PerTabData global memory handle
     LPWCHAR lpwszCompLine;      // 08:  Ptr to complete line
-    HGLOBAL hGlbWFSO;           // 0C:  WaitForSingleObject callback global memory handle
-    UBOOL   bFreeLine,          // 10:  TRUE iff we should free lpwszCompLine on completion
-            bWaitUntilFini,     // 14:  TRUE iff wait until finished
-            bActOnErrors;       // 18:  TRUE iff errors are acted upon
-                                // 1C:  Length
+    APLNELM aplNELM;            // 0C:  NELM of lpwszCompLine
+    HGLOBAL hGlbWFSO;           // 10:  WaitForSingleObject callback global memory handle
+    UBOOL   bFreeLine,          // 14:  TRUE iff we should free lpwszCompLine on completion
+            bWaitUntilFini,     // 18:  TRUE iff wait until finished
+            bActOnErrors;       // 1C:  TRUE iff errors are acted upon
+                                // 20:  Length
 } IE_THREAD, *LPIE_THREAD;
 
 

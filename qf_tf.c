@@ -945,7 +945,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
             //     varname{is}shape{rho}values
             //   where 'shape' is the shape of the array, and 'values' are x/shape elements
             //***************************************************************
-            if (!TransferInverseArr2_EM (lpwszTemp, 0, 0, lptkFunc, NULL, FALSE))
+            if (!TransferInverseArr2_EM (lpwszTemp, aplNELMRht, 0, 0, lptkFunc, NULL, FALSE))
                 goto EMPTY_EXIT;
         } else
         // If the first one is a blank, ...

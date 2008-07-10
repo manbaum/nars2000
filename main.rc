@@ -117,7 +117,11 @@ BEGIN
 	BEGIN
 #include "edit.rc"
 		MENUITEM SEPARATOR
+#ifdef DEBUG
+		MENUITEM "&Customize...",                IDM_CUSTOMIZE
+#else
 		MENUITEM "&Customize...",                IDM_CUSTOMIZE   , INACTIVE GRAYED
+#endif
 	END
 	POPUP "&Window"
 	BEGIN
@@ -267,13 +271,26 @@ BEGIN
 	CONTROL 		"",IDC_RADIO5E   ,"Button",BS_AUTORADIOBUTTON,140,75,16,8
 END
 
-IDD_PROPPAGE_RANGE_LIMITS DIALOGEX 0, 0, 195, 127
+IDD_PROPPAGE_RANGE_LIMITS DIALOG DISCARDABLE  0, 0, 195, 127
 STYLE DS_3DLOOK | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-	LTEXT			"Range Limit"    ,IDC_STATIC,25,15,45,8
-
+	LTEXT			"Check the box to map assigned values of these system vars to the allowable range.  An unchecked box means that assigning an out of range value signals a DOMAIN ERROR.",
+					IDC_STATIC,45,26,143,78
+	CONTROL 		"CT",IDC_RANGE_XB_CT,"Button",BS_AUTOCHECKBOX |
+					WS_TABSTOP,10,26,25,10
+	CONTROL 		"IO",IDC_RANGE_XB_IO,"Button",BS_AUTOCHECKBOX |
+					WS_TABSTOP,10,39,25,10
+	CONTROL 		"IC",IDC_RANGE_XB_IC,"Button",BS_AUTOCHECKBOX |
+					WS_TABSTOP,10,52,25,10
+	CONTROL 		"PP",IDC_RANGE_XB_PP,"Button",BS_AUTOCHECKBOX |
+					WS_TABSTOP,10,65,25,10
+	CONTROL 		"PW",IDC_RANGE_XB_PW,"Button",BS_AUTOCHECKBOX |
+					WS_TABSTOP,10,78,25,10
+	CONTROL 		"RL",IDC_RANGE_XB_RL,"Button",BS_AUTOCHECKBOX |
+					WS_TABSTOP,10,91,25,10
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

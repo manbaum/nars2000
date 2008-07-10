@@ -1,4 +1,4 @@
-Buuld #300 -- Version 0.0.0.19263
+Build #300 -- Version 0.0.0.19263
 ---------------------------------
 
 Directory trunk:

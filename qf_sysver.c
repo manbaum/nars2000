@@ -54,7 +54,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    UINT         ByteRes;           // # bytes in the result
+    APLUINT      ByteRes;           // # bytes in the result
     APLNELM      aplNELMRes;        // Result NELM
     HGLOBAL      hGlbRes;           // Result global memory handle
     LPAPLCHAR    lpMemRes,          // Ptr to result global memory
@@ -72,27 +72,21 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Define maximum length of []SYSVER
 #define SYSVER  L"000.000.0000.00799  Tue Jan 16 17:43:45 2007  Win/32"
 #define SYSVER_NELM    ((sizeof (SYSVER) / sizeof (APLCHAR)) - 1)
 
     // Calculate space needed for the result
-    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
+    ByteRes = CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+    // N.B. Conversion from APLUINT to UINT.
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -114,8 +108,8 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     // Skip over the header and dimensions to the data
     lpw = lpMemData = VarArrayBaseToData (lpMemRes, 1);
 
-    // Read in the application's File Version String
-    LclFileVersionStrW (wszAppDPFE, lpw);
+    // Copy the application's File Version String
+    lstrcpyW (lpw, wszFileVer);
 
     // Skip to the trailing zero
     lpw += lstrlenW (lpw);
@@ -138,13 +132,13 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
         IMAGE_NT_HEADERS32 inth;
 
         // Set the file pointer to read the e_lfanew value
-        SetFilePointer (hFile, (UINT) (((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh), NULL, FILE_BEGIN);
+        SetFilePointer (hFile, (__int3264) (((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh), NULL, FILE_BEGIN);
 
         // Read in the e_lfanew value
         ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
 
         // Add in the distance to the file timestamp
-        dwTemp += (UINT) (((LPBYTE) &inth.FileHeader.TimeDateStamp) - (LPBYTE) &inth);
+        dwTemp += (__int3264) (((LPBYTE) &inth.FileHeader.TimeDateStamp) - (LPBYTE) &inth);
 
         // Set file pointer to the file timestamp
         SetFilePointer (hFile, dwTemp, NULL, FILE_BEGIN);
@@ -186,10 +180,12 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     if (aplNELMRes < SYSVER_NELM)
     {
         // Calculate space needed for the result
-        ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
+        ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
 
         // Re-allocate the global downwards
-        hGlbRes = MyGlobalReAlloc (hGlbRes, ByteRes, GMEM_MOVEABLE);
+        // N.B. Conversion from APLUINT to UINT.
+        Assert (ByteRes EQ (__int3264) ByteRes);
+        hGlbRes = MyGlobalReAlloc (hGlbRes, (__int3264) ByteRes, GMEM_MOVEABLE);
     } else
     if (aplNELMRes > SYSVER_NELM)
         // We should never get here
@@ -206,6 +202,16 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnSYSVER_EM_YY
 #undef  APPEND_NAME
 

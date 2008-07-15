@@ -52,6 +52,7 @@
 #define KEYNAME_XSIZE                   L"xSize"
 #define KEYNAME_YPOS                    L"yPos"
 #define KEYNAME_YSIZE                   L"ySize"
+#define KEYNAME_INITIALCAT              L"InitialCategory"
 
 #define KEYNAME_QUADALX                 L"QuadALX"
 #define KEYNAME_QUADCT                  L"QuadCT"
@@ -224,7 +225,7 @@ void ReadIniFileGlb
     // Read in the [SameFontAs] section
     //***************************************************************
 
-    for (uCnt = 0; uCnt < SAMEFONTAS_LENGTH; uCnt++)
+    for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
     {
         wsprintfW (wszTemp,
                    L"%u",
@@ -915,6 +916,11 @@ void ReadIniFileWnd
                              KEYNAME_SIZESTATE,     // Ptr to the key name
                              MFSizeState,           // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    gInitCustomizeCategory =
+      GetPrivateProfileIntW (SECTNAME_GENERAL,      // Ptr to the section name
+                             KEYNAME_INITIALCAT,    // Ptr to the key name
+                             DEF_INIT_CATEGORY,     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
 } // End ReadIniFileWnd
 
 
@@ -989,6 +995,16 @@ void SaveIniFile
                                 KEYNAME_SIZESTATE,  // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
+    // Format the initial category
+    wsprintfW (wszTemp,
+               L"%d",
+               gInitCustomizeCategory);
+    // Write out the initial category
+    WritePrivateProfileStringW (SECTNAME_GENERAL,   // Ptr to the section name
+                                KEYNAME_INITIALCAT, // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+
     //*********************************************************
     // Write out [Fonts] section entries
     //*********************************************************
@@ -1027,7 +1043,7 @@ void SaveIniFile
     // Write out [SameFontAs] section entries
     //*********************************************************
 
-    for (uCnt = 0; uCnt < SAMEFONTAS_LENGTH; uCnt++)
+    for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
     {
         wsprintfW (wszKey,
                    L"%u",
@@ -1035,7 +1051,7 @@ void SaveIniFile
         wsprintfW (wszTemp,
                    L"%u",
                    glbSameFontAs[uCnt]);
-        WritePrivateProfileStringW (SECTNAME_SAMEFONTAS,// Pre to the section name
+        WritePrivateProfileStringW (SECTNAME_SAMEFONTAS,// Ptr to the section name
                                     wszKey,         // Ptr to the key name
                                     wszTemp,        // Ptr to the SameFontAs value
                                     lpwszIniFile);  // Ptr to the file name

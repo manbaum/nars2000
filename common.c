@@ -290,6 +290,9 @@ void GetModuleFileNames
 
         // Create the .HLP file name
         _wmakepath  (wszHlpDPFE, wszDrive, wszDir, wszFname, L".HLP");
+
+        // Read in the application's File Version String
+        LclFileVersionStrW (wszAppDPFE, wszFileVer);
     } // End IF
 } // End GetModuleFileNames
 

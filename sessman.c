@@ -1307,7 +1307,6 @@ WM_NCCREATE_FAIL:
                              | WS_VSCROLL
                              | ES_MULTILINE
                              | ES_WANTRETURN
-                             | ES_NOHIDESEL         // ***TESTME***
                              | ES_AUTOHSCROLL
                              | ES_AUTOVSCROLL
                                ,                    // Styles

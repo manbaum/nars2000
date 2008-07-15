@@ -305,11 +305,7 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
         //***************************************************************
 
         if (lptkAxis NE NULL)
-        {
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkAxis);
-            return NULL;
-        } // End IF
+            goto SYNTAX_EXIT;
 
         //***************************************************************
         // Called monadically
@@ -369,6 +365,11 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
 
     goto NORMAL_EXIT;
 
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
@@ -410,11 +411,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
 
     // Check for axis present
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -432,12 +429,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                                                 lptkFunc);
     // Check for DOMAIN ERROR
     if (aplTypeRes EQ ARRAY_ERROR)
-    {
-        // Mark as a DOMAIN ERROR
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -604,11 +596,9 @@ RESTART_EXCEPTION_VARNAMED:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
                         YYFree (lpYYRes); lpYYRes = NULL;
 
-                        return NULL;
+                        goto DOMAIN_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -751,11 +741,9 @@ RESTART_EXCEPTION_VARIMMED:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
                         YYFree (lpYYRes); lpYYRes = NULL;
 
-                        return NULL;
+                        goto DOMAIN_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -839,6 +827,16 @@ RESTART_EXCEPTION_VARIMMED:
     YYFree (lpYYRes); lpYYRes = NULL;
 
     return NULL;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnMon_EM_YY
 #undef  APPEND_NAME
 
@@ -898,12 +896,7 @@ HGLOBAL PrimFnMonGlb_EM
 
     // Check for DOMAIN ERROR
     if (aplTypeRes EQ ARRAY_ERROR)
-    {
-        // Mark as a DOMAIN ERROR
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // In case the result is APA
     if (IsSimpleAPA (aplTypeRes))
@@ -924,14 +917,10 @@ RESTART_EXCEPTION:
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -1187,12 +1176,7 @@ RESTART_EXCEPTION:
                                                                      lptkFunc);
                         // Check for DOMAIN ERROR
                         if (aplTypeRes2 EQ ARRAY_ERROR)
-                        {
-                            // Mark as a DOMAIN ERROR
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                       lptkFunc);
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto DOMAIN_EXIT;
 
                         // Copy the SYMENTRY as the same type as the result
                         lpSymSrc = ClrPtrTypeIndAsSym (lpMemRht);
@@ -1336,9 +1320,7 @@ RESTART_EXCEPTION:
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                goto ERROR_EXIT;
+                goto DOMAIN_EXIT;
 
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -1378,6 +1360,19 @@ RESTART_EXCEPTION:
 
     if (bRet)
         goto NORMAL_EXIT;
+    else
+        goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     bRet = FALSE;
 
@@ -1516,11 +1511,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                                 aplNELMRht,
                                                &aplTypeRht);
     if (aplTypeRes EQ ARRAY_ERROR)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     Assert (IsSimpleNum (aplTypeRes)
          || IsNested (aplTypeRes));
@@ -1650,6 +1641,12 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
         goto ERROR_EXIT;
     else
         goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     bRet = FALSE;
 
@@ -1816,14 +1813,10 @@ UBOOL PrimFnDydSimpNest_EM
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (UINT) ByteAlloc);
-        hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        Assert (ByteAlloc EQ (__int3264) ByteAlloc);
+        hGlbWVec = DbgGlobalAlloc (GHND, (__int3264) ByteAlloc);
         if (!hGlbWVec)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemWVec = MyGlobalLock (hGlbWVec);
@@ -1846,14 +1839,10 @@ UBOOL PrimFnDydSimpNest_EM
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (UINT) ByteAlloc);
-        hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        Assert (ByteAlloc EQ (__int3264) ByteAlloc);
+        hGlbOdo = DbgGlobalAlloc (GHND, (__int3264) ByteAlloc);
         if (!hGlbOdo)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemOdo = MyGlobalLock (hGlbOdo);
@@ -1990,6 +1979,11 @@ UBOOL PrimFnDydSimpNest_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     bRet = FALSE;
@@ -2157,14 +2151,10 @@ UBOOL PrimFnDydNestSimp_EM
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (UINT) ByteAlloc);
-        hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        Assert (ByteAlloc EQ (__int3264) ByteAlloc);
+        hGlbWVec = DbgGlobalAlloc (GHND, (__int3264) ByteAlloc);
         if (!hGlbWVec)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemWVec = MyGlobalLock (hGlbWVec);
@@ -2187,14 +2177,10 @@ UBOOL PrimFnDydNestSimp_EM
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (UINT) ByteAlloc);
-        hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        Assert (ByteAlloc EQ (__int3264) ByteAlloc);
+        hGlbOdo = DbgGlobalAlloc (GHND, (__int3264) ByteAlloc);
         if (!hGlbOdo)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemOdo = MyGlobalLock (hGlbOdo);
@@ -2332,6 +2318,11 @@ UBOOL PrimFnDydNestSimp_EM
 
     goto NORMAL_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
@@ -2446,11 +2437,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                                 aplNELMRht,
                                                &aplTypeRht);
     if (aplTypeRes EQ ARRAY_ERROR)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Special case APA result
     if (IsSimpleAPA (aplTypeRes))
@@ -2594,6 +2581,14 @@ HGLOBAL PrimFnDydNestSiSc_EM
 
     if (bRet)
         goto NORMAL_EXIT;
+    else
+        goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     bRet = FALSE;
 
@@ -2711,9 +2706,10 @@ UBOOL PrimFnDydNestNest_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-    UBOOL  bRet = TRUE;             // TRUE iff result is valid
-    APLINT uRes;                    // Loop counter
-    LPVOID lpMemRes = NULL;         // Ptr to result global memory
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
+    APLINT       uRes;              // Loop counter
+    LPVOID       lpMemRes = NULL;   // Ptr to result global memory
+    LPPL_YYSTYPE lpYYRes2;          // Ptr to the secondary result
 
     DBGENTER;
 
@@ -2743,7 +2739,6 @@ UBOOL PrimFnDydNestNest_EM
     {
         TOKEN     tkLft = {0},
                   tkRht = {0};
-        LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
         // Fill in the left arg token
         FillToken (&tkLft,
@@ -2754,15 +2749,36 @@ UBOOL PrimFnDydNestNest_EM
                     ((LPAPLNESTED) lpMemRht)[uRes % aplNELMRht],
                     lptkRhtArg->tkCharIndex);
         // Call as dyadic function
-        lpYYRes = (*lpPrimSpec->PrimFnDyd_EM_YY) (&tkLft,       // Ptr to left arg token
-                                                   lptkFunc,    // Ptr to function token
-                                                  &tkRht,       // Ptr to right arg token
-                                                   NULL,        // Ptr to axis token
-                                                   lpPrimSpec); // Ptr to local PRIMSPEC
-        if (lpYYRes)
+        lpYYRes2 =
+          (*lpPrimSpec->PrimFnDyd_EM_YY) (&tkLft,           // Ptr to left arg token
+                                           lptkFunc,        // Ptr to function token
+                                           &tkRht,          // Ptr to right arg token
+                                            NULL,           // Ptr to axis token
+                                            lpPrimSpec);    // Ptr to local PRIMSPEC
+        if (lpYYRes2)
         {
-            ((LPAPLNESTED) lpMemRes)[uRes] = lpYYRes->tkToken.tkData.tkGlbData;
-            YYFree (lpYYRes); lpYYRes = NULL;
+            // If the result is immediate, make it into a SYMENTRY
+            // Split cases based upon the result token type
+            switch (lpYYRes2->tkToken.tkFlags.TknType)
+            {
+                case TKT_VARIMMED:
+                    ((LPAPLNESTED) lpMemRes)[uRes] =
+                      MakeSymEntry_EM (lpYYRes2->tkToken.tkFlags.ImmType,   // Immediate type
+                                      &lpYYRes2->tkToken.tkData.tkLongest,  // Ptr to immediate value
+                                       lptkFunc);                           // Ptr to function token
+                    break;
+
+                case TKT_VARARRAY:
+                    ((LPAPLNESTED) lpMemRes)[uRes] =
+                      lpYYRes2->tkToken.tkData.tkGlbData;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Free the YYRes
+            YYFree (lpYYRes2); lpYYRes2 = NULL;
         } else
             bRet = FALSE;
     } // End FOR
@@ -3502,9 +3518,7 @@ RESTART_EXCEPTION:
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
+                goto DOMAIN_EXIT;
 
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -3572,7 +3586,16 @@ RESTART_EXCEPTION:
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // Restore the memory ptr
     *lplpMemRes = lpMemRes;
 
@@ -4296,9 +4319,7 @@ RESTART_EXCEPTION:
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
+                goto DOMAIN_EXIT;
 
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -4366,7 +4387,16 @@ RESTART_EXCEPTION:
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // Restore the memory ptr
     *lplpMemRes = lpMemRes;
 
@@ -4449,11 +4479,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                                                 aplNELMRht,
                                                &aplTypeRht);
     if (aplTypeRes EQ ARRAY_ERROR)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Special case APA result
     if (IsSimpleAPA (aplTypeRes))
@@ -4593,6 +4619,14 @@ HGLOBAL PrimFnDydSiScNest_EM
 
     if (bRet)
         goto NORMAL_EXIT;
+    else
+        goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     bRet = FALSE;
 
@@ -4662,11 +4696,7 @@ HGLOBAL PrimFnDydSiScSiSc_EM
                                                 1,
                                                &aplTypeRht);
     if (aplTypeRes EQ ARRAY_ERROR)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     if (PrimFnDydSiScSiScSub_EM (&tkRes,
                                   lptkFunc,
@@ -4687,6 +4717,11 @@ HGLOBAL PrimFnDydSiScSiSc_EM
                                 lptkFunc);                  // Ptr to function token
     else
         return NULL;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnDydSiScSiSc_EM
 #undef  APPEND_NAME
 
@@ -4852,11 +4887,7 @@ RESTART_EXCEPTION_IMMED:
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                bRet = FALSE;
-
-                goto ERROR_EXIT;
+                goto DOMAIN_EXIT;
 
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -4880,7 +4911,17 @@ RESTART_EXCEPTION_IMMED:
                 break;
         } // End SWITCH
     } // End __try/__except
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+    bRet = FALSE;
+NORMAL_EXIT:
     return bRet;
 } // End PrimFnDydSiScSiScSub_EM
 #undef  APPEND_NAME
@@ -5156,9 +5197,7 @@ RESTART_EXCEPTION_SINGLETON:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                           lptkFunc);
-                        goto ERROR_EXIT;
+                        goto DOMAIN_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -5381,14 +5420,10 @@ RESTART_EXCEPTION_SINGLETON:
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteRes = aplRankRes * sizeof (APLUINT);
-            Assert (ByteRes EQ (UINT) ByteRes);
-            hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+            Assert (ByteRes EQ (__int3264) ByteRes);
+            hGlbWVec = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
             if (!hGlbWVec)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
             lpMemWVec = MyGlobalLock (hGlbWVec);
@@ -5411,14 +5446,10 @@ RESTART_EXCEPTION_SINGLETON:
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteRes = aplRankRes * sizeof (APLUINT);
-            Assert (ByteRes EQ (UINT) ByteRes);
-            hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+            Assert (ByteRes EQ (__int3264) ByteRes);
+            hGlbOdo = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
             if (!hGlbOdo)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
             lpMemOdo = MyGlobalLock (hGlbOdo);
@@ -5883,9 +5914,7 @@ RESTART_EXCEPTION_AXIS:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
+                        goto DOMAIN_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -6300,9 +6329,7 @@ RESTART_EXCEPTION_NOAXIS:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
+                        goto DOMAIN_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -6388,6 +6415,16 @@ RESTART_EXCEPTION_NOAXIS:
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     // Mark as in error

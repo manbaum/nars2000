@@ -177,7 +177,7 @@ void SendMessageLastTab
         // Get the PerTabData global memory handle for the preceding tab
         hGlbPTD = GetPerTabHandle (iPrvTabIndex);
 
-        // Lock the memory to get a pre to it
+        // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
         // Send this error message to the previous tab's SM
@@ -203,7 +203,7 @@ void MakeWorkspaceBackup
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;             // Ptr to temporary storage
-    UINT         uLen;                  // Temporary length
+    APLUINT      uLen;                  // Temporary length
     FILE        *fStream = NULL,        // Ptr to file stream for the plain text workspace file
                 *fBackup;               // Ptr to file stream for the backup file
 
@@ -246,8 +246,8 @@ void MakeWorkspaceBackup
     while (feof (fStream) EQ 0
         && ferror (fBackup) EQ 0)
     {
-        uLen = (UINT) fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR), fStream);
-                      fwrite (lpwszTemp, 1, uLen                                  , fBackup);
+        uLen = (__int3264) fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR), fStream);
+                           fwrite (lpwszTemp, 1, (__int3264) uLen                      , fBackup);
     } // End WHILE
 
     // We no longer need this handle
@@ -327,8 +327,8 @@ UBOOL SaveNewWsid_EM
 
         // Allocate space for the new WSID
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteWSID EQ (UINT) ByteWSID);
-        hGlbWSID = DbgGlobalAlloc (GHND, (UINT) ByteWSID);
+        Assert (ByteWSID EQ (__int3264) ByteWSID);
+        hGlbWSID = DbgGlobalAlloc (GHND, (__int3264) ByteWSID);
         if (!hGlbWSID)
             goto WSFULL_EXIT;
 

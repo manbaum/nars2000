@@ -138,7 +138,7 @@ Downloads</h1>
                .   "        <td align=\"right\">$Size</td>\n"
                .   "        <td>$Ext</td>\n"
                . (($Class == 'zip')
-               ?   "        <td class=\"notes\"><a target=\"bodyFrame\"class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
+               ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
                :   "        <td class=\"notes\"></td>\n")
                .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
                .   "      </tr>\n";

@@ -125,10 +125,7 @@ __int3264 CALLBACK AboutDlgProc
     {
         case WM_INITDIALOG:
         {
-            WCHAR wszTemp[512], wszFileVer[32];
-
-            // Read in the application's File Version String
-            LclFileVersionStrW (wszAppDPFE, wszFileVer);
+            WCHAR wszTemp[512];
 
             // Format the version #
             wsprintfW (wszTemp, lpwszVersion, wszFileVer);

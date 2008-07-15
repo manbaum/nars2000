@@ -245,6 +245,8 @@
 #define WS_UTF16_QUADUPARROW        L"\x2350"   //
 #define WS_UTF16_QUADDOWNARROW      L"\x2357"   //
 #define WS_UTF16_DELTILDE           L"\x236B"   // Del-tilde
+#define WS_UTF16_HORIZELLIPSIS      L"\x2026"   // Horizontal ellipsis
+#define WS_UTF16_REPLACEMENTCHAR    L"\xFFFD"   // Replacement char for unknown
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA              L"\x237A"   // Alt-'a' - alpha

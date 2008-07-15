@@ -542,7 +542,7 @@ long CheckException
 //  Compare starting addresses so as to sort them
 //***************************************************************************
 
-UINT __cdecl CompareStartAddresses
+__int3264 __cdecl CompareStartAddresses
     (const void *elem1,
      const void *elem2)
 
@@ -550,8 +550,8 @@ UINT __cdecl CompareStartAddresses
 #define lpSALft     ((LPSTART_ADDRESSES) elem1)
 #define lpSARht     ((LPSTART_ADDRESSES) elem2)
 
-    return (UINT) (lpSALft->StartAddressAddr
-                 - lpSARht->StartAddressAddr);
+    return (__int3264) (lpSALft->StartAddressAddr
+                      - lpSARht->StartAddressAddr);
 #undef  lpSARht
 #undef  lpSALft
 } // End CompareStartAddresses
@@ -690,6 +690,13 @@ void DisplayException
     NewMsg (L"   (the one with an extension of .save.bak.ws.nars)."  );
     NewMsg (L"----------------------------------------------------"  );
 
+    // Display the version # of the executable
+    wsprintfW (wszTemp,
+               WS_APPNAME L" -- Version %s",
+               wszFileVer);
+    NewMsg (wszTemp);
+
+    // Display the exception code
     wsprintfW (wszTemp,
                L"Exception code = %08X (%S)",
                exceptCode,
@@ -958,10 +965,10 @@ void DisplayException
 //***************************************************************************
 
 void FindRoutineAddress
-    (LPUCHAR exceptAddr,            // Exception address
-     LPUINT  lpNearAddress,         // Ptr to offset from closest address
-     LPUINT  lpNearIndex,           // Ptr to index into StartAddresses
-     UBOOL   bDebugger)             // TRUE iff test for running under debugger
+    (LPUCHAR    exceptAddr,         // Exception address
+     __int3264 *lpNearAddress,      // Ptr to offset from closest address
+     LPUINT     lpNearIndex,        // Ptr to index into StartAddresses
+     UBOOL      bDebugger)          // TRUE iff test for running under debugger
 
 {
     UINT    i;                      // Loop counter
@@ -969,7 +976,7 @@ void FindRoutineAddress
 
     // Find the address closest to and at or below the given address
     for (i = 0,
-           *lpNearAddress = NEG1U,
+           *lpNearAddress = (__int3264) -1,
            *lpNearIndex   = START_ADDRESSES_LENGTH;
          i < START_ADDRESSES_LENGTH;
          i++)
@@ -987,9 +994,9 @@ void FindRoutineAddress
 
         // Check against the actual address
         if (exceptAddr >= startAddr
-         && ((UINT) (exceptAddr - startAddr)) < *lpNearAddress)
+         && ((__int3264) (exceptAddr - startAddr)) < *lpNearAddress)
         {
-            *lpNearAddress = (UINT) (exceptAddr - startAddr);
+            *lpNearAddress = (__int3264) (exceptAddr - startAddr);
             *lpNearIndex   = i;
         } // End IF
     } // End FOR

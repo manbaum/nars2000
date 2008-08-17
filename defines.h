@@ -101,6 +101,12 @@
 #define DEF_GLBHSHTAB_MAXSIZE   (1024 * DEF_GLBHSHTAB_EPB)  // Maximum ...
 #define DEF_GLBHSHTAB_HASHMASK  (DEF_GLBHSHTAB_NBLKS - 1)   // Starting hash mask
 #define DEF_GLBHSHTAB_INCR      (DEF_HSHTAB_PRIME % DEF_GLBHSHTAB_INITSIZE)
+#define DEF_CS_INITSIZE         (   4*1024)                 // Initial size of Ctrl Struc token buffer
+#define DEF_CS_INCRSIZE         (   4*1024)                 // Incremental ...
+#define DEF_CS_MAXSIZE          (  64*1024)                 // Maximum ...
+#define DEF_FORSTMT_INITSIZE    (   1*1024)                 // Initial size of FORSTMT stack
+#define DEF_FORSTMT_INCRSIZE    (   1*1024)                 // Incremental ...
+#define DEF_FORSTMT_MAXSIZE     (   1*1024)                 // Maximum ...
 
 
 // Global Options
@@ -111,8 +117,8 @@
 #define DEF_USELOCALTIME            TRUE
 #define DEF_BACKUPONLOAD            TRUE
 #define DEF_BACKUPONSAVE            TRUE
-#define DEF_CLOSINGLAMP             TRUE
 #define DEF_DEFAULTPASTE            UNITRANS_NORMAL
+#define DEF_DEFAULTCOPY             UNITRANS_NARS
 
 
 // Range limits for []vars
@@ -168,10 +174,22 @@
 #define LMEWNDCLASS    L"MEClass"       // Matrix Editor ...
 #define  VEWNDCLASS     "VEClass"       // Vector Editor ...
 #define LVEWNDCLASS    L"VEClass"       // Vector Editor ...
-#define  ECWNDCLASS     "ECClass"       // Edit Control ...
-#define LECWNDCLASS    L"ECClass"       // Edit Control ...
+#define  ECWNDCLASS     "ECClass"       // Edit Ctrl ...
+#define LECWNDCLASS    L"ECClass"       // Edit Ctrl ...
 #define  CCWNDCLASS     "CCClass"       // Crash Control ...
 #define LCCWNDCLASS    L"CCClass"       // Crash Control ...
+
+#define CQUADPR_MT      L'\xFFFF'       // cQuadPR value indicating it's empty
+
+//***************************************************************************
+//  Threads
+//***************************************************************************
+
+#define TLSTYPE_DB      ((LPVOID) 'DB')     // Debugger
+#define TLSTYPE_IE      ((LPVOID) 'IE')     // Immediate Execution
+#define TLSTYPE_MF      ((LPVOID) 'MF')     // Master Frame
+#define TLSTYPE_PL      ((LPVOID) 'PL')     // ParseLine
+#define TLSTYPE_TC      ((LPVOID) 'TC')     // Tab Control
 
 
 //***************************************************************************

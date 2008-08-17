@@ -81,8 +81,8 @@
 #define KEYNAME_USELOCALTIME            L"UseLocalTime"
 #define KEYNAME_BACKUPONLOAD            L"BackupOnLoad"
 #define KEYNAME_BACKUPONSAVE            L"BackupOnSave"
-#define KEYNAME_CLOSINGLAMP             L"ClosingLamp"
 #define KEYNAME_DEFAULTPASTE            L"DefaultPaste"
+#define KEYNAME_DEFAULTCOPY             L"DefaultCopy"
 
 // Format string for [Fonts] section LOGFONT
 #define FMTSTR_LOGFONT_INP      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
@@ -209,6 +209,8 @@ void ReadIniFileGlb
          *lpwszTemp;                // Temporary ptr into wszTemp
     UINT  uCnt;                     // Loop counter
 
+#define TEMPBUFLEN      (sizeof (wszTemp) / sizeof (wszTemp[0]))
+
     //***************************************************************
     // Read in the [Fonts] section
     //***************************************************************
@@ -283,17 +285,17 @@ void ReadIniFileGlb
                              KEYNAME_BACKUPONSAVE,  // Ptr to the key name
                              DEF_USELOCALTIME,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bClosingLamp
-    OptionFlags.bClosingLamp =
-      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
-                             KEYNAME_CLOSINGLAMP,   // Ptr to the key name
-                             DEF_CLOSINGLAMP,       // Default value if not found
-                             lpwszIniFile);         // Ptr to the file name
     // Read in uDefaultPaste
     OptionFlags.uDefaultPaste =
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_DEFAULTPASTE,  // Ptr to the key name
                              DEF_DEFAULTPASTE,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in uDefaultCopy
+    OptionFlags.uDefaultCopy =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_DEFAULTCOPY,   // Ptr to the key name
+                             DEF_DEFAULTCOPY,       // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     //***************************************************************
     // Read in the [SysVars] section -- default values for system
@@ -369,15 +371,20 @@ void ReadIniFileGlb
     // Read in []PR
     GetPrivateProfileStringW (SECTNAME_SYSVARS,     // Ptr to the section name
                               KEYNAME_QUADPR,       // Ptr to the key name
-                              L"\x0001",            // Ptr to the default value
+                              DEF_QUADPR_CWS,       // Ptr to the default value
                               wszTemp,              // Ptr to the output buffer
-                              sizeof (wszTemp),     // Byte size of the output buffer
+                              TEMPBUFLEN,           // Byte size of the output buffer
                               lpwszIniFile);        // Ptr to the file name
-    // If the new value is present, ...
-    if (wszTemp[0] NE L'\x0001')
+    // Convert any {name}s to symbols
+    ConvertNameInPlace (wszTemp);
+
+    // If the value is empty (''), ...
+    if (wszTemp[0] EQ L'\0')
+    {
+        cQuadPR_CWS = CQUADPR_MT;
+        hGlbQuadPR_CWS = hGlbV0Char;
+    } else
         cQuadPR_CWS = wszTemp[0];
-    else
-        cQuadPR_CWS = DEF_QUADPR_CWS;
 
     // Read in []RL
     uQuadRL_CWS =
@@ -505,6 +512,7 @@ void ReadIniFileGlb
                              KEYNAME_QUADRL,        // Ptr to the key name
                              DEF_SETEMPTYCWS_RL,    // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+#undef  TEMPBUFLEN
 } // End ReadIniFileGlb
 
 
@@ -623,7 +631,8 @@ HGLOBAL GetPrivateProfileGlbCharW
                               hDefVal,              // Default value global memory handle
                               ARRAY_CHAR,           // Result storage type
                               sizeof (APLCHAR),     // Size of each item in the result
-                              lstrlenW (lpwDefVal), // Length of the default vector
+                              lstrlenW (lpwDefVal) - 2,// Length of the default vector
+                                                    //   less the surrounding single quotes
                               lpwszIniFile);        // Ptr to the file name
 } // End GetPrivateProfileGlbCharW
 
@@ -740,7 +749,7 @@ HGLOBAL GetPrivateProfileGlbComW
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     return hGlbRes;
-} // End GetPrivateProfileGlbCharW
+} // End GetPrivateProfileGlbComW
 
 
 //***************************************************************************
@@ -789,13 +798,27 @@ void CopyConvertDataOfType
                     // Get the next char
                     wcTmp = SymbolNameToChar (wszTemp);
 
-                    // Skip to the next field
-                    wszTemp = SkipPastCharW (wszTemp, L'}');
-                } else
-                    wcTmp = *wszTemp++;
+                    // If there's a matching UTF16_xxx equivalent, ...
+                    if (wcTmp)
+                    {
+                        // Save in the result and skip over it
+                        *((LPAPLCHAR) lpMemRes)++ = wcTmp;
 
-                // Save in the result and skip over it
-                *((LPAPLCHAR) lpMemRes)++ = wcTmp;
+                        // Skip to the next field
+                        wszTemp = SkipPastCharW (wszTemp, L'}');
+                    } else
+                    {
+                        // Copy source to destin up to and including the matching '}'
+                        while (wszTemp[0] NE L'}')
+                            // Save in the result and skip over it
+                            *((LPAPLCHAR) lpMemRes)++ = *wszTemp++;
+
+                        // Copy the '}'
+                        *((LPAPLCHAR) lpMemRes)++ = *wszTemp++;
+                    } // End IF/ELSE
+                } else
+                    // Save in the result and skip over it
+                    *((LPAPLCHAR) lpMemRes)++ = *wszTemp++;
             } // End FOR
 
             break;
@@ -1124,15 +1147,6 @@ void SaveIniFile
                                 KEYNAME_BACKUPONSAVE, // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
-    //******************* bClosingLamp ************************
-    wszTemp[0] = L'0' + OptionFlags.bClosingLamp;
-    wszTemp[1] = L'\0';
-
-    // Write out bClosingLamp
-    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
-                                KEYNAME_CLOSINGLAMP,// Ptr to the key name
-                                wszTemp,            // Ptr to the key value
-                                lpwszIniFile);      // Ptr to the file name
     //******************* uDefaultPaste ***********************
     wsprintfW (wszTemp,
                L"%u",
@@ -1140,6 +1154,15 @@ void SaveIniFile
     // Write out uDefaultPaste
     WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
                                 KEYNAME_DEFAULTPASTE, // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //******************* uDefaultCopy ************************
+    wsprintfW (wszTemp,
+               L"%u",
+               OptionFlags.uDefaultCopy);
+    // Write out uDefaultCopy
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,   // Ptr to the section name
+                                KEYNAME_DEFAULTCOPY, // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
 
@@ -1244,6 +1267,29 @@ void SaveIniFile
     // Write out []PP
     WritePrivateProfileStringW (SECTNAME_SYSVARS,   // Ptr to the section name
                                 KEYNAME_QUADPP,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+    //************************ []PR ***************************
+    // Format []PR
+    if (cQuadPR_CWS EQ CQUADPR_MT)
+    {
+        wszTemp[0] =
+        wszTemp[1] = L'\'';
+        wszTemp[2] = L'\0';
+    } else
+    {
+        UINT uLen;
+
+        wszTemp[0] = L'\'';
+        uLen =
+          ConvertWideToNameLength (&wszTemp[1], &cQuadPR_CWS, 1);
+        wszTemp[uLen + 1] = L'\'';
+        wszTemp[uLen + 2] = L'\0';
+    } // End IF/ELSE
+
+    // Write out []PR
+    WritePrivateProfileStringW (SECTNAME_SYSVARS,   // Ptr to the section name
+                                KEYNAME_QUADPR,     // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
     //************************ []PW ***************************
@@ -1464,7 +1510,6 @@ void WritePrivateProfileGlbCharW
     LPAPLCHAR lpMemObj,                     // Ptr to object global memory
               lpaplChar;                    // Ptr to running output
     APLNELM   aplNELMObj;                   // Object NELM
-    APLUINT   uObj;                         // Loop counter
 
     // Lock the memory to get a ptr to it
     lpMemObj = MyGlobalLock (hGlbObj);
@@ -1480,15 +1525,19 @@ void WritePrivateProfileGlbCharW
     // Get starting ptr
     lpaplChar = lpwszGlbTemp;
 
-    // Loop through the array elements
-    for (uObj = 0; uObj < aplNELMObj; uObj++, lpMemObj++)
-        // Format the text as an ASCII string with non-ASCII chars
-        //   represented as either {symbol} or {\xXXXX} where XXXX is
-        //   a four-digit hex number.
-        lpaplChar +=
-          ConvertWideToNameLength (lpaplChar,       // Ptr to output save buffer
-                                   lpMemObj,        // Ptr to incoming chars
-                                   1);              // # chars to convert
+    // Leading single quote
+    *lpaplChar++ = L'\'';
+
+    // Format the text as an ASCII string with non-ASCII chars
+    //   represented as either {symbol} or {\xXXXX} where XXXX is
+    //   a four-digit hex number.
+    lpaplChar +=
+      ConvertWideToNameLength (lpaplChar,       // Ptr to output save buffer
+                               lpMemObj,        // Ptr to incoming chars
+                        (UINT) aplNELMObj);     // # chars to convert
+    // Trailing single quote
+    *lpaplChar++ = L'\'';
+
     // Ensure properly terminated
     *lpaplChar   = L'\0';
 

@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Edit Control Header
+//  NARS2000 -- Edit Ctrl Header
 //***************************************************************************
 
 /***************************************************************************
@@ -35,6 +35,7 @@ typedef PAINTHOOK *LPPAINTHOOK;
 #define MYWM_SELECTALL      (WM_USER + 2)
 #define MYWM_KEYDOWN        (WM_USER + 3)
 #define MYWM_PASTE_APL      (WM_USER + 4)
+#define MYWM_COPY_APL       (WM_USER + 5)
 
 #define FCN_INDENT  6
 

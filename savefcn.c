@@ -32,6 +32,7 @@
 #include "pertab.h"
 #include "sis.h"
 #include "savefcn.h"
+#include "cs_parse.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -81,9 +82,9 @@ UBOOL SaveFunction
 //***************************************************************************
 
 UINT SF_LineLenFE
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPVOID    lpVoid,              // Ptr to common struc
-     UINT      uLineNum)            // Function line #
+     UINT      uLineNum)            // Function line # (0 = header)
 
 {
     UINT uLinePos;
@@ -103,16 +104,16 @@ UINT SF_LineLenFE
 //***************************************************************************
 
 UINT SF_LineLenLW
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPLW_PARAMS lpLW_Params,       // Ptr to common struc
-     UINT        uLineNum)          // Function line #
+     UINT        uLineNum)          // Function line # (0 = header)
 
 {
     // The caller requests the line length before it reads
     //   the line so it can allocate memory.
 
     // This means we must read the line first so we can get its length
-    SF_ReadLineLW (hWndEC,                  // Edit Control window handle (FE only)
+    SF_ReadLineLW (hWndEC,                  // Edit Ctrl window handle (FE only)
                    lpLW_Params,             // Ptr to common struc
                    uLineNum,                // Function line #
                    lpLW_Params->lpwBuffer); // Ptr to header/line global memory
@@ -129,9 +130,9 @@ UINT SF_LineLenLW
 //***************************************************************************
 
 UINT SF_LineLenM
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPFX_PARAMS lpFX_Params,       // Ptr to common struc
-     UINT        uLineNum)          // Function line #
+     UINT        uLineNum)          // Function line # (0 = header)
 
 {
     LPAPLCHAR lpMemRht;             // Ptr to right arg global memory
@@ -171,9 +172,9 @@ UINT SF_LineLenM
 //***************************************************************************
 
 UINT SF_LineLenN
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPFX_PARAMS lpFX_Params,       // Ptr to common struc
-     UINT        uLineNum)          // Function line #
+     UINT        uLineNum)          // Function line # (0 = header)
 
 {
     LPAPLNESTED lpMemRht;           // Ptr to right arg global memory
@@ -222,9 +223,9 @@ UINT SF_LineLenN
 //***************************************************************************
 
 UINT SF_LineLenSV
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPVOID    lpVoid,              // Ptr to common struc
-     UINT      uLineNum)            // Function line #
+     UINT      uLineNum)            // Function line # (0 = header)
 
 {
     // The function line is a single char
@@ -240,13 +241,50 @@ UINT SF_LineLenSV
 //***************************************************************************
 
 UINT SF_LineLenTF1
-    (HWND         hWndEC,           // Edit Control window handle (FE only)
+    (HWND         hWndEC,           // Edit Ctrl window handle (FE only)
      LPTF1_PARAMS lpTF1_Params,     // Ptr to common struc
-     UINT         uLineNum)         // Function line #
+     UINT         uLineNum)         // Function line # (0 = header)
 
 {
     return (UINT) lpTF1_Params->aplColsRht;
 } // End SF_LineLenTF1
+
+
+//***************************************************************************
+//  $SF_LineLenAA
+//
+//  Return the length of a function text header/line
+//    when called from )INASCII with a file whose contents are a
+//    simple char vector
+//***************************************************************************
+
+UINT SF_LineLenAA
+    (HWND         hWndEC,           // Edit Ctrl window handle (FE only)
+     LPAA_PARAMS  lpAA_Params,      // Ptr to common struc
+     UINT         uLineNum)         // Function line # (0 = header)
+
+{
+    LPWCHAR lpw;
+
+    // Get a ptr to the start of the function lines
+    lpw = lpAA_Params->lpwStart;
+
+    // Skip to the designated line #
+    while (uLineNum)
+    {
+        // Skip over the line
+        lpw += lstrlenW (lpw);
+
+        // Skip over trailing CR/LFs zapped to zeros
+        while (*lpw EQ L'\0')
+            lpw++;
+        // Count out one more line
+        uLineNum--;
+    } // End WHILE
+
+    // Return the line length
+    return lstrlenW (lpw);
+} // End SF_LineLenAA
 
 
 //***************************************************************************
@@ -257,9 +295,9 @@ UINT SF_LineLenTF1
 //***************************************************************************
 
 void SF_ReadLineFE
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPVOID    lpVoid,              // Ptr to common struc
-     UINT      uLineNum,            // Function line #
+     UINT      uLineNum,            // Function line # (0 = header)
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
 {
@@ -275,9 +313,9 @@ void SF_ReadLineFE
 //***************************************************************************
 
 void SF_ReadLineLW
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPLW_PARAMS lpLW_Params,       // Ptr to common struc
-     UINT        uLineNum,          // Function line #
+     UINT        uLineNum,          // Function line # (0 = header)
      LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
 
 {
@@ -311,9 +349,9 @@ void SF_ReadLineLW
 //***************************************************************************
 
 void SF_ReadLineM
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPFX_PARAMS lpFX_Params,       // Ptr to common struc
-     UINT        uLineNum,          // Function line #
+     UINT        uLineNum,          // Function line # (0 = header)
      LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
 
 {
@@ -359,9 +397,9 @@ void SF_ReadLineM
 //***************************************************************************
 
 void SF_ReadLineN
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPFX_PARAMS lpFX_Params,       // Ptr to common struc
-     UINT        uLineNum,          // Function line #
+     UINT        uLineNum,          // Function line # (0 = header)
      LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
 
 {
@@ -426,9 +464,9 @@ void SF_ReadLineN
 //***************************************************************************
 
 void SF_ReadLineSV
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPFX_PARAMS lpFX_Params,       // Ptr to common struc
-     UINT        uLineNum,          // Function line #
+     UINT        uLineNum,          // Function line # (0 = header)
      LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
 
 {
@@ -466,16 +504,57 @@ void SF_ReadLineSV
 //***************************************************************************
 
 void SF_ReadLineTF1
-    (HWND         hWndEC,           // Edit Control window handle (FE only)
+    (HWND         hWndEC,           // Edit Ctrl window handle (FE only)
      LPTF1_PARAMS lpTF1_Params,     // Ptr to common struc
-     UINT         uLineNum,         // Function line #
+     UINT         uLineNum,         // Function line # (0 = header)
      LPAPLCHAR    lpMemLine)        // Ptr to header/line global memory
 
 {
+    // Copy the line to global memory
     CopyMemory (lpMemLine,
                 lpTF1_Params->lpMemRht + uLineNum * lpTF1_Params->aplColsRht,
                 (__int3264) lpTF1_Params->aplColsRht * sizeof (APLCHAR));
 } // End SF_ReadLineTF1
+
+
+//***************************************************************************
+//  $SF_ReadLineAA
+//
+//  Read in a header/function line
+//    when called from )INASCII with a file whose contents are a
+//    simple char vector
+//***************************************************************************
+
+void SF_ReadLineAA
+    (HWND         hWndEC,           // Edit Ctrl window handle (FE only)
+     LPAA_PARAMS  lpAA_Params,      // Ptr to common struc
+     UINT         uLineNum,         // Function line # (0 = header)
+     LPAPLCHAR    lpMemLine)        // Ptr to header/line global memory
+
+{
+    LPWCHAR lpw;
+
+    // Get a ptr to the start of the function lines
+    lpw = lpAA_Params->lpwStart;
+
+    // Skip to the designated line #
+    while (uLineNum)
+    {
+        // Skip over the line
+        lpw += lstrlenW (lpw);
+
+        // Skip over trailing CR/LFs zapped to zeros
+        while (*lpw EQ L'\0')
+            lpw++;
+        // Count out one more line
+        uLineNum--;
+    } // End WHILE
+
+    // Copy the line to global memory
+    CopyMemory (lpMemLine,
+                lpw,
+                lstrlenW (lpw) * sizeof (APLCHAR));
+} // End SF_ReadLineAA
 
 
 //***************************************************************************
@@ -487,7 +566,7 @@ void SF_ReadLineTF1
 //***************************************************************************
 
 UINT SF_NumLinesCom
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPFX_PARAMS lpFX_Params)       // Ptr to common struc
 
 {
@@ -505,7 +584,7 @@ UINT SF_NumLinesCom
 //***************************************************************************
 
 UINT SF_NumLinesFE
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPVOID    lpVoid)              // Ptr to common struc
 
 {
@@ -522,7 +601,7 @@ UINT SF_NumLinesFE
 //***************************************************************************
 
 UINT SF_NumLinesLW
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPLW_PARAMS lpLW_Params)       // Ptr to common struc
 
 {
@@ -542,7 +621,7 @@ UINT SF_NumLinesLW
 //***************************************************************************
 
 UINT SF_NumLinesM
-    (HWND        hWndEC,            // Edit Control window handle (FE only)
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPFX_PARAMS lpFX_Params)       // Ptr to common struc
 
 {
@@ -560,7 +639,7 @@ UINT SF_NumLinesM
 //***************************************************************************
 
 UINT SF_NumLinesTF1
-    (HWND         hWndEC,           // Edit Control window handle (FE only)
+    (HWND         hWndEC,           // Edit Ctrl window handle (FE only)
      LPTF1_PARAMS lpTF1_Params)     // Ptr to common struc
 
 {
@@ -568,6 +647,25 @@ UINT SF_NumLinesTF1
     return -1 +
       (UINT) lpTF1_Params->aplRowsRht;
 } // End SF_NumLinesTF1
+
+
+//***************************************************************************
+//  $SF_NumLinesAA
+//
+//  Return the # lines in the function (excluding the header line)
+//    when called from )INASCII with a file whose contents are a
+//    simple char vector
+//***************************************************************************
+
+UINT SF_NumLinesAA
+    (HWND         hWndEC,           // Edit Ctrl window handle (FE only)
+     LPAA_PARAMS  lpAA_Params)      // Ptr to common struc
+
+{
+    // The # function lines
+    return -1 +
+      (UINT) lpAA_Params->NumLines;
+} // End SF_NumLinesAA
 
 
 //***************************************************************************
@@ -851,6 +949,8 @@ HGLOBAL SF_UndoBufferLW
                     lpMemUndoTxt = SkipToCharW (lpMemUndoTxt, L'{');
 
                     // Parse the {name}
+                    // Because we created this name, we can expect it to be found
+                    //   and so don't need to check for zero result
                     lpMemUndoBin->Char = SymbolNameToChar (lpMemUndoTxt);
                 } else
                 if (lpMemUndoBin->Char EQ L'\\')
@@ -930,7 +1030,7 @@ UBOOL SaveFunctionCom
      LPSF_FCNS lpSF_Fcns)               // Ptr to common struc
 
 {
-    HWND           hWndEC = NULL;       // Window handle to Edit Control
+    HWND           hWndEC = NULL;       // Window handle to Edit Ctrl
     UINT           uLineLen;            // Line length
     HGLOBAL        hGlbTxtHdr = NULL,   // Header text global memory handle
                    hGlbTknHdr = NULL,   // Tokenized header text ...
@@ -941,20 +1041,28 @@ UBOOL SaveFunctionCom
     LPPERTABDATA   lpMemPTD;            // Ptr to PerTabData global memory
     WCHAR          wszTemp[1024];       // Save area for error message text
     MEMVIRTSTR     lclMemVirtStr[1] = {0};// Room for one GuardAlloc
+    LPTOKEN        lptkCSBeg;           // Ptr to next token on the CS stack
 
     // Fill in common values
     lpSF_Fcns->bRet = FALSE;
     lpSF_Fcns->uErrLine = NEG1U;
 
-    if (hWndFE)
-    {
-        Assert (IzitFE (hWndFE));
-    } // End IF
+    Assert ((hWndFE EQ NULL) ? TRUE : IzitFE (hWndFE));
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    // Get the handle to the edit control
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save the ptr to the next token on the CS stack
+    //   as our beginning
+    lptkCSBeg = lpMemPTD->lptkCSNxt;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Get the handle to the Edit Ctrl
     if (hWndFE)
         (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
 
@@ -971,10 +1079,17 @@ UBOOL SaveFunctionCom
     hGlbTxtHdr = MyGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (!hGlbTxtHdr)
     {
-        MessageBox (hWndEC,
-                    "Insufficient memory to save the function header text!!",
-                    lpszAppName,
-                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        // Mark the line in error
+        lpSF_Fcns->uErrLine = 0;
+
+        if (hWndFE)
+            MessageBox (hWndEC,
+                        "Insufficient memory to save the function header text!!",
+                        lpszAppName,
+                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        else
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lpSF_Fcns->lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -1000,10 +1115,11 @@ UBOOL SaveFunctionCom
 
         // Tokenize the line
         hGlbTknHdr =
-          Tokenize_EM (&lpMemTxtLine->C,
-                        uLineLen,
-                        hWndEC,
-                       &ErrorHandler);
+          Tokenize_EM (&lpMemTxtLine->C,    // The line to tokenize (not necessarily zero-terminated)
+                        uLineLen,           // NELM of lpwszLine
+                        hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                        0,                  // Function line # (0 = header)
+                       &ErrorHandler);      // Ptr to error handling function (may be NULL)
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } // End IF
@@ -1020,7 +1136,7 @@ UBOOL SaveFunctionCom
 
             // Format the error message
             wsprintfW (wszTemp,
-                       ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER,
+                       ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
                        lpMemPTD->uCaret);
             // Display the error message
             MessageBoxW (hWndEC,
@@ -1029,8 +1145,9 @@ UBOOL SaveFunctionCom
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-        } // End IF
-
+        } else
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
+                                       lpSF_Fcns->lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -1070,7 +1187,7 @@ UBOOL SaveFunctionCom
     // Parse the header
     if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
     {
-        UINT         uLineNum,          // Current line # in the Edit Control
+        UINT         uLineNum,          // Current line # in the Edit Ctrl
                      uOffset,           // Cumulative offset
                      numResultSTE,      // # result STEs (may be zero)
                      numLftArgSTE,      // # left arg ...
@@ -1085,6 +1202,7 @@ UBOOL SaveFunctionCom
         SYSTEMTIME   systemTime;        // Current system (UTC) time
         FILETIME     ftCreation;        // Creation time
         HGLOBAL      hGlbOldDfn;        // Old Dfn global memory handle
+        CSLOCALVARS  csLocalVars = {0}; // CS local vars
 
         // Check on invalid function name (e.g. empty function header/body)
         if (!fhLocalVars.lpYYFcnName)
@@ -1371,17 +1489,19 @@ UBOOL SaveFunctionCom
 
                 // Tokenize the line
                 lpFcnLines->hGlbTknLine =
-                  Tokenize_EM (&lpMemTxtLine->C,
-                                uLineLen,
-                                hWndEC,
-                               &ErrorHandler);
+                  Tokenize_EM (&lpMemTxtLine->C,    // The line to tokenize (not necessarily zero-terminated)
+                                uLineLen,           // NELM of lpwszLine
+                                hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                                uLineNum + 1,       // Function line # (0 = header)
+                               &ErrorHandler);      // Ptr to error handling function (may be NULL)
             } else
                 // Tokenize the (empty) line
                 lpFcnLines->hGlbTknLine =
-                  Tokenize_EM (L"",
-                               0,
-                               hWndEC,
-                              &ErrorHandler);
+                  Tokenize_EM (L"",                 // The line to tokenize (not necessarily zero-terminated)
+                               0,                   // NELM of lpwszLine
+                               hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                               uLineNum + 1,        // Function line # (0 = header)
+                              &ErrorHandler);       // Ptr to error handling function (may be NULL)
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
@@ -1422,6 +1542,43 @@ UBOOL SaveFunctionCom
             // Skip to the next struct
             lpFcnLines++;
         } // End FOR
+
+        // Fill in the CS local vars struc
+        csLocalVars.hWndEC      = hWndEC;
+        csLocalVars.hGlbPTD     = hGlbPTD;
+        csLocalVars.lptkCSBeg   =
+        csLocalVars.lptkCSNxt   = lptkCSBeg;
+        csLocalVars.lptkCSLink  = NULL;
+        csLocalVars.hGlbDfnHdr  = hGlbDfnHdr;
+        csLocalVars.hGlbImmExec = NULL;
+
+        // Parse the tokens on the CS stack
+        if (!ParseCtrlStruc_EM (&csLocalVars))
+        {
+            if (hWndFE)
+            {
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Format the error message
+                wsprintfW (wszTemp,
+                           L"SYNTAX ERROR on line # %d, statement #%d, position %d -- function not saved",
+                           csLocalVars.tkCSErr.tkData.uLineNum,
+                           csLocalVars.tkCSErr.tkData.uStmtNum + 1,
+                           lpMemPTD->uCaret);
+                // Display the error message
+                MessageBoxW (hWndEC,
+                            wszTemp,
+                            lpwszAppName,
+                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+            } else
+                // Save the line # in error (origin-0)
+                lpSF_Fcns->uErrLine = uLineNum + 1;
+
+            goto ERROR_EXIT;
+        } // End IF
 
         // Check for special labels ([]IDENTITY, []INVERSE, []PROTOTYPE, and []SINGLETON)
         GetSpecialLabelNums (lpMemDfnHdr);
@@ -1518,6 +1675,15 @@ ERROR_EXIT:
         MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
     } // End IF
 NORMAL_EXIT:
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Restore the ptr to the next token on the CS stack
+    lpMemPTD->lptkCSNxt = lptkCSBeg;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     // If we allocated virtual storage, ...
     if (lclMemVirtStr[0].IniAddr)
     {

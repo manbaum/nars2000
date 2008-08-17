@@ -196,7 +196,7 @@ UBOOL CreateFcnWindow
 //***************************************************************************
 
 void SetMarginsFE
-    (HWND hWndEC,           // Window handle to the Edit Control
+    (HWND hWndEC,           // Window handle to the Edit Ctrl
      UINT uLeft)            // Left margin
 
 {
@@ -249,7 +249,7 @@ LRESULT APIENTRY FEWndProc
      LONG lParam)                   // ...
 
 {
-    HWND         hWndEC;            // Handle of Edit Control window
+    HWND         hWndEC;            // Handle of Edit Ctrl window
     VKSTATE      vkState;           // Virtual key state (Shift, Alt, Ctrl)
     long         lvkState;          // Temporary var for vkState
     LPUNDO_BUF   lpUndoBeg,         // Ptr to start of Undo Buffer
@@ -267,7 +267,7 @@ LRESULT APIENTRY FEWndProc
 ////                          };
 ////LCLODSAPI ("FE: ", hWnd, message, wParam, lParam);
 
-    // Get the handle to the edit control
+    // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = (GetWindowLongPtrW (hWnd, GWLSF_HWNDEC));
 
     switch (message)
@@ -412,7 +412,7 @@ LRESULT APIENTRY FEWndProc
             // Save incremented starting ptr in window extra bytes
             SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (__int3264) (LONG_PTR) ++lpUndoBeg);
 
-            // Create an edit control within which we can edit
+            // Create an Edit Ctrl within which we can edit
             hWndEC =
             CreateWindowExW (0L,                    // Extended styles
                              LECWNDCLASS,           // Class name
@@ -450,7 +450,7 @@ LRESULT APIENTRY FEWndProc
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Subclass the Edit Control so we can handle some of its messages
+            // Subclass the Edit Ctrl so we can handle some of its messages
             (HANDLE_PTR) lpMemPTD->lpfnOldEditCtrlWndProc =
               SetWindowLongPtrW (hWndEC,
                                  GWL_WNDPROC,
@@ -477,7 +477,7 @@ LRESULT APIENTRY FEWndProc
                 // Lock the memory to get a ptr to it
                 lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
-                // Append the text to the Edit Control
+                // Append the text to the Edit Ctrl
                 SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) &lpMemTxtLine->C);
 
                 // We no longer need this ptr
@@ -489,10 +489,10 @@ LRESULT APIENTRY FEWndProc
                 // Get ptr to array of function line structs (FCNLINE[numFcnLines])
                 lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-                // Loop through the lines, appending the text to the Edit Control
+                // Loop through the lines, appending the text to the Edit Ctrl
                 for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
                 {
-                    // Append a CRLF to the Edit Control
+                    // Append a CRLF to the Edit Ctrl
                     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
 
                     // Get the line text global memory handle
@@ -501,7 +501,7 @@ LRESULT APIENTRY FEWndProc
                     // Lock the memory to get a ptr to it
                     lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
-                    // Append the text to the Edit Control
+                    // Append the text to the Edit Ctrl
                     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) &lpMemTxtLine->C);
 
                     // We no longer need this ptr
@@ -541,6 +541,9 @@ LRESULT APIENTRY FEWndProc
         case MYWM_INIT_EC:
             // Draw the line #s
             DrawLineNumsFE (hWndEC);
+
+            // Set the caret to the Start-of-Buffer
+            SendMessageW (hWndEC, EM_SETSEL, 0, 0);
 
             return FALSE;           // We handled the msg
 
@@ -621,7 +624,7 @@ LRESULT APIENTRY FEWndProc
 #undef  fwSizeType
 
         case WM_SETFONT:
-            // Pass on to the edit control
+            // Pass on to the Edit Ctrl
             SendMessageW (hWndEC, message, wParam, lParam);
 
             // Changing the font also means changing the size
@@ -637,7 +640,7 @@ LRESULT APIENTRY FEWndProc
             return FALSE;           // We handled the msg
 
         case WM_SETFOCUS:
-            // Pass on to the edit ctrl
+            // Pass on to the Edit Ctrl
             SetFocus (hWndEC);
 
             // Draw the line #s
@@ -654,12 +657,13 @@ LRESULT APIENTRY FEWndProc
         case WM_UNDO:
         case MYWM_REDO:
         case WM_COPY:
+        case MYWM_COPY_APL:
         case WM_CUT:
         case WM_PASTE:
         case MYWM_PASTE_APL:
         case WM_CLEAR:
         case MYWM_SELECTALL:
-            // Pass on to the edit control
+            // Pass on to the Edit Ctrl
             SendMessageW (hWndEC, message, wParam, lParam);
 
             return FALSE;           // We handled the msg
@@ -670,15 +674,15 @@ LRESULT APIENTRY FEWndProc
         case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // Notification code
                                     // wID = LOWORD (wParam);         // Item, control, or accelerator identifier
                                     // hwndCtrl = (HWND) lParam;      // Handle of control
-            // This message should be from the edit control
+            // This message should be from the Edit Ctrl
             Assert (wID      EQ IDWC_FE_EC);
             Assert (hWndCtrl EQ hWndEC);
 
             // Split cases based upon the notify code
             switch (wNotifyCode)
             {
-                case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // identifier of edit control
-                                                    // hwndEditCtrl = (HWND) lParam;      // handle of edit control
+                case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // identifier of Edit Ctrl
+                                                    // hwndEditCtrl = (HWND) lParam;      // handle of Edit Ctrl
                     // Split cases based upon the last key
                     switch (GetWindowLongW (hWnd, GWLSF_LASTKEY))
                     {
@@ -691,15 +695,15 @@ LRESULT APIENTRY FEWndProc
                             break;
                     } // End SWITCH
 
-                    // The contents of the edit control have changed,
+                    // The contents of the Edit Ctrl have changed,
                     // set the changed flag
                     SetWindowLongW (hWnd, GWLSF_CHANGED, TRUE);
 
                     break;
 
-                case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
-                                    // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
-                    // The edit control has exceed its maximum # chars
+                case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of Edit Ctrl
+                                    // hwndEditCtrl = (HWND) lParam;      // Handle of Edit Ctrl
+                    // The Edit Ctrl has exceed its maximum # chars
 
                     // The default maximum is 32K, so we increase it by that amount
                     SendMessageW (hWndEC,
@@ -773,11 +777,11 @@ LRESULT APIENTRY FEWndProc
 //***************************************************************************
 //  $LclECPaintHook
 //
-//  Local Edit Control paint hook
+//  Local Edit Ctrl paint hook
 //***************************************************************************
 
 int LclECPaintHook
-    (HWND    hWndEC,        // Window handle of Edit Control
+    (HWND    hWndEC,        // Window handle of Edit Ctrl
      HDC     hDC,           // The Device Context
      int     x,             // The x-coordinate (Client Area)
      int     y,             // ... y- ...
@@ -1083,7 +1087,7 @@ UBOOL IzitNameChar
 //***************************************************************************
 //  $LclEditCtrlWndProc
 //
-//  Local window procedure for the Edit Control
+//  Local window procedure for the Edit Ctrl
 //***************************************************************************
 
 LRESULT WINAPI LclEditCtrlWndProc
@@ -1122,28 +1126,51 @@ LRESULT WINAPI LclEditCtrlWndProc
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;   // Ptr to formatting save area
-    WNDPROC      lpfnOldEditCtrlWndProc; // Ptr to preceding Edit Control window procedure
+    WNDPROC      lpfnOldEditCtrlWndProc; // Ptr to preceding Edit Ctrl window procedure
     LPWCHAR      lpwszTemp;     // Ptr to temporary storage
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // If the thread is MF, ...
+    if (TLSTYPE_MF EQ TlsGetValue (dwTlsType))
+        // Get the address of the preceding Edit Ctrl window proc
+        lpfnOldEditCtrlWndProc = GetPropW (hWnd, L"OldHandler");
+    else
+    {
+        // Get the thread's PerTabData global memory handle
+        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get the address of the preceding Edit Control window proc
-    lpfnOldEditCtrlWndProc = lpMemPTD->lpfnOldEditCtrlWndProc;
+        // Get the address of the preceding Edit Ctrl window proc
+        lpfnOldEditCtrlWndProc = lpMemPTD->lpfnOldEditCtrlWndProc;
 
-    // Get ptr to temporary storage
-    lpwszTemp = lpMemPTD->lpwszTemp;
+        // Get ptr to temporary storage
+        lpwszTemp = lpMemPTD->lpwszTemp;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } // End IF/ELSE
 
 ////LCLODSAPI ("EC: ", hWnd, message, wParam, lParam);
     // Split cases
     switch (message)
     {
+        case WM_SETCURSOR:          // hwnd = (HWND) wParam;       // handle of window with cursor
+                                    // nHittest = LOWORD(lParam);  // hit-test code
+                                    // wMouseMsg = HIWORD(lParam); // mouse-message identifier
+            // If this is an Edit Ctrl for SM,
+            //   and we're executing
+            //   and the mouse is in the client area
+            if (IzitSM (GetParent (hWnd)) && bExecuting && LOWORD (lParam) EQ HTCLIENT)
+            {
+                // Set a new cursor to indicate that we're waiting
+                SetCursor (hCursorWait);
+
+                return FALSE;           // We handled the msg
+            } // End IF
+
+            break;
+
         // In the case of right double click, the sequence of messages is
         //   WM_RBUTTONDOWN
         //   WM_RBUTTONUP
@@ -1291,14 +1318,14 @@ LRESULT WINAPI LclEditCtrlWndProc
             POINT pt;
 
             // This message is sent whenever the user right clicks
-            //   inside a Function Edit window and the Edit Control
+            //   inside a Function Edit window and the Edit Ctrl
             //   wants to know whether or not to enable the
             //   Localize/Unlocalize menu items, or it occurs
             //   inside a Session Manager window and the user wants
             //   to edit the named object.
 
             // Translate the xPos & yPos mouse screen coordinates into
-            //   client coordinates in the Edit Control window
+            //   client coordinates in the Edit Ctrl window
             pt.x = (UINT) wParam;
             pt.y = (UINT) lParam;
             ScreenToClient (hWnd, &pt);
@@ -1328,6 +1355,9 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             // Get the contents of the line
             SendMessageW (hWnd, EM_GETLINE, uLineNum, (LPARAM) lpwszTemp);
+
+            // Ensure the name is properly terminated
+            lpwszTemp[uLineLen] = L'\0';
 
             // Check the chars at and to the right of the specified char pos
             uCharPosEnd = uCharPos;
@@ -1372,7 +1402,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // nWidth = LOWORD(lParam);  // Width of client area
                                     // nHeight = HIWORD(lParam); // Height of client area
             // If requested to do so, change []PW to track the new width
-            if (IzitSM (GetParent (hWnd))   // If Edit Control for SM,
+            if (IzitSM (GetParent (hWnd))   // If Edit Ctrl for SM,
              && OptionFlags.bAdjustPW       // and requested to do so,
              && nWidth NE 0)                // and width is non-zero
             {
@@ -1488,7 +1518,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     if (IzitSM (hWndParent))
                         cyAveChar = cyAveCharSM;
                     else
-////////////////////if (IzitFE (hWndParent))    // ***FIXME*** -- Handle other Edit Control parents
+////////////////////if (IzitFE (hWndParent))    // ***FIXME*** -- Handle other Edit Ctrl parents
                         cyAveChar = cyAveCharFE;
 
                     // Get the current vkState
@@ -1516,7 +1546,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 case VK_RETURN:
                 {
-                    RECT rcFmtEC,       // Formatting rectangle for the Edit Control
+                    RECT rcFmtEC,       // Formatting rectangle for the Edit Ctrl
                          rcPaint;
 
                     // If the parent is SM,
@@ -1723,6 +1753,25 @@ LRESULT WINAPI LclEditCtrlWndProc
             if (0 <= iChar
              &&      iChar < ACHARCODES_NROWS)
             {
+                // If the Caps Lock key is On,
+                //   and the key is alphabetic,
+                //   the key comes in as toggled to Lower/Uppercase
+                //   depending upon the state of the shift key.
+                // I prefer the behavior where the Caps Lock key
+                //   doesn't affect the shift state when the Alt-key
+                //   is pressed, so the following code
+                //   toggles the upper/lowercase state
+                if (GetKeyState (VK_CAPITAL) & BIT0)
+                {
+                    if ('a' <= chCharCode && chCharCode <= 'z')
+                        chCharCode = (char) CharUpper ((LPCHAR) chCharCode);
+                    else
+                    if ('A' <= chCharCode && chCharCode <= 'Z')
+                        chCharCode = (char) CharLower ((LPCHAR) chCharCode);
+
+                    iChar = chCharCode - ' ';
+                } // End IF
+
                 // Get the Alt- char code
                 wChar[0] = aCharCodes[iChar].alt;
                 wChar[1] = L'\0';
@@ -2038,6 +2087,29 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             return FALSE;           // We handled the msg
 
+        case WM_COPY:               // bCopyAPL = (BOOL) wParam
+                                    // 0 = lParam
+            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
+                                       hWnd,
+                                       WM_COPY,
+                                       0,
+                                       lParam);     // Pass on down the line
+            // If we've not already laundered the input, do so now
+            if (wParam EQ 0)
+                // Copy text to the clipboard
+                CopyAPLChars (hWnd, OptionFlags.uDefaultCopy);
+            return lResult;         // We handled the msg
+
+        case MYWM_COPY_APL:
+            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
+                                       hWnd,
+                                       WM_COPY,
+                                       0,
+                                       lParam);     // Pass on down the line
+            CopyAPLChars (hWnd, (UINT) wParam);
+
+            return lResult;         // We handled the msg
+
         case MYWM_SAVE_FN:
         case MYWM_SAVECLOSE_FN:
         case MYWM_CLOSE_FN:
@@ -2072,6 +2144,26 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 case IDM_COPY:
                     SendMessageW (hWnd, WM_COPY, 0, 0);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_COPY_APLWIN:
+                    SendMessageW (hWnd, MYWM_COPY_APL, UNITRANS_APLWIN, 0);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_COPY_APL2:
+                    SendMessageW (hWnd, MYWM_COPY_APL, UNITRANS_APL2, 0);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_COPY_ISO:
+                    SendMessageW (hWnd, MYWM_COPY_APL, UNITRANS_ISO, 0);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_COPY_PC3270:
+                    SendMessageW (hWnd, MYWM_COPY_APL, UNITRANS_PC3270, 0);
 
                     return FALSE;   // We handled the msg
 
@@ -2204,13 +2296,159 @@ HGLOBAL CopyGlbMemory
 
 
 //***************************************************************************
+//  $CopyAPLChars
+//
+//  Copy APL chars to another APL system
+//***************************************************************************
+
+void CopyAPLChars
+    (HWND      hWndEC,              // Window handle of the Edit Ctrl
+     UNI_TRANS uIndex)              // UNI_TRANS index
+
+{
+    SIZE_T     dwChars;             // # chars on the clipboard
+    HGLOBAL    hGlbClip = NULL,
+               hGlbText = NULL;     // Clipboard UNICODETEXT global memory handle
+    LPVOID     lpMemClip = NULL;    // Ptr to clipboard global memory
+    LPWCHAR    lpMemText = NULL;    // Ptr to clipboard UNICODETEXT global memory
+    UINT       uTran,               // Loop counter
+               uText,               // Loop counter
+               uCount;              // # formats on the clipboard
+    UBOOL      bUnicode;            // TRUE iff the clipboard contains Unicdoe chars
+
+    // Open the clipboard so we can write to it
+    OpenClipboard (hWndEC);
+
+    // Get the # formats on the clipboard
+    uCount = CountClipboardFormats ();
+
+    // If there are no formats, ...
+    if (uCount EQ 0)
+        goto NORMAL_EXIT;
+
+    // Get a handle to the clipboard data for CF_UNICODETEXT
+    hGlbClip = GetClipboardData (CF_UNICODETEXT);
+    if (hGlbClip EQ NULL)
+    {
+        // Get a handle to the clipboard data for CF_TEXT
+        hGlbClip = GetClipboardData (CF_TEXT);
+        if (hGlbClip EQ NULL)
+            goto NORMAL_EXIT;
+
+        // Get the # chars
+        dwChars = GlobalSize (hGlbClip);
+
+        // Mark as not Unicode chars
+        bUnicode = FALSE;
+    } else
+    {
+        // Get the # chars
+        dwChars = GlobalSize (hGlbClip) / sizeof (WCHAR);
+
+        // Mark as Unicode chars
+        bUnicode = TRUE;
+    } // End IF/ELSE
+
+    // Allocate space for that many Unicode chars
+    // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
+    //   because after we pass this handle to the clipboard
+    //   we won't own it anymore.
+    hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwChars * sizeof (WCHAR));
+    if (!hGlbText)
+    {
+        MessageBox (hWndEC,
+                    "Unable to allocate memory for the copy of CF_UNICODETEXT format",
+                    lpszAppName,
+                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    // Note we can't use MyGlobalLock/Unlock as the lock count
+    //   is not modified for a clipboard (non-owned) handle
+    lpMemClip = GlobalLock (hGlbClip); Assert (lpMemClip NE NULL);
+    lpMemText = GlobalLock (hGlbText); Assert (lpMemText NE NULL);
+
+    if (bUnicode)
+        // Make a copy of the clipboard data
+        CopyMemory (lpMemText, lpMemClip, dwChars * sizeof (WCHAR));
+    else
+    for (uText = 0; uText < dwChars; uText++)
+        lpMemText[uText] = bUnicode ? ((LPWCHAR) lpMemClip)[uText]
+                                    : ((LPUCHAR) lpMemClip)[uText];
+    // We no longer need this ptr
+    GlobalUnlock (hGlbClip); lpMemClip = NULL;
+
+    // Translate the NARS charset to the other APL charset
+    for (uText = 0; uText < dwChars; uText++, lpMemText++)
+    if (*lpMemText)
+    {
+        for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
+        if (*lpMemText EQ uniTransTab[uTran][UNITRANS_NARS])
+        {
+            WCHAR wcTmp;
+
+            // Translate the external char to the given format
+            wcTmp = uniTransTab[uTran][uIndex];
+
+            // If the translated char is not the same as the original, ...
+            if (wcTmp NE SAME)
+            {
+                // If the translation is not from NARS and
+                //   the char is UTF16_A_ through UTF16_Z_,
+                //   optionally translate it to 'a-z'
+                if (OptionFlags.bUnderbarToLowercase
+                 && uTran NE UNITRANS_NORMAL
+                 && UTF16_A_ <= wcTmp
+                 &&             wcTmp <= UTF16_Z_)
+                    wcTmp = L'a' + (wcTmp - UTF16_A_);
+                *lpMemText = wcTmp;
+            } // End IF
+
+            break;      // out of the innermost FOR loop
+        } // End FOR/IF/...
+    } // End FOR/IF
+
+    // We no longer need this ptr
+    GlobalUnlock (hGlbText); lpMemText = NULL;
+
+    // Empty the clipboard
+    EmptyClipboard (); hGlbClip = NULL;
+
+    // Place the changed data onto the clipboard
+    SetClipboardData (CF_UNICODETEXT, hGlbText); hGlbText = NULL;
+NORMAL_EXIT:
+    // We're done with the clipboard and its handle
+    CloseClipboard ();
+ERROR_EXIT:
+    if (hGlbText && lpMemText)
+    {
+        // We no longer need this ptr
+        GlobalUnlock (hGlbText); lpMemText = NULL;
+    } // End IF
+
+    if (hGlbClip)
+    {
+        if (lpMemClip)
+        {
+            // We no longer need this ptr
+            GlobalUnlock (hGlbClip); lpMemClip = NULL;
+        } // End IF
+
+        // We're done with the clipboard
+        CloseClipboard ();
+    } // End IF
+} // End CopyAPLChars
+
+
+//***************************************************************************
 //  $PasteAPLChars
 //
 //  Paste APL chars from another APL system
 //***************************************************************************
 
 void PasteAPLChars
-    (HWND      hWndEC,              // Window handle of the Edit Control
+    (HWND      hWndEC,              // Window handle of the Edit Ctrl
      UNI_TRANS uIndex)              // UNI_TRANS index
 
 {
@@ -2219,8 +2457,8 @@ void PasteAPLChars
                hGlbClip = NULL,
                hGlbText = NULL;
     LPCLIPFMTS lpMemFmts = NULL;    // Ptr to clipboard format global memory
-    LPWCHAR    lpMemClip = NULL,    // Ptr to
-               lpMemText = NULL;    // Ptr to
+    LPWCHAR    lpMemClip = NULL,    // Ptr to clipboard global memory
+               lpMemText = NULL;    // Ptr to local copy global memory
     UINT       uTran,               // Loop counter
                uText,               // Loop counter
                uFmt,                // Loop counter
@@ -2293,65 +2531,64 @@ void PasteAPLChars
                         lpszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             goto ERROR_EXIT;
-        } else
+        } // End IF
+
+        // Lock the memory to get a ptr to it
+        // Note we can't use MyGlobalLock/Unlock as the lock count
+        //   is not modified for a clipboard (non-owned) handle
+        lpMemClip = GlobalLock (hGlbClip); Assert (lpMemClip NE NULL);
+        lpMemText = GlobalLock (hGlbText); Assert (lpMemText NE NULL);
+
+        // Make a copy of the clipboard data
+        CopyMemory (lpMemText, lpMemClip, dwSize);
+
+        // We no longer need this ptr
+        GlobalUnlock (hGlbClip); lpMemClip = NULL;
+
+        // Convert dwSize to # elements
+        dwSize /= sizeof (WCHAR);
+
+        // Translate the other APL charset to the NARS charset
+        for (uText = 0; uText < dwSize; uText++, lpMemText++)
+        if (*lpMemText)
         {
-            // Lock the memory to get a ptr to it
-            // Note we can't use MyGlobalLock/Unlock as the lock count
-            //   is not modified for a clipboard (non-owned) handle
-            lpMemClip = GlobalLock (hGlbClip); Assert (lpMemClip NE NULL);
-            lpMemText = GlobalLock (hGlbText); Assert (lpMemText NE NULL);
-
-            // Make a copy of the clipboard data
-            CopyMemory (lpMemText, lpMemClip, dwSize);
-
-            // We no longer need this ptr
-            GlobalUnlock (hGlbClip); lpMemClip = NULL;
-
-            // Convert dwSize to # elements
-            dwSize /= sizeof (WCHAR);
-
-            // Translate the other APL charset to the NARS charset
-            for (uText = 0; uText < dwSize; uText++, lpMemText++)
-            if (*lpMemText)
+            for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
+            if (*lpMemText EQ uniTransTab[uTran][uIndex])
             {
-                for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
-                if (*lpMemText EQ uniTransTab[uTran][uIndex])
-                {
-                    WCHAR wcTmp;
+                WCHAR wcTmp;
 
-                    // Translate the external char to NARS
-                    wcTmp = uniTransTab[uTran][UNITRANS_NARS];
+                // Translate the external char to NARS
+                wcTmp = uniTransTab[uTran][UNITRANS_NARS];
 
-                    // If the translation is not from NARS and
-                    //   the char is UTF16_A_ through UTF16_Z_,
-                    //   optionally translate it to 'a-z'
-                    if (OptionFlags.bUnderbarToLowercase
-                     && uTran NE UNITRANS_NORMAL
-                     && UTF16_A_ <= wcTmp
-                     &&             wcTmp <= UTF16_Z_)
-                        wcTmp = L'a' + (wcTmp - UTF16_A_);
-                    *lpMemText = wcTmp;
+                // If the translation is not from NARS and
+                //   the char is UTF16_A_ through UTF16_Z_,
+                //   optionally translate it to 'a-z'
+                if (OptionFlags.bUnderbarToLowercase
+                 && uTran NE UNITRANS_NORMAL
+                 && UTF16_A_ <= wcTmp
+                 &&             wcTmp <= UTF16_Z_)
+                    wcTmp = L'a' + (wcTmp - UTF16_A_);
+                *lpMemText = wcTmp;
 
-                    break;      // out of the innermost loop
-                } // End FOR/IF/...
-            } // End FOR/IF
+                break;      // out of the innermost FOR loop
+            } // End FOR/IF/...
+        } // End FOR/IF
 
-            // We no longer need this ptr
-            GlobalUnlock (hGlbText); lpMemText = NULL;
+        // We no longer need this ptr
+        GlobalUnlock (hGlbText); lpMemText = NULL;
 
-            // Empty the clipboard
-            EmptyClipboard (); hGlbClip = NULL;
+        // Empty the clipboard
+        EmptyClipboard (); hGlbClip = NULL;
 
-            // Place all the other formats on the clipboard first
-            for (uFmt = 0; uFmt < uCount; uFmt++)
-            if (lpMemFmts[uFmt].uFmtNum NE CF_PRIVATEFIRST
-             && lpMemFmts[uFmt].hGlbFmt NE NULL)
-                SetClipboardData (lpMemFmts[uFmt].uFmtNum, lpMemFmts[uFmt].hGlbFmt);
+        // Place all the other formats on the clipboard first
+        for (uFmt = 0; uFmt < uCount; uFmt++)
+        if (lpMemFmts[uFmt].uFmtNum NE CF_PRIVATEFIRST
+         && lpMemFmts[uFmt].hGlbFmt NE NULL)
+            SetClipboardData (lpMemFmts[uFmt].uFmtNum, lpMemFmts[uFmt].hGlbFmt);
 
-            // Place the changed data onto the clipboard
-            SetClipboardData (CF_PRIVATEFIRST, hGlbText); hGlbText = NULL;
-        } // End IF/ELSE
-    } // End IF
+        // Place the changed data onto the clipboard
+        SetClipboardData (CF_PRIVATEFIRST, hGlbText); hGlbText = NULL;
+    } // End IF/ELSE
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
@@ -2368,14 +2605,17 @@ ERROR_EXIT:
         GlobalUnlock (hGlbText); lpMemText = NULL;
     } // End IF
 
-    if (hGlbClip && lpMemClip)
+    if (hGlbClip)
     {
-        // We no longer need this ptr
-        GlobalUnlock (hGlbClip); lpMemClip = NULL;
-    } // End IF
+        if (lpMemClip)
+        {
+            // We no longer need this ptr
+            GlobalUnlock (hGlbClip); lpMemClip = NULL;
+        } // End IF
 
-    // We're done with the clipboard
-    CloseClipboard ();
+        // We're done with the clipboard
+        CloseClipboard ();
+    } // End IF
 
     if (hGlbFmts)
     {
@@ -2428,7 +2668,7 @@ ERROR_EXIT:
 //***************************************************************************
 
 UBOOL IzitEOB
-    (HWND hWnd)         // Window handle of the Edit Control
+    (HWND hWnd)         // Window handle of the Edit Ctrl
 
 {
     UINT uCharPos,
@@ -2459,7 +2699,7 @@ UBOOL IzitEOB
 //***************************************************************************
 
 UINT GetCurCharPos
-    (HWND hWndEC)       // Window handle of the Edit Control
+    (HWND hWndEC)       // Window handle of the Edit Ctrl
 
 {
     UINT uCharPosBeg,
@@ -2479,7 +2719,7 @@ UINT GetCurCharPos
 //***************************************************************************
 
 WCHAR GetCharValue
-    (HWND hWndEC,               // Window handle of the Edit Control
+    (HWND hWndEC,               // Window handle of the Edit Ctrl
      UINT uCharPos)             // Char position (-1 = under the caret)
 
 {
@@ -2583,7 +2823,7 @@ void AppendUndo
 //***************************************************************************
 //  $InsRepCharStr
 //
-//  Insert or replace a char string in an edit control
+//  Insert or replace a char string in an Edit Ctrl
 //***************************************************************************
 
 void InsRepCharStr
@@ -2754,14 +2994,14 @@ UBOOL IzitSM
 //***************************************************************************
 
 void DrawLineNumsFE
-    (HWND hWndEC)           // Edit Control window handle
+    (HWND hWndEC)           // Edit Ctrl window handle
 
 {
     HDC     hDC;            // Device context
     RECT    rcPaint,        // Paint rectangle
             rcClient;       // Client area
     UINT    uLen,           // Length of string
-            uLineCnt,       // # lines in the edit control
+            uLineCnt,       // # lines in the Edit Ctrl
             uLineTop,       // # of topmost visible line
             uCnt;           // Counter
     WCHAR   wszLineNum[FCN_INDENT + 1];  // Line # (e.g. L"[0000]\0"
@@ -2886,7 +3126,7 @@ void ErrorHandler
     (LPWCHAR lpwszMsg,          // Ptr to error message text
      LPWCHAR lpwszLine,         // Ptr to the line which generated the error
      UINT    uCaret,            // Position of caret (origin-0)
-     HWND    hWndEC)            // Window handle to the Edit Control
+     HWND    hWndEC)            // Window handle to the Edit Ctrl
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -2925,7 +3165,7 @@ LPSYMENTRY ParseFunctionName
      LPAPLCHAR lpaplChar)       // Ptr to header text
 
 {
-    HWND        hWndEC;             // Window handle to Edit Control
+    HWND        hWndEC;             // Window handle to Edit Ctrl
     HGLOBAL     hGlbTknHdr = NULL;  // Tokenized header global memory handle
     FHLOCALVARS fhLocalVars = {0};  // Re-entrant vars
     LPSYMENTRY  lpSymName = NULL;   // Ptr to SYMENTRY for the function name
@@ -2933,14 +3173,15 @@ LPSYMENTRY ParseFunctionName
 
     Assert (IzitFE (hWndFE));
 
-    // Get the handle to the edit control
+    // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
 
     // Tokenize the line
     hGlbTknHdr =
       Tokenize_EM (lpaplChar,               // The line to tokenize (not necessarily zero-terminated)
                    lstrlenW (lpaplChar),    // The length of the above line
-                   NULL,                    // Window handle for Edit Control (may be NULL if lpErrHandFn is NULL)
+                   NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                   0,                       // Function line # (0 = header)
                    NULL);                   // Ptr to error handling function (may be NULL)
     if (!hGlbTknHdr)
         goto ERROR_EXIT;

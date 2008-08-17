@@ -123,6 +123,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
                  lpMemRes = NULL;   // Ptr to result    ...
     LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
+    LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
     APLUINT      aplAxis,           // The (one and only) axis value
                  uDim,              // Loop counter
                  uLo,               // ...
@@ -180,6 +181,16 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
         goto IMMED_EXIT;
     } // End IF
 
+    // Get right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // In case we need it, save a ptr to the right arg hdr
+    lpMemHdrRht = lpMemRht;
+
+    // Skip over the header to the dimensions
+    lpMemRht = VarArrayBaseToDim (lpMemRht);
+    lpMemDimRht = (LPAPLDIM) lpMemRht;
+
     // The type of the result is the same as the
     //   type of the right arg except APA -> INT
     if (IsSimpleAPA (aplTypeRht))
@@ -204,18 +215,15 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = 0;           // Already zero from GHND
+    lpHeader->PV0        = (lpMemHdrRht->PV0);
+    lpHeader->PV1        = (lpMemHdrRht->PV1);
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
 #undef  lpHeader
 
-    // Get right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-
     // Skip over the header to the dimensions
     lpMemRes = VarArrayBaseToDim (lpMemRes);
-    lpMemRht = VarArrayBaseToDim (lpMemRht);
-    lpMemDimRht = (LPAPLDIM) lpMemRht;
 
     // Fill in the dimensions
     for (uDim = 0; uDim < aplRankRht; uDim++)
@@ -415,6 +423,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
                  lpMemRht = NULL,   // Ptr to right ...
                  lpMemRes = NULL;   // Ptr to result   ...
+    LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
     LPAPLINT     lpMemRot = NULL;   // Ptr to normalized left arg ...
     UBOOL        bRet = TRUE;       // TRUE iff result is valid
     APLUINT      aplAxis,           // The (one and only) axis value
@@ -471,6 +480,9 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     // Get left and right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
                     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // In case we need access to the right arg header, save that ptr
+    lpMemHdrRht = lpMemRht;
 
     // Scalar or one-element vector left arg matches everything
     if (!(IsScalar (aplRankLft) || IsVectorSing (aplNELMLft, aplRankLft)))
@@ -661,6 +673,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = 0;           // Already zero from GHND
+    lpHeader->PV0        = (lpMemHdrRht && lpMemHdrRht->PV0);
+    lpHeader->PV1        = (lpMemHdrRht && lpMemHdrRht->PV1);
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;

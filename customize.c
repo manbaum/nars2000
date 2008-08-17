@@ -22,15 +22,12 @@
 
 /* To Do
 
-* []FC:  Use two ComboBoxes -- Index Names & Index Values
 * Set UD control initial values
 * Handle UDN_DELTAPOS messages
-* Handle CBN_SELCHANGE messages
 * Set initial ComboBox selections
 * Set initial char vector lengths
 * Handle changes to char vector lengths
 * Validate values on Apply
-* Subclass Edit Controls so allow entry of APL chars
 * Figure why Infinity doesn't display correctly (that is, why Uniscribe isn't used)
 *
 
@@ -52,10 +49,7 @@
 #include "compro.h"
 #endif
 
-static WNDPROC lpfnOldEditCtrlWndProc[] = {NULL
-                                          };
-static WNDPROC lpfnNewEditCtrlWndProc[] = {NULL
-                                          };
+static WNDPROC lpfnOldEditCtrlWndProc;
 
 
 //***************************************************************************
@@ -102,15 +96,32 @@ __int3264 CALLBACK CustomizeDlgProc
     static UINT       Radio7[] = {IDC_FONTS_RADIO7A, IDC_FONTS_RADIO7B, IDC_FONTS_RADIO7C, IDC_FONTS_RADIO7D, IDC_FONTS_RADIO7E, IDC_FONTS_RADIO7F, IDC_FONTS_RADIO7G};
     static LPUINT     RadioPtr[] = {&Radio1[0], &Radio2[0], &Radio3[0], &Radio4[0], &Radio5[0], &Radio6[0], &Radio7[0]};
            HWND       hWndProp,                 // Property page window handle
+                      hWndProp1,                // ...
+                      hWndProp2,                // ...
                       hWndFont;                 // Font property page ChooseFont button window handle
+
+    typedef struct tagUNITRANS_STR
+    {
+        LPWCHAR lpwChar;            // Ptr to text
+        UBOOL   bValidCopy,         // TRUE iff this entry is valid for Copy
+                bValidPaste;        // ...                              Paste
+        UINT    IncTransCopy,       // Incoming Translation for Copy
+                IncTransPaste,      // ...                      Paste
+                OutTransCopy,       // Outgoing Translation for Copy
+                OutTransPaste;      // ...                      Paste
+    } UNITRANS_STR;
+
     // The following var must be in the same order as UNITRANS_xxx
-    static LPWCHAR    lpwUnitrans[] = {L"APL+Win",
-                                       L"ISO Standard PDF",
-                                       L"APL2",
-                                       L"Dyalog",
-                                       L"PC/3270",
-                                       L"Normal (Unicode)",
-                                      };
+    static UNITRANS_STR unitransStr[] = {{L"APL+Win",             TRUE,   TRUE , 0, 0, 0, 0},
+                                         {L"ISO Standard PDF",    TRUE,   TRUE , 1, 1, 1, 1},
+                                         {L"APL2",                TRUE,   TRUE , 2, 2, 2, 2},
+                                         {L"Dyalog",              TRUE,   TRUE , 3, 3, 3, 3},
+                                         {L"PC/3270",             TRUE,   TRUE , 4, 4, 4, 4},
+                                         {L"Normal (Unicode)",    FALSE,  TRUE , 0, 5, 6, 5},
+                                         {L"NARS (Unicode)",      TRUE,   FALSE, 5, 0, 0, 0},
+                                        };
+#define UNITRANS_STR_LENGTH      (sizeof (unitransStr) / sizeof (UNITRANS_STR))
+
     // This text is too long for a resource file (limit 256 chars), so we define it here
     //   and save it ino the dialog upon initialization of the appropriate Property Page
     static LPWCHAR    lpwFontsText = L"There are seven categories of fonts (Session Manager, etc.).  "
@@ -220,11 +231,11 @@ __int3264 CALLBACK CustomizeDlgProc
                     case IDD_PROPPAGE_CLEARWS_VALUES:
                         // Initialize the CLEAR WS values
 
-                        // Set the font for each edit control
+                        // Set the font for each Edit Ctrl
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC    ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
@@ -237,11 +248,16 @@ __int3264 CALLBACK CustomizeDlgProc
                         // []ALX
                         //***************************************************************
 
-                        // Subclass the []ALX Edit Control so we may allow APL chars
-                        (HANDLE_PTR) lpfnOldEditCtrlWndProc[0] =
+                        // Subclass the []ALX Edit Ctrl so we may allow APL chars
+                        (HANDLE_PTR) lpfnOldEditCtrlWndProc =
                           SetWindowLongPtrW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC),
                                              GWL_WNDPROC,
-                                             (__int3264) (HANDLE_PTR) (WNDPROC) &lpfnNewEditCtrlWndProc[0]);
+                                             (__int3264) (HANDLE_PTR) LclEditCtrlWndProc);
+                        // Save the address of the previous handler as a Window Property
+                        SetPropW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC),
+                                  L"OldHandler",
+                                  (HANDLE) lpfnOldEditCtrlWndProc);
+
                         // Lock the memory to get a ptr to it
                         lpMemChr = MyGlobalLock (hGlbQuadALX_CWS);
 
@@ -286,6 +302,16 @@ __int3264 CALLBACK CustomizeDlgProc
                         // []ELX
                         //***************************************************************
 
+                        // Subclass the []ELX Edit Ctrl so we may allow APL chars
+                        (HANDLE_PTR) lpfnOldEditCtrlWndProc =
+                          SetWindowLongPtrW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC),
+                                             GWL_WNDPROC,
+                                             (__int3264) (HANDLE_PTR) LclEditCtrlWndProc);
+                        // Save the address of the previous handler as a Window Property
+                        SetPropW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC),
+                                  L"OldHandler",
+                                  (HANDLE) lpfnOldEditCtrlWndProc);
+
                         // Lock the memory to get a ptr to it
                         lpMemChr = MyGlobalLock (hGlbQuadELX_CWS);
 
@@ -312,6 +338,16 @@ __int3264 CALLBACK CustomizeDlgProc
                         // []FC
                         //***************************************************************
 
+                        // Subclass the []FC Edit Ctrl so we may allow APL chars
+                        (HANDLE_PTR) lpfnOldEditCtrlWndProc =
+                          SetWindowLongPtrW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC),
+                                             GWL_WNDPROC,
+                                             (__int3264) (HANDLE_PTR) LclEditCtrlWndProc);
+                        // Save the address of the previous handler as a Window Property
+                        SetPropW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC),
+                                  L"OldHandler",
+                                  (HANDLE) lpfnOldEditCtrlWndProc);
+
                         // Lock the memory to get a ptr to it
                         lpMemChr = MyGlobalLock (hGlbQuadFC_CWS);
 
@@ -332,7 +368,7 @@ __int3264 CALLBACK CustomizeDlgProc
                         lpwszGlbTemp[aplNELM] = L'\0';
 
                         // Set the text
-                        SetDlgItemTextW (hWndProp, IDC_CLEARWS_FC, lpwszGlbTemp);
+                        SetDlgItemTextW (hWndProp, IDC_CLEARWS_FC_EC, lpwszGlbTemp);
 
                         //***************************************************************
                         // []IO
@@ -341,11 +377,6 @@ __int3264 CALLBACK CustomizeDlgProc
                         // Get the []IO UpDown Control window handle
                         hWndIO_UD = GetDlgItem (hWndProp, IDC_CLEARWS_IO_UD);
 
-                        // Subclass the []IO Edit Control so we may allow APL chars
-                        (HANDLE_PTR) lpfnOldEditCtrlWndProc[1] =
-                          SetWindowLongPtrW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC),
-                                             GWL_WNDPROC,
-                                             (__int3264) (HANDLE_PTR) (WNDPROC) &lpfnNewEditCtrlWndProc[1]);
                         // Set the range
                         SendMessageW (hWndIO_UD, UDM_SETRANGE, 0, MAKELONG (1, 0));
 
@@ -407,6 +438,16 @@ __int3264 CALLBACK CustomizeDlgProc
                         //***************************************************************
                         // []LX
                         //***************************************************************
+
+                        // Subclass the []LX Edit Ctrl so we may allow APL chars
+                        (HANDLE_PTR) lpfnOldEditCtrlWndProc =
+                          SetWindowLongPtrW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC),
+                                             GWL_WNDPROC,
+                                             (__int3264) (HANDLE_PTR) LclEditCtrlWndProc);
+                        // Save the address of the previous handler as a Window Property
+                        SetPropW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC),
+                                  L"OldHandler",
+                                  (HANDLE) lpfnOldEditCtrlWndProc);
 
                         // Lock the memory to get a ptr to it
                         lpMemChr = MyGlobalLock (hGlbQuadLX_CWS);
@@ -564,18 +605,23 @@ __int3264 CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_USELOCALTIME       , OptionFlags.bUseLocalTime       );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_BACKUPONLOAD       , OptionFlags.bBackupOnLoad       );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_BACKUPONSAVE       , OptionFlags.bBackupOnSave       );
-                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_CLOSINGLAMP        , OptionFlags.bClosingLamp        );
 
-                        // Get the window handle for the combo box
-                        hWndProp = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);
+                        // Get the window handle for the Paste & Copy combo boxes
+                        hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);
+                        hWndProp2 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTCOPY);
 
-                        // Loop through the Unitrans Paste options
-                        //  " - 1" because we don't mention the _NARS column
-                        for (uCnt = 0; uCnt < (UNITRANS_LENGTH - 1); uCnt++)
-                            SendMessageW (hWndProp, CB_ADDSTRING, 0, (LPARAM) lpwUnitrans[uCnt]);
+                        // Loop through the Unitrans Copy/Paste options
+                        for (uCnt = 0; uCnt < UNITRANS_STR_LENGTH; uCnt++)
+                        {
+                            if (unitransStr[uCnt].bValidPaste)
+                                SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) unitransStr[uCnt].lpwChar);
+                            if (unitransStr[uCnt].bValidCopy)
+                                SendMessageW (hWndProp2, CB_ADDSTRING, 0, (LPARAM) unitransStr[uCnt].lpwChar);
+                        } // End FOR
 
                         // Set the current selection to the user preference value
-                        SendMessageW (hWndProp, CB_SETCURSEL, OptionFlags.uDefaultPaste, 0);
+                        SendMessageW (hWndProp1, CB_SETCURSEL, unitransStr[OptionFlags.uDefaultPaste].IncTransPaste, 0);
+                        SendMessageW (hWndProp2, CB_SETCURSEL, unitransStr[OptionFlags.uDefaultCopy ].IncTransCopy , 0);
 
                         break;
 
@@ -685,6 +731,31 @@ __int3264 CALLBACK CustomizeDlgProc
                     } // End SWITCH
 
                     return TRUE;    // We handled the msg
+
+                    break;
+
+                case IDC_CLEARWS_ALX_EC:
+                    DbgBrk ();
+
+                    break;
+
+                case IDC_CLEARWS_CT_EC:
+                    DbgBrk ();
+
+                    break;
+
+                case IDC_CLEARWS_ELX_EC:
+                    DbgBrk ();
+
+                    break;
+
+                case IDC_CLEARWS_FC_EC:
+                    DbgBrk ();
+
+                    break;
+
+                case IDC_CLEARWS_LX_EC:
+                    DbgBrk ();
 
                     break;
 
@@ -895,13 +966,14 @@ __int3264 CALLBACK CustomizeDlgProc
                         OptionFlags.bUseLocalTime        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_USELOCALTIME       );
                         OptionFlags.bBackupOnLoad        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_BACKUPONLOAD       );
                         OptionFlags.bBackupOnSave        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_BACKUPONSAVE       );
-                        OptionFlags.bClosingLamp         = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_CLOSINGLAMP        );
 
-                        // Get the window handle for the combo box
-                        hWndProp = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);
+                        // Get the window handle for the Paste & Copy combo boxes
+                        hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);
+                        hWndProp2 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTCOPY);
 
                         // Get the current selection of the user preference value
-                        OptionFlags.uDefaultPaste = SendMessageW (hWndProp, CB_GETCURSEL, 0, 0);
+                        OptionFlags.uDefaultPaste = unitransStr[SendMessageW (hWndProp1, CB_GETCURSEL, 0, 0)].OutTransPaste;
+                        OptionFlags.uDefaultCopy  = unitransStr[SendMessageW (hWndProp2, CB_GETCURSEL, 0, 0)].OutTransCopy ;
                     } // End IF
 
                     return TRUE;    // We handled the msg
@@ -1169,7 +1241,6 @@ __int3264 CALLBACK CustomizeDlgProc
                 case IDC_USER_PREFS_XB_USELOCALTIME:
                 case IDC_USER_PREFS_XB_BACKUPONLOAD:
                 case IDC_USER_PREFS_XB_BACKUPONSAVE:
-                case IDC_USER_PREFS_XB_CLOSINGLAMP:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
                         // Enable the Apply button
@@ -1177,6 +1248,13 @@ __int3264 CALLBACK CustomizeDlgProc
                     return TRUE;    // We handled the msg
 
                 case IDC_USER_PREFS_CB_DEFAULTPASTE:
+                    // We care about CBN_SELCHANGE only
+                    if (CBN_SELCHANGE EQ GET_WM_COMMAND_CMD (wParam, lParam))
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    return TRUE;    // We handled the msg
+
+                case IDC_USER_PREFS_CB_DEFAULTCOPY:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ GET_WM_COMMAND_CMD (wParam, lParam))
                         // Enable the Apply button

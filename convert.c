@@ -293,7 +293,7 @@ UINT ConvertWideToNameLength
         // Get the next char
         wc = *lpwszInp++;
 
-        if (32 <= wc && wc <= 0x7E
+        if (32 < wc && wc <= 0x7E
          && wc NE L'\''
          && wc NE L'#'
          && wc NE L'{'
@@ -360,15 +360,31 @@ LPWCHAR ConvertNameInPlace
 
 {
     LPWCHAR lpwDst = lpwSrc;
+    WCHAR   wcTmp;
 
     while (*lpwSrc)
     if (*lpwSrc EQ L'{')
     {
         // Get the next char
-        *lpwDst++ = SymbolNameToChar (lpwSrc);
+        wcTmp = SymbolNameToChar (lpwSrc);
 
-        // Find the matching L'}'
-        lpwSrc = SkipPastCharW (lpwSrc, L'}');
+        // If there's a matching UTF16_xxx equivalent, ...
+        if (wcTmp)
+        {
+            // Replace {name} with UTF16_xxx equivalent
+            *lpwDst++ = wcTmp;
+
+            // Skip over the {name}
+            lpwSrc = SkipPastCharW (lpwSrc, L'}');
+        } else
+        {
+            // Copy source to the destin up to and including the matching '}'
+            while (*lpwSrc NE L'}')
+                *lpwDst++ = *lpwSrc++;
+
+            // Copy the '}'
+            *lpwDst++ = *lpwSrc++;
+        } // End IF/ELSE
     } else
         *lpwDst++ = *lpwSrc++;
 

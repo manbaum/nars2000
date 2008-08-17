@@ -105,8 +105,8 @@ void BreakMessage
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
-////lpHeader->Perm       = 0;   // Already zero from GHND
-////lpHeader->SysVar     = 0;   // Already zero from GHND
+////lpHeader->Perm       = FALSE;   // Already zero from GHND
+////lpHeader->SysVar     = FALSE;   // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -295,8 +295,8 @@ void ErrorMessageDirect
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
-////lpHeader->Perm       = 0;   // Already zero from GHND
-////lpHeader->SysVar     = 0;   // Already zero from GHND
+////lpHeader->Perm       = FALSE;   // Already zero from GHND
+////lpHeader->SysVar     = FALSE;   // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -360,11 +360,12 @@ void ErrorMessageDirect
         && lpSISCur->DfnType NE DFNTYPE_OP2)
         lpSISCur = lpSISCur->lpSISPrv;
 
+    // If there's an SIS level, fill in []EM
     if (lpSISCur)
     {
         // Calculate the maximum length
         uMaxLen = max (uErrMsgLen, uNameLen + uErrLinLen);
-        uMaxLen = max (uMaxLen, uCaretLen);
+        uMaxLen = max (uMaxLen, uCaretLen + 1);
 
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_CHAR, 3 * uMaxLen, 2);
@@ -381,8 +382,8 @@ void ErrorMessageDirect
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_CHAR;
-////////////lpHeader->Perm       = 0;               // Already zero from GHND
-////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////////lpHeader->Perm       = FALSE;           // Already zero from GHND
+////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = 3 * uMaxLen;
             lpHeader->Rank       = 2;
@@ -526,8 +527,9 @@ void ErrorMessageSetCharIndex
     // Get this thread's LocalVars ptr
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
-    // Set the error char index
-    lpplLocalVars->tkErrorCharIndex = tkCharIndex;
+    // Set the error char index if we're inside ParseLine
+    if (lpplLocalVars)
+        lpplLocalVars->tkErrorCharIndex = tkCharIndex;
 } // End ErrorMessageSetCharIndex
 
 

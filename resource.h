@@ -122,26 +122,31 @@
 
 #define IDM_UNDO                                 700
 #define IDM_REDO                                 701
-#define IDM_COPY                                 702
-#define IDM_CUT                                  703
-#define IDM_DELETE                               704
-#define IDM_SELECTALL                            705
+#define IDM_CUT                                  702
+#define IDM_DELETE                               703
+#define IDM_SELECTALL                            704
 
-#define IDM_PASTE                                710
-#define IDM_PASTE_APLWIN                         711
-#define IDM_PASTE_APL2                           712
-#define IDM_PASTE_ISO                            713
-#define IDM_PASTE_PC3270                         714
+#define IDM_COPY                                 710
+#define IDM_COPY_APLWIN                          711
+#define IDM_COPY_APL2                            712
+#define IDM_COPY_ISO                             713
+#define IDM_COPY_PC3270                          714
 
-#define IDM_LOCALIZE                             720
-#define IDM_UNLOCALIZE                           721
+#define IDM_PASTE                                720
+#define IDM_PASTE_APLWIN                         721
+#define IDM_PASTE_APL2                           722
+#define IDM_PASTE_ISO                            723
+#define IDM_PASTE_PC3270                         724
 
-#define IDM_CLOSE_FN                             730
-#define IDM_SAVE_FN                              731
-#define IDM_SAVECLOSE_FN                         732
-#define IDM_SAVE_FN_AS                           733
+#define IDM_LOCALIZE                             730
+#define IDM_UNLOCALIZE                           731
 
-#define IDM_CUSTOMIZE                            740
+#define IDM_CLOSE_FN                             740
+#define IDM_SAVE_FN                              741
+#define IDM_SAVECLOSE_FN                         742
+#define IDM_SAVE_FN_AS                           743
+
+#define IDM_CUSTOMIZE                            750
 
 #define IDC_VERSION                              800
 #define IDC_LINK                                 801
@@ -156,7 +161,7 @@
 #define IDC_CLEARWS_ALX_EC                       820
 #define IDC_CLEARWS_CT_EC                        821
 #define IDC_CLEARWS_ELX_EC                       822
-#define IDC_CLEARWS_FC                           823
+#define IDC_CLEARWS_FC_EC                        823
 #define IDC_CLEARWS_IO_EC                        824
 #define IDC_CLEARWS_IO_UD                        825
 #define IDC_CLEARWS_IC_CB1                       826
@@ -225,8 +230,8 @@
 #define IDC_USER_PREFS_XB_USELOCALTIME          1004
 #define IDC_USER_PREFS_XB_BACKUPONLOAD          1005
 #define IDC_USER_PREFS_XB_BACKUPONSAVE          1006
-#define IDC_USER_PREFS_XB_CLOSINGLAMP           1007
-#define IDC_USER_PREFS_CB_DEFAULTPASTE          1008
+#define IDC_USER_PREFS_CB_DEFAULTPASTE          1007
+#define IDC_USER_PREFS_CB_DEFAULTCOPY           1008
 
 #define IDC_STATIC                       -1
 

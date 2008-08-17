@@ -105,43 +105,47 @@ Downloads</h1>
 
         foreach ($Files as $File)
         {
-            if (strcmp ($File, "gsldir.zip") == 0
-             || strcmp ($File, "qdebug.zip") == 0)
+            // Ignore "robots.txt"
+            if (strcmp ($File, "robots.txt") != 0)
             {
-                $Name   = substr ($File, 0, strpos ($File, '.'));
-                $Rel    = "";
-                $ExtPos = strpos (strrev ($File), '.');
-                $Ext    = substr ($File, -$ExtPos);    // Extract the extension
-                $Class  = "map";
-            } else
-            {
-                $Pos    = strpos ($File, '-');
-                $Name   = substr ($File, 0, $Pos);
-                $Rel    = substr ($File, $Pos + 1);
-                $ExtPos = strpos (strrev ($File), '.');
-                $Ext    = substr ($File, -$ExtPos);    // Extract the extension
-                $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
-                $Class  = $Ext;
-                $Notes  = "Notes-$Rel.txt";
+                if (strcmp ($File, "gsldir.zip") == 0
+                 || strcmp ($File, "qdebug.zip") == 0)
+                {
+                    $Name   = substr ($File, 0, strpos ($File, '.'));
+                    $Rel    = "";
+                    $ExtPos = strpos (strrev ($File), '.');
+                    $Ext    = substr ($File, -$ExtPos);    // Extract the extension
+                    $Class  = "map";
+                } else
+                {
+                    $Pos    = strpos ($File, '-');
+                    $Name   = substr ($File, 0, $Pos);
+                    $Rel    = substr ($File, $Pos + 1);
+                    $ExtPos = strpos (strrev ($File), '.');
+                    $Ext    = substr ($File, -$ExtPos);    // Extract the extension
+                    $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
+                    $Class  = $Ext;
+                    $Notes  = "Notes-$Rel.txt";
 
-                // Get the corresponding release
-                $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
-            } // End IF/ELSE
+                    // Get the corresponding release
+                    $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
+                } // End IF/ELSE
 
-            $Date   = gmdate ("Y F d H:i:s", filemtime ($DirName . $File));
-            $Size   = number_format (filesize ($DirName . $File));
+                $Date   = gmdate ("Y F d H:i:s", filemtime ($DirName . $File));
+                $Size   = number_format (filesize ($DirName . $File));
 
-            echo   "      <tr class=\"$Class\">\n"
-               .   "        <td>$Name</td>\n"
-               .   "        <td>$Rel</td>\n"
-               .   "        <td>$Date</td>\n"
-               .   "        <td align=\"right\">$Size</td>\n"
-               .   "        <td>$Ext</td>\n"
-               . (($Class == 'zip')
-               ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
-               :   "        <td class=\"notes\"></td>\n")
-               .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
-               .   "      </tr>\n";
+                echo   "      <tr class=\"$Class\">\n"
+                   .   "        <td>$Name</td>\n"
+                   .   "        <td>$Rel</td>\n"
+                   .   "        <td>$Date</td>\n"
+                   .   "        <td align=\"right\">$Size</td>\n"
+                   .   "        <td>$Ext</td>\n"
+                   . (($Class == 'zip')
+                   ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
+                   :   "        <td class=\"notes\"></td>\n")
+                   .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
+                   .   "      </tr>\n";
+            } // End IF
         } // End FOREACH
 
         closedir ($dh);

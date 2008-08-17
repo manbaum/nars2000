@@ -126,7 +126,7 @@ typedef struct tagPERTABDATA
                 *lpPLCur;           // E8:  Ptr to current plLocalVars struct
                                     //      in thread creation order (NULL = none)
     WNDPROC lpfnOldListboxWndProc,  // EC:  Save area for old Listbox procedure
-            lpfnOldEditCtrlWndProc; // F0:  Save area for old Edit Control procedure
+            lpfnOldEditCtrlWndProc; // F0:  Save area for old Edit Ctrl procedure
 
     // Magic function global memory handles
     HGLOBAL      hGlbMF_MonIota,    // F4:  Extended Monadic Iota
@@ -156,16 +156,17 @@ typedef struct tagPERTABDATA
     UINT         uTempMaxSize,      //178:  Maximum size of lpwszTemp
                  RegisterEBP,       //17C:  Register EBP from an exception
                  uErrLine;          //180:  Error line # from []FX for )IN
+    LPTOKEN      lptkCSIni,         //184:  Ptr to start of CtrlStruc token stack (static)
+                 lptkCSNxt;         //188:  Ptr to next available slot in CS ...  (dynamic)
+    struct tagFORSTMT *
+                 lpForStmtBase;     //18C:  Ptr to base of FORSTMT stack
 #ifndef UNISCRIBE
     IMLangFontLink
-                *lpFontLink;        //184:  Ptr to FontLink struc
+                *lpFontLink;        //190:  Ptr to FontLink struc
 #endif
-
-#define CQUADPR_MT      L'\xFFFF'   // cQuadPR value indicating it's empty
-
-    APLCHAR      cQuadPR,           //188:  []PR     (' ') (When a char scalar)
-                 cQuadxSA;          //18A:  []SA     (0)   (in its index form as an integer)
-                                    //18C:  Length
+    APLCHAR      cQuadPR,           //194:  []PR     (' ') (When a char scalar)
+                 cQuadxSA;          //196:  []SA     (0)   (in its index form as an integer)
+                                    //198:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

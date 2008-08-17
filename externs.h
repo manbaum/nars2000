@@ -724,6 +724,13 @@ WCHAR wszIndent[DEF_INDENT + 1]
 ;
 
 EXTERN
+UBOOL bExecuting                        // TRUE iff we 're waiting for an execution to complete
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+;
+
+EXTERN
 int gLstTabID                           // ID of the previous (outgoing) tab (-1 = none)
 #ifdef DEFINE_VALUES
  = -1
@@ -823,6 +830,10 @@ int     iLCWidth;                       // Width of the line continuation column
 
 EXTERN
 BITMAP  bmLineCont;                     // Bitmap metrics for the line continuation char
+
+EXTERN
+HCURSOR hCursorWait,                    // Hourglass cursor
+        hCursorIdle;                    // Arrow     ...
 
 // FONTS
 EXTERN
@@ -1225,184 +1236,11 @@ CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
 // The # rows in the above table
 #define ACHARCODES_NROWS    (sizeof (aCharCodes) / sizeof (aCharCodes[0]))
 
-typedef struct tagSYMBOLNAMES
-{
-    WCHAR   Symbol;     // Symbol
-    LPWCHAR lpwName;    // Ptr to name
-} SYMBOLNAMES, *LPSYMBOLNAMES;
-
-// The # rows in the below table
-#define ASYMBOLNAMES_NROWS  (91+26)
-
-// Translate table for symbols to names
+// The # rows in the aSymbolNames table
 EXTERN
-SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
+UINT aSymbolNames_NRows
 #ifdef DEFINE_VALUES
-=
-{
-// No keystroke equivalents for these as yet
-  {UTF16_DIERESISDOT          , L"{dieresisdot}"        },
-  {UTF16_NOTEQUALUNDERBAR     , L"{notequalunderbar}"   },
-  {UTF16_IBEAM                , L"{ibeam}"              },
-  {UTF16_QUADJOT              , L"{quadjot}"            },
-  {UTF16_QUADSLOPE            , L"{quadslope}"          },
-  {UTF16_QUADLEFTARROW        , L"{quadleftarrow}"      },
-  {UTF16_QUADRIGHTARROW       , L"{quadrightarrow}"     },
-  {UTF16_QUADUPARROW          , L"{quaduparrow}"        },
-  {UTF16_QUADDOWNARROW        , L"{quaddownarrow}"      },
-
-// _alpbahet_ characters
-  {UTF16_A_                   , L"{A underbar}"         },
-  {UTF16_B_                   , L"{B underbar}"         },
-  {UTF16_C_                   , L"{C underbar}"         },
-  {UTF16_D_                   , L"{D underbar}"         },
-  {UTF16_E_                   , L"{E underbar}"         },
-  {UTF16_F_                   , L"{F underbar}"         },
-  {UTF16_G_                   , L"{G underbar}"         },
-  {UTF16_H_                   , L"{H underbar}"         },
-  {UTF16_I_                   , L"{I underbar}"         },
-  {UTF16_J_                   , L"{J underbar}"         },
-  {UTF16_K_                   , L"{K underbar}"         },
-  {UTF16_L_                   , L"{L underbar}"         },
-  {UTF16_M_                   , L"{M underbar}"         },
-  {UTF16_N_                   , L"{N underbar}"         },
-  {UTF16_O_                   , L"{O underbar}"         },
-  {UTF16_P_                   , L"{P underbar}"         },
-  {UTF16_Q_                   , L"{Q underbar}"         },
-  {UTF16_R_                   , L"{R underbar}"         },
-  {UTF16_S_                   , L"{S underbar}"         },
-  {UTF16_T_                   , L"{T underbar}"         },
-  {UTF16_U_                   , L"{U underbar}"         },
-  {UTF16_V_                   , L"{V underbar}"         },
-  {UTF16_W_                   , L"{W underbar}"         },
-  {UTF16_X_                   , L"{X underbar}"         },
-  {UTF16_Y_                   , L"{Y underbar}"         },
-  {UTF16_Z_                   , L"{Z underbar}"         },
-
-// The alphabet, unshifted
-  {UTF16_ALPHA                , L"{alpha}"              },  // Alt-'a' - alpha
-  {UTF16_UPTACK               , L"{uptack}"             },  // Alt-'b' - base
-  {UTF16_UPSHOE               , L"{upshoe}"             },  // Alt-'c' - intersection
-  {UTF16_DOWNSTILE            , L"{downstile}"          },  // Alt-'d' - floor
-  {UTF16_EPSILON              , L"{epsilon}"            },  // Alt-'e' - epsilon
-  {UTF16_INFINITY             , L"{infinity}"           },  // Alt-'f' - infinity
-  {UTF16_DEL                  , L"{del}"                },  // Alt-'g' - del
-  {UTF16_DELTA                , L"{delta}"              },  // Alt-'h' - delta
-  {UTF16_IOTA                 , L"{iota}"               },  // Alt-'i' - iota
-  {UTF16_JOT                  , L"{jot}"                },  // Alt-'j' - jot
-  {UTF16_APOSTROPHE           , L"{apostrophe}"         },  // Alt-'k' - single-quote
-  {UTF16_QUAD                 , L"{quad}"               },  // Alt-'l' - quad (9109??)
-  {UTF16_STILE                , L"{stile}"              },  // Alt-'m' - modulus
-  {UTF16_DOWNTACK             , L"{downtack}"           },  // Alt-'n' - representation
-  {UTF16_CIRCLE               , L"{circle}"             },  // Alt-'o' - circle
-  {UTF16_STAR                 , L"{star}"               },  // Alt-'p' - power
-  {UTF16_QUERY                , L"{query}"              },  // Alt-'q' - question-mark
-  {UTF16_RHO                  , L"{rho}"                },  // Alt-'r' - rho
-  {UTF16_UPSTILE              , L"{upstile}"            },  // Alt-'s' - ceiling
-  {UTF16_TILDE                , L"{tilde}"              },  // Alt-'t' - tilde
-  {UTF16_DOWNARROW            , L"{downarrow}"          },  // Alt-'u' - down arrow
-  {UTF16_DOWNSHOE             , L"{downshoe}"           },  // Alt-'v' - union
-  {UTF16_OMEGA                , L"{omega}"              },  // Alt-'w' - omega
-  {UTF16_RIGHTSHOE            , L"{rightshoe}"          },  // Alt-'x' - disclose
-  {UTF16_UPARROW              , L"{uparrow}"            },  // Alt-'y' - up arrow
-  {UTF16_LEFTSHOE             , L"{leftshoe}"           },  // Alt-'z' - enclose
-
-// The alphabet, shifted
-//{UTF16_                     ,                         },  // Alt-'A' - (none)
-//{UTF16_                     ,                         },  // Alt-'B' - (none)
-//{UTF16_                     ,                         },  // Alt-'C' - (none)
-//{UTF16_                     ,                         },  // Alt-'D' - (none)
-  {UTF16_EPSILONUNDERBAR      , L"{epsilonunderbar}"    },  // Alt-'E' - epsilon-underbar
-//{UTF16_                     ,                         },  // Alt-'F' - (none)
-  {UTF16_DIERESISDEL          , L"{dieresisdel}"        },  // Alt-'G' - Dual operator        (frog)
-  {UTF16_DELTAUNDERBAR        , L"{deltaunderbar}"      },  // Alt-'H' - delta-underbar
-  {UTF16_IOTAUNDERBAR         , L"{iotaunderbar}"       },  // Alt-'I' - iota-underbar
-  {UTF16_DIERESISJOT          , L"{dieresisjot}"        },  // Alt-'J' - Rank operator        (hoot)
-//{UTF16_                     ,                         },  // Alt-'K' - (none)
-  {UTF16_SQUAD                , L"{squad}"              },  // Alt-'L' - squad
-  {UTF16_STILETILDE           , L"{stiletilde}"         },  // Alt-'M' - Partition operator   (dagger)
-  {UTF16_DIERESISDOWNTACK     , L"{dieresisdowntack}"   },  // Alt-'N' - Convolution operator (snout)
-  {UTF16_DIERESISCIRCLE       , L"{dieresiscircle}"     },  // Alt-'O' - Rank operator w/Axis (holler)
-  {UTF16_DIERESISSTAR         , L"{dieresisstar}"       },  // Alt-'P' - Power operator       (sourpuss)
-//{UTF16_                     ,                         },  // Alt-'Q' - (none)
-//{UTF16_                     ,                         },  // Alt-'R' - (none)
-//{UTF16_                     ,                         },  // Alt-'S' - (none)
-  {UTF16_DIERESISTILDE        , L"{dieresistilde}"      },  // Alt-'T' - Commute operator     (frown)
-//{UTF16_                     ,                         },  // Alt-'U' - (none)
-//{UTF16_                     ,                         },  // Alt-'V' - (none)
-//{UTF16_                     ,                         },  // Alt-'W' - (none)
-//{UTF16_                     ,                         },  // Alt-'X' - (none)
-//{UTF16_                     ,                         },  // Alt-'Y' - (none)
-//{UTF16_                     ,                         },  // Alt-'Z' - (none)
-
-// Top row, unshifted
-  {UTF16_DIAMOND              , L"{diamond}"            },  // Alt-'`' - diamond (9674??)
-  {UTF16_DIERESIS             , L"{dieresis}"           },  // Alt-'1' - dieresis
-  {UTF16_OVERBAR              , L"{overbar}"            },  // Alt-'2' - high minus
-  {UTF16_LEFTCARET            , L"{leftcaret}"          },  // Alt-'3' - less
-  {UTF16_LEFTCARETUNDERBAR    , L"{leftcaretunderbar}"  },  // Alt-'4' - not more
-  {UTF16_EQUAL                , L"{equal}"              },  // Alt-'5' - equal
-  {UTF16_RIGHTCARETUNDERBAR   , L"{rightcaretunderbar}" },  // Alt-'6' - not less
-  {UTF16_RIGHTCARET           , L"{rightcaret}"         },  // Alt-'7' - more
-  {UTF16_NOTEQUAL             , L"{notequal}"           },  // Alt-'8' - not equal
-  {UTF16_DOWNCARET            , L"{downcaret}"          },  // Alt-'9' - or
-  {UTF16_UPCARET              , L"{upcaret}"            },  // Alt-'0' - and (94??)
-  {UTF16_TIMES                , L"{times}"              },  // Alt-'-' - times
-  {UTF16_COLONBAR             , L"{colonbar}"           },  // Alt-'=' - divide
-
-// Top row, shifted
-  {UTF16_COMMABAR             , L"{commabar}"           },  // Alt-'~' - comma-bar
-  {UTF16_EQUALUNDERBAR        , L"{equalunderbar}"      },  // Alt-'!' - match
-  {UTF16_CIRCLEMIDDLEDOT      , L"{circlemiddledot}"    },  // Alt-'@' - circle-middle-dot
-  {UTF16_DELSTILE             , L"{delstile}"           },  // Alt-'#' - grade-down
-  {UTF16_DELTASTILE           , L"{deltastile}"         },  // Alt-'$' - grade-up
-  {UTF16_CIRCLESTILE          , L"{circlestile}"        },  // Alt-'%' - rotate
-  {UTF16_CIRCLESLOPE          , L"{circleslope}"        },  // Alt-'^' - transpose
-  {UTF16_CIRCLEBAR            , L"{circlebar}"          },  // Alt-'&' - circle-bar
-  {UTF16_CIRCLESTAR           , L"{circlestar}"         },  // Alt-'*' - log
-  {UTF16_DOWNCARETTILDE       , L"{downcarettilde}"     },  // Alt-'(' - nor
-  {UTF16_UPCARETTILDE         , L"{upcarettilde}"       },  // Alt-')' - nand
-  {UTF16_QUOTEDOT             , L"{quotedot}"           },  // Alt-'_' - quote-dot
-  {UTF16_DOMINO               , L"{domino}"             },  // Alt-'+' - domino
-
-// Second row, unshifted
-  {UTF16_LEFTARROW            , L"{leftarrow}"          },  // Alt-'[' - left arrow
-  {UTF16_RIGHTARROW           , L"{rightarrow}"         },  // Alt-']' - right arrow
-  {UTF16_LEFTTACK             , L"{lefttack}"           },  // Alt-'\' - left tack
-
-// Second row, shifted
-  {UTF16_QUOTEQUAD            , L"{quotequad}"          },  // Alt-'{' - quote-quad
-  {UTF16_ZILDE                , L"{zilde}"              },  // Alt-'}' - zilde
-  {UTF16_RIGHTTACK            , L"{righttack}"          },  // Alt-'|' - right tack
-
-// Third row, unshifted
-  {UTF16_UPTACKJOT            , L"{uptackjot}"          },  // Alt-';' - execute
-  {UTF16_DOWNTACKJOT          , L"{downtackjot}"        },  // Alt-'\''- format
-
-// Third row, shifted
-//{UTF16_                     ,                         },  // Alt-':' - (none)
-//{UTF16_                     ,                         },  // Alt-'"' - (none)
-
-// Fourth row, unshifted
-  {UTF16_LAMP                 , L"{lamp}"               },  // Alt-',' - comment
-  {UTF16_SLOPEBAR             , L"{slopebar}"           },  // Alt-'.' - slope-bar
-  {UTF16_SLASHBAR             , L"{slashbar}"           },  // Alt-'/' - slash-bar
-
-// Fourth row, shifted
-//{UTF16_                     ,                         },  // Alt-'<' - (none)
-//{UTF16_                     ,                         },  // Alt-'>' - (none)
-//{UTF16_                     ,                         },  // Alt-'?' - (none)
-
-// Non-Alt key equivalents (these are the only ones we need for SaveWS)
-  {UTF16_DOUBLEQUOTE          , L"{doublequote}"        },  // 22:  Double quote
-  {UTF16_POUND                , L"{pound}"              },  // 23:  Pound
-  {UTF16_COMMA                , L"{comma}"              },  // 2C:  Comma
-  {UTF16_SLOPE                , L"{slope}"              },  // 5C:  Slope
-  {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // 5E:  Circumflex
-  {UTF16_LEFTBRACE            , L"{leftbrace}"          },  // 7B:  Left brace
-  {UTF16_STILE2               , L"{stile2}"             },  // 7C:  Stile (a.k.a. 0x2223)
-  {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 7D:  Right brace
-}
+= (sizeof (aSymbolNames) / sizeof (aSymbolNames[0]))
 #endif
 ;
 
@@ -1469,9 +1307,9 @@ typedef struct tagOPTIONFLAGS
          bUseLocalTime       :1,    // 00000010:  ...      LocalTime is used instead of SystemTime (GMT)
          bBackupOnLoad       :1,    // 00000020:  ...      make a backup copy on all )LOADs
          bBackupOnSave       :1,    // 00000040:  ...      make a backup copy on all )SAVEs
-         bClosingLamp        :1,    // 00000080:  ...      {lamp} may close a comment
-         uDefaultPaste       :4,    // 00000F00:  Index of default Paste translation (see UNI_TRANS)
-         Avail               :22;   // FFFFF000:  Available bits
+         uDefaultPaste       :4,    // 00000780:  Index of default Paste translation (see UNI_TRANS)
+         uDefaultCopy        :4,    // 00007800:  Index of default Paste translation (see UNI_TRANS)
+         Avail               :18;   // FFFF8000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 EXTERN
@@ -1484,8 +1322,8 @@ OPTIONFLAGS OptionFlags
    DEF_USELOCALTIME,
    DEF_BACKUPONLOAD,
    DEF_BACKUPONSAVE,
-   DEF_CLOSINGLAMP,
-   DEF_DEFAULTPASTE}
+   DEF_DEFAULTPASTE,
+   DEF_DEFAULTCOPY}
 #endif
 ;
 

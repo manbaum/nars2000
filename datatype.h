@@ -223,7 +223,9 @@ typedef struct tagVARARRAY_HEADER
     UINT             ArrType:4, // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
                      PermNdx:4, //      000000F0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
                      SysVar:1,  //      00000100:  Izit for a Sysvar (***DEBUG*** only)?
-                     Avail:23;  //      FFFFFE00:  Available bits
+                     PV0:1,     //      00000200:  Permutation Vector in origin-0
+                     PV1:1,     //      00000400:  ...                          1
+                     Avail:21;  //      FFFFF800:  Available bits
     UINT             RefCnt;    // 08:  Reference count
     APLNELM          NELM;      // 0C:  # elements in the array
     APLRANK          Rank;      // 10:  The rank of the array

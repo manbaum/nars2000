@@ -20,6 +20,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#ifndef NARS_UNICODE
+#define NARS_UNICODE
+
 // When initializing an array of functions (such as PrimFnsTab) use these
 //   equates instead of the low-order byte of the corresponding UTF16_xxx
 //   so as to avoid a conflict.
@@ -417,6 +420,7 @@
 #define WS_UTF16_Y_                 L"\xE04E"   // Y underbar
 #define WS_UTF16_Z_                 L"\xE04F"   // Z underbar
 
+#endif
 
 //***************************************************************************
 //  End of File: Unicode.h

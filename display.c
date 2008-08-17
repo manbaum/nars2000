@@ -573,7 +573,8 @@ UBOOL DisplayGlbArr_EM
                    uFmtRow = 0;
                  uFmtRow < lpFmtHeader->uFmtRows;
                  uFmtRow++,
-                   lpwsz += aplLastDim)
+                   lpwsz += aplLastDim,
+                   bLineCont = FALSE)
             {
                 WCHAR   wch;                // The replaced WCHAR
                 APLDIM  aplDimTmp;          // Remaining line length to output

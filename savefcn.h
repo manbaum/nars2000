@@ -40,18 +40,24 @@ typedef struct tagSF_FCNS
 // Aliases for common functions
 #define SF_NumLinesN        SF_NumLinesCom
 #define SF_NumLinesSV       SF_NumLinesCom
+
 #define SF_CreationTimeM    SF_CreationTimeCom
 #define SF_CreationTimeN    SF_CreationTimeCom
 #define SF_CreationTimeSV   SF_CreationTimeCom
 #define SF_CreationTimeTF1  SF_CreationTimeCom
+#define SF_CreationTimeAA   SF_CreationTimeCom
+
 #define SF_LastModTimeM     SF_LastModTimeCom
 #define SF_LastModTimeN     SF_LastModTimeCom
 #define SF_LastModTimeSV    SF_LastModTimeCom
 #define SF_LastModTimeTF1   SF_LastModTimeCom
+#define SF_LastModTimeAA    SF_LastModTimeCom
+
 #define SF_UndoBufferM      SF_UndoBufferCom
 #define SF_UndoBufferN      SF_UndoBufferCom
 #define SF_UndoBufferSV     SF_UndoBufferCom
 #define SF_UndoBufferTF1    SF_UndoBufferCom
+#define SF_UndoBufferAA     SF_UndoBufferCom
 
 
 typedef struct tagFX_PARAMS
@@ -85,6 +91,12 @@ typedef struct tagTF1_PARAMS
               aplColsRht;           // 08:  Right arg # cols
 } TF1_PARAMS, *LPTF1_PARAMS;
 
+
+typedef struct tagAA_PARAMS
+{
+    UINT    NumLines;               // 00:  # lines in the function
+    LPWCHAR lpwStart;               // 04:  Ptr to start of function
+} AA_PARAMS, *LPAA_PARAMS;
 
 //***************************************************************************
 //  End of File: savefcn.h

@@ -267,7 +267,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -422,7 +422,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
@@ -514,21 +514,21 @@ UBOOL PrimOpDydJotDotProto_EM
     // If the left arg is not immediate, get the next value
     if (lpMemLft)
         // Get the next value from the left arg
-        GetValueIntoToken (uLft,                // Index to use
-                           lpMemLft,            // Ptr to global memory object to index
-                           aplTypeLft,          // Storage type of the arg
-                           apaOffLft,           // APA offset (if needed)
-                           apaMulLft,           // APA multiplier (if needed)
-                           lptkLftArg);         // Ptr to token in which to place the result
+        GetNextValueMemIntoToken (uLft,         // Index to use
+                                  lpMemLft,     // Ptr to global memory object to index
+                                  aplTypeLft,   // Storage type of the arg
+                                  apaOffLft,    // APA offset (if needed)
+                                  apaMulLft,    // APA multiplier (if needed)
+                                  lptkLftArg);  // Ptr to token in which to place the result
     // If the right arg is not immediate, get the next value
     if (lpMemRht)
         // Get the next value from the right arg
-        GetValueIntoToken (uRht,                // Index to use
-                           lpMemRht,            // Ptr to global memory object to index
-                           aplTypeRht,          // Storage type of the arg
-                           apaOffRht,           // APA offset (if needed)
-                           apaMulRht,           // APA multiplier (if needed)
-                           lptkRhtArg);         // Ptr to token in which to place the result
+        GetNextValueMemIntoToken (uRht,         // Index to use
+                                  lpMemRht,     // Ptr to global memory object to index
+                                  aplTypeRht,   // Storage type of the arg
+                                  apaOffRht,    // APA offset (if needed)
+                                  apaMulRht,    // APA multiplier (if needed)
+                                  lptkRhtArg);  // Ptr to token in which to place the result
     if (!ExecFuncOnToken_EM (lplpMemRes,        // Ptr to ptr to result global memory
                               lptkLftArg,       // Ptr to left arg token
                               lpYYFcnStrRht,    // Ptr to function strand

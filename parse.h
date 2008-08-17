@@ -64,8 +64,8 @@ typedef enum tagSTRAND_INDS
 
 typedef struct tagPLLOCALVARS       // ParseLine Local Vars
 {
-    HGLOBAL      hGlbTxtLine,       // 00:  Line text global memory handle
-                 hGlbToken;         // 04:  Tokenized line global memory handle
+    HGLOBAL      hGlbTknLine,       // 00:  Tokenized line global memory handle
+                 hGlbTxtLine;       // 04:  Text      ...
     UNION_TOKEN  t2;                // 08:  Locked base of hGlbToken
     LPTOKEN      lptkStart,         // 0C:  Ptr to first available entry after the header
                  lptkNext,          // 10:  Ptr to next  ...
@@ -77,7 +77,10 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                  bLookAhead:1,      //      00000010:  TRUE iff looking for object type within surrounding parens
                  ExitType:4,        //      000001E0:  Exit Type (see EXIT_TYPES)
                  bRet:1,            //      00000200   Various function results
-                 Avail:22;          //      FFFFFC00:  Available bits
+                 bStopExec:1,       //      00000400   TRUE iff we're to stop executing this line
+                 bRestart:1,        //      00000800   TRUE iff we're to restart from a Control Structure
+                 bExec1Stmt:1,      //      00001000   TRUE iff we're to execute one stmt only
+                 Avail:19;          //      FFFFE000:  Available bits
     UBOOL        bCtrlBreak;        // 28:  TRUE iff Ctrl-Break pressed
     LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 2C:  Strand stack start (static)
                  lpYYStrandBase [STRAND_LEN],   // 34:  ...          base (dynamic)
@@ -101,7 +104,9 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     struct tagPLLOCALVARS
                 *lpPLPrev;          // 88:  Ptr to previous PLLOCALVARS struct
                                     //      in thread creation order (NULL = none)
-                                    // 8C:  Length
+    UINT         uLineNum;          // 8C:  Function line # (1 for execute or immexec)
+    HGLOBAL      hGlbDfnHdr;        // 90:  User-defined functio/operator global memory handle (NULL = execute/immexec)
+                                    // 94:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

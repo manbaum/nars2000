@@ -210,8 +210,8 @@ UBOOL AssignName_EM
             FreeResultName (lptkNam);
 
             // It's an immediate primitive function
-            lptkNam->tkData.tkSym->stFlags.Imm     = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ImmType = GetImmTypeFcn (lptkSrc->tkData.tkChar);
+            lptkNam->tkData.tkSym->stFlags.Imm        = TRUE;
+            lptkNam->tkData.tkSym->stFlags.ImmType    = GetImmTypeFcn (lptkSrc->tkData.tkChar);
             lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_FN12;
 
             // Copy the constant data
@@ -224,8 +224,8 @@ UBOOL AssignName_EM
             FreeResultName (lptkNam);
 
             // It's an immediate primitive operator
-            lptkNam->tkData.tkSym->stFlags.Imm     = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP1;
+            lptkNam->tkData.tkSym->stFlags.Imm        = TRUE;
+            lptkNam->tkData.tkSym->stFlags.ImmType    = IMMTYPE_PRIMOP1;
             lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP1;
 
             // Copy the constant data
@@ -238,8 +238,8 @@ UBOOL AssignName_EM
             FreeResultName (lptkNam);
 
             // It's an immediate primitive operator
-            lptkNam->tkData.tkSym->stFlags.Imm     = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP2;
+            lptkNam->tkData.tkSym->stFlags.Imm        = TRUE;
+            lptkNam->tkData.tkSym->stFlags.ImmType    = IMMTYPE_PRIMOP2;
             lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP2;
 
             // Copy the constant data
@@ -252,8 +252,8 @@ UBOOL AssignName_EM
             FreeResultName (lptkNam);
 
             // It's an immediate primitive operator
-            lptkNam->tkData.tkSym->stFlags.Imm     = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP3;
+            lptkNam->tkData.tkSym->stFlags.Imm        = TRUE;
+            lptkNam->tkData.tkSym->stFlags.ImmType    = IMMTYPE_PRIMOP3;
             lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP3;
 
             // Copy the constant data
@@ -677,7 +677,7 @@ UBOOL AssignSelectSpec_EM
     // Fill in the value token
 ////tkToken.tkFlags.TknType     =
 ////tkToken.tkFlags.ImmType     =
-////tkToken.tkFlags.NoDisplay   = 0;    // Already from from {0}
+////tkToken.tkFlags.NoDisplay   = FALSE;    // Already from from {0}
 ////tkToken.tkData              =
     tkToken.tkCharIndex         = lptkVal->tkCharIndex;
 
@@ -895,7 +895,7 @@ NORMAL_EXIT:
     } // End IF
 
     // Mark as not displayable
-    lptkVal->tkFlags.NoDisplay = 1;
+    lptkVal->tkFlags.NoDisplay = TRUE;
 
     DBGLEAVE;
 

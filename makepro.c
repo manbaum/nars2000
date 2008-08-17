@@ -265,7 +265,28 @@ int PASCAL WinMain
     // Get the file size (it always fits in a DWORD)
     dwTmpFileSize = GetFileSize (hTmpFile, NULL);
     if (dwTmpFileSize EQ 0)
+    {
+        hOutFile =
+          CreateFile (lpOutFile,                    // Pointer to name of the file
+                      GENERIC_READ                  // Access (read-write) mode
+                    | GENERIC_WRITE,
+                      FILE_SHARE_READ
+                    | FILE_SHARE_WRITE,             // Share mode
+                     &secAttr,                      // Pointer to security descriptor
+                      OPEN_ALWAYS,                  // How to create
+                      0                             // File attributes
+                    | FILE_ATTRIBUTE_NORMAL
+                    | FILE_FLAG_WRITE_THROUGH,
+                      NULL);                        // Handle to file with attributes to copy
+        if (hOutFile EQ NULL)
+        {
+            MessageBox (NULL, "Unable to create hOutFile", "makepro", MB_OK | MB_ICONEXCLAMATION);
+            DbgBrk ();
+            GetLastError ();
+        } // End IF
+
         goto NORMAL_EXIT;
+    } // End IF
 
     // Now launder the output file to remove anomalies of some MS compilers
 
@@ -512,6 +533,12 @@ NORMAL_EXIT:
     {
         // We no longer need this resource
         CloseHandle (hTmpMap); hTmpMap = NULL;
+    } // End IF
+
+    if (hOutFile)
+    {
+        // We no longer need this resource
+        CloseHandle (hOutFile); hOutFile = NULL;
     } // End IF
 
     if (hTmpFile)

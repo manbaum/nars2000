@@ -117,14 +117,15 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     *lpw++ = L' ';
 
     // Open the executable file so we can read its internal timestamp
-    hFile = CreateFileW (wszAppDPFE,                // lpwFileName
-                         GENERIC_READ,              // dwDesiredAccess
-                         FILE_SHARE_READ,           // dwShareMode
-                         NULL,                      // lpSecurityAttributes
-                         OPEN_EXISTING,             // dwCreationDistribution
-                         FILE_ATTRIBUTE_NORMAL,     // dwFlagsAndAttributes
-                         NULL);                     // hTemplateFile
-    if (hFile)
+    hFile =
+      CreateFileW (wszAppDPFE,              // lpwFileName
+                   GENERIC_READ,            // dwDesiredAccess
+                   FILE_SHARE_READ,         // dwShareMode
+                   NULL,                    // lpSecurityAttributes
+                   OPEN_EXISTING,           // dwCreationDistribution
+                   FILE_ATTRIBUTE_NORMAL,   // dwFlagsAndAttributes
+                   NULL);                   // hTemplateFile
+    if (hFile NE INVALID_HANDLE_VALUE)
     {
         DWORD              dwTemp,
                            dwCount;

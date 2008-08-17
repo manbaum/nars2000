@@ -32,7 +32,7 @@
   #define MyDeleteObject(a)               _MyDeleteObject(a,__LINE__)
   #define MyGetDC(a)                      _MyGetDC(a,__LINE__)
   #define MyGetWindowDC(a)                _MyGetWindowDC(a,__LINE__)
-  #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(a,b,__LINE__)
+  #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(a,b,FNLN)
   #define MyGlobalLock(a)                 _MyGlobalLock(a,FNLN)
   #define MyGlobalUnlock(a)               _MyGlobalUnlock(a,__LINE__)
   #define MyGlobalSize(a)                 _MyGlobalSize(a,__LINE__)
@@ -46,7 +46,8 @@
   #define MyQueryObject(a,b)              _MyQueryObject(a,b,__LINE__)
   #define MyReleaseDC(a,b)                _MyReleaseDC(a,b,__LINE__)
 
-  #define OBJ_GLOBAL      15
+  #define OBJ_GLBLOCK     15
+  #define OBJ_GLBALLOC    16
 #else
   #define MyCreateCompatibleBitmap(a,b,c) CreateCompatibleBitmap(a,b,c)
   #define MyCreateCompatibleDC(a)         CreateCompatibleDC(a)

@@ -114,7 +114,7 @@ UBOOL WINAPI CreateDebuggerInThread
     __try
     {
         // Save the thread type ('DB')
-        TlsSetValue (dwTlsType, (LPVOID) 'DB');
+        TlsSetValue (dwTlsType, TLSTYPE_DB);
 
         // Extract values from the arg struc
         hGlbPTD = lpcdbThread->hGlbPTD;

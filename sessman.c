@@ -33,6 +33,7 @@
 #include "resource.h"
 #include "externs.h"
 #include "editctrl.h"
+#include "cs_parse.h"
 #include "pertab.h"
 #include "dfnhdr.h"
 #include "sis.h"
@@ -44,21 +45,21 @@
 
 /*
 
-The Session Manager (SM) window consists of an Edit Control which
+The Session Manager (SM) window consists of an Edit Ctrl which
 holds the APL statements of the session.
 
 When the cursor moves to a line, the contents of the current line
 are copied to <lpwCurLine>.
 
 If the user edits the line:
-    * The edit changes are saved in the Edit Control.
+    * The edit changes are saved in the Edit Ctrl.
 
 In any case,
     * If the user hits Enter, the contents of the current
-      line in the Edit Control are copied to the last line
-      in the Edit Control, the contents of <lpwCurLine>
-      replace the current line in the Edit Control, and the
-      last line in the Edit Control is executed.
+      line in the Edit Ctrl are copied to the last line
+      in the Edit Ctrl, the contents of <lpwCurLine>
+      replace the current line in the Edit Ctrl, and the
+      last line in the Edit Ctrl is executed.
 
  */
 
@@ -94,12 +95,14 @@ typedef enum tagPTDMEMVIRTENUM
     PTDMEMVIRT_HSHTAB,                  // 02:  htsPTD.lpHshTab
     PTDMEMVIRT_SYMTAB,                  // 03:  lpSymTab
     PTDMEMVIRT_SIS,                     // 04:  lpSISBeg
-    PTDMEMVIRT_YYRES,                   // 05:  lpYYRes
-    PTDMEMVIRT_STRAND_VAR,              // 06:  lpStrand[STRAND_VAR]
-    PTDMEMVIRT_STRAND_FCN,              // 07:  lpStrand[STRAND_FCN]
-    PTDMEMVIRT_WSZFORMAT,               // 08:  Temporary formatting
-    PTDMEMVIRT_WSZTEMP,                 // 09:  Temporary save area
-    PTDMEMVIRT_LENGTH                   // 0A:  # entries
+    PTDMEMVIRT_CS,                      // 05:  lptkCSIni
+    PTDMEMVIRT_YYRES,                   // 06:  lpYYRes
+    PTDMEMVIRT_STRAND_VAR,              // 07:  lpStrand[STRAND_VAR]
+    PTDMEMVIRT_STRAND_FCN,              // 08:  lpStrand[STRAND_FCN]
+    PTDMEMVIRT_WSZFORMAT,               // 09:  Temporary formatting
+    PTDMEMVIRT_WSZTEMP,                 // 0A:  Temporary save area
+    PTDMEMVIRT_FORSTMT,                 // 0B:  FOR ... IN stmts
+    PTDMEMVIRT_LENGTH                   // 0C:  # entries
 } PTDMEMVIRTENUM;
 
 
@@ -143,7 +146,7 @@ HWND GetThreadSMEC
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    HWND         hWndEC;        // Window handle to Edit Control
+    HWND         hWndEC;        // Window handle to Edit Ctrl
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -151,7 +154,7 @@ HWND GetThreadSMEC
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get the handle to the edit control
+    // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 
     // We no longer need this ptr
@@ -173,7 +176,7 @@ void AppendLine
      UBOOL   bEndingCRLF)       // TRUE iff this line should end with a CR/LF
 
 {
-    HWND hWndEC;                // Window handle to Edit Control
+    HWND hWndEC;                // Window handle to Edit Ctrl
 
     // Get hWndEC for the Session Manager from the current thread
     hWndEC = GetThreadSMEC ();
@@ -209,7 +212,7 @@ void AppendLine
 #endif
 
 void ReplaceLine
-    (HWND    hWndEC,            // Edit Control window handle
+    (HWND    hWndEC,            // Edit Ctrl window handle
      LPWCHAR lpwszLine,         // Ptr to incoming line text
      UINT    uLineNum)          // Line # to replace
 
@@ -251,7 +254,7 @@ void ReplaceLastLineCR
     (LPWCHAR lpwszLine)         // Ptr to incoming line text
 
 {
-    HWND hWndEC;                // Window handle to Edit Control
+    HWND hWndEC;                // Window handle to Edit Ctrl
 
     // Get hWndEC for the Session Manager from the current thread
     hWndEC = GetThreadSMEC ();
@@ -301,7 +304,7 @@ void ReplaceLastLineCRPmt
 //***************************************************************************
 
 UBOOL IzitLastLine
-    (HWND hWndEC)           // Window handle of the Edit Control
+    (HWND hWndEC)           // Window handle of the Edit Ctrl
 
 {
     UINT uLineCnt,
@@ -431,11 +434,11 @@ UBOOL IzitLastLine
 //***************************************************************************
 //  $MoveCaretEOB
 //
-//  Move the text caret in an Edit Control to the end of the buffer
+//  Move the text caret in an Edit Ctrl to the end of the buffer
 //***************************************************************************
 
 void MoveCaretEOB
-    (HWND hWndEC)           // Window handle of Edit Control
+    (HWND hWndEC)           // Window handle of Edit Ctrl
 
 {
     UINT uLineCnt,
@@ -467,7 +470,7 @@ void MoveCaretEOB
 //***************************************************************************
 
 void DisplayPrompt
-    (HWND hWndEC,       // Window handle of the Edit Control
+    (HWND hWndEC,       // Window handle of the Edit Ctrl
 /////UBOOL bSetFocusSM, // TRUE iff we're to set the focus to the Session Manager
      UINT uCaller)      // ***DEBUG***
 
@@ -480,6 +483,9 @@ void DisplayPrompt
 
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
+
+    // Mark as no longer executing
+    bExecuting = FALSE;
 
 ////if (bSetFocusSM)
 ////    // Set the focus to the Session Manager so the prompt displays
@@ -494,7 +500,7 @@ void DisplayPrompt
 //***************************************************************************
 
 UINT GetLineLength
-    (HWND hWndEC,           // Edit Control window handle
+    (HWND hWndEC,           // Edit Ctrl window handle
      UINT uLineNum)         // The line #
 
 {
@@ -522,7 +528,7 @@ UINT GetLineLength
 
 void FormatQQuadInput
     (UINT          uLineNum,        // Line #
-     HWND          hWndEC,          // Handle of Edit Control window
+     HWND          hWndEC,          // Handle of Edit Ctrl window
      LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
@@ -683,14 +689,14 @@ LRESULT APIENTRY SMWndProc
      LONG lParam)   // ...
 
 {
-    HWND         hWndEC;                // Window handle to Edit Control
+    HWND         hWndEC;                // Window handle to Edit Ctrl
     VKSTATE      vkState;
     long         lvkState;
     HGLOBAL      hGlbPTD;               // Handle to this window's PerTabData
     LPPERTABDATA lpMemPTD;              // Ptr to ...
     LPWCHAR      lpwCurLine;            // Ptr to current line global memory
     UINT         uCnt;                  // Loop counter
-////RECT         rcFmtEC;               // Formatting rectangle for the Edit Control
+////RECT         rcFmtEC;               // Formatting rectangle for the Edit Ctrl
     LPUNDO_BUF   lpUndoBeg;             // Ptr to start of Undo Buffer
 ////HDC          hDC;
 ////HFONT        hFontOld;
@@ -698,7 +704,7 @@ LRESULT APIENTRY SMWndProc
     static UBOOL bLoadMsgDisp = FALSE;  // TRUE iff )LOAD message has been displayed
     LPMEMVIRTSTR lpLclMemVirtStr;       // Ptr to local MemVirtStr
 
-    // Get the handle to the edit control
+    // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
 
     // Get the thread's PerTabData global memory handle
@@ -1079,7 +1085,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpStateInd> failed");
+                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSISBeg> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1090,6 +1096,42 @@ WM_NCCREATE_FAIL:
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr,
                             DEF_SIS_INITSIZE * sizeof (SYMENTRY),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
+
+            // *************** Control Structure Stack *****************
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Allocate virtual memory for the Control Structure Stack
+#ifdef DEBUG
+            lpLclMemVirtStr[PTDMEMVIRT_CS].lpText   = "lpMemPTD->lptkCSIni in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[PTDMEMVIRT_CS].IncrSize = DEF_CS_INCRSIZE * sizeof (TOKEN);
+            lpLclMemVirtStr[PTDMEMVIRT_CS].MaxSize  = DEF_CS_MAXSIZE  * sizeof (TOKEN);
+            lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr  = (LPVOID)
+            lpMemPTD->lptkCSIni = lpMemPTD->lptkCSNxt =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_CS].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lptkCSIni> failed");
+
+                goto WM_CREATE_FAIL;    // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_CS]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr,
+                            DEF_CS_INITSIZE * sizeof (TOKEN),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
@@ -1275,6 +1317,42 @@ WM_NCCREATE_FAIL:
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
+            // *************** lpForStmt *******************************
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Allocate virtual memory for the WCHAR Formatting storage
+#ifdef DEBUG
+            lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].lpText   = "lpMemPTD->lpForStmt in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IncrSize = DEF_FORSTMT_INCRSIZE * sizeof (FORSTMT);
+            lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].MaxSize  = DEF_FORSTMT_MAXSIZE  * sizeof (FORSTMT);
+            lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr  = (LPVOID)
+            lpMemPTD->lpForStmtBase =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"InitInstance:  GuardAlloc for <lpForStmt> failed");
+
+                return FALSE;           // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_FORSTMT]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr,
+                            DEF_FORSTMT_INITSIZE * sizeof (FORSTMT),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
+
             // *************** System Names ****************************
 
             // Initialize all system names (functions and variables) as reserved
@@ -1295,8 +1373,8 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
-            // *************** Edit Control ****************************
-            // Create an Edit Control within which we can enter expressions
+            // *************** Edit Ctrl ****************************
+            // Create an Edit Ctrl within which we can enter expressions
             hWndEC =
               CreateWindowExW (0L,                  // Extended styles
                                LECWNDCLASS,         // Class name
@@ -1331,7 +1409,7 @@ WM_NCCREATE_FAIL:
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Subclass the Edit Control so we can handle some of its messages
+            // Subclass the Edit Ctrl so we can handle some of its messages
             (HANDLE_PTR) lpMemPTD->lpfnOldEditCtrlWndProc =
               SetWindowLongPtrW (hWndEC,
                                  GWL_WNDPROC,
@@ -1392,8 +1470,11 @@ WM_NCCREATE_FAIL:
             if (!LoadWorkspace_EM ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE, hWndEC))
             {
                 // If we're loading a workspace from the command line, we can't afford to fail
-                if (wszLoadFile[0]
-                 && !LoadWorkspace_EM (NULL, hWndEC))   // Attempt to load a CLEAR WS
+                if (wszLoadFile[0])
+                {
+                    if (!LoadWorkspace_EM (NULL, hWndEC))   // Attempt to load a CLEAR WS
+                        goto LOAD_WORKSPACE_FAIL;           // If that fails, give up
+                } else
                     goto LOAD_WORKSPACE_FAIL;           // If that fails, give up
             } // End IF
 
@@ -1429,13 +1510,28 @@ NORMAL_EXIT:
         } // End WM_CREATE
 #undef  lpMDIcs
 
+        case WM_SETCURSOR:          // hwnd = (HWND) wParam;       // handle of window with cursor
+                                    // nHittest = LOWORD(lParam);  // hit-test code
+                                    // wMouseMsg = HIWORD(lParam); // mouse-message identifier
+            // If we're executing
+            //   and the mouse is in the client area
+            if (bExecuting && LOWORD (lParam) EQ HTCLIENT)
+            {
+                // Set a new cursor to indicate that we're waiting
+                SetCursor (hCursorWait);
+
+                return FALSE;           // We handled the msg
+            } // End IF
+
+            break;
+
         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
                                     // idChild = HIWORD(wParam);  // Identifier of child window
                                     // lValue = lParam;           // Child handle, or cursor coordinates
 #define fwEvent     (LOWORD (wParam))
 #define idChild     (HIWORD (wParam))
 
-            // Check for WM_CREATE from the Edit Control/Debugger
+            // Check for WM_CREATE from the Edit Ctrl/Debugger
             switch (fwEvent)
             {
                 case WM_CREATE:
@@ -1454,7 +1550,7 @@ NORMAL_EXIT:
                 {
                     UINT uCharPos;              // Character position
 
-                    // Ask the Edit Control what char is under the mouse cursor
+                    // Ask the Edit Ctrl what char is under the mouse cursor
                     uCharPos = (UINT) SendMessageW (hWndEC, EM_CHARFROMPOS, 0, lParam);
 
                     // If it's valid, ...
@@ -1517,7 +1613,7 @@ NORMAL_EXIT:
             // Make sure we can communicate between windows
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
-            // Tell the Edit Control about its font
+            // Tell the Edit Ctrl about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
 #ifdef DEBUG
             PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
@@ -1536,7 +1632,7 @@ NORMAL_EXIT:
                              4,                                         // NELM of line to execute
                              FALSE,                                     // TRUE iff free the line on completion
                              FALSE,                                     // TRUE iff wait until finished
-                             hWndEC,                                    // Edit Control window handle
+                             hWndEC,                                    // Edit Ctrl window handle
                              TRUE);                                     // TRUE iff errors are acted upon
             } else
             // If the SI level is for Quad Input
@@ -1634,12 +1730,13 @@ NORMAL_EXIT:
         case WM_UNDO:
         case MYWM_REDO:
         case WM_COPY:
+        case MYWM_COPY_APL:
         case WM_CUT:
         case WM_PASTE:
         case MYWM_PASTE_APL:
         case WM_CLEAR:
         case MYWM_SELECTALL:
-            // Pass on to the Edit Control
+            // Pass on to the Edit Ctrl
             SendMessageW (hWndEC, message, wParam, lParam);
 
             return FALSE;           // We handled the msg
@@ -1780,7 +1877,7 @@ NORMAL_EXIT:
                     break;
 
                 case VK_DOWN:
-                    // Get the # lines in the Edit Control
+                    // Get the # lines in the Edit Ctrl
                     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
                     // If the next line is out of range, exit
@@ -1970,7 +2067,7 @@ NORMAL_EXIT:
         case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // Notification code
                                     // wID = LOWORD (wParam);         // Item, control, or accelerator identifier
                                     // hwndCtrl = (HWND) lParam;      // Handle of control
-            // This message should be from the edit control
+            // This message should be from the Edit Ctrl
             Assert (wID      EQ IDWC_FE_EC
                  || wID      EQ IDWC_SM_EC);
             Assert (hWndCtrl EQ hWndEC || hWndEC EQ 0);
@@ -1978,17 +2075,17 @@ NORMAL_EXIT:
             // Split cases based upon the notify code
             switch (wNotifyCode)
             {
-                case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
-                                                    // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
-                    // The contents of the edit control have changed,
+                case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // Identifier of Edit Ctrl
+                                                    // hwndEditCtrl = (HWND) lParam;      // Handle of Edit Ctrl
+                    // The contents of the Edit Ctrl have changed,
                     // set the changed flag
                     SetWindowLongW (hWnd, GWLSF_CHANGED, TRUE);
 
                     break;
 
-                case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
-                                    // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
-                    // The edit control has exceed its maximum # chars
+                case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of Edit Ctrl
+                                    // hwndEditCtrl = (HWND) lParam;      // Handle of Edit Ctrl
+                    // The Edit Ctrl has exceed its maximum # chars
 
                     // The default maximum is 32K, so we increase it by that amount
                     Assert (hWndEC NE 0);
@@ -2080,10 +2177,23 @@ NORMAL_EXIT:
                 } // End FOR/IF
 
                 // Free the virtual storage
-                MyVirtualFree (lpLclMemVirtStr, 0,MEM_RELEASE); lpLclMemVirtStr = NULL;
+                MyVirtualFree (lpLclMemVirtStr, 0, MEM_RELEASE); lpLclMemVirtStr = NULL;
 
                 // Zap the window extra in case we're called again???
                 SetWindowLongPtrW (hWnd, GWLSF_LPMVS, 0);
+
+                // Zap the ptrs in lpMemPTD
+                lpMemPTD->lpwszQuadErrorMsg    = NULL;
+                lpUndoBeg                      = NULL;
+                lpMemPTD->htsPTD.lpHshTab      = NULL;
+                lpMemPTD->lpSymTab             = NULL;
+                lpMemPTD->lpSISBeg             = NULL;
+                lpMemPTD->lptkCSIni            = NULL;
+                lpMemPTD->lpYYRes              = NULL;
+                lpMemPTD->lpStrand[STRAND_VAR] = NULL;
+                lpMemPTD->lpStrand[STRAND_FCN] = NULL;
+                lpMemPTD->lpwszFormat          = NULL;
+                lpMemPTD->lpwszBaseTemp        = NULL;
             } // End IF
 
             // Uninitialize window-specific resources
@@ -2124,7 +2234,7 @@ NORMAL_EXIT:
 void MoveToLine
     (UINT    uLineNum,                  // The given line #
      HGLOBAL hGlbPTD,                   // PerTabData global memory handle
-     HWND    hWndEC)                    // Edit Control window handle
+     HWND    hWndEC)                    // Edit Ctrl window handle
 
 {
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData

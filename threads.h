@@ -31,18 +31,9 @@ typedef struct tagCNT_THREAD    // Thread struct for CreateNewTabInThread
 } CNT_THREAD, *LPCNT_THREAD;
 
 
-typedef struct tagUTJ_THREAD    // Thread struct for PrimFnMonUpTackJotInThread
-{
-    HWND    hWndEC;             // 00:  Handle of Edit Control window
-    HGLOBAL hGlbPTD;            // 04:  PerTabData global memory handle
-    LPWCHAR lpwszCompLine;      // 08:  Ptr to complete line
-                                // 0C:  Length
-} UTJ_THREAD, *LPUTJ_THREAD;
-
-
 typedef struct tagIE_THREAD     // Thread struct for ImmExecStmtInThread
 {
-    HWND    hWndEC;             // 00:  Handle of Edit Control window
+    HWND    hWndEC;             // 00:  Handle of Edit Ctrl window
     HGLOBAL hGlbPTD;            // 04:  PerTabData global memory handle
     LPWCHAR lpwszCompLine;      // 08:  Ptr to complete line
     APLNELM aplNELM;            // 0C:  NELM of lpwszCompLine

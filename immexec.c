@@ -32,6 +32,7 @@
 #include "dfnhdr.h"
 #include "sis.h"
 #include "threads.h"
+#include "cs_parse.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -122,7 +123,7 @@ VOID CALLBACK WaitForImmExecStmt
 
 void ImmExecLine
     (UINT uLineNum,             // Line #
-     HWND hWndEC)               // Handle of Edit Control window
+     HWND hWndEC)               // Handle of Edit Ctrl window
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -243,7 +244,7 @@ void ImmExecLine
                          lstrlenW (lpwszCompLine),  // NELM of lpwszCompLine
                          TRUE,                      // TRUE iff free lpwszCompLine on completion
                          FALSE,                     // TRUE iff wait until finished
-                         hWndEC,                    // Edit Control window handle
+                         hWndEC,                    // Edit Ctrl window handle
                          TRUE);                     // TRUE iff errors are acted upon
             return;
     } // End SWITCH
@@ -284,7 +285,7 @@ EXIT_TYPES ImmExecStmt
      APLNELM aplNELM,           // NELM of lpwszCompLine
      UBOOL   bFreeLine,         // TRUE iff free lpwszCompLine on completion
      UBOOL   bWaitUntilFini,    // TRUE iff wait until finished
-     HWND    hWndEC,            // Edit Control window handle
+     HWND    hWndEC,            // Edit Ctrl window handle
      UBOOL   bActOnErrors)      // TRUE iff errors are acted upon
 
 {
@@ -394,7 +395,7 @@ DWORD WINAPI ImmExecStmtInThread
     APLNELM       aplNELM;              // NELM of lpwszCompLine
     HGLOBAL       hGlbToken,            // Handle of tokenized line
                   hGlbWFSO;             // WaitForSingleObject callback global memory handle
-    HWND          hWndEC,               // Handle of Edit Control window
+    HWND          hWndEC,               // Handle of Edit Ctrl window
                   hWndSM;               // ...       Session Manager ...
     HGLOBAL       hGlbPTD;              // Handle to this window's PerTabData
     LPPERTABDATA  lpMemPTD;             // Ptr to ...
@@ -406,11 +407,13 @@ DWORD WINAPI ImmExecStmtInThread
     EXIT_TYPES    exitType;             // Return code from ParseLine
     LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
     LPSIS_HEADER  lpSISPrv;             // Ptr to previous SIS header
+    LPTOKEN       lptkCSBeg;            // Ptr to next token on the CS stack
+    CSLOCALVARS   csLocalVars = {0};    // CS local vars
 
     __try
     {
         // Save the thread type ('IE')
-        TlsSetValue (dwTlsType, (LPVOID) 'IE');
+        TlsSetValue (dwTlsType, TLSTYPE_IE);
 
         // Extract values from the arg struc
         hWndEC         = lpieThread->hWndEC;
@@ -433,53 +436,61 @@ DWORD WINAPI ImmExecStmtInThread
         // Initialize the Reset Flag
         resetFlag = RESETFLAG_NONE;
 
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Save the ptr to the next token on the CS stack
+        lptkCSBeg = lpMemPTD->lptkCSNxt;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
         // Tokenize, parse, and untokenize the line
 
         // Tokenize the line
         hGlbToken =
-          Tokenize_EM (lpwszCompLine,
-                       aplNELM,
-                       hWndEC,
-                      &ErrorMessageDirect);
+          Tokenize_EM (lpwszCompLine,       // The line to tokenize (not necessarily zero-terminated)
+                       aplNELM,             // NELM of lpwszLine
+                       hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                       1,                   // Function line # (0 = header)
+                      &ErrorMessageDirect); // Ptr to error handling function (may be NULL)
         // If it's invalid, ...
         if (hGlbToken EQ NULL)
         {
-            if (bActOnErrors)
-            {
-                // Execute the statement in immediate execution mode
-                exitType =
-                  ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
-                               5,                   // NELM of line to execute
-                               FALSE,               // TRUE iff free the line on completion
-                               TRUE,                // TRUE iff wait until finished
-                               (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),  // Edit Control window handle
-                               TRUE);               // TRUE iff errors are acted upon
-                // Split cases based upon the exit type
-                switch (exitType)
-                {
-                    case EXITTYPE_GOTO_LINE:        // Pass on to caller
-                    case EXITTYPE_RESET_ALL:        // ...
-                    case EXITTYPE_RESET_ONE:        // ...
-                    case EXITTYPE_RESET_ONE_INIT:   // ...
-                        break;
-
-                    case EXITTYPE_ERROR:            // Mark as in error (from the error in Tokenize_EM)
-                    case EXITTYPE_DISPLAY:          // ...
-                    case EXITTYPE_NODISPLAY:        // ...
-                    case EXITTYPE_NOVALUE:          // ...
-                    case EXITTYPE_GOTO_ZILDE:       // ...
-                        exitType = EXITTYPE_ERROR;
-
-                        break;
-
-                    case EXITTYPE_NONE:
-                    defstop
-                        break;
-                } // End SWITCH
-            } else
-                exitType = EXITTYPE_ERROR;
+            // If we should act on this error, ...
+            exitType = bActOnErrors ? ActOnError (hWndSM) : EXITTYPE_ERROR;
 
             goto ERROR_EXIT;
+        } // End IF
+
+        // Fill in the CS local vars struc
+        csLocalVars.hWndEC      = hWndEC;
+        csLocalVars.hGlbPTD     = hGlbPTD;
+        csLocalVars.lptkCSBeg   =
+        csLocalVars.lptkCSNxt   = lptkCSBeg;
+        csLocalVars.lptkCSLink  = NULL;
+        csLocalVars.hGlbDfnHdr  = NULL;
+        csLocalVars.hGlbImmExec = hGlbToken;
+
+        // Parse the tokens on the CS stack
+        if (!ParseCtrlStruc_EM (&csLocalVars))
+        {
+            WCHAR wszTemp[1024];
+
+            // Format the error message
+            wsprintfW (wszTemp,
+                       L"CS SYNTAX ERROR -- Line %d statement %d",
+                       csLocalVars.tkCSErr.tkData.uLineNum,
+                       csLocalVars.tkCSErr.tkData.uStmtNum + 1);
+            // Set the error message
+            ErrorMessageDirect (wszTemp,                        // Ptr to error message text
+                                lpwszCompLine,                  // Ptr to the line which generated the error
+                                csLocalVars.tkCSErr.tkCharIndex,// Position of caret (origin-0)
+                                hWndSM);                        // Window handle to the Session Manager
+            // If we should act on this error, ...
+            exitType = bActOnErrors ? ActOnError (hWndSM) : EXITTYPE_ERROR;
+
+            goto UNTOKENIZE_EXIT;
         } // End IF
 
         // Lock the memory to get a ptr to it
@@ -496,14 +507,18 @@ DWORD WINAPI ImmExecStmtInThread
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-        // Call the parser
+        // Execute the line
         exitType =
           ParseLine (hWndSM,                // Session Manager window handle
-                     NULL,                  // Line text global memory handle
                      hGlbToken,             // Tokenized line global memory handle
+                     NULL,                  // Text      ...
                      lpwszCompLine,         // Ptr to the complete line
                      hGlbPTD,               // PerTabData global memory handle
-                     bActOnErrors);         // TRUE iff errors are acted upon
+                     1,                     // Function line #  (1 for execute or immexec)
+                     0,                     // Starting token # in the above function line
+                     NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
+                     bActOnErrors,          // TRUE iff errors are acted upon
+                     FALSE);                // TRUE iff executing only one stmt
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -531,7 +546,7 @@ DWORD WINAPI ImmExecStmtInThread
                                        5,               // NELM of line to execute
                                        FALSE,           // TRUE iff free the line on completion
                                        TRUE,            // TRUE iff wait until finished
-                                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Control window handle
+                                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
                                        TRUE);           // TRUE iff errors are acted upon
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
@@ -572,7 +587,7 @@ DWORD WINAPI ImmExecStmtInThread
                                    5,               // NELM of line to execute
                                    FALSE,           // TRUE iff free the line on completion
                                    TRUE,            // TRUE iff wait until finished
-                                   (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Control window handle
+                                   (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Ctrl window handle
                                    TRUE);           // TRUE iff errors are acted upon
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
@@ -599,6 +614,7 @@ DWORD WINAPI ImmExecStmtInThread
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
             case EXITTYPE_DISPLAY:      // ...
             case EXITTYPE_NOVALUE:      // ...
+            case EXITTYPE_NONE:         // ...
                 break;
 
             case EXITTYPE_NODISPLAY:    // Signal previous SI layer's semaphore if it's Quad input
@@ -670,7 +686,6 @@ DWORD WINAPI ImmExecStmtInThread
 
                 break;
 
-            case EXITTYPE_NONE:
             defstop
                 break;
         } // End SWITCH
@@ -684,7 +699,7 @@ DWORD WINAPI ImmExecStmtInThread
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
+UNTOKENIZE_EXIT:
         // Untokenize the temporary line and free its memory
         Untokenize (hGlbToken);
         MyGlobalFree (hGlbToken); hGlbToken = NULL;
@@ -692,6 +707,15 @@ ERROR_EXIT:
 #ifdef DEBUG
         dprintfW (L"--Ending   thread in <ImmExecStmtInThread>.");
 #endif
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Restore the ptr to the next token on the CS stack
+        lpMemPTD->lptkCSNxt = lptkCSBeg;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
         // Free the virtual memory for the complete line
         if (bFreeLine)
         {
@@ -729,6 +753,53 @@ ERROR_EXIT:
     } // End __try/__except
 } // End ImmExecStmtInThread
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ActOnError
+//
+//  Act on an error in immmediate execution mode
+//***************************************************************************
+
+EXIT_TYPES ActOnError
+    (HWND hWndSM)                       // Session Manager window handle
+
+{
+    EXIT_TYPES exitType;                // Exit type
+
+    // Execute the statement in immediate execution mode
+    exitType =
+      ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                   5,                   // NELM of line to execute
+                   FALSE,               // TRUE iff free the line on completion
+                   TRUE,                // TRUE iff wait until finished
+                   (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),  // Edit Ctrl window handle
+                   TRUE);               // TRUE iff errors are acted upon
+    // Split cases based upon the exit type
+    switch (exitType)
+    {
+        case EXITTYPE_GOTO_LINE:        // Pass on to caller
+        case EXITTYPE_RESET_ALL:        // ...
+        case EXITTYPE_RESET_ONE:        // ...
+        case EXITTYPE_RESET_ONE_INIT:   // ...
+            break;
+
+        case EXITTYPE_ERROR:            // Mark as in error (from the error in Tokenize_EM)
+        case EXITTYPE_DISPLAY:          // ...
+        case EXITTYPE_NODISPLAY:        // ...
+        case EXITTYPE_NOVALUE:          // ...
+        case EXITTYPE_GOTO_ZILDE:       // ...
+            exitType = EXITTYPE_ERROR;
+
+            break;
+
+        case EXITTYPE_NONE:
+        defstop
+            break;
+    } // End SWITCH
+
+    return exitType;
+} // End ActOnError
 
 
 //***************************************************************************

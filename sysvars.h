@@ -33,7 +33,7 @@
 #define DEF_QUADPP_CWS         10
 #define DEF_QUADPW_CWS         80
 #define DEF_QUADRL_CWS      16807
-#define DEF_QUADPR_CWS      L' '
+#define DEF_QUADPR_CWS      L" "
 #define DEF_QUADxSA_CWS         0   // 0 = "", 1 = "CLEAR", 2 = "ERROR", 3 = "EXIT", 4 = "OFF"
 #define DEF_QUADLX_CWS      L""
 #define DEF_QUADLX_GLB      hGlbV0Char

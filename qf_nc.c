@@ -64,17 +64,18 @@ LPPL_YYSTYPE SysFnNC_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonNC_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydNC_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnNC_EM_YY
 #undef  APPEND_NAME
 
@@ -129,21 +130,13 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
     // Check for RANK ERROR
     if (aplRankRht > 2)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for DOMAIN ERROR
     if (!IsSimple (aplTypeRht)
      || ((!IsSimpleChar (aplTypeRht))
       && !IsEmpty (aplNELMRht)))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Get right arg's global ptrs
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -168,11 +161,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -311,6 +300,21 @@ YYALLOC_EXIT:
 
     goto NORMAL_EXIT;
 
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (hGlbRes)
     {
@@ -363,15 +367,7 @@ UBOOL ValidName
 
     // Check the first char
     if (IsSysName (lpaplChar)
-     || lpaplChar[0] EQ UTF16_DELTA
-     || lpaplChar[0] EQ UTF16_DELTAUNDERBAR
-     || lpaplChar[0] EQ UTF16_OVERBAR
-     || lpaplChar[0] EQ UTF16_ALPHA
-     || lpaplChar[0] EQ UTF16_OMEGA
-     || (L'a' <= lpaplChar[0]
-      &&         lpaplChar[0] <= L'z')
-     || (L'A' <= lpaplChar[0]
-      &&         lpaplChar[0] <= L'Z'))
+     || Valid1stCharInName (lpaplChar[0]))
     {
         // If the first char is overbar | alpha | omega,
         //   it must be the only char
@@ -383,21 +379,57 @@ UBOOL ValidName
 
         // Loop through the rest of the chars
         for (uNam = 1; uNam < uLen; uNam++)
-        if (!((L'a' <= lpaplChar[uNam]
-            &&         lpaplChar[uNam] <= L'z')
-           || (L'A' <= lpaplChar[uNam]
-            &&         lpaplChar[uNam] <= L'Z')
-           || (L'0' <= lpaplChar[uNam]
-            &&         lpaplChar[uNam] <= L'9')
-           || lpaplChar[0] EQ UTF16_DELTA
-           || lpaplChar[0] EQ UTF16_DELTAUNDERBAR
-           || lpaplChar[0] EQ UTF16_OVERBAR))
+        if (!Valid2ndCharInName (lpaplChar[uNam]))
             return FALSE;
         return TRUE;
     } // End IF
 
     return FALSE;
 } // End ValidName
+
+
+//***************************************************************************
+//  $Valid1stCharInName
+//
+//  Return TRUE iff the given char is valid as a first char in a name
+//***************************************************************************
+
+UBOOL Valid1stCharInName
+    (WCHAR wch)
+
+{
+    return (wch EQ UTF16_DELTA
+         || wch EQ UTF16_DELTAUNDERBAR
+         || wch EQ UTF16_OVERBAR
+         || wch EQ UTF16_ALPHA
+         || wch EQ UTF16_OMEGA
+         || (L'a' <= wch
+          &&         wch <= L'z')
+         || (L'A' <= wch
+          &&         wch <= L'Z'));
+} // End Valid1stCharInName
+
+
+//***************************************************************************
+//  $Valid2ndCharInName
+//
+//  Return TRUE iff the given char is valid as a second char in a name
+//***************************************************************************
+
+UBOOL Valid2ndCharInName
+    (WCHAR wch)
+
+{
+    return (wch EQ UTF16_DELTA
+         || wch EQ UTF16_DELTAUNDERBAR
+         || wch EQ UTF16_OVERBAR
+         || (L'a' <= wch
+          &&         wch <= L'z')
+         || (L'A' <= wch
+          &&         wch <= L'Z')
+         || (L'0' <= wch
+          &&         wch <= L'9'));
+} // End Valid2ndCharInName
 
 
 //***************************************************************************

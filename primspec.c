@@ -1934,7 +1934,6 @@ UBOOL PrimFnDydSimpNest_EM
                                  &aplCharRht,
                                   NULL,
                                   NULL,
-                                  NULL,
                                  &aplTypeHetRht);
                 hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
                                                 aplTypeHetLft,
@@ -2272,7 +2271,6 @@ UBOOL PrimFnDydNestSimp_EM
                                  &aplCharLft,
                                   NULL,
                                   NULL,
-                                  NULL,
                                  &aplTypeHetLft);
                 hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
                                                 aplTypeHetLft,
@@ -2538,7 +2536,6 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                      &aplIntegerLft,
                                      &aplFloatLft,
                                      &aplCharLft,
-                                      NULL,
                                       NULL,
                                       NULL,
                                      &aplTypeHetLft);
@@ -4576,7 +4573,6 @@ HGLOBAL PrimFnDydSiScNest_EM
                                      &aplIntegerRht,
                                      &aplFloatRht,
                                      &aplCharRht,
-                                      NULL,
                                       NULL,
                                       NULL,
                                      &aplTypeHetRht);

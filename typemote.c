@@ -196,6 +196,12 @@ void TypeDemote
 
                 break;
 
+            case ARRAY_APA:
+#define lpAPA           ((LPAPLAPA) lpMemRht)
+                aplLongestRht = lpAPA->Off;
+#undef  lpAPA
+                break;
+
             defstop
                 break;
         } // End SWITCH
@@ -889,11 +895,8 @@ UBOOL TypePromoteGlb_EM
     // Allocate space for the result
     hGlbRes = MyGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        // WS FULL, so no promotion
+        goto NORMAL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -1145,6 +1148,7 @@ UBOOL TypePromoteGlb_EM
     // Save the new HGLOBAL
     *lphGlbArg = MakePtrTypeGlb (hGlbRes);
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbArg && lpMemArg)
     {
         // We no longer need this ptr

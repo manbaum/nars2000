@@ -165,11 +165,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     //   the axis operator, so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
@@ -253,7 +249,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
@@ -280,7 +276,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     // Fill in the right arg token
     tkRhtArg.tkFlags.TknType   = TKT_VARIMMED;
 ////tkRhtArg.tkFlags.ImmType   =       // To be filled in below
-////tkRhtArg.tkFlags.NoDisplay = 0;    // Already zero from = {0}
+////tkRhtArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
 ////tkRhtArg.tkData.tkLongest  =       // To be filled in below
     tkRhtArg.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
@@ -564,7 +560,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
@@ -572,6 +568,11 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
 
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
@@ -959,11 +960,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         Assert (ByteAlloc EQ (UINT) ByteAlloc);
         hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
         if (!hGlbWVec)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemWVec = MyGlobalLock (hGlbWVec);
@@ -989,11 +986,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         Assert (ByteAlloc EQ (UINT) ByteAlloc);
         hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
         if (!hGlbOdo)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemOdo = MyGlobalLock (hGlbOdo);
@@ -1034,28 +1027,28 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         // If the left arg is not immediate, get the next value
         if (lpMemLft)
             // Get the next value from the left arg
-            GetValueIntoToken (uLft,            // Index to use
-                               lpMemLft,        // Ptr to global memory object to index
-                               aplTypeLft,      // Storage type of the arg
-                               apaOffLft,       // APA offset (if needed)
-                               apaMulLft,       // APA multiplier (if needed)
-                              &tkLftArg);       // Ptr to token in which to place the value
+            GetNextValueMemIntoToken (uLft,         // Index to use
+                                      lpMemLft,     // Ptr to global memory object to index
+                                      aplTypeLft,   // Storage type of the arg
+                                      apaOffLft,    // APA offset (if needed)
+                                      apaMulLft,    // APA multiplier (if needed)
+                                     &tkLftArg);    // Ptr to token in which to place the value
         // If the right arg is not immediate, get the next value
         if (lpMemRht)
             // Get the next value from the right arg
-            GetValueIntoToken (uRht,            // Index to use
-                               lpMemRht,        // Ptr to global memory object to index
-                               aplTypeRht,      // Storage type of the arg
-                               apaOffRht,       // APA offset (if needed)
-                               apaMulRht,       // APA multiplier (if needed)
-                              &tkRhtArg);       // Ptr to token in which to place the value
+            GetNextValueMemIntoToken (uRht,         // Index to use
+                                      lpMemRht,     // Ptr to global memory object to index
+                                      aplTypeRht,   // Storage type of the arg
+                                      apaOffRht,    // APA offset (if needed)
+                                      apaMulRht,    // APA multiplier (if needed)
+                                     &tkRhtArg);    // Ptr to token in which to place the value
         // Execute the function strand between the left & right arg tokens
-        if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
-                                 &tkLftArg,             // Ptr to left arg token
-                                  lpYYFcnStrLft,        // Ptr to function strand
-                                 &tkRhtArg,             // Ptr to right arg token
-                                  NULL,                 // Ptr to axis token
-                                  lpPrimProtoLft))      // Ptr to left operand prototype function
+        if (!ExecFuncOnToken_EM (&lpMemRes,         // Ptr to output storage
+                                 &tkLftArg,         // Ptr to left arg token
+                                  lpYYFcnStrLft,    // Ptr to function strand
+                                 &tkRhtArg,         // Ptr to right arg token
+                                  NULL,             // Ptr to axis token
+                                  lpPrimProtoLft))  // Ptr to left operand prototype function
             goto ERROR_EXIT;
 
         // Free the left & right arg tokens
@@ -1078,7 +1071,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
@@ -1094,6 +1087,11 @@ LEFT_SYNTAX_EXIT:
 
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 

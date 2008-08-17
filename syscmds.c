@@ -47,31 +47,32 @@ SYSCMDSTAB SysCmdsTab[]
 #ifndef PROTO
  =
 {
-    {L"clear" ,     &CmdClear_EM    },
-    {L"close" ,     &CmdClose_EM    },
-    {L"copy"  ,     &CmdCopy_EM     },
-    {L"drop"  ,     &CmdDrop_EM     },
-    {L"edit"  ,     &CmdEdit_EM     },
-    {L"erase" ,     &CmdErase_EM    },
-    {L"exit"  ,     &CmdExit_EM     },
-    {L"fns"   ,     &CmdFns_EM      },
-    {L"in"    ,     &CmdIn_EM       },
-    {L"lib"   ,     &CmdLib_EM      },
-    {L"laod"  ,     &CmdLoad_EM     },
-    {L"load"  ,     &CmdLoad_EM     },
-    {L"newtab",     &CmdNewTab_EM   },
-    {L"nms"   ,     &CmdNms_EM      },
-    {L"ops"   ,     &CmdOps_EM      },
-    {L"out"   ,     &CmdOut_EM      },
-    {L"reset" ,     &CmdReset_EM    },
-    {L"save"  ,     &CmdSave_EM     },
-    {L"svae"  ,     &CmdSave_EM     },
-    {L"si"    ,     &CmdSi_EM       },
-    {L"sic"   ,     &CmdReset_EM    },
-    {L"sinl"  ,     &CmdSinl_EM     },
-    {L"vars"  ,     &CmdVars_EM     },
-    {L"xload" ,     &CmdXload_EM    },
-    {L"wsid"  ,     &CmdWsid_EM     },
+    {L"clear"     ,     &CmdClear_EM    },
+    {L"close"     ,     &CmdClose_EM    },
+    {L"copy"      ,     &CmdCopy_EM     },
+    {L"drop"      ,     &CmdDrop_EM     },
+    {L"edit"      ,     &CmdEdit_EM     },
+    {L"erase"     ,     &CmdErase_EM    },
+    {L"exit"      ,     &CmdExit_EM     },
+    {L"fns"       ,     &CmdFns_EM      },
+    {L"in"        ,     &CmdIn_EM       },
+    {L"inascii"   ,     &CmdInAscii_EM  },
+    {L"lib"       ,     &CmdLib_EM      },
+    {L"laod"      ,     &CmdLoad_EM     },
+    {L"load"      ,     &CmdLoad_EM     },
+    {L"newtab"    ,     &CmdNewTab_EM   },
+    {L"nms"       ,     &CmdNms_EM      },
+    {L"ops"       ,     &CmdOps_EM      },
+    {L"out"       ,     &CmdOut_EM      },
+    {L"reset"     ,     &CmdReset_EM    },
+    {L"save"      ,     &CmdSave_EM     },
+    {L"svae"      ,     &CmdSave_EM     },
+    {L"si"        ,     &CmdSi_EM       },
+    {L"sic"       ,     &CmdReset_EM    },
+    {L"sinl"      ,     &CmdSinl_EM     },
+    {L"vars"      ,     &CmdVars_EM     },
+    {L"xload"     ,     &CmdXload_EM    },
+    {L"wsid"      ,     &CmdWsid_EM     },
 }
 #endif
 ;
@@ -112,7 +113,7 @@ UBOOL ExecSysCmd
 
 {
     int     i;
-    LPWCHAR wp;
+    LPWCHAR wp, wpEnd;
 
     // Skip over the leading ')' and any following spaces
     while (*++lpwszLine EQ L' ');
@@ -132,6 +133,13 @@ UBOOL ExecSysCmd
         while (*wp EQ L' ')
             wp++;
     } // End IF/ELSE
+
+    // Point to the end of the string
+    wpEnd = &wp[lstrlenW (wp)];
+
+    // Delete trailing blanks
+    while (wpEnd > lpwszLine && wpEnd[-1] EQ L' ')
+        *--wpEnd = L'\0';
 
     // Search for this command in the table
     for (i = 0; i < SYSCMDSTAB_NROWS; i++)

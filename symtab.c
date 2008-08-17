@@ -30,6 +30,7 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "pertab.h"
+#include "symbolnames.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -1439,13 +1440,12 @@ UBOOL InitSymbolNamesValues
 {
     UINT uSym;          // Loop counter
 
-    // Check for too few rows in the table
-    if (aSymbolNames[ASYMBOLNAMES_NROWS - 1].Symbol EQ 0)
-        DbgStop ();         // We should never get here
-    else
     // Loop through all symbol names/values
-    for (uSym = 0; uSym < ASYMBOLNAMES_NROWS; uSym++)
+    for (uSym = 0; uSym < aSymbolNames_NRows; uSym++)
     {
+        // Because we may use multiple names for each char,
+        //   append the first one only
+        if ((uSym EQ 0) || aSymbolNames[uSym].Symbol NE aSymbolNames[uSym - 1].Symbol)
         if (!AppendSymbolValue (aSymbolNames[uSym].Symbol,
                                 aSymbolNames[uSym].lpwName))
             return FALSE;
@@ -1545,7 +1545,7 @@ WCHAR SymbolNameToChar
         wcTmp = *lpwCharEnd;
         *lpwCharEnd = L'\0';
 
-        // Hash the char
+        // Hash the name
         uHash = hashlittle
                ((const uint32_t *) lpwCharName, // A ptr to the name to hash
                  lstrlenW (lpwCharName) * sizeof (lpwCharName[0]),// The # bytes pointed to

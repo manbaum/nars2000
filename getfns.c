@@ -27,6 +27,8 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "pertab.h"
+#include "sis.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -48,6 +50,10 @@ void GetFirstItemToken
 
 {
     HGLOBAL hGlbData;               // Global memory handle of TKT_VARNAMED or TKT_VARARRAY
+
+    // Fill in default values
+    if (lpSymGlb)
+        *lpSymGlb = NULL;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -74,7 +80,6 @@ void GetFirstItemToken
                               NULL,
                               NULL,
                               lpaplLongest,
-                              NULL,
                               lpImmType,
                               NULL);
             return;
@@ -87,7 +92,6 @@ void GetFirstItemToken
                               NULL,
                               NULL,
                               lpaplLongest,
-                              NULL,
                               lpImmType,
                               NULL);
             return;
@@ -114,7 +118,276 @@ void GetFirstItemToken
                       lpImmType,                        // ...    immediate type (see IMM_TYPES) (may be NULL)
                       NULL,                             // ...    array type -- ARRAY_TYPES (may be NULL)
                       FALSE);                           // TRUE iff we should expand LPSYMENTRY into immediate value
-} // End FirstItemToken
+} // End GetFirstItemToken
+
+
+//***************************************************************************
+//  $GetNextValueTokenIntoToken
+//
+//  Return the next value from a token as either
+//    a VARIMMED or VARARRAY.
+//  The token may be an empty array in which case the
+//    value of the prototype is returned.
+//***************************************************************************
+
+void GetNextValueTokenIntoToken
+    (LPTOKEN      lptkArg,      // Ptr to the arg token
+     APLUINT      uIndex,       // Index to use
+     LPTOKEN      lptkRes)      // Ptr to the result token
+
+{
+    HGLOBAL    hGlbData,
+               hGlbSub;
+    IMM_TYPES  immType;
+
+    // Fill in common values
+    lptkRes->tkFlags.NoDisplay = FALSE;
+    lptkRes->tkCharIndex       = lptkArg->tkCharIndex;
+
+    // Split cases based upon the token type
+    switch (lptkArg->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, we must look inside the array
+            if (!lptkArg->tkData.tkSym->stFlags.Imm)
+            {
+                hGlbData = lptkArg->tkData.tkSym->stData.stGlbData;
+
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbData));
+
+                break;      // Continue below with global case
+            } // End IF
+
+            Assert (uIndex EQ 0);
+
+            // Handle the immediate case
+            GetFirstValueImm (lptkArg->tkData.tkSym->stFlags.ImmType,
+                              lptkArg->tkData.tkSym->stData.stLongest,
+                              NULL,
+                              NULL,
+                              NULL,
+                             &lptkRes->tkData.tkLongest,
+                             &immType,
+                              NULL);
+            // Fill in the result token
+            lptkRes->tkFlags.TknType   = TKT_VARIMMED;
+            lptkRes->tkFlags.ImmType   = immType;
+////////////lptkRes->tkFlags.NoDisplay =                    // Filled in above
+////////////lptkRes->tkData.tkLongest  =                    // Filled in above
+////////////lptkRes->tkCharIndex       =                    // Filled in above
+
+            return;
+
+        case TKT_VARIMMED:
+            Assert (uIndex EQ 0);
+
+            // Handle the immediate case
+            GetFirstValueImm (lptkArg->tkFlags.ImmType,
+                              lptkArg->tkData.tkLongest,
+                              NULL,
+                              NULL,
+                              NULL,
+                             &lptkRes->tkData.tkLongest,
+                             &immType,
+                              NULL);
+            // Fill in the result token
+            lptkRes->tkFlags.TknType   = TKT_VARIMMED;
+            lptkRes->tkFlags.ImmType   = immType;
+////////////lptkRes->tkFlags.NoDisplay =                    // Filled in above
+////////////lptkRes->tkData.tkLongest  =                    // Filled in above
+////////////lptkRes->tkCharIndex       =                    // Filled in above
+
+            return;
+
+        case TKT_VARARRAY:
+            hGlbData = lptkArg->tkData.tkGlbData;
+
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (hGlbData));
+
+            break;      // Continue below with global case
+
+        defstop
+            return;
+    } // End SWITCH
+
+    // Handle the HGLOBAL case
+    GetNextValueGlb (ClrPtrTypeDirAsGlb (hGlbData),     // The global memory handle
+                     uIndex,                            // Index into item
+                    &hGlbSub,                           // Ptr to result global memory handle (may be NULL)
+                    &lptkRes->tkData.tkLongest,         // Ptr to result immediate value (may be NULL)
+                    &immType);                          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+    // If the return value is immediate, ...
+    if (hGlbSub EQ NULL)
+    {
+        // Fill in the result token
+        lptkRes->tkFlags.TknType   = TKT_VARIMMED;
+        lptkRes->tkFlags.ImmType   = immType;
+////////lptkRes->tkFlags.NoDisplay =                    // Filled in above
+////////lptkRes->tkData.tkLongest  =                    // Filled in above
+////////lptkRes->tkCharIndex       =                    // Filled in above
+    } else
+    {
+        // Fill in the result token
+        lptkRes->tkFlags.TknType   = TKT_VARARRAY;
+        lptkRes->tkFlags.ImmType   = 0;
+////////lptkRes->tkFlags.NoDisplay =                    // Filled in above
+        lptkRes->tkData.tkGlbData  = MakePtrTypeGlb (hGlbSub);
+////////lptkRes->tkCharIndex       =                    // Filled in above
+    } // End IF/ELSE
+} // End GetNextValueTokenIntoToken
+
+
+//***************************************************************************
+//  $GetNextValueTokenIntoNamedVarToken
+//
+//  Return the next value from a token as a VARNAMED.
+//  The token may be an empty array in which case the
+//    value of the prototype is returned.
+//  Note that the nested global case increments the reference count
+//***************************************************************************
+
+void GetNextValueTokenIntoNamedVarToken
+    (LPTOKEN      lptkArg,      // Ptr to the arg token
+     APLUINT      uIndex,       // Index to use
+     LPTOKEN      lptkRes)      // Ptr to the result token
+
+{
+    HGLOBAL    hGlbData,
+               hGlbSub;
+    IMM_TYPES  immType;
+
+    // tkData is an LPSYMENTRY
+    Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+    // Free the previous value (if any)
+    FreeResultName (lptkRes);
+
+    // Fill in common values
+    lptkRes->tkFlags.ImmType   = 0;
+    lptkRes->tkFlags.NoDisplay = FALSE;
+    lptkRes->tkCharIndex       = lptkArg->tkCharIndex;
+
+    // Split cases based upon the token type
+    switch (lptkArg->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, we must look inside the array
+            if (!lptkArg->tkData.tkSym->stFlags.Imm)
+            {
+                hGlbData = lptkArg->tkData.tkSym->stData.stGlbData;
+
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbData));
+
+                break;      // Continue below with global case
+            } // End IF
+
+            Assert (uIndex EQ 0);
+
+            // Handle the immediate case
+            GetFirstValueImm (lptkArg->tkData.tkSym->stFlags.ImmType,
+                              lptkArg->tkData.tkSym->stData.stLongest,
+                              NULL,
+                              NULL,
+                              NULL,
+                             &lptkRes->tkData.tkSym->stData.stLongest,
+                             &immType,
+                              NULL);
+            // Fill in the result token
+            lptkRes->tkFlags.TknType                  = TKT_VARNAMED;
+////////////lptkRes->tkFlags.ImmType                  =     // Filled in above
+////////////lptkRes->tkFlags.NoDisplay                =     // Filled in above
+            lptkRes->tkData.tkSym->stFlags.Imm        = TRUE;
+            lptkRes->tkData.tkSym->stFlags.ImmType    = immType;
+            lptkRes->tkData.tkSym->stFlags.Value      = TRUE;
+            lptkRes->tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
+            lptkRes->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
+////////////lptkRes->tkData.tkSym->stData.stLongest   =     // Filled in above
+////////////lptkRes->tkCharIndex                      =     // Filled in above
+
+            return;
+
+        case TKT_VARIMMED:
+            Assert (uIndex EQ 0);
+
+            // Handle the immediate case
+            GetFirstValueImm (lptkArg->tkFlags.ImmType,
+                              lptkArg->tkData.tkLongest,
+                              NULL,
+                              NULL,
+                              NULL,
+                             &lptkRes->tkData.tkSym->stData.stLongest,
+                             &immType,
+                              NULL);
+            // Fill in the result token
+            lptkRes->tkFlags.TknType                  = TKT_VARNAMED;
+////////////lptkRes->tkFlags.ImmType                  =     // Filled in above
+////////////lptkRes->tkFlags.NoDisplay                =     // Filled in above
+            lptkRes->tkData.tkSym->stFlags.Imm        = TRUE;
+            lptkRes->tkData.tkSym->stFlags.ImmType    = immType;
+            lptkRes->tkData.tkSym->stFlags.Value      = TRUE;
+            lptkRes->tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
+            lptkRes->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
+////////////lptkRes->tkData.tkSym->stData.stLongest   =     // Filled in above
+////////////lptkRes->tkCharIndex                      =     // Filled in above
+
+            return;
+
+        case TKT_VARARRAY:
+            hGlbData = lptkArg->tkData.tkGlbData;
+
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (hGlbData));
+
+            break;      // Continue below with global case
+
+        defstop
+            return;
+    } // End SWITCH
+
+    // Handle the HGLOBAL case
+    GetNextValueGlb (ClrPtrTypeDirAsGlb (hGlbData),         // The global memory handle
+                     uIndex,                                // Index into item
+                    &hGlbSub,                               // Ptr to result global memory handle (may be NULL)
+                    &lptkRes->tkData.tkSym->stData.stLongest,// Ptr to result immediate value (may be NULL)
+                    &immType);                              // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+    // If the return value is immediate, ...
+    if (hGlbSub EQ NULL)
+    {
+        // Fill in the result token
+        lptkRes->tkFlags.TknType                  = TKT_VARNAMED;
+////////lptkRes->tkFlags.ImmType                  =     // Filled in above
+////////lptkRes->tkFlags.NoDisplay                =     // Filled in above
+        lptkRes->tkData.tkSym->stFlags.Imm        = TRUE;
+        lptkRes->tkData.tkSym->stFlags.ImmType    = immType;
+        lptkRes->tkData.tkSym->stFlags.Value      = TRUE;
+        lptkRes->tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
+        lptkRes->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
+////////lptkRes->tkData.tkSym->stData.stLongest   =     // Filled in above
+////////lptkRes->tkCharIndex                      =     // Filled in above
+    } else
+    {
+        // Fill in the result token
+        lptkRes->tkFlags.TknType                  = TKT_VARNAMED;
+////////lptkRes->tkFlags.ImmType                  =     // Filled in above
+////////lptkRes->tkFlags.NoDisplay                =     // Filled in above
+        lptkRes->tkData.tkSym->stFlags.Imm        = FALSE;
+        lptkRes->tkData.tkSym->stFlags.ImmType    = 0;
+        lptkRes->tkData.tkSym->stFlags.Value      = TRUE;
+        lptkRes->tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
+        lptkRes->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
+        lptkRes->tkData.tkSym->stData.stGlbData   = CopySymGlbDirAsGlb (hGlbSub);
+////////lptkRes->tkCharIndex                      =     // Filled in above
+    } // End IF/ELSE
+} // End GetNextValueTokenIntoNamedVarToken
 
 
 //***************************************************************************
@@ -144,6 +417,10 @@ void GetNextValueToken
     APLLONGEST aplLongest;
     IMM_TYPES  immType;
 
+    // Fill in default values
+    if (lpSymGlb)
+        *lpSymGlb = NULL;
+
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
@@ -171,7 +448,6 @@ void GetNextValueToken
                               lpaplFloat,
                               lpaplChar,
                               lpaplLongest,
-                              lpSymGlb,
                               lpImmType,
                               lpArrType);
             return;
@@ -186,7 +462,6 @@ void GetNextValueToken
                               lpaplFloat,
                               lpaplChar,
                               lpaplLongest,
-                              lpSymGlb,
                               lpImmType,
                               lpArrType);
             return;
@@ -255,6 +530,10 @@ void GetFirstValueToken
 {
     HGLOBAL hGlbData;
 
+    // Fill in default values
+    if (lpSymGlb)
+        *lpSymGlb = NULL;
+
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
@@ -280,7 +559,6 @@ void GetFirstValueToken
                               lpaplFloat,
                               lpaplChar,
                               lpaplLongest,
-                              lpSymGlb,
                               lpImmType,
                               lpArrType);
             return;
@@ -293,7 +571,6 @@ void GetFirstValueToken
                               lpaplFloat,
                               lpaplChar,
                               lpaplLongest,
-                              lpSymGlb,
                               lpImmType,
                               lpArrType);
             return;
@@ -336,7 +613,6 @@ void GetFirstValueImm
      LPAPLFLOAT   lpaplFloat,   // ...        float (may be NULL)
      LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
      LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
-     LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
      LPIMM_TYPES  lpImmType,    // ...        immediate type (see IMM_TYPES) (may be NULL)
      LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
 {
@@ -344,8 +620,6 @@ void GetFirstValueImm
         *lpImmType    = immType;
     if (lpArrType)
         *lpArrType    = TranslateImmTypeToArrayType (immType);
-    if (lpSymGlb)
-        *lpSymGlb     = NULL;
     if (lpaplLongest)
         *lpaplLongest = aplLongest;
 
@@ -549,6 +823,10 @@ void GetFirstValueGlb
 
                     Assert (IsNested (aplType) || !IsEmpty (aplNELM));
 
+                    // Fill in default values
+                    if (lpSymGlb)
+                        *lpSymGlb = NULL;
+
                     // Handle the immediate case
                     GetFirstValueImm (lpSym->stFlags.ImmType,
                                       lpSym->stData.stLongest,
@@ -556,7 +834,6 @@ void GetFirstValueGlb
                                       lpaplFloat,
                                       lpaplChar,
                                       lpaplLongest,
-                                      lpSymGlb,
                                       lpImmType,
                                       lpArrType);
                     break;
@@ -590,12 +867,13 @@ void GetFirstValueGlb
 
 
 //***************************************************************************
-//  $GetValueIntoToken
+//  $GetNextValueMemIntoToken
 //
-//  Get the next value from a variable into a token
+//  Get the next value from global memory into a token
+//  Note that the nested global case increments the reference count
 //***************************************************************************
 
-void GetValueIntoToken
+void GetNextValueMemIntoToken
     (APLUINT  uArg,                         // Index to use
      LPVOID   lpMemArg,                     // Ptr to global memory object to index
      APLSTYPE aplTypeArg,                   // Storage type of the arg
@@ -673,7 +951,7 @@ void GetValueIntoToken
         defstop
             break;
     } // End SWITCH
-} // End GetValueIntoToken
+} // End GetNextValueMemIntoToken
 
 
 //***************************************************************************
@@ -1220,7 +1498,7 @@ LPSYMENTRY GetSteZero
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
 
     // Ensure we are where we think we are
-    Assert ('PL' EQ (__int3264) (HANDLE_PTR) TlsGetValue (dwTlsType));
+    Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1253,7 +1531,7 @@ LPSYMENTRY GetSteOne
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
 
     // Ensure we are where we think we are
-    Assert ('PL' EQ (__int3264) (HANDLE_PTR) TlsGetValue (dwTlsType));
+    Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1286,7 +1564,7 @@ LPSYMENTRY GetSteBlank
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
 
     // Ensure we are where we think we are
-    Assert ('PL' EQ (__int3264) (HANDLE_PTR) TlsGetValue (dwTlsType));
+    Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1567,6 +1845,42 @@ LPPRIMFLAGS GetPrimFlagsPtr
             return NULL;
     } // End SWITCH
 } // End GetPrimFlagsPtr
+
+
+//***************************************************************************
+//  $GetTokenLineHandle
+//
+//  Return the global memory handle of a given
+//***************************************************************************
+
+HGLOBAL GetTokenLineHandle
+    (HGLOBAL hGlbDfnHdr,                // User-defined function/operator global memory handle
+     APLINT  aplLineNum)                // Target line #
+
+{
+    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
+    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    HGLOBAL      hGlbTknLine = NULL;    // Target tokenized line global memory handle
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+    // Ensure the line # is within range
+    if (aplLineNum < 1
+     || aplLineNum >= lpMemDfnHdr->numFcnLines)
+        goto ERROR_EXIT;
+
+    // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+    // Get the starting line's token global memory handles
+    hGlbTknLine = lpFcnLines[aplLineNum - 1].hGlbTknLine;
+ERROR_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    return hGlbTknLine;
+} // End GetTokenLineHandle
 
 
 //***************************************************************************

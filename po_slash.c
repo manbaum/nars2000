@@ -397,7 +397,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -500,14 +500,14 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         // Fill in the right arg token
 ////////tkRhtArg.tkFlags.TknType   =            // To be filled in below
 ////////tkRhtArg.tkFlags.ImmType   =            // To be filled in below
-////////tkRhtArg.tkFlags.NoDisplay = 0;         // Already zero from {0}
+////////tkRhtArg.tkFlags.NoDisplay = FALSE;     // Already zero from {0}
 ////////tkRhtArg.tkData.tkGlbData  =            // To be filled in below
         tkRhtArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
         // Fill in the left arg token
 ////////tkLftArg.tkFlags.TknType   =            // To be filled in below
 ////////tkLftArg.tkFlags.ImmType   =            // To be filled in below
-////////tkLftArg.tkFlags.NoDisplay = 0;         // Already zero from {0}
+////////tkLftArg.tkFlags.NoDisplay = FALSE;     // Already zero from {0}
 ////////tkLftArg.tkData.tkGlbData  =            // To be filled in below
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 RESTART_EXCEPTION:
@@ -528,12 +528,12 @@ RESTART_EXCEPTION:
             uRht = uDimRht + (uDimAxRht - 1) * uDimHi;
 
             // Get the last element as the right arg
-            GetValueIntoToken (uRht,            // Index to use
-                               lpMemRht,        // Ptr to global memory object to index
-                               aplTypeRht,      // Storage type of the arg
-                               apaOffRht,       // APA offset (if needed)
-                               apaMulRht,       // APA multiplier (if needed)
-                              &tkRhtArg);       // Ptr to token in which to place the value
+            GetNextValueMemIntoToken (uRht,             // Index to use
+                                      lpMemRht,         // Ptr to global memory object to index
+                                      aplTypeRht,       // Storage type of the arg
+                                      apaOffRht,        // APA offset (if needed)
+                                      apaMulRht,        // APA multiplier (if needed)
+                                     &tkRhtArg);        // Ptr to token in which to place the value
             // In case we blew up, check to see if we must blow up tkRhtArg
             if (IsSimpleFlt (aplTypeRes)
              && IsSimpleInt (aplTypeRht))
@@ -550,12 +550,12 @@ RESTART_EXCEPTION:
                 uRht = uDimRht + iDim * uDimHi;
 
                 // Get the previous element as the left arg
-                GetValueIntoToken (uRht,        // Index to use
-                                   lpMemRht,    // Ptr to global memory object to index
-                                   aplTypeRht,  // Storage type of the arg
-                                   apaOffRht,   // APA offset (if needed)
-                                   apaMulRht,   // APA multiplier (if needed)
-                                  &tkLftArg);   // Ptr to token in which to place the value
+                GetNextValueMemIntoToken (uRht,         // Index to use
+                                          lpMemRht,     // Ptr to global memory object to index
+                                          aplTypeRht,   // Storage type of the arg
+                                          apaOffRht,    // APA offset (if needed)
+                                          apaMulRht,    // APA multiplier (if needed)
+                                         &tkLftArg);    // Ptr to token in which to place the value
                 // Execute the left operand between the left & right args
                 if (lpPrimProtoLft)
                     // Note that we cast the function strand to LPTOKEN
@@ -691,7 +691,7 @@ YYALLOC_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
@@ -798,7 +798,7 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRht);
 ////////lpYYRes->tkToken.tkCharIndex       =        // Filled in below
     } else  // It's an immediate
@@ -819,7 +819,7 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
             lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkLongest;
         } // End IF/ELSE
 
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkCharIndex       =        // Filled in below
     } // End IF/ELSE
 
@@ -856,7 +856,7 @@ void SymGlbToToken
         case PTRTYPE_STCONST:
             lptkArg->tkFlags.TknType   = TKT_VARIMMED;
             lptkArg->tkFlags.ImmType   = ((LPSYMENTRY) hSymGlb)->stFlags.ImmType;
-////////////lptkArg->tkFlags.NoDisplay = 0;         // Already zero by the caller
+////////////lptkArg->tkFlags.NoDisplay = FALSE;     // Already zero by the caller
             lptkArg->tkData.tkLongest  = ((LPSYMENTRY) hSymGlb)->stData.stLongest;
 ////////////lptkArg->tkCharIndex       =            // Filled in by the caller
 
@@ -865,7 +865,7 @@ void SymGlbToToken
         case PTRTYPE_HGLOBAL:
             lptkArg->tkFlags.TknType   = TKT_VARARRAY;
 ////////////lptkArg->tkFlags.ImmType   = 0;         // Already zero by caller
-////////////lptkArg->tkFlags.NoDisplay = 0;         // Already zero by the caller
+////////////lptkArg->tkFlags.NoDisplay = FALSE;     // Already zero by the caller
             lptkArg->tkData.tkGlbData  = hSymGlb;
 ////////////lptkArg->tkCharIndex       =            // Filled in by the caller
 
@@ -1331,14 +1331,14 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // Fill in the right arg token
 ////////tkRhtArg.tkFlags.TknType   =            // To be filled in below
 ////////tkRhtArg.tkFlags.ImmType   =            // To be filled in below
-////////tkRhtArg.tkFlags.NoDisplay = 0;         // Already zero from {0}
+////////tkRhtArg.tkFlags.NoDisplay = FALSE;     // Already zero from {0}
 ////////tkRhtArg.tkData.tkGlbData  =            // To be filled in below
         tkRhtArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
         // Fill in the left arg token
 ////////tkLftArg.tkFlags.TknType   =            // To be filled in below
 ////////tkLftArg.tkFlags.ImmType   =            // To be filled in below
-////////tkLftArg.tkFlags.NoDisplay = 0;         // Already zero from {0}
+////////tkLftArg.tkFlags.NoDisplay = FALSE;     // Already zero from {0}
 ////////tkLftArg.tkData.tkGlbData  =            // To be filled in below
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 RESTART_EXCEPTION:
@@ -1370,12 +1370,12 @@ RESTART_EXCEPTION:
                     uRht = uDimRht + (uAx + aplIntegerLftAbs - 1) * uDimHi;
 
                     // Get the last element as the right arg
-                    GetValueIntoToken (uRht,            // Index to use
-                                       lpMemRht,        // Ptr to global memory object to index
-                                       aplTypeRht,      // Storage type of the arg
-                                       apaOffRht,       // APA offset (if needed)
-                                       apaMulRht,       // APA multiplier (if needed)
-                                      &tkRhtArg);       // Ptr to token in which to place the value
+                    GetNextValueMemIntoToken (uRht,             // Index to use
+                                              lpMemRht,         // Ptr to global memory object to index
+                                              aplTypeRht,       // Storage type of the arg
+                                              apaOffRht,        // APA offset (if needed)
+                                              apaMulRht,        // APA multiplier (if needed)
+                                             &tkRhtArg);        // Ptr to token in which to place the value
                     // In case we blew up, check to see if we must blow up tkRhtArg
                     if (IsSimpleFlt (aplTypeRes)
                      && IsSimpleInt (aplTypeRht))
@@ -1392,12 +1392,12 @@ RESTART_EXCEPTION:
                         uRht = uDimRht + (uAx + iDim) * uDimHi;
 
                         // Get the previous element as the left arg
-                        GetValueIntoToken (uRht,        // Index to use
-                                           lpMemRht,    // Ptr to global memory object to index
-                                           aplTypeRht,  // Storage type of the arg
-                                           apaOffRht,   // APA offset (if needed)
-                                           apaMulRht,   // APA multiplier (if needed)
-                                          &tkLftArg);   // Ptr to token in which to place the value
+                        GetNextValueMemIntoToken (uRht,         // Index to use
+                                                  lpMemRht,     // Ptr to global memory object to index
+                                                  aplTypeRht,   // Storage type of the arg
+                                                  apaOffRht,    // APA offset (if needed)
+                                                  apaMulRht,    // APA multiplier (if needed)
+                                                 &tkLftArg);    // Ptr to token in which to place the value
                         // Execute the left operand between the left & right args
                         if (lpPrimProtoLft)
                             // Note that we cast the function strand to LPTOKEN
@@ -1434,12 +1434,12 @@ RESTART_EXCEPTION:
                     uRht = uDimRht + uAx * uDimHi;
 
                     // Get the first element as the right arg
-                    GetValueIntoToken (uRht,            // Index to use
-                                       lpMemRht,        // Ptr to global memory object to index
-                                       aplTypeRht,      // Storage type of the arg
-                                       apaOffRht,       // APA offset (if needed)
-                                       apaMulRht,       // APA multiplier (if needed)
-                                      &tkRhtArg);       // Ptr to token in which to place the value
+                    GetNextValueMemIntoToken (uRht,             // Index to use
+                                              lpMemRht,         // Ptr to global memory object to index
+                                              aplTypeRht,       // Storage type of the arg
+                                              apaOffRht,        // APA offset (if needed)
+                                              apaMulRht,        // APA multiplier (if needed)
+                                             &tkRhtArg);        // Ptr to token in which to place the value
                     // In case we blew up, check to see if we must blow up tkRhtArg
                     if (IsSimpleFlt (aplTypeRes)
                      && IsSimpleInt (aplTypeRht))
@@ -1456,12 +1456,12 @@ RESTART_EXCEPTION:
                         uRht = uDimRht + (uAx + iDim) * uDimHi;
 
                         // Get the next element as the left arg
-                        GetValueIntoToken (uRht,        // Index to use
-                                           lpMemRht,    // Ptr to global memory object to index
-                                           aplTypeRht,  // Storage type of the arg
-                                           apaOffRht,   // APA offset (if needed)
-                                           apaMulRht,   // APA multiplier (if needed)
-                                          &tkLftArg);   // Ptr to token in which to place the value
+                        GetNextValueMemIntoToken (uRht,         // Index to use
+                                                  lpMemRht,     // Ptr to global memory object to index
+                                                  aplTypeRht,   // Storage type of the arg
+                                                  apaOffRht,    // APA offset (if needed)
+                                                  apaMulRht,    // APA multiplier (if needed)
+                                                 &tkLftArg);    // Ptr to token in which to place the value
                         // Execute the left operand between the left & right args
                         if (lpPrimProtoLft)
                             // Note that we cast the function strand to LPTOKEN
@@ -1592,7 +1592,7 @@ RESTART_EXCEPTION:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
@@ -1732,7 +1732,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = 1;
         lpHeader->Rank       = 1;
@@ -1778,7 +1778,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
         lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbTmp);
 ////////lpYYRes->tkToken.tkCharIndex       =        // Already filled in by caller
 
@@ -1890,7 +1890,7 @@ UBOOL PrimOpDydSlashAllocate_EM
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;

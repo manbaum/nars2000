@@ -70,40 +70,41 @@ ToDo
 #define COL_FIRST 0             // It's origin-0
 
 enum COL_INDICES
-{COL_DIGIT = COL_FIRST,     // 00: Digit
- COL_DOT         ,          // 01: Decimal number, inner & outer product separator
- COL_FPEXP       ,          // 02: Floating point exponent separator
- COL_ALPHA       ,          // 03: Alphabetic
- COL_DIRIDENT    ,          // 04: Alpha or Omega
- COL_Q_QQ        ,          // 05: Quad
- COL_UNDERBAR    ,          // 06: Underbar
- COL_INFINITY    ,          // 07: Infinity
- COL_OVERBAR     ,          // 08: Overbar
- COL_COMPLEX     ,          // 09: Complex number separator
- COL_RATIONAL    ,          // 0A: Rational number separator
- COL_ASSIGN      ,          // 0B: Assignment symbol
- COL_SEMICOLON   ,          // 0C: Semicolon symbol
- COL_COLON       ,          // 0D: Colon symbol
- COL_PRIM_FN     ,          // 0E: Primitive monadic or dyadic function
- COL_PRIM_FN0    ,          // 0F: ...       niladic function
- COL_PRIM_OP1    ,          // 10: ...       monadic/ambiguous operator
- COL_PRIM_OP2    ,          // 11: ...       dyadic  ...
- COL_JOT         ,          // 12: Jot symbol
- COL_LEFTPAREN   ,          // 13: Left paren
- COL_RIGHTPAREN  ,          // 14: Right ...
- COL_LEFTBRACKET ,          // 15: Left bracket
- COL_RIGHTBRACKET,          // 16: Right ...
- COL_LEFTBRACE   ,          // 17: Left brace
- COL_RIGHTBRACE  ,          // 18: Right ...
- COL_SPACE       ,          // 19: White space (' ' or '\t')
- COL_QUOTE1      ,          // 1A: Single quote symbol
- COL_QUOTE2      ,          // 1B: Double ...
- COL_DIAMOND     ,          // 1C: Diamond symbol
- COL_LAMP        ,          // 1D: Comment symbol
- COL_EOL         ,          // 1E: End-Of-Line
- COL_UNK         ,          // 1F: Unknown symbols
+{COL_DIGIT = COL_FIRST,     // 00:  Digit
+ COL_DOT         ,          // 01:  Decimal number, inner & outer product separator
+ COL_FPEXP       ,          // 02:  Floating point exponent separator
+ COL_ALPHA       ,          // 03:  Alphabetic
+ COL_DIRIDENT    ,          // 04:  Alpha or Omega
+ COL_Q_QQ        ,          // 05:  Quad
+ COL_UNDERBAR    ,          // 06:  Underbar
+ COL_INFINITY    ,          // 07:  Infinity
+ COL_OVERBAR     ,          // 08:  Overbar
+ COL_COMPLEX     ,          // 09:  Complex number separator
+ COL_RATIONAL    ,          // 0A:  Rational number separator
+ COL_ASSIGN      ,          // 0B:  Assignment symbol
+ COL_SEMICOLON   ,          // 0C:  Semicolon symbol
+ COL_COLON       ,          // 0D:  Colon symbol
+ COL_CTRLSTRUC   ,          // 0E:  Control Structure
+ COL_PRIM_FN     ,          // 0F:  Primitive monadic or dyadic function
+ COL_PRIM_FN0    ,          // 10:  ...       niladic function
+ COL_PRIM_OP1    ,          // 11:  ...       monadic/ambiguous operator
+ COL_PRIM_OP2    ,          // 12:  ...       dyadic  ...
+ COL_JOT         ,          // 13:  Jot symbol
+ COL_LEFTPAREN   ,          // 14:  Left paren
+ COL_RIGHTPAREN  ,          // 15:  Right ...
+ COL_LEFTBRACKET ,          // 16:  Left bracket
+ COL_RIGHTBRACKET,          // 17:  Right ...
+ COL_LEFTBRACE   ,          // 18:  Left brace
+ COL_RIGHTBRACE  ,          // 19:  Right ...
+ COL_SPACE       ,          // 1A:  White space (' ' or '\t')
+ COL_QUOTE1      ,          // 1B:  Single quote symbol
+ COL_QUOTE2      ,          // 1C:  Double ...
+ COL_DIAMOND     ,          // 1D:  Diamond symbol
+ COL_LAMP        ,          // 1E:  Comment symbol
+ COL_EOL         ,          // 1F:  End-Of-Line
+ COL_UNK         ,          // 20:  Unknown symbols
 
- COL_LENGTH      ,          // 20: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
+ COL_LENGTH      ,          // 21: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
                             // Because these enums are origin-0, this value is the # valid columns.
 };
 
@@ -116,7 +117,8 @@ enum COL_INDICES
 // The order of the values of these constants *MUST* match the
 //   row order in fsaColTable.
 enum FSA_TOKENS
-{FSA_INIT = 0,  // Initial state
+{FSA_SOS = 0 ,  // Start of stmt
+ FSA_INIT    ,  // Initial state
  FSA_OVERBAR ,  // Initial overbar
  FSA_INTEGER ,  // Numeric integer
  FSA_BIGINT  ,  // Big numeric integer (from integer overflow in fnIntAccum)
@@ -148,22 +150,28 @@ WCHAR cComplexSep = L'j';           // Complex number separator (as well as uppe
 typedef struct tagTKLOCALVARS
 {
     HGLOBAL     hGlbToken;          // 00:  Global memory handle
-    UNION_TOKEN t2;                 // 01:  Locked base of hGlbToken
-    LPTOKEN     lpStart,            // 02:  First available entry after the header
-                lpNext,             // 03:  Next  ...
-                lpLastEOS;          // 04:  Ptr to last EOS token
-    UINT        State,              // 05:  Current state
-                uChar,              // 06:  ...     index into lpwszLine
-                ActionNum;          // 07:  Action # (1 or 2)
-    LPWCHAR     lpwszOrig,          // 08:  Ptr to original lpwszLine
-                lpwsz;              // 09:  ...    current WCHAR in ...
+    UNION_TOKEN t2;                 // 04:  Locked base of hGlbToken
+    LPTOKEN     lpStart,            // 08:  First available entry after the header
+                lpNext,             // 0C:  Next  ...
+                lpLastEOS;          // 10:  Ptr to last EOS token
+    UINT        State,              // 14:  Current state (FSA_xxx)
+                uChar,              // 18:  ...     index into lpwszLine
+                uCharIni;           // 1C:  Initial ...
+    LPWCHAR     lpwszOrig,          // 20:  Ptr to original lpwszLine
+                lpwszCur;           // 24:  ...    current WCHAR in ...
+    TOKEN_TYPES CtrlStrucTknType;   // 28:  Control Structure token type
+    UINT        CtrlStrucStrLen;    // 2C:  ...               string length
+    ANON_CTRL_STRUC;                // 30:  Ctrl Struc data (8 bytes)
+                                    // 38:  Length
 } TKLOCALVARS, *LPTKLOCALVARS;
+
+typedef UBOOL (*FNACTION) (LPTKLOCALVARS);
 
 typedef struct tagFSA_ACTION
 {
-    int  iNewState;
-    UBOOL (*fnAction1) (LPTKLOCALVARS);
-    UBOOL (*fnAction2) (LPTKLOCALVARS);
+    int      iNewState;
+    FNACTION fnAction1;
+    FNACTION fnAction2;
 } FSA_ACTION;
 
 #define fnIntInit   fnIntAccum
@@ -190,7 +198,7 @@ typedef struct tagFSA_ACTION
 FSA_ACTION fsaColTable [][COL_LENGTH]
 #ifndef PROTO
  =
-{   // FSA_INIT     Initial state ('')
+{   // FSA_SOS      Start of stmt ('')
  {{FSA_INTEGER , NULL        , fnIntInit   },   // '0123456789'
   {FSA_DOTAMBIG, NULL        , fnFrcInit   },   // '.'
   {FSA_ALPHA   , NULL        , fnAlpInit   },   // Exponent separator (eE)
@@ -205,6 +213,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , NULL        , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , NULL        , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , NULL        , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , NULL        , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , NULL        , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , NULL        , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , NULL        , fnOp1Done   },   // ...       monadic/ambiguous operator
@@ -219,7 +228,42 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , NULL        , NULL        },   // White space
   {FSA_QUOTE1A , NULL        , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , NULL        , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , NULL        , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , NULL        , fnDiaDone   },   // Diamond symbol
+  {FSA_INIT    , NULL        , fnComDone   },   // Comment symbol
+  {FSA_EXIT    , NULL        , NULL        },   // EOL
+  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+ },
+    // FSA_INIT     Initial state ('')
+ {{FSA_INTEGER , NULL        , fnIntInit   },   // '0123456789'
+  {FSA_DOTAMBIG, NULL        , fnFrcInit   },   // '.'
+  {FSA_ALPHA   , NULL        , fnAlpInit   },   // Exponent separator (eE)
+  {FSA_ALPHA   , NULL        , fnAlpInit   },   // 'a..zA..Z'
+  {FSA_INIT    , NULL        , fnDirIdent  },   // Alpha or Omega
+  {FSA_SYSNAME , NULL        , fnSysInit   },   // Quad
+  {FSA_INIT    , NULL        , fnInfinity  },   // Underbar
+  {FSA_INIT    , NULL        , fnInfinity  },   // Infinity
+  {FSA_OVERBAR , NULL        , fnNegInit   },   // Overbar
+  {FSA_ALPHA   , NULL        , fnAlpInit   },   // Complex separator (iIjJ)
+  {FSA_ALPHA   , NULL        , fnAlpInit   },   // Rational separator (rR)
+  {FSA_INIT    , NULL        , fnAsnDone   },   // Assignment symbol
+  {FSA_INIT    , NULL        , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , NULL        , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , NULL        , fnCtrlDone  },   // Control Structure
+  {FSA_INIT    , NULL        , fnPrmDone   },   // Primitive monadic or dyadic function
+  {FSA_INIT    , NULL        , fnPrmDone   },   // ...       niladic           ...
+  {FSA_INIT    , NULL        , fnOp1Done   },   // ...       monadic/ambiguous operator
+  {FSA_INIT    , NULL        , fnOp2Done   },   // ...       dyadic  ...
+  {FSA_JOTAMBIG, NULL        , NULL        },   // Jot
+  {FSA_INIT    , NULL        , fnParInit   },   // Left paren
+  {FSA_INIT    , NULL        , fnParDone   },   // Right ...
+  {FSA_INIT    , NULL        , fnBrkInit   },   // Left bracket
+  {FSA_INIT    , NULL        , fnBrkDone   },   // Right ...
+  {FSA_INIT    , NULL        , fnBrcInit   },   // Left brace
+  {FSA_INIT    , NULL        , fnBrcDone   },   // Right ...
+  {FSA_INIT    , NULL        , NULL        },   // White space
+  {FSA_QUOTE1A , NULL        , fnQuo1Init  },   // Single quote
+  {FSA_QUOTE2A , NULL        , fnQuo2Init  },   // Double ...
+  {FSA_SOS     , NULL        , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , NULL        , fnComDone   },   // Comment symbol
   {FSA_EXIT    , NULL        , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -239,6 +283,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // Assignment symbol
   {FSA_SYNTERR , NULL        , NULL        },   // Semicolon  ...
   {FSA_SYNTERR , NULL        , NULL        },   // Colon  ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Control Structure
   {FSA_SYNTERR , NULL        , NULL        },   // Primitive monadic or dyadic function
   {FSA_SYNTERR , NULL        , NULL        },   // ...       niladic           ...
   {FSA_SYNTERR , NULL        , NULL        },   // ...       monadic operator
@@ -273,6 +318,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnIntDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnIntDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnIntDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnIntDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnIntDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnIntDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnIntDone   , fnOp1Done   },   // ...       monadic operator
@@ -287,7 +333,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnIntDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnIntDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnIntDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnIntDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnIntDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnIntDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnIntDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -307,6 +353,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnBigDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnBigDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnBigDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnBigDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnBigDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnBigDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnBigDone   , fnOp1Done   },   // ...       monadic operator
@@ -321,7 +368,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnBigDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnBigDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnBigDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnBigDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnBigDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnBigDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnBigDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -341,6 +388,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnFrcDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnFrcDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnFrcDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnFrcDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnFrcDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnFrcDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnFrcDone   , fnOp1Done   },   // ...       monadic operator
@@ -355,7 +403,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnFrcDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnFrcDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnFrcDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnFrcDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnFrcDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnFrcDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnFrcDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -375,6 +423,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnFrcDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnFrcDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnFrcDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnFrcDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnFrcDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnFrcDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnFrcDone   , fnOp1Done   },   // ...       monadic operator
@@ -389,7 +438,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnFrcDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnFrcDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnFrcDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnFrcDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnFrcDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnFrcDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnFrcDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -409,6 +458,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // Assignment symbol
   {FSA_SYNTERR , NULL        , NULL        },   // Semicolon  ...
   {FSA_SYNTERR , NULL        , NULL        },   // Colon  ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Control Structure
   {FSA_SYNTERR , NULL        , NULL        },   // Primitive monadic or dyadic function
   {FSA_SYNTERR , NULL        , NULL        },   // ...       niladic           ...
   {FSA_SYNTERR , NULL        , NULL        },   // ...       monadic operator
@@ -443,6 +493,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // Assignment symbol
   {FSA_SYNTERR , NULL        , NULL        },   // Semicolon  ...
   {FSA_SYNTERR , NULL        , NULL        },   // Colon  ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Control Structure
   {FSA_SYNTERR , NULL        , NULL        },   // Primitive monadic or dyadic function
   {FSA_SYNTERR , NULL        , NULL        },   // ...       niladic           ...
   {FSA_SYNTERR , NULL        , NULL        },   // ...       monadic operator
@@ -477,6 +528,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnExpDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnExpDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnExpDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnExpDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnExpDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnExpDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnExpDone   , fnOp1Done   },   // ...       monadic operator
@@ -491,7 +543,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnExpDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnExpDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnExpDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnExpDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnExpDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnExpDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnExpDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -511,6 +563,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnAlpDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnAlpDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnAlpDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnAlpDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnAlpDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnAlpDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnAlpDone   , fnOp1Done   },   // ...       monadic operator
@@ -525,7 +578,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnAlpDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnAlpDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnAlpDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnAlpDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnAlpDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnAlpDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnAlpDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -545,6 +598,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnSysDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnSysDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnSysDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnSysDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnSysDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnSysDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnSysDone   , fnOp1Done   },   // ...       monadic operator
@@ -559,7 +613,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnSysDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnSysDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnSysDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnSysDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnSysDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnSysDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnSysDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -579,6 +633,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Assignment symbol
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Semicolon  ...
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Colon  ...
+  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Control Structure
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Primitive monadic or dyadic function
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // ...       niladic           ...
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // ...       monadic operator
@@ -613,6 +668,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnQuo1Done  , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnQuo1Done  , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnQuo1Done  , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnQuo1Done  , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnQuo1Done  , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnQuo1Done  , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnQuo1Done  , fnOp1Done   },   // ...       monadic operator
@@ -627,7 +683,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnQuo1Done  , NULL        },   // White space
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Single quote
   {FSA_QUOTE2A , fnQuo1Done  , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnQuo1Done  , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnQuo1Done  , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnQuo1Done  , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnQuo1Done  , NULL        },   // EOL
   {FSA_SYNTERR , fnQuo1Done  , NULL        },   // Unknown symbols
@@ -647,6 +703,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Assignment symbol
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Semicolon  ...
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Colon  ...
+  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Control Structure
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Primitive monadic or dyadic function
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // ...       niladic           ...
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // ...       monadic operator
@@ -681,6 +738,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnQuo2Done  , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnQuo2Done  , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnQuo2Done  , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnQuo2Done  , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnQuo2Done  , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnQuo2Done  , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnQuo2Done  , fnOp1Done   },   // ...       monadic operator
@@ -695,7 +753,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnQuo2Done  , NULL        },   // White space
   {FSA_QUOTE1A , fnQuo2Done  , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Double ...
-  {FSA_INIT    , fnQuo2Done  , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnQuo2Done  , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnQuo2Done  , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnQuo2Done  , NULL        },   // EOL
   {FSA_SYNTERR , fnQuo2Done  , NULL        },   // Unknown symbols
@@ -715,6 +773,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnDotDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnDotDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnDotDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnDotDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnDotDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnDotDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnDotDone   , fnOp1Done   },   // ...       monadic operator
@@ -729,7 +788,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnDotDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnDotDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnDotDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnDotDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnDotDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnDotDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnDotDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -749,6 +808,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnJotDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnJotDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnJotDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnJotDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnJotDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnJotDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnJotDone   , fnOp1Done   },   // ...       monadic operator
@@ -763,7 +823,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_JOTAMBIG, NULL        , NULL        },   // White space
   {FSA_QUOTE1A , fnJotDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnJotDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnJotDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_SOS     , fnJotDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnJotDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnJotDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
@@ -783,6 +843,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnOutDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnOutDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnOutDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnOutDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnOutDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnOutDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_SYNTERR , NULL        , NULL        },   // ...       monadic operator
@@ -1079,7 +1140,7 @@ UBOOL fnIntAccum
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Copy current WCHAR
-    wch = *lptkLocalVars->lpwsz;
+    wch = *lptkLocalVars->lpwszCur;
 
     // Shift over by one digit
     // We'd like to do the following, but C has no way to
@@ -1213,7 +1274,7 @@ UBOOL fnFPAccum
     // Check for overflow -- LIMIT ERROR
     bRet = (lpMemPTD->iNumLen < DEF_NUM_MAXSIZE);
     if (bRet)
-        lpszNum[lpMemPTD->iNumLen++] = (char) *lptkLocalVars->lpwsz;
+        lpszNum[lpMemPTD->iNumLen++] = (char) *lptkLocalVars->lpwszCur;
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
@@ -1456,7 +1517,7 @@ UBOOL fnAlpha
     bRet = (lpMemPTD->iStrLen < DEF_STR_MAXSIZE);
     if (bRet)
         // Save the char
-        lpwszStr[lpMemPTD->iStrLen++] = *lptkLocalVars->lpwsz;
+        lpwszStr[lpMemPTD->iStrLen++] = *lptkLocalVars->lpwszCur;
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
@@ -1595,7 +1656,7 @@ UBOOL fnDirIdent
     lpwszStr = MyGlobalLock (lpMemPTD->hGlbStr);
 
     // Save the character in the string
-    lpwszStr[0] = lptkLocalVars->lpwsz[0];
+    lpwszStr[0] = lptkLocalVars->lpwszCur[0];
 
     // Save the string length
     lpMemPTD->iStrLen = 1;
@@ -1653,7 +1714,7 @@ UBOOL fnAsnDone
 #endif
 
     // Copy current WCHAR
-    aplLongest = *lptkLocalVars->lpwsz;
+    aplLongest = *lptkLocalVars->lpwszCur;
 
     // Mark the data as an assignment
     tkFlags.TknType = TKT_ASSIGN;
@@ -1685,7 +1746,7 @@ UBOOL fnLstDone
 #endif
 
     // Copy current WCHAR
-    aplLongest = *lptkLocalVars->lpwsz;
+    aplLongest = *lptkLocalVars->lpwszCur;
 
     // Mark the data as a list separator
     tkFlags.TknType = TKT_LISTSEP;
@@ -1717,16 +1778,27 @@ UBOOL fnClnDone
 #endif
 
     // Copy current WCHAR
-    aplLongest = *lptkLocalVars->lpwsz;
+    aplLongest = *lptkLocalVars->lpwszCur;
 
     // If the first token is a name, and
     //   this is the second token,
     //   then it's a label separator
     if (lptkLocalVars->lpStart[1].tkFlags.TknType EQ TKT_VARNAMED
      && (lptkLocalVars->lpNext - lptkLocalVars->lpStart) EQ 2)
+    {
         // Mark the data as a label separator
         tkFlags.TknType = TKT_LABELSEP;
-    else
+
+        // Set the new state to FSA_SOS so we can accept Control Strucures
+        lptkLocalVars->State = FSA_SOS;
+
+        // Save as index of new initial char
+        lptkLocalVars->uCharIni = lptkLocalVars->uChar + 1;
+
+        // Skip over leading blanks
+        while (IsWhiteW (lptkLocalVars->lpwszOrig[lptkLocalVars->uCharIni]))
+            lptkLocalVars->uCharIni++;
+    } else
         // Mark the data as a colon
         tkFlags.TknType = TKT_COLON;
 
@@ -1737,6 +1809,141 @@ UBOOL fnClnDone
                              &aplLongest,
                               0);
 } // End fnClnDone
+
+
+//***************************************************************************
+//  $fnCtrlDone
+//
+//  Done with this Control Structure
+//***************************************************************************
+
+UBOOL fnCtrlDone
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    TKFLAGS        tkFlags = {0};
+    ANON_CTRL_STRUC aplInteger;
+
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"fnCtrlDone");
+#endif
+
+    // For selected CS tokens, prepend an additional special token
+    if (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_ELSEIF
+     || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_CASE
+     || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_CASELIST)
+    {
+        APLINT aplInteger2 = 0;
+
+        // Mark as a special token
+        tkFlags.TknType =
+          (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_ELSEIF) ? TKT_CS_SKIPEND
+                                                             : TKT_CS_SKIPCASE;
+        // Save the line & stmt #s for later use
+        aplInteger.uLineNum = lptkLocalVars->uLineNum;
+        aplInteger.uStmtNum = lptkLocalVars->uStmtNum;
+        aplInteger.uTknNum  = lptkLocalVars->lpNext - lptkLocalVars->lpStart;
+        aplInteger.bSOS     = lptkLocalVars->bSOS;
+        aplInteger.uCLIndex = 0;
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        if (!AppendNewToken_EM (lptkLocalVars,
+                               &tkFlags,
+                    (LPAPLINT) &aplInteger,
+                                0))
+            return FALSE;
+
+        // Mark as an SOS
+        tkFlags.TknType = TKT_SOS;
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        if (!AppendNewToken_EM (lptkLocalVars,
+                               &tkFlags,
+                               &aplInteger2,
+                                0))
+            return FALSE;
+
+        // Attempt to append an EOS token
+        if (!AppendEOSToken (lptkLocalVars, TRUE))
+            return FALSE;
+    } // End IF
+
+    // Mark as a Control Structure
+    tkFlags.TknType = lptkLocalVars->CtrlStrucTknType;
+
+    // Save the line & stmt #s for later use
+    aplInteger.uLineNum = lptkLocalVars->uLineNum;
+    aplInteger.uStmtNum = lptkLocalVars->uStmtNum;
+    aplInteger.uTknNum  = lptkLocalVars->lpNext - lptkLocalVars->lpStart;
+    aplInteger.bSOS     = lptkLocalVars->bSOS;
+    aplInteger.uCLIndex = 0;
+
+    // Attempt to append as new token, check for TOKEN TABLE FULL,
+    //   and resize as necessary.
+    if (!AppendNewToken_EM (lptkLocalVars,
+                           &tkFlags,
+                (LPAPLINT) &aplInteger,
+                            0))
+        return FALSE;
+
+    // For selected CS tokens, append an additional special token
+    if (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_IF
+     || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_FOR
+     || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_REPEAT
+     || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_SELECT
+     || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_WHILE)
+    {
+        APLINT aplInteger = 0;
+
+        // SpLit cases based upon the token type
+        switch (lptkLocalVars->CtrlStrucTknType)
+        {
+            case TKT_CS_IF:
+                tkFlags.TknType = TKT_CS_IF2;
+
+                break;
+
+            case TKT_CS_FOR:
+                tkFlags.TknType = TKT_CS_FOR2;
+
+                break;
+
+            case TKT_CS_REPEAT:
+                tkFlags.TknType = TKT_CS_REPEAT2;
+
+                break;
+
+            case TKT_CS_SELECT:
+                tkFlags.TknType = TKT_CS_SELECT2;
+
+                break;
+
+            case TKT_CS_WHILE:
+                tkFlags.TknType = TKT_CS_WHILE2;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        if (!AppendNewToken_EM (lptkLocalVars,
+                               &tkFlags,
+                               &aplInteger,
+                                0))
+            return FALSE;
+    } // End IF
+
+    // Skip over the name
+    // (" - 1" to account for the ++ at the end of the FOR stmt)
+    lptkLocalVars->uChar += lptkLocalVars->CtrlStrucStrLen - 1;
+
+    return TRUE;
+} // End fnCtrlDone
 
 
 //***************************************************************************
@@ -1757,7 +1964,7 @@ UBOOL fnPrmDone
 #endif
 
     // Copy current WCHAR
-    aplInteger = *lptkLocalVars->lpwsz;
+    aplInteger = *lptkLocalVars->lpwszCur;
 
     // For reasons which escape me now, this is
     //   where we handle {zilde}
@@ -1772,7 +1979,7 @@ UBOOL fnPrmDone
     {
         // Mark the data as a primitive function
         tkFlags.TknType = TKT_FCNIMMED;
-        tkFlags.ImmType = GetImmTypeFcn (*lptkLocalVars->lpwsz);
+        tkFlags.ImmType = GetImmTypeFcn (*lptkLocalVars->lpwszCur);
     } // End IF/ELSE
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
@@ -1853,7 +2060,7 @@ UBOOL fnOp1Done
 #endif
 
     // Copy current WCHAR
-    wch = *lptkLocalVars->lpwsz;
+    wch = *lptkLocalVars->lpwszCur;
 
     if (wch EQ UTF16_SLASH
      || wch EQ UTF16_SLOPE
@@ -1872,7 +2079,7 @@ UBOOL fnOp1Done
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    aplLongest = *lptkLocalVars->lpwsz;
+    aplLongest = *lptkLocalVars->lpwszCur;
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
                              &aplLongest,
@@ -1903,7 +2110,7 @@ UBOOL fnOp2Done
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    aplLongest = *lptkLocalVars->lpwsz;
+    aplLongest = *lptkLocalVars->lpwszCur;
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
                              &aplLongest,
@@ -2031,11 +2238,11 @@ UBOOL fnComDone
 #endif
 
     // Get the length of the comment (up to but not including any '\n')
-    iLen  = lstrlenW (lptkLocalVars->lpwsz); // Including the leading comment symbol
-    lpwch = wcspbrk (&lptkLocalVars->lpwsz[1], OptionFlags.bClosingLamp ? L"\n" WS_UTF16_LAMP : L"\n");
+    iLen  = lstrlenW (lptkLocalVars->lpwszCur); // Including the leading comment symbol
+    lpwch = wcspbrk (&lptkLocalVars->lpwszCur[1], L"\n");
     if (lpwch)
     {
-        iLen2 = (UINT) (&lpwch[*lpwch EQ UTF16_LAMP] - lptkLocalVars->lpwsz);
+        iLen2 = (UINT) (&lpwch[*lpwch EQ UTF16_LAMP] - lptkLocalVars->lpwszCur);
         iLen  = min (iLen2, iLen);
     } // End IF
 
@@ -2099,7 +2306,7 @@ UBOOL fnQuoAccum
     // Check for overflow -- LIMIT ERROR
     bRet = (lpMemPTD->iStrLen < DEF_STR_MAXSIZE);
     if (bRet)
-        lpwszStr[lpMemPTD->iStrLen++] = *lptkLocalVars->lpwsz;
+        lpwszStr[lpMemPTD->iStrLen++] = *lptkLocalVars->lpwszCur;
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
@@ -2171,6 +2378,8 @@ UBOOL fnQuoDone
     {
         // Mark the data as a string in a global memory handle
         tkFlags.TknType = TKT_STRING;
+
+        aplInteger = 0;     // Zero high-order dword
 
         // Copy to local var so we may pass its address
         (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlbV0Char);
@@ -2549,6 +2758,15 @@ UBOOL fnDiaDone
                             0))
         return FALSE;
 
+    // Count in another stmt
+    lptkLocalVars->uStmtNum++;
+
+    // Start the initial char over again
+    lptkLocalVars->uCharIni = lptkLocalVars->uChar + 1;
+
+    // Skip over leading blanks
+    while (IsWhiteW (lptkLocalVars->lpwszOrig[lptkLocalVars->uCharIni]))
+        lptkLocalVars->uCharIni++;
     // Append the EOS token
     return AppendEOSToken (lptkLocalVars, TRUE);
 } // End fnDiaDone
@@ -2580,21 +2798,44 @@ The format of a token is defined in tokens.h
 HGLOBAL Tokenize_EM
     (LPAPLCHAR   lpwszLine,     // The line to tokenize (not necessarily zero-terminated)
      APLNELM     aplNELM,       // NELM of lpwszLine
-     HWND        hWndEC,        // Window handle for Edit Control (may be NULL if lpErrHandFn is NULL)
+     HWND        hWndEC,        // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+     UINT        uLineNum,      // Function line # (0 = header)
      LPERRHANDFN lpErrHandFn)   // Ptr to error handling function (may be NULL)
 
 {
     UINT         uChar;         // Loop counter
     WCHAR        wchOrig,       // The original char
                  wchColNum;     // The translated char for tokenization as a COL_*** value
-    UBOOL        (*fnAction1_EM) (LPTKLOCALVARS);
-    UBOOL        (*fnAction2_EM) (LPTKLOCALVARS);
+    FNACTION     fnAction1_EM,  // Ptr to 1st action
+                 fnAction2_EM;  // ...    2nd ...
     TKLOCALVARS  tkLocalVars;   // Local vars
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPTOKEN      lptkCSNxt;     // Ptr to next token on the CS stack
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Save local vars in struct which we pass to each FSA action routine
-    tkLocalVars.State = FSA_INIT;
+    tkLocalVars.State = FSA_SOS;
+    tkLocalVars.uLineNum = uLineNum;
+    tkLocalVars.uStmtNum = 0;
+
+    // If this is the function header (uLineNum EQ 0)
+    //   save and restore the ptr to the next token
+    //   on the CS stack as there are no CSs in the
+    //   function header
+    if (uLineNum EQ 0)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Save the ptr to the next token on the CS stack
+        lptkCSNxt = lpMemPTD->lptkCSNxt;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } // End IF
 
     // Allocate some memory for the tokens
     // If we need more, we'll GlobalRealloc
@@ -2605,10 +2846,13 @@ HGLOBAL Tokenize_EM
     tkLocalVars.hGlbToken = MyGlobalAlloc (GHND, DEF_TOKEN_SIZE * sizeof (TOKEN));
     if (!tkLocalVars.hGlbToken)
     {
-        if (lpErrHandFn)
-            (*lpErrHandFn) (ERRMSG_WS_FULL APPEND_NAME, lpwszLine, NEG1U, hWndEC);
+        // Mark as no caret
+        uChar = NEG1U;
 
-        return tkLocalVars.hGlbToken;
+        // Save the error message
+        ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+        goto ERROR_EXIT;
     } // End IF
 
     // Lock the memory to get a ptr to it
@@ -2625,7 +2869,7 @@ HGLOBAL Tokenize_EM
 
     // Initialize EOS
     tkLocalVars.lpLastEOS               = tkLocalVars.lpStart;
-    tkLocalVars.lpwsz                   = &lpwszLine[0];// Just so it has a known value
+    tkLocalVars.lpwszCur                = &lpwszLine[0];// Just so it has a known value
 
     // Attempt to append an EOS token
     if (!AppendEOSToken (&tkLocalVars, TRUE))
@@ -2637,14 +2881,18 @@ HGLOBAL Tokenize_EM
     DisplayTokens (tkLocalVars.hGlbToken);
 #endif
 
-    //  Initialize the accumulation variables for the next constant
+    // Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
     // Skip over leading blanks (more to reduce clutter
     //   in the debugging window)
     for (uChar = 0; uChar < aplNELM; uChar++)
-    if (lpwszLine[uChar] NE L' ')
+    if (!IsWhiteW (lpwszLine[uChar]))
         break;
+
+    // Save initial char index to compare against
+    //   in case we get a leading colon
+    tkLocalVars.uCharIni = uChar;
 
     for (     ; uChar <= aplNELM; uChar++)
     {
@@ -2652,6 +2900,9 @@ HGLOBAL Tokenize_EM
 
         // Save current index (may be modified by an action)
         tkLocalVars.uChar = uChar;
+
+        // Save pointer to current wch
+        tkLocalVars.lpwszCur = &lpwszLine[uChar];
 
         /* The FSA works as follows:
 
@@ -2691,10 +2942,11 @@ HGLOBAL Tokenize_EM
                 goto ERROR_EXIT;
         } // End IF
 
+        // Strip out EOL check so we don't confuse a zero-value char with EOL
         if (uChar EQ aplNELM)
             wchColNum = COL_EOL;
         else
-            wchColNum = CharTrans (wchOrig);
+            wchColNum = CharTrans (wchOrig, &tkLocalVars);
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         wsprintfW (wszTemp,
@@ -2715,17 +2967,12 @@ HGLOBAL Tokenize_EM
         fnAction2_EM = fsaColTable[tkLocalVars.State][wchColNum].fnAction2;
         tkLocalVars.State = fsaColTable[tkLocalVars.State][wchColNum].iNewState;
 
-        // Save pointer to current wch
-        tkLocalVars.lpwsz = &lpwszLine[uChar];
-
         // Check for primary action
-        tkLocalVars.ActionNum = 1;
         if (fnAction1_EM
          && !(*fnAction1_EM) (&tkLocalVars))
             goto ERROR_EXIT;
 
         // Check for secondary action
-        tkLocalVars.ActionNum = 2;
         if (fnAction2_EM
          && !(*fnAction2_EM) (&tkLocalVars))
             goto ERROR_EXIT;
@@ -2734,6 +2981,9 @@ HGLOBAL Tokenize_EM
         switch (tkLocalVars.State)
         {
             case FSA_NONCE:
+                // Save the error caret position
+                SaveErrorPosition (tkLocalVars.uChar);
+
                 // Save the error message
                 ErrorMessageIndirect (ERRMSG_NONCE_ERROR APPEND_NAME);
 
@@ -2804,9 +3054,6 @@ HGLOBAL Tokenize_EM
     //   exit from one of the actions with FSA_EXIT.
     DbgStop ();
 ERROR_EXIT:
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -2826,10 +3073,10 @@ ERROR_EXIT:
         tkLocalVars.lpStart     = NULL;
         tkLocalVars.lpNext      = NULL;
         tkLocalVars.lpLastEOS   = NULL;
-    } // End IF
 
-    // Free the handle
-    MyGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
+        // Free the handle
+        MyGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
+    } // End IF
 
     goto FREED_EXIT;
 
@@ -2842,6 +3089,19 @@ FREED_EXIT:
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"*** Tokenize_EM End");
 #endif
+
+    // If this is the function header, ...
+    if (uLineNum EQ 0)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Restore the ptr to the next token on the CS stack
+        lpMemPTD->lptkCSNxt = lptkCSNxt;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } // End IF
 
     return tkLocalVars.hGlbToken;
 } // End Tokenize_EM
@@ -2887,7 +3147,7 @@ UBOOL CheckGroupSymbols_EM
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- Untokenize_EM"
+#define APPEND_NAME     L" -- Untokenize"
 #else
 #define APPEND_NAME
 #endif
@@ -2984,8 +3244,40 @@ void Untokenize
             case TKT_SOS:               // Start-of-Stmt (data is NULL)
             case TKT_LINECONT:          // Line continuation (data is NULL)
             case TKT_INPOUT:            // Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+            case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
+            case TKT_CS_CASE:           // ...                 CASE
+            case TKT_CS_CASELIST:       // ...                 CASELIST
+            case TKT_CS_CONTINUE:       // ...                 CONTINUE
+            case TKT_CS_ELSE:           // ...                 ELSE
+            case TKT_CS_ELSEIF:         // ...                 ELSEIF
+            case TKT_CS_END:            // ...                 END
+            case TKT_CS_ENDFOR:         // ...                 ENDFOR
+            case TKT_CS_ENDIF:          // ...                 ENDIF
+            case TKT_CS_ENDREPEAT:      // ...                 ENDREPEAT
+            case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
+            case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
+            case TKT_CS_FOR:            // ...                 FOR
+            case TKT_CS_FOR2:           // ...                 FOR2
+            case TKT_CS_GOTO:           // ...                 GOTO
+            case TKT_CS_IF:             // ...                 IF
+            case TKT_CS_IF2:            // ...                 IF2
+            case TKT_CS_IN:             // ...                 IN
+            case TKT_CS_LEAVE:          // ...                 LEAVE
+            case TKT_CS_ORIF:           // ...                 ORIF
+            case TKT_CS_REPEAT:         // ...                 REPEAT
+            case TKT_CS_REPEAT2:        // ...                 REPEAT2
+            case TKT_CS_RETURN:         // ...                 RETURN
+            case TKT_CS_SELECT:         // ...                 SELECT
+            case TKT_CS_SELECT2:        // ...                 SELECT2
+            case TKT_CS_UNTIL:          // ...                 UNTIL
+            case TKT_CS_WHILE:          // ...                 WHILE
+            case TKT_CS_WHILE2:         // ...                 WHILE2
+            case TKT_CS_SKIPCASE:       // ...                 Special token
+            case TKT_CS_SKIPEND:        // ...                 Special token
                 break;                  // Nothing to do
 
+            case TKT_CS_NEC:            // ...                 Special token
+            case TKT_CS_EOL:            // ...                 Special token
             defstop
 #ifdef DEBUG
             {
@@ -3079,7 +3371,7 @@ UBOOL AppendEOSToken
                                   0);
     } else
         return TRUE;
-} // Ens AppendEOSToken
+} // End AppendEOSToken
 
 
 //***************************************************************************
@@ -3099,10 +3391,10 @@ UBOOL AppendEOSToken
 #endif
 
 UBOOL AppendNewToken_EM
-    (LPTKLOCALVARS lptkLocalVars,
-     LPTKFLAGS     lptkFlags,
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to local vars
+     LPTKFLAGS     lptkFlags,           // Ptr to token flags
      LPAPLLONGEST  lptkData,            // Ptr to token data (may be NULL)
-     int           iCharOffset)
+     int           iCharOffset)         // Offset from lpwszCur of the token (where the caret goes)
 
 {
     // Check for TOKEN TABLE FULL
@@ -3144,7 +3436,7 @@ UBOOL AppendNewToken_EM
     lptkLocalVars->lpNext->tkFlags          = *lptkFlags;// Append the flags
 
     // Save index in input line of this token
-    lptkLocalVars->lpNext->tkCharIndex = iCharOffset + (UINT) (lptkLocalVars->lpwsz - lptkLocalVars->lpwszOrig);
+    lptkLocalVars->lpNext->tkCharIndex = iCharOffset + (UINT) (lptkLocalVars->lpwszCur - lptkLocalVars->lpwszOrig);
 
     // Count in another token
     lptkLocalVars->t2.lpHeader->TokenCnt++;
@@ -3152,9 +3444,183 @@ UBOOL AppendNewToken_EM
     // Skip to next token
     lptkLocalVars->lpNext++;
 
+    // Append a CS token
+
+    // Split cases based upon the token type
+    switch (lptkFlags->TknType)
+    {
+        case TKT_VARNAMED    :
+        case TKT_STRING      :
+        case TKT_VARIMMED    :
+        case TKT_COMMENT     :
+        case TKT_ASSIGN      :
+        case TKT_LISTSEP     :
+        case TKT_COLON       :
+        case TKT_FCNIMMED    :
+        case TKT_OP1IMMED    :
+        case TKT_OP2IMMED    :
+        case TKT_OP3IMMED    :
+        case TKT_OPJOTDOT    :
+        case TKT_LEFTPAREN   :
+        case TKT_RIGHTPAREN  :
+        case TKT_LEFTBRACKET :
+        case TKT_RIGHTBRACKET:
+        case TKT_LEFTBRACE   :
+        case TKT_RIGHTBRACE  :
+        case TKT_LINECONT    :
+        case TKT_INPOUT      :
+        case TKT_VARARRAY    :
+            // Append the NEC token to the CS stack
+            //   to allow for later parsing for SYNTAX ERRORs
+            AppendNewCSToken_EM (TKT_CS_NEC,
+                                 lptkLocalVars->uLineNum,
+                                 lptkLocalVars->uStmtNum,
+                       (USHORT) (lptkLocalVars->lpNext - lptkLocalVars->lpStart),
+                                 FALSE,
+                                 lptkLocalVars->uChar);
+            break;
+
+        case TKT_LABELSEP    :
+        case TKT_EOS         :
+        case TKT_EOL         :
+        case TKT_SOS         :
+            // Append the EOS token to the CS stack
+            //   to allow for later parsing for SYNTAX ERRORs
+            AppendNewCSToken_EM (lptkFlags->TknType,
+                                 lptkLocalVars->uLineNum,
+                                 lptkLocalVars->uStmtNum,
+                       (USHORT) (lptkLocalVars->lpNext - lptkLocalVars->lpStart),
+                                 TRUE,
+                                 lptkLocalVars->uChar);
+            break;
+
+        case TKT_CS_ANDIF    :
+        case TKT_CS_CASE     :
+        case TKT_CS_CASELIST :
+        case TKT_CS_CONTINUE :
+        case TKT_CS_ELSE     :
+        case TKT_CS_ELSEIF   :
+        case TKT_CS_END      :
+        case TKT_CS_ENDFOR   :
+        case TKT_CS_ENDIF    :
+        case TKT_CS_ENDREPEAT:
+        case TKT_CS_ENDSELECT:
+        case TKT_CS_ENDWHILE :
+        case TKT_CS_FOR      :
+        case TKT_CS_FOR2     :
+        case TKT_CS_GOTO     :
+        case TKT_CS_IF       :
+        case TKT_CS_IF2      :
+        case TKT_CS_IN       :
+        case TKT_CS_LEAVE    :
+        case TKT_CS_ORIF     :
+        case TKT_CS_REPEAT   :
+        case TKT_CS_REPEAT2  :
+        case TKT_CS_RETURN   :
+        case TKT_CS_SELECT   :
+        case TKT_CS_SELECT2  :
+        case TKT_CS_UNTIL    :
+        case TKT_CS_WHILE    :
+        case TKT_CS_WHILE2   :
+        case TKT_CS_SKIPCASE :
+        case TKT_CS_SKIPEND  :
+#define lptdAnon    ((ANON_CTRL_STRUC *) lptkData)
+            // Append the Ctrl Struc token to the CS stack
+            //   to allow for later parsing for SYNTAX ERRORs
+            AppendNewCSToken_EM (lptkFlags->TknType,
+                                 lptdAnon->uLineNum,
+                                 lptdAnon->uStmtNum,
+                                 lptdAnon->uTknNum,
+                                 lptdAnon->bSOS,
+                                 lptkLocalVars->uChar);
+#undef  lptdAnon
+            break;
+
+        case TKT_CS_NEC      :
+        case TKT_CS_EOL      :
+        defstop
+            break;
+    } // End SWITCH
+
     return TRUE;
 } // End AppendNewToken_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $AppendNewCSToken_EM
+//
+//  Append a new token to the CS stack
+//***************************************************************************
+
+UBOOL AppendNewCSToken_EM
+    (TOKEN_TYPES TknType,       // CS token type (TKT_CS_xxx)
+     USHORT      uLineNum,      // Line #
+     USHORT      uStmtNum,      // Stmt #
+     USHORT      uTknNum,       // Token #
+     UBOOL       bSOS,          // TRUE iff the matching CS starts a stmt
+     UINT        tkCharIndex)   // Index into the input line of this token
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    TOKEN        tkCS = {0};    // Control Structure token
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // If there's a preceding token, ...
+    if (lpMemPTD->lptkCSNxt >= &lpMemPTD->lptkCSIni[1])
+    {
+        // Coalesce CS_NEC ... CS_NEC -> CS_NEC
+        //          EOS SOS           -> <empty>
+        //          NEC LABELSEP      -> LABELSEP
+
+        // Check for duplicate CS_NEC tokens
+        if (TKT_CS_NEC EQ TknType
+         && TKT_CS_NEC EQ lpMemPTD->lptkCSNxt[-1].tkFlags.TknType)
+            goto SKIP_EXIT;
+
+        // Check for EOS SOS pair (blank line)
+        if (TKT_SOS EQ TknType
+         && TKT_EOS EQ lpMemPTD->lptkCSNxt[-1].tkFlags.TknType)
+        {
+            // Delete the preceding EOS
+            lpMemPTD->lptkCSNxt--;
+
+            goto SKIP_EXIT;
+        } // End IF
+
+        if (TKT_LABELSEP EQ TknType
+         && TKT_CS_NEC EQ lpMemPTD->lptkCSNxt[-1].tkFlags.TknType)
+        {
+            // Delete the preceding NEC
+            lpMemPTD->lptkCSNxt--;
+
+            goto SKIP_EXIT;
+        } // End IF
+    } // End IF
+
+    // Fill in the token values
+    tkCS.tkFlags.TknType = TknType;
+    tkCS.tkData.uLineNum = uLineNum;
+    tkCS.tkData.uStmtNum = uStmtNum;
+    tkCS.tkData.uTknNum  = uTknNum;
+    tkCS.tkData.bSOS     = bSOS;
+    tkCS.tkData.uCLIndex = 0;
+    tkCS.tkCharIndex     = tkCharIndex;
+
+    // Save the token on the CS stack
+    *lpMemPTD->lptkCSNxt++ = tkCS;
+SKIP_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return TRUE;
+} // End AppendNewCSToken_EM
 
 
 //***************************************************************************
@@ -3164,7 +3630,8 @@ UBOOL AppendNewToken_EM
 //***************************************************************************
 
 WCHAR CharTrans
-    (WCHAR wchOrig)
+    (WCHAR wchOrig,                     // Char to translate into a COL_xxx index
+     LPTKLOCALVARS lptkLocalVars)       // Ptr to local vars
 
 {
     // Split cases
@@ -3474,8 +3941,34 @@ WCHAR CharTrans
             return COL_SEMICOLON;
 
         case UTF16_COLON:               // Line labels
-                                        // Control structures ***FIXME***
-            return COL_COLON;
+            // Check the next few chars to see if they match any
+            //   Control Structures
+            if (CtrlStrucCmpi (lptkLocalVars, L":andif"    , TKT_CS_ANDIF    )
+             || CtrlStrucCmpi (lptkLocalVars, L":case"     , TKT_CS_CASE     )
+             || CtrlStrucCmpi (lptkLocalVars, L":caselist" , TKT_CS_CASELIST )
+             || CtrlStrucCmpi (lptkLocalVars, L":continue" , TKT_CS_CONTINUE )
+             || CtrlStrucCmpi (lptkLocalVars, L":else"     , TKT_CS_ELSE     )
+             || CtrlStrucCmpi (lptkLocalVars, L":elseif"   , TKT_CS_ELSEIF   )
+             || CtrlStrucCmpi (lptkLocalVars, L":end"      , TKT_CS_END      )
+             || CtrlStrucCmpi (lptkLocalVars, L":endfor"   , TKT_CS_ENDFOR   )
+             || CtrlStrucCmpi (lptkLocalVars, L":endif"    , TKT_CS_ENDIF    )
+             || CtrlStrucCmpi (lptkLocalVars, L":endrepeat", TKT_CS_ENDREPEAT)
+             || CtrlStrucCmpi (lptkLocalVars, L":endselect", TKT_CS_ENDSELECT)
+             || CtrlStrucCmpi (lptkLocalVars, L":endwhile" , TKT_CS_ENDWHILE )
+             || CtrlStrucCmpi (lptkLocalVars, L":for"      , TKT_CS_FOR      )
+             || CtrlStrucCmpi (lptkLocalVars, L":goto"     , TKT_CS_GOTO     )
+             || CtrlStrucCmpi (lptkLocalVars, L":if"       , TKT_CS_IF       )
+             || CtrlStrucCmpi (lptkLocalVars, L":in"       , TKT_CS_IN       )
+             || CtrlStrucCmpi (lptkLocalVars, L":leave"    , TKT_CS_LEAVE    )
+             || CtrlStrucCmpi (lptkLocalVars, L":orif"     , TKT_CS_ORIF     )
+             || CtrlStrucCmpi (lptkLocalVars, L":repeat"   , TKT_CS_REPEAT   )
+             || CtrlStrucCmpi (lptkLocalVars, L":return"   , TKT_CS_RETURN   )
+             || CtrlStrucCmpi (lptkLocalVars, L":select"   , TKT_CS_SELECT   )
+             || CtrlStrucCmpi (lptkLocalVars, L":until"    , TKT_CS_UNTIL    )
+             || CtrlStrucCmpi (lptkLocalVars, L":while"    , TKT_CS_WHILE    ))
+                return COL_CTRLSTRUC;
+            else
+                return COL_COLON;
 
         case UTF16_LEFTBRACE:           //     '{' - left brace
             return COL_LEFTBRACE;
@@ -3510,6 +4003,47 @@ WCHAR CharTrans
 } // End CharTrans
 
 
+//***************************************************************************
+//  $CtrlStrucCmpi
+//
+//  Case-insensitive comparison of a Control Structure name
+//***************************************************************************
+
+UBOOL CtrlStrucCmpi
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to local vars
+     LPWCHAR       lpwCSName,           // Ptr to Control Structure name
+     TOKEN_TYPES   TknType)             // Matching token type
+
+{
+    UINT    uCSLen,                     // Length of lpwCSName
+            uLen;                       // Loop counter
+    LPWCHAR lpwLine;                    // Ptr to line contents
+
+    // Get the length of the name
+    uCSLen = lstrlenW (lpwCSName);
+
+    // Get a ptr to the line
+    lpwLine = lptkLocalVars->lpwszCur;
+
+    // Loop through the name
+    for (uLen = 0; uLen < uCSLen; uLen++)
+    if (((WCHAR) CharLowerW ((LPWCHAR) *lpwLine++)) NE *lpwCSName++)
+        return FALSE;
+
+    // Ensure the next char after the name in the line is not valid
+    //   in a name and thus terminates the name
+    if (Valid2ndCharInName (*lpwLine))
+        return FALSE;
+
+    // Save the token type and string length for later use
+    lptkLocalVars->CtrlStrucTknType = TknType;
+    lptkLocalVars->CtrlStrucStrLen  = uCSLen;
+    lptkLocalVars->bSOS             = (lptkLocalVars->uChar EQ lptkLocalVars->uCharIni);
+
+    return TRUE;
+} // End CtrlStrucCmpi
+
+
 #ifdef DEBUG
 //***************************************************************************
 //  $GetColName
@@ -3542,24 +4076,25 @@ static COLNAMES colNames[] =
  {L"ASSIGN"      , COL_ASSIGN      },   // 0B: Assignment symbol
  {L"SEMICOLON"   , COL_SEMICOLON   },   // 0C: Semicolon symbol
  {L"COLON"       , COL_COLON       },   // 0D: Colon symbol
- {L"PRIM_FN"     , COL_PRIM_FN     },   // 0E: Primitive monadic or dyadic function
- {L"PRIM_FN0"    , COL_PRIM_FN0    },   // 0F: ...       niladic function
- {L"PRIM_OP1"    , COL_PRIM_OP1    },   // 10: ...       monadic operator
- {L"PRIM_OP2"    , COL_PRIM_OP2    },   // 11: ...       dyadic  ...
- {L"JOT"         , COL_JOT         },   // 12: Jot symbol
- {L"LEFTPAREN"   , COL_LEFTPAREN   },   // 13: Left paren
- {L"RIGHTPAREN"  , COL_RIGHTPAREN  },   // 14: Right ...
- {L"LEFTBRACKET" , COL_LEFTBRACKET },   // 15: Left bracket
- {L"RIGHTBRACKET", COL_RIGHTBRACKET},   // 16: Right ...
- {L"LEFTBRACE"   , COL_LEFTBRACE   },   // 17: Left brace
- {L"RIGHTBRACE"  , COL_RIGHTBRACE  },   // 18: Right ...
- {L"SPACE"       , COL_SPACE       },   // 19: White space (' ' or '\t')
- {L"QUOTE1"      , COL_QUOTE1      },   // 1A: Single quote symbol
- {L"QUOTE2"      , COL_QUOTE2      },   // 1B: Double ...
- {L"DIAMOND"     , COL_DIAMOND     },   // 1C: Diamond symbol
- {L"LAMP"        , COL_LAMP        },   // 1D: Comment symbol
- {L"EOL"         , COL_EOL         },   // 1E: End-Of-Line
- {L"UNK"         , COL_UNK         },   // 1F: Unknown symbols
+ {L"CTRLSTRUC"   , COL_CTRLSTRUC   },   // 0E: Control Structure
+ {L"PRIM_FN"     , COL_PRIM_FN     },   // 0F: Primitive monadic or dyadic function
+ {L"PRIM_FN0"    , COL_PRIM_FN0    },   // 10: ...       niladic function
+ {L"PRIM_OP1"    , COL_PRIM_OP1    },   // 11: ...       monadic operator
+ {L"PRIM_OP2"    , COL_PRIM_OP2    },   // 12: ...       dyadic  ...
+ {L"JOT"         , COL_JOT         },   // 13: Jot symbol
+ {L"LEFTPAREN"   , COL_LEFTPAREN   },   // 14: Left paren
+ {L"RIGHTPAREN"  , COL_RIGHTPAREN  },   // 15: Right ...
+ {L"LEFTBRACKET" , COL_LEFTBRACKET },   // 16: Left bracket
+ {L"RIGHTBRACKET", COL_RIGHTBRACKET},   // 17: Right ...
+ {L"LEFTBRACE"   , COL_LEFTBRACE   },   // 18: Left brace
+ {L"RIGHTBRACE"  , COL_RIGHTBRACE  },   // 19: Right ...
+ {L"SPACE"       , COL_SPACE       },   // 1A: White space (' ' or '\t')
+ {L"QUOTE1"      , COL_QUOTE1      },   // 1B: Single quote symbol
+ {L"QUOTE2"      , COL_QUOTE2      },   // 1C: Double ...
+ {L"DIAMOND"     , COL_DIAMOND     },   // 1D: Diamond symbol
+ {L"LAMP"        , COL_LAMP        },   // 1E: Comment symbol
+ {L"EOL"         , COL_EOL         },   // 1F: End-Of-Line
+ {L"UNK"         , COL_UNK         },   // 20: Unknown symbols
 };
     if (COL_LENGTH > (uType - COL_FIRST))
         return colNames[uType - COL_FIRST].lpwsz;

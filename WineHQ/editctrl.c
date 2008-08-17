@@ -4371,6 +4371,14 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     EnableMenuItem(popup, IDM_CUT         , ((end - start) && !(es->style & ES_PASSWORD) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* copy */
     EnableMenuItem(popup, IDM_COPY        , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
+    /* copy APL+WIN */
+    EnableMenuItem(popup, IDM_COPY_APLWIN , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
+    /* copy APL2    */
+    EnableMenuItem(popup, IDM_COPY_APL2   , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
+    /* copy ISO     */
+    EnableMenuItem(popup, IDM_COPY_ISO    , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
+    /* copy PC/3270 */
+    EnableMenuItem(popup, IDM_COPY_PC3270 , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* paste */
     EnableMenuItem(popup, IDM_PASTE       , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste APL+WIN */
@@ -4895,7 +4903,7 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         {
             SendMessageW( hwndParent, WM_COMMAND,
                   MAKEWPARAM( LOWORD(dw), BN_CLICKED ),
-                  (LPARAM)(__int3264)(HANDLE_PTR)GetDlgItem( hwndParent, LOWORD(dw) ) );
+                  (LPARAM)(INT_PTR)(HANDLE_PTR)GetDlgItem( hwndParent, LOWORD(dw) ) );
         }
         }
         break;
@@ -5053,7 +5061,7 @@ static LRESULT EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode)
 
     if (!(es = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*es))))
         return FALSE;
-        SetWindowLongPtrW( hwnd, GWLEC_ES, (__int3264) (HANDLE_PTR) es );
+        SetWindowLongPtrW( hwnd, GWLEC_ES, (INT_PTR) (HANDLE_PTR) es );
 
        /*
         *      Note: since the EDITSTATE has not been fully initialized yet,

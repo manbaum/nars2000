@@ -70,7 +70,7 @@ UBOOL CmdCopy_EM
                  iCnt;                      // # fields scanned
     UBOOL        bRet = FALSE;              // TRUE iff result is valid
     FILE        *fStream;                   // Ptr to file stream for the plain text workspace file
-    HWND         hWndEC;                    // Edit Control window handle
+    HWND         hWndEC;                    // Edit Ctrl window handle
     LPSYMENTRY   lpSymLink = NULL;          // Anchor of SYMENTRY links for [Globals] values
                                             //   so we may delete them easily
 
@@ -92,7 +92,7 @@ UBOOL CmdCopy_EM
 
     // If there's no WSID, that's an error
     if (lpwszTail EQ L'\0')
-        goto INCORRECTCOMMAND_EXIT;
+        goto INCORRECT_COMMAND_EXIT;
 
     // Save not found ptr
     lpwNotFound = lpwszTail;
@@ -106,7 +106,7 @@ UBOOL CmdCopy_EM
 
         // Ensure we got a value
         if (iCnt NE 1)
-            goto INCORRECTCOMMAND_EXIT;
+            goto INCORRECT_COMMAND_EXIT;
 
         // Skip over the field
         lpwCmd = SkipToCharW (lpwszTail, L' ');
@@ -177,7 +177,7 @@ UBOOL CmdCopy_EM
             //   all the names
             if (CopyWsVars (NULL,                   // Ptr to name in command line (may be NULL if bAllNames)
                             lpwCmd,                 // Ptr to command line
-                            hWndEC,                 // Edit Control for SM window handle
+                            hWndEC,                 // Edit Ctrl for SM window handle
                            &lpwErrMsg,              // Ptr to ptr to (constant) error message text
                             TRUE,                   // TRUE if we should process all names
                            &lpSymLink,              // Ptr to ptr to SYMENTRY link
@@ -190,7 +190,7 @@ UBOOL CmdCopy_EM
             // Loop through the [Fcns.0] section copying
             //   all the names
             if (CopyWsFcns (NULL,                   // Ptr to name in command line (may be NULL if bAllNames)
-                            hWndEC,                 // Edit Control for SM window handle
+                            hWndEC,                 // Edit Ctrl for SM window handle
                            &lpwErrMsg,              // Ptr to ptr to (constant) error message text
                             TRUE,                   // TRUE if we should process all names
                            &lpSymLink,              // Ptr to ptr to SYMENTRY link
@@ -220,7 +220,7 @@ UBOOL CmdCopy_EM
                 //                              where T is the variable immediate type (BIFC)
                 switch (CopyWsVars (lpwNameInCmd,   // Ptr to name in command line (may be NULL if bAllNames)
                                     lpwCmd,         // Ptr to command line
-                                    hWndEC,         // Edit Control for SM window handle
+                                    hWndEC,         // Edit Ctrl for SM window handle
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
                                     FALSE,          // TRUE if we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
@@ -247,7 +247,7 @@ UBOOL CmdCopy_EM
                 //  xxx=Name=y=:ggg             for a function in [Globals] with NameType y
                 //  xxx=Name=y={name} or char   for immediate functions
                 switch (CopyWsFcns (lpwNameInCmd,   // Ptr to name in command line (may be NULL if bAllNames)
-                                    hWndEC,         // Edit Control for SM window handle
+                                    hWndEC,         // Edit Ctrl for SM window handle
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
                                     FALSE,          // TRUE if we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
@@ -304,7 +304,7 @@ UBOOL CmdCopy_EM
 
     goto NORMAL_EXIT;
 
-INCORRECTCOMMAND_EXIT:
+INCORRECT_COMMAND_EXIT:
     IncorrectCommand ();
 
     goto ERROR_EXIT;
@@ -372,7 +372,7 @@ void DeleteGlobalLinks
 int CopyWsVars
     (LPWCHAR     lpwNameInCmd,              // Ptr to name in command line (may be NULL if bAllNames)
      LPWCHAR     lpwCmd,                    // Ptr to command line
-     HWND        hWndEC,                    // Edit Control for SM window handle
+     HWND        hWndEC,                    // Edit Ctrl for SM window handle
      LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
      UBOOL       bAllNames,                 // TRUE if we should process all names
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
@@ -478,7 +478,7 @@ int CopyWsVars
                                  &aplTypeObj,       // Ptr to storage type (may be NULL)
                                  &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                   FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
-                                  hWndEC,           // Edit Control window handle
+                                  hWndEC,           // Edit Ctrl window handle
                                   lplpSymLink,      // Ptr to ptr to SYMENTRY link
                                   wszTailDPFE,      // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                   lplpwErrMsg);     // Ptr to ptr to (constant error message text
@@ -562,7 +562,7 @@ ERRMSG_EXIT:
 
 int CopyWsFcns
     (LPWCHAR     lpwNameInCmd,              // Ptr to name in command line (may be NULL if bAllNames)
-     HWND        hWndEC,                    // Edit Control for SM window handle
+     HWND        hWndEC,                    // Edit Ctrl for SM window handle
      LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
      UBOOL       bAllNames,                 // TRUE if we should process all names
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
@@ -647,7 +647,7 @@ int CopyWsFcns
                                      uMaxSize - (UINT) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
                                      lpSymEntry,        // Ptr to STE for the object
                                      nameType,          // Function name type (see NAME_TYPES)
-                                     hWndEC,            // Edit Control window handle
+                                     hWndEC,            // Edit Ctrl window handle
                                      lplpSymLink,       // Ptr to ptr to SYMENTRY link
                                      wszTailDPFE,       // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                      lplpwErrMsg))      // Ptr to ptr to (constant) error message text

@@ -66,7 +66,7 @@ Welcome to NARS2000</h1>
           <span class="APL">B{is}2</span>)</li>
         <li>Modify Assignment (e.g.,
           <span class="APL">A+{is}1</span> is the same as <span class="APL">A{is}A+1</span>)</li>
-        <li>Modify Strand Assignment (e.g.
+        <li>Modify Strand Assignment (e.g.,
           <span class="APL">(A B)+{is}1</span> is the same as
           <span class="APL">A{is}A+1</span> and
           <span class="APL">B{is}B+1</span>)</li>
@@ -74,7 +74,7 @@ Welcome to NARS2000</h1>
           <span class="APL">F{is}+.{times}</span> and
           <span class="APL">F{is}{dieresis}</span> and
           <span class="APL">F{is}{jot}</span>)</li>
-        <li>Sink (monadic {is}<span class="APL">A</span>
+        <li>Sink (monadic <span class="APL">{is}A</span>
           to suppress the display of <span class="APL">A</span>)</li>
         <li>Unified index reference, assignment, and modify assignment:
               <span class="APL">R[L]</span>,
@@ -155,9 +155,8 @@ Welcome to NARS2000</h1>
         <li>Monadic and dyadic domino (<span class="APL">{domino}</span>) &mdash; matrix inverse/divide extended to
           use Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
         <li>Prototypes for all primitive functions and operators</li>
-        <li>The comment symbol (<span class="APL">{lamp}</span>) may be used to close a comment as well as start one.
-          Thus one may write code with a comment inside a statement such as
-          <span class="APL">Payments {lamp} Global var {lamp} {is}{times}/M[;2 3]</span>.</li>
+        <li>Control structures on one line or split across multiple lines
+          (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
@@ -178,6 +177,10 @@ Welcome to NARS2000</h1>
             <li><span class="APL">{quad}SYSID</span></li>
             <li><span class="APL">{quad}SYSVER</span></li>
             <li><span class="APL">{quad}TC</span> and other related <span class="APL">{quad}TC</span>xxx</li>
+            <li><span class="APL">{neg}2 {quad}TF R</span>,
+                <span class="APL">{neg}1 {quad}TF R</span>,
+                <span class="APL">1 {quad}TF R</span>, and
+                <span class="APL">2 {quad}TF R</span></li>
             <li><span class="APL">{quad}TYPE R</span></li>
             <li><span class="APL">{quad}UCS R</span></li>
           </ul>
@@ -260,12 +263,13 @@ Welcome to NARS2000</h1>
 
   <h3>Wish List of Datatypes</h3>
   <ul>
-    <li>Complex numbers (e.g., <span class="APL">2J3.4</span>
-      or <span class="APL">2i3.4</span>)</li>
+    <li>Complex numbers (e.g., <span class="APL">2i3.4</span>
+      or <span class="APL">2J3.4</span>)</li>
     <li>Quaternions (e.g., <span class="APL">2i3j4ij5</span>
       or <span class="APL">2i3j4k5</span>)</li>
     <li>Octonions (e.g., <span class="APL">2i3j4k5l6il7jl8kl9</span>)</li>
     <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
+    <li>Extended precision numbers (e.g., <span class="APL">12345x</span>)</li>
     <li>Array predicates (a la Bernecky)</li>
     <li>Datatypes user extensible via user-defined APL functions</li>
   </ul>
@@ -301,13 +305,14 @@ Welcome to NARS2000</h1>
       <span class="APL">{quad}PP</span> is set to <span class="APL">23.7</span>,
       that value is rounded down to <span class="APL">17</span>, the largest value
       that system variable may assume</li>
+    <li>Control structures on one line or split across multiple lines
+      (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).</li>
   </ul>
 
   <h3>Wish List of Miscellaneous Features</h3>
   <ul>
     <li>Line continuation marker for easier display of long lines &mdash;
       this also allows comments within a line</li>
-    <li>Control structures (on one line or split across multiple lines)</li>
     <li>Idiom recognition at tokenization time</li>
     <li>Syntax highlighting</li>
     <li>Language bar</li>

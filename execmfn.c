@@ -32,6 +32,7 @@
 #include "dfnhdr.h"
 #include "sis.h"
 #include "execmfn.h"
+#include "cs_parse.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -130,11 +131,12 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
 HGLOBAL Init1MagicFunction
     (LPWCHAR          lpwszName,        // Ptr to the external name
      LPMAGIC_FUNCTION lpMagicFunction,  // Ptr to magic function struc
-     LPPERTABDATA     lpMemPTD,         // Ptr to PerTabData global memory
-     HWND             hWndEC)           // Edit Control window handle
+     HGLOBAL          hGlbPTD,          // PerTabData global memory handle
+     HWND             hWndEC)           // Edit Ctrl window handle
 
 {
     UINT           uLineLen;            // Line length var
+    LPPERTABDATA   lpMemPTD;            // Ptr to PerTabData global memory
     HGLOBAL        hGlbTxtHdr = NULL,   // Header text global memory handle
                    hGlbTknHdr = NULL,   // Tokenized header text ...
                    hGlbDfnHdr = NULL;   // User-defined function/operator header ...
@@ -143,6 +145,14 @@ HGLOBAL Init1MagicFunction
     STFLAGS        stFlags = {0};       // STE flags for the MF
     LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY for the MF
     MEMVIRTSTR     lclMemVirtStr[1] = {0}; // Room for one GuardAlloc
+    LPTOKEN        lptkCSBeg;           // Ptr to next token on the CS stack
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save the ptr to the next token on the CS stack
+    //   as our beginning
+    lptkCSBeg = lpMemPTD->lptkCSNxt;
 
     // Throughout this function, we use GlobalAlloc
     //   instead of MyGlobalAlloc because we never intend to
@@ -186,19 +196,21 @@ HGLOBAL Init1MagicFunction
 
         // Tokenize the line
         hGlbTknHdr =
-          Tokenize_EM (&lpMemTxtLine->C,
-                        uLineLen,
-                        hWndEC,
-                       &ErrorHandler);
+          Tokenize_EM (&lpMemTxtLine->C,    // The line to tokenize (not necessarily zero-terminated)
+                        uLineLen,           // NELM of lpwszLine
+                        hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                        0,                  // Function line # (0 = header)
+                       &ErrorHandler);      // Ptr to error handling function (may be NULL)
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } else
         // Tokenize the (empty) line
         hGlbTknHdr =
-          Tokenize_EM (L"",
-                       0,
-                       NULL,
-                       NULL);
+          Tokenize_EM (L"",                 // The line to tokenize (not necessarily zero-terminated)
+                       0,                   // NELM of lpwszLine
+                       NULL,                // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                       0,                   // Function line # (0 = header)
+                       NULL);               // Ptr to error handling function (may be NULL)
     if (!hGlbTknHdr)
     {
         WCHAR wszTemp[1024];
@@ -247,7 +259,7 @@ HGLOBAL Init1MagicFunction
     // Parse the header
     if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
     {
-        UINT         uLineNum,          // Current line # in the Edit Control
+        UINT         uLineNum,          // Current line # in the Edit Ctrl
                      uOffset,           // Cumulative offset
                      numResultSTE,      // # result STEs (may be zero)
                      numLftArgSTE,      // # left arg ...
@@ -258,6 +270,7 @@ HGLOBAL Init1MagicFunction
         LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
         LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
         LPSYMENTRY  *lplpSymDfnHdr;     // Ptr to LPSYMENTRYs at end of user-defined function/operator header
+        CSLOCALVARS  csLocalVars = {0}; // CS local vars
 
         // Get # extra result STEs
         if (fhLocalVars.lpYYResult)
@@ -463,17 +476,19 @@ HGLOBAL Init1MagicFunction
 
                 // Tokenize the line
                 lpFcnLines->hGlbTknLine =
-                  Tokenize_EM (&lpMemTxtLine->C,
-                                uLineLen,
-                                hWndEC,
-                               &ErrorHandler);
+                  Tokenize_EM (&lpMemTxtLine->C,    // The line to tokenize (not necessarily zero-terminated)
+                                uLineLen,           // NELM of lpwszLine
+                                hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                                uLineNum + 1,       // Function line # (0 = header)
+                               &ErrorHandler);      // Ptr to error handling function (may be NULL)
             } else
                 // Tokenize the (empty) line
                 lpFcnLines->hGlbTknLine =
-                  Tokenize_EM (L"",
-                               0,
-                               hWndEC,
-                              &ErrorHandler);
+                  Tokenize_EM (L"",                 // The line to tokenize (not necessarily zero-terminated)
+                               0,                   // NELM of lpwszLine
+                               hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                               uLineNum + 1,        // Function line # (0 = header)
+                              &ErrorHandler);       // Ptr to error handling function (may be NULL)
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
@@ -502,6 +517,32 @@ HGLOBAL Init1MagicFunction
             // Skip to the next struct
             lpFcnLines++;
         } // End FOR
+
+        // Fill in the CS local vars struc
+        csLocalVars.hWndEC      = hWndEC;
+        csLocalVars.hGlbPTD     = hGlbPTD;
+        csLocalVars.lptkCSBeg   =
+        csLocalVars.lptkCSNxt   = lptkCSBeg;
+        csLocalVars.lptkCSLink  = NULL;
+        csLocalVars.hGlbDfnHdr  = hGlbDfnHdr;
+        csLocalVars.hGlbImmExec = NULL;
+
+        // Parse the tokens on the CS stack
+        if (!ParseCtrlStruc_EM (&csLocalVars))
+        {
+            WCHAR wszTemp[1024];
+
+            // Format the error message
+            wsprintfW (wszTemp,
+                       L"CS SYNTAX ERROR in %s -- Line %d statement %d position %d",
+                       lpwszName,
+                       csLocalVars.tkCSErr.tkData.uLineNum,
+                       csLocalVars.tkCSErr.tkData.uStmtNum + 1,
+                       csLocalVars.tkCSErr.tkCharIndex);
+            MBW (wszTemp);
+
+            goto ERROR_EXIT;
+        } // End IF
 
         // Check for special labels ([]IDENTITY, []INVERSE, []PROTOTYPE, and []SINGLETON)
         GetSpecialLabelNums (lpMemDfnHdr);
@@ -550,6 +591,12 @@ ERROR_EXIT:
         MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
     } // End IF
 NORMAL_EXIT:
+    // Restore the ptr to the next token on the CS stack
+    lpMemPTD->lptkCSNxt = lptkCSBeg;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     // If we allocated virtual storage, ...
     if (lclMemVirtStr[0].IniAddr)
     {
@@ -584,13 +631,13 @@ UBOOL InitMagicFunctions
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Define the magic functions
-    lpMemPTD->hGlbMF_MonIota   = Init1MagicFunction (L"#MonIota"  , &MF_MonIota  , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydIota   = Init1MagicFunction (L"#DydIota"  , &MF_DydIota  , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_MonUpShoe = Init1MagicFunction (L"#MonUpShoe", &MF_MonUpShoe, lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydTilde  = Init1MagicFunction (L"#DydTilde" , &MF_DydTilde , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_MonRank   = Init1MagicFunction (L"#MonRank"  , &MF_MonRank  , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydRank   = Init1MagicFunction (L"#DydRank"  , &MF_DydRank  , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_Conform   = Init1MagicFunction (L"#Conform"  , &MF_Conform  , lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_MonIota   = Init1MagicFunction (L"#MonIota"  , &MF_MonIota  , hGlbPTD, hWndEC);
+    lpMemPTD->hGlbMF_DydIota   = Init1MagicFunction (L"#DydIota"  , &MF_DydIota  , hGlbPTD, hWndEC);
+    lpMemPTD->hGlbMF_MonUpShoe = Init1MagicFunction (L"#MonUpShoe", &MF_MonUpShoe, hGlbPTD, hWndEC);
+    lpMemPTD->hGlbMF_DydTilde  = Init1MagicFunction (L"#DydTilde" , &MF_DydTilde , hGlbPTD, hWndEC);
+    lpMemPTD->hGlbMF_MonRank   = Init1MagicFunction (L"#MonRank"  , &MF_MonRank  , hGlbPTD, hWndEC);
+    lpMemPTD->hGlbMF_DydRank   = Init1MagicFunction (L"#DydRank"  , &MF_DydRank  , hGlbPTD, hWndEC);
+    lpMemPTD->hGlbMF_Conform   = Init1MagicFunction (L"#Conform"  , &MF_Conform  , hGlbPTD, hWndEC);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

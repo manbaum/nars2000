@@ -44,6 +44,7 @@
 #define DEFINE_VARS
 #define DEFINE_VALUES
 #define DEFINE_ENUMS
+#include "symbolnames.h"
 #include "externs.h"
 #undef  DEFINE_ENUMS
 #undef  DEFINE_VALUES
@@ -1351,6 +1352,26 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;       // We handled the msg
 
+                case IDM_COPY_APLWIN:
+                    SendMessageW (hWndActive, MYWM_COPY_APL, UNITRANS_APLWIN, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_COPY_APL2:
+                    SendMessageW (hWndActive, MYWM_COPY_APL, UNITRANS_APL2, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_COPY_ISO:
+                    SendMessageW (hWndActive, MYWM_COPY_APL, UNITRANS_ISO, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_COPY_PC3270:
+                    SendMessageW (hWndActive, MYWM_COPY_APL, UNITRANS_PC3270, 0);
+
+                    return FALSE;       // We handled the msg
+
                 case IDM_PASTE:
                     SendMessageW (hWndActive, WM_PASTE, 0, 0);
 
@@ -1573,12 +1594,12 @@ LRESULT APIENTRY MFWndProc
                     PRINTDLGEX pdex;        // Struc used when printing
                     HWND       hWndMC,      // Active hWndMC
                                hWndAct,     // Active window handle
-                               hWndEC;      // Edit Control window handle
+                               hWndEC;      // Edit Ctrl window handle
                     DWORD      dwSelBeg,    // Selection beginning
                                dwSelEnd;    // ...       end
                     HRESULT    hResult;     // Result from PrintDlgEx
 
-                    // Determine whether or not the Edit Control has a selection
+                    // Determine whether or not the Edit Ctrl has a selection
                     hWndMC  = GetActiveMC (hWndTC);
                     hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
        (HANDLE_PTR) hWndEC = (GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC));
@@ -1665,7 +1686,7 @@ LRESULT APIENTRY MFWndProc
                             // Start the print job
                             StartDocW (pdex.hDC, &docInfo);
 
-                            // Tell the Edit Control to print the client area
+                            // Tell the Edit Ctrl to print the client area
                             SendMessageW (hWndEC,
                                           WM_PRINTCLIENT,
                                           (WPARAM) pdex.hDC,
@@ -2312,7 +2333,7 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = hIconMF_Large;
     wcw.hIconSm         = hIconMF_Small;
-    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = (HBRUSH) (COLOR_WINDOW + 1);
     wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_SMMENU);
     wcw.lpszClassName   = LMFWNDCLASS;
@@ -2332,7 +2353,7 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = hIconSM_Large;
     wcw.hIconSm         = hIconSM_Small;
-    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
 ////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_SMMENU);
     wcw.lpszMenuName    = NULL;
@@ -2353,7 +2374,7 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = hIconFE_Large;
     wcw.hIconSm         = hIconFE_Small;
-    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
 ////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_FEMENU);
     wcw.lpszMenuName    = NULL;
@@ -2374,7 +2395,7 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = hIconME_Large;
     wcw.hIconSm         = hIconME_Small;
-    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
 ////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_MEMENU);
     wcw.lpszMenuName    = NULL;
@@ -2395,7 +2416,7 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = hIconVE_Large;
     wcw.hIconSm         = hIconVE_Small;
-    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
 ////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_VEMENU);
     wcw.lpszMenuName    = NULL;
@@ -2416,7 +2437,7 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = hIconDB_Large;
     wcw.hIconSm         = hIconDB_Small;
-    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
 ////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_SMMENU);
     wcw.lpszMenuName    = NULL;
@@ -2438,7 +2459,7 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = hIconCC_Large;
     wcw.hIconSm         = hIconCC_Small;
-    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
 ////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_CCMENU);
     wcw.lpszMenuName    = NULL;
@@ -2451,7 +2472,7 @@ UBOOL InitApplication
         return FALSE;
     } // End IF
 
-    // Fill in Edit Control window class structure
+    // Fill in Edit Ctrl window class structure
     wcw.style           = CS_DBLCLKS;
     wcw.lpfnWndProc     = (WNDPROC) EditWndProcW;
     wcw.cbClsExtra      = 0;
@@ -2459,12 +2480,12 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = NULL;
     wcw.hIconSm         = NULL;
-    wcw.hCursor         = LoadCursor (NULL, IDC_ARROW);
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = (HBRUSH) (COLOR_WINDOW + 1);
     wcw.lpszMenuName    = NULL;
     wcw.lpszClassName   = LECWNDCLASS;
 
-    // Register the Edit Control window class
+    // Register the Edit Ctrl window class
     if (!RegisterClassExW (&wcw))
     {
         MB (pszNoRegECWndClass);
@@ -2610,6 +2631,10 @@ UBOOL InitInstance
     // Get keyboard accelerators
     hAccel = LoadAccelerators (hInstance, MAKEINTRESOURCE (IDR_ACCEL));
 
+    // Initialize the cursors
+    hCursorWait = LoadCursor (NULL, MAKEINTRESOURCE (IDC_WAIT));
+    hCursorIdle = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+
     return TRUE;
 } // End InitInstance
 
@@ -2713,7 +2738,7 @@ int PASCAL WinMain
     dwTlsPerTabData  = TlsAlloc ();     // PerTabData    (for 'PL' or 'SM' only)
 
     // Save the thread type ('MF')
-    TlsSetValue (dwTlsType, (LPVOID) 'MF');
+    TlsSetValue (dwTlsType, TLSTYPE_MF);
 
     // Set rounding precision to 53-bits
     //   as per comments in top of <dtoa.c>

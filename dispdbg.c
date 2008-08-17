@@ -38,9 +38,9 @@
 
 #ifdef DEBUG
 // Resource debugging variables
-extern int iCountGLOBAL[MAXOBJ];
-extern HANDLE ahGLOBAL[MAXOBJ];
-extern UINT auLinNumGLOBAL[MAXOBJ];
+extern HANDLE ahGLBALLOC[MAXOBJ];
+extern UINT auLinNumGLBALLOC[MAXOBJ];
+extern LPCHAR lpaFileNameGLBALLOC[MAXOBJ];
 #endif
 
 
@@ -487,10 +487,10 @@ void DisplayGlobals
     //   MyGlobalLock/Unlock so as not to pollute the result
     lpMemPTD = GlobalLock (hGlbPTD);
 
-    DbgMsgW2 (L"********** Globals *************************************");
+    DbgMsgW (L"********** Globals *************************************");
 
     for (i = 0; i < MAXOBJ; i++)
-    if (hGlb = ahGLOBAL[i])
+    if (hGlb = ahGLBALLOC[i])
     {
         // Note we don't use MyGlobalLock here as that function might well
         //   fail and trigger a hard error which we prefer to catch softly.
@@ -502,7 +502,7 @@ void DisplayGlobals
             wsprintfW (wszTemp,
                        L"hGlb=%p *** INVALID ***",
                        hGlb);
-            DbgMsgW2 (wszTemp);
+            DbgMsgW (wszTemp);
 
             continue;
         } // End IF
@@ -573,7 +573,7 @@ void DisplayGlobals
                  || lpHeader->PermNdx EQ PERMNDX_NONE)
                 {
                     wsprintfW (wszTemp,
-                               L"hGlb=%p, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Lock=%d, Line#=%4d, (%s)",
+                               L"hGlb=%p AType=%c%c NELM=%3d RC=%1d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
                                hGlb,
                                ArrayTypeAsChar[lpHeader->ArrType],
                                L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
@@ -582,9 +582,10 @@ void DisplayGlobals
                                LODWORD (lpHeader->Rank),
                                LODWORD (aplDim),
                                (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                               auLinNumGLOBAL[i],
+                               lpaFileNameGLBALLOC[i],
+                               auLinNumGLBALLOC[i],
                                aplArrChar);
-                    DbgMsgW2 (wszTemp);
+                    DbgMsgW (wszTemp);
                 } // End IF
             } // End IF
         } else
@@ -596,14 +597,15 @@ void DisplayGlobals
             Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlb)));
 
             wsprintfW (wszTemp,
-                       L"hGlb=%p, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
+                       L"hGlb=%p NType=%s NELM=%3d RC=%1d                  Lck=%d (%S#%4d)",
                        hGlb,
                        lpwNameTypeStr[lpHeader->fnNameType],
                        lpHeader->tknNELM,
                        lpHeader->RefCnt,
                        (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                       auLinNumGLOBAL[i]);
-            DbgMsgW2 (wszTemp);
+                       lpaFileNameGLBALLOC[i],
+                       auLinNumGLBALLOC[i]);
+            DbgMsgW (wszTemp);
         } else
 #undef  lpHeader
         if (uDispGlb EQ 2)
@@ -611,14 +613,14 @@ void DisplayGlobals
             wsprintfW (wszTemp,
                        L"hGlb=%p -- No NARS/FCNS Signature",
                        hGlb);
-            DbgMsgW2 (wszTemp);
+            DbgMsgW (wszTemp);
         } // End IF/ELSE
 
         // We no longer need this ptr
         GlobalUnlock (hGlb); lpMem = NULL;
     } // End FOR/IF
 
-    DbgMsgW2 (L"********** End Globals *********************************");
+    DbgMsgW (L"********** End Globals *********************************");
 
     UpdateDBWindow ();
 
@@ -649,12 +651,12 @@ void DisplayTokens
     if (gDbgLvl <= 2)
         return;
 
-    DbgMsgW2 (L"********** Tokens **************************************");
+    DbgMsgW (L"********** Tokens **************************************");
 
     // Ensure it's valid
     if (!hGlbToken)
     {
-        DbgMsgW2 (L"DisplayTokens:  ***INAVLID HANDLE***:  hGlbToken EQ 0");
+        DbgMsgW (L"DisplayTokens:  ***INAVLID HANDLE***:  hGlbToken EQ 0");
         return;
     } // End IF
 
@@ -674,7 +676,7 @@ void DisplayTokens
                lpHeader->Version,
                lpHeader->TokenCnt,
                lpHeader->PrevGroup);
-    DbgMsgW2 (wszTemp);
+    DbgMsgW (wszTemp);
 
     iLen = lpHeader->TokenCnt;
 #undef  lpHeader
@@ -689,10 +691,10 @@ void DisplayTokens
                    *(LPAPLINT) &lpToken->tkData.tkFloat,
                    lpToken->tkCharIndex,
                    GetTokenTypeName (lpToken->tkFlags.TknType));
-        DbgMsgW2 (wszTemp);
+        DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW2 (L"********** End Tokens **********************************");
+    DbgMsgW (L"********** End Tokens **********************************");
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbToken); lpToken = NULL;
@@ -745,19 +747,51 @@ static TOKENNAMES tokenNames[] =
  {"SOS"         , TKT_SOS           },  // 16: Start-of-Stmt (data is NULL)
  {"LINECONT"    , TKT_LINECONT      },  // 17: Line continuation (data is NULL)
  {"INPOUT"      , TKT_INPOUT        },  // 18: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
- {"STRAND"      , TKT_STRAND        },  // 19: Strand accumulating (data is LPTOKEN)
- {"LISTINT"     , TKT_LISTINT       },  // 1A: List in parens    (data is HGLOBAL)
- {"LISTPAR"     , TKT_LISTPAR       },  // 1B: List in parens    (data is HGLOBAL)
- {"LISTBR"      , TKT_LISTBR        },  // 1C: List in brackets  (data is HGLOBAL)
- {"VARARRAY"    , TKT_VARARRAY      },  // 1D: Array of data (data is HGLOBAL)
- {"FCNARRAY"    , TKT_FCNARRAY      },  // 1E: Array of functions (data is HGLOBAL)
- {"FCNNAMED"    , TKT_FCNNAMED      },  // 1F: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED"   , TKT_AXISIMMED     },  // 20: An immediate axis specification (data is immediate)
- {"AXISARRAY"   , TKT_AXISARRAY     },  // 21: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"    , TKT_OP1NAMED      },  // 22: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"    , TKT_OP2NAMED      },  // 23: ...     dyadic  ...
- {"OP3NAMED"    , TKT_OP3NAMED      },  // 24: ...     ambiguous ...
- {"STRNAMED"    , TKT_STRNAMED      },  // 25: ...     strand  ...
+ {"VARARRAY"    , TKT_VARARRAY      },  // 10: Array of data (data is HGLOBAL)
+ {"CS_ANDIF"    , TKT_CS_ANDIF      },  // 1A: Control Structure:  ANDIF     (Data is Line/Stmt #)
+ {"CS_CASE"     , TKT_CS_CASE       },  // 1B: ...                 CASE       ...
+ {"CS_CASELIST" , TKT_CS_CASELIST   },  // 1C: ...                 CASELIST   ...
+ {"CS_CONTINUE" , TKT_CS_CONTINUE   },  // 1D: ...                 CONTINUE   ...
+ {"CS_ELSE"     , TKT_CS_ELSE       },  // 1E: ...                 ELSE       ...
+ {"CS_ELSEIF"   , TKT_CS_ELSEIF     },  // 1F: ...                 ELSEIF     ...
+ {"CS_END"      , TKT_CS_END        },  // 20: ...                 END        ...
+ {"CS_ENDFOR"   , TKT_CS_ENDFOR     },  // 21: ...                 ENDFOR     ...
+ {"CS_ENDIF"    , TKT_CS_ENDIF      },  // 22: ...                 ENDIF      ...
+ {"CS_ENDREPEAT", TKT_CS_ENDREPEAT  },  // 23: ...                 ENDREPEAT  ...
+ {"CS_ENDSELECT", TKT_CS_ENDSELECT  },  // 24: ...                 ENDSELECT  ...
+ {"CS_ENDWHILE" , TKT_CS_ENDWHILE   },  // 25: ...                 ENDWHILE   ...
+ {"CS_FOR"      , TKT_CS_FOR        },  // 26: ...                 FOR        ...
+ {"CS_FOR2"     , TKT_CS_FOR2       },  // 27: ...                 FOR2       ...
+ {"CS_GOTO"     , TKT_CS_GOTO       },  // 28: ...                 GOTO       ...
+ {"CS_IF"       , TKT_CS_IF         },  // 29: ...                 IF         ...
+ {"CS_IF2"      , TKT_CS_IF2        },  // 2A: ...                 IF2        ...
+ {"CS_IN"       , TKT_CS_IN         },  // 2B: ...                 IN         ...
+ {"CS_LEAVE"    , TKT_CS_LEAVE      },  // 2C: ...                 LEAVE      ...
+ {"CS_ORIF"     , TKT_CS_ORIF       },  // 2D: ...                 ORIF       ...
+ {"CS_REPEAT"   , TKT_CS_REPEAT     },  // 2E: ...                 REPEAT     ...
+ {"CS_REPEAT2"  , TKT_CS_REPEAT2    },  // 2F: ...                 REPEAT2    ...
+ {"CS_RETURN"   , TKT_CS_RETURN     },  // 30: ...                 RETURN     ...
+ {"CS_SELECT"   , TKT_CS_SELECT     },  // 31: ...                 SELECT     ...
+ {"CS_SELECT2"  , TKT_CS_SELECT2    },  // 32: ...                 SELECT2    ...
+ {"CS_UNTIL"    , TKT_CS_UNTIL      },  // 33: ...                 UNTIL      ...
+ {"CS_WHILE"    , TKT_CS_WHILE      },  // 34: ...                 WHILE      ...
+ {"CS_WHILE2"   , TKT_CS_WHILE2     },  // 35: ...                 WHILE2     ...
+ {"CS_SKIPCASE" , TKT_CS_SKIPCASE   },  // 36: ...                 Special token
+ {"CS_SKIPEND"  , TKT_CS_SKIPEND    },  // 37: ...                 Special token
+ {"STRAND"      , TKT_STRAND        },  // 38: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"     , TKT_LISTINT       },  // 39: List in parens    (data is HGLOBAL)
+ {"LISTPAR"     , TKT_LISTPAR       },  // 3A: List in parens    (data is HGLOBAL)
+ {"LISTBR"      , TKT_LISTBR        },  // 3B: List in brackets  (data is HGLOBAL)
+ {"FCNARRAY"    , TKT_FCNARRAY      },  // 3C: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"    , TKT_FCNNAMED      },  // 3D: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED"   , TKT_AXISIMMED     },  // 3E: An immediate axis specification (data is immediate)
+ {"AXISARRAY"   , TKT_AXISARRAY     },  // 3F: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"    , TKT_OP1NAMED      },  // 40: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"    , TKT_OP2NAMED      },  // 41: ...     dyadic  ...
+ {"OP3NAMED"    , TKT_OP3NAMED      },  // 42: ...     ambiguous ...
+ {"STRNAMED"    , TKT_STRNAMED      },  // 43: ...     strand  ...
+ {"CS_NEC"      , TKT_CS_NEC        },  // 44: Control Structure:  Special token
+ {"CS_EOL"      , TKT_CS_EOL        },  // 45: ...                 Special token
 };
 
 // The # rows in the above table
@@ -1444,7 +1478,7 @@ void DisplayStrand
 //***************************************************************************
 
 void DisplayUndo
-    (HWND hWnd)         // Window handle of the Edit Control
+    (HWND hWnd)         // Window handle of the Edit Ctrl
 
 {
     UINT         uCharPos,
@@ -1483,7 +1517,7 @@ void DisplayUndo
     // Get the lines in the text
     uLineCount = (UINT) SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
 
-    // Get the Edit Control's memory handle
+    // Get the Edit Ctrl's memory handle
     (HANDLE_PTR) hGlbEC = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
 
     // Display it

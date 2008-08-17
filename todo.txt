@@ -11,8 +11,6 @@ TO DO:  General:  Less Important (post-alpha)
 * Allocate bison stack from virtual memory
 * Implement Garbage Collection???
 * Test implementation limits (stack, FP, Integer, etc.)
-* Test _MAXSIZE limits on VirtualAlloc
-* Check on freeing intermediate variables on error
 * Idiom recognition in the tokenizer???
 * Test ± infinity code
 * Get permission to redistribute APL385 Unicode or SimPL font
@@ -26,6 +24,9 @@ TO DO:  General:  Less Important (post-alpha)
 * Check for 64-bit compile
 * Check for updates from the web:  nars2000.org/CurrentRelease.php
 * Need an installation program which also sets up file associations for .ws.nars
+* Never fail Tokenize_EM on SYNTAX ERROR
+* When editing a function, check to see if it's already open for editing
+* Rename PARSE.* to PL_PARSE.* and DFNHDR.* to FH_PARSE.*.
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -235,12 +236,16 @@ DONE:  General
 * Move registry info into <nars2000.ini> file
 * Implement crash Control window
 * Unlocalize in reverse order
-* Implement )IN to enable users to import data easily
+* Implement )IN to enable users to import data more easily
 * Implement trailing {lamp} as comment end
 * Use structured exception handling to change storage
   type on the fly (such as {floor} {infinity})
 * Function/operator assignment
-* Implement )OUT to enable users to export data easily
+* Implement )OUT to enable users to export data more easily
+* Implement )INASCII to enable users to import data more easily
+* Use hourglass cursor during long computations
+* Test _MAXSIZE limits on VirtualAlloc
+* Check on freeing intermediate variables on error
 
 
 DONE:  Session Manager

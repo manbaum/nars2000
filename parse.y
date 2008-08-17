@@ -96,6 +96,27 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 
 %token NAMEVAR NAMEUNK CONSTANT STRING USRFN0 SYSFN0 QUAD QUOTEQUAD SYSLBL
 %token UNK EOL
+%token CS_ANDIF
+%token CS_CASE
+%token CS_CASELIST
+%token CS_CONTINUE
+%token CS_ELSE
+%token CS_ELSEIF
+%token CS_ENDFOR
+%token CS_ENDREPEAT
+%token CS_ENDWHILE
+%token CS_FOR
+%token CS_GOTO
+%token CS_IF
+%token CS_IN
+%token CS_LEAVE
+%token CS_ORIF
+%token CS_RETURN
+%token CS_SELECT
+%token CS_SKIPCASE
+%token CS_SKIPEND
+%token CS_UNTIL
+%token CS_WHILE
 
 /*  Note that as we parse APL from right to left, these rules
     are all reversed as well as token associativity (long scope).
@@ -132,7 +153,7 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 // One or more statements
 StmtMult:
       // All errors propagate up to this point where we ABORT -- this ensures
-      //   that the call to pl_yyparse terminates with a non-zero error code.
+      //   that the call to pl_yyparse terminates wth a non-zero error code.
       error                             {DbgMsgWP (L"%%StmtMult:  error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -142,6 +163,17 @@ StmtMult:
 
                                              // Lock the memory to get a ptr to it
                                              lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+
+                                             // If we're resetting via {goto}, ...
+                                             if (lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_ONE
+                                              || lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_ONE_INIT)
+                                             {
+                                                // Mark as not resetting
+                                                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
+
+                                                 // Mark as a SYNTAX ERROR
+                                                 ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR);
+                                             } // End IF
 
                                              // If we're resetting, ...
                                              if (lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
@@ -183,6 +215,492 @@ StmtSing:
                                          if (!lpplLocalVars->bLookAhead)
                                              lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
                                         }
+    | error   CS_ANDIF                  {DbgMsgWP (L"%%StmtSing:  CS_ANDIF error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_ANDIF                  {DbgMsgWP (L"%%StmtSing:  CS_ANDIF ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle ANDIF statement
+                                             lpplLocalVars->bRet =
+                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle CASE/CASELIST statement
+                                             lpplLocalVars->bRet =
+                                               CS_CASE_Stmt (lpplLocalVars, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle CASE/CASELIST statement
+                                             lpplLocalVars->bRet =
+                                               CS_CASE_Stmt (lpplLocalVars, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | CS_CONTINUE                       {DbgMsgWP (L"%%StmtSing:  CS_CONTINUE");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                            // Handle CONTINUE statement
+                                            if (!CS_CONTINUE_Stmt (lpplLocalVars, &$1))
+                                                YYERROR;
+                                            else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | CS_ENDREPEAT                      {DbgMsgWP (L"%%StmtSing:  CS_ENDREPEAT");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                            // Handle ENDREPEAT statement
+                                            if (!CS_ENDREPEAT_Stmt (lpplLocalVars, &$1))
+                                                YYERROR;
+                                            else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | CS_ELSE                           {DbgMsgWP (L"%%StmtSing:  CS_ELSE");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle ELSE statement
+                                             lpplLocalVars->bRet =
+                                               CS_ELSE_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle ELSEIF statement
+                                             lpplLocalVars->bRet =
+                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | CS_ENDFOR                         {DbgMsgWP (L"%%StmtSing:  CS_ENDFOR");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle ENDFOR statement
+                                             lpplLocalVars->bRet =
+                                               CS_ENDFOR_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | ArrExpr CS_IN NameAnyVar CS_FOR   {DbgMsgWP (L"%%StmtSing:  CS_FOR NameAnyVar CS_IN ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle FOR statement
+                                             lpplLocalVars->bRet =
+                                               CS_FOR_Stmt_EM (lpplLocalVars, &$4, &$3, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_GOTO                   {DbgMsgWP (L"%%StmtSing:  CS_GOTO error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_GOTO                   {DbgMsgWP (L"%%StmtSing:  CS_GOTO ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle IF statement
+                                             lpplLocalVars->bRet =
+                                               CS_GOTO_Stmt_EM (lpplLocalVars, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle IF statement
+                                             lpplLocalVars->bRet =
+                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | CS_LEAVE                          {DbgMsgWP (L"%%StmtSing:  CS_LEAVE");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                            // Handle LEAVE statement
+                                            if (!CS_LEAVE_Stmt (lpplLocalVars, &$1))
+                                                YYERROR;
+                                            else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle ORIF statement
+                                             lpplLocalVars->bRet =
+                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | CS_RETURN                         {DbgMsgWP (L"%%StmtSing:  CS_RETURN");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                            // Handle RETURN statement
+                                            if (!CS_RETURN_Stmt (lpplLocalVars))
+                                                YYERROR;
+                                            else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle SELECT statement
+                                             lpplLocalVars->bRet =
+                                               CS_SELECT_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | CS_SKIPCASE                       {DbgMsgWP (L"%%StmtSing:  CS_SKIPCASE");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle SKIPCASE statement
+                                             if (!CS_SKIPCASE_Stmt (lpplLocalVars, &$1))
+                                                YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | CS_SKIPEND                        {DbgMsgWP (L"%%StmtSing:  CS_SKIPEND");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle SKIPEND statement
+                                             if (!CS_SKIPEND_Stmt (lpplLocalVars, &$1))
+                                                YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle UNTIL statement
+                                             lpplLocalVars->bRet =
+                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
+    | error   CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE error");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                             YYERROR;
+                                         else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR;
+                                         } else
+                                             YYERROR;
+                                        }
+    | ArrExpr CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE ArrExpr");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle WHILE statement
+                                             lpplLocalVars->bRet =
+                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF/ELSE
+                                        }
 ////| error                             //--Conflicts
     | ArrExpr                           {DbgMsgWP (L"%%StmtSing:  ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
@@ -210,38 +728,9 @@ StmtSing:
                                                && lpSISCur->lpSISPrv NE NULL
                                                && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
                                                 || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)))
-                                             {
-                                                 // Mark as not in error
-                                                 lpplLocalVars->bRet = TRUE;
-
-                                                 // If it's NoValue on Quad input, ...
-                                                 if (IsTokenNoValue (&$1.tkToken)
-                                                  && lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)
-                                                 {
-                                                     // Check for NoValue
-                                                     if (IsSymNoValue ($1.tkToken.tkData.tkSym))
-                                                     {
-                                                         // Signal a VALUE ERROR
-                                                         PrimFnValueError_EM (&$1.tkToken);
-
-                                                         // Mark as in error
-                                                         lpplLocalVars->bRet = FALSE;
-                                                         lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                                     } // End IF
-                                                 } else
-                                                 {
-                                                     // Lock the memory to get a ptr to it
-                                                     lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
-
-                                                     // Copy the result
-                                                     lpplLocalVars->lpYYRes = CopyPL_YYSTYPE_EM_YY (&$1, FALSE);
-                                                     lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
-                                                     YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-
-                                                     // We no longer need this ptr
-                                                     MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
-                                                 } // End IF/ELSE
-                                             } else
+                                                 // Handle ArrExpr if caller is Execute or quad
+                                                 ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1);
+                                             else
                                                  lpplLocalVars->bRet =
                                                    ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
 
@@ -380,7 +869,36 @@ StmtSing:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$1.tkToken);
+                                             LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+                                             LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+
+                                             // Lock the memory to get a ptr to it
+                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+
+                                             // Get the ptr to the current SIS header
+                                             lpSISCur = lpMemPTD->lpSISCur;
+
+                                             // We no longer need this ptr
+                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+
+                                             // Do not free if caller is Execute or Quad
+                                             if (lpSISCur->DfnType EQ DFNTYPE_EXEC
+                                              || (lpSISCur->DfnType EQ DFNTYPE_IMM
+                                               && lpSISCur->lpSISPrv NE NULL
+                                               && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
+                                                || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)))
+                                             {
+                                                 // Handle ArrExpr if caller is Execute or quad
+                                                 ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1);
+
+                                                 // Mark as already displayed
+                                                 $1.tkToken.tkFlags.NoDisplay = TRUE;
+
+                                                 // Pass on as result
+                                                 $$ = $1;
+                                             } else
+                                                 FreeResult (&$1.tkToken);
+
                                              lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
                                          } // End IF/ELSE/IF
                                         }
@@ -537,7 +1055,7 @@ StmtSing:
 ////                                     if (lpplLocalVars->bLookAhead)
 ////                                     {
 ////                                         lpplLocalVars->plNameType = NAMETYPE_LST;
-////                                         YYACCEPT;
+////                                         YYACCEPT;              // Stop executing this line
 ////                                     } else
 ////                                         YYERROR;
 ////                                    }
@@ -545,7 +1063,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_VAR;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -553,7 +1071,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -561,7 +1079,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -569,7 +1087,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -577,7 +1095,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP2;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -585,7 +1103,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -593,7 +1111,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -601,7 +1119,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP2;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -609,7 +1127,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP3;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -617,7 +1135,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -625,7 +1143,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -633,7 +1151,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -641,7 +1159,7 @@ StmtSing:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
-                                             YYACCEPT;
+                                             YYACCEPT;              // Stop executing this line
                                          } else
                                              YYERROR;
                                         }
@@ -715,6 +1233,8 @@ FcnSpec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -750,6 +1270,8 @@ FcnSpec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -785,6 +1307,8 @@ FcnSpec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -820,6 +1344,8 @@ FcnSpec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -880,6 +1406,8 @@ FcnSpec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -940,6 +1468,8 @@ FcnSpec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -1004,6 +1534,8 @@ FcnSpec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -1067,6 +1599,8 @@ FcnSpec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -1106,6 +1640,8 @@ Op1Spec:
 
                                              // The result is always the root of the function tree
                                              $$ = $1; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -1170,6 +1706,8 @@ Op1Spec:
 ////
 ////                                         // The result is always the root of the function tree
 ////                                         $$ = *lpplLocalVars->YYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+////
+////                                         // Mark as already displayed
 ////                                         $$.tkToken.tkFlags.NoDisplay = TRUE;
 ////                                     } // End IF
 ////                                    }
@@ -1208,6 +1746,8 @@ Op2Spec:
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -1409,6 +1949,8 @@ Op3Spec:
 
                                              // The result is always the root of the function tree
                                              $$ = $1; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -1977,6 +2519,7 @@ StrandInst:
                                              lpplLocalVars->lpYYRes =
                                                ArrayIndexRef_EM_YY (&lpplLocalVars->lpYYStr->tkToken, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
+                                             FreeResult (&lpplLocalVars->lpYYStr->tkToken);
                                              YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2067,6 +2610,7 @@ SimpExpr:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Mark as NOT already displayed
                                              $1.tkToken.tkFlags.NoDisplay = FALSE;
                                              lpplLocalVars->bRet =
                                                ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
@@ -2078,6 +2622,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2097,6 +2642,7 @@ SimpExpr:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Mark as NOT already displayed
                                              $1.tkToken.tkFlags.NoDisplay = FALSE;
                                              lpplLocalVars->bRet =
                                                ArrayDisplay_EM (&$1.tkToken, FALSE, &lpplLocalVars->bCtrlBreak);
@@ -2108,6 +2654,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2140,6 +2687,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2177,6 +2725,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2267,6 +2816,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2305,6 +2855,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2416,6 +2967,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2477,6 +3029,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2558,6 +3111,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2630,6 +3184,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2695,6 +3250,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -2772,6 +3328,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
+                                             // Mark as already displayed
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -5105,11 +5662,15 @@ SingTokn:
 
 EXIT_TYPES ParseLine
     (HWND    hWndSM,                // Session Manager window handle
-     HGLOBAL hGlbTxtLine,           // Line text global memory handle
-     HGLOBAL hGlbToken,             // Tokenized line global memory handle (may be NULL)
+     HGLOBAL hGlbTknLine,           // Tokenized line global memory handle (may be NULL)
+     HGLOBAL hGlbTxtLine,           // Text      ...
      LPWCHAR lpwszLine,             // Ptr to the line text (may be NULL)
      HGLOBAL hGlbPTD,               // PerTabData global memory handle
-     UBOOL   bActOnErrors)          // TRUE iff errors are acted upon
+     UINT    uLineNum,              // Function line #
+     UINT    uTknNum,               // Starting token # in the above function line
+     HGLOBAL hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
+     UBOOL   bActOnErrors,          // TRUE iff errors are acted upon
+     UBOOL   bExec1Stmt)            // TRUE iff executing only one stmt
 
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -5118,15 +5679,22 @@ EXIT_TYPES ParseLine
                  oldTlsType,        // Previous value of dwTlsType
                  uError,            // Error code
                  uRet,              // The result from pl_yyparse
+                 uTokenCnt,         // # tokens in the function line
                  uCnt;              // Loop counter
 #define MVS_CNT     2
     MEMVIRTSTR   lclMemVirtStr[MVS_CNT] = {0};// Room for MVS_CNT GuardAllocs
+    HCURSOR     hCursorOld;         // Handle to previous cursor
+    UBOOL       bOldExecuting;      // Old value of bExecuting
+
+    // Set the cursor to an hourglass and indicate that we're executing
+    hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
+    bOldExecuting = bExecuting; bExecuting = TRUE;
 
     // Save the previous value of dwTlsType
     oldTlsType = PtrToUlong (TlsGetValue (dwTlsType));
 
     // Save the thread type ('PL')
-    TlsSetValue (dwTlsType, (LPVOID) 'PL');
+    TlsSetValue (dwTlsType, TLSTYPE_PL);
 
     // Save the previous value of dwTlsPlLocalVars
     oldTlsPlLocalVars = PtrToUlong (TlsGetValue (dwTlsPlLocalVars));
@@ -5163,7 +5731,7 @@ EXIT_TYPES ParseLine
     uError = ERRORCODE_NONE;
 
     // If we don't have a valid handle, ...
-    if (!hGlbToken)
+    if (!hGlbTknLine)
     {
         plLocalVars.ExitType = EXITTYPE_ERROR;
 
@@ -5172,7 +5740,7 @@ EXIT_TYPES ParseLine
 #ifdef DEBUG
     { // ***DEBUG***
         // Display the tokens so far
-        DisplayTokens (hGlbToken);
+        DisplayTokens (hGlbTknLine);
     } // ***DEBUG*** END
 #endif
 
@@ -5180,19 +5748,42 @@ EXIT_TYPES ParseLine
     plLocalVars.hGlbPTD     = hGlbPTD;
     plLocalVars.hWndSM      = hWndSM;
     plLocalVars.hGlbTxtLine = hGlbTxtLine;
-    plLocalVars.hGlbToken   = hGlbToken;
+    plLocalVars.hGlbTknLine = hGlbTknLine;
     plLocalVars.lpwszLine   = lpwszLine;
     plLocalVars.bLookAhead  = FALSE;
     plLocalVars.ExitType    = EXITTYPE_NONE;
+    plLocalVars.uLineNum    = uLineNum;
+    plLocalVars.hGlbDfnHdr  = hGlbDfnHdr;
+    plLocalVars.bExec1Stmt  = bExec1Stmt;
 
     // Lock the memory to get a ptr to it, and set the variables
-    UTLockAndSet (plLocalVars.hGlbToken, &plLocalVars.t2);
+    UTLockAndSet (plLocalVars.hGlbTknLine, &plLocalVars.t2);
+
+    // Get # tokens in the line
+    uTokenCnt = ((LPTOKEN_HEADER) plLocalVars.t2.lpBase)->TokenCnt;
+
+    // If the starting token # is outside the token count, ...
+    if (uTknNum >= uTokenCnt)
+    {
+        // Set the exit type to exit normally
+        plLocalVars.ExitType = EXITTYPE_GOTO_ZILDE;
+
+        goto NORMAL_EXIT;
+    } // End IF
 
     // Skip over TOKEN_HEADER
     plLocalVars.lptkStart = TokenBaseToStart (plLocalVars.t2.lpBase);
 
-    // Skip to end of 1st stmt
-    plLocalVars.lptkNext  = &plLocalVars.lptkStart[plLocalVars.lptkStart->tkData.tkIndex];
+    Assert (plLocalVars.lptkStart->tkFlags.TknType EQ TKT_EOL
+         || plLocalVars.lptkStart->tkFlags.TknType EQ TKT_EOS);
+
+    // If we're not starting at the first token, ...
+    if (uTknNum)
+        // Skip to the starting token
+        plLocalVars.lptkNext  = &plLocalVars.lptkStart[uTknNum];
+    else
+        // Skip to end of 1st stmt
+        plLocalVars.lptkNext  = &plLocalVars.lptkStart[plLocalVars.lptkStart->tkData.tkIndex];
 
     // Start off with no error
     plLocalVars.tkErrorCharIndex =
@@ -5283,7 +5874,7 @@ EXIT_TYPES ParseLine
     {
         __try
         {
-            // Parse the file, check for errors
+            // Parse the line, check for errors
             //   0 = success
             //   1 = YYABORT or APL error
             //   2 = memory exhausted
@@ -5519,10 +6110,10 @@ NORMAL_EXIT:
 
         // Unlink this entry from the chain
         UnlinkMVS (&lclMemVirtStr[uCnt]);
-    } // End IF
+    } // End FOR/IF
 
     // We no longer need this ptr
-    MyGlobalUnlock (plLocalVars.hGlbToken); plLocalVars.t2.lpBase   = NULL;
+    MyGlobalUnlock (plLocalVars.hGlbTknLine); plLocalVars.t2.lpBase   = NULL;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -5592,7 +6183,7 @@ NORMAL_EXIT:
                        lstrlenW (lpwszLine),// NELM of line to execute
                        FALSE,               // TRUE iff free the lpwszLine on completion
                        TRUE,                // TRUE iff wait until finished
-                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Control window handle
+                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Ctrl window handle
                        TRUE);               // TRUE iff errors are acted upon
         // Split cases based upon the exit type
         switch (exitType)
@@ -5618,6 +6209,9 @@ NORMAL_EXIT:
                 break;
         } // End SWITCH
     } // End IF
+
+    // Restore the previous cursor and its state
+    SetCursor (hCursorOld); ShowCursor (FALSE); bExecuting = bOldExecuting;
 
     DBGLEAVE;
 
@@ -5917,6 +6511,38 @@ char LookaheadAdjacent
         case TKT_LEFTBRACE:
         case TKT_RIGHTBRACE:
         case TKT_SOS:
+        case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
+        case TKT_CS_CASE:           // ...                 CASE
+        case TKT_CS_CASELIST:       // ...                 CASELIST
+        case TKT_CS_CONTINUE:       // ...                 CONTINUE
+        case TKT_CS_ELSE:           // ...                 ELSE
+        case TKT_CS_ELSEIF:         // ...                 ELSEIF
+        case TKT_CS_END:            // ...                 END
+        case TKT_CS_ENDFOR:         // ...                 ENDFOR
+        case TKT_CS_ENDIF:          // ...                 ENDIF
+        case TKT_CS_ENDREPEAT:      // ...                 ENDREPEAT
+        case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
+        case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
+        case TKT_CS_FOR:            // ...                 FOR
+        case TKT_CS_FOR2:           // ...                 FOR2
+        case TKT_CS_GOTO:           // ...                 GOTO
+        case TKT_CS_IF:             // ...                 IF
+        case TKT_CS_IF2:            // ...                 IF2
+        case TKT_CS_IN:             // ...                 IN
+        case TKT_CS_LEAVE:          // ...                 LEAVE
+        case TKT_CS_ORIF:           // ...                 ORIF
+        case TKT_CS_REPEAT:         // ...                 REPEAT
+        case TKT_CS_REPEAT2:        // ...                 REPEAT2
+        case TKT_CS_RETURN:         // ...                 RETURN
+        case TKT_CS_SELECT:         // ...                 SELECT
+        case TKT_CS_SELECT2:        // ...                 SELECT2
+        case TKT_CS_UNTIL:          // ...                 UNTIL
+        case TKT_CS_WHILE:          // ...                 WHILE
+        case TKT_CS_WHILE2:         // ...                 WHILE2
+        case TKT_CS_SKIPCASE:       // ...                 Special token
+        case TKT_CS_SKIPEND:        // ...                 Special token
+        case TKT_CS_NEC:            // ...                 Special token
+        case TKT_CS_EOL:            // ...                 Special token
             cRes = '?';             // SYNTAX ERROR
 
             goto NORMAL_EXIT;
@@ -5980,6 +6606,38 @@ BOOL LookaheadDyadicOp
         case TKT_RIGHTBRACE:
         case TKT_VARARRAY:
         case TKT_INPOUT:
+        case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
+        case TKT_CS_CASE:           // ...                 CASE
+        case TKT_CS_CASELIST:       // ...                 CASELIST
+        case TKT_CS_CONTINUE:       // ...                 CONTINUE
+        case TKT_CS_ELSE:           // ...                 ELSE
+        case TKT_CS_ELSEIF:         // ...                 ELSEIF
+        case TKT_CS_END:            // ...                 END
+        case TKT_CS_ENDFOR:         // ...                 ENDFOR
+        case TKT_CS_ENDIF:          // ...                 ENDIF
+        case TKT_CS_ENDREPEAT:      // ...                 ENDREPEAT
+        case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
+        case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
+        case TKT_CS_FOR:            // ...                 FOR
+        case TKT_CS_FOR2:           // ...                 FOR2
+        case TKT_CS_GOTO:           // ...                 GOTO
+        case TKT_CS_IF:             // ...                 IF
+        case TKT_CS_IF2:            // ...                 IF2
+        case TKT_CS_IN:             // ...                 IN
+        case TKT_CS_LEAVE:          // ...                 LEAVE
+        case TKT_CS_ORIF:           // ...                 ORIF
+        case TKT_CS_REPEAT:         // ...                 REPEAT
+        case TKT_CS_REPEAT2:        // ...                 REPEAT2
+        case TKT_CS_RETURN:         // ...                 RETURN
+        case TKT_CS_SELECT:         // ...                 SELECT
+        case TKT_CS_SELECT2:        // ...                 SELECT2
+        case TKT_CS_UNTIL:          // ...                 UNTIL
+        case TKT_CS_WHILE:          // ...                 WHILE
+        case TKT_CS_WHILE2:         // ...                 WHILE2
+        case TKT_CS_SKIPCASE:       // ...                 Special token
+        case TKT_CS_SKIPEND:        // ...                 Special token
+        case TKT_CS_NEC:            // ...                 Special token
+        case TKT_CS_EOL:            // ...                 Special token
             bRet = FALSE;
 
             goto NORMAL_EXIT;
@@ -6039,14 +6697,21 @@ int pl_yylex
     static UINT YYIndex = 0;        // Unique index for each YYRes
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 #endif
+    // If we're restarting from a Control Structure, ...
+    if (lpplLocalVars->bRestart)
+    {
+        lpplLocalVars->bRestart = FALSE;
+
+        return DIAMOND;
+    } // End IF
 PL_YYLEX_START:
     // Because we're parsing the stmt from right to left
     lpplLocalVars->lptkNext--;
+
 #if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
     dprintfW (L"==pl_yylex:  TknType = %S, CharIndex = %d",
               GetTokenTypeName (lpplLocalVars->lptkNext->tkFlags.TknType),
               lpplLocalVars->lptkNext->tkCharIndex);
-    DbgBrk ();
 #endif
 
     // Return the current token
@@ -6164,7 +6829,7 @@ PL_YYLEX_START:
         case TKT_COMMENT:
         case TKT_LINECONT:
         case TKT_SOS:
-            goto PL_YYLEX_START;
+            goto PL_YYLEX_START;    // Ignore these tokens
 
         case TKT_STRING:
             return STRING;
@@ -6397,6 +7062,10 @@ PL_YYLEX_START:
             // Fall through to common code
 
         case TKT_EOS:
+            // If we're to execute only one stmt, ...
+            if (lpplLocalVars->bExec1Stmt)
+                return '\0';
+
             // Skip to end of the current stmt
             lpplLocalVars->lptkNext = &lpplLocalVars->lptkNext[lpplLocalVars->lptkNext->tkData.tkIndex];
 
@@ -6417,6 +7086,78 @@ PL_YYLEX_START:
         case TKT_RIGHTBRACE:
             return '}';
 
+        case TKT_CS_ANDIF:          // Control structure:  ANDIF
+            return CS_ANDIF;
+
+        case TKT_CS_CASE:           // Control Structure:  CASE
+            return CS_CASE;
+
+        case TKT_CS_CASELIST:       // Control Structure:  CASELIST
+            return CS_CASELIST;
+
+        case TKT_CS_CONTINUE:       // Control Structure:  CONTINUE
+            return CS_CONTINUE;
+
+        case TKT_CS_ELSE:           // Control Structure:  ELSE
+            return CS_ELSE;
+
+        case TKT_CS_ELSEIF:         // Control Structure:  ELSEIF
+            return CS_ELSEIF;
+
+        case TKT_CS_ENDFOR:         // Control Structure:  ENDFOR
+            return CS_ENDFOR;
+
+        case TKT_CS_ENDREPEAT:      // Control Structure:  ENDREPEAT
+            return CS_ENDREPEAT;
+
+        case TKT_CS_FOR:            // Control Structure:  FOR
+            return CS_FOR;
+
+        case TKT_CS_GOTO:           // Control Structure:  GOTO
+            return CS_GOTO;
+
+        case TKT_CS_IF:             // Control Structure:  IF
+            return CS_IF;
+
+        case TKT_CS_IN:             // Control Structure:  IN
+            return CS_IN;
+
+        case TKT_CS_LEAVE:          // Control Structure:  LEAVE
+            return CS_LEAVE;
+
+        case TKT_CS_ORIF:           // Control Structure:  ORIF
+            return CS_ORIF;
+
+        case TKT_CS_RETURN:         // Control Structure:  RETURN
+            return CS_RETURN;
+
+        case TKT_CS_SELECT:         // Control Structure:  SELECT
+            return CS_SELECT;
+
+        case TKT_CS_SKIPCASE:       // Control Structure:  Special token
+            return CS_SKIPCASE;
+
+        case TKT_CS_SKIPEND:        // Control Structure:  Special token
+            return CS_SKIPEND;
+
+        case TKT_CS_UNTIL:          // Control Structure:  UNTIL
+            return CS_UNTIL;
+
+        case TKT_CS_WHILE:          // Control Structure:  WHILE
+            return CS_WHILE;
+
+        case TKT_CS_ENDIF:          // Control Structure:  ENDIF
+        case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
+        case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
+        case TKT_CS_FOR2:           // ...                 FOR2
+        case TKT_CS_IF2:            // ...                 IF2
+        case TKT_CS_REPEAT:         // ...                 REPEAT
+        case TKT_CS_REPEAT2:        // ...                 REPEAT2
+        case TKT_CS_SELECT2:        // ...                 SELECT2
+        case TKT_CS_WHILE2:         // ...                 WHILE2
+            goto PL_YYLEX_START;    // Ignore these tokens
+
+        case TKT_CS_END:            // Control Structure:  END
         defstop
             return UNK;
     } // End SWITCH
@@ -6671,7 +7412,7 @@ LPPL_YYSTYPE WaitForInput
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
     UINT           uLinePos,        // Char position of start of line
                    uCharPos;        // Current char position
-    HWND           hWndEC;          // Edit Control window handle
+    HWND           hWndEC;          // Edit Ctrl window handle
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -6696,7 +7437,7 @@ LPPL_YYSTYPE WaitForInput
     // Save a ptr to the function token
     lpMemPTD->lpSISCur->lptkFunc = lptkFunc;
 
-    // Get the Edit Control window handle
+    // Get the Edit Ctrl window handle
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
     // Get the char position of the caret
@@ -6938,6 +7679,60 @@ void AmbOpToOp1
         } // End IF
     } // End IF/ELSE
 } // End AmbOpToOp1
+
+
+//***************************************************************************
+//  $ArrExprCheckCaller
+//
+//
+//***************************************************************************
+
+void ArrExprCheckCaller
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to local vars
+     LPSIS_HEADER  lpSISCur,            // Ptr to current SIS header
+     LPPL_YYSTYPE  lpYYArg)             // Ptr to ArrExpr
+
+{
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+
+    // Mark as not in error
+    lpplLocalVars->bRet = TRUE;
+
+    // If it's NoValue on Quad input, ...
+    if (IsTokenNoValue (&lpYYArg->tkToken)
+     && lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)
+    {
+        // Check for NoValue
+        if (IsSymNoValue (lpYYArg->tkToken.tkData.tkSym))
+        {
+            // Signal a VALUE ERROR
+            PrimFnValueError_EM (&lpYYArg->tkToken);
+
+            // Mark as in error
+            lpplLocalVars->bRet = FALSE;
+            lpplLocalVars->ExitType = EXITTYPE_ERROR;
+        } // End IF
+    } else
+    {
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+
+        // Copy the result
+        lpplLocalVars->lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
+
+        // If the Execute/Quad result is already filled, display it
+        if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+            lpplLocalVars->bRet =
+              ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
+
+        // Save the Execute/Quad result
+        lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
+        YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+    } // End IF/ELSE
+} // End ArrExprCheckCaller
 
 
 //***************************************************************************

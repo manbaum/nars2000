@@ -22,6 +22,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <limits.h>
 
 #include "aplerrors.h"
 #include "main.h"
@@ -54,20 +55,23 @@
 #endif
 
 EXIT_TYPES GotoLine_EM
-    (LPTOKEN lptkRhtArg,        // Ptr to right arg token
-     LPTOKEN lptkFunc)          // Ptr to function token
+    (LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    EXIT_TYPES   exitType;          // Return value
-    APLSTYPE     aplTypeRht;        // Right arg storage type
-    APLNELM      aplNELMRht;        // ...       NELM
-    APLRANK      aplRankRht;        // ...       rank
-    IMM_TYPES    immType;           // Right arg first value immediate type
-    APLINT       aplIntegerRht;     // First value as integer
-    APLFLOAT     aplFloatRht;       // ...            float
-    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+    HGLOBAL       hGlbPTD,          // PerTabData global memory handle
+                  hGlbTknLine;      // Tokenized line global memory handle
+    LPPERTABDATA  lpMemPTD;         // Ptr to PerTabData global memory
+    EXIT_TYPES    exitType;         // Return value
+    APLSTYPE      aplTypeRht;       // Right arg storage type
+    APLNELM       aplNELMRht;       // ...       NELM
+    APLRANK       aplRankRht;       // ...       rank
+    IMM_TYPES     immType;          // Right arg first value immediate type
+    APLINT        aplIntegerRht;    // First value as integer
+    APLFLOAT      aplFloatRht;      // ...            float
+    LPSIS_HEADER  lpSISCur;         // Ptr to current SIS header
+    TOKEN_TYPES   TknType;          // Target token type
+    LPTOKEN       lpMemTknLine;     // Ptr to tokenized line global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -114,12 +118,63 @@ EXIT_TYPES GotoLine_EM
         goto NORMAL_EXIT;
     } // End IF
 
+    // Copy ptr to current SI level
+    lpSISCur = lpMemPTD->lpSISCur;
+
     // Check for not restartable SI level
-    if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_IMM      // This level is Immediate
-     && lpMemPTD->lpSISCur->lpSISPrv                    // There is a previous level
-     && !lpMemPTD->lpSISCur->lpSISPrv->Restartable)     // and it's not restartable
+    if (lpSISCur->DfnType EQ DFNTYPE_IMM    // This level is Immediate
+     && lpSISCur->lpSISPrv                  // There is a previous level
+     && !lpSISCur->lpSISPrv->Restartable)   // and it's not restartable
         goto NORESTART_EXIT;
 
+    // Ensure line # is within range
+    if (aplIntegerRht < 0
+     || aplIntegerRht > UINT_MAX)
+        aplIntegerRht = -1;
+
+    // Peel back to non-ImmExec, non-Execute, non-Quad layer
+    while (lpSISCur
+        && (lpSISCur->DfnType EQ DFNTYPE_IMM
+         || lpSISCur->DfnType EQ DFNTYPE_QUAD
+         || lpSISCur->DfnType EQ DFNTYPE_EXEC))
+        lpSISCur = lpSISCur->lpSISPrv;
+
+    if (lpSISCur EQ NULL)
+        hGlbTknLine = NULL;
+    else
+        // Get the the corresponding tokenized line's global memory handle
+        hGlbTknLine = GetTokenLineHandle (lpSISCur->hGlbDfnHdr, aplIntegerRht);
+    if (hGlbTknLine)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemTknLine = MyGlobalLock (hGlbTknLine);
+
+        // Skip over the header to the data
+        lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+
+        Assert (lpMemTknLine->tkFlags.TknType EQ TKT_EOS
+             || lpMemTknLine->tkFlags.TknType EQ TKT_EOL);
+        lpMemTknLine++;
+
+        // Check for and skip over line label
+        if (lpMemTknLine[1].tkFlags.TknType EQ TKT_LABELSEP)
+            lpMemTknLine += 2;
+
+        // Get the next token type
+        TknType = lpMemTknLine->tkFlags.TknType;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+
+        // Check for branch to non-restartable Control Structure tokens:
+        //   CASE, CASELIST (both covered by SKIPCASE), ELSE, or ENDFOR
+        if (TknType EQ TKT_CS_SKIPCASE
+         || TknType EQ TKT_CS_ELSE
+         || TknType EQ TKT_CS_ENDFOR)
+            goto DESTIN_EXIT;
+    } // End IF
+
+    // Save the exit type
     exitType = EXITTYPE_GOTO_LINE;
 
     // Split cases based upon the function type
@@ -195,6 +250,11 @@ DOMAIN_EXIT:
 
 NORESTART_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NOTRESTARTABLE APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DESTIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DESTINATION_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

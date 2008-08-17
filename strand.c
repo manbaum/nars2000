@@ -516,6 +516,38 @@ static char tabConvert[][STRAND_LENGTH] =
             case TKT_SOS:
             case TKT_LINECONT:
             case TKT_STRAND:
+            case TKT_CS_ANDIF:          // Control structure:  ANDIF
+            case TKT_CS_CASE:           // ...                 CASE
+            case TKT_CS_CASELIST:       // ...                 CASELIST
+            case TKT_CS_CONTINUE:       // ...                 CONTINUE
+            case TKT_CS_ELSE:           // ...                 ELSE
+            case TKT_CS_ELSEIF:         // ...                 ELSEIF
+            case TKT_CS_END:            // ...                 END
+            case TKT_CS_ENDFOR:         // ...                 ENDFOR
+            case TKT_CS_ENDIF:          // ...                 ENDIF
+            case TKT_CS_ENDREPEAT:      // ...                 ENDREPEAT
+            case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
+            case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
+            case TKT_CS_FOR:            // ...                 FOR
+            case TKT_CS_FOR2:           // ...                 FOR2
+            case TKT_CS_GOTO:           // ...                 GOTO
+            case TKT_CS_IF:             // ...                 IF
+            case TKT_CS_IF2:            // ...                 IF2
+            case TKT_CS_IN:             // ...                 IN
+            case TKT_CS_LEAVE:          // ...                 LEAVE
+            case TKT_CS_ORIF:           // ...                 ORIF
+            case TKT_CS_REPEAT:         // ...                 REPEAT
+            case TKT_CS_REPEAT2:        // ...                 REPEAT2
+            case TKT_CS_RETURN:         // ...                 RETURN
+            case TKT_CS_SELECT:         // ...                 SELECT
+            case TKT_CS_SELECT2:        // ...                 SELECT2
+            case TKT_CS_UNTIL:          // ...                 UNTIL
+            case TKT_CS_WHILE:          // ...                 WHILE
+            case TKT_CS_WHILE2:         // ...                 WHILE2
+            case TKT_CS_SKIPCASE:       // ...                 Special token
+            case TKT_CS_SKIPEND:        // ...                 Special token
+            case TKT_CS_NEC:            // ...                 Special token
+            case TKT_CS_EOL:            // ...                 Special token
             defstop
                 return NULL;
         } // End SWITCH

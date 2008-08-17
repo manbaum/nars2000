@@ -119,13 +119,7 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-#include "edit.rc"
-        MENUITEM SEPARATOR
-#ifdef DEBUG
-        MENUITEM "&Customize...",                IDM_CUSTOMIZE
-#else
-        MENUITEM "&Customize...",                IDM_CUSTOMIZE   , INACTIVE GRAYED
-#endif
+#include "edit.rch"
     END
     POPUP "&Window"
     BEGIN
@@ -161,7 +155,7 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-#include "edit.rc"
+#include "edit.rch"
         MENUITEM SEPARATOR
         MENUITEM "&Localize",                   IDM_LOCALIZE
         MENUITEM "Unl&ocalize",                 IDM_UNLOCALIZE
@@ -271,7 +265,7 @@ BEGIN
                     IDC_CLEARWS_ELX_LEN,180, 70,70,15
 
     LTEXT           "FC" ,IDC_STATIC,5, 88,20,15
-    CONTROL         "",IDC_CLEARWS_FC ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,25, 84,150, 16
+    CONTROL         "",IDC_CLEARWS_FC_EC ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,25, 84,150, 16
     LTEXT           "Character Vector (6)",
                     IDC_CLEARWS_FC_LEN,180, 88,70,15
 
@@ -437,14 +431,16 @@ BEGIN
     CONTROL         "Make backup of ws on )SAVE",
                     IDC_USER_PREFS_XB_BACKUPONSAVE       ,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,10,104,160,10
-    CONTROL         "Lamp symbol in comment as closing marker",
-                    IDC_USER_PREFS_XB_CLOSINGLAMP        ,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,10,117,160,10
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC,10,130,160,10
+                    IDC_STATIC,10,117,160,10
     CONTROL         "",
                     IDC_USER_PREFS_CB_DEFAULTPASTE       ,"ComboBox",CBS_DROPDOWNLIST |
-                    WS_TABSTOP,10,143,80,100
+                    WS_TABSTOP,10,130,80,100
+    LTEXT           "Default translation on Copy (Ctrl-C)",
+                    IDC_STATIC,10,143,160,10
+    CONTROL         "",
+                    IDC_USER_PREFS_CB_DEFAULTCOPY        ,"ComboBox",CBS_DROPDOWNLIST |
+                    WS_TABSTOP,10,156,80,100
 END
 
 

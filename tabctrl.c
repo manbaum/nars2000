@@ -284,7 +284,7 @@ UBOOL WINAPI CreateNewTabInThread
     UBOOL        bExecLX;           // TRUE iff execute []LX after successful load
 
     // Store the thread type ('TC')
-    TlsSetValue (dwTlsType, (LPVOID) 'TC');
+    TlsSetValue (dwTlsType, TLSTYPE_TC);
 
     // Extract values from the arg struc
     hWndParent = lpcntThread->hWndParent;
@@ -764,7 +764,7 @@ LRESULT WINAPI LclTabCtrlWndProc
         {
             int     iNewTabIndex,               // Index of new tab (after deleting this one)
                     iDelTabIndex;               // Index of tab to delete
-            HWND    hWndEC;                     // Edit Control window handle
+            HWND    hWndEC;                     // Edit Ctrl window handle
             LRESULT lResult;                    // Result from CallWindowProc
 
             // Save the tab index to delete
@@ -820,7 +820,7 @@ LRESULT WINAPI LclTabCtrlWndProc
                 FreeResultGlobalVar (lpMemPTD->lpSymQuadLX  ->stData.stGlbData); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
                 FreeResultGlobalVar (lpMemPTD->lpSymQuadSA  ->stData.stGlbData); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
                 FreeResultGlobalVar (lpMemPTD->lpSymQuadWSID->stData.stGlbData); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
-                if (lpMemPTD->cQuadPR NE CQUADPR_MT)
+                if (lpMemPTD->cQuadPR EQ CQUADPR_MT)
                     FreeResultGlobalVar (lpMemPTD->lpSymQuadPR  ->stData.stGlbData); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
             } // End IF
 

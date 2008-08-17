@@ -54,17 +54,21 @@ typedef struct tagSIS_HEADER
     UINT             EventType,     // 1C:  Event type (Major, Minor) (see EVENT_TYPES)
                      CurLineNum,    // 20:  Current line # (origin-1)
                      NxtLineNum,    // 24:  Next    ...
-                     numLabels,     // 28:  # line labels
-                     numFcnLines,   // 2C:  # lines in the function (not counting the header)
-                     numSymEntries, // 30:  # LPSYMENTRYs localized on the stack
-                     QQPromptLen,   // 34:  Quote-Quad input prompt length
-                     ErrorCode;     // 38:  Error code (see ERROR_CODES)
+                     NxtTknNum,     // 28:  Next token #
+                     numLabels,     // 2C:  # line labels
+                     numFcnLines,   // 30:  # lines in the function (not counting the header)
+                     numSymEntries, // 34:  # LPSYMENTRYs localized on the stack
+                     QQPromptLen,   // 38:  Quote-Quad input prompt length
+                     ErrorCode;     // 3C:  Error code (see ERROR_CODES)
     struct tagSIS_HEADER
-                    *lpSISPrv,      // 3C:  Ptr to previous SIS header (NULL = none)
-                    *lpSISNxt;      // 40:  Ptr to next     ...         ...
-    LPTOKEN          lptkFunc;      // 44:  Ptr to function token for Quote-Quad input
-                                    // 48:  Length
-                                    // 48:  Array of LPSYMENTRYs (shadowed entry for results, args, labels, & locals)
+                    *lpSISPrv,      // 40:  Ptr to previous SIS header (NULL = none)
+                    *lpSISNxt;      // 44:  Ptr to next     ...         ...
+    LPTOKEN          lptkFunc;      // 48:  Ptr to function token for Quote-Quad input
+    struct tagFORSTMT
+                    *lpForStmtBase, // 54:  Ptr to starting entry in FORSTMT stack
+                    *lpForStmtNext; // 58:  Ptr to next available ...
+                                    // 5C:  Length
+                                    // 5C:  Array of LPSYMENTRYs (shadowed entry for results, args, labels, & locals)
 } SIS_HEADER, *LPSIS_HEADER;
 
 

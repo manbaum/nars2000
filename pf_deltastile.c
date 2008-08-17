@@ -45,13 +45,16 @@ typedef struct tagTT_HANDLES        // Translate Table handles & ptrs
 typedef struct tagGRADE_DATA
 {
     APLSTYPE     aplTypeRht;        // Right arg storage type
-    APLUINT      aplNELMRest;       // Product of right arg dims after the first
+    APLUINT      aplNELMRest,       // Product of right arg dims after the first
+                 aplNELMRht;        // Right arg NELM
     APLINT       apaOffRht,         // Right arg APA offset
                  apaMulRht;         // Right arg APA multiplier
     int          iMul;              // Multiplier for GradeUp vs. GradeDown
                                     //   1 for GradeUp, -1 for GradeDown
     APLRANK      aplRankLft;        // Left arg rank
     LPTT_HANDLES lpMemTTHandles;    // Ptr to TT Handles global memory
+    UBOOL        PV0:1,             // Right arg is a Perumtatino Vector, origin-0
+                 PV1:1;             // ...                                       1
 } GRADE_DATA, *LPGRADE_DATA;
 
 
@@ -275,11 +278,15 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     // Get right arg global ptr
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
+    // Save the
+    gradeData.PV0 = ((LPVARARRAY_HEADER) lpMemRht)->PV0;
+    gradeData.PV1 = ((LPVARARRAY_HEADER) lpMemRht)->PV1;
+
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Get the length of the first dimension (as result length)
-    aplNELMRes = lpMemDimRht[0];
+    gradeData.aplNELMRht = aplNELMRes = lpMemDimRht[0];
 
     // Calculate the length of the dimensions after the first one
     for (gradeData.aplNELMRest = 1, uRes = 1; uRes < aplRankRht; uRes++)
@@ -304,6 +311,8 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->PV0        = (gradeData.PV0 || gradeData.PV1) && bQuadIO EQ 0;
+    lpHeader->PV1        = (gradeData.PV0 || gradeData.PV1) && bQuadIO EQ 1;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -326,16 +335,25 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 #undef  lpAPA
     } // End IF
 
-    // Initialize the result with {iota}aplNELMRes (origin-0)
-    for (uRes = 0; uRes < aplNELMRes; uRes++)
-        ((LPAPLINT) lpMemRes)[uRes] = uRes;
+    // If the right arg is a PV, grade it specially
+    if (gradeData.PV0 || gradeData.PV1)
+        PermVecGrade (lpMemRes,                 // Ptr to result global memory
+                      lpMemRht,                 // Ptr to right arg global memory
+                     &gradeData);               // Ptr to extra grade data
+    else
+    {
+        // Initialize the result with {iota}aplNELMRes (origin-0)
+        for (uRes = 0; uRes < aplNELMRes; uRes++)
+            ((LPAPLINT) lpMemRes)[uRes] = uRes;
 
-    // Grade the array
-    GRADE_ROUTINE (lpMemRes,                // Ptr to result global memory
-                   lpMemRht,                // Ptr to right arg global memory
-                   aplNELMRes,              // Result NELM
-                  &PrimFnGradeCompare,      // Ptr to comparison routine
-                  &gradeData);              // Ptr to extra grade data
+        // Grade the array
+        GRADE_ROUTINE (lpMemRes,                // Ptr to result global memory
+                       lpMemRht,                // Ptr to right arg global memory
+                       aplNELMRes,              // Result NELM
+                      &PrimFnGradeCompare,      // Ptr to comparison routine
+                      &gradeData);              // Ptr to extra grade data
+    } // End IF/ELSE
+
     // Add in []IO
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         ((LPAPLINT) lpMemRes)[uRes] += bQuadIO;
@@ -387,6 +405,82 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnMonGradeCommon_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PermVecGrade
+//
+//  Grade a permutation vectora
+//***************************************************************************
+
+void PermVecGrade
+    (LPAPLUINT    lpMemRes,         // Ptr to result global memory
+     LPAPLUINT    lpMemRht,         // Ptr to right arg global memory
+     LPGRADE_DATA lpGradeData)      // Ptr to extra data
+
+{
+    APLUINT uRht,                   // Loop counter
+            PV1;                    // Right arg PV1
+    APLNELM aplNELMRht,             // Right arg NELM
+            aplNELMRht1;            // Right arg NELM - 1 - PV1
+    APLINT  apaOffRht,              // Right arg APA offset
+            apaMulRht;              // ...           multiplier
+
+    // Get Grade Data parameters
+    apaOffRht  = lpGradeData->apaOffRht;
+    apaMulRht  = lpGradeData->apaMulRht;
+    aplNELMRht = lpGradeData->aplNELMRht;
+    PV1        = lpGradeData->PV1;
+
+    // If it's Grade Up, ...
+    if (lpGradeData->iMul EQ 1)
+    {
+        // Split cases based upon the right arg storage type
+        switch (lpGradeData->aplTypeRht)
+        {
+            case ARRAY_INT:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    lpMemRes[*lpMemRht++ - PV1] = uRht;
+                break;
+
+            case ARRAY_APA:
+                // Initialize the first element
+                apaOffRht -= PV1;
+
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++, apaOffRht += apaMulRht)
+                    lpMemRes[apaOffRht] = uRht;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
+    {
+        // Factor out common data
+        aplNELMRht1 = (aplNELMRht - 1) + PV1;
+
+        // Split cases based upon the right arg storage type
+        switch (lpGradeData->aplTypeRht)
+        {
+            case ARRAY_INT:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    lpMemRes[aplNELMRht1 - *lpMemRht++] = uRht;
+                break;
+
+            case ARRAY_APA:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++, apaOffRht += apaMulRht)
+                    lpMemRes[aplNELMRht1 - apaOffRht] = uRht;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End IF/ELSE
+} // End PermVecGrade
 
 
 //***************************************************************************

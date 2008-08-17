@@ -31,15 +31,12 @@
 #include "pertab.h"
 #include "dfnhdr.h"
 #include "sis.h"
-#include "threads.h"
+#include "cs_parse.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
-
-
-UTJ_THREAD utjThread;           // Temporary global
 
 
 //***************************************************************************
@@ -73,17 +70,18 @@ LPPL_YYSTYPE PrimFnUpTackJot_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonUpTackJot_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydUpTackJot_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnUpTackJot_EM_YY
 #undef  APPEND_NAME
 
@@ -150,19 +148,11 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
 
     // Check for RIGHT RANK ERROR
     if (IsMultiRank (aplRankRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
     if ((!IsSimpleChar (aplTypeRht)) && !IsEmpty (aplNELMRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Check for empty case
     if (IsEmpty (aplNELMRht))
@@ -214,6 +204,15 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
     return PrimFnMonUpTackJotGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbRht),   // HGLOBAL
                                         lptkAxis,                       // Ptr to axis token (may be NULL)
                                         lptkFunc);                      // Ptr to function token
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnMonUpTackJot_EM_YY
 #undef  APPEND_NAME
 
@@ -245,17 +244,18 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
     if (!lpwszCompLine)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;                // Mark as failed
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Save the char in the line
     lpwszCompLine[0] = (APLCHAR) aplLongest;
     lpwszCompLine[1] = L'\0';
 
     return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE, lptkFunc);
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;                // Mark as failed
 } // End PrimFnMonUpTackJotImm_EM_YY
 #undef  APPEND_NAME
 
@@ -303,11 +303,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
     if (!lpwszCompLine)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;                // Mark as failed
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Copy the chars into the line
     Assert (aplNELMRht EQ (UINT) aplNELMRht);
@@ -318,6 +314,11 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
     return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE, lptkFunc);
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;                // Mark as failed
 } // End PrimFnMonUpTackJotGlb_EM_YY
 #undef  APPEND_NAME
 
@@ -329,44 +330,57 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
 //***************************************************************************
 
 LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
-    (LPAPLCHAR lpwszCompLine,
-     UBOOL     bFreeCompLine,
-     LPTOKEN   lptkFunc)
+    (LPAPLCHAR lpwszCompLine,           // Ptr to text of line to execute
+     UBOOL     bFreeCompLine,           // TRUE iff we shoudl free lpwszCompLine
+     LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
     LPPL_YYSTYPE   lpYYRes;         // Ptr to the result
     HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
+    HWND           hWndEC;          // Edit Ctrl window handle
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    // Save args in struc to pass to thread func
     // Get hWndEC for the Session Manager from the current thread
-    utjThread.hWndEC        = GetThreadSMEC ();
-    utjThread.hGlbPTD       = hGlbPTD;
-    utjThread.lpwszCompLine = lpwszCompLine;
+    hWndEC = GetThreadSMEC ();
 
-    PrimFnMonUpTackJotInThread (&utjThread);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // If there's no error, ...
-    if (lpMemPTD->YYResExec.YYInuse)
+    // Call common function which calls ParseCtrlStruc & ParseLine
+    if (PrimFnMonUpTackJotCSPLParse (hWndEC, hGlbPTD, lpwszCompLine, lptkFunc) EQ 0)
     {
-        // Allocate a new YYRes
-        lpYYRes = YYAlloc ();
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
 
-        // Copy the result
-        *lpYYRes = lpMemPTD->YYResExec;
-        lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
-        ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+        // If there's no error, ...
+        if (lpMemPTD->YYResExec.YYInuse)
+        {
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Copy the result
+            *lpYYRes = lpMemPTD->YYResExec;
+            lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
+            ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+        } else
+        {
+            // Mark as in error
+            lpYYRes = NULL;
+
+            // Set the error caret location
+            ErrorMessageSetToken (lptkFunc);
+        } // End IF
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } else
+    {
+        // Mark as in error
         lpYYRes = NULL;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+        // Set the error caret location
+        ErrorMessageSetToken (lptkFunc);
+    } // End IF
 
     // Free the virtual memory for the complete line
     if (bFreeCompLine)
@@ -379,55 +393,51 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 
 
 //***************************************************************************
-//  $PrimFnMonUpTackJotInThread
+//  $PrimFnMonUpTackJotCSPLParse
 //
-//  Monadic UpTackJot ("execute") in a thread
+//  Monadic UpTackJot ("execute") CS & PL parser
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpTackJotInThread"
+#define APPEND_NAME     L" -- PrimFnMonUpTackJotCSPLParse"
 #else
 #define APPEND_NAME
 #endif
 
-DWORD WINAPI PrimFnMonUpTackJotInThread
-    (LPUTJ_THREAD lputjThread)          // Ptr to UpTackJotThread struct
+DWORD WINAPI PrimFnMonUpTackJotCSPLParse
+    (HWND         hWndEC,               // Edit Ctrl window handle
+     HGLOBAL      hGlbPTD,              // PerTabData global memory handle
+     LPAPLCHAR    lpwszCompLine,        // Ptr to text of line to execute
+     LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
-    HGLOBAL       hGlbPTD;              // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
-    HWND          hWndSM,               // Session Manager window handle
-                  hWndEC;               // Edit Control    ...
-    LPAPLCHAR     lpwszCompLine;        // Ptr to the complete line to execute
     DWORD         dwRet = 0;            // Return code from this function
     HGLOBAL       hGlbToken = NULL;     // Tokenized line global memory handle
     HANDLE        hSigaphore = NULL;    // Semaphore handle to signal (NULL if none)
     EXIT_TYPES    exitType;             // Return code from ParseLine
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
+    LPTOKEN       lptkCSBeg;            // Ptr to next token on the CS stack
+    CSLOCALVARS   csLocalVars = {0};    // CS local vars
 
-    // Extract values from the arg struc
-    hWndEC        = lputjThread->hWndEC;
-    hGlbPTD       = lputjThread->hGlbPTD;
-    lpwszCompLine = lputjThread->lpwszCompLine;
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Save the thread's PerTabData global memory handle
-    TlsSetValue (dwTlsPerTabData, hGlbPTD);
+    // Save the ptr to the next token on the CS stack
+    //   as our beginning
+    lptkCSBeg = lpMemPTD->lptkCSNxt;
 
-#ifdef DEBUG
-    dprintfW (L"--Starting thread in <PrimFnMonUpTackJotInThread>.");
-#endif
-
-    // Get the window handle of the Session Manager
-    hWndSM = GetParent (hWndEC);
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Tokenize, parse, and untokenize the line
 
     // Tokenize the line
     hGlbToken =
-      Tokenize_EM (lpwszCompLine,
-                   lstrlenW (lpwszCompLine),
-                   hWndEC,
-                  &ErrorMessageDirect);
+      Tokenize_EM (lpwszCompLine,               // The line to tokenize (not necessarily zero-terminated)
+                   lstrlenW (lpwszCompLine),    // NELM of lpwszLine
+                   hWndEC,                      // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                   1,                           // Function line # (0 = header)
+                  &ErrorMessageDirect);         // Ptr to error handling function (may be NULL)
     // If it's invalid, ...
     if (hGlbToken EQ NULL)
     {
@@ -436,95 +446,54 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
         goto ERROR_EXIT;
     } // End IF
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Fill in the CS local vars struc
+    csLocalVars.hWndEC      = hWndEC;
+    csLocalVars.hGlbPTD     = hGlbPTD;
+    csLocalVars.lptkCSBeg   =
+    csLocalVars.lptkCSNxt   = lptkCSBeg;
+    csLocalVars.lptkCSLink  = NULL;
+    csLocalVars.hGlbDfnHdr  = NULL;
+    csLocalVars.hGlbImmExec = hGlbToken;
 
-    // Fill in the SIS header for the Execute primitive
-    FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
-                NULL,                   // Semaphore handle
-                DFNTYPE_EXEC,           // DfnType
-                FCNVALENCE_MON,         // FcnValence
-                FALSE,                  // Suspended
-                TRUE,                   // Restartable
-                TRUE);                  // LinkIntoChain
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    // Run the parser in a separate thread
-    exitType =
-      ParseLine (hWndSM,            // Session Manager window handle
-                 NULL,              // Line text global memory handle
-                 hGlbToken,         // Tokenized line global memory handle
-                 lpwszCompLine,     // Ptr to the complete line
-                 hGlbPTD,           // PerTabData global memory handle
-                 TRUE);             // TRUE iff errors are acted upon
-    // Split cases based upon the exit type
-    switch (exitType)
+    // Parse the tokens on the CS stack
+    if (!ParseCtrlStruc_EM (&csLocalVars))
     {
-        case EXITTYPE_DISPLAY:      // Nothing more to do with these types
-        case EXITTYPE_NOVALUE:      // ...
-        case EXITTYPE_GOTO_ZILDE:   // ...
-        case EXITTYPE_GOTO_LINE:    // ...
-        case EXITTYPE_NODISPLAY:    // ...
-        case EXITTYPE_ERROR:        // ...
-        case EXITTYPE_STOP:         // ...
-            break;
+        static WCHAR wszTemp[1024];
 
-        case EXITTYPE_RESET_ONE:
-            DbgBrk ();
+        DbgBrk ();          // ***TESTME***
 
+        // Format the error message
+        wsprintfW (wszTemp,
+                   L"CS SYNTAX ERROR -- Line %d statement %d",
+                   csLocalVars.tkCSErr.tkData.uLineNum,
+                   csLocalVars.tkCSErr.tkData.uStmtNum + 1);
+        // Save the error message
+        ErrorMessageIndirectToken (wszTemp, lptkFunc);
 
-            break;
+        dwRet = 1;          // Mark as failed ParseCtrlStruc
 
-        case EXITTYPE_RESET_ONE_INIT:
-            DbgBrk ();
+        goto ERROR_EXIT;
+    } // End IF
 
-
-            break;
-
-        case EXITTYPE_RESET_ALL:
-            DbgBrk ();
-
-
-            break;
-
-        case EXITTYPE_NONE:
-        defstop
-            break;
-    } // End SWITCH
-
-    // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
-
-    // Save the exit type in the plLocalVars
-    lpplLocalVars->ExitType = exitType;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Save the semaphore handle to signal after Unlocalize (may be NULL if none)
-    hSigaphore = lpMemPTD->lpSISCur->hSigaphore;
-    lpMemPTD->lpSISCur->hSigaphore = NULL;
-
-    // Unlocalize the STEs on the innermost level
-    //   and strip off one level
-    Unlocalize ();
-
-    // If this hSigaphore is not for this level, pass it on up the line
-    hSigaphore = PassSigaphore (lpMemPTD, hSigaphore);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
+    // Fill the SIS struc, execute the line via ParseLine, and cleanup
+    exitType =
+      PrimFnMonUpTackJotPLParse (hGlbPTD,           // PerTabData global memory handle
+                                 hGlbToken,         // Tokenized line global memory handle
+                                 NULL,              // Text      ...
+                                 lpwszCompLine,     // Ptr to text of line to execute
+                                &hSigaphore,        // Ptr to semaphore handle to signal
+                                 1,                 // Function line # (1 for execute or immexec)
+                                 0,                 // Starting token # in the above function line
+                                 FALSE);            // TRUE iff executing only one stmt
     // Untokenize the temporary line and free its memory
     Untokenize (hGlbToken);
     MyGlobalFree (hGlbToken); hGlbToken = NULL;
 ERROR_EXIT:
-#ifdef DEBUG
-    dprintfW (L"--Ending   thread in <PrimFnMonUpTackJotInThread>.");
-#endif
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Restore the ptr to the next token on the CS stack
+    lpMemPTD->lptkCSNxt = lptkCSBeg;
 
     // Display the default prompt if there's a suspension
     if (hSigaphore EQ NULL
@@ -548,8 +517,88 @@ ERROR_EXIT:
     } // End IF
 
     return dwRet;
-} // End PrimFnMonUpTackJotInThread
+} // End PrimFnMonUpTackJotCSPLParse
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonUpTackJotPLParse
+//
+//  Fill the SIS struc, execute the line via ParseLine, and cleanup
+//***************************************************************************
+
+EXIT_TYPES PrimFnMonUpTackJotPLParse
+    (HGLOBAL      hGlbPTD,              // PerTabData global memory handle
+     HGLOBAL      hGlbToken,            // Tokenized line global memory handle
+     HGLOBAL      hGlbTxtLine,          // Text      ...
+     LPAPLCHAR    lpwszCompLine,        // Ptr to text of line to execute
+     HANDLE      *lphSigaphore,         // Ptr to Semaphore handle to signal (NULL if none)
+     UINT         uLineNum,             // Function line #
+     UINT         uTknNum,              // Starting token # in the above function line
+     UBOOL        bExec1Stmt)           // TRUE iff executing only one stmt
+
+{
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+    HWND          hWndSM;               // Session Manager window handle
+    EXIT_TYPES    exitType;             // Return code from ParseLine
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the window handle of the Session Manager
+    hWndSM = lpMemPTD->hWndSM;
+
+    // Fill in the SIS header for the Execute primitive
+    FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
+                NULL,                   // Semaphore handle
+                DFNTYPE_EXEC,           // DfnType
+                FCNVALENCE_MON,         // FcnValence
+                FALSE,                  // Suspended
+                TRUE,                   // Restartable
+                TRUE);                  // LinkIntoChain
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Execute the line
+    exitType =
+      ParseLine (hWndSM,                // Session Manager window handle
+                 hGlbToken,             // Tokenized line global memory handle
+                 hGlbTxtLine,           // Text      ...
+                 lpwszCompLine,         // Ptr to the complete line
+                 hGlbPTD,               // PerTabData global memory handle
+                 uLineNum,              // Function line # (1 for execute or immexec)
+                 uTknNum,               // Starting token # in the above function line
+                 NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
+                 TRUE,                  // TRUE iff errors are acted upon
+                 bExec1Stmt);           // TRUE iff executing only one stmt
+    // Get this thread's LocalVars ptr
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+
+    // Save the exit type in the plLocalVars
+    lpplLocalVars->ExitType = exitType;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save the semaphore handle to signal after Unlocalize (may be NULL if none)
+    if (lphSigaphore)
+        *lphSigaphore = lpMemPTD->lpSISCur->hSigaphore;
+    lpMemPTD->lpSISCur->hSigaphore = NULL;
+
+    // Unlocalize the STEs on the innermost level
+    //   and strip off one level
+    Unlocalize ();
+
+    // If this hSigaphore is not for this level, pass it on up the line
+    if (lphSigaphore)
+        *lphSigaphore = PassSigaphore (lpMemPTD, *lphSigaphore);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return exitType;
+} // End PrimFnMonUpTackJotPLParse
 
 
 //***************************************************************************

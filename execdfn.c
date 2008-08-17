@@ -28,6 +28,7 @@
 #include "resdebug.h"
 #include "sysvars.h"
 #include "externs.h"
+#include "cs_parse.h"
 #include "pertab.h"
 #include "dfnhdr.h"
 #include "sis.h"
@@ -173,6 +174,12 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  symRhtArg;         // ...               right arg
     UBOOL        bNamedLftFcn,      // TRUE iff the left operand is a named function
                  bNamedRhtFcn;      // ...          right ...
+    HCURSOR      hCursorOld;        // Handle to previous cursor
+    UBOOL        bOldExecuting;     // Old value of bExecuting
+
+    // Set the cursor to an hourglass and indicate that we're executing
+    hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
+    bOldExecuting = bExecuting; bExecuting = TRUE;
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -483,6 +490,9 @@ NORMAL_EXIT:
     if (lpSymRhtFcn && bNamedRhtFcn)
         lpYYFcnTmpRht->tkToken.tkData.tkSym = lpSymRhtFcn;
 
+    // Restore the previous cursor and its state
+    SetCursor (hCursorOld); ShowCursor (FALSE); bExecuting = bOldExecuting;
+
     return lpYYRes;
 } // End ExecDfnOprGlb_EM_YY
 #undef  APPEND_NAME
@@ -680,7 +690,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     HWND           hWndSM;          // Session Manager window handle
     HANDLE         hSemaphore;      // Semaphore handle
     UINT           numResultSTE,    // # result STEs (may be zero if no result)
-                   numRes;          // Loop counter
+                   numRes,          // Loop counter
+                   uTknNum;         // Next token # in the line
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
     UBOOL          bRet;            // TRUE iff result is valid
@@ -704,9 +715,10 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Get the SM window handle
     hWndSM = lpMemPTD->hWndSM;
 
-    // Save current line #
+    // Save current line & token #
     lpMemPTD->lpSISCur->CurLineNum = uLineNum;
     lpMemPTD->lpSISCur->NxtLineNum = uLineNum + 1;
+    lpMemPTD->lpSISCur->NxtTknNum  = uTknNum = 0;
 
     // Create a semaphore
     hSemaphore =
@@ -735,23 +747,27 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-        // Execute the function line
+        // Execute the line
         exitType =
           ParseLine (hWndSM,                // Session Manager window handle
-                     hGlbTxtLine,           // Line text global memory handle
-                     hGlbTknLine,           // Tokenixed line global memory handle
+                     hGlbTknLine,           // Tokenized line global memory handle
+                     hGlbTxtLine,           // Text      ...
                      NULL,                  // Ptr to line text global memory
                      hGlbPTD,               // PerTabData global memory handle
-                     TRUE);                 // TRUE iff errors are acted upon
+                     uLineNum,              // Function line # (1 for execute or immexec)
+                     uTknNum,               // Starting token # in the above function line
+                     hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
+                     TRUE,                  // TRUE iff errors are acted upon
+                     FALSE);                // TRUE iff executing only one stmt
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
         // If suspended, wait for the semaphore to trigger
         if (lpMemPTD->lpSISCur->Suspended)
         {
-            HWND hWndEC;        // Edit Control window handle
+            HWND hWndEC;        // Edit Ctrl window handle
 
-            // Get the Edit Control window handle
+            // Get the Edit Ctrl window handle
             (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
             // If we're at a stop, display the error message
@@ -819,7 +835,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
         // Get next line #
         uLineNum = lpMemPTD->lpSISCur->NxtLineNum++;
+        uTknNum  = lpMemPTD->lpSISCur->NxtTknNum;
         lpMemPTD->lpSISCur->CurLineNum = uLineNum;
+        lpMemPTD->lpSISCur->NxtTknNum = 0;
     } // End WHILE
 #ifdef DEBUG
     DisplayFcnLine (NULL, lpMemPTD, NEG1U);
@@ -1005,6 +1023,9 @@ void DisplayFcnLine
     LPMEMTXT_UNION lpMemTxtLine;
     LPAPLCHAR      lpMemFcnName;
 
+    if (gDbgLvl <= 2)
+        return;
+
     // If the handle is valid, ...
     if (hGlbTxtLine)
         // Lock the memory to get a ptr to it
@@ -1023,7 +1044,7 @@ void DisplayFcnLine
                    uLineNum,
                    lpMemFcnName,
                   &lpMemTxtLine->C);
-    DbgMsgW2 (lpMemPTD->lpwszTemp);
+    DbgMsgW (lpMemPTD->lpwszTemp);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemFcnName = NULL;
@@ -1216,6 +1237,8 @@ UBOOL Unlocalize
     LPSYMENTRY   lpSymEntryNxt;     // Ptr to next localized LPSYMENTRY on the SIS
     UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
+    LPFORSTMT    lpForStmtNext;     // Ptr to next entry on the FOR stmt stack
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS level
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1226,21 +1249,24 @@ UBOOL Unlocalize
     // If the SI is non-empty, ...
     if (lpMemPTD->SILevel)
     {
-        Assert (lpMemPTD->lpSISCur NE NULL);
+        // Copy current SIS ptr
+        lpSISCur = lpMemPTD->lpSISCur;
+
+        Assert (lpSISCur NE NULL);
 #ifdef DEBUG
-        dprintfW (L"~~Unlocalize:  %p to %p", lpMemPTD->lpSISCur, lpMemPTD->lpSISCur->lpSISPrv);
+        dprintfW (L"~~Unlocalize:  %p to %p", lpSISCur, lpSISCur->lpSISPrv);
 #endif
         // Save the reset flag
-        resetFlag = lpMemPTD->lpSISCur->ResetFlag;
+        resetFlag = lpSISCur->ResetFlag;
 
         // Free the outgoing value of []EM
-        FreeResultGlobalVar (lpMemPTD->lpSISCur->hGlbQuadEM); lpMemPTD->lpSISCur->hGlbQuadEM = NULL;
+        FreeResultGlobalVar (lpSISCur->hGlbQuadEM); lpMemPTD->lpSISCur->hGlbQuadEM = NULL;
 
         // Get # LPSYMENTRYs on the stack
-        numSymEntries = lpMemPTD->lpSISCur->numSymEntries;
+        numSymEntries = lpSISCur->numSymEntries;
 
         // Point to the start of the localized LPSYMENTRYs
-        lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISCur, sizeof (SIS_HEADER));
+        lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpSISCur, sizeof (SIS_HEADER));
 
         // Point to the end of the localize LPSYMENTRYs
         lpSymEntryNxt = &lpSymEntryNxt[numSymEntries - 1];
@@ -1302,6 +1328,14 @@ UBOOL Unlocalize
             // Restore the previous STE
             *lpSymEntryCur = *lpSymEntryNxt;
         } // End FOR/IF
+
+        // Loop through the entries on the FOR stmt stack
+        for (lpForStmtNext = lpSISCur->lpForStmtBase;
+             lpForStmtNext && lpForStmtNext < lpSISCur->lpForStmtNext;
+             lpForStmtNext++)
+        // If the token is not immediate, ...
+        if (!IsTknImmed (lpForStmtNext->tkForArr.tkFlags.TknType))
+            FreeResultGlobalVar (lpForStmtNext->tkForArr.tkData.tkGlbData);
 
         // Strip the level from the stack
         lpMemPTD->lpSISNxt = lpMemPTD->lpSISCur;

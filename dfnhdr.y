@@ -541,7 +541,7 @@ HeaderComm:
 //***************************************************************************
 
 BOOL ParseHeader
-    (HWND          hWndEC,          // Window handle of Edit Control
+    (HWND          hWndEC,          // Window handle of Edit Ctrl
      HGLOBAL       hGlbTknHdr,      // Tokenized header global memory handle
      LPFHLOCALVARS lpfhLocalVars,   // Ptr to Local vars
      UBOOL         bDisplayErr)     // TRUE iff want error messages displayed
@@ -604,6 +604,9 @@ BOOL ParseHeader
 #endif
 
     // Parse the header, check for errors
+    //   0 = success
+    //   1 = YYABORT or APL error
+    //   2 = memory exhausted
     bRet = fh_yyparse (lpfhLocalVars) EQ 0;
 
     // Restore the error display flag
@@ -729,7 +732,7 @@ void fh_yyerror                     // Called for Bison syntax error
      LPCHAR        s)               // Ptr to error msg
 
 {
-    char szTemp[10244], *p;
+    char szTemp[1024], *p;
     UINT uCharIndex;
 
 #ifdef DEBUG

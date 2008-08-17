@@ -109,7 +109,7 @@ typedef struct tagDFN_HEADER        // Function header structure
 typedef struct tagFH_YYSTYPE        // YYSTYPE for Function Header parser
 {
     TOKEN  tkToken;                 // 00:  Token info
-    UINT   uStrandLen:31,           // 14:  3FFFFFFF:  # elements in this strand
+    UINT   uStrandLen:30,           // 14:  3FFFFFFF:  # elements in this strand
            Indirect:1,              //      40000000:  Indirect entry
            List:1;                  //      80000000:  Itsa list
                                     //      00000000:  No available bits
@@ -125,7 +125,7 @@ typedef struct tagFH_YYSTYPE        // YYSTYPE for Function Header parser
 
 typedef struct tagFHLOCALVARS       // Function Header Local Vars
 {
-    HWND         hWndEC;            // 00:  Window handle for Edit Control
+    HWND         hWndEC;            // 00:  Window handle for Edit Ctrl
     HGLOBAL      hGlbTknHdr,        // 04:  Tokenized header global memory handle
                  hGlbUndoBuff;      // 08:  Undo buffer      ...
     UNION_TOKEN  t2;                // 0C:  Locked base of hGlbToken

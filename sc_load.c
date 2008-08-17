@@ -162,7 +162,7 @@ WSNOTFOUND_EXIT:
 
 UBOOL LoadWorkspace_EM
     (HGLOBAL hGlbDPFE,                  // Workspace DPFE global memory handle (NULL = CLEAR WS)
-     HWND    hWndEC)                    // Edit control window handle
+     HWND    hWndEC)                    // Edit Ctrl window handle
 
 {
     LPWCHAR      lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
@@ -491,7 +491,7 @@ UBOOL LoadWorkspace_EM
                                      &aplTypeObj,       // Ptr to storage type (may be NULL)
                                      &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                       FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
-                                      hWndEC,           // Edit Control window handle
+                                      hWndEC,           // Edit Ctrl window handle
                                      &lpSymLink,        // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,        // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                      &lpwErrMsg);       // Ptr to ptr to (constant error message text
@@ -632,7 +632,7 @@ UBOOL LoadWorkspace_EM
                                          uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                          lpSymEntry,    // Ptr to STE for the object
                                          nameType,      // Function name type (see NAME_TYPES)
-                                         hWndEC,        // Edit Control window handle
+                                         hWndEC,        // Edit Ctrl window handle
                                         &lpSymLink,     // Ptr to ptr to SYMENTRY link
                                          lpwszDPFE,     // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                         &lpwErrMsg))    // Ptr to ptr to (constant) error message text
@@ -705,7 +705,7 @@ UBOOL ParseSavedWsFcn_EM
      UINT        uMaxSize,              // Maximum size of lpwSrc
      LPSYMENTRY  lpSymObj,              // Ptr to STE for the object
      NAME_TYPES  nameType,              // Function name type (see NAME_TYPES)
-     HWND        hWndEC,                // Edit Control window handle
+     HWND        hWndEC,                // Edit Ctrl window handle
      LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
      LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
      LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant) error message text
@@ -750,7 +750,7 @@ UBOOL ParseSavedWsFcn_EM
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
                                       lpwDataEnd,   // Ptr to next available byte
                                       uMaxSize - (UINT) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
-                                      hWndEC,       // Edit Control window handle
+                                      hWndEC,       // Edit Ctrl window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
@@ -774,6 +774,8 @@ UBOOL ParseSavedWsFcn_EM
         if (L'{' EQ  *lpwSrc)
         {
             // Get the next char
+            // Because we created this name, we can expect it to be found
+            //   and so don't need to check for zero result
             wcTmp = SymbolNameToChar (lpwSrc);
 
             // Skip to the next field
@@ -826,7 +828,7 @@ LPWCHAR ParseSavedWsVar_EM
      LPAPLSTYPE  lpaplTypeObj,          // Ptr to storage type (may be NULL)
      LPUBOOL     lpbImmed,              // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
      UBOOL       bSymTab,               // TRUE iff to save SymTabAppend values, FALSE to save values directly
-     HWND        hWndEC,                // Edit Control window handle
+     HWND        hWndEC,                // Edit Ctrl window handle
      LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
      LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
      LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant error message text
@@ -883,7 +885,7 @@ LPWCHAR ParseSavedWsVar_EM
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
                                       lpwDataEnd,   // Ptr to next available byte
                                       uMaxSize - (UINT) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
-                                      hWndEC,       // Edit Control window handle
+                                      hWndEC,       // Edit Ctrl window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
@@ -995,6 +997,8 @@ LPWCHAR ParseSavedWsVar_EM
                 if (L'{' EQ  *lpwSrc)
                 {
                     // Get the next char
+                    // Because we created this name, we can expect it to be found
+                    //   and so don't need to check for zero result
                     wcTmp = SymbolNameToChar (lpwSrc);
 
                     // Skip to the next field
@@ -1084,7 +1088,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     (LPWCHAR     lpwGlbName,                // Ptr to keyname (FMTSTR_GLBCNT)
      LPWCHAR     lpwSrc,                    // Ptr to next available byte
      UINT        uMaxSize,                  // Maximum size of
-     HWND        hWndEC,                    // Edit Control window handle
+     HWND        hWndEC,                    // Edit Ctrl window handle
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
      LPWCHAR     lpwszDPFE,                 // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
      LPWCHAR    *lplpwErrMsg)               // Ptr to ptr to (constant) error message text
@@ -1312,6 +1316,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         if (L'{' EQ  *lpwSrc)
                         {
                             // Get the next char
+                            // Because we created this name, we can expect it to be found
+                            //   and so don't need to check for zero result
                             wcTmp = SymbolNameToChar (lpwSrc);
 
                             // Skip to the next field
@@ -1359,7 +1365,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                               NULL,         // Ptr to storage type (may be NULL)
                                               NULL,         // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                               TRUE,         // TRUE iff to save SymTabAppend values, FALSE to save values directly
-                                              hWndEC,       // Edit Control window handle
+                                              hWndEC,       // Edit Ctrl window handle
                                               lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                               lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                               lplpwErrMsg); // Ptr to ptr to (constant error message text
@@ -1548,7 +1554,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                lstrlenW (lpwLine),  // NELM of lpwLine
                                FALSE,               // Free lpwLine on completion
                                TRUE,                // TRUE iff wait until finished
-                               hWndEC,              // Edit Control window handle
+                               hWndEC,              // Edit Ctrl window handle
                                FALSE);              // TRUE iff errors are acted upon
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 
@@ -1656,7 +1662,7 @@ HGLOBAL LoadWsGlbVarConv
           LoadWorkspaceGlobal_EM (wszGlbCnt,                        // Ptr to keyname (FMTSTR_GLBCNT)
                                   lpLoadWsGlbVarParm->lpwSrc,       // Ptr to next available byte
                                   lpLoadWsGlbVarParm->uMaxSize,     // Maximum size of lpwSrc
-                                  lpLoadWsGlbVarParm->hWndEC,       // Edit Control window handle
+                                  lpLoadWsGlbVarParm->hWndEC,       // Edit Ctrl window handle
                                   lpLoadWsGlbVarParm->lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                   lpLoadWsGlbVarParm->lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                   lpLoadWsGlbVarParm->lplpwErrMsg); // Ptr to ptr to (constant) error message text

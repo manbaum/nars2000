@@ -135,27 +135,35 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
-    APLUINT      ByteRes;               // # bytes in the result
-    APLSTYPE     aplTypeRht,            // Right arg storage type
-                 aplTypeRes;            // Result    ...
-    APLNELM      aplNELMRht;            // Right arg NELM
-    APLRANK      aplRankRht;            // Right arg rank
-    HGLOBAL      hGlbRht = NULL,        // Right arg global memory handle
-                 hGlbRes = NULL;        // Result    ...
-    LPVOID       lpMemRht = NULL,       // Ptr to right arg global memory
-                 lpMemRes = NULL;       // Ptr to result    ...
-    APLUINT      uRht,                  // Right arg loop counter
-                 uRes;                  // Result    ...
-    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
-                 lpYYRes2;              // Ptr to secondary result
-    APLINT       apaOff,                // Right arg APA offset
-                 apaMul;                // ...           multiplier
-    TOKEN        tkRhtArg = {0};        // Right arg token
-    UINT         uBitMask;              // Bit mask for marching through Booleans
-    UBOOL        bRet = TRUE;           // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
-    LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
-    LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function (may be NULL if not prototyping)
+    APLUINT       ByteRes;              // # bytes in the result
+    APLSTYPE      aplTypeRht,           // Right arg storage type
+                  aplTypeRes;           // Result    ...
+    APLNELM       aplNELMRht;           // Right arg NELM
+    APLRANK       aplRankRht;           // Right arg rank
+    HGLOBAL       hGlbRht = NULL,       // Right arg global memory handle
+                  hGlbRes = NULL;       // Result    ...
+    LPVOID        lpMemRht = NULL,      // Ptr to right arg global memory
+                  lpMemRes = NULL;      // Ptr to result    ...
+    APLUINT       uRht,                 // Right arg loop counter
+                  uRes;                 // Result    ...
+    LPPL_YYSTYPE  lpYYRes = NULL,       // Ptr to the result
+                  lpYYRes2;             // Ptr to secondary result
+    APLINT        apaOff,               // Right arg APA offset
+                  apaMul;               // ...           multiplier
+    TOKEN         tkRhtArg = {0};       // Right arg token
+    UINT          uBitMask;             // Bit mask for marching through Booleans
+    UBOOL         bRet = TRUE;          // TRUE iff result is valid
+    LPPL_YYSTYPE  lpYYFcnStrLft;        // Ptr to left operand function strand
+    LPTOKEN       lptkAxis;             // Ptr to axis token (may be NULL)
+    LPPRIMFNS     lpPrimProtoLft;       // Ptr to left operand prototype function (may be NULL if not prototyping)
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
@@ -290,7 +298,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
             case ARRAY_INT:
             case ARRAY_FLOAT:
             case ARRAY_APA:
-                tkRhtArg.tkFlags.ImmType = ARRAY_BOOL;
+                tkRhtArg.tkFlags.ImmType = IMMTYPE_BOOL;
                 tkRhtArg.tkData.tkBoolean = 0;
 
                 // Execute the function on the arg token
@@ -304,7 +312,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 break;
 
             case ARRAY_CHAR:
-                tkRhtArg.tkFlags.ImmType = ARRAY_CHAR;
+                tkRhtArg.tkFlags.ImmType = IMMTYPE_CHAR;
                 tkRhtArg.tkData.tkBoolean = L' ';
 
                 // Execute the function on the arg token
@@ -337,7 +345,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                     case PTRTYPE_HGLOBAL:
                         // Set the token & immediate type
                         tkRhtArg.tkFlags.TknType = TKT_VARARRAY;
-                        tkRhtArg.tkFlags.ImmType = 0;
+                        tkRhtArg.tkFlags.ImmType = IMMTYPE_ERROR;
 
                         // Copy the value to the arg token
                         tkRhtArg.tkData.tkGlbData = CopySymGlbInd ((LPAPLNESTED) lpMemRht);
@@ -349,12 +357,13 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 } // End SWITCH
 
                 // Execute the function on the arg token
-                bRet = ExecFuncOnToken_EM (&lpMemRes,           // Ptr to output storage
-                                            NULL,               // Ptr to left arg token
-                                            lpYYFcnStrLft,      // Ptr to function strand
-                                           &tkRhtArg,           // Ptr to right arg token
-                                            NULL,               // Ptr to axis token
-                                            lpPrimProtoLft);    // Ptr to left operand prototype function (may be NULL)
+                bRet =
+                  ExecFuncOnToken_EM (&lpMemRes,            // Ptr to output storage
+                                       NULL,                // Ptr to left arg token
+                                       lpYYFcnStrLft,       // Ptr to function strand
+                                      &tkRhtArg,            // Ptr to right arg token
+                                       NULL,                // Ptr to axis token
+                                       lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                 // Free the arg token
                 FreeResult (&tkRhtArg);
 
@@ -369,9 +378,9 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     {
         // Translate ARRAY_APA args to ARRAY_INT
         if (IsSimpleAPA (aplTypeRht))
-            tkRhtArg.tkFlags.ImmType = ARRAY_INT;
+            tkRhtArg.tkFlags.ImmType = IMMTYPE_INT;
         else
-            tkRhtArg.tkFlags.ImmType = aplTypeRht;
+            tkRhtArg.tkFlags.ImmType = TranslateArrayTypeToImmType (aplTypeRht);
 
         // Split cases based upon the storage type of the right arg
         switch (aplTypeRht)
@@ -383,8 +392,12 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Copy the value to the arg token
-                    tkRhtArg.tkData.tkBoolean = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
+                    tkRhtArg.tkData.tkBoolean = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
 
                     // Shift over the bit mask
                     uBitMask <<= 1;
@@ -412,6 +425,10 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Copy the value to the arg token
                     tkRhtArg.tkData.tkInteger = *((LPAPLINT) lpMemRht)++;
 
@@ -431,6 +448,10 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Copy the value to the arg token
                     tkRhtArg.tkData.tkFloat = *((LPAPLFLOAT) lpMemRht)++;
 
@@ -450,6 +471,10 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Copy the value to the arg token
                     tkRhtArg.tkData.tkChar = *((LPAPLCHAR) lpMemRht)++;
 
@@ -471,9 +496,13 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
     #undef  lpAPA
-            // Loop through the right arg
+                // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Copy the value to the arg token
                     tkRhtArg.tkData.tkInteger = apaOff + apaMul * uRht;
 
@@ -497,6 +526,10 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Split cases based upon the ptr type
                     switch (GetPtrTypeInd (lpMemRht))
                     {
@@ -515,7 +548,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                         case PTRTYPE_HGLOBAL:
                             // Set the token & immediate type
                             tkRhtArg.tkFlags.TknType = TKT_VARARRAY;
-                            tkRhtArg.tkFlags.ImmType = 0;
+                            tkRhtArg.tkFlags.ImmType = IMMTYPE_ERROR;
 
                             // Copy the value to the arg token
                             tkRhtArg.tkData.tkGlbData = CopySymGlbInd ((LPAPLNESTED) lpMemRht);
@@ -527,12 +560,13 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                     } // End SWITCH
 
                     // Execute the function on the arg token
-                    bRet = ExecFuncOnToken_EM (&lpMemRes,           // Ptr to output storage
-                                               NULL,                // Ptr to left arg token
-                                               lpYYFcnStrLft,       // Ptr to function strand
-                                              &tkRhtArg,            // Ptr to right arg token
-                                               NULL,                // Ptr to axis token
-                                               lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
+                    bRet =
+                      ExecFuncOnToken_EM (&lpMemRes,            // Ptr to output storage
+                                           NULL,                // Ptr to left arg token
+                                           lpYYFcnStrLft,       // Ptr to function strand
+                                          &tkRhtArg,            // Ptr to right arg token
+                                           NULL,                // Ptr to axis token
+                                           lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                     // Free the arg token
                     FreeResult (&tkRhtArg);
 
@@ -559,8 +593,8 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
@@ -736,47 +770,55 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    APLSTYPE     aplTypeLft,            // Left arg storage type
-                 aplTypeRht,            // Right ...
-                 aplTypeRes;            // Result ...
-    APLNELM      aplNELMLft,            // Left arg NELM
-                 aplNELMRht,            // Right ...
-                 aplNELMRes,            // Result ...
-                 aplNELMAxis;           // Axis ...
-    APLRANK      aplRankLft,            // Left arg rank
-                 aplRankRht,            // Right ...
-                 aplRankRes;            // Result ...
-    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
-                 hGlbRht = NULL,        // Right ...
-                 hGlbRes = NULL,        // Result   ...
-                 hGlbAxis = NULL,       // Axis     ...
-                 hGlbWVec = NULL,       // Weighting vector ...
-                 hGlbOdo = NULL;        // Odometer ...
-    LPAPLUINT    lpMemAxisHead = NULL,  // Ptr to axis values, fleshed out
-                 lpMemAxisTail = NULL,  // Ptr to grade up of AxisHead
-                 lpMemOdo = NULL,       // Ptr to odometer global memory
-                 lpMemWVec = NULL;      // Ptr to weighting vector ...
-    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
-                 lpMemRht = NULL,       // Ptr to right ...
-                 lpMemRes = NULL;       // Ptr to result   ...
-    LPAPLDIM     lpMemDimRes;           // Ptr to result dimensions
-    UBOOL        bRet = TRUE;           // TRUE iff result is valid
-    APLUINT      uLft,                  // Left arg loop counter
-                 uRht,                  // Right ...
-                 uRes,                  // Result   ...
-                 ByteAlloc;             // # bytes to allocate
-    APLINT       apaOffLft,             // Left arg APA offset
-                 apaMulLft,             // ...          multiplier
-                 apaOffRht,             // Right arg APA offset
-                 apaMulRht,             // ...           multiplier
-                 iDim;                  // Dimension loop counter
-    IMM_TYPES    immType;               // Immediate type
-    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
-                 lpYYFcnStrLft;         // Ptr to left operand function strand
-    TOKEN        tkLftArg = {0},        // Left arg token
-                 tkRhtArg = {0};        // Right ...
-    LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
-    LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand function strand (may be NULL if not prototyping)
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht,           // Right ...
+                  aplTypeRes;           // Result ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht,           // Right ...
+                  aplNELMRes,           // Result ...
+                  aplNELMAxis;          // Axis ...
+    APLRANK       aplRankLft,           // Left arg rank
+                  aplRankRht,           // Right ...
+                  aplRankRes;           // Result ...
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL,       // Right ...
+                  hGlbRes = NULL,       // Result   ...
+                  hGlbAxis = NULL,      // Axis     ...
+                  hGlbWVec = NULL,      // Weighting vector ...
+                  hGlbOdo = NULL;       // Odometer ...
+    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out
+                  lpMemAxisTail = NULL, // Ptr to grade up of AxisHead
+                  lpMemOdo = NULL,      // Ptr to odometer global memory
+                  lpMemWVec = NULL;     // Ptr to weighting vector ...
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL,      // Ptr to right ...
+                  lpMemRes = NULL;      // Ptr to result   ...
+    LPAPLDIM      lpMemDimRes;          // Ptr to result dimensions
+    UBOOL         bRet = TRUE;          // TRUE iff result is valid
+    APLUINT       uLft,                 // Left arg loop counter
+                  uRht,                 // Right ...
+                  uRes,                 // Result   ...
+                  ByteAlloc;            // # bytes to allocate
+    APLINT        apaOffLft,            // Left arg APA offset
+                  apaMulLft,            // ...          multiplier
+                  apaOffRht,            // Right arg APA offset
+                  apaMulRht,            // ...           multiplier
+                  iDim;                 // Dimension loop counter
+    IMM_TYPES     immType;              // Immediate type
+    LPPL_YYSTYPE  lpYYRes = NULL,       // Ptr to the result
+                  lpYYFcnStrLft;        // Ptr to left operand function strand
+    TOKEN         tkLftArg = {0},       // Left arg token
+                  tkRhtArg = {0};       // Right ...
+    LPTOKEN       lptkAxis;             // Ptr to axis token (may be NULL)
+    LPPRIMFNS     lpPrimProtoLft;       // Ptr to left operand function strand (may be NULL if not prototyping)
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     DBGENTER;
 
@@ -1003,6 +1045,10 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     // Loop through the result
     for (uRes = 0; uRes < aplNELMRes; uRes++)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
         // If there's an axis, ...
         if (lptkAxis
          && aplNELMAxis NE aplRankRes)
@@ -1043,19 +1089,20 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                       apaMulRht,    // APA multiplier (if needed)
                                      &tkRhtArg);    // Ptr to token in which to place the value
         // Execute the function strand between the left & right arg tokens
-        if (!ExecFuncOnToken_EM (&lpMemRes,         // Ptr to output storage
-                                 &tkLftArg,         // Ptr to left arg token
-                                  lpYYFcnStrLft,    // Ptr to function strand
-                                 &tkRhtArg,         // Ptr to right arg token
-                                  NULL,             // Ptr to axis token
-                                  lpPrimProtoLft))  // Ptr to left operand prototype function
-            goto ERROR_EXIT;
-
+        bRet =
+          ExecFuncOnToken_EM (&lpMemRes,            // Ptr to output storage
+                              &tkLftArg,            // Ptr to left arg token
+                               lpYYFcnStrLft,       // Ptr to function strand
+                              &tkRhtArg,            // Ptr to right arg token
+                               NULL,                // Ptr to axis token
+                               lpPrimProtoLft);     // Ptr to left operand prototype function
         // Free the left & right arg tokens
         if (lpMemLft)
             FreeResult (&tkLftArg);
         if (lpMemRht)
             FreeResult (&tkRhtArg);
+        if (!bRet)
+            goto ERROR_EXIT;
     } // End FOR
 
     // Unlock the result global memory in case TypeDemote actually demotes
@@ -1070,8 +1117,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 

@@ -375,7 +375,7 @@ APLINT PrimFnDydQuoteDotIisIvI
             //      T = R-L;
             //      Z = Prod (I, 1, L, (I+T) / I)
             for (T = R - L, Z = 1, I = 1; I <= L; I++)
-                Z = (imul64 (Z, I + T, NULL)) / I;
+                Z = (imul64 (Z, I + T)) / I;
             return Z;
 
         case 4*0 + 2*0 + 1*1:   // 0
@@ -467,7 +467,7 @@ APLFLOAT PrimFnDydQuoteDotFisIvI
                  II <= LI;
                  II++)
             {
-                TI2 = imul64 (ZI, II + TI, &bRet);
+                TI2 = _imul64 (ZI, II + TI, &bRet);
                 if (bRet)
                     ZI = TI2 / II;
                 else

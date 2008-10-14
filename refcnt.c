@@ -32,6 +32,11 @@
 #include "compro.h"
 #endif
 
+#ifdef DEBUG
+extern HGLOBAL hGlbRC1,             // ***DEBUG***
+               hGlbRC2;             // ***DEBUG***
+#endif
+
 
 //***************************************************************************
 //  $ChangeRefCntDir
@@ -61,8 +66,17 @@ int ChangeRefCntDir
             return 1;
 
         case PTRTYPE_HGLOBAL:
+            // Clear the ptr type bits
+            hGlb = ClrPtrTypeDirAsGlb (hGlb);
+#ifdef DEBUG
+            if (hGlb EQ hGlbRC1)            // ***DEBUG***
+                DbgBrk ();
+
+            if (hGlb EQ hGlbRC2)            // ***DEBUG***
+                DbgBrk ();
+#endif
             // Lock the memory to get a ptr to it
-            lpSig = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlb));
+            lpSig = MyGlobalLock (hGlb);
 
             // Split cases based upon the array signature
             switch (((LPHEADER_SIGNATURE) lpSig)->nature)
@@ -72,8 +86,8 @@ int ChangeRefCntDir
                     // Don't change the reference count on Perms
                     if (lpHeader->PermNdx NE PERMNDX_NONE)
                     {
-#ifdef DEBUG
-////////////////////////dprintfW (L"  RefCntNC in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
+#ifdef DEBUG_REFCNT
+                        dprintfW9 (L"  RefCntNC in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt, FNLN);
 #endif
                         RefCnt = NEG1U;
 
@@ -81,8 +95,14 @@ int ChangeRefCntDir
                     } // End IF
 
                     // Change the reference count
-#ifdef DEBUG
-////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+#ifdef DEBUG_REFCNT
+                    if (iIncr EQ 1)
+                        dprintfW9 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                    else
+                    if (iIncr EQ -1)
+                        dprintfW9 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                    else
+                        DbgStop ();
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;
@@ -93,8 +113,14 @@ int ChangeRefCntDir
                 case FCNARRAY_HEADER_SIGNATURE:
 #define lpHeader        ((LPFCNARRAY_HEADER) lpSig)
                     // Change the reference count
-#ifdef DEBUG
-////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+#ifdef DEBUG_REFCNT
+                    if (iIncr EQ 1)
+                        dprintfW9 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                    else
+                    if (iIncr EQ -1)
+                        dprintfW9 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                    else
+                        DbgStop ();
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;
@@ -108,15 +134,23 @@ int ChangeRefCntDir
                     // Don't change the reference count on permanent functions (i.e. Magic Functions)
                     if (lpHeader->PermFn)
                     {
-#ifdef DEBUG
-////////////////////////dprintfW (L"  RefCntNC in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
+#ifdef DEBUG_REFCNT
+                        dprintfW9 (L"  RefCntNC in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt, FNLN);
 #endif
                         RefCnt = NEG1U;
 
                         break;
                     } // End IF
-#ifdef DEBUG
-////////////////////dprintfW (L"  RefCnt   in " APPEND_NAME L": %p(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+
+                    // Change the reference count
+#ifdef DEBUG_REFCNT
+                    if (iIncr EQ 1)
+                        dprintfW9 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                    else
+                    if (iIncr EQ -1)
+                        dprintfW9 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                    else
+                        DbgStop ();
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;
@@ -128,7 +162,7 @@ int ChangeRefCntDir
                     return -1;
             } // End SWITCH
 
-            MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlb)); lpSig = NULL;
+            MyGlobalUnlock (hGlb); lpSig = NULL;
 
             return RefCnt;
 
@@ -147,10 +181,10 @@ int ChangeRefCntDir
 //***************************************************************************
 
 int IncrRefCntDir
-    (LPVOID lpMem)
+    (HGLOBAL hGlb)
 
 {
-    return ChangeRefCntDir (lpMem, 1);
+    return ChangeRefCntDir (hGlb, 1);
 } // End IncrRefCntDir
 
 
@@ -165,7 +199,7 @@ int IncrRefCntInd
     (LPVOID lpMem)
 
 {
-    return ChangeRefCntDir (*(LPVOID *) lpMem, 1);
+    return ChangeRefCntDir (*(HGLOBAL *) lpMem, 1);
 } // End IncrRefCntInd
 
 
@@ -177,10 +211,10 @@ int IncrRefCntInd
 //***************************************************************************
 
 int DecrRefCntDir
-    (LPVOID lpMem)
+    (HGLOBAL hGlb)
 
 {
-    return ChangeRefCntDir (lpMem, -1);
+    return ChangeRefCntDir (hGlb, -1);
 } // End DecrRefCntDir
 
 
@@ -195,8 +229,36 @@ int DecrRefCntInd
     (LPVOID lpMem)
 
 {
-    return ChangeRefCntDir (*(LPVOID *) lpMem, -1);
+    return ChangeRefCntDir (*(HGLOBAL *) lpMem, -1);
 } // End DecrRefCntInd
+
+
+//***************************************************************************
+//  $GetRefCntGlb
+//
+//  Get the reference count from a global memory handle
+//***************************************************************************
+
+UINT GetRefCntGlb
+    (HGLOBAL hGlbArg)           // Arg global memory handle
+
+{
+    LPVARARRAY_HEADER lpMemHdr; // Ptr to global memory header
+    UINT              uRefCnt;  // The array reference count
+
+    // Lock the memory to get a ptr to it
+    lpMemHdr = MyGlobalLock (hGlbArg);
+
+    Assert (((LPHEADER_SIGNATURE) lpMemHdr)->nature EQ VARARRAY_HEADER_SIGNATURE);
+
+    // Get the reference count
+    uRefCnt = lpMemHdr->RefCnt;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbArg); lpMemHdr = NULL;
+
+    return uRefCnt;
+} // End GetRefCntGlb
 
 
 //***************************************************************************

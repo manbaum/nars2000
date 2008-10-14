@@ -32,10 +32,18 @@ typedef WCHAR       APLCHAR;            // ...         ...           a character
 typedef double      APLFLOAT;           // ...         ...           a Floating Point array
 typedef HGLOBAL     APLNESTED;          // ...         ...           a nested array
 typedef struct tagSYMENTRY *APLHETERO;  // ...         ...           a HETERO array
-typedef LPVOID      APLLIST;            // ...                       a list
+typedef struct tagTOKEN APLLIST;        // ...                       a list
 typedef UCHAR       APLSTYPE;           // Storage type (see ARRAY_TYPES)
 
-// APLLIST and APLNESTED may be either an LPSYMENTRY or
+#if defined (_WIN32)
+  typedef          __int32 APLI3264;    // Widest native signed value
+  typedef unsigned __int32 APLU3264;    // ...           unsigned ...
+#elif defined (_WIN64)
+  typedef          __int64 APLI3264;    // Widest native signed value
+  typedef unsigned __int64 APLU3264;    // ...           unsigned ...
+#endif
+
+// APLNESTED may be either an LPSYMENTRY or
 //   an HGLOBAL.
 // APLHETERO may be an LPSYMENTRY only.
 
@@ -49,8 +57,12 @@ typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMT
 #define MIN_APLINT      0x8000000000000000                      // Smallest APLINT
 #define MIN_APLINT_STR  WS_UTF16_OVERBAR L"9223372036854775808" // ...      ...    as a string
 
+// # bits in an APLxxx
+#define BITS_IN_APLCHAR (NBIB * (sizeof (APLCHAR)))
+#define BITS_IN_APLINT  (NBIB * (sizeof (APLINT )))
+
 // # integers in an APLCHAR
-#define APLCHAR_SIZE    (BIT0 << (NBIB * sizeof (APLCHAR)))
+#define APLCHAR_SIZE    (BIT0 << BITS_IN_APLCHAR)
 
 // Define ptrs
 typedef char      * LPCHAR;
@@ -105,7 +117,7 @@ typedef enum tagARRAY_TYPES
  ARRAY_LENGTH,              // 08:  # elements in this enum
                             //      *MUST* be the last non-error entry
                             // 09-0F:  Available entries (4 bits)
- ARRAY_MIXED = (APLSTYPE) -2,
+ ARRAY_INIT  = ARRAY_LENGTH,
  ARRAY_ERROR = (APLSTYPE) -1,
 
 // Whenever changing this <enum>, be sure to make a
@@ -144,7 +156,8 @@ in the symbol table.  If it's in the symbol table, it is identified
 by its symbol table index.
 
 All variable arrays in memory have a common header (VARARRAY_HEADER).
-All function arrays in memory have a common header (FCNARRAY_HEADER).
+All function ...                                   (FCNARRAY_HEADER).
+All list     ...                                   (LSTARRAY_HEADER).
 
 
 Array Contents
@@ -179,8 +192,7 @@ ARRAY_NESTED    One value per APLNESTED, stored sequentially.
                 all of which are distinguished by the low-order two bits.
 
 ARRAY_LIST      One value per APLLIST, stored sequentially.
-                Values are either LPSYMENTRYs or HGLOBALs (which
-                point to one of the other Array Types).
+                Values are either VARIMMED, VARARRAY, or LISTSEP tokens.
 
 ARRAY_APA       An APA is a representation of a1 + a2 {times} {iota} a3
                 in origin-0.
@@ -233,6 +245,16 @@ typedef struct tagVARARRAY_HEADER
                                 // 14:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
 
+// List array header
+#define LSTARRAY_HEADER_SIGNATURE   'TSIL'
+
+typedef struct tagLSTARRAY_HEADER
+{
+    HEADER_SIGNATURE Sig;       // 00:  Array header signature
+    APLNELM          NELM;      // 04:  # elements in the array (8 bytes)
+                                // 0C:  Length
+} LSTARRAY_HEADER, *LPLSTARRAY_HEADER;
+
 // Function array header signature
 #define FCNARRAY_HEADER_SIGNATURE   'SNCF'
 
@@ -256,7 +278,7 @@ typedef struct tagFCNARRAY_HEADER
 typedef struct tagVARNAMED_HEADER
 {
     HEADER_SIGNATURE Sig;       // 00:  Array header signature
-    APLNELM          NELM;      // 04:  # elements in the array
+    APLNELM          NELM;      // 04:  # elements in the array (8 bytes)
                                 // 0C:  Length
 } VARNAMED_HEADER, *LPVARNAMED_HEADER;
 

@@ -177,7 +177,7 @@ typedef enum tagEXIT_TYPES
     EXITTYPE_NODISPLAY,         // 0B:  Value already displayed
     EXITTYPE_NOVALUE,           // 0C:  No value returned
                                 // 0D-0F:  Available entries (4 bits)
-} EXIT_TYPES;
+} EXIT_TYPES, *LPEXITTYPES;
 
 // Resource debugging
 #define MAXOBJ  128000
@@ -201,6 +201,15 @@ typedef enum tagEXIT_TYPES
 // Mask for LOG2NBIB bits
 #define MASKLOG2NBIB    ((BIT0 << LOG2NBIB) - 1)    // a.k.a. (NBIB - 1)
 
+// # bits in a word
+#define NBIW           16
+
+// Log base 2 of NBIW
+#define LOG2NBIW        4
+
+// Mask for LOG2NBIW bits
+#define MASKLOG2NBIW    ((BIT0 << LOG2NBIW) - 1)    // a.k.a. (NBIW - 1)
+
 // # bits in a dword
 #define NBID           32
 
@@ -209,6 +218,15 @@ typedef enum tagEXIT_TYPES
 
 // Mask for LOG2NBID bits
 #define MASKLOG2NBID    ((BIT0 << LOG2NBID) - 1)    // a.k.a. (NBID - 1)
+
+// # bits in a qword
+#define NBIQ           64
+
+// Log base 2 of NBIQ
+#define LOG2NBIQ        6
+
+// Mask for LOG2NBIQ bits
+#define MASKLOG2NBIQ    ((BIT0 << LOG2NBIQ) - 1)    // a.k.a. (NBIQ - 1)
 
 // End value for shift mask
 #define END_OF_BYTE     (BIT0 << NBIB)

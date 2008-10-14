@@ -26,10 +26,12 @@
 #define DEF_QUADxCT_CWS     0x3CEB05876E5B0120      // 3E-15 in hex
 #define DEF_QUADFC_CWS      L".,*0_" WS_UTF16_OVERBAR
 #define DEF_QUADFC_CWS_BR   L".,*0_{overbar}"       // The braces form of DEF_QUAD_FC_CWS
+#define DEF_QUADFC_CWS_LEN  ((sizeof (DEF_QUADFC_CWS) / sizeof (DEF_QUADFC_CWS[0])) - 1)
 #define DEF_QUADIC_CWS      aplDefaultIC
 #define DEF_QUADFC_GLB      hGlbQuadFC_SYS
 #define DEF_QUADIC_GLB      hGlbQuadIC_SYS
 #define DEF_QUADIO_CWS          1
+#define DEF_QUADMF_CWS          2
 #define DEF_QUADPP_CWS         10
 #define DEF_QUADPW_CWS         80
 #define DEF_QUADRL_CWS      16807

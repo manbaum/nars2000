@@ -80,13 +80,13 @@
 
 // The following defines must be in sequence
 #define IDD_PROPPAGE_CLEARWS_VALUES              123
-#define IDD_PROPPAGE_DIRS                        124
-#define IDD_PROPPAGE_FONTS                       125
-#define IDD_PROPPAGE_RANGE_LIMITS                126
-#define IDD_PROPPAGE_SYNTAX_COLORING             127
-#define IDD_PROPPAGE_SYSTEM_VAR_RESET            128
-#define IDD_PROPPAGE_TAB_COLORS                  129
-#define IDD_PROPPAGE_USER_PREFS                  130
+#define IDD_PROPPAGE_DIRS                               128 // Not implemented as yet
+#define IDD_PROPPAGE_FONTS                       124
+#define IDD_PROPPAGE_RANGE_LIMITS                125
+#define IDD_PROPPAGE_SYNTAX_COLORING                    129 // Not implemented as yet
+#define IDD_PROPPAGE_SYSTEM_VAR_RESET            126
+#define IDD_PROPPAGE_TAB_COLORS                         130 // Not implemented as yet
+#define IDD_PROPPAGE_USER_PREFS                  127
 
 #define IDM_EXIT                                 102
 
@@ -158,24 +158,29 @@
 #define IDC_CUST_LB                              811
 #define IDC_GROUPBOX                             812
 
+// The _EC and matching _LEN IDs must be consecutive
 #define IDC_CLEARWS_ALX_EC                       820
-#define IDC_CLEARWS_CT_EC                        821
-#define IDC_CLEARWS_ELX_EC                       822
-#define IDC_CLEARWS_FC_EC                        823
-#define IDC_CLEARWS_IO_EC                        824
-#define IDC_CLEARWS_IO_UD                        825
-#define IDC_CLEARWS_IC_CB1                       826
-#define IDC_CLEARWS_IC_CB2                       827
-#define IDC_CLEARWS_LX_EC                        828
-#define IDC_CLEARWS_PP_EC                        829
-#define IDC_CLEARWS_PP_UD                        830
-#define IDC_CLEARWS_PW_EC                        831
-#define IDC_CLEARWS_PW_UD                        832
-#define IDC_CLEARWS_RL_EC                        833
-#define IDC_CLEARWS_ALX_LEN                      834
-#define IDC_CLEARWS_ELX_LEN                      835
-#define IDC_CLEARWS_FC_LEN                       836
-#define IDC_CLEARWS_LX_LEN                       837
+#define IDC_CLEARWS_ALX_LEN                      821
+#define IDC_CLEARWS_CT_EC                        822
+#define IDC_CLEARWS_ELX_EC                       823
+#define IDC_CLEARWS_ELX_LEN                      824
+#define IDC_CLEARWS_FC_EC                        825
+#define IDC_CLEARWS_FC_LEN                       826
+#define IDC_CLEARWS_IO_EC                        827
+#define IDC_CLEARWS_IO_UD                        828
+#define IDC_CLEARWS_IC_CB1                       829
+#define IDC_CLEARWS_IC_CB2                       830
+#define IDC_CLEARWS_LX_EC                        831
+#define IDC_CLEARWS_LX_LEN                       832
+#define IDC_CLEARWS_MF_CB                        833
+#define IDC_CLEARWS_PP_EC                        834
+#define IDC_CLEARWS_PP_UD                        835
+#define IDC_CLEARWS_PW_EC                        836
+#define IDC_CLEARWS_PW_UD                        837
+#define IDC_CLEARWS_RL_EC                        838
+
+#define INI_BUTTON_TEXT     WS_UTF16_HORIZELLIPSIS
+#define SET_BUTTON_TEXT     WS_UTF16_CHECKMARK
 
 #define IDC_FONT1                                840
 #define IDC_FONT2                                841
@@ -222,6 +227,23 @@
 #define IDC_RANGE_XB_PP                          893
 #define IDC_RANGE_XB_PW                          894
 #define IDC_RANGE_XB_RL                          895
+
+#define IDC_RESET_TEXT                           900
+
+#define IDC_RESET_CT_RADIO1                      901
+#define IDC_RESET_CT_RADIO2                      902
+#define IDC_RESET_FC_RADIO1                      903
+#define IDC_RESET_FC_RADIO2                      904
+#define IDC_RESET_IC_RADIO1                      905
+#define IDC_RESET_IC_RADIO2                      906
+#define IDC_RESET_IO_RADIO1                      907
+#define IDC_RESET_IO_RADIO2                      908
+#define IDC_RESET_PP_RADIO1                      909
+#define IDC_RESET_PP_RADIO2                      910
+#define IDC_RESET_PW_RADIO1                      911
+#define IDC_RESET_PW_RADIO2                      912
+#define IDC_RESET_RL_RADIO1                      913
+#define IDC_RESET_RL_RADIO2                      914
 
 #define IDC_USER_PREFS_XB_ADJUSTPW              1000
 #define IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE   1001

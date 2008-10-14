@@ -27,17 +27,26 @@ TO DO:  General:  Less Important (post-alpha)
 * Never fail Tokenize_EM on SYNTAX ERROR
 * When editing a function, check to see if it's already open for editing
 * Rename PARSE.* to PL_PARSE.* and DFNHDR.* to FH_PARSE.*.
+* Implement :forlcl stmt which localizes the varname to the FOR loop
+* Boolean grade up/down??
+* Write the function name in the function editor title.
+* When removing a tab, )RESET and then remove all globals.
+* User preference to avoid saving Undo buffer with user-defined functions/operators.
+* Convert from ARRAY_CHAR (UCS-2) to ARRAY_CHAR8  for 0x00-0x7F,
+                                     ARRAY_CHAR16 for 0x0000-0xFFFF, and
+                                     ARRAY_CHAR32 for the rest so as to handle Unicode.
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
-* ...       magic functions for primitive functions
-* ...       magic functions for primitive operators
-* ...       magic functions for primitive datatypes
+* ...       user-defined magic functions for primitive functions
+* ...       user-defined magic functions for primitive operators
+* ...       user-defined magic functions for primitive datatypes
 * ...       complex numbers
 * ...       quaternions
 * ...       octonions
 * ...       rational numbers
-* ...       array predicates
+* ...       extended precision
+* ...       array predicates beyond Permutation Vectors
 * ...       syntax highlighting
 * ...       control structures
 * ...       []L and []R
@@ -246,6 +255,10 @@ DONE:  General
 * Use hourglass cursor during long computations
 * Test _MAXSIZE limits on VirtualAlloc
 * Check on freeing intermediate variables on error
+* Implement array predicates for Permutation Vectors
+* Optimize L[R] as it uses up a STE.
+* Unlocalize in one pass (and clear .Value), and restore
+  in another pass to handle duplicate localized names
 
 
 DONE:  Session Manager
@@ -308,6 +321,7 @@ QUESTIONS
 * What letters of Unicode should be allowed in var/fcn names?
 * Should []TS be a system variable?
 * How to produce )OUT for a variable with non-ASCII chars in its name?
+* Should we store complex #s as floats only or floats and ints?
 *
 
 ATF File Questions
@@ -347,8 +361,6 @@ Anomalous Results
 
 ToDo
 ----
-* Unlocalize in one pass (and clear .Value), and restore
-  in another pass to handle duplicate localized names
 * Review IBM APL2 Deviations & Restrictions
 * Optimize CopyArray_EM by copying the top level only
 *

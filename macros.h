@@ -31,6 +31,7 @@
 #define IsGlbTypeFcnInd(a)  (IsGlobalTypeArray (*(LPVOID *) (a), FCNARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeDfnDir(a)  (IsGlobalTypeArray (            (a), DFN_HEADER_SIGNATURE))
 #define IsGlbTypeNamDir(a)  (IsGlobalTypeArray (            (a), VARNAMED_HEADER_SIGNATURE))
+#define IsGlbTypeLstDir(a)  (IsGlobalTypeArray (            (a), LSTARRAY_HEADER_SIGNATURE))
 #define IsSymNoValue(a)     ((a)->stHshEntry EQ NULL                \
                           && (a)->stFlags.Perm                      \
                           && (a)->stFlags.Value EQ 0                \
@@ -39,7 +40,8 @@
 #define IsTokenNoValue(a)   ((a)                                    \
                           && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
                           && IsSymNoValue ((a)->tkData.tkSym))
-#define IsSysName(a)        ((a)[0] EQ UTF16_QUAD || (a)[0] EQ UTF16_QUOTEQUAD)
+#define IsSysName(a)        ((a)[0] EQ UTF16_QUAD  || (a)[0] EQ UTF16_QUOTEQUAD)
+#define IsDirectName(a)     ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA)
 
 #define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
 
@@ -74,19 +76,19 @@
 
   #ifdef DEBUG_REFCNT
     #define DbgIncrRefCntDir(hGlbData) \
-    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfW9 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     IncrRefCntDir (hGlbData)
 
     #define DbgIncrRefCntInd(hGlbData) \
-    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfW9 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     IncrRefCntInd (hGlbData)
 
     #define DbgDecrRefCntDir(hGlbData) \
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfW9 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntDir (hGlbData)
 
     #define DbgDecrRefCntInd(hGlbData) \
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfW9 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntInd (hGlbData)
   #else
     #define DbgIncrRefCntDir(hGlbData) \
@@ -102,11 +104,12 @@
     DecrRefCntInd (hGlbData)
   #endif
 
-  #define DbgMsgW2(a) {if (gDbgLvl > 2) {DbgMsgW(a);}}
+  #define DbgMsgW2(a)                     {if (gDbgLvl > 2) {DbgMsgW(a);}}
 
-  #define CheckMemStat()      _CheckMemStat ()
+  #define CheckMemStat()                  _CheckMemStat ()
 
-  #define Assert(a)     ((a) || (DbgBrk (), nop (), 0))
+  #define Assert(a)                       ((a) || (DbgBrk (), nop (), 0))
+  #define CheckCtrlBreak(a)               _CheckCtrlBreak(a)
 #else
   #define YYAlloc()     _YYAlloc()
 
@@ -128,9 +131,14 @@
 
   #define CheckMemStat()
 
-  #define Assert(a)     ((void) 0)
+  #define Assert(a)                       ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
+  #define CheckCtrlBreak(a)               (a)
 #endif
+
+#define imul64(a,b)         _imul64 ((a), (b), NULL)
+#define iadd64(a,b)         _iadd64 ((a), (b), NULL)
+#define isub64(a,b)         _isub64 ((a), (b), NULL)
 
 #define SIGN_APLNELM(a)     ((a) >> 63)     // Sign bit of an APLNELM
 #define SIGN_APLRANK(a)     ((a) >> 63)     // ...            APLRANK
@@ -179,6 +187,9 @@
 // Define macro for detecting list array type
 #define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
 
+// Define macro for detecting permuation vectors
+#define IsPermVector(lpHeader)          (lpHeader->PV0 || lpHeader->PV1)
+
 // Define macro for detecting scalars
 #define IsScalar(ArrRank)               ((ArrRank) EQ 0)
 
@@ -190,6 +201,9 @@
 
 // Define macro for detecting matrices or higher rank arrays
 #define IsMultiRank(ArrRank)            ((ArrRank) >  1)
+
+// Define macro for detecting rank 3 or higher rank arrays
+#define IsRank3P(ArrRank)               ((ArrRank) >  2)
 
 // Define macro for detecting empty arrays
 #define IsEmpty(ArrNELM)                ((ArrNELM) EQ 0)
@@ -235,6 +249,9 @@
 // Macro to skip from the named array base to the data
 #define VarNamedBaseToData(lpMem) (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (VARNAMED_HEADER))
 
+// Macro to skip from the list array base to the data
+#define LstArrayBaseToData(lpMem) (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (LSTARRAY_HEADER))
+
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
@@ -271,8 +288,8 @@
 // Note that the following macros depend upon
 //   the ordering of the enum IMM_TYPES in <symtab.h>
 #define IsImmBool(a)    ((a) EQ IMMTYPE_BOOL)
-#define IsImmInt(a)     ((a) < IMMTYPE_FLOAT)
-#define IsImmNum(a)     ((a) < IMMTYPE_CHAR)
+#define IsImmInt(a)     (IMMTYPE_ERROR < (a) && (a) < IMMTYPE_FLOAT)
+#define IsImmNum(a)     (IMMTYPE_ERROR < (a) && (a) < IMMTYPE_CHAR)
 #define IsImmFlt(a)     ((a) EQ IMMTYPE_FLOAT)
 #define IsImmChr(a)     ((a) EQ IMMTYPE_CHAR)
 
@@ -283,6 +300,9 @@
 #define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
 #define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
 #define IsNameTypeName(a)   (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_OP3)
+
+
+#define GetSignatureMem(a)  (((LPHEADER_SIGNATURE) (a))->nature)
 
 
 //***************************************************************************

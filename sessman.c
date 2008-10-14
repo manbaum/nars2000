@@ -475,6 +475,9 @@ void DisplayPrompt
      UINT uCaller)      // ***DEBUG***
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
 #ifdef DEBUG
     dprintfW (L"~~DisplayPrompt (%d)", uCaller);
 #endif
@@ -484,8 +487,17 @@ void DisplayPrompt
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
 
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Mark as no longer executing
-    bExecuting = FALSE;
+    lpMemPTD->bExecuting = FALSE;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
 ////if (bSetFocusSM)
 ////    // Set the focus to the Session Manager so the prompt displays
@@ -615,7 +627,7 @@ void FormatQQuadInput
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
         lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lpMemPTD->lpSISCur->lptkFunc->tkCharIndex;
@@ -1406,17 +1418,6 @@ WM_NCCREATE_FAIL:
             // Save in window extra bytes
             SetWindowLongPtrW (hWnd, GWLSF_HWNDEC, (__int3264) (LONG_PTR) hWndEC);
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Subclass the Edit Ctrl so we can handle some of its messages
-            (HANDLE_PTR) lpMemPTD->lpfnOldEditCtrlWndProc =
-              SetWindowLongPtrW (hWndEC,
-                                 GWL_WNDPROC,
-                                 (__int3264) (LONG_PTR) (WNDPROC) &LclEditCtrlWndProc);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             // Set the paint hook
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
 
@@ -1489,15 +1490,6 @@ WM_NCCREATE_FAIL:
             goto NORMAL_EXIT;       // Join common code
 
 WM_CREATE_FAIL_UNHOOK:
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Unhook the LclEditCtrlWndProc
-            SetWindowLongPtrW (hWndEC,
-                               GWL_WNDPROC,
-                               (__int3264) (LONG_PTR) lpMemPTD->lpfnOldEditCtrlWndProc);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 WM_CREATE_FAIL:
             // Send a constant message to the previous tab
             SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, hGlbPTD);
@@ -1513,6 +1505,18 @@ NORMAL_EXIT:
         case WM_SETCURSOR:          // hwnd = (HWND) wParam;       // handle of window with cursor
                                     // nHittest = LOWORD(lParam);  // hit-test code
                                     // wMouseMsg = HIWORD(lParam); // mouse-message identifier
+        {
+            UBOOL bExecuting;       // TRUE iff we're waiting for an execution to complete
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Mark as no longer executing
+            bExecuting = lpMemPTD->bExecuting;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             // If we're executing
             //   and the mouse is in the client area
             if (bExecuting && LOWORD (lParam) EQ HTCLIENT)
@@ -1524,6 +1528,7 @@ NORMAL_EXIT:
             } // End IF
 
             break;
+        } // End WM_SETCURSOR
 
         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
                                     // idChild = HIWORD(wParam);  // Identifier of child window

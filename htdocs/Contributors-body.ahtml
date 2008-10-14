@@ -26,7 +26,7 @@ Contributors</h1>
   <p>The Internet is a great resource, especially for software
     developers who need expert help in the guise of well-crafted
     code and useful ideas.  This project is no exception having
-    borrowed with great thanks from the following projects:</p>
+    borrowed with great thanks from the following sources:</p>
 
   <ul>
     <li><a class="linkleft" href="http://www.gnu.org/software/gsl/">GNU
@@ -45,6 +45,9 @@ Contributors</h1>
     <li><a class="linkleft" href="http://www.netlib.org/fp/">Numeric input/output conversion</a>
       routines by David M. Gay were invaluable for full numeric precision
       conversion (good to the last ULP!).</li>
+
+    <li>Bob Bernecky's <a class="linkleft" href="http://www.snakeisland.com/apexup.htm">APEX project</a>
+      contributed many test cases of APL code through which numerous bugs in NARS were found.</li>
   </ul>
 </div>
 
@@ -85,6 +88,9 @@ Contributors</h1>
       Proceedings of The Sixth International Conference on APL,
       1974, pp. 316-323.</li>
 
+    <li>The idea for <a class="linkleft" href="http://www.snakeisland.com/predicat.pdf">Array Predicates</a>
+      was taken from Bob Bernecky's <a class="linkleft" href="http://www.snakeisland.com/apexup.htm">APEX project</a>.</li>
+
     <li>This project benefited greatly by discussions (across several decades) with some
       of the many great APL implementors and designers who went
       before me.  To name but a few:  Larry Breed, Gene McDonnell,
@@ -96,8 +102,12 @@ Contributors</h1>
 <div class="section">
   <h2 id="Contributors">Contributors</h2>
 
-  <p>OK, what is it going to take to get your name here?  Don't
-    make me beg.</p>
+  <ul>
+    <li>Dave Durgee was especially helpful in testing the early beta release of NARS,
+      particularly with PC/3270 translations.</li>
+  </ul>
+
+  <p>OK, what is it going to take to get your name here?  Don't make me beg.</p>
 </div>
 <hr />
 

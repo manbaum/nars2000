@@ -346,7 +346,7 @@ void DeleteGlobalLinks
     while (lpSymLink)
     {
         // Free the global var/fcn/opr
-        FreeResultGlobalDFV (lpSymLink->stData.stGlbData);
+        FreeResultGlobalDFLV (lpSymLink->stData.stGlbData);
 
         // Point to the next entry and zap it
         lpSymLast = lpSymLink->stSymLink;
@@ -529,7 +529,7 @@ int CopyWsVars
                     // Set the stFlags & stData
                     lpSymEntry->stFlags.Imm      = FALSE;
                     lpSymEntry->stFlags.Value    = TRUE;
-                    lpSymEntry->stFlags.ImmType  = 0;
+                    lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
                     lpSymEntry->stData.stLongest = aplLongestObj;
                 } // End IF/ELSE
             } // End IF

@@ -43,6 +43,27 @@
 
 CDB_THREAD cdbThread;           // Temporary global
 
+
+#ifdef DEBUG
+//***************************************************************************
+//  $_CheckCtrlBreak
+//
+//  Check for Ctrl-Break, thus providing a place to put
+//    a breakpoint to catch when it is first checked.
+//***************************************************************************
+
+UBOOL _CheckCtrlBreak
+    (UBOOL bCtrlBreak)
+
+{
+    if (bCtrlBreak)
+        return TRUE;
+    else
+        return FALSE;
+} // End _CheckCtrlBreak
+#endif
+
+
 ////#ifndef DEBUG
 //////***************************************************************************
 //////  $AssertPrint
@@ -745,7 +766,9 @@ void DbgMsg
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    if (hGlbPTD EQ NULL)
+        return;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -780,7 +803,9 @@ void DbgMsgW
     HWND         hWndDB;        // Debugger window handle
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    if (hGlbPTD EQ NULL)
+        return;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -868,6 +893,51 @@ int dprintf
 
     return iRet;
 } // End dprintf
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $dprintfW9
+//
+//  Display a debug message a la printfW
+//***************************************************************************
+
+int dprintfW9
+    (LPWCHAR lpwszFmt,
+     ...)
+
+{
+    va_list vl;
+    int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
+    WCHAR   wszTemp[1024];
+
+    // We hope that no one calls us with more than
+    //   eight arguments.
+    // Note we must grab them separately this way
+    //   as using va_arg in the argument list to
+    //   wsprintf pushes the arguments in reverse
+    //   order.
+    va_start (vl, lpwszFmt);
+
+    i1 = va_arg (vl, int);
+    i2 = va_arg (vl, int);
+    i3 = va_arg (vl, int);
+    i4 = va_arg (vl, int);
+    i5 = va_arg (vl, int);
+    i6 = va_arg (vl, int);
+    i7 = va_arg (vl, int);
+    i8 = va_arg (vl, int);
+
+    va_end (vl);
+
+    iRet = wsprintfW (wszTemp,
+                      lpwszFmt,
+                      i1, i2, i3, i4, i5, i6, i7, i8);
+    DbgMsgW (wszTemp);
+
+    return iRet;
+} // End dprintfW9
 #endif
 
 

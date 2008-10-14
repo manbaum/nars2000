@@ -191,18 +191,18 @@ LPPL_YYSTYPE PrimFnDydTackCommon_YY
     {
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbArg);
-////////lpYYRes->tkToken.tkCharIndex       =           // Already set
+////////lpYYRes->tkToken.tkCharIndex       =                // Already set
     } else
     {
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplType);
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
-////////lpYYRes->tkToken.tkCharIndex       =           // Already set
+////////lpYYRes->tkToken.tkCharIndex       =                // Already set
     } // End IF/ELSE
 
     return lpYYRes;

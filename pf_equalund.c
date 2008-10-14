@@ -126,6 +126,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     APLRANK      aplRankRht;
     HGLOBAL      hGlbRht;
     LPPL_YYSTYPE lpYYRes;
+    APLINT       aplIntegerRes;
 
     // Determine how deep the argument is.
     // Simple scalars:  0
@@ -136,18 +137,8 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
         goto SYNTAX_EXIT;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -156,7 +147,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     // If it's not nested,
     //   it's of depth 0 (scalar) or 1 (vector or higher)
     if (!IsNested (aplTypeRht))
-        lpYYRes->tkToken.tkData.tkInteger = !IsScalar (aplRankRht);
+        aplIntegerRes = !IsScalar (aplRankRht);
     else
     {
         // Split cases based upon the right arg's token type
@@ -192,14 +183,29 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
         } // End SWITCH
 
         // Recursively run through the elements of the nested array
-        lpYYRes->tkToken.tkData.tkInteger = PrimFnMonEqualUnderBarGlb (hGlbRht);
+        aplIntegerRes = PrimFnMonEqualUnderBarGlb (hGlbRht);
     } // End IF/ELSE
+
+    // Check for Ctrl-Break
+    if (aplIntegerRes EQ -1)
+        goto ERROR_EXIT;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkInteger  = aplIntegerRes;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
 
 SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
+ERROR_EXIT:
     return NULL;
 } // End PrimFnMonEqualUnderbar_EM_YY
 #undef  APPEND_NAME
@@ -215,13 +221,21 @@ APLINT PrimFnMonEqualUnderBarGlb
     (HGLOBAL hGlbRht)
 
 {
-    LPAPLNESTED lpMemRht;
-    APLSTYPE    aplTypeRht;
-    APLNELM     aplNELMRht;
-    APLRANK     aplRankRht;
-    APLUINT     uRes,
-                uRht,
-                uTmp;
+    LPAPLNESTED   lpMemRht;
+    APLSTYPE      aplTypeRht;
+    APLNELM       aplNELMRht;
+    APLRANK       aplRankRht;
+    APLUINT       uRes,
+                  uRht,
+                  uTmp;
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Split cases based upon the ptr bits
     switch (GetPtrTypeDir (hGlbRht))
@@ -263,6 +277,10 @@ APLINT PrimFnMonEqualUnderBarGlb
                 // Loop through the elements of the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Split cases based on the ptr type of the element
                     switch (GetPtrTypeDir (lpMemRht[uRht]))
                     {
@@ -291,6 +309,8 @@ APLINT PrimFnMonEqualUnderBarGlb
     } // End SWITCH
 
     return uRes;
+ERROR_EXIT:
+    return -1;
 } // End PrimFnMonEqualUnderBarGlb
 
 
@@ -313,37 +333,48 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,    // Left arg storage type
-                 aplTypeRht,    // Right ...
-                 aplTypeTmp;    // Temp ...
-    APLNELM      aplNELMLft,    // Left arg NELM
-                 aplNELMRht;    // Right ...
-    APLRANK      aplRankLft,    // Left arg rank
-                 aplRankRht;    // Right ...
-    HGLOBAL      hGlbLft,       // Left arg global memory handle
-                 hGlbRht;       // Right ...
-    LPVOID       lpMemLft,      // Ptr to left arg global memory
-                 lpMemRht;      // Ptr to right ...
-    LPTOKEN      lptkTmpArg;    // Ptr to temp arg token
-    UBOOL        bNumLft,       // TRUE iff left arg is simple numeric
-                 bNumRht;       // ...      right ...
-    APLINT       aplIntegerLft, // Left arg as integer
-                 aplIntegerRht; // Right ...
-    APLFLOAT     aplFloatLft,   // Left arg as float
-                 aplFloatRht;   // Right ...
-    APLCHAR      aplCharLft,    // Left arg as char
-                 aplCharRht;    // Right ...
-    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
-    APLFLOAT     fQuadCT;       // []CT
+    APLSTYPE      aplTypeLft,       // Left arg storage type
+                  aplTypeRht,       // Right ...
+                  aplTypeTmp;       // Temp ...
+    APLNELM       aplNELMLft,       // Left arg NELM
+                  aplNELMRht;       // Right ...
+    APLRANK       aplRankLft,       // Left arg rank
+                  aplRankRht;       // Right ...
+    HGLOBAL       hGlbLft,          // Left arg global memory handle
+                  hGlbRht;          // Right ...
+    LPVOID        lpMemLft,         // Ptr to left arg global memory
+                  lpMemRht;         // Ptr to right ...
+    LPTOKEN       lptkTmpArg;       // Ptr to temp arg token
+    UBOOL         bNumLft,          // TRUE iff left arg is simple numeric
+                  bNumRht;          // ...      right ...
+    APLINT        aplIntegerLft,    // Left arg as integer
+                  aplIntegerRht,    // Right ...
+                  aplIntegerRes;    // Result   ...
+    APLFLOAT      aplFloatLft,      // Left arg as float
+                  aplFloatRht;      // Right ...
+    APLCHAR       aplCharLft,       // Left arg as char
+                  aplCharRht;       // Right ...
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    APLFLOAT      fQuadCT;          // []CT
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
+
+    // Initialize the result
+    aplIntegerRes = FALSE;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
         goto SYNTAX_EXIT;
 
@@ -356,16 +387,6 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkBoolean  = FALSE;
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Because this function is commutative, we can switch
     //    the two args without loss of generality.
@@ -427,18 +448,19 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
                 {               // Both are numeric
                     if (IsSimpleInt (aplTypeLft)
                      && IsSimpleInt (aplTypeRht))
-                        lpYYRes->tkToken.tkData.tkBoolean = (aplIntegerLft EQ aplIntegerRht);
+                        aplIntegerRes = (aplIntegerLft EQ aplIntegerRht);
                     else
-                        lpYYRes->tkToken.tkData.tkBoolean = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
+                        aplIntegerRes = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
                 } else          // Both are char
                     // Compare the values
-                    lpYYRes->tkToken.tkData.tkBoolean = (aplCharLft EQ aplCharRht);
+                    aplIntegerRes = (aplCharLft EQ aplCharRht);
                 break;
             } // End IF
 
-            lpYYRes->tkToken.tkData.tkBoolean =
+            aplIntegerRes =
               PrimFnDydEqualUnderbarSimple (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
+                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
+                                            lpbCtrlBreak);
             break;
 
         case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
@@ -446,15 +468,39 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
             break;
 
         case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
-            lpYYRes->tkToken.tkData.tkBoolean =
+            aplIntegerRes =
               PrimFnDydEqualUnderbarNested (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
+                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
+                                            lpbCtrlBreak);
             break;
 
         defstop
             break;
     } // End SWITCH
 
+    // Check for Ctrl-Break
+    if (aplIntegerRes EQ -1)
+        goto ERROR_EXIT;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkBoolean  = (APLBOOL) (BIT0 & aplIntegerRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -468,11 +514,6 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     } // End IF
 
     return lpYYRes;
-
-SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
-    return NULL;
 } // End PrimFnDydEqualUnderbar_EM_YY
 #undef  APPEND_NAME
 
@@ -491,20 +532,21 @@ UBOOL PrimFnDydEqualUnderbarSimple
      LPVOID   lpMemRht,
      APLSTYPE aplTypeRht,
      APLNELM  aplNELMRht,
-     APLRANK  aplRankRht)
+     APLRANK  aplRankRht,
+     LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
-    APLINT   uDim,
-             apaOff,
-             apaMul;
-    UINT     uBitMask = 0x01;
-    APLINT   aplIntegerLft,
-             aplIntegerRht;
-    APLFLOAT aplFloatLft,
-             aplFloatRht;
-    APLCHAR  aplCharLft,
-             aplCharRht;
-    APLFLOAT fQuadCT;           // []CT
+    APLINT        uDim,
+                  apaOff,
+                  apaMul;
+    UINT          uBitMask = 0x01;
+    APLINT        aplIntegerLft,
+                  aplIntegerRht;
+    APLFLOAT      aplFloatLft,
+                  aplFloatRht;
+    APLCHAR       aplCharLft,
+                  aplCharRht;
+    APLFLOAT      fQuadCT;          // []CT
 
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
@@ -539,19 +581,39 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
-                        if ((uBitMask & *((LPAPLBOOL) lpMemLft))
-                         NE (uBitMask & *((LPAPLBOOL) lpMemRht)))
-                            return FALSE;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
 
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
+                        // Optimize for Booleans
+                        if ((aplNELMLft - uDim) >= BITS_IN_APLINT)
                         {
-                            uBitMask = 0x01;            // Start over
-                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                        } // End IF
+                            if ((*((LPAPLINT) lpMemLft))
+                             NE (*((LPAPLINT) lpMemRht)))
+                                return FALSE;
+                            // Increment the loop counter
+                            uDim += BITS_IN_APLINT - 1;
+
+                            // Increment the global memory ptrs
+                            ((LPAPLINT) lpMemLft)++;
+                            ((LPAPLINT) lpMemRht)++;
+                        } else
+                        {
+                            if ((uBitMask & *((LPAPLBOOL) lpMemLft))
+                             NE (uBitMask & *((LPAPLBOOL) lpMemRht)))
+                                return FALSE;
+
+                            // Shift over the bit mask
+                            uBitMask <<= 1;
+
+                            // Check for end-of-byte
+                            if (uBitMask EQ END_OF_BYTE)
+                            {
+                                uBitMask = 0x01;            // Start over
+                                ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                                ((LPAPLBOOL) lpMemRht)++;   // ...
+                            } // End IF
+                        } // End IF/ELSE
                     } // End FOR
 
                     return TRUE;
@@ -560,7 +622,11 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
-                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE)
                          NE *((LPAPLINT) lpMemRht)++)
                             return FALSE;
 
@@ -581,7 +647,11 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
-                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE)
                          NE *((LPAPLFLOAT) lpMemRht)++)
                             return FALSE;
 
@@ -607,7 +677,11 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
-                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE)
                          NE (apaOff + apaMul * uDim))
                             return FALSE;
 
@@ -631,17 +705,21 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Split cases based upon the hetero's storage type
                         switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
                         {
                             case ARRAY_BOOL:    // Lft = BOOL, Rht = BOOL
                             case ARRAY_INT:     // Lft = BOOL, Rht = INT
-                                if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0) NE aplIntegerRht)
+                                if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE) NE aplIntegerRht)
                                     return FALSE;
                                 break;
 
                             case ARRAY_FLOAT:   // Lft = BOOL, Rht = FLOAT
-                                if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0) NE aplFloatRht)
+                                if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE) NE aplFloatRht)
                                     return FALSE;
                                 break;
 
@@ -676,15 +754,29 @@ UBOOL PrimFnDydEqualUnderbarSimple
                 case ARRAY_INT:     // Lft = INT, Rht = INT
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (*((LPAPLINT) lpMemLft)++ NE *((LPAPLINT) lpMemRht)++)
-                        return FALSE;
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (*((LPAPLINT) lpMemLft)++ NE *((LPAPLINT) lpMemRht)++)
+                            return FALSE;
+                    } // End FOR
+
                     return TRUE;
 
                 case ARRAY_FLOAT:   // Lft = INT, Rht = FLOAT
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (!CompareCT ((APLFLOAT) *((LPAPLINT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
-                        return FALSE;
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (!CompareCT ((APLFLOAT) *((LPAPLINT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
+                            return FALSE;
+                    } // End FOR
+
                     return TRUE;
 
                 case ARRAY_APA:     // Lft = INT, Rht = APA
@@ -695,8 +787,15 @@ UBOOL PrimFnDydEqualUnderbarSimple
 #undef  lpAPA
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (*((LPAPLINT) lpMemLft)++ NE (apaOff + apaMul * uDim))
-                        return FALSE;
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (*((LPAPLINT) lpMemLft)++ NE (apaOff + apaMul * uDim))
+                            return FALSE;
+                    } // End FOR
+
                     return TRUE;
 
                 case ARRAY_CHAR:    // Lft = INT, Rht = CHAR
@@ -706,6 +805,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Split cases based upon the hetero's storage type
                         switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
                         {
@@ -730,7 +833,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                     return TRUE;
 
-                case ARRAY_BOOL:    // Lft = INT, Rht = BOOL   (Can't happen)
+                case ARRAY_BOOL:    // Lft = INT, Rht = BOOL    (Can't happen)
                 defstop
                     return FALSE;
             } // End SWITCH
@@ -742,8 +845,15 @@ UBOOL PrimFnDydEqualUnderbarSimple
                 case ARRAY_FLOAT:   // Lft = FLOAT, Rht = FLOAT
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
-                        return FALSE;
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
+                            return FALSE;
+                    } // End FOR
+
                     return TRUE;
 
                 case ARRAY_APA:     // Lft = FLOAT, Rht = APA
@@ -754,8 +864,15 @@ UBOOL PrimFnDydEqualUnderbarSimple
 #undef  lpAPA
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, (APLFLOAT) (apaOff + apaMul * uDim), fQuadCT, NULL))
-                        return FALSE;
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, (APLFLOAT) (apaOff + apaMul * uDim), fQuadCT, NULL))
+                            return FALSE;
+                    } // End FOR
+
                     return TRUE;
 
                 case ARRAY_CHAR:    // Lft = FLOAT, Rht = CHAR
@@ -765,6 +882,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Split cases based upon the hetero's storage type
                         switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
                         {
@@ -789,7 +910,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                     return TRUE;
 
-                case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL (Can't happen)
+                case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL  (Can't happen)
                 case ARRAY_INT:     // Lft = FLOAT, Rht = INT   (Can't happen)
                 defstop
                     return FALSE;
@@ -805,6 +926,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
             switch (aplTypeRht)
             {
                 case ARRAY_APA:     // Lft = APA, Rht = APA
+                    // If the args are empty, they're equal
+                    if (aplNELMLft EQ 0)
+                        return TRUE;
+
                     // Compare the APA offsets and multipliers
 #define lpAPA       ((LPAPLAPA) lpMemRht)
                     return ((apaOff EQ lpAPA->Off)
@@ -817,6 +942,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Split cases based upon the hetero's storage type
                         switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
                         {
@@ -841,7 +970,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                     return TRUE;
 
-                case ARRAY_BOOL:    // Lft = APA, Rht = BOOL   (Can't happen)
+                case ARRAY_BOOL:    // Lft = APA, Rht = BOOL    (Can't happen)
                 case ARRAY_INT:     // Lft = APA, Rht = INT     (Can't happen)
                 case ARRAY_FLOAT:   // Lft = APA, Rht = FLOAT   (Can't happen)
                 defstop
@@ -855,14 +984,25 @@ UBOOL PrimFnDydEqualUnderbarSimple
                 case ARRAY_CHAR:    // Lft = CHAR, Rht = CHAR
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (*((LPAPLCHAR) lpMemLft)++ NE *((LPAPLCHAR) lpMemRht)++)
-                        return FALSE;
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (*((LPAPLCHAR) lpMemLft)++ NE *((LPAPLCHAR) lpMemRht)++)
+                            return FALSE;
+                    } // End FOR
+
                     return TRUE;
 
                 case ARRAY_HETERO:  // Lft = CHAR, Rht = HETERO
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Split cases based upon the hetero's storage type
                         switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
                         {
@@ -883,7 +1023,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                     return TRUE;
 
-                case ARRAY_BOOL:    // Lft = CHAR, Rht = BOOL  (Can't happen)
+                case ARRAY_BOOL:    // Lft = CHAR, Rht = BOOL   (Can't happen)
                 case ARRAY_INT:     // Lft = CHAR, Rht = INT    (Can't happen)
                 case ARRAY_FLOAT:   // Lft = CHAR, Rht = FLOAT  (Can't happen)
                 case ARRAY_APA:     // Lft = CHAR, Rht = APA    (Can't happen)
@@ -899,6 +1039,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Get the next values and type
                         aplTypeLft = GetNextHetero (lpMemLft, uDim, &aplIntegerLft, &aplFloatLft, &aplCharLft);
                         aplTypeRht = GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht);
@@ -989,6 +1133,9 @@ UBOOL PrimFnDydEqualUnderbarSimple
         defstop
             return FALSE;
     } // End SWITCH
+
+ERROR_EXIT:
+    return -1;
 } // End PrimFnDydEqualUnderbarSimple
 
 
@@ -1006,23 +1153,24 @@ UBOOL PrimFnDydEqualUnderbarNested
      LPVOID   lpMemRht,
      APLSTYPE aplTypeRht,
      APLNELM  aplNELMRht,
-     APLRANK  aplRankRht)
+     APLRANK  aplRankRht,
+     LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
-    APLUINT  uDim;
-    APLNELM  aplNELMLft2,
-             aplNELMRht2;
-    LPVOID   lpMemLft2,
-             lpMemRht2;
-    APLINT   aplIntegerLft,
-             aplIntegerRht;
-    APLFLOAT aplFloatLft,
-             aplFloatRht;
-    APLCHAR  aplCharLft,
-             aplCharRht;
-    UINT     ptrType;
-    UBOOL    bRet = TRUE;
-    APLFLOAT fQuadCT;           // []CT
+    APLUINT       uDim;
+    APLNELM       aplNELMLft2,
+                  aplNELMRht2;
+    LPVOID        lpMemLft2,
+                  lpMemRht2;
+    APLINT        aplIntegerLft,
+                  aplIntegerRht;
+    APLFLOAT      aplFloatLft,
+                  aplFloatRht;
+    APLCHAR       aplCharLft,
+                  aplCharRht;
+    UINT          ptrType;
+    UBOOL         bRet = TRUE;
+    APLFLOAT      fQuadCT;          // []CT
 
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
@@ -1046,6 +1194,10 @@ UBOOL PrimFnDydEqualUnderbarNested
     // Loop through the elements
     for (uDim = 0; bRet && uDim < aplNELMLft; uDim++, ((LPAPLNESTED) lpMemLft)++, ((LPAPLNESTED) lpMemRht)++)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
         // The ptr types must be the same
         ptrType = GetPtrTypeInd (lpMemLft);
         if (ptrType NE GetPtrTypeInd (lpMemRht))
@@ -1094,8 +1246,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                 // Get the attrs (Type, NELM, and Rank) of the left and right elements
                 // Note that we overwrite the incoming parameters aplTypeXXX and aplRankXXX
                 //   as we no longer need those variables.
-                AttrsOfGlb (ClrPtrTypeIndAsGlb (lpMemLft), &aplTypeLft, &aplNELMLft2, &aplRankLft, NULL);
-                AttrsOfGlb (ClrPtrTypeIndAsGlb (lpMemRht), &aplTypeRht, &aplNELMRht2, &aplRankRht, NULL);
+                AttrsOfGlb (*(LPAPLNESTED) lpMemLft, &aplTypeLft, &aplNELMLft2, &aplRankLft, NULL);
+                AttrsOfGlb (*(LPAPLNESTED) lpMemRht, &aplTypeRht, &aplNELMRht2, &aplRankRht, NULL);
 
                 // Ensure same rank and # elements
                 if (aplRankLft NE aplRankRht
@@ -1118,10 +1270,12 @@ UBOOL PrimFnDydEqualUnderbarNested
                         //    and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
                         if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
                             bRet = PrimFnDydEqualUnderbarSimple (lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
-                                                                 lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft);
+                                                                 lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
+                                                                 lpbCtrlBreak);
                         else
                             bRet = PrimFnDydEqualUnderbarSimple (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
-                                                                 lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht);
+                                                                 lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
+                                                                 lpbCtrlBreak);
                         break;
 
                     case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
@@ -1132,7 +1286,8 @@ UBOOL PrimFnDydEqualUnderbarNested
 
                     case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
                         bRet = PrimFnDydEqualUnderbarNested (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
-                                                             lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht);
+                                                             lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
+                                                             lpbCtrlBreak);
                         break;
 
                     defstop
@@ -1151,6 +1306,8 @@ UBOOL PrimFnDydEqualUnderbarNested
     } // End FOR
 
     return bRet;
+ERROR_EXIT:
+    return -1;
 } // End PrimFnDydEqualUnderbarNested
 
 

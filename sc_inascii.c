@@ -37,6 +37,8 @@
 #include "compro.h"
 #endif
 
+#define LEADING_TEXT        L"FUNCTIONS COPIED:"
+
 
 //***************************************************************************
 //  $CmdInAscii_EM
@@ -55,7 +57,8 @@ UBOOL CmdInAscii_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
 
 {
-    UBOOL            bRet = FALSE;          // TRUE iff the result is valid
+    UBOOL            bRet = FALSE,          // TRUE iff the result is valid
+                     bLast;                 // TRUE iff the last call to InAsciiFile_EM was successful
     WIN32_FIND_DATAW findData = {0};        // Struct used with FindXXXX functions
     HANDLE           hFile;                 // File handle
     WCHAR            wszDrive[_MAX_DRIVE],  // Drive info from command line
@@ -72,8 +75,6 @@ UBOOL CmdInAscii_EM
     // Extract the Drive and Path from the command line
     _wsplitpath (lpwszTail, wszDrive, wszDir, NULL, NULL);
 
-#define LEADING_TEXT        L"FUNCTIONS COPIED:"
-
     // Initialize success string
     lstrcpyW (lpwszGlbTemp, LEADING_TEXT);
 
@@ -88,12 +89,12 @@ UBOOL CmdInAscii_EM
         do
         {
             // Process the file
-            if (!(bRet = InAsciiFile_EM (wszDrive,                  // Drive info from command line
-                                         wszDir,                    // Dir   ...
-                                         findData.cFileName,        // Filename.ext
-                                         lpwszGlbTemp,              // Ptr to string to which function named is appended
-                                         lstrlenW (LEADING_TEXT)))) // Length of leading text in success string
-                break;
+            bRet |= bLast =
+              InAsciiFile_EM (wszDrive,                     // Drive info from command line
+                              wszDir,                       // Dir   ...
+                              findData.cFileName,           // Filename.ext
+                              lpwszGlbTemp,                 // Ptr to string to which function named is appended
+                              lstrlenW (LEADING_TEXT));     // Length of leading text in success string
             // Count in another conversion
             uFcnCount++;
         } while  (FindNextFileW (hFile, &findData));
@@ -102,8 +103,8 @@ UBOOL CmdInAscii_EM
         FindClose (hFile);
 
         // Display the success string if there were
-        //   functions and all were successful
-        if (uFcnCount && bRet)
+        //   functions and at least one was successful
+        if (uFcnCount && bLast)
             ReplaceLastLineCRPmt (lpwszGlbTemp);
     } else
         goto FILENOTFOUND_EXIT;
@@ -160,11 +161,6 @@ UBOOL InAsciiFile_EM
 #define wszTempLen      (sizeof (wszTemp) / sizeof (wszTemp[0]))
     SF_FCNS             SF_Fcns = {0};              // Common struc for SaveFunctionCom
     AA_PARAMS           AA_Params = {0};            // Local struc for  ...
-    HGLOBAL             hGlbPTD;                    // PerTabData global memory handle
-    LPPERTABDATA        lpMemPTD;                   // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Put the Drive, Dir, and Filename.ext info together
     _wmakepath (wszDPFE, wszDrive, wszDir, lpwszFileName, NULL);
@@ -330,6 +326,7 @@ UBOOL InAsciiFile_EM
     // Setup
 
     // Fill in common values
+    SF_Fcns.bDisplayErr     = FALSE;                // DO NOT Display Errors
     SF_Fcns.SF_LineLen      = SF_LineLenAA;         // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineAA;        // Ptr to read line function
     SF_Fcns.SF_NumLines     = SF_NumLinesAA;        // Ptr to get # lines function
@@ -391,15 +388,22 @@ UBOOL InAsciiFile_EM
         // Display the text so far
         ReplaceLastLineCRPmt (lpwszTemp);
 
+        // Initialize success string
+        lstrcpyW (lpwszTemp, LEADING_TEXT);
+
         // If the error line # is NEG1U, there is an error message, so display it
         if (SF_Fcns.uErrLine EQ NEG1U)
-            goto ERRMSG_EXIT;
-
-        // Otherwise, display the error line # as an integer scalar (origin-sensitive)
-        wsprintfW (wszTemp,
-                   L"FUNCTION IN %s NOT DEFINED:  ERROR ON LINE %u",
-                   lpwszFileName,
-                   SF_Fcns.uErrLine);
+            wsprintfW (wszTemp,
+                       L"FUNCTION IN <%s> NOT DEFINED:  %s",
+                       lpwszFileName,
+                       SF_Fcns.wszErrMsg);
+        else
+            // Otherwise, display the error line # as an integer scalar (origin-sensitive)
+            wsprintfW (wszTemp,
+                       L"FUNCTION IN <%s> NOT DEFINED:  ERROR ON LINE %u",
+                       lpwszFileName,
+                       SF_Fcns.uErrLine);
+        // Display the line
         ReplaceLastLineCRPmt (wszTemp);
 
         goto ERROR_EXIT;
@@ -417,18 +421,6 @@ FILENOTFOUND_EXIT:
 
 WSFULL_EXIT:
     ReplaceLastLineCRPmt (ERRMSG_WS_FULL APPEND_NAME);
-
-    goto ERROR_EXIT;
-
-ERRMSG_EXIT:
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Display the error message
-    ReplaceLastLineCRPmt (lpMemPTD->lpwszErrorMessage);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     goto ERROR_EXIT;
 

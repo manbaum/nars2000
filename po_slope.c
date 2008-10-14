@@ -175,6 +175,14 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
     LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
@@ -282,9 +290,9 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         uDimHi *= lpMemDimRht[uDim];
 
     // Calculate the result NELM
-    aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
+    aplNELMRes = _imul64 (uDimLo, uDimHi, &bRet);
     if (bRet || IsZeroDim (uDimAxRht))
-        aplNELMRes = imul64 (aplNELMRes, uDimAxRht, &bRet);
+        aplNELMRes = _imul64 (aplNELMRes, uDimAxRht, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 
@@ -550,6 +558,10 @@ RESTART_EXCEPTION:
                 // Loop forwards through the elements along the specified axis
                 for (uAx = 1; uAx < uDimAxRht; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Calculate the index of the next element in this vector
                     uRht = uDimRht + uAx * uDimHi;
 
@@ -701,6 +713,10 @@ RESTART_EXCEPTION:
                 // Loop backwards through the elements along the specified axis
                 for (iDim = uAx - 1; iDim >= 0; iDim--)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Calculate the index of the previous element in this vector
                     uRht = uDimRht + iDim * uDimHi;
 
@@ -839,8 +855,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 

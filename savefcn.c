@@ -39,6 +39,11 @@
 #include "compro.h"
 #endif
 
+#ifdef DEBUG
+HGLOBAL hGlbRC1,                // ***DEBUG***
+        hGlbRC2;                // ***DEBUG***
+#endif
+
 
 //***************************************************************************
 //  $SaveFunction
@@ -59,6 +64,7 @@ UBOOL SaveFunction
     SF_FCNS SF_Fcns = {0};
 
     // Fill in common values
+    SF_Fcns.bDisplayErr     = TRUE;             // Display Errors
     SF_Fcns.SF_LineLen      = SF_LineLenFE;     // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineFE;    // Ptr to read line function
     SF_Fcns.SF_NumLines     = SF_NumLinesFE;    // Ptr to get # lines function
@@ -1185,7 +1191,7 @@ UBOOL SaveFunctionCom
                     MEM_COMMIT,
                     PAGE_READWRITE);
     // Parse the header
-    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
+    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, lpSF_Fcns->bDisplayErr))
     {
         UINT         uLineNum,          // Current line # in the Edit Ctrl
                      uOffset,           // Cumulative offset
@@ -1320,7 +1326,14 @@ UBOOL SaveFunctionCom
                                            lpSF_Fcns->lptkFunc);
             goto ERROR_EXIT;
         } // End IF
-
+#ifdef DEBUG
+////    // If it's named <times>, ...
+////    if (lstrcmpW ((*lpSymName->stHshEntry->lplpaplChar6)->aplChar, L"times") EQ 0)
+////        hGlbRC1 = hGlbDfnHdr;
+////    // If it's named <from>, ...
+////    if (lstrcmpW ((*lpSymName->stHshEntry->lplpaplChar6)->aplChar, L"rle4" ) EQ 0)
+////        hGlbRC2 = hGlbDfnHdr;
+#endif
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
@@ -1354,6 +1367,7 @@ UBOOL SaveFunctionCom
                                   : NULL;
         lpMemDfnHdr->hGlbTxtHdr   = hGlbTxtHdr;
         lpMemDfnHdr->hGlbTknHdr   = hGlbTknHdr;
+////////lpMemDfnHdr->hGlbMonInfo  = NULL;           // Already zero from GHND
 
         // Save creation time
         lpMemDfnHdr->ftCreation = ftCreation;
@@ -1532,9 +1546,6 @@ UBOOL SaveFunctionCom
                 goto ERROR_EXIT;
             } // End IF
 
-            // No monitor info as yet
-            lpFcnLines->hGlbMonInfo = NULL;
-
             // Transfer Stop & Trace info
             lpFcnLines->bStop  =
             lpFcnLines->bTrace = FALSE;     // ***FIXME*** -- transfer from orig fn
@@ -1650,10 +1661,13 @@ UBOOL SaveFunctionCom
 
         goto NORMAL_EXIT;
     } else
+        // Copy the error message up the line
+        lstrcpyW (lpSF_Fcns->wszErrMsg, fhLocalVars.wszErrMsg);
+ERROR_EXIT:
     if (hWndFE)
         // Ensure the FE window redraws the caret
         SetFocus (hWndFE);
-ERROR_EXIT:
+
     if (hGlbDfnHdr)
     {
         FreeResultGlobalDfn (hGlbDfnHdr); hGlbDfnHdr = NULL;

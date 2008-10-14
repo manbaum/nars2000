@@ -51,7 +51,7 @@ PRIMSPEC PrimSpecBar =
     NULL,   // &PrimFnMonBarIisF, -- Can't happen w/Bar
 
 ////               FisB,     // Handled via type promotion (to FisI)
-    NULL,   // &PrimFnMonBarFisI, -- Can't happen w/Bar
+    &PrimFnMonBarFisI,
     &PrimFnMonBarFisF,
 
     // Dyadic functions
@@ -163,6 +163,21 @@ APLINT PrimFnMonBarIisI
 
 
 //***************************************************************************
+//  $PrimFnMonBarFisI
+//
+//  Primitive scalar function monadic Bar:  F {is} fn I
+//***************************************************************************
+
+APLFLOAT PrimFnMonBarFisI
+    (APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return -(APLFLOAT) aplIntegerRht;
+} // End PrimFnMonBarFisI
+
+
+//***************************************************************************
 //  $PrimFnMonBarFisF
 //
 //  Primitive scalar function monadic Bar:  F {is} fn F
@@ -198,8 +213,10 @@ UBOOL PrimFnMonBarAPA_EM
      LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
-    LPVOID  lpMemRes;
-    APLRANK aplRankRes;
+    LPVOID  lpMemRes;               // Ptr to result global memory
+    APLNELM aplNELMRes;             // Result NELM
+    APLRANK aplRankRes;             // Result rank
+    UBOOL   bRet = FALSE;           // TRUE iff the result is valid
 
     DBGENTER;
 
@@ -207,20 +224,26 @@ UBOOL PrimFnMonBarAPA_EM
 
     *lphGlbRes = CopyArray_EM (hGlbRht, lptkFunc);
     if (!*lphGlbRes)
-        goto WSFULL_EXIT;
+        goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    aplNELMRes = lpHeader->NELM;
     aplRankRes = lpHeader->Rank;
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // Negating the offset and multiplier negates the APA
+    // Check for un-negatable integer
 #define lpAPA       ((LPAPLAPA) lpMemRes)
+    if (lpAPA->Off EQ MIN_APLINT
+     || (lpAPA->Off + aplNELMRes * lpAPA->Mul) EQ MIN_APLINT)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
+    // Negating the offset and multiplier negates the APA
     lpAPA->Off = -lpAPA->Off;
     lpAPA->Mul = -lpAPA->Mul;
 #undef  lpAPA
@@ -232,21 +255,17 @@ UBOOL PrimFnMonBarAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     } // End IF
 
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
     DBGLEAVE;
 
-    return TRUE;
-
-WSFULL_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                               lptkFunc);
-    DBGLEAVE;
-
-    return FALSE;
+    return bRet;
 } // End PrimFnMonBarAPA_EM
 #undef  APPEND_NAME
 
@@ -265,7 +284,7 @@ APLSTYPE PrimSpecBarStorageTypeDyd
      LPAPLSTYPE lpaplTypeRht)
 
 {
-    APLSTYPE aplTypeRes;
+    APLSTYPE aplTypeRes;            // Result storage type
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
@@ -308,7 +327,7 @@ APLINT PrimFnDydBarIisIvI
 
 {
     // Subtract the two integers and signal overflow execption in <isub64>
-    return isub64 (aplIntegerLft, aplIntegerRht, NULL);
+    return isub64 (aplIntegerLft, aplIntegerRht);
 } // End PrimFnDydBarIisIvI
 
 
@@ -376,8 +395,9 @@ UBOOL PrimFnDydBarAPA_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to PRIMSPEC
 
 {
-    APLRANK aplRankRes;         // Result rank
-    LPVOID  lpMemRes;           // Ptr to result global memory
+    APLRANK aplRankRes;             // Result rank
+    LPVOID  lpMemRes;               // Ptr to result global memory
+    UBOOL   bRet = FALSE;           // TRUE iff the result is valid
 
     DBGENTER;
 
@@ -411,7 +431,7 @@ UBOOL PrimFnDydBarAPA_EM
         DbgStop ();     // We should never get here
 
     if (!*lphGlbRes)
-        goto WSFULL_EXIT;
+        goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -438,21 +458,17 @@ UBOOL PrimFnDydBarAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     } // End IF
 
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
     DBGLEAVE;
 
-    return TRUE;
-
-WSFULL_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                               lptkFunc);
-    DBGLEAVE;
-
-    return FALSE;
+    return bRet;
 } // End PrimFnDydBarAPA_EM
 #undef  APPEND_NAME
 

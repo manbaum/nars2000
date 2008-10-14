@@ -253,7 +253,7 @@ APLINT PrimFnDydTimesIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return imul64 (aplIntegerLft, aplIntegerRht, NULL);
+    return imul64 (aplIntegerLft, aplIntegerRht);
 } // End PrimFnDydTimesIisIvI
 
 
@@ -272,7 +272,7 @@ APLFLOAT PrimFnDydTimesFisIvI
     UBOOL  bRet = TRUE;
     APLINT aplRes;
 
-    aplRes = imul64 (aplIntegerLft, aplIntegerRht, &bRet);
+    aplRes = _imul64 (aplIntegerLft, aplIntegerRht, &bRet);
     if (bRet)
         return (APLFLOAT) aplRes;
 
@@ -341,8 +341,9 @@ UBOOL PrimFnDydTimesAPA_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-    APLRANK aplRankRes;     // Result rank
-    LPVOID  lpMemRes;       // Ptr to result global memory
+    APLRANK aplRankRes;             // Result rank
+    LPVOID  lpMemRes;               // Ptr to result global memory
+    UBOOL   bRet = FALSE;           // TRUE iff the result is valid
 
     DBGENTER;
 
@@ -376,7 +377,7 @@ UBOOL PrimFnDydTimesAPA_EM
         DbgStop ();     // We should never get here
 
     if (!*lphGlbRes)
-        goto WSFULL_EXIT;
+        goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -399,21 +400,17 @@ UBOOL PrimFnDydTimesAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     } // End IF
 
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
     DBGLEAVE;
 
-    return TRUE;
-
-WSFULL_EXIT:
-    DBGLEAVE;
-
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                               lptkFunc);
-    return FALSE;
+    return bRet;
 } // End PrimFnDydTimesAPA_EM
 #undef  APPEND_NAME
 

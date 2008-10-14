@@ -56,7 +56,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
     // Get the user-defined function/operator global memory handle
     hGlbProto = lptkFcnStr->tkData.tkGlbData;
 
-    Assert (GetSignatureGlb (ClrPtrTypeDirAsGlb (hGlbProto)) EQ DFN_HEADER_SIGNATURE);
+    Assert (GetSignatureGlb (hGlbProto) EQ DFN_HEADER_SIGNATURE);
 
     // Execute the user-defined function/operator on the arg using the []PROTOTYPE entry point
     return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbProto),// User-defined function/operator global memory handle
@@ -177,43 +177,43 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     HCURSOR      hCursorOld;        // Handle to previous cursor
     UBOOL        bOldExecuting;     // Old value of bExecuting
 
-    // Set the cursor to an hourglass and indicate that we're executing
-    hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
-    bOldExecuting = bExecuting; bExecuting = TRUE;
-
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Set the cursor to an hourglass and indicate that we're executing
+    hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
+    bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
+
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
     // If there's no left arg token and this function requires a left arg,
-    //   signal a SYNTAX ERROR
+    //   signal a VALENCE ERROR
     if (lptkLftArg EQ NULL
      && lpMemDfnHdr->FcnValence NE FCNVALENCE_AMB
      && lpMemDfnHdr->numLftArgSTE NE 0)
-        goto SYNTAX_EXIT;
+        goto VALENCE_EXIT;
 
     // If there's a left arg token and this function has no left arg,
-    //   signal a SYNTAX ERROR
+    //   signal a VALENCE ERROR
     if (lptkLftArg NE NULL
      && lpMemDfnHdr->numLftArgSTE EQ 0)
-        goto SYNTAX_EXIT;
+        goto VALENCE_EXIT;
 
     // If there is an axis token and this function does not accept
     //   an axis operator, signal an SYNTAX ERROR
     if (lptkAxis NE NULL
      && lpMemDfnHdr->steAxisOpr EQ NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // If there's no right arg token and this function requires a right arg,
     //   signal a SYNTAX ERROR
     if (lptkRhtArg EQ NULL
      && lpMemDfnHdr->numRhtArgSTE NE 0)
-        goto SYNTAX_EXIT;
+        goto RIGHT_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -415,7 +415,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         if (!InitFcnSTEs (lpYYFcnTmpRht,
                           lpMemDfnHdr->steRhtOpr NE NULL,
                          &lpMemDfnHdr->steRhtOpr))
-            goto UNLOCALIZE_EXIT;
+            goto LEFT_UNLOCALIZE_EXIT;
     } // End IF
 
     // Setup the right arg STEs
@@ -429,47 +429,81 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     lpYYRes =
       ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
 
-    goto NORMAL_EXIT;
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+    // If we incremented the RefCnt for the right operand,
+    //   decrement it now
+    if (lpYYFcnTmpRht
+     && lpMemDfnHdr->steRhtOpr NE NULL)
+        UninitOprSTEs (lpYYFcnTmpRht,
+                      &lpMemDfnHdr->steRhtOpr);
+LEFT_UNLOCALIZE_EXIT:
+    // If we incremented the RefCnt for the left operand,
+    //   decrement it now
+    if (lpYYFcnTmpLft
+     && lpMemDfnHdr->steLftOpr NE NULL)
+        UninitOprSTEs (lpYYFcnTmpLft,
+                      &lpMemDfnHdr->steLftOpr);
 UNLOCALIZE_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize ();
+    UnlocalizeSTEs ();
 
     goto NORMAL_EXIT;
 
+// The RANK, LENGTH, and SYNTAX errors don't point the caret to the
+//   specific arg because that might confuse the user into thinking
+//   that the error is with the construction of that arg rather than
+//   its interaction with this user-defined function/operator.
 LEFT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkLftArg);
+                              &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
 
 RIGHT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkRhtArg);
+                              &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
 
 LEFT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkLftArg);
+                              &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
 
 RIGHT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkRhtArg);
+                              &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkRhtArg);
+                              &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
 
-SYNTAX_EXIT:
+VALENCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
+                              &lpYYFcnStr->tkToken);
+    goto ERROR_EXIT;
+
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkLftArg);
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+RIGHT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
 NORMAL_EXIT:
+    // Restore the previous cursor and its state
+    SetCursor (hCursorOld); ShowCursor (FALSE); lpMemPTD->bExecuting = bOldExecuting;
+
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
         // We no longer need this ptr
@@ -489,9 +523,6 @@ NORMAL_EXIT:
     // Restore named right operand tkSym
     if (lpSymRhtFcn && bNamedRhtFcn)
         lpYYFcnTmpRht->tkToken.tkData.tkSym = lpSymRhtFcn;
-
-    // Restore the previous cursor and its state
-    SetCursor (hCursorOld); ShowCursor (FALSE); bExecuting = bOldExecuting;
 
     return lpYYRes;
 } // End ExecDfnOprGlb_EM_YY
@@ -587,7 +618,7 @@ void LocalizeAll
 //***************************************************************************
 //  $_CheckSymEntries
 //
-//  Debug routine to checck on localized SYMENTRYs
+//  Debug routine to check on localized SYMENTRYs
 //***************************************************************************
 
 void _CheckSymEntries
@@ -691,11 +722,13 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     HANDLE         hSemaphore;      // Semaphore handle
     UINT           numResultSTE,    // # result STEs (may be zero if no result)
                    numRes,          // Loop counter
+                   uTokenCnt,       // # tokens in the function line
                    uTknNum;         // Next token # in the line
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
     UBOOL          bRet;            // TRUE iff result is valid
     EXIT_TYPES     exitType;        // Return code from ParseLine
+    LPTOKEN_HEADER lpMemTknLine;    // Ptr to tokenized line global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -708,6 +741,21 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+    // If monitoring is on, increment the function counter
+    if (lpMemDfnHdr->MonOn)
+    {
+        LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
+
+        // Lock the memory to get a ptr to it
+        lpMemMonInfo = MyGlobalLock (lpMemDfnHdr->hGlbMonInfo);
+
+        // Increment the function counter
+        lpMemMonInfo[0].Count++;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpMemDfnHdr->hGlbMonInfo); lpMemMonInfo = NULL;
+    } // End IF
 
     // Get the tokenized header global memory handle
     hGlbTknHdr = lpMemDfnHdr->hGlbTknHdr;
@@ -740,9 +788,25 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         hGlbTxtLine = lpFcnLines[uLineNum - 1].hGlbTxtLine;
         hGlbTknLine = lpFcnLines[uLineNum - 1].hGlbTknLine;
 
+        // Lock the memory to get a ptr to it
+        lpMemTknLine = MyGlobalLock (hGlbTknLine);
+
+        // Get the token count of this line
+        uTokenCnt = lpMemTknLine->TokenCnt;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+
+        // If the starting token # is outside the token count, ...
+        if (uTknNum >= uTokenCnt)
+            goto NEXTLINE;
 #ifdef DEBUG
         DisplayFcnLine (hGlbTxtLine, lpMemPTD, uLineNum);
 #endif
+        // If line monitoring is enabled, start it for this line
+        if (lpMemDfnHdr->MonOn)
+            StartStopMonInfo (lpMemDfnHdr, uLineNum, TRUE);
+
         // We no longer need these ptrs
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -761,6 +825,16 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                      FALSE);                // TRUE iff executing only one stmt
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // If line monitoring is enabled, stop it for this line
+        if (lpMemDfnHdr->MonOn)
+            StartStopMonInfo (lpMemDfnHdr, uLineNum, FALSE);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         // If suspended, wait for the semaphore to trigger
         if (lpMemPTD->lpSISCur->Suspended)
@@ -803,7 +877,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
 #ifdef DEBUG
             dprintfW (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
 #endif
@@ -832,7 +905,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         if (lpMemPTD->lpSISCur->Suspended
          || lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
             break;
-
+NEXTLINE:
         // Get next line #
         uLineNum = lpMemPTD->lpSISCur->NxtLineNum++;
         uTknNum  = lpMemPTD->lpSISCur->NxtTknNum;
@@ -857,9 +930,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         ErrorMessageSetToken (lptkFunc);
     } // End IF
 
-    // If we're resetting or stopping, Unlocalize
+    // If we're resetting or stopping, exit normally
     if (lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
-        goto UNLOCALIZE_EXIT;
+        goto NORMAL_EXIT;
 
     // If we're suspended, don't Unlocalize
     if (lpMemPTD->lpSISCur->Suspended)
@@ -906,7 +979,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                 {
                     // Fill in the result token
                     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
+////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Set below
                     lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir ((*lplpSymEntry)->stData.stGlbData);
                     lpYYRes->tkToken.tkCharIndex       = NEG1U;
@@ -979,7 +1052,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Set below
             lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = NEG1U;
@@ -993,11 +1066,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             break;
         } // End default
     } // End SWITCH
-UNLOCALIZE_EXIT:
-    // Unlocalize the STEs on the innermost level
-    //   and strip off one level
-    Unlocalize ();
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need these ptrs
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1219,13 +1289,13 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $Unlocalize
+//  $UnlocalizeSTEs
 //
 //  Unlocalize STEs on the innermost level
 //    and strip off one level
 //***************************************************************************
 
-UBOOL Unlocalize
+void UnlocalizeSTEs
     (void)
 
 {
@@ -1235,7 +1305,6 @@ UBOOL Unlocalize
     UINT         numSymEntries,     // # LPSYMENTRYs localized
                  numSym;            // Loop counter
     LPSYMENTRY   lpSymEntryNxt;     // Ptr to next localized LPSYMENTRY on the SIS
-    UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
     LPFORSTMT    lpForStmtNext;     // Ptr to next entry on the FOR stmt stack
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS level
@@ -1359,9 +1428,7 @@ UBOOL Unlocalize
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return bRet;
-} // End Unlocalize
+} // End UnlocalizeSTEs
 
 
 //***************************************************************************
@@ -1561,10 +1628,10 @@ void InitVarSTEs
         {
             // Clear the STE flags & data
             *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
-////////////(*lplpSymEntry)->stData.stLongest = 0;          // stLongest set below
+////////////(*lplpSymEntry)->stData.stLongest = 0;              // stLongest set below
 
-////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;    // Already zero from previous initialization
-////////////(*lplpSymEntry)->stFlags.ImmType    = 0;        // Already zero from previous initialization
+////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from previous initialization
+////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;// Already zero from previous initialization
             (*lplpSymEntry)->stFlags.Value      = TRUE;
             (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
             (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
@@ -1693,8 +1760,8 @@ void InitVarSTEs
                                 break;
 
                             case PTRTYPE_HGLOBAL:
-////////////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;// Already zero from previous initialization
-////////////////////////////////(*lplpSymEntry)->stFlags.ImmType    = 0;    // Already zero from previous initialization
+////////////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from previous initialization
+////////////////////////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;// Already zero from previous initialization
                                 (*lplpSymEntry)->stFlags.Value      = TRUE;
                                 (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                                 (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
@@ -1742,6 +1809,7 @@ UBOOL InitFcnSTEs
 
 {
     STFLAGS stFlagsClr = {0};   // Flags for clearing an STE
+    UINT    TknCount;           // Token count
 
     // Set the Inuse flag
     stFlagsClr.Inuse = TRUE;
@@ -1751,8 +1819,11 @@ UBOOL InitFcnSTEs
     {
         Assert (numArgSTE EQ 1);
 
+        // Get the token count
+        TknCount = lpYYArg->TknCount;
+
         // Split cases based upon the function count
-        if (lpYYArg->TknCount EQ 1
+        if (TknCount EQ 1
          && lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNIMMED)
         {
             // Clear the STE flags & data
@@ -1773,7 +1844,7 @@ UBOOL InitFcnSTEs
             UINT    uFcn;               // Loop counter
 
             // Calculate space needed for the result
-            ByteRes = CalcFcnSize (lpYYArg->TknCount);
+            ByteRes = CalcFcnSize (TknCount);
 
             // Allocate global memory for the function array
             // N.B.: Conversion from APLUINT to UINT.
@@ -1790,7 +1861,7 @@ UBOOL InitFcnSTEs
             lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
             lpHeader->fnNameType  = NAMETYPE_FN12;
             lpHeader->RefCnt      = 1;
-            lpHeader->tknNELM     = lpYYArg->TknCount;
+            lpHeader->tknNELM     = TknCount;
 ////////////lpHeader->hGlbTxtLine = NULL;           // Already zero from GHND
 #undef  lpHeader
 
@@ -1800,39 +1871,39 @@ UBOOL InitFcnSTEs
             // Copy the PL_YYSTYPEs to the global memory object
             // Test cases:  +/rank[2] a     (as defined operator)
             //              +/{rank}[2] a   (as primitive operator)
-            CopyMemory (lpMemRes, lpYYArg, lpYYArg->TknCount * sizeof (PL_YYSTYPE));
+            CopyMemory (lpMemRes, lpYYArg, TknCount * sizeof (PL_YYSTYPE));
 
             // Loop through the functions incrementing the RefCnt as appropriate
-            for (uFcn = 0; uFcn < lpYYArg->TknCount; uFcn++)
+            for (uFcn = 0; uFcn < TknCount; uFcn++, lpYYArg++)
             // Split cases based upon the token type
-            switch (lpYYArg[uFcn].tkToken.tkFlags.TknType)
+            switch (lpYYArg->tkToken.tkFlags.TknType)
             {
                 case TKT_FCNNAMED:
                     // If it's not an immediate, ...
-                    if (!lpYYArg[uFcn].tkToken.tkData.tkSym->stFlags.Imm)
+                    if (!lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
                         // Increment the RefCnt
-                        IncrRefCntDir (lpYYArg[uFcn].tkToken.tkData.tkSym->stData.stGlbData);
+                        DbgIncrRefCntDir (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
 
                     break;
 
                 case TKT_FCNARRAY:
                     // Increment the RefCnt
-                    IncrRefCntDir (lpYYArg[uFcn].tkToken.tkData.tkGlbData);
+                    DbgIncrRefCntDir (lpYYArg->tkToken.tkData.tkGlbData);
 
                     break;
 
                 default:
                     break;
-            } // End SWITCH
+            } // End FOR/SWITCH
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
             // Clear the STE flags & data
             *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
-////////////(*lplpSymEntry)->stData.stLongest   = 0;        // stLongest set below
-////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;    // Already zero from above
-////////////(*lplpSymEntry)->stFlags.ImmType    = 0;        // Already zero from above
+////////////(*lplpSymEntry)->stData.stLongest   = 0;            // stLongest set below
+////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from above
+////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;// Already zero from above
             (*lplpSymEntry)->stFlags.Value      = TRUE;
             (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
             (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
@@ -1848,6 +1919,63 @@ WSFULL_EXIT:
     return FALSE;
 } // End InitFcnSTEs
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $UninitOprSTEs
+//
+//  Uninitialize operand arg STEs
+//***************************************************************************
+
+void UninitOprSTEs
+    (LPPL_YYSTYPE lpYYArg,          // Ptr to arg PL_YYSTYPE
+     LPSYMENTRY  *lplpSymEntry)     // Ptr to LPSYMENTRYs
+
+{
+    UINT    uFcn,                   // Loop counter
+            TknCount;               // Token count
+
+    if (lpYYArg->TknCount NE 1
+      || (lpYYArg->tkToken.tkFlags.TknType NE TKT_VARIMMED
+       && lpYYArg->tkToken.tkFlags.TknType NE TKT_FCNIMMED))
+    {
+        // Get the token count
+        TknCount = lpYYArg->TknCount;
+
+        // Loop through the functions/variables decrementing the RefCnt as appropriate
+        for (uFcn = 0; uFcn < TknCount; uFcn++, lpYYArg++)
+        {
+            // Split cases based upon the token type
+            switch (lpYYArg->tkToken.tkFlags.TknType)
+            {
+                case TKT_VARNAMED:
+                case TKT_FCNNAMED:
+                    // If it's not an immediate, ...
+                    if (!lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
+                        // Decrement the RefCnt
+                        FreeResultGlobalDFLV (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
+
+                    break;
+
+                case TKT_VARARRAY:
+                case TKT_FCNARRAY:
+                    // Decrement the RefCnt
+                    FreeResultGlobalDFLV (lpYYArg->tkToken.tkData.tkGlbData);
+
+                    break;
+
+                default:
+                    break;
+            } // End SWITCH
+
+            // We no longer need this resource
+            DbgGlobalFree (ClrPtrTypeDirAsGlb ((*lplpSymEntry)->stData.stGlbData));
+
+            // Mark as without a value
+            (*lplpSymEntry)->stFlags.Value = FALSE;
+        } // End FOR
+    } // End IF
+} // End UninitOprSTEs
 
 
 //***************************************************************************

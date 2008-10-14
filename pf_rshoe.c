@@ -227,57 +227,69 @@ LPPL_YYSTYPE PrimFnMonRightShoeCon_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
-    (HGLOBAL hGlbRht,               // Right arg global memory handle
-     LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
-     LPTOKEN lptkFunc)              // Ptr to function token
+    (HGLOBAL hGlbRht,                   // Right arg global memory handle
+     LPTOKEN lptkAxis,                  // Ptr to axis token (may be NULL)
+     LPTOKEN lptkFunc)                  // Ptr to function token
 
 {
-    HGLOBAL      hGlbRes = NULL,    // Result global memory handle
-                 hGlbAxis = NULL,   // Axis global memory handle
-                 hGlbSub,           // Right arg item global memory handle
-                 hGlbProto,         // Right arg item prototype as global memory handle
-                 hGlbDimCom = NULL, // Right arg common item dimension global memory handle
-                 hGlbLft;           // Left arg global memory handle
-    LPVOID       lpMemRes = NULL,   // Ptr to result global memory
-                 lpMemRht = NULL,   // Ptr to right arg global memory
-                 lpMemSub;          // Ptr to right arg item global memory
-    LPAPLDIM     lpMemDimRht = NULL,// Ptr to right arg dimensions
-                 lpMemDimCom = NULL,// Ptr to right arg common item dimensions
-                 lpMemDimRes;       // Ptr to result dimensions
-    LPAPLUINT    lpMemAxis = NULL,  // Ptr to axis values, fleshed out
-                 lpMemLft;          // Ptr to left arg global memory
-    APLUINT      ByteRes;           // # bytes in the result
-    APLNELM      aplNELMAxis,       // Axis NELM
-                 aplNELMRes,        // Result NELM
-                 aplNELMRht,        // Right arg NELM
-                 aplNELMNstRht,     // Right arg NELM if empty nested
-                 aplNELMCom,        // Right arg common item NELM
-                 aplNELMComRest,    // Right arg common item NELM except for last dimension
-                 aplNELMComLast,    // Right arg common item NELM last dimension
-                 aplNELMSub;        // Right arg item NELM
-    APLRANK      aplRankRht,        // Right arg rank
-                 aplRankRes,        // Result rank
-                 aplRankCom,        // Right arg common item rank
-                 aplRankSub;        // Right arg item rank
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
-    UINT         uBitMask;          // Bit mask for looping through Booleans
-    APLNELM      uRht,              // Loop counter
-                 uCom,              // ...
-                 uSub;              // ...
-    APLSTYPE     aplTypeRht,        // Right arg storage type
-                 aplTypeSub;        // Right arg item storage type
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    LPSYMENTRY   lpSymProto,        // Right arg item prototype as Symbol Table Entry
-                 lpSym0,            // LPSYMENTRY for constant zero
-                 lpSym1,            // ...                     one
-                 lpSymB,            // ...                     ' '
-                 lpSymTmp;          // Ptr to temporary LPSYMENTRY
-    APLUINT      uSubRest,          // Loop counter
-                 uSubLast;          // ...
-    APLNELM      aplNELMSubRest,    // Right arg item NELM except for last coordinate
-                 aplNELMSubLast;    // Right arg item NELM last coordinate
-    APLINT       apaOffSub,         // Right arg item APA offset
-                 apaMulSub;         // Right arg item APA multiplier
+    HGLOBAL       hGlbRes = NULL,       // Result global memory handle
+                  hGlbAxis = NULL,      // Axis global memory handle
+                  hGlbSub = NULL,       // Right arg item global memory handle
+                  hGlbProto,            // Right arg item prototype as global memory handle
+                  hGlbDimCom = NULL,    // Right arg common item dimension global memory handle
+                  hGlbLft;              // Left arg global memory handle
+    LPVOID        lpMemRes = NULL,      // Ptr to result global memory
+                  lpMemRht = NULL,      // Ptr to right arg global memory
+                  lpMemSub = NULL;      // Ptr to right arg item global memory
+    LPAPLDIM      lpMemDimRht = NULL,   // Ptr to right arg dimensions
+                  lpMemDimCom = NULL,   // Ptr to right arg common item dimensions
+                  lpMemDimRes;          // Ptr to result dimensions
+    LPAPLUINT     lpMemAxis = NULL,     // Ptr to axis values, fleshed out
+                  lpMemLft;             // Ptr to left arg global memory
+    APLUINT       ByteRes;              // # bytes in the result
+    APLNELM       aplNELMAxis,          // Axis NELM
+                  aplNELMRes,           // Result NELM
+                  aplNELMRht,           // Right arg NELM
+                  aplNELMNstRht,        // Right arg NELM if empty nested
+                  aplNELMCom,           // Right arg common item NELM
+                  aplNELMComRest,       // Right arg common item NELM except for last dimension
+                  aplNELMComLast,       // Right arg common item NELM last dimension
+                  aplNELMSub;           // Right arg item NELM
+    APLRANK       aplRankRht,           // Right arg rank
+                  aplRankRes,           // Result rank
+                  aplRankCom,           // Right arg common item rank
+                  aplRankSub;           // Right arg item rank
+    UBOOL         bRet = TRUE;          // TRUE iff result is valid
+    UINT          uBitMask;             // Bit mask for looping through Booleans
+    APLNELM       uRht,                 // Loop counter
+                  uCom,                 // ...
+                  uSub;                 // ...
+    APLSTYPE      aplTypeRht,           // Right arg storage type
+                  aplTypeSub,           // Right arg item storage type
+                  aplTypeRes;           // Result    ...
+    LPPL_YYSTYPE  lpYYRes;              // Ptr to the result
+    LPSYMENTRY    lpSymProto,           // Right arg item prototype as Symbol Table Entry
+                  lpSym0,               // LPSYMENTRY for constant zero
+                  lpSym1,               // ...                     one
+                  lpSymB,               // ...                     ' '
+                  lpSymTmp;             // Ptr to temporary LPSYMENTRY
+    APLUINT       uSubRest,             // Loop counter
+                  uSubLast,             // ...
+                  aplIndex;             // Index for Booleans
+    APLNELM       aplNELMSubRest,       // Right arg item NELM except for last coordinate
+                  aplNELMSubLast;       // Right arg item NELM last coordinate
+    APLINT        apaOffSub,            // Right arg item APA offset
+                  apaMulSub;            // Right arg item APA multiplier
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    APLINT        aplInteger;           // Immediate value as Boolean/Integer
+    APLFLOAT      aplFloat;             // ...                Float
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get STEs for constants
     lpSym0 = GetSteZero  ();
@@ -320,7 +332,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
             case PTRTYPE_HGLOBAL:
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the item
-                AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]), NULL, NULL, &aplRankSub, NULL);
+                AttrsOfGlb (((LPAPLNESTED) lpMemRht)[uRht], NULL, NULL, &aplRankSub, NULL);
 
                 // If the item is not a scalar, ...
                 if (!IsScalar (aplRankSub))
@@ -403,20 +415,29 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpMemDimCom = MyGlobalLock (hGlbDimCom);
 
-    // Trundle through the right arg calculating the shape
+    // Initialize the result storage type
+    aplTypeRes = ARRAY_INIT;
+
+    // Trundle through the right arg calculating the shape and type
     //   of the common item
     for (aplNELMRes = 0, uRht = 0; uRht < aplNELMNstRht; uRht++)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
         // Split cases based upon the ptr type of the item
         switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]))
         {
             case PTRTYPE_STCONST:   // Ignore (simple) scalar items
+                aplTypeSub = TranslateImmTypeToArrayType (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType);
+
                 break;
 
             case PTRTYPE_HGLOBAL:
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the item
-                AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]), NULL, &aplNELMSub, &aplRankSub, NULL);
+                AttrsOfGlb (((LPAPLNESTED) lpMemRht)[uRht], &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
                 // If the item is not a scalar, ...
                 if (!IsScalar (aplRankSub))
@@ -440,6 +461,9 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
             defstop
                 break;
         } // End SWITCH
+
+        // Include this type in the mix
+        aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
     } // End IF/FOR
 
     // Trundle through the common item's shape and calculate its NELM
@@ -461,7 +485,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     aplNELMRes = aplNELMCom * aplNELMRht;
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRes, aplRankRes);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
     //***************************************************************
     // Now we can allocate the storage for the result
@@ -478,7 +502,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_NESTED;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -505,343 +529,759 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // Handle prototypes
     if (IsEmpty (aplNELMRes))
     {
-        // Get the handle of the right arg item (prototype)
-        hGlbSub = ClrPtrTypeIndAsGlb ((LPAPLNESTED *) lpMemRht);
-
-        // Get the attributes (Type, NELM, and Rank)
-        //   of the right arg global
-        AttrsOfGlb (hGlbSub, &aplTypeSub, NULL, &aplRankSub, NULL);
-
-        // Split cases based upon the right arg's prototype's storage type
-        switch (aplTypeSub)
+        // If the result is Nested, ...
+        if (IsNested (aplTypeRes))
         {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
-            case ARRAY_FLOAT:
-            case ARRAY_APA:
-                *((LPAPLNESTED) lpMemRes) = lpSym0;
+            // Get the handle of the right arg item (prototype)
+            hGlbSub = ClrPtrTypeIndAsGlb ((LPAPLNESTED *) lpMemRht);
 
-                break;
+            // Get the attributes (Type, NELM, and Rank)
+            //   of the right arg global
+            AttrsOfGlb (hGlbSub, &aplTypeSub, NULL, &aplRankSub, NULL);
 
-            case ARRAY_CHAR:
-                *((LPAPLNESTED) lpMemRes) = lpSymB;
+            // Split cases based upon the right arg's prototype's storage type
+            switch (aplTypeSub)
+            {
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                case ARRAY_FLOAT:
+                case ARRAY_APA:
+                    *((LPAPLNESTED) lpMemRes) = lpSym0;
 
-                break;
+                    break;
 
-            case ARRAY_HETERO:
-            case ARRAY_NESTED:
-                // Lock the memory to get a ptr to it
-                lpMemSub = MyGlobalLock (hGlbSub);
+                case ARRAY_CHAR:
+                    *((LPAPLNESTED) lpMemRes) = lpSymB;
 
-                // Skip over the header and dimensions to the data
-                lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+                    break;
 
-                // Save first item as prototype
-                *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemSub);
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
+                    // Lock the memory to get a ptr to it
+                    lpMemSub = MyGlobalLock (hGlbSub);
 
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                    // Skip over the header and dimensions to the data
+                    lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
 
-                break;
+                    // Save first item as prototype
+                    *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemSub);
 
-            defstop
-                break;
-        } // End SWITCH
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End IF
 
         goto NORMAL_EXIT;
     } // End IF
 
     //***************************************************************
     // Copy the data to the result
-    //
-    // At this point, the right arg is nested and non-empty
     //***************************************************************
-
-    // Fill the entire result with PTR_REUSED in case we fail during processing
-    for (uCom = 0; uCom < aplNELMRes; uCom++)
-        ((LPAPLNESTED) lpMemRes)[uCom] = PTR_REUSED;
-
-    // Loop through the elements of the right arg
-    for (uRht = 0; uRht < aplNELMRht; uRht++)
+    if (IsSimpleNH (aplTypeRes))
     {
-        // Split cases based upon the ptr type of the item
-        switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]))
+        //***************************************************************
+        // At this point, the right arg is nested and non-empty
+        //   and the result is simple.
+        //***************************************************************
+
+        // Loop through the elements of the right arg
+        for (uRht = 0; uRht < aplNELMRht; uRht++)
         {
-            case PTRTYPE_STCONST:
-                // Get the item as a prototype
-                if (IsImmChr (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType))
-                    lpSymProto = lpSymB;
-                else
-                    lpSymProto = lpSym0;
+            // Split cases based upon the ptr type of the item
+            switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]))
+            {
+                case PTRTYPE_STCONST:   // Ignore (simple) scalar items
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
 
-                // Loop through the rest of common item's elements
-                //   saving the item's prototype
-                for (uSubRest = 0; uSubRest < aplNELMComRest; uSubRest++)
-                for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
-                    ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                       CopySymGlbDir (lpSymProto);
+                    // Split cases based upon the storage type of the result
+                    switch (aplTypeRes)
+                    {
+                        case ARRAY_BOOL:
+                            // The fill element of zero is already present via GHND
 
-                // Overtake this scalar
-                ((LPAPLNESTED) lpMemRes)[uRht * aplNELMCom] = ((LPAPLNESTED) lpMemRht)[uRht];
+                            // Get the index into the Boolean array
+                            aplIndex = uRht * aplNELMCom;
 
-                break;
+                            // Save the Boolean in the first position
+                            ((LPAPLBOOL)  lpMemRes)[aplIndex >> LOG2NBIB] |=
+                              (BIT0 & ((LPAPLHETERO) lpMemRht)[uRht]->stData.stBoolean) << (MASKLOG2NBIB & (UINT) aplIndex);
 
-            case PTRTYPE_HGLOBAL:
-                // Get the item's global handle
-                hGlbSub = ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]);
+                            break;
 
-                // Lock the memory to get a ptr to it
-                lpMemSub = MyGlobalLock (hGlbSub);
+                        case ARRAY_INT:
+                            // The fill element of zero is already present via GHND
+
+                            // Get the value
+                            aplInteger = ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger;
+
+                            // If the immediate is Boolean, ...
+                            if (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType EQ IMMTYPE_BOOL)
+                                aplInteger &= BIT0;
+
+                            // Save the Integer in the first position
+                            ((LPAPLINT)   lpMemRes)[uRht * aplNELMCom] =        aplInteger;
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // The fill element of zero is already present via GHND
+
+                            // If the immediate is Boolean, ...
+                            if (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType EQ IMMTYPE_BOOL)
+                                aplFloat = (APLFLOAT) (BIT0 & ((LPAPLHETERO) lpMemRht)[uRht]->stData.stBoolean);
+                            else
+                            // If the immediate is Integer, ...
+                            if (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType EQ IMMTYPE_INT)
+                                aplFloat = (APLFLOAT) ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger;
+                            else
+                                aplFloat =            ((LPAPLHETERO) lpMemRht)[uRht]->stData.stFloat;
+
+                            // Save the Float in the first position
+                            ((LPAPLFLOAT) lpMemRes)[uRht * aplNELMCom] =        aplFloat;
+
+                            break;
+                        case ARRAY_CHAR:
+                            // Fill the row with blanks
+                            // Loop through the rest of common item's elements
+                            //   saving the item's prototype
+                            for (uSubRest = 0; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                                ((LPAPLCHAR) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] = L' ';
+
+                            // Save the Char in the first position
+                            ((LPAPLCHAR)  lpMemRes)[uRht * aplNELMCom] =        ((LPAPLHETERO) lpMemRht)[uRht]->stData.stChar;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    // Get the item's global handle
+                    hGlbSub = ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemSub = MyGlobalLock (hGlbSub);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemSub)
-                // Get the Array Type, NELM, and Rank
-                aplTypeSub = lpHeader->ArrType;
-                aplRankSub = lpHeader->Rank;
+                    // Get the Array Type, NELM, and Rank
+                    aplTypeSub = lpHeader->ArrType;
+                    aplRankSub = lpHeader->Rank;
 #undef  lpHeader
+                    // Skip over the header to the dimensions
+                    lpMemSub = VarArrayBaseToDim (lpMemSub);
 
-                // Skip over the header to the dimensions
-                lpMemSub = VarArrayBaseToDim (lpMemSub);
+                    // Trundle through the right arg item's shape, ...
+                    if (!IsScalar (aplRankSub))
+                    {
+                        // Calculate the product of the dimensions except for the last
+                        for (aplNELMSubRest = 1, uSub = 0; uSub < (aplRankSub - 1); uSub++)
+                            aplNELMSubRest *= *((LPAPLDIM) lpMemSub)++;
 
-                // Trundle through the right arg item's shape, ...
-                if (!IsScalar (aplRankSub))
-                {
-                    // Calculate the product of the dimensions except for the last
-                    for (aplNELMSubRest = 1, uSub = 0; uSub < (aplRankSub - 1); uSub++)
-                        aplNELMSubRest *= *((LPAPLDIM) lpMemSub)++;
+                        // Get the last dimension
+                        aplNELMSubLast = *((LPAPLDIM) lpMemSub)++;
+                    } else
+                        aplNELMSubLast = aplNELMSubRest = 1;
 
-                    // Get the last dimension
-                    aplNELMSubLast = *((LPAPLDIM) lpMemSub)++;
-                } else
-                    aplNELMSubLast = aplNELMSubRest = 1;
+                    // lpMemSub now points to the right arg item's data
 
-                // lpMemSub now points to the right arg item's data
+                    // Split cases based upon the result storage type
+                    switch (aplTypeRes)
+                    {
+                        case ARRAY_BOOL:
+                            // The fill element of zero is already present via GHND
 
-                // Split cases based upon the right arg item's storage type
-                switch (aplTypeSub)
-                {
-                    case ARRAY_BOOL:
-                        // Get the prototype
-                        lpSymProto = lpSym0;
-
-                        uBitMask = 0x01;
-
-                        // Loop through the right arg item's elements
-                        //   copying them to the result
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
-                        {
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              (uBitMask & *(LPAPLBOOL) lpMemSub) ? lpSym1 : lpSym0;
-
-                            // Shift over the bit mask
-                            uBitMask <<= 1;
-
-                            // Check for end-of-byte
-                            if (uBitMask EQ END_OF_BYTE)
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = uSub = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
-                                uBitMask = 0x01;            // Start over
-                                ((LPAPLBOOL) lpMemSub)++;   // Skip to next byte
-                            } // End IF
-                        } // End FOR/FOR
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+                                // Get the index into the Boolean array
+                                aplIndex = (uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast);
 
-                        // Loop through the missing elements in the result (right arg item's cols)
-                        //   copying the prototype
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
+                                ((LPAPLBOOL)   lpMemRes)[aplIndex >> LOG2NBIB] |=
+                                  (BIT0 & (APLBOOL) GetNextInteger (lpMemSub, aplTypeSub, uSub)) << (MASKLOG2NBIB & (UINT) aplIndex);
+                            } // End FOR/FOR
 
-                        // Loop through the missing elements in the result (right arg item's rows)
-                        //   copying the prototype
-                        for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
-                        break;
+////////////////////////////// Loop through the missing elements in the result (right arg item's cols)
+//////////////////////////////   copying the prototype
+////////////////////////////for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+////////////////////////////{
+////////////////////////////    // Check for Ctrl-Break
+////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////        goto ERROR_EXIT;
+////////////////////////////
+////////////////////////////    ((LPAPLBOOL)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+////////////////////////////      FALSE;
+////////////////////////////} // End FOR/FOR
+////////////////////////////
+////////////////////////////// Loop through the missing elements in the result (right arg item's rows)
+//////////////////////////////   copying the prototype
+////////////////////////////for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+////////////////////////////{
+////////////////////////////    // Check for Ctrl-Break
+////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////        goto ERROR_EXIT;
+////////////////////////////
+////////////////////////////    ((LPAPLBOOL)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+////////////////////////////      FALSE;
+////////////////////////////} // End FOR/FOR
 
-                    case ARRAY_INT:
-                        // Get the prototype
-                        lpSymProto = lpSym0;
+                            break;
 
-                        // Loop through the right arg item's elements
-                        //   copying them to the result
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
-                        {
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                            lpSymTmp =
-                              SymTabAppendInteger_EM (*((LPAPLINT) lpMemSub)++);
-                            if (!lpSymTmp)
-                                goto ERROR_EXIT;
-                        } // End FOR/FOR
+                        case ARRAY_INT:
+                            // The fill element of zero is already present via GHND
 
-                        // Loop through the missing elements in the result (right arg item's cols)
-                        //   copying the prototype
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = uSub = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
 
-                        // Loop through the missing elements in the result (right arg item's rows)
-                        //   copying the prototype
-                        for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
-                        break;
+                                ((LPAPLINT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  GetNextInteger (lpMemSub, aplTypeSub, uSub);
+                            } // End FOR/FOR
 
-                    case ARRAY_APA:
-#define lpAPA       ((LPAPLAPA) lpMemSub)
-                        // Get the APA parameters
-                        apaOffSub = lpAPA->Off;
-                        apaMulSub = lpAPA->Mul;
-#undef  lpAPA
-                        // Get the prototype
-                        lpSymProto = lpSym0;
+////////////////////////////// Loop through the missing elements in the result (right arg item's cols)
+//////////////////////////////   copying the prototype
+////////////////////////////for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+////////////////////////////{
+////////////////////////////    // Check for Ctrl-Break
+////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////        goto ERROR_EXIT;
+////////////////////////////
+////////////////////////////    ((LPAPLINT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+////////////////////////////      0;
+////////////////////////////} // End FOR/FOR
+////////////////////////////
+////////////////////////////// Loop through the missing elements in the result (right arg item's rows)
+//////////////////////////////   copying the prototype
+////////////////////////////for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+////////////////////////////{
+////////////////////////////    // Check for Ctrl-Break
+////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////        goto ERROR_EXIT;
+////////////////////////////
+////////////////////////////    ((LPAPLINT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+////////////////////////////      0;
+////////////////////////////} // End FOR/FOR
 
-                        // Loop through the right arg item's elements
-                        //   copying them to the result
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
-                        {
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                            lpSymTmp =
-                              SymTabAppendInteger_EM (apaOffSub + apaMulSub * (uSubLast + (uSubRest * aplNELMSubLast)));
-                            if (!lpSymTmp)
-                                goto ERROR_EXIT;
-                        } // End FOR/FOR
+                            break;
 
-                        // Loop through the missing elements in the result (right arg item's cols)
-                        //   copying the prototype
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
+                        case ARRAY_FLOAT:
+                            // The fill element of zero is already present via GHND
 
-                        // Loop through the missing elements in the result (right arg item's rows)
-                        //   copying the prototype
-                        for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
-                        break;
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = uSub = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
 
-                    case ARRAY_FLOAT:
-                        // Get the prototype
-                        lpSymProto = lpSym0;
+                                ((LPAPLFLOAT)  lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  GetNextFloat (lpMemSub, aplTypeSub, uSub);
+                            } // End FOR/FOR
 
-                        // Loop through the right arg item's elements
-                        //   copying them to the result
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
-                        {
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                            lpSymTmp =
-                              SymTabAppendFloat_EM (*((LPAPLFLOAT) lpMemSub)++);
-                            if (!lpSymTmp)
-                                goto ERROR_EXIT;
-                        } // End FOR/FOR
+////////////////////////////// Loop through the missing elements in the result (right arg item's cols)
+//////////////////////////////   copying the prototype
+////////////////////////////for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+////////////////////////////{
+////////////////////////////    // Check for Ctrl-Break
+////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////        goto ERROR_EXIT;
+////////////////////////////
+////////////////////////////    ((LPAPLFLOAT)  lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+////////////////////////////      0.0;
+////////////////////////////} // End FOR/FOR
+////////////////////////////
+////////////////////////////// Loop through the missing elements in the result (right arg item's rows)
+//////////////////////////////   copying the prototype
+////////////////////////////for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+////////////////////////////{
+////////////////////////////    // Check for Ctrl-Break
+////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////        goto ERROR_EXIT;
+////////////////////////////
+////////////////////////////    ((LPAPLFLOAT)  lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+////////////////////////////      0.0;
+////////////////////////////} // End FOR/FOR
 
-                        // Loop through the missing elements in the result (right arg item's cols)
-                        //   copying the prototype
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
+                            break;
 
-                        // Loop through the missing elements in the result (right arg item's rows)
-                        //   copying the prototype
-                        for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
-                        break;
+                        case ARRAY_CHAR:
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
 
-                    case ARRAY_CHAR:
-                        // Get the prototype
+                                ((LPAPLCHAR)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  *((LPAPLCHAR) lpMemSub)++;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLCHAR)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  L' ';
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLCHAR)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  L' ';
+                            } // End FOR/FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End FOR
+    } else
+    {
+        //***************************************************************
+        // At this point, the right arg is nested and non-empty
+        //   and the result is nested/hetero.
+        //***************************************************************
+
+        // Fill the entire result with PTR_REUSED in case we fail during processing
+        for (uCom = 0; uCom < aplNELMRes; uCom++)
+            ((LPAPLNESTED) lpMemRes)[uCom] = PTR_REUSED;
+
+        // Loop through the elements of the right arg
+        for (uRht = 0; uRht < aplNELMRht; uRht++)
+        {
+            // Split cases based upon the ptr type of the item
+            switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]))
+            {
+                case PTRTYPE_STCONST:
+                    // Get the item as a prototype
+                    if (IsImmChr (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType))
                         lpSymProto = lpSymB;
+                    else
+                        lpSymProto = lpSym0;
 
-                        // Loop through the right arg item's elements
-                        //   copying them to the result
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
-                        {
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                            lpSymTmp =
-                              SymTabAppendChar_EM (*((LPAPLCHAR) lpMemSub)++);
-                            if (!lpSymTmp)
-                                goto ERROR_EXIT;
-                        } // End FOR/FOR
+                    // Loop through the rest of common item's elements
+                    //   saving the item's prototype
+                    for (uSubRest = 0; uSubRest < aplNELMComRest; uSubRest++)
+                    for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
 
-                        // Loop through the missing elements in the result (right arg item's cols)
-                        //   copying the prototype
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
+                        ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                           CopySymGlbDir (lpSymProto);
+                    } // End FOR/FOR
 
-                        // Loop through the missing elements in the result (right arg item's rows)
-                        //   copying the prototype
-                        for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (lpSymProto);
-                        break;
+                    // Overtake this scalar
+                    ((LPAPLNESTED) lpMemRes)[uRht * aplNELMCom] = ((LPAPLNESTED) lpMemRht)[uRht];
 
-                    case ARRAY_HETERO:
-                    case ARRAY_NESTED:
-                        // Get the right arg item's first element global memory handle
-                        hGlbProto = ClrPtrTypeIndAsGlb ((LPAPLNESTED) lpMemSub);
+                    break;
 
-                        // Calculate its prototype
-                        hGlbProto =
-                          MakeMonPrototype_EM (hGlbProto,   // Proto arg handle
-                                               lptkFunc,    // Ptr to function token
-                                               MP_CHARS);   // CHARs allowed
-                        if (!hGlbProto)
-                            goto WSFULL_EXIT;
+                case PTRTYPE_HGLOBAL:
+                    // Get the item's global handle
+                    hGlbSub = ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]);
 
-                        // Set the ptr bits
-                        hGlbProto = MakePtrTypeGlb (hGlbProto);
+                    // Lock the memory to get a ptr to it
+                    lpMemSub = MyGlobalLock (hGlbSub);
 
-                        // Loop through the right arg item's elements
-                        //   copying them to the result
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (*((LPAPLNESTED) lpMemSub)++);
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemSub)
+                    // Get the Array Type, NELM, and Rank
+                    aplTypeSub = lpHeader->ArrType;
+                    aplRankSub = lpHeader->Rank;
+#undef  lpHeader
+                    // Skip over the header to the dimensions
+                    lpMemSub = VarArrayBaseToDim (lpMemSub);
 
-                        // Loop through the missing elements in the result (right arg item's cols)
-                        //   copying the prototype
-                        for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
-                        for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (hGlbProto);
+                    // Trundle through the right arg item's shape, ...
+                    if (!IsScalar (aplRankSub))
+                    {
+                        // Calculate the product of the dimensions except for the last
+                        for (aplNELMSubRest = 1, uSub = 0; uSub < (aplRankSub - 1); uSub++)
+                            aplNELMSubRest *= *((LPAPLDIM) lpMemSub)++;
 
-                        // Loop through the missing elements in the result (right arg item's rows)
-                        //   copying the prototype
-                        for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
-                        for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
-                            ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                              CopySymGlbDir (hGlbProto);
-                        // We no longer need this storage
-                        FreeResultGlobalVar (hGlbProto); hGlbProto = NULL;
+                        // Get the last dimension
+                        aplNELMSubLast = *((LPAPLDIM) lpMemSub)++;
+                    } else
+                        aplNELMSubLast = aplNELMSubRest = 1;
 
-                        break;
+                    // lpMemSub now points to the right arg item's data
 
-                    defstop
-                        break;
-                } // End SWITCH
+                    // Split cases based upon the right arg item's storage type
+                    switch (aplTypeSub)
+                    {
+                        case ARRAY_BOOL:
+                            // Get the prototype
+                            lpSymProto = lpSym0;
 
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                            uBitMask = 0x01;
 
-                break;
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
 
-            defstop
-                break;
-        } // End FOR/SWITCH
-    } // End FOR
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  (uBitMask & *(LPAPLBOOL) lpMemSub) ? lpSym1 : lpSym0;
+
+                                // Shift over the bit mask
+                                uBitMask <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMask EQ END_OF_BYTE)
+                                {
+                                    uBitMask = 0x01;            // Start over
+                                    ((LPAPLBOOL) lpMemSub)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            break;
+
+                        case ARRAY_INT:
+                            // Get the prototype
+                            lpSymProto = lpSym0;
+
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                lpSymTmp =
+                                  SymTabAppendInteger_EM (*((LPAPLINT) lpMemSub)++);
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            break;
+
+                        case ARRAY_APA:
+    #define lpAPA       ((LPAPLAPA) lpMemSub)
+                            // Get the APA parameters
+                            apaOffSub = lpAPA->Off;
+                            apaMulSub = lpAPA->Mul;
+    #undef  lpAPA
+                            // Get the prototype
+                            lpSymProto = lpSym0;
+
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                lpSymTmp =
+                                  SymTabAppendInteger_EM (apaOffSub + apaMulSub * (uSubLast + (uSubRest * aplNELMSubLast)));
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Get the prototype
+                            lpSymProto = lpSym0;
+
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                lpSymTmp =
+                                  SymTabAppendFloat_EM (*((LPAPLFLOAT) lpMemSub)++);
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            break;
+
+                        case ARRAY_CHAR:
+                            // Get the prototype
+                            lpSymProto = lpSymB;
+
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                lpSymTmp =
+                                  SymTabAppendChar_EM (*((LPAPLCHAR) lpMemSub)++);
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (lpSymProto);
+                            } // End FOR/FOR
+
+                            break;
+
+                        case ARRAY_HETERO:
+                        case ARRAY_NESTED:
+                            // Get the right arg item's first element global memory handle
+                            hGlbProto = ClrPtrTypeIndAsGlb ((LPAPLNESTED) lpMemSub);
+
+                            // Calculate its prototype
+                            hGlbProto =
+                              MakeMonPrototype_EM (hGlbProto,   // Proto arg handle
+                                                   lptkFunc,    // Ptr to function token
+                                                   MP_CHARS);   // CHARs allowed
+                            if (!hGlbProto)
+                                goto WSFULL_EXIT;
+
+                            // Set the ptr bits
+                            hGlbProto = MakePtrTypeGlb (hGlbProto);
+
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (*((LPAPLNESTED) lpMemSub)++);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (hGlbProto);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  CopySymGlbDir (hGlbProto);
+                            } // End FOR/FOR
+
+                            // We no longer need this storage
+                            FreeResultGlobalVar (hGlbProto); hGlbProto = NULL;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                    break;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+        } // End FOR
+    } // End IF/ELSE
 NORMAL_EXIT:
     // Unlock the result global memory in case TypeDemote actually demotes
     if (hGlbRes && lpMemRes)
@@ -855,8 +1295,8 @@ NORMAL_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -922,8 +1362,8 @@ NORMAL_EXIT:
 
         // Fill in the left arg token
         lpYYRes2->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes2->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes2->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes2->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;// Already zero from YYAlloc
+////////lpYYRes2->tkToken.tkFlags.NoDisplay = FALSE;        // Already zero from YYAlloc
         lpYYRes2->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLft);
         lpYYRes2->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1003,6 +1443,12 @@ TAIL_EXIT:
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht);  lpMemRht  = NULL;
+    } // End IF
+
+    if (hGlbSub && lpMemSub)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbSub);  lpMemSub  = NULL;
     } // End IF
 
     if (bRet)
@@ -1237,7 +1683,7 @@ UBOOL PrimFnDydRightShoeGlbImm_EM
 
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the item
-                AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemLft)[uLft]), &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
+                AttrsOfGlb (((LPAPLNESTED) lpMemLft)[uLft], &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
                 // Check for LEFT RANK ERROR
                 if (!IsVector (aplRankSub))
@@ -1437,8 +1883,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             {
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (MakePtrTypeGlb (hGlbRes));
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
             } else
@@ -1498,22 +1944,30 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
      APLLONGEST aplLongestSet)          // Set arg immediate value
 
 {
-    APLSTYPE     aplTypeLft,            // Left  arg storage type
-                 aplTypeRht,            // Right ...
-                 aplTypePro;            // Promoted  ...
-    APLNELM      aplNELMLft,            // Left  arg NELM
-                 aplNELMNstLft,         // Left  arg NELM if nested
-                 aplNELMRht;            // Right arg NELM
-    APLRANK      aplRankLft,            // Left  arg rank
-                 aplRankRht;            // Right arg rank
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
-                 lpMemRht = NULL;       // Ptr to right ...
-    LPAPLDIM     lpMemDimRht;           // Ptr to right arg dimensions
-    APLUINT      uLft;                  // Loop counter
-    UBOOL        bRet = TRUE;           // TRUE iff result is valid
-    APLBOOL      bQuadIO;               // []IO
-    LPSYMENTRY   lpSymTmp;              // Ptr to temporary LPSYMENTRY
+    APLSTYPE      aplTypeLft,           // Left  arg storage type
+                  aplTypeRht,           // Right ...
+                  aplTypePro;           // Promoted  ...
+    APLNELM       aplNELMLft,           // Left  arg NELM
+                  aplNELMNstLft,        // Left  arg NELM if nested
+                  aplNELMRht;           // Right arg NELM
+    APLRANK       aplRankLft,           // Left  arg rank
+                  aplRankRht;           // Right arg rank
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL;      // Ptr to right ...
+    LPAPLDIM      lpMemDimRht;          // Ptr to right arg dimensions
+    APLUINT       uLft;                 // Loop counter
+    UBOOL         bRet = TRUE;          // TRUE iff result is valid
+    APLBOOL       bQuadIO;              // []IO
+    LPSYMENTRY    lpSymTmp;             // Ptr to temporary LPSYMENTRY
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg global
@@ -1619,10 +2073,14 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     // Loop through the right arg dimensions
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) iDim);
 
                         // Get the left arg item value in origin-0
-                        aplTmpSubLft = ((uBitMask & ((LPAPLBOOL) lpMemSubLft)[iDim >> LOG2NBIB]) ? 1 : 0) - bQuadIO;
+                        aplTmpSubLft = ((uBitMask & ((LPAPLBOOL) lpMemSubLft)[iDim >> LOG2NBIB]) ? TRUE : FALSE) - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft))
@@ -1649,6 +2107,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     // Loop through the right arg dimensions
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Get the left arg item value in origin-0
                         aplTmpSubLft = ((LPAPLUINT) lpMemSubLft)[iDim] - bQuadIO;
 
@@ -1677,6 +2139,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     // Loop through the right arg dimensions
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Attempt to convert the float to an integer using System CT
                         aplTmpSubLft = FloatToAplint_SCT (((LPAPLFLOAT) lpMemSubLft)[iDim], &bRet) - bQuadIO;
 
@@ -1710,6 +2176,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     // Loop through the right arg dimensions
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Get the left arg item value in origin-0
                         aplTmpSubLft = (apaOffSubLft + apaMulSubLft * iDim) - bQuadIO;
 
@@ -1959,8 +2429,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbRht);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE

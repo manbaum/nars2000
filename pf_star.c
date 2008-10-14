@@ -279,7 +279,7 @@ APLINT PrimFnDydStarIisIvI
     // Initialize with identity element for multiplication
     aplIntegerRes = 1;
     while (aplIntegerRht--)
-        aplIntegerRes = imul64 (aplIntegerRes, aplIntegerLft, NULL);
+        aplIntegerRes = imul64 (aplIntegerRes, aplIntegerLft);
 
     return aplIntegerRes;
 } // End PrimFnDydStarIisIvI

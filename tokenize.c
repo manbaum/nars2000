@@ -1148,7 +1148,7 @@ UBOOL fnIntAccum
 ////lpMemPTD->aplInteger *= 10;
 ////lpMemPTD->aplInteger += wch - L'0';
     //   so, instead, we do the following:
-    aplInt = imul64 (lpMemPTD->aplInteger, 10, &bRet);
+    aplInt = _imul64 (lpMemPTD->aplInteger, 10, &bRet);
     if (!bRet)
     {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1210,7 +1210,6 @@ UBOOL fnIntDone
 
     // Mark as an immediate Boolean/integer
     tkFlags.TknType = TKT_VARIMMED;
-
     if (IsBooleanValue (lpMemPTD->aplInteger))
         tkFlags.ImmType = IMMTYPE_BOOL;
     else
@@ -1594,22 +1593,22 @@ UBOOL fnAlpDone
 
     // Lookup in or append to the symbol table
     lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
-    if (lpSymEntry)
-    {
-        // Mark the data as a symbol table entry
-        tkFlags.TknType = TKT_VARNAMED;
+    if (!lpSymEntry)
+        lpSymEntry = lpMemPTD->steNoValue;
 
-        // Copy to local var so we may pass its address
-        (LPSYMENTRY) aplInteger = MakePtrTypeSym (lpSymEntry);
+    // Mark the data as a symbol table entry
+    tkFlags.TknType = TKT_VARNAMED;
+////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
 
-        // Attempt to append as new token, check for TOKEN TABLE FULL,
-        //   and resize as necessary.
-        bRet = AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &aplInteger,
-                                  -lpMemPTD->iStrLen);
-    } else
-        bRet = FALSE;
+    // Copy to local var so we may pass its address
+    (LPSYMENTRY) aplInteger = MakePtrTypeSym (lpSymEntry);
+
+    // Attempt to append as new token, check for TOKEN TABLE FULL,
+    //   and resize as necessary.
+    bRet = AppendNewToken_EM (lptkLocalVars,
+                             &tkFlags,
+                             &aplInteger,
+                              -lpMemPTD->iStrLen);
 NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
@@ -1634,13 +1633,13 @@ UBOOL fnDirIdent
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    LPSYMENTRY   lpSymEntry;
-    UBOOL        bRet;
+    LPSYMENTRY   lpSymEntry;        // Ptr to the SYMENTRY for the name
+    UBOOL        bRet;              // TRUE iff the result is valid
     APLINT       aplInteger;
     TKFLAGS      tkFlags = {0};
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPWCHAR      lpwszStr;      // Ptr to Str global memory
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPWCHAR      lpwszStr;          // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnDirIdent");
@@ -1666,23 +1665,22 @@ UBOOL fnDirIdent
 
     // Lookup in or append to the symbol table
     lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
-    if (lpSymEntry)
-    {
-        // Mark the data as a symbol table entry
-        tkFlags.TknType = TKT_VARNAMED;
+    if (!lpSymEntry)
+        lpSymEntry = lpMemPTD->steNoValue;
 
-        // Copy to local var so we may pass its address
-        (LPSYMENTRY) aplInteger = MakePtrTypeSym (lpSymEntry);
+    // Mark the data as a symbol table entry
+    tkFlags.TknType = TKT_VARNAMED;
+////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
 
-        // Attempt to append as new token, check for TOKEN TABLE FULL,
-        //   and resize as necessary.
-        bRet = AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &aplInteger,
-                                  -lpMemPTD->iStrLen);
-    } else
-        bRet = FALSE;
+    // Copy to local var so we may pass its address
+    (LPSYMENTRY) aplInteger = MakePtrTypeSym (lpSymEntry);
 
+    // Attempt to append as new token, check for TOKEN TABLE FULL,
+    //   and resize as necessary.
+    bRet = AppendNewToken_EM (lptkLocalVars,
+                             &tkFlags,
+                             &aplInteger,
+                              -lpMemPTD->iStrLen);
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
@@ -1972,8 +1970,8 @@ UBOOL fnPrmDone
     {
         // Mark the data as a variable
         tkFlags.TknType   = TKT_VARARRAY;
-////////tkFlags.ImmType   = 0;      // Already zero from {0}
-////////tkFlags.NoDisplay = FALSE;  // Already zero from {0}
+////////tkFlags.ImmType   = IMMTYPE_ERROR;  // Already zero from {0}
+////////tkFlags.NoDisplay = FALSE;          // Already zero from {0}
         (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlbZilde);
     } else
     {
@@ -2134,6 +2132,9 @@ UBOOL fnDotDone
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnDotDone");
 #endif
+
+    //  Initialize the accumulation variables for the next constant
+    InitAccumVars ();
 
     // Mark the data as a dyadic primitive operator
     tkFlags.TknType = TKT_OP2IMMED;
@@ -3278,6 +3279,9 @@ void Untokenize
 
             case TKT_CS_NEC:            // ...                 Special token
             case TKT_CS_EOL:            // ...                 Special token
+            case TKT_LSTIMMED:          // List in brackets, single element, immediate
+            case TKT_LSTARRAY:          // List in brackets, single element, array
+            case TKT_LSTMULT:           // List in brackets, multiple elements
             defstop
 #ifdef DEBUG
             {
@@ -3886,7 +3890,7 @@ WCHAR CharTrans
         case UTF16_SLASH:               //     '/' - slash
         case UTF16_SLASHBAR:            // Alt-'/' - slash-bar
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
-        case UTF16_DIERESISCIRCLE:      // Alt-'O' - rank (holler)
+        case UTF16_DIERESISCIRCLE:      // Alt-'O' - ??? (holler)
         case UTF16_DIERESISTILDE:       // Alt-'T' - commute/duplicate
         case UTF16_CIRCLEMIDDLEDOT:     // Alt-'@' - circle-middle-dot
             return COL_PRIM_OP1;
@@ -4032,7 +4036,7 @@ UBOOL CtrlStrucCmpi
 
     // Ensure the next char after the name in the line is not valid
     //   in a name and thus terminates the name
-    if (Valid2ndCharInName (*lpwLine))
+    if (IsValid2ndCharInName (*lpwLine))
         return FALSE;
 
     // Save the token type and string length for later use

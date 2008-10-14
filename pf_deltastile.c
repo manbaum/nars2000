@@ -53,8 +53,9 @@ typedef struct tagGRADE_DATA
                                     //   1 for GradeUp, -1 for GradeDown
     APLRANK      aplRankLft;        // Left arg rank
     LPTT_HANDLES lpMemTTHandles;    // Ptr to TT Handles global memory
-    UBOOL        PV0:1,             // Right arg is a Perumtatino Vector, origin-0
+    UBOOL        PV0:1,             // Right arg is a Perumtation Vector, origin-0
                  PV1:1;             // ...                                       1
+    LPUBOOL      lpbCtrlBreak;      // Ptr to Ctrl-Break flag
 } GRADE_DATA, *LPGRADE_DATA;
 
 
@@ -241,24 +242,31 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLNELM      aplNELMRht,        // Right arg NELM
-                 aplNELMRes;        // Result    ...
-    APLRANK      aplRankRht;        // Right arg rank
-    HGLOBAL      hGlbRht,           // Right arg global memory handle
-                 hGlbRes;           // Result    ...
-    APLUINT      ByteRes,           // # bytes in the result
-                 uRes;              // Loop counter
-    LPVOID       lpMemRht,          // Ptr to right arg global memory
-                 lpMemRes;          // Ptr to result    ...
-    LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    APLBOOL      bQuadIO;           // []IO
-    GRADE_DATA   gradeData;         // Data passed to GRADE_ROUTINE
+    APLNELM       aplNELMRht,       // Right arg NELM
+                  aplNELMRes;       // Result    ...
+    APLRANK       aplRankRht;       // Right arg rank
+    HGLOBAL       hGlbRht,          // Right arg global memory handle
+                  hGlbRes;          // Result    ...
+    APLUINT       ByteRes,          // # bytes in the result
+                  uRes;             // Loop counter
+    LPVOID        lpMemRht,         // Ptr to right arg global memory
+                  lpMemRes;         // Ptr to result    ...
+    LPAPLDIM      lpMemDimRht;      // Ptr to right arg dimensions
+    UBOOL         bRet = TRUE;      // TRUE iff result is valid
+    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
+    APLBOOL       bQuadIO;          // []IO
+    GRADE_DATA    gradeData;        // Data passed to GRADE_ROUTINE
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    gradeData.lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Mark as grade up or down
-    gradeData.iMul = (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE) ? 1 : -1;
-    gradeData.aplRankLft = 0;
+    gradeData.iMul           = (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE) ? 1 : -1;
+    gradeData.aplRankLft     = 0;
     gradeData.lpMemTTHandles = NULL;
 
     // Get the current value of []IO
@@ -310,7 +318,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->PV0        = (gradeData.PV0 || gradeData.PV1) && bQuadIO EQ 0;
     lpHeader->PV1        = (gradeData.PV0 || gradeData.PV1) && bQuadIO EQ 1;
     lpHeader->RefCnt     = 1;
@@ -337,21 +345,33 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // If the right arg is a PV, grade it specially
     if (gradeData.PV0 || gradeData.PV1)
-        PermVecGrade (lpMemRes,                 // Ptr to result global memory
-                      lpMemRht,                 // Ptr to right arg global memory
-                     &gradeData);               // Ptr to extra grade data
-    else
+    {
+        if (!PermVecGrade (lpMemRes,            // Ptr to result global memory
+                           lpMemRht,            // Ptr to right arg global memory
+                          &gradeData))          // Ptr to extra grade data
+            goto ERROR_EXIT;
+    } else
+    // If the right arg is a Boolean vector, grade it specially
+    if (IsSimpleBool (gradeData.aplTypeRht) && IsVector (aplRankRht))
+    {
+        if (!BoolVecGrade (lpMemRes,            // Ptr to result global memory
+                           lpMemRht,            // Ptr to right arg global memory
+                          &gradeData))          // Ptr to extra grade data
+            goto ERROR_EXIT;
+    } else
     {
         // Initialize the result with {iota}aplNELMRes (origin-0)
         for (uRes = 0; uRes < aplNELMRes; uRes++)
             ((LPAPLINT) lpMemRes)[uRes] = uRes;
 
         // Grade the array
-        GRADE_ROUTINE (lpMemRes,                // Ptr to result global memory
-                       lpMemRht,                // Ptr to right arg global memory
-                       aplNELMRes,              // Result NELM
-                      &PrimFnGradeCompare,      // Ptr to comparison routine
-                      &gradeData);              // Ptr to extra grade data
+        if (!GRADE_ROUTINE (lpMemRes,               // Ptr to result global memory
+                            lpMemRht,               // Ptr to right arg global memory
+                            aplNELMRes,             // Result NELM
+                           &PrimFnGradeCompare,     // Ptr to comparison routine
+                            gradeData.lpbCtrlBreak, // Ptr to Ctrl-Break flag
+                           &gradeData))             // Ptr to extra grade data
+            goto ERROR_EXIT;
     } // End IF/ELSE
 
     // Add in []IO
@@ -366,8 +386,8 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -413,7 +433,7 @@ NORMAL_EXIT:
 //  Grade a permutation vectora
 //***************************************************************************
 
-void PermVecGrade
+UBOOL PermVecGrade
     (LPAPLUINT    lpMemRes,         // Ptr to result global memory
      LPAPLUINT    lpMemRht,         // Ptr to right arg global memory
      LPGRADE_DATA lpGradeData)      // Ptr to extra data
@@ -441,7 +461,14 @@ void PermVecGrade
             case ARRAY_INT:
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpGradeData->lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
                     lpMemRes[*lpMemRht++ - PV1] = uRht;
+                } // End FOR
+
                 break;
 
             case ARRAY_APA:
@@ -450,7 +477,14 @@ void PermVecGrade
 
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++, apaOffRht += apaMulRht)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpGradeData->lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
                     lpMemRes[apaOffRht] = uRht;
+                } // End FOR
+
                 break;
 
             defstop
@@ -467,20 +501,149 @@ void PermVecGrade
             case ARRAY_INT:
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpGradeData->lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
                     lpMemRes[aplNELMRht1 - *lpMemRht++] = uRht;
+                } // End FOR
+
                 break;
 
             case ARRAY_APA:
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++, apaOffRht += apaMulRht)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpGradeData->lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
                     lpMemRes[aplNELMRht1 - apaOffRht] = uRht;
+                } // End FOR
+
                 break;
 
             defstop
                 break;
         } // End SWITCH
     } // End IF/ELSE
+
+    return TRUE;
+ERROR_EXIT:
+    return FALSE;
 } // End PermVecGrade
+
+
+//***************************************************************************
+//  $BoolVecGrade
+//
+//  Grade a Boolean vectora
+//***************************************************************************
+
+UBOOL BoolVecGrade
+    (LPAPLUINT    lpMemRes,         // Ptr to result global memory
+     LPAPLBOOL    lpMemRht,         // Ptr to right arg global memory
+     LPGRADE_DATA lpGradeData)      // Ptr to extra data
+
+{
+    APLUINT   uRht,                 // Loop counter
+              u1s,                  // # 1s in the right arg
+              uVal;                 // Byte value
+    APLNELM   aplNELMRht,           // Right arg NELM
+              aplNELMRht1;          // Right arg NELM / 8
+    LPAPLBOOL lpMemBool;            // Ptr to right arg
+    UINT      uBitIndex,            // Index for looping through Booleans
+              uBitMask,             // Mask  ...
+              uNBIB;                // # bits in the last byte
+    APLUINT   aplOff0,              // Result offset of next 1 index
+              aplOff1;              // ...                   0 ...
+
+    // Get Grade Data parameters
+    aplNELMRht = lpGradeData->aplNELMRht;
+    aplNELMRht1 = RoundUpBits8 (aplNELMRht);
+
+    // Copy ptr to right arg global memory
+    lpMemBool = lpMemRht;
+
+    // Loop through the right arg bytes
+    for (uRht = u1s = 0; uRht < aplNELMRht1; uRht++)
+    {
+        // Check for Ctrl-Break
+        if (*lpGradeData->lpbCtrlBreak)
+            goto ERROR_EXIT;
+
+        // Count the # 1s
+        u1s += FastBoolTrans[*lpMemBool++][2];
+    } // End IF
+
+    // Restart the ptr
+    lpMemBool = lpMemRht;
+
+    // Initialize bit index & mask
+    uBitIndex = 0;
+    uBitMask  = 0x01;
+
+    // If it's Grade Up, ...
+    if (lpGradeData->iMul EQ 1)
+    {
+        // Calculate offsets for storing 0s and 1s
+        aplOff0 = 0;
+        aplOff1 = aplNELMRht - u1s;
+    } else
+    {
+        // Calculate offsets for storing 0s and 1s
+        aplOff0 = u1s;
+        aplOff1 = 0;
+    } // End IF/ELSE
+
+    // Loop through the right arg bytes again
+    for (uRht = 0; uRht < aplNELMRht1; uRht++)
+    {
+        // Check for Ctrl-Break
+        if (*lpGradeData->lpbCtrlBreak)
+            goto ERROR_EXIT;
+
+        // Perhaps there's a faster way to loop through the bits.
+        // There certainly is in assembler language.
+
+        // Get the next byte
+        uVal = *lpMemBool++;
+
+        // Check for end-of-vector
+        if (uRht EQ (aplNELMRht1 - 1))
+            uNBIB = (UINT) (aplNELMRht - ((aplNELMRht1 - 1) << LOG2NBIB));
+        else
+            uNBIB = NBIB;
+
+        // Loop through the bits in the byte
+        while (TRUE)
+        {
+            if (uVal & uBitMask)
+                lpMemRes[aplOff1++] = (uRht << LOG2NBIB) + uBitIndex;
+            else
+                lpMemRes[aplOff0++] = (uRht << LOG2NBIB) + uBitIndex;
+
+            // Shift over the bit mask
+            uBitMask <<= 1;
+
+            // Check for end-of-byte
+            if (uBitMask EQ END_OF_BYTE)
+                uBitMask = 0x01;            // Start over
+
+            // Check for end-of-byte
+            if (++uBitIndex EQ uNBIB)
+            {
+                uBitIndex = 0;              // Start over
+                break;
+            } // End IF
+        } // End WHILE
+    } // End FOR
+
+    return TRUE;
+ERROR_EXIT:
+    return FALSE;
+} // End BoolVecGrade
 
 
 //***************************************************************************
@@ -503,33 +666,40 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft;            // Left arg storage type
-    APLNELM      aplNELMLft,            // Left arg NELM
-                 aplNELMRht,            // Right ...
-                 aplNELMRes;            // Result    ...
-    APLRANK      aplRankLft,            // Left arg rank
-                 aplRankRht;            // Right ...
-    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
-                 hGlbRht = NULL,        // Right ...
-                 hGlbRes = NULL;        // Result   ...
-    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
-                 lpMemRht = NULL,       // Ptr to right ...
-                 lpMemRes = NULL;       // Ptr to result   ...
-    LPAPLDIM     lpMemDimLft,           // Ptr to left arg dimensions
-                 lpMemDimRht;           // Ptr to right ...
-    APLUINT      ByteRes,               // # bytes in the result
-                 uDim,                  // Loop counter
-                 uRes,                  // Loop counter
-                 uBegLen,               // Product of leading dimensions
-                 uBeg,                  // Loop counter
-                 uEndLen,               // Product of trailing dimensions
-                 uEnd;                  // Loop counter
-    APLINT       iLft;                  // Loop counter
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    APLBOOL      bQuadIO;               // []IO
-    GRADE_DATA   gradeData;             // Data passed to GRADE_ROUTINE
-    HGLOBAL      hGlbTTHandles = NULL;  // TT Handles global memory handle
-    LPTT_HANDLES lpMemTTHandles = NULL; // Ptr to TT handles global memory
+    APLSTYPE      aplTypeLft;               // Left arg storage type
+    APLNELM       aplNELMLft,               // Left arg NELM
+                  aplNELMRht,               // Right ...
+                  aplNELMRes;               // Result    ...
+    APLRANK       aplRankLft,               // Left arg rank
+                  aplRankRht;               // Right ...
+    HGLOBAL       hGlbLft = NULL,           // Left arg global memory handle
+                  hGlbRht = NULL,           // Right ...
+                  hGlbRes = NULL;           // Result   ...
+    LPVOID        lpMemLft = NULL,          // Ptr to left arg global memory
+                  lpMemRht = NULL,          // Ptr to right ...
+                  lpMemRes = NULL;          // Ptr to result   ...
+    LPAPLDIM      lpMemDimLft,              // Ptr to left arg dimensions
+                  lpMemDimRht;              // Ptr to right ...
+    APLUINT       ByteRes,                  // # bytes in the result
+                  uDim,                     // Loop counter
+                  uRes,                     // Loop counter
+                  uBegLen,                  // Product of leading dimensions
+                  uBeg,                     // Loop counter
+                  uEndLen,                  // Product of trailing dimensions
+                  uEnd;                     // Loop counter
+    APLINT        iLft;                     // Loop counter
+    LPPL_YYSTYPE  lpYYRes = NULL;           // Ptr to the result
+    APLBOOL       bQuadIO;                  // []IO
+    GRADE_DATA    gradeData;                // Data passed to GRADE_ROUTINE
+    HGLOBAL       hGlbTTHandles = NULL;     // TT Handles global memory handle
+    LPTT_HANDLES  lpMemTTHandles = NULL;    // Ptr to TT handles global memory
+    LPPLLOCALVARS lpplLocalVars;            // Ptr to re-entrant vars
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    gradeData.lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Mark as grade up or down
     gradeData.iMul = (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE) ? 1 : -1;
@@ -614,7 +784,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         // Get the dimension length
         uDimLen = lpMemDimLft[iLft];
 
-        Assert (uDimLen < APLCHAR_SIZE);
+        Assert (uDimLen <= APLCHAR_SIZE);
 
         // Calculate product of the leading dimensions
         uBegLen = aplNELMLft / (uDimLen * uEndLen);
@@ -626,7 +796,9 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         for (uDim = 0; uDim < uDimLen; uDim++)
         for (uEnd = 0; uEnd < uEndLen; uEnd++)
         {
-            Assert (uDimLen < APLCHAR_SIZE);
+            // Check for Ctrl-Break
+            if (*gradeData.lpbCtrlBreak)
+                goto ERROR_EXIT;
 
             // Get the next char
             aplChar = ((LPAPLCHAR) lpMemLft)[uEnd + uEndLen * (uDimLen * uBeg + uDim)];
@@ -667,7 +839,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -695,11 +867,13 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         ((LPAPLINT) lpMemRes)[uRes] = uRes;
 
     // Grade the array
-    GRADE_ROUTINE (lpMemRes,                // Ptr to result global memory
-                   lpMemRht,                // Ptr to right arg global memory
-                   aplNELMRes,              // Result NELM
-                  &PrimFnGradeCompare,      // Ptr to comparison routine
-                  &gradeData);              // Ptr to extra grade data
+    if (!GRADE_ROUTINE (lpMemRes,               // Ptr to result global memory
+                        lpMemRht,               // Ptr to right arg global memory
+                        aplNELMRes,             // Result NELM
+                       &PrimFnGradeCompare,     // Ptr to comparison routine
+                        gradeData.lpbCtrlBreak, // Ptr to Ctrl-Break flag
+                       &gradeData))             // Ptr to extra grade data
+        goto ERROR_EXIT;
     // Add in []IO
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         ((LPAPLINT) lpMemRes)[uRes] += bQuadIO;
@@ -712,8 +886,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -842,12 +1016,12 @@ APLINT PrimFnGradeCompare
                 // Get the left hand indexed bit
                 aplBitLft = aplUIntLft * aplNELMRest + uRest;
                 uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) aplBitLft);
-                aplBitLft = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitLft >> LOG2NBIB]) ? 1 : 0;
+                aplBitLft = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitLft >> LOG2NBIB]) ? TRUE : FALSE;
 
                 // Get the right hand indexed bit
                 aplBitRht = aplUIntRht * aplNELMRest + uRest;
                 uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) aplBitRht);
-                aplBitRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitRht >> LOG2NBIB]) ? 1 : 0;
+                aplBitRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitRht >> LOG2NBIB]) ? TRUE : FALSE;
 
                 // Split cases based upon the signum of the difference
                 switch (PrimFnMonTimesIisI (aplBitLft - aplBitRht,

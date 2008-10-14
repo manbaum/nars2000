@@ -184,28 +184,40 @@ LPCHAR *lpaaFileName[] =
 //  Save the allocation of an object
 //***************************************************************************
 
-int _SaveObj
+void _SaveObj
     (DWORD   dwType,
      HGDIOBJ hObject,
+     LPCHAR  lpFileName,    // Ptr to filename (may be NULL)
      UINT    uLine)         // Line #
 
 {
     int *lpiCount;
 
+    if (bCSO)
+        EnterCriticalSection (&CSORsrc);
+
     // Get a ptr to the counter
     lpiCount = lpiaCount[dwType - 1];
 
-    if (*lpiCount >= (MAXOBJ - 1))
-        return -1;
+    if (*lpiCount < (MAXOBJ - 1))
+    {
+        // Save the line number
+        lpaauLinNum[dwType - 1][*lpiCount] = uLine;
 
-    // Save the line number
-    lpaauLinNum[dwType - 1][*lpiCount] = uLine;
+        // Count in another OBJECT
+        lpaah[dwType - 1][*lpiCount] = hObject;
 
-    // Count in another OBJECT
-    lpaah[dwType - 1][*lpiCount] = hObject;
+        // Save the filename (if any)
+        if (lpaaFileName[dwType - 1])
+            lpaaFileName[dwType - 1][*lpiCount] = lpFileName;
 
-    // Increment the counter
-    return (*lpiCount)++;
+        // Increment the counter
+        (*lpiCount)++;
+    } else
+        DbgBrk ();
+
+    if (bCSO)
+        LeaveCriticalSection (&CSORsrc);
 } // _SaveObj
 
 
@@ -220,72 +232,102 @@ void _DeleObj
      HGDIOBJ hObject)
 
 {
-    int i, iLen;
-    int *lpiCount;
+    int     i, iLen;
+    int    *lpiCount;
+    HANDLE *lpah;
+
+    EnterCriticalSection (&CSORsrc);
 
     // Get a ptr to the counter
     lpiCount = lpiaCount[dwType - 1];
+
+    // Get a ptr to the handle array
+    lpah = lpaah[dwType - 1];
 
     // Find this object in the array
     //   looking backwards
     iLen = *lpiCount;
     for (i = iLen - 1; i >= 0; i--)
-    if (hObject EQ lpaah[dwType - 1][i])
+    if (hObject EQ lpah[i])
         break;
 
     // If we didn't find it, ...
-    if (i EQ iLen)
-    {
-        if (*lpiCount < MAXOBJ)
-            DbgBrk ();
-    } else
+    if (i < 0)
+        DbgBrk ();
+    else
     {
         // Move down the saved values above this entry
-        MoveMemory (&lpaauLinNum[dwType - 1][i],
-                    &lpaauLinNum[dwType - 1][i + 1],
-                    (iLen - i) * sizeof (lpaauLinNum[0][0]));
-        MoveMemory (&lpaah[dwType - 1][i],
-                    &lpaah[dwType - 1][i + 1],
-                    (iLen - i) * sizeof (lpaah[0][0]));
+        OverLapMemory (&lpaauLinNum[dwType - 1][i],
+                       &lpaauLinNum[dwType - 1][i + 1],
+                        (iLen - i) * sizeof (lpaauLinNum[0][0]));
+        OverLapMemory (&lpah[i],
+                       &lpah[i + 1],
+                        (iLen - i) * sizeof (lpah[0]));
         if (lpaaFileName[dwType - 1])
-            MoveMemory (&lpaaFileName[dwType - 1][i],
-                        &lpaaFileName[dwType - 1][i + 1],
-                        (iLen - i) * sizeof (lpaaFileName[0][0]));
+            OverLapMemory (&lpaaFileName[dwType - 1][i],
+                           &lpaaFileName[dwType - 1][i + 1],
+                            (iLen - i) * sizeof (lpaaFileName[0][0]));
     } // End IF/ELSE
 
     if (*lpiCount < MAXOBJ)
     {
         // Count out another OBJECT
         if (*lpiCount)
-            (*lpiaCount[dwType - 1])--;
+            (*lpiCount)--;
         else
             DbgBrk ();
-    } // End IF
+    } else
+        DbgBrk ();
+
+    LeaveCriticalSection (&CSORsrc);
 } // _DeleObj
 
 
 //***************************************************************************
-//  $_LastLock
+//  $OverLapMemory
+//
+//  Local version of MoveMemory for overalpping memory where
+//    we mean to destroy the overlapping part
+//***************************************************************************
+
+void OverLapMemory
+    (LPVOID lpDst,          // Ptr to destin
+     LPVOID lpSrc,          // Ptr to source
+     UINT   uLen)           // # bytes to move
+
+{
+    while (uLen--)
+        *((LPBYTE) lpDst)++ = *((LPBYTE) lpSrc)++;
+} // End OverLapMemory
+
+
+//***************************************************************************
+//  $_LastTouch
 //
 //  Format a message about the last place a global memory handle was locked
 //    and allocated.
 //***************************************************************************
 
-void _LastLock
+void _LastTouch
     (char   *szTemp,
-     HGLOBAL hMem)
+     HGLOBAL hMem,
+     UBOOL   bLocked)               // TRUE iff the hMem is currently locked
 
 {
     int i, j,
         iLen;
 
-    // Find this object in the array
-    iLen = *lpiaCount[OBJ_GLBLOCK - 1];
+    // If it's currently locked, ...
+    if (bLocked)
+    {
+        // Find this object in the array
+        iLen = *lpiaCount[OBJ_GLBLOCK - 1];
 
-    // Note we loop backwards to find the most recent entry
-    for (i = iLen - 1; i >= 0; i--)
-    if (hMem EQ lpaah[OBJ_GLBLOCK - 1][i])
-        break;
+        // Note we loop backwards to find the most recent entry
+        for (i = iLen - 1; i >= 0; i--)
+        if (hMem EQ lpaah[OBJ_GLBLOCK - 1][i])
+            break;
+    } // End IF
 
     // Find this object in the array
     iLen = *lpiaCount[OBJ_GLBALLOC - 1];
@@ -296,17 +338,25 @@ void _LastLock
         break;
 
     // If we didn't find it, ...
-    if (i EQ iLen || j EQ iLen)
+    if (i < 0 || j < 0)
         DbgBrk ();
     else
+    // If it's currently locked, ...
+    if (bLocked)
         wsprintf (szTemp,
                   "The global (%p) was last locked in (%s#%d) and allocated in (%s#%d).",
                   hMem,
-                  lpaaFileName[OBJ_GLBLOCK - 1][i],
-                  lpaauLinNum[OBJ_GLBLOCK - 1][i],
+                  lpaaFileName[OBJ_GLBLOCK  - 1][i],
+                  lpaauLinNum [OBJ_GLBLOCK  - 1][i],
                   lpaaFileName[OBJ_GLBALLOC - 1][j],
-                  lpaauLinNum[OBJ_GLBALLOC - 1][j]);
-} // End _LastLock
+                  lpaauLinNum [OBJ_GLBALLOC - 1][j]);
+    else
+        wsprintf (szTemp,
+                  "The global (%p) was last allocated in (%s#%d).",
+                  hMem,
+                  lpaaFileName[OBJ_GLBALLOC - 1][j],
+                  lpaauLinNum [OBJ_GLBALLOC - 1][j]);
+} // End _LastTouch
 
 
 //***************************************************************************
@@ -330,7 +380,6 @@ HBITMAP _MyCreateCompatibleBitmap
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -338,8 +387,9 @@ HBITMAP _MyCreateCompatibleBitmap
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_BITMAP, hBitmap, uLine);
+        _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
 } // _MyCreateCompatibleBitmap
@@ -364,7 +414,6 @@ HDC _MyCreateCompatibleDC
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -372,8 +421,9 @@ HDC _MyCreateCompatibleDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_MEMDC, hMEMDC, uLine);
+        _SaveObj (OBJ_MEMDC,    hMEMDC,  NULL,       uLine);
 
     return hMEMDC;
 } // _MyCreateCompatibleDC
@@ -400,7 +450,6 @@ HPEN _MyCreatePen
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -408,8 +457,9 @@ HPEN _MyCreatePen
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_PEN, hPen, uLine);
+        _SaveObj (OBJ_PEN,      hPen,    NULL,       uLine);
 
     return hPen;
 } // _MyCreatePen
@@ -434,7 +484,6 @@ HFONT _MyCreateFontIndirect
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -442,8 +491,9 @@ HFONT _MyCreateFontIndirect
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_FONT, hFont, uLine);
+        _SaveObj (OBJ_FONT,     hFont,   NULL,       uLine);
 
     return hFont;
 } // _MyCreateFontIndirect
@@ -470,7 +520,6 @@ HRGN _MyCreatePolygonRgn
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -478,8 +527,9 @@ HRGN _MyCreatePolygonRgn
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_REGION, hRgn, uLine);
+        _SaveObj (OBJ_REGION,   hRgn,    NULL,       uLine);
 
     return hRgn;
 } // _MyCreatePolygonRgn
@@ -504,7 +554,6 @@ HRGN _MyCreateRectRgnIndirect
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -512,8 +561,9 @@ HRGN _MyCreateRectRgnIndirect
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_REGION, hRgn, uLine);
+        _SaveObj (OBJ_REGION,   hRgn,    NULL,       uLine);
 
     return hRgn;
 } // _MyCreateRectRgnIndirect
@@ -538,7 +588,6 @@ HBRUSH _MyCreateSolidBrush
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -546,8 +595,9 @@ HBRUSH _MyCreateSolidBrush
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_BRUSH, hBrush, uLine);
+        _SaveObj (OBJ_BRUSH,    hBrush,  NULL,       uLine);
 
     return hBrush;
 } // _MyCreateSolidBrush
@@ -572,7 +622,6 @@ UBOOL _MyDeleteDC
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -580,6 +629,7 @@ UBOOL _MyDeleteDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
         _DeleObj (OBJ_MEMDC, hMEMDC);
 
@@ -616,7 +666,6 @@ UBOOL _MyDeleteObject
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -624,6 +673,7 @@ UBOOL _MyDeleteObject
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
         _DeleObj (dwType, hObject);
 
@@ -650,7 +700,6 @@ HDC _MyGetDC
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -658,8 +707,9 @@ HDC _MyGetDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_DC, hDC, uLine);
+        _SaveObj (OBJ_DC,       hDC,     NULL,       uLine);
 
     return hDC;
 } // _MyGetDC
@@ -684,7 +734,6 @@ HDC _MyGetWindowDC
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -692,8 +741,9 @@ HDC _MyGetWindowDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_DC, hDC, uLine);
+        _SaveObj (OBJ_DC,       hDC,     NULL,       uLine);
 
     return hDC;
 } // _MyGetWindowDC
@@ -719,7 +769,6 @@ HBITMAP _MyLoadBitmap
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -727,8 +776,9 @@ HBITMAP _MyLoadBitmap
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_BITMAP, hBitmap, uLine);
+        _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
 } // _MyLoadBitmap
@@ -758,7 +808,6 @@ HANDLE _MyLoadImage
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -766,8 +815,9 @@ HANDLE _MyLoadImage
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-        _SaveObj (OBJ_BITMAP, hBitmap, uLine);
+        _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
 } // _MyLoadImage
@@ -793,7 +843,6 @@ UBOOL _MyReleaseDC
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -801,6 +850,7 @@ UBOOL _MyReleaseDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
         _DeleObj (OBJ_DC, hDC);
 
@@ -817,37 +867,39 @@ UBOOL _MyReleaseDC
 LPVOID _MyGlobalAlloc
     (UINT   uFlags,         // Object allocation attributes
      SIZE_T dwBytes,        // Number of bytes to allocate
-     char  *lpFileName,     // Ptr to filename
+     LPCHAR lpFileName,     // Ptr to filename
      UINT   uLine)          // Line #
 
 {
-    LPVOID lpVoid;
-    int    iCount;
+    LPVOID lpMem;
 
     CheckMemStat ();
 
-    lpVoid = GlobalAlloc (uFlags, dwBytes);
+    lpMem = GlobalAlloc (uFlags, dwBytes);
 
-    if (!lpVoid)
+    if (!lpMem)
     {
         char szTemp[1024];
+        UINT uLastError;
 
-        DbgBrk ();
+        // Get the last error
+        uLastError = GetLastError ();
+#ifdef DEBUG
+        if (uLastError EQ ERROR_NOT_ENOUGH_MEMORY)
+            DisplayGlobals (0);
+#endif
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
-                       GetLastError (),             // Requested message identifier
+                       uLastError,                  // Requested message identifier
                        0,                           // Language identifier for requested message
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        CheckMemStat ();
+        DbgBrk ();
     } else
-    {
-        iCount = _SaveObj (OBJ_GLBALLOC, lpVoid, uLine);
-        lpaaFileName[OBJ_GLBALLOC - 1][iCount] = lpFileName;
-    } // End IF/ELSE
+        _SaveObj (OBJ_GLBALLOC, lpMem,   lpFileName, uLine);
 
-    return lpVoid;
+    return lpMem;
 } // End _MyGlobalAlloc
 
 
@@ -859,7 +911,7 @@ LPVOID _MyGlobalAlloc
 
 LPVOID _MyGlobalLock
     (HGLOBAL hMem,          // Address of the global memory object
-     char   *lpFileName,    // Ptr to filename
+     LPCHAR  lpFileName,    // Ptr to filename
      UINT    uLine)         // Line #
 
 {
@@ -875,7 +927,7 @@ LPVOID _MyGlobalLock
 
 LPVOID _MyGlobalLockNS
     (HGLOBAL hMem,          // Address of the global memory object
-     char   *lpFileName,    // Ptr to filename
+     LPCHAR  lpFileName,    // Ptr to filename
      UINT    uLine)         // Line #
 
 {
@@ -892,12 +944,13 @@ LPVOID _MyGlobalLockNS
 LPVOID _MyGlobalLockSub
     (HGLOBAL hMem,          // Address of the global memory object
      UBOOL   bSaveFileName, // TRUE iff we should save the filename
-     char   *lpFileName,    // Ptr to filename
+     LPCHAR  lpFileName,    // Ptr to filename
      UINT    uLine)         // Line #
 
 {
     LPVOID lpVoid;
-    int    iCount;
+
+    Assert (bSaveFileName);     // Unused as yet
 
     CheckMemStat ();
 
@@ -907,7 +960,6 @@ LPVOID _MyGlobalLockSub
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -915,12 +967,9 @@ LPVOID _MyGlobalLockSub
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } else
-    {
-        iCount = _SaveObj (OBJ_GLBLOCK, hMem, uLine);
-        if (bSaveFileName)
-            lpaaFileName[OBJ_GLBLOCK - 1][iCount] = lpFileName;
-    } // End IF/ELSE
+        _SaveObj (OBJ_GLBLOCK,  hMem,    lpFileName, uLine);
 
     return lpVoid;
 } // End _MyGlobalLockSub
@@ -946,10 +995,9 @@ UBOOL _MyGlobalUnlock
     {
         char szTemp[1024];
 
+        // Format a message about the last lock & alloc
+        _LastTouch (szTemp, hMem, FALSE);
         DbgBrk ();
-
-        // Format a message about the last lock
-        _LastLock (szTemp, hMem);
     } // End IF
 
     bRet = GlobalUnlock (hMem);
@@ -979,7 +1027,6 @@ SIZE_T _MyGlobalSize
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -987,6 +1034,7 @@ SIZE_T _MyGlobalSize
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } // End IF
 
     return dwRet;
@@ -1013,7 +1061,6 @@ DWORD _MyGlobalFlags
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1021,6 +1068,7 @@ DWORD _MyGlobalFlags
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } // End IF
 
     return dwRet;
@@ -1050,7 +1098,6 @@ HGLOBAL _MyGlobalReAlloc
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1058,16 +1105,16 @@ HGLOBAL _MyGlobalReAlloc
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } // End IF
 
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
         char szTemp[1024];
 
+        // Format a message about the last lock & alloc
+        _LastTouch (szTemp, hMem, TRUE);
         DbgBrk ();
-
-        // Format a message about the last lock
-        _LastLock (szTemp, hMem);
     } // End IF
 
     hGlb = GlobalReAlloc (hMem, dwBytes, uFlags);
@@ -1075,7 +1122,6 @@ HGLOBAL _MyGlobalReAlloc
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1083,6 +1129,7 @@ HGLOBAL _MyGlobalReAlloc
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } // End IF
 
     return hGlb;
@@ -1103,18 +1150,19 @@ HGLOBAL _MyGlobalFree
     CheckMemStat ();
 
     // GlobalFlags returns the lock count in the low-order byte
-    if (_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT)
+    if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
         char szTemp[1024];
 
+        // Format a message about the last lock & alloc
+        _LastTouch (szTemp, hMem, TRUE);
         DbgBrk ();
-
-        // Format a message about the last lock
-        _LastLock (szTemp, hMem);
     } else
         _DeleObj (OBJ_GLBALLOC, hMem);
 
-    return GlobalFree (hMem);
+    CheckMemStat ();
+
+    return GlobalFree (hMem); hMem = NULL;
 } // _MyGlobalFree
 
 
@@ -1144,7 +1192,6 @@ LPVOID _MyVirtualAlloc
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1152,6 +1199,7 @@ LPVOID _MyVirtualAlloc
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } // End IF
 
     return lpRet;
@@ -1182,7 +1230,6 @@ UBOOL _MyVirtualFree
     {
         char szTemp[1024];
 
-        DbgBrk ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1190,6 +1237,7 @@ UBOOL _MyVirtualFree
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
+        DbgBrk ();
     } // End IF
 
     return bRet;

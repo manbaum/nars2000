@@ -8,7 +8,6 @@ APLERRORS.H:
 
 ASSIGN.C:
   Use TRUE/FALSE instead of 0/1 whenever Boolean.
-  Whitespace changes only.
 
 COMPRO.H:
   Reference new modules.

@@ -133,36 +133,44 @@ LPPL_YYSTYPE PrimProtoFnDomino_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnMonDomino_EM_YY
-    (LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht;        // Right arg storage type
-    APLNELM      aplNELMRht,        // Right arg NELM
-                 aplNELMRes;        // Result    ...
-    APLRANK      aplRankRht,        // Right arg rank
-                 aplRankRes;        // Result    ...
-    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
-                 hGlbRes = NULL;    // Result    ...
-    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
-                 lpMemRes = NULL;   // Ptr to result    ...
-    APLUINT      ByteRes;           // # bytes in the result
-    APLDIM       uNumRows,
-                 uNumCols,
-                 uRow,
-                 uCol;
-    APLINT       apaOffRht,         // Right arg APA offset
-                 apaMulRht;         // ...           multiplier
-    APLFLOAT     aplFloatRht;       // Right arg temporary float
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    UINT         uBitMask;          // Bit mask for marching through Booleans
-    gsl_matrix  *lpGslMatrixU = NULL,
-                *lpGslMatrixV = NULL;
-    gsl_vector  *lpGslVectorS = NULL,
-                *lpGslVectorW = NULL,
-                *lpGslVectorI = NULL;
-    int          ErrCode;
+    APLSTYPE      aplTypeRht;           // Right arg storage type
+    APLNELM       aplNELMRht,           // Right arg NELM
+                  aplNELMRes;           // Result    ...
+    APLRANK       aplRankRht,           // Right arg rank
+                  aplRankRes;           // Result    ...
+    HGLOBAL       hGlbRht = NULL,       // Right arg global memory handle
+                  hGlbRes = NULL;       // Result    ...
+    LPVOID        lpMemRht = NULL,      // Ptr to right arg global memory
+                  lpMemRes = NULL;      // Ptr to result    ...
+    APLUINT       ByteRes;              // # bytes in the result
+    APLDIM        uNumRows,
+                  uNumCols,
+                  uRow,
+                  uCol;
+    APLINT        apaOffRht,            // Right arg APA offset
+                  apaMulRht;            // ...           multiplier
+    APLFLOAT      aplFloatRht;          // Right arg temporary float
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    UINT          uBitMask;             // Bit mask for marching through Booleans
+    gsl_matrix   *lpGslMatrixU = NULL,
+                 *lpGslMatrixV = NULL;
+    gsl_vector   *lpGslVectorS = NULL,
+                 *lpGslVectorW = NULL,
+                 *lpGslVectorI = NULL;
+    int           ErrCode;
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -172,7 +180,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for RANK ERROR
-    if (aplRankRht > 2)
+    if (IsRank3P (aplRankRht))
         goto RANK_EXIT;
 
     // Calculate the # rows & cols in the result
@@ -323,7 +331,11 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
                     {
-                        lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -340,7 +352,14 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
                 case ARRAY_INT:
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+                    } // End FOR
+
                     break;
 
                 case ARRAY_FLOAT:
@@ -349,7 +368,14 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                     Assert (sizeof (double) EQ sizeof (APLFLOAT));
                     CopyMemory (lpGslMatrixU->data, lpMemRht, (UINT) ByteRes);
 ////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
+////////////////////{
+////////////////////    // Check for Ctrl-Break
+////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////        goto ERROR_EXIT;
+////////////////////
 ////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
+////////////////////} // End FOR
+
                     break;
 
                 case ARRAY_APA:
@@ -359,7 +385,14 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                     apaMulRht = lpAPA->Mul;
 #undef  lpAPA
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
+                    } // End FOR
+
                     break;
 
                 defstop
@@ -421,7 +454,13 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
         // Copy the values from W to the result
         for (uCol = 0; uCol < uNumCols; uCol++)
+        {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
             lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
+        } // End FOR
 
 #undef  lpMemData
     } // End FOR
@@ -439,8 +478,8 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -539,52 +578,60 @@ NORMAL_EXIT:
 #endif
 
 LPPL_YYSTYPE PrimFnDydDomino_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                // Ptr to left arg token
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // Right ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht,        // Right ...
-                 aplNELMRes;        // Result   ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht,        // Right ...
-                 aplRankRes;        // Result   ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL;    // Result   ...
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL,   // Ptr to right ...
-                 lpMemRes = NULL;   // Ptr to result   ...
-    APLUINT      ByteRes;           // # bytes in the result
-    APLDIM       uNumRowsLft,       //
-                 uNumColsLft,       //
-                 uNumRowsRht,       //
-                 uNumColsRht,       //
-                 uNumRowsRes,       //
-                 uNumColsRes,       //
-                 uRow,              //
-                 uCol;              //
-    APLINT       apaOffLft,         // Left arg APA offset
-                 apaMulLft,         // ...           multiplier
-                 apaOffRht,         // Right arg APA offset
-                 apaMulRht;         // ...           multiplier
-    APLFLOAT     aplFloatLft,       //
-                 aplFloatRht,       //
-                 aplFloatRes;       //
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    UINT         uBitMask;          // Bit mask for marching through Booleans
-    gsl_matrix  *lpGslMatrixU = NULL,
-                *lpGslMatrixV = NULL;
-    gsl_vector  *lpGslVectorS = NULL,
-                *lpGslVectorW = NULL,
-                *lpGslVectorX = NULL,
-                *lpGslVectorB = NULL;
-    int         ErrCode;
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht;           // Right ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht,           // Right ...
+                  aplNELMRes;           // Result   ...
+    APLRANK       aplRankLft,           // Left arg rank
+                  aplRankRht,           // Right ...
+                  aplRankRes;           // Result   ...
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL,       // Right ...
+                  hGlbRes = NULL;       // Result   ...
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL,      // Ptr to right ...
+                  lpMemRes = NULL;      // Ptr to result   ...
+    APLUINT       ByteRes;              // # bytes in the result
+    APLDIM        uNumRowsLft,          //
+                  uNumColsLft,          //
+                  uNumRowsRht,          //
+                  uNumColsRht,          //
+                  uNumRowsRes,          //
+                  uNumColsRes,          //
+                  uRow,                 //
+                  uCol;                 //
+    APLINT        apaOffLft,            // Left arg APA offset
+                  apaMulLft,            // ...           multiplier
+                  apaOffRht,            // Right arg APA offset
+                  apaMulRht;            // ...           multiplier
+    APLFLOAT      aplFloatLft,          //
+                  aplFloatRht,          //
+                  aplFloatRes;          //
+    UBOOL         bRet = TRUE;          // TRUE iff result is valid
+    LPPL_YYSTYPE  lpYYRes;              // Ptr to the result
+    UINT          uBitMask;             // Bit mask for marching through Booleans
+    gsl_matrix   *lpGslMatrixU = NULL,
+                 *lpGslMatrixV = NULL;
+    gsl_vector   *lpGslVectorS = NULL,
+                 *lpGslVectorW = NULL,
+                 *lpGslVectorX = NULL,
+                 *lpGslVectorB = NULL;
+    int          ErrCode;
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -596,7 +643,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for RANK ERROR
-    if (aplRankLft > 2 || aplRankRht > 2)
+    if (IsRank3P (aplRankLft) || IsRank3P (aplRankRht))
         goto RANK_EXIT;
 
     // Calculate the # rows & cols in the right arg
@@ -771,7 +818,11 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
                     {
-                        lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -788,7 +839,14 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                 case ARRAY_INT:
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+                    } // End FOR
+
                     break;
 
                 case ARRAY_FLOAT:
@@ -797,7 +855,14 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                     Assert (sizeof (double) EQ sizeof (APLFLOAT));
                     CopyMemory (lpGslMatrixU->data, lpMemRht, (UINT) ByteRes);
 ////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
+////////////////////{
+////////////////////    // Check for Ctrl-Break
+////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////        goto ERROR_EXIT;
+////////////////////
 ////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
+////////////////////} // End FOR
+
                     break;
 
                 case ARRAY_APA:
@@ -807,7 +872,14 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                     apaMulRht = lpAPA->Mul;
 #undef  lpAPA
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
+                    } // End FOR
+
                     break;
 
                 defstop
@@ -850,7 +922,11 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                 Assert (uNumRowsLft EQ lpGslVectorB->size);
                 for (uRow = 0; uRow < uNumRowsLft; uRow++)
                 {
-                    lpGslVectorB->data[uRow] = (uBitMask & *(LPAPLBOOL) lpMemLft) ? 1 : 0;
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    lpGslVectorB->data[uRow] = (uBitMask & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
 
                     // Shift over the bit mask
                     uBitMask <<= 1;
@@ -868,13 +944,27 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             case ARRAY_INT:
                 Assert (uNumRowsLft EQ lpGslVectorB->size);
                 for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     lpGslVectorB->data[uRow] = (APLFLOAT) ((LPAPLINT) lpMemLft)[uRow * uNumColsLft + uCol];
+                } // End FOR
+
                 break;
 
             case ARRAY_FLOAT:
                 Assert (uNumRowsLft EQ lpGslVectorB->size);
                 for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     lpGslVectorB->data[uRow] = ((LPAPLFLOAT) lpMemLft)[uRow * uNumColsLft + uCol];
+                } // End FOR
+
                 break;
 
             case ARRAY_APA:
@@ -885,7 +975,14 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                 apaMulLft = lpAPA->Mul;
 #undef  lpAPA
                 for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     lpGslVectorB->data[uRow] = (APLFLOAT) (APLINT) (apaOffLft + apaMulLft * (uRow * uNumColsLft + uCol));
+                } // End FOR
+
                 break;
 
             defstop
@@ -911,7 +1008,13 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             aplFloatRes = lpGslVectorX->data[0];
         else
         for (uRow = 0; uRow < uNumRowsRes; uRow++)
+        {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
             lpMemData[uRow * uNumColsRes + uCol] = lpGslVectorX->data[uRow];
+        } // End IF/ELSE/...
 
 #undef  lpMemData
     } // End FOR
@@ -939,8 +1042,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     } else
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE

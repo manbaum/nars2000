@@ -155,35 +155,43 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht,        // Right ...
-                 aplTypeRes;        // Result   ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht,        // Right ...
-                 aplNELMRes;        // Result   ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht,        // Right ...
-                 aplRankRes;        // Result   ...
-    APLDIM       aplColsLft,        // Left arg # cols
-                 aplRowsLft,        // Left arg # rows
-                 aplRestLft;        // Left arg product of remaining dimensions
-    APLLONGEST   aplLongestLft,     // Left arg immediate value
-                 aplLongestRht;     // Right ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL;    // Result   ...
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL,   // Ptr to right ...
-                 lpMemRes = NULL;   // Ptr to result   ...
-    LPAPLDIM     lpMemDimLft,       // Ptr to left arg dimensions
-                 lpMemDimRht,       // Ptr to right ...
-                 lpMemDimRes;       // Ptr to result   ...
-    APLUINT      ByteRes,           // # bytes in the result
-                 uLftCol,           // Loop counter
-                 uLftRst,           // Loop counter
-                 uRht;              // Loop counter
-    APLINT       iLftRow;           // Loop counter
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    APLSTYPE      aplTypeLft,       // Left arg storage type
+                  aplTypeRht,       // Right ...
+                  aplTypeRes;       // Result   ...
+    APLNELM       aplNELMLft,       // Left arg NELM
+                  aplNELMRht,       // Right ...
+                  aplNELMRes;       // Result   ...
+    APLRANK       aplRankLft,       // Left arg rank
+                  aplRankRht,       // Right ...
+                  aplRankRes;       // Result   ...
+    APLDIM        aplColsLft,       // Left arg # cols
+                  aplRowsLft,       // Left arg # rows
+                  aplRestLft;       // Left arg product of remaining dimensions
+    APLLONGEST    aplLongestLft,    // Left arg immediate value
+                  aplLongestRht;    // Right ...
+    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
+                  hGlbRht = NULL,   // Right ...
+                  hGlbRes = NULL;   // Result   ...
+    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
+                  lpMemRht = NULL,  // Ptr to right ...
+                  lpMemRes = NULL;  // Ptr to result   ...
+    LPAPLDIM      lpMemDimLft,      // Ptr to left arg dimensions
+                  lpMemDimRht,      // Ptr to right ...
+                  lpMemDimRes;      // Ptr to result   ...
+    APLUINT       ByteRes,          // # bytes in the result
+                  uLftCol,          // Loop counter
+                  uLftRst,          // Loop counter
+                  uRht;             // Loop counter
+    APLINT        iLftRow;          // Loop counter
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type,NELM, and Rank)
     //   of the left & right args
@@ -231,7 +239,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -328,6 +336,10 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                 APLUINT  uLft,
                          uRes;
 
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Get left arg index
                 uLft = 1 * uLftCol + aplColsLft * (1 * iLftRow + aplRowsLft * uLftRst);
 
@@ -388,8 +400,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -409,6 +421,17 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this resource
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {

@@ -153,8 +153,8 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
     {
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpSymGlb);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -165,7 +165,7 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = immType;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE
@@ -194,54 +194,62 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,            // Left arg storage type
-                 aplTypeRht,            // Right ...
-                 aplTypeRes;            // Result   ...
-    APLNELM      aplNELMLft,            // Left arg NELM
-                 aplNELMRht,            // Right ...
-                 aplNELMRes,            // Result   ...
-                 aplNELMCom,            // Common   ...
-                 aplNELMAxis;           // Axis     ...
-    APLRANK      aplRankLft,            // Left arg rank
-                 aplRankRht,            // Right ...
-                 aplRankRes;            // Result   ...
-    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
-                 hGlbRht = NULL,        // Right ...
-                 hGlbRes = NULL,        // Result   ...
-                 hGlbAxis = NULL,       // Axis     ...
-                 hGlbTmpLft = NULL,     // Left arg temporary values global memory handle
-                 hGlbOdoRht = NULL,     // Right arg odometer ...
-                 hGlbOdoRes = NULL,     // Result    ...
-                 hGlbWVecRht = NULL,    // Right arg weighting vector ...
-                 hGlbWVecRes = NULL;    // Result    ...
-    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
-                 lpMemRht = NULL,       // Ptr to right ...
-                 lpMemRes = NULL;       // Ptr to result   ...
-    APLLONGEST   aplLongestLft,         // Left arg immediate value
-                 aplLongestRht;         // Right arg ...
-    APLINT       apaOffRht,             // Right arg APA offset
-                 apaMulRht,             // Right arg APA multiplier
-                 iRht;                  // Loop counter
-    APLUINT      ByteRes,               // # bytes in the result
-                 uRes,                  // Loop counter
-                 uRhtWVec,              // Loop counter
-                 uResWVec,              // Loop counter
-                 uOdo;                  // Loop counter
-    LPAPLDIM     lpMemDimRht = NULL,    // Ptr to right arg dimensions
-                 lpMemDimRes = NULL;    // Ptr to result    ...
-    LPAPLUINT    lpMemAxisHead,         // Ptr to axis values, fleshed out
-                 lpMemAxisTail = NULL,  // Ptr to grade up of AxisHead
-                 lpMemOdoRht = NULL,    // Ptr to right arg odometer global memory
-                 lpMemOdoRes = NULL,    // Ptr to result    ...
-                 lpMemWVecRht = NULL,   // Ptr to right arg weighting vector global memory
-                 lpMemWVecRes = NULL;   // Ptr to result    ...
-    LPAPLINT     lpMemTmpLft,           // Ptr to left arg temporary values global memory
-                 lpMemLoHiRht,          // Ptr to right arg low/high bounds
-                 lpMemLoHiRes;          // Ptr to result    ...
-    UINT         uBitMask;              // Bit mask for looping through Booleans
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    APLNESTED    aplProtoGlb;           // Right arg prototype if nested
-    APLHETERO    aplProtoSym;           // Right arg prototype if hetero
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht,           // Right ...
+                  aplTypeRes;           // Result   ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht,           // Right ...
+                  aplNELMRes,           // Result   ...
+                  aplNELMCom,           // Common   ...
+                  aplNELMAxis;          // Axis     ...
+    APLRANK       aplRankLft,           // Left arg rank
+                  aplRankRht,           // Right ...
+                  aplRankRes;           // Result   ...
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL,       // Right ...
+                  hGlbRes = NULL,       // Result   ...
+                  hGlbAxis = NULL,      // Axis     ...
+                  hGlbTmpLft = NULL,    // Left arg temporary values global memory handle
+                  hGlbOdoRht = NULL,    // Right arg odometer ...
+                  hGlbOdoRes = NULL,    // Result    ...
+                  hGlbWVecRht = NULL,   // Right arg weighting vector ...
+                  hGlbWVecRes = NULL;   // Result    ...
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL,      // Ptr to right ...
+                  lpMemRes = NULL;      // Ptr to result   ...
+    APLLONGEST    aplLongestLft,        // Left arg immediate value
+                  aplLongestRht;        // Right arg ...
+    APLINT        apaOffRht,            // Right arg APA offset
+                  apaMulRht,            // Right arg APA multiplier
+                  iRht;                 // Loop counter
+    APLUINT       ByteRes,              // # bytes in the result
+                  uRes,                 // Loop counter
+                  uRhtWVec,             // Loop counter
+                  uResWVec,             // Loop counter
+                  uOdo;                 // Loop counter
+    LPAPLDIM      lpMemDimRht = NULL,   // Ptr to right arg dimensions
+                  lpMemDimRes = NULL;   // Ptr to result    ...
+    LPAPLUINT     lpMemAxisHead,        // Ptr to axis values, fleshed out
+                  lpMemAxisTail = NULL, // Ptr to grade up of AxisHead
+                  lpMemOdoRht = NULL,   // Ptr to right arg odometer global memory
+                  lpMemOdoRes = NULL,   // Ptr to result    ...
+                  lpMemWVecRht = NULL,  // Ptr to right arg weighting vector global memory
+                  lpMemWVecRes = NULL;  // Ptr to result    ...
+    LPAPLINT      lpMemTmpLft,          // Ptr to left arg temporary values global memory
+                  lpMemLoHiRht,         // Ptr to right arg low/high bounds
+                  lpMemLoHiRes;         // Ptr to result    ...
+    UINT          uBitMask;             // Bit mask for looping through Booleans
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    APLNESTED     aplProtoGlb;          // Right arg prototype if nested
+    APLHETERO     aplProtoSym;          // Right arg prototype if hetero
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -319,7 +327,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeRht);
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -360,6 +368,9 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     if (!hGlbTmpLft)
         goto ERROR_EXIT;
 
+    // Lock the memory to get a ptr to it
+    lpMemTmpLft = MyGlobalLock (hGlbTmpLft);
+
     // The storage type of the result is the same as that of the right arg
     //   unless the right arg is hetero and the result is a singleton, or
     //   the right arg is APA
@@ -368,8 +379,14 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         aplTypeRes = TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType);
     else
     if (IsSimpleAPA (aplTypeRht))
-        aplTypeRes = ARRAY_INT;
-    else
+    {
+        // The (under-)take of an APV is an APV
+        if (IsVector (aplRankRht)
+         && abs64 (lpMemTmpLft[0]) < (APLINT) aplNELMRht)
+            aplTypeRes = aplTypeRht;
+        else
+            aplTypeRes = ARRAY_INT;
+    } else
         aplTypeRes = aplTypeRht;
 
     // Calculate space needed for the result
@@ -394,7 +411,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -408,9 +425,6 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     else
         lpMemLft = &aplLongestLft;
-
-    // Lock the memory to get a ptr to it
-    lpMemTmpLft = MyGlobalLock (hGlbTmpLft);
 
     // Get ptr to the right arg low/high bounds
     lpMemLoHiRht = &lpMemTmpLft [aplRankRes];
@@ -433,12 +447,37 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto YYALLOC_EXIT;
     } // End IF
 
+    // If the right arg is an APA, ...
+    if (IsSimpleAPA (aplTypeRht))
+    {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
+        apaOffRht = lpAPA->Off;
+        apaMulRht = lpAPA->Mul;
+#undef  lpAPA
+    } // End IF
+
     // Copy the values from the right arg to the result
     //   taking into account
     //   1.  scalar right arg extension
     //   2.  negative values in the left arg
     //   3.  prototypes from overtake.
     //   4.  axis operator
+
+    // If the result is an APA, handle specially
+    if (IsSimpleAPA (aplTypeRes))
+    {
+        // If the left arg is negative, ...
+        if (lpMemTmpLft[0] < 0)
+#define lpAPA           ((LPAPLAPA) lpMemRes)
+            // Increase the offset by the NELM-complement of that amount times the multiplier
+            lpAPA->Off = apaOffRht + apaMulRht * (aplNELMRht + lpMemTmpLft[0]);
+        else
+            lpAPA->Off = apaOffRht;
+        lpAPA->Mul = apaMulRht;
+#undef  lpAPA
+        goto YYALLOC_EXIT;
+    } // End IF
 
     // If the result is simple char, and
     //   the common NELM is less than the result NELM
@@ -553,16 +592,6 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // Initialize the result odometer array
     CopyMemory (lpMemOdoRes, lpMemLoHiRes, (UINT) aplRankRes * sizeof (APLUINT));
 
-    // If the right arg is an APA, ...
-    if (IsSimpleAPA (aplTypeRht))
-    {
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-        // Get the APA parameters
-        apaOffRht = lpAPA->Off;
-        apaMulRht = lpAPA->Mul;
-#undef  lpAPA
-    } // End IF
-
     // If the right arg is an immediate, ...
     if (lpMemRht EQ NULL)
         lpMemRht = &aplLongestRht;
@@ -571,6 +600,10 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     //   common to the two from the right arg to the result
     for (uRes = 0; uRes < aplNELMCom; uRes++)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
         // Use the index in lpMemOdoRht to calculate the
         //   corresponding index in lpMemRht from which
         //   the next value comes.
@@ -599,7 +632,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
                 // Copy element # uRhtWVec from the right arg to lpMemRes]
                 ((LPAPLBOOL)   lpMemRes)[uResWVec >> LOG2NBIB] |=
-                ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRhtWVec >> LOG2NBIB]) ? 1 : 0) << (MASKLOG2NBIB & (UINT) uResWVec);
+                ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRhtWVec >> LOG2NBIB]) ? TRUE : FALSE) << (MASKLOG2NBIB & (UINT) uResWVec);
 
                 break;
 
@@ -676,8 +709,15 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
             // Loop through the result filling in prototype values
             for (uRes = 0; uRes < aplNELMRes; uRes++)
-            if (((LPAPLNESTED) lpMemRes)[uRes] EQ NULL)
-                ((LPAPLHETERO) lpMemRes)[uRes] = aplProtoSym;
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                if (((LPAPLNESTED) lpMemRes)[uRes] EQ NULL)
+                    ((LPAPLHETERO) lpMemRes)[uRes] = aplProtoSym;
+            } // End FOR
+
             break;
 
         case ARRAY_NESTED:
@@ -693,8 +733,15 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
             // Loop through the result filling in prototype values
             for (uRes = 0; uRes < aplNELMRes; uRes++)
-            if (((LPAPLNESTED) lpMemRes)[uRes] EQ NULL)
-                ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (aplProtoGlb);
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                if (((LPAPLNESTED) lpMemRes)[uRes] EQ NULL)
+                    ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (aplProtoGlb);
+            } // End FOR
+
             // We no longer need this storage
             FreeResultGlobalVar (aplProtoGlb); aplProtoGlb = NULL;
 
@@ -712,8 +759,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

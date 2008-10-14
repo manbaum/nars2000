@@ -43,7 +43,7 @@ Welcome to NARS2000</h1>
     code space (smaller executable), time space (faster execution
     times), or expressibility (clearer and more understandable code).
     A goal of the existing implementation is to be open
-    and easy for others to change, so that new ideas may be inserted
+    and easy for others to change so that new ideas may be inserted
     smoothly.</p>
 
   <p>Moreover, this project is made available as
@@ -157,6 +157,8 @@ Welcome to NARS2000</h1>
         <li>Prototypes for all primitive functions and operators</li>
         <li>Control structures on one line or split across multiple lines
           (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).</li>
+        <li>Selective assignment (e.g.,
+          <span class="APL">(1 1{transpose}M){is}0</span>)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
@@ -165,22 +167,34 @@ Welcome to NARS2000</h1>
         </li>
         <li>System functions:
           <ul>
-            <li><span class="APL">{neg}2 {quad}CR R</span>,
-                <span class="APL">{neg}1 {quad}CR R</span>,
-                <span class="APL">1 {quad}CR R</span>, and
-                <span class="APL">2 {quad}CR R</span></li>
+            <li><span class="APL">{quad}AF</span></li>
+            <li><span class="APL">L {quad}CR R</span> for
+                <span class="APL">L={neg}2</span>,
+                <span class="APL">{neg}1</span>,
+                <span class="APL">0</span>,
+                <span class="APL">1</span>, and
+                <span class="APL">2</span></li>
             <li><span class="APL">{quad}DM</span></li>
             <li><span class="APL">{quad}DR R</span></li>
-            <li><span class="APL">L {quad}DR R</span></li>
+            <li><span class="APL">L {quad}DR R</span> for
+                <span class="APL">L={neg}2</span>,
+                <span class="APL">{neg}1</span>,
+                <span class="APL">0</span>,
+                <span class="APL">1</span>,
+                <span class="APL">2</span>, and higher</li>
             <li><span class="APL">{quad}ERROR R</span></li>
+            <li><span class="APL">{quad}MF R</span></li>
+            <li><span class="APL">L {quad}MF R</span></li>
             <li><span class="APL">{quad}SIZE R</span></li>
             <li><span class="APL">{quad}SYSID</span></li>
             <li><span class="APL">{quad}SYSVER</span></li>
             <li><span class="APL">{quad}TC</span> and other related <span class="APL">{quad}TC</span>xxx</li>
-            <li><span class="APL">{neg}2 {quad}TF R</span>,
-                <span class="APL">{neg}1 {quad}TF R</span>,
-                <span class="APL">1 {quad}TF R</span>, and
-                <span class="APL">2 {quad}TF R</span></li>
+            <li><span class="APL">L {quad}TF R</span> for
+                <span class="APL">L={neg}2</span>,
+                <span class="APL">{neg}1</span>,
+                <span class="APL">0</span>,
+                <span class="APL">1</span>, and
+                <span class="APL">2</span></li>
             <li><span class="APL">{quad}TYPE R</span></li>
             <li><span class="APL">{quad}UCS R</span></li>
           </ul>
@@ -190,7 +204,10 @@ Welcome to NARS2000</h1>
             <li><span class="APL">)CLOSE</span></li>
             <li><span class="APL">)EDIT</span></li>
             <li><span class="APL">)EXIT</span></li>
+            <li><span class="APL">)IN</span></li>
+            <li><span class="APL">)INASCII</span></li>
             <li><span class="APL">)NEWTAB</span></li>
+            <li><span class="APL">)OUT</span></li>
             <li><span class="APL">)RESET</span></li>
           </ul>
         </li>
@@ -228,8 +245,6 @@ Welcome to NARS2000</h1>
       (<span class="APL">{quad}SINGLETON:</span>)</li>
     <li>Dynamic functions (e.g.,
       <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
-    <li>Selective assignment (e.g.,
-      <span class="APL">(1 1{transpose}A){is}1 2 3</span>)</li>
     <li>Primitive functions and operators user extensible via user-defined APL functions</li>
     <li>Primitive dyadic function down tack (<span class="APL">{downtackjot}</span>) with character left argument
       (Format By Example)</li>
@@ -259,10 +274,13 @@ Welcome to NARS2000</h1>
       and <span class="APL">{overbar}{infinity}</span> for negative infinity)
       &mdash; considerable development work needs to be done to this
       feature to handle the many special cases</li>
+    <li>Array predicates (a la Bernecky) for Permutation Vectors</li>
     </ul>
 
   <h3>Wish List of Datatypes</h3>
   <ul>
+    <li>Unicode support via multiple character widths
+      (8-, 16-, and 32-bits) instead of the current 16-bits</li>
     <li>Complex numbers (e.g., <span class="APL">2i3.4</span>
       or <span class="APL">2J3.4</span>)</li>
     <li>Quaternions (e.g., <span class="APL">2i3j4ij5</span>
@@ -270,7 +288,6 @@ Welcome to NARS2000</h1>
     <li>Octonions (e.g., <span class="APL">2i3j4k5l6il7jl8kl9</span>)</li>
     <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
     <li>Extended precision numbers (e.g., <span class="APL">12345x</span>)</li>
-    <li>Array predicates (a la Bernecky)</li>
     <li>Datatypes user extensible via user-defined APL functions</li>
   </ul>
 </div>
@@ -299,8 +316,12 @@ Welcome to NARS2000</h1>
       <span class="APL">{quad}TCLF</span>, <span class="APL">{quad}TCNL</span>, and
       <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</li>
     <li>Out of range numeric assignments to
-      <span class="APL">{quad}PP</span> and
-      <span class="APL">{quad}PW</span> are set to the value in the allowable range
+      <span class="APL">{quad}CT</span>,
+      <span class="APL">{quad}IC</span>,
+      <span class="APL">{quad}IO</span>,
+      <span class="APL">{quad}PP</span>,
+      <span class="APL">{quad}PW</span>, and
+      <span class="APL">{quad}RL</span> are set to the value in the allowable range
       nearest the ceiling of the given number.  For example, if
       <span class="APL">{quad}PP</span> is set to <span class="APL">23.7</span>,
       that value is rounded down to <span class="APL">17</span>, the largest value

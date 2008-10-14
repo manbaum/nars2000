@@ -83,7 +83,9 @@ TOKEN       tkTmp;
 %%
 
 CtrlStruc:
-    Stmts                                                       {DbgMsgWP (L"%%CtrlStruc:  Stmts");
+    /* Empty */                                                 {DbgMsgWP (L"%%CtrlStruc:  <empty>");
+                                                                }
+  | Stmts                                                       {DbgMsgWP (L"%%CtrlStruc:  Stmts");
                                                                     $$ = $1;
                                                                 }
   | Stmts  CSRec                                                {DbgMsgWP (L"%%CtrlStruc:  Stmts CSRec");
@@ -181,14 +183,8 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // In case $1 has an unmatched ContinueLeave in it,
-                                                                    //   transfer the ptr and index to the result
-                                                                    $2.lptkCL1st                =
-                                                                    $2.lptk1st                  = $1.lptkCL1st;
-                                                                    $2.uCLIndex                 =
-                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $2;
+                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    $$ = $1;
                                                                 }
   | CSRec GotoStmt                                              {DbgMsgWP (L"%%CSRec:  CSRec GotoStmt");
                                                                     // Ensure there is no unmatched ContinueLeave in $2
@@ -198,14 +194,8 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // In case $1 has an unmatched ContinueLeave in it,
-                                                                    //   transfer the ptr and index to the result
-                                                                    $2.lptkCL1st                =
-                                                                    $2.lptk1st                  = $1.lptkCL1st;
-                                                                    $2.uCLIndex                 =
-                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $2;
+                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    $$ = $1;
                                                                 }
   | CSRec IfStmt                                                {DbgMsgWP (L"%%CSRec:  CSRec IfStmt");
                                                                     // If $1 has an unmatched ContinueLeave, ...
@@ -247,14 +237,8 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // In case $1 has an unmatched ContinueLeave in it,
-                                                                    //   transfer the ptr and index to the result
-                                                                    $2.lptkCL1st                =
-                                                                    $2.lptk1st                  = $1.lptkCL1st;
-                                                                    $2.uCLIndex                 =
-                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $2;
+                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    $$ = $1;
                                                                 }
   | CSRec ReturnStmt                                            {DbgMsgWP (L"%%CSRec:  CSRec ReturnStmt");
                                                                     // Ensure there is no unmatched ContinueLeave in $2
@@ -264,14 +248,8 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // In case $1 has an unmatched ContinueLeave in it,
-                                                                    //   transfer the ptr and index to the result
-                                                                    $2.lptkCL1st                =
-                                                                    $2.lptk1st                  = $1.lptkCL1st;
-                                                                    $2.uCLIndex                 =
-                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $2;
+                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    $$ = $1;
                                                                 }
   | CSRec SelectStmt                                            {DbgMsgWP (L"%%CSRec:  CSRec SelectStmt");
                                                                     // Ensure there is no unmatched ContinueLeave in $2
@@ -281,14 +259,8 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // In case $1 has an unmatched ContinueLeave in it,
-                                                                    //   transfer the ptr and index to the result
-                                                                    $2.lptkCL1st                =
-                                                                    $2.lptk1st                  = $1.lptkCL1st;
-                                                                    $2.uCLIndex                 =
-                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $2;
+                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    $$ = $1;
                                                                 }
   | CSRec WhileStmt                                             {DbgMsgWP (L"%%CSRec:  CSRec WhileStmt");
                                                                     // Ensure there is no unmatched ContinueLeave in $2
@@ -298,14 +270,8 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // In case $1 has an unmatched ContinueLeave in it,
-                                                                    //   transfer the ptr and index to the result
-                                                                    $2.lptkCL1st                =
-                                                                    $2.lptk1st                  = $1.lptkCL1st;
-                                                                    $2.uCLIndex                 =
-                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $2;
+                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    $$ = $1;
                                                                 }
   ;
 
@@ -743,6 +709,8 @@ ForStmt:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // N.B.:  $5 could be empty
+
                                                                     // If $5 has an unmatched ContinueLeave, ...
                                                                     if ($5.lptkCL1st)
                                                                     // Loop through $5's unmatched ContinueLeave
@@ -759,6 +727,12 @@ ForStmt:
                                                                             // Chain together the LEAVE/CONTINUE token and the EndFor token
                                                                             CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptkCur);
                                                                     } // End IF/FOR/IF
+
+                                                                    // Save the same unique identifier in the FOR and EndFor
+                                                                    //   tokens so we may tie together the two and thus allow
+                                                                    //   a branch to an EndFor stmt
+                                                                    CS_SetTokenCLIndex (lpcsLocalVars, &$6.lptkCur->tkData, $1.uCLIndex);
+                                                                    CS_SetTokenCLIndex (lpcsLocalVars, &$1.lptkCur->tkData, $1.uCLIndex);
 
                                                                     // Copy the FOR token as the next call to CS_ChainTokens clobbers it
                                                                     tkTmp = *$1.lptkCur;
@@ -961,7 +935,7 @@ ElseIfRec:
   ;
 
 ElseIfElse:
-                    ELSE   NSS                                  {DbgMsgWP (L"%%ElseIfElse:  ELSE NSS");
+                    ELSE   SOSStmts                             {DbgMsgWP (L"%%ElseIfElse:  ELSE SOSStmts");
                                                                     // Ensure the ELSE token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -974,7 +948,7 @@ ElseIfElse:
 
                                                                     $$ = $1;
                                                                 }
-  | ElseIfRec CSRec ELSE   NSS                                  {DbgMsgWP (L"%%ElseIfElse:  ElseIfRec CSRec ELSE NSS");
+  | ElseIfRec CSRec ELSE   SOSStmts                             {DbgMsgWP (L"%%ElseIfElse:  ElseIfRec CSRec ELSE SOSStmts");
                                                                     // Ensure the ELSE token is SOS
                                                                     if (!$3.lptkCur->tkData.bSOS)
                                                                     {
@@ -1030,6 +1004,8 @@ IfStmt:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // N.B.:  $3 could be empty
+
                                                                     // Chain together the IF token and the EndIf token
                                                                     CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptkCur);
 
@@ -1053,6 +1029,8 @@ IfStmt:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // N.B.:  $3 and $5 could be empty
+
                                                                     // If $3 has an unmatched ContinueLeave, ...
                                                                     if ($3.lptkCL1st)
                                                                     {
@@ -1074,8 +1052,9 @@ IfStmt:
                                                                         } // End IF/FOR/IF
 
                                                                         // Copy the ContinueLeave index
-                                                                        $5.uCLIndex                 =
-                                                                        $5.lptkCur->tkData.uCLIndex = $3.uCLIndex;
+                                                                        $5.uCLIndex                 = $3.uCLIndex;
+                                                                        if ($5.lptkCur)
+                                                                            $5.lptkCur->tkData.uCLIndex = $3.uCLIndex;
 
                                                                         // Move the ptr to encompass $1's ContinueLeave
                                                                         $5.lptkCL1st                =
@@ -1124,6 +1103,8 @@ IfStmt:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // N.B.:  $3 and $5 could be empty
+
                                                                     // If $3 has an unmatched ContinueLeave, ...
                                                                     if ($3.lptkCL1st)
                                                                     {
@@ -1145,8 +1126,9 @@ IfStmt:
                                                                         } // End IF/FOR/IF
 
                                                                         // Copy the ContinueLeave index
-                                                                        $5.uCLIndex                 =
-                                                                        $5.lptkCur->tkData.uCLIndex = $3.uCLIndex;
+                                                                        $5.uCLIndex                 = $3.uCLIndex;
+                                                                        if ($5.lptkCur)
+                                                                            $5.lptkCur->tkData.uCLIndex = $3.uCLIndex;
 
                                                                         // Move the ptr to encompass $1's ContinueLeave
                                                                         $5.lptkCL1st                =
@@ -1162,6 +1144,7 @@ IfStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $4.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_ANDIF
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ELSE
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ELSEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ORIF);
 
@@ -1194,6 +1177,8 @@ IfStmt:
                                                                         lpcsLocalVars->tkCSErr = *$1.lptkCur;
                                                                         YYERROR;
                                                                     } // End IF
+
+                                                                    // N.B.:  $4 could be empty
 
                                                                     // Save as the ptr to the previous token
                                                                     lptkPrv = $1.lptkCur;
@@ -1233,6 +1218,8 @@ IfStmt:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // N.B.:  $4 and $6 could be empty
+
                                                                     // If $4 has an unmatched ContinueLeave, ...
                                                                     if ($4.lptkCL1st)
                                                                     {
@@ -1254,8 +1241,9 @@ IfStmt:
                                                                         } // End IF/FOR/IF
 
                                                                         // Copy the ContinueLeave index
-                                                                        $6.uCLIndex                 =
-                                                                        $6.lptkCur->tkData.uCLIndex = $4.uCLIndex;
+                                                                        $6.uCLIndex                 = $4.uCLIndex;
+                                                                        if ($6.lptkCur)
+                                                                            $6.lptkCur->tkData.uCLIndex = $4.uCLIndex;
 
                                                                         // Move the ptr to encompass $1's ContinueLeave
                                                                         $6.lptkCL1st                =
@@ -1303,6 +1291,8 @@ IfStmt:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // N.B.:  $4 and $6 could be empty
+
                                                                     // If $4 has an unmatched ContinueLeave, ...
                                                                     if ($4.lptkCL1st)
                                                                     {
@@ -1324,8 +1314,9 @@ IfStmt:
                                                                         } // End IF/FOR/IF
 
                                                                         // Copy the ContinueLeave index
-                                                                        $6.uCLIndex                 =
-                                                                        $6.lptkCur->tkData.uCLIndex = $4.uCLIndex;
+                                                                        $6.uCLIndex                 = $4.uCLIndex;
+                                                                        if ($6.lptkCur)
+                                                                            $6.lptkCur->tkData.uCLIndex = $4.uCLIndex;
 
                                                                         // Move the ptr to encompass $1's ContinueLeave
                                                                         $6.lptkCL1st                =
@@ -1399,6 +1390,8 @@ RepeatStmt:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // N.B.:  $3 could be empty
+
                                                                     // If $3 has an unmatched ContinueLeave, ...
                                                                     if ($3.lptkCL1st)
                                                                     // Loop through the ContinueLeave tokens
@@ -1431,6 +1424,8 @@ RepeatStmt:
                                                                         lpcsLocalVars->tkCSErr = *$1.lptkCur;
                                                                         YYERROR;
                                                                     } // End IF
+
+                                                                    // N.B.:  $3 could be empty
 
                                                                     // If $3 has an unmatched ContinueLeave, ...
                                                                     if ($3.lptkCL1st)
@@ -1519,7 +1514,7 @@ CCListRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // Chain together the SkipCase token and the CASELIST token
+                                                                    // Chain together the SkipCase token and the CASE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$2.lptkCur->tkData, $3.lptk1st);
 
                                                                     // In this partial sequence, pass on down a ptr to the first entry
@@ -1537,14 +1532,25 @@ CCListRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // If $2 has an unmatched ContinueLeave, ...
-                                                                    if ($2.lptkCL1st)
+                                                                    // If $2 has an unmatched CONTINUE, ...
+                                                                    for (lptk1st = $2.lptk1st; lptk1st <= $2.lptkCur; lptk1st++)
+                                                                    // If it's in the same sequence, ...
+                                                                    if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                     {
-                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCL1st;
-                                                                        YYERROR;
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE)
+                                                                        {
+                                                                            lpcsLocalVars->tkCSErr = *lptk1st;
+                                                                            YYERROR;
+                                                                        } // End IF
+
+                                                                        // Mark with same index as $1's
+                                                                        lptk1st->tkData.uCLIndex = $1.uCLIndex;
                                                                     } // End IF
 
-                                                                    // Chain together the SkipCase token and the CASELIST token
+                                                                    // Chain together the SkipCase token and the CASE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptk1st);
 
                                                                     // In this partial sequence, pass on down a ptr to the first entry
@@ -1580,11 +1586,22 @@ CCListRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // If $2 has an unmatched ContinueLeave, ...
-                                                                    if ($2.lptkCL1st)
+                                                                    // If $2 has an unmatched CONTINUE, ...
+                                                                    for (lptk1st = $2.lptk1st; lptk1st <= $2.lptkCur; lptk1st++)
+                                                                    // If it's in the same sequence, ...
+                                                                    if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                     {
-                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCL1st;
-                                                                        YYERROR;
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE)
+                                                                        {
+                                                                            lpcsLocalVars->tkCSErr = *lptk1st;
+                                                                            YYERROR;
+                                                                        } // End IF
+
+                                                                        // Mark with same index as $1's
+                                                                        lptk1st->tkData.uCLIndex = $1.uCLIndex;
                                                                     } // End IF
 
                                                                     // Chain together the SkipCase token and the CASELIST token
@@ -1603,18 +1620,37 @@ CCListCS:
     /* Empty */                                                 {DbgMsgWP (L"%%CCListCS:  <empty>");
                                                                     ZeroMemory (&$$, sizeof ($$));
                                                                 }
-  | CCListRec                                                   {DbgMsgWP (L"%%CCListCS:  CCListRec");
-                                                                    $$ = $1;
-                                                                }
-  | CCListRec CSRec                                             {DbgMsgWP (L"%%CCListCS:  CCListRec CSRec");
-                                                                    // If $2 has an unmatched ContinueLeave, ...
-                                                                    if ($2.lptkCL1st)
-                                                                    {
-                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCL1st;
-                                                                        YYERROR;
-                                                                    } // End IF
+  | CCListRec CSCLCSRec                                         {DbgMsgWP (L"%%CCListCS:  CCListRec CSCLCSRec");
+                                                                    // N.B.:  $2 could be empty
 
-                                                                    $$ = $1;
+                                                                    // If $2 has an unmatched CONTINUE, ...
+                                                                    if ($2.lptk1st)
+                                                                    for (lptk1st = $2.lptk1st; lptk1st <= $2.lptkCur; lptk1st++)
+                                                                    // If it's in the same sequence, ...
+                                                                    if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
+                                                                    {
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE)
+                                                                        {
+                                                                            lpcsLocalVars->tkCSErr = *lptk1st;
+                                                                            YYERROR;
+                                                                        } // End IF
+
+                                                                        // Mark with same index as $1's
+                                                                        lptk1st->tkData.uCLIndex = $1.uCLIndex;
+                                                                    } // End IF/FOR/IF
+
+                                                                    // In this partial sequence, pass on down a ptr to the first entry
+                                                                    if ($2.lptkCur)
+                                                                    {
+                                                                        $2.lptk1st                  = $1.lptk1st;
+                                                                        $2.uCLIndex                 =
+                                                                        $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
+                                                                        $$ = $2;
+                                                                    } else
+                                                                        $$ = $1;
                                                                 }
   ;
 
@@ -1631,19 +1667,29 @@ SelectStmt:
                                                                     lptkPrv = $1.lptkCur;
 
                                                                     // Loop through the tokens in CCListCS
+                                                                    if ($3.lptk1st)
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST);
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
 
-                                                                        // Chain together lptkPrv and lptk1st
-                                                                        CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
+                                                                        // If it's LEAVE, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
+                                                                            // Chain together lptk1st and the EndSelect token
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $4.lptkCur);
+                                                                        else
+                                                                        // It's CASE or CASELIST
+                                                                        {
+                                                                            // Chain together lptkPrv and lptk1st
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
 
-                                                                        // Save as the ptr to the previous token
-                                                                        lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
+                                                                            // Save as the ptr to the previous token
+                                                                            lptkPrv = lptk1st;
+                                                                        } // End IF
+                                                                    } // End IF/FOR/IF
 
                                                                     // Chain together the last token in CCListCS and the EndSelect token
                                                                     CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptkCur);
@@ -1672,19 +1718,29 @@ SelectStmt:
                                                                     lptkPrv = $1.lptkCur;
 
                                                                     // Loop through the tokens in CCListCS
+                                                                    if ($3.lptk1st)
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST);
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
 
-                                                                        // Chain together lptkPrv and lptk1st
-                                                                        CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
+                                                                        // If it's LEAVE, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
+                                                                            // Chain together lptk1st and the EndSelect token
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptkCur);
+                                                                        else
+                                                                        // It's CASE or CASELIST
+                                                                        {
+                                                                            // Chain together lptkPrv and lptk1st
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
 
-                                                                        // Save as the ptr to the previous token
-                                                                        lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
+                                                                            // Save as the ptr to the previous token
+                                                                            lptkPrv = lptk1st;
+                                                                        } // End IF
+                                                                    } // End IF/FOR/IF
 
                                                                     // Chain together the last token in CCListCS and the ELSE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptkCur);
@@ -1723,19 +1779,29 @@ SelectStmt:
                                                                     lptkPrv = $1.lptkCur;
 
                                                                     // Loop through the tokens in CCListCS
+                                                                    if ($3.lptk1st)
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST);
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
 
-                                                                        // Chain together lptkPrv and lptk1st
-                                                                        CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
+                                                                        // If it's LEAVE, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
+                                                                            // Chain together lptk1st and the EndSelect token
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $7.lptkCur);
+                                                                        else
+                                                                        // It's CASE or CASELIST
+                                                                        {
+                                                                            // Chain together lptkPrv and lptk1st
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
 
-                                                                        // Save as the ptr to the previous token
-                                                                        lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
+                                                                            // Save as the ptr to the previous token
+                                                                            lptkPrv = lptk1st;
+                                                                        } // End IF
+                                                                    } // End IF/FOR/IF
 
                                                                     // Chain together the last token in CCListCS and the ELSE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptkCur);
@@ -1758,6 +1824,8 @@ WhileStmt:
                                                                         lpcsLocalVars->tkCSErr = *$1.lptkCur;
                                                                         YYERROR;
                                                                     } // End IF
+
+                                                                    // N.B.:  $3 could be empty
 
                                                                     // If $3 has an unmatched ContinueLeave, ...
                                                                     if ($3.lptkCL1st)
@@ -1797,6 +1865,8 @@ WhileStmt:
                                                                         lpcsLocalVars->tkCSErr = *$1.lptkCur;
                                                                         YYERROR;
                                                                     } // End IF
+
+                                                                    // N.B.:  $4 could be empty
 
                                                                     // If $4 has an unmatched ContinueLeave, ...
                                                                     if ($4.lptkCL1st)
@@ -1852,6 +1922,8 @@ WhileStmt:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // N.B.:  $3 could be empty
+
                                                                     // If $3 has an unmatched ContinueLeave, ...
                                                                     if ($3.lptkCL1st)
                                                                     // Loop through $3's unmatched ContinueLeave
@@ -1890,6 +1962,8 @@ WhileStmt:
                                                                         lpcsLocalVars->tkCSErr = *$1.lptkCur;
                                                                         YYERROR;
                                                                     } // End IF
+
+                                                                    // N.B.:  $4 could be empty
 
                                                                     // If $4 has an unmatched ContinueLeave, ...
                                                                     if ($4.lptkCL1st)

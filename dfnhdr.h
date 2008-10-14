@@ -20,12 +20,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+typedef struct tagINTMONINFO        // Internal function line monitoring info
+{
+    APLINT  IncSubFns,              // 00:  Total time including subfunctions (8 bytes)
+            ExcSubFns;              // 08:  ...        excluding ...          (8 bytes)
+    UINT    Count:30,               // 10:  3FFFFFFF:  # times executed
+            IncActive:1,            //      40000000:  IncSubFns active
+            ExcActive:1;            //      80000000:  ExcSubFns active
+                                    // 14:  Length
+} INTMONINFO, *LPINTMONINFO;
+
+typedef struct tagEXTMONINFO        // External function line monitoring info
+{
+    APLINT  IncSubFns,              // 00:  Total time including subfunctions (8 bytes)
+            ExcSubFns,              // 08:  ...        excluding ...          (8 bytes)
+            Count;                  // 10:  # times executed                  (8 bytes)
+                                    // 18:  Length
+} EXTMONINFO, *LPEXTMONINFO;
+
 typedef struct tagFCNLINE           // Function line structure, one per function line
 {
     HGLOBAL hGlbTxtLine,            // 00:  Text of the line (APLCHAR) global memory handle
-            hGlbTknLine,            // 04:  Tokenized line (TOKEN)     ...
-            hGlbMonInfo;            // 08:  Monitor information (??)   ... (may be NULL)
-    UINT    bStop:1,                // 0C:  00000001:  Stop on this line
+            hGlbTknLine;            // 04:  Tokenized line (TOKEN)     ...
+    UINT    bStop:1,                // 08:  00000001:  Stop on this line
             bTrace:1,               //      00000002:  Trace this line
             Avail:30;               //      FFFFFFFC:  Available bits
                                     // 0C:  Length
@@ -43,6 +60,8 @@ typedef enum tagDFN_TYPES            // User-Defined Function/Operator Types
     DFNTYPE_QQUAD,                  // 07:  Quote-Quad input
                                     // 08-0F:  Available entries (4 bits)
 } DFN_TYPES;
+
+#define cDfnTypeStr     L"?12FIE!@"
 
 typedef enum tagFCN_VALENCES        // User-Defined Function/Operator Valence
 {
@@ -69,7 +88,8 @@ typedef struct tagDFN_HEADER        // Function header structure
                      ListRes:1,     //      00000400:  TRUE iff the result is a list (unused so far)
                      ListLft:1,     //      00000800:  TRUE iff the left arg is a list
                      ListRht:1,     //      00001000:  TRUE iff the right arg is a list
-                     Avail:19;      //      FFFFE000:  Available bits
+                     MonOn:1,       //      00002000:  Function line monitoring on
+                     Avail:18;      //      FFFFC000:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nInverseLine,  // 10:  Line # of the []IDENTITY label (0 if not present)
                      nIdentityLine, // 14:  Line # of the []INVERSE label (0 if not present)
@@ -91,11 +111,12 @@ typedef struct tagDFN_HEADER        // Function header structure
                      steRhtOpr;     // 54:  Right operand STE (may be NULL if monadic operator or not an operator)
     HGLOBAL          hGlbTxtHdr,    // 58:  Text of function header (APLCHAR) global memory handle
                      hGlbTknHdr,    // 5C:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff;  // 60:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-    FILETIME         ftCreation,    // 64:  Time of creation (8 bytes)
-                     ftLastMod;     // 6C:  Time of last modification (8 bytes)
-                                    // 74:  Length
-                                    // 74:  Array of function line structures (FCNLINE[nLines])
+                     hGlbUndoBuff,  // 60:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo;   // 64:  Function line monitor info (MONINFO)
+    FILETIME         ftCreation,    // 68:  Time of creation (8 bytes)
+                     ftLastMod;     // 70:  Time of last modification (8 bytes)
+                                    // 78:  Length
+                                    // 78:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a
@@ -129,9 +150,9 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
     HGLOBAL      hGlbTknHdr,        // 04:  Tokenized header global memory handle
                  hGlbUndoBuff;      // 08:  Undo buffer      ...
     UNION_TOKEN  t2;                // 0C:  Locked base of hGlbToken
-    LPTOKEN      lpStart,           // 10:  First available entry after the header
-                 lpNext,            // 14:  Next  ...
-                 lpStop;            // 18:  Stopping token
+    LPTOKEN      lptkStart,         // 10:  First available entry after the header
+                 lptkNext,          // 14:  Next  ...
+                 lptkStop;          // 18:  Stopping token
     UINT         tkErrorCharIndex;  // 1C:  Error char index
     UINT         DfnType:4,         // 20:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                  FcnValence:3,      //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
@@ -153,7 +174,8 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  lpYYRhtOpr,        // 44:  ...    right operand name
                  lpYYRhtArg,        // 48:  ...    right arg name or list
                  lpYYLocals;        // 4C:  ...    locals name or list
-                                    // 50:  Length
+    WCHAR        wszErrMsg[256];    // 50:  Save area for error message
+                                    //150:  Length
 } FHLOCALVARS, *LPFHLOCALVARS;
 
 

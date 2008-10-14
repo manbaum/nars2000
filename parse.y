@@ -50,7 +50,7 @@ in the lexical analyser (pl_yylex).
 #include "compro.h"
 #endif
 
-#define   DIRECT    FALSE           // Flags for PushFcnSTrand
+#define   DIRECT    FALSE           // Flags for PushFcnStrand
 #define INDIRECT    TRUE            // ...
 
 ////#define YYLEX_DEBUG
@@ -76,6 +76,8 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 #define yy_reduce_print         pl_yy_reduce_print
 #define yydestruct              pl_yydestruct
 
+#define YYERROR2        {lpplLocalVars->bYYERROR = TRUE; YYERROR;}
+
 ////#define DbgMsgWP(a)         DbgMsgW2 (lpplLocalVars->bLookAhead ? L"==" a : a)
 ////#define DbgMsgWP(a)         DbgMsgW  (lpplLocalVars->bLookAhead ? L"==" a : a); DbgBrk ()
 ////#define DbgMsgWP(a)         DbgMsgW  (lpplLocalVars->bLookAhead ? L"==" a : a)
@@ -95,6 +97,7 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 %lex-param   {LPPLLOCALVARS lpplLocalVars}
 
 %token NAMEVAR NAMEUNK CONSTANT STRING USRFN0 SYSFN0 QUAD QUOTEQUAD SYSLBL
+%token LBRACE RBRACE
 %token UNK EOL
 %token CS_ANDIF
 %token CS_CASE
@@ -106,12 +109,10 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 %token CS_ENDREPEAT
 %token CS_ENDWHILE
 %token CS_FOR
-%token CS_GOTO
 %token CS_IF
 %token CS_IN
 %token CS_LEAVE
 %token CS_ORIF
-%token CS_RETURN
 %token CS_SELECT
 %token CS_SKIPCASE
 %token CS_SKIPEND
@@ -172,7 +173,8 @@ StmtMult:
                                                  lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
                                                  // Mark as a SYNTAX ERROR
-                                                 ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR);
+                                                 if (!lpplLocalVars->bYYERROR)
+                                                     ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR);
                                              } // End IF
 
                                              // If we're resetting, ...
@@ -190,18 +192,12 @@ StmtMult:
                                              YYABORT;
                                         }
     |                  StmtSing         {DbgMsgWP (L"%%StmtMult:  StmtSing");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              Assert (YYResIsEmpty ());
                                          } // End IF
                                         }
     | StmtMult DIAMOND StmtSing         {DbgMsgWP (L"%%StmtMult:  StmtSing " WS_UTF16_DIAMOND L" StmtMult");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              Assert (YYResIsEmpty ());  // Likely not TRUE with non-empty SI
@@ -216,31 +212,26 @@ StmtSing:
                                              lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
                                         }
     | error   CS_ANDIF                  {DbgMsgWP (L"%%StmtSing:  CS_ANDIF error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr CS_ANDIF                  {DbgMsgWP (L"%%StmtSing:  CS_ANDIF ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle ANDIF statement
-                                             lpplLocalVars->bRet =
-                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -249,31 +240,26 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | error   CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle CASE/CASELIST statement
-                                             lpplLocalVars->bRet =
-                                               CS_CASE_Stmt (lpplLocalVars, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_CASE_Stmt (lpplLocalVars, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -282,31 +268,26 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | error   CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle CASE/CASELIST statement
-                                             lpplLocalVars->bRet =
-                                               CS_CASE_Stmt (lpplLocalVars, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_CASE_Stmt (lpplLocalVars, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -315,15 +296,18 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | CS_CONTINUE                       {DbgMsgWP (L"%%StmtSing:  CS_CONTINUE");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                            // Handle CONTINUE statement
-                                            if (!CS_CONTINUE_Stmt (lpplLocalVars, &$1))
-                                                YYERROR;
-                                            else
+                                             // Handle CONTINUE statement
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_CONTINUE_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR2
+                                             else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
 
@@ -331,15 +315,18 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | CS_ENDREPEAT                      {DbgMsgWP (L"%%StmtSing:  CS_ENDREPEAT");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                            // Handle ENDREPEAT statement
-                                            if (!CS_ENDREPEAT_Stmt (lpplLocalVars, &$1))
-                                                YYERROR;
-                                            else
+                                             // Handle ENDREPEAT statement
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_ENDREPEAT_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR2
+                                             else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
 
@@ -347,17 +334,17 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | CS_ELSE                           {DbgMsgWP (L"%%StmtSing:  CS_ELSE");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle ELSE statement
-                                             lpplLocalVars->bRet =
-                                               CS_ELSE_Stmt (lpplLocalVars, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_ELSE_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -366,31 +353,26 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | error   CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle ELSEIF statement
-                                             lpplLocalVars->bRet =
-                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -399,17 +381,17 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | CS_ENDFOR                         {DbgMsgWP (L"%%StmtSing:  CS_ENDFOR");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle ENDFOR statement
-                                             lpplLocalVars->bRet =
-                                               CS_ENDFOR_Stmt (lpplLocalVars, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_ENDFOR_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -418,53 +400,18 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | ArrExpr CS_IN NameAnyVar CS_FOR   {DbgMsgWP (L"%%StmtSing:  CS_FOR NameAnyVar CS_IN ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle FOR statement
-                                             lpplLocalVars->bRet =
-                                               CS_FOR_Stmt_EM (lpplLocalVars, &$4, &$3, &$2, &$1);
-                                             FreeResult (&$1.tkToken);
-
-                                             if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
                                              else
-                                             if (lpplLocalVars->bStopExec)
-                                                 YYACCEPT;          // Stop executing this line
-
-                                             // No return value needed
-                                         } // End IF/ELSE
-                                        }
-    | error   CS_GOTO                   {DbgMsgWP (L"%%StmtSing:  CS_GOTO error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
-                                         } else
-                                             YYERROR;
-                                        }
-    | ArrExpr CS_GOTO                   {DbgMsgWP (L"%%StmtSing:  CS_GOTO ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             // Handle IF statement
-                                             lpplLocalVars->bRet =
-                                               CS_GOTO_Stmt_EM (lpplLocalVars, &$1);
+                                                 lpplLocalVars->bRet =
+                                                   CS_FOR_Stmt_EM (lpplLocalVars, &$4, &$3, &$2, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -473,31 +420,26 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | error   CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle IF statement
-                                             lpplLocalVars->bRet =
-                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -506,47 +448,17 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | CS_LEAVE                          {DbgMsgWP (L"%%StmtSing:  CS_LEAVE");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                            // Handle LEAVE statement
-                                            if (!CS_LEAVE_Stmt (lpplLocalVars, &$1))
-                                                YYERROR;
-                                            else
-                                             if (lpplLocalVars->bStopExec)
-                                                 YYACCEPT;          // Stop executing this line
-
-                                             // No return value needed
-                                         } // End IF/ELSE
-                                        }
-    | error   CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
-                                         } else
-                                             YYERROR;
-                                        }
-    | ArrExpr CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             // Handle ORIF statement
-                                             lpplLocalVars->bRet =
-                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
-                                             FreeResult (&$1.tkToken);
+                                             // Handle LEAVE statement
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_LEAVE_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -554,16 +466,28 @@ StmtSing:
                                              // No return value needed
                                          } // End IF/ELSE
                                         }
-    | CS_RETURN                         {DbgMsgWP (L"%%StmtSing:  CS_RETURN");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
+    | error   CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                            // Handle RETURN statement
-                                            if (!CS_RETURN_Stmt (lpplLocalVars))
-                                                YYERROR;
-                                            else
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR2
+                                         } else
+                                             YYERROR2
+                                        }
+    | ArrExpr CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF ArrExpr");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle ORIF statement
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR2
+                                             else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
 
@@ -571,31 +495,26 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | error   CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle SELECT statement
-                                             lpplLocalVars->bRet =
-                                               CS_SELECT_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_SELECT_Stmt_EM (lpplLocalVars, &$2, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -604,14 +523,17 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | CS_SKIPCASE                       {DbgMsgWP (L"%%StmtSing:  CS_SKIPCASE");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle SKIPCASE statement
-                                             if (!CS_SKIPCASE_Stmt (lpplLocalVars, &$1))
-                                                YYERROR;
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_SKIPCASE_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -620,14 +542,17 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | CS_SKIPEND                        {DbgMsgWP (L"%%StmtSing:  CS_SKIPEND");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle SKIPEND statement
-                                             if (!CS_SKIPEND_Stmt (lpplLocalVars, &$1))
-                                                YYERROR;
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_SKIPEND_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -636,31 +561,26 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | error   CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle UNTIL statement
-                                             lpplLocalVars->bRet =
-                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -669,31 +589,26 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | error   CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle WHILE statement
-                                             lpplLocalVars->bRet =
-                                               CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_IF_Stmt_EM (lpplLocalVars, &$2, &$1);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -701,64 +616,74 @@ StmtSing:
                                              // No return value needed
                                          } // End IF/ELSE
                                         }
+    | LeftOper                          {DbgMsgWP (L"%%StmtSing:  LeftOper");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 // Mark as a SYNTAX ERROR
+                                                 PrimFnSyntaxError_EM (&$1.tkToken);
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR2
+                                         } else
+                                             YYERROR2
+                                        }
 ////| error                             //--Conflicts
     | ArrExpr                           {DbgMsgWP (L"%%StmtSing:  ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
                                              LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
-
-                                             // Get the ptr to the current SIS header
-                                             lpSISCur = lpMemPTD->lpSISCur;
-
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
-
-                                             // Do not display if caller is Execute or Quad
-                                             if (lpSISCur->DfnType EQ DFNTYPE_EXEC
-                                              || (lpSISCur->DfnType EQ DFNTYPE_IMM
-                                               && lpSISCur->lpSISPrv NE NULL
-                                               && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
-                                                || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)))
-                                                 // Handle ArrExpr if caller is Execute or quad
-                                                 ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1);
+                                             if ((CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR) && !$1.tkToken.tkFlags.NoDisplay)
+                                                 lpplLocalVars->bRet = FALSE;
                                              else
-                                                 lpplLocalVars->bRet =
-                                                   ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
+                                             {
+                                                 // Lock the memory to get a ptr to it
+                                                 lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
-                                             FreeResult (&$1.tkToken);
+                                                 // Get the ptr to the current SIS header
+                                                 lpSISCur = lpMemPTD->lpSISCur;
+
+                                                 // We no longer need this ptr
+                                                 MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+
+                                                 // Do not display if caller is Execute or Quad
+                                                 if (lpSISCur->DfnType EQ DFNTYPE_EXEC
+                                                  || (lpSISCur->DfnType EQ DFNTYPE_IMM
+                                                   && lpSISCur->lpSISPrv NE NULL
+                                                   && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
+                                                    || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)))
+                                                     // Handle ArrExpr if caller is Execute or quad
+                                                     ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1);
+                                                 else
+                                                     lpplLocalVars->bRet =
+                                                       ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
+                                             } // End IF
+
+/////////////////////////////////////////////// If this is not a named variable, ...
+/////////////////////////////////////////////if ($1.tkToken.tkFlags.TknType NE TKT_VARNAMED)
+                                                 FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR;
+                                                 YYERROR2
                                              // If the exit type isn't GOTO_LINE, mark it as already displayed
                                              if (lpplLocalVars->ExitType NE EXITTYPE_GOTO_LINE)
                                                  lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
                                          } // End IF/ELSE
                                         }
     | error   GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
+                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             YYERROR;
+                                             YYERROR2
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -773,7 +698,8 @@ StmtSing:
                                              // Make a PL_YYSTYPE NoValue entry
                                              lpplLocalVars->lpYYMak =
                                                MakeNoValue_YY (&$2.tkToken);
-                                             lpMemPTD->YYResExec = *lpplLocalVars->lpYYMak; YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             lpMemPTD->YYResExec = *lpplLocalVars->lpYYMak;
+                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              // We no longer need this ptr
                                              MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
@@ -792,12 +718,12 @@ StmtSing:
                                                      {
                                                          PrimFnSyntaxError_EM (&$2.tkToken);
                                                          lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                                         YYERROR;
+                                                         YYERROR2
                                                      } else
                                                          YYACCEPT;          // Stop executing this line
 
                                                  case EXITTYPE_ERROR:       // Error
-                                                     YYERROR;               // Stop on error
+                                                     YYERROR2               // Stop on error
 
                                                  defstop
                                                      break;
@@ -805,8 +731,8 @@ StmtSing:
                                          } // End IF/ELSE/IF
                                         }
     |         GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW);
-                                         if (lpplLocalVars->bCtrlBreak || lpplLocalVars->bLookAhead)
-                                             YYERROR;
+                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR || lpplLocalVars->bLookAhead)
+                                             YYERROR2
                                          else
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -816,8 +742,9 @@ StmtSing:
                                              if (lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOL
                                               && lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOS)
                                              {
-                                                 PrimFnSyntaxError_EM (&$1.tkToken);
-                                                 YYERROR;
+                                                 if (!lpplLocalVars->bYYERROR)
+                                                     PrimFnSyntaxError_EM (&$1.tkToken);
+                                                 YYERROR2
                                              } // End IF
 
                                              // Lock the memory to get a ptr to it
@@ -851,21 +778,18 @@ StmtSing:
                                          } // End IF/ELSE
                                         }
     | error   ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"error");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
+                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             YYERROR;
+                                             YYERROR2
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -907,13 +831,12 @@ StmtSing:
 ////
 ////                                              lpplLocalVars->lpYYMak =
 ////                                                MakeNameFcnOpr_YY (&$2);
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+////                                              FreeResult (&$2.tkToken);
 ////
 ////                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
 ////                                              {
 ////                                                  FreeResult (&$1.tkToken);
-////                                                  FreeResult (&$2.tkToken);
-////                                                  YYERROR;
+////                                                  YYERROR2
 ////                                              } // End IF
 ////
 ////                                              // Change the first token in the function strand
@@ -922,24 +845,21 @@ StmtSing:
 ////
 ////                                              lpplLocalVars->lpYYOp3 =
 ////                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
-////                                              YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+////                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 ////
 ////                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
 ////                                              {
 ////                                                  FreeResult (&$1.tkToken);
-////                                                  FreeResult (&$2.tkToken);
-////                                                  YYERROR;
+////                                                  YYERROR2
 ////                                              } // End IF
 ////
 ////                                              lpplLocalVars->lpYYFcn =
 ////                                                MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp3, NAMETYPE_FN12, FALSE);
-////                                              YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
 ////
 ////                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
 ////                                              {
 ////                                                  FreeResult (&$1.tkToken);
-////                                                  FreeResult (&$2.tkToken);
-////                                                  YYERROR;
+////                                                  YYERROR2
 ////                                              } // End IF
 ////
 ////                                              lpplLocalVars->lpYYRes =
@@ -948,16 +868,13 @@ StmtSing:
 ////                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 ////
 ////                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
+////                                                  YYERROR2
 ////
-////                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+////                                              $$ = *lpplLocalVars->lpYYRes;
+////                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+////                                              YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
 ////                                         }
     | FcnSpec                           {DbgMsgWP (L"%%StmtSing:  FcnSpec");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -973,14 +890,9 @@ StmtSing:
                                              MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              $$ = $1;
-                                         } // End IF/ELSE/IF
+                                         } // End IF
                                         }
     | Op1Spec                           {DbgMsgWP (L"%%StmtSing:  Op1Spec");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -996,14 +908,9 @@ StmtSing:
                                              MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              $$ = $1;
-                                         }
+                                         } // End IF
                                         }
     | Op2Spec                           {DbgMsgWP (L"%%StmtSing:  Op2Spec");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -1019,14 +926,9 @@ StmtSing:
                                              MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              $$ = $1;
-                                         }
+                                         } // End IF
                                         }
     | Op3Spec                           {DbgMsgWP (L"%%StmtSing:  Op3Spec");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -1042,14 +944,14 @@ StmtSing:
                                              MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              $$ = $1;
-                                         }
+                                         } // End IF
                                         }
 // The following productions ending in EOL are for bLookAhead only
     |     error   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL error");
                                          if (lpplLocalVars->bLookAhead)
-                                             YYERROR;
+                                             YYERROR2
                                          else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////|     IndexListWE EOL               {DbgMsgWP (L"%%StmtSing:  EOL IndexListWE");
 ////                                     if (lpplLocalVars->bLookAhead)
@@ -1057,7 +959,7 @@ StmtSing:
 ////                                         lpplLocalVars->plNameType = NAMETYPE_LST;
 ////                                         YYACCEPT;              // Stop executing this line
 ////                                     } else
-////                                         YYERROR;
+////                                         YYERROR2
 ////                                    }
     |     ArrExpr EOL                   {DbgMsgWP (L"%%StmtSing:  EOL ArrExpr");
                                          if (lpplLocalVars->bLookAhead)
@@ -1065,7 +967,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_VAR;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     FcnSpec EOL                   {DbgMsgWP (L"%%StmtSing:  EOL FcnSpec");
                                          if (lpplLocalVars->bLookAhead)
@@ -1073,7 +975,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     Op1Spec EOL                   {DbgMsgWP (L"%%StmtSing:  EOL Op1Spec");
                                          if (lpplLocalVars->bLookAhead)
@@ -1081,7 +983,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     Op1Spec LeftOper EOL          {DbgMsgWP (L"%%StmtSing:  EOL LeftOper Op1Spec");
                                          if (lpplLocalVars->bLookAhead)
@@ -1089,7 +991,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     Op2Spec EOL                   {DbgMsgWP (L"%%StmtSing:  EOL Op2Spec");
                                          if (lpplLocalVars->bLookAhead)
@@ -1097,7 +999,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_OP2;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     Op3Spec EOL                   {DbgMsgWP (L"%%StmtSing:  EOL Op3Spec");
                                          if (lpplLocalVars->bLookAhead)
@@ -1105,7 +1007,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     MonOp   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL MonOp");
                                          if (lpplLocalVars->bLookAhead)
@@ -1113,7 +1015,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_OP1;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     DydOp   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL DydOp");
                                          if (lpplLocalVars->bLookAhead)
@@ -1121,7 +1023,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_OP2;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     AmbOp   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL AmbOp");
                                          if (lpplLocalVars->bLookAhead)
@@ -1129,7 +1031,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_OP3;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     LeftOper EOL                  {DbgMsgWP (L"%%StmtSing:  EOL LeftOper");
                                          if (lpplLocalVars->bLookAhead)
@@ -1137,7 +1039,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     AxisFunc EOL                  {DbgMsgWP (L"%%StmtSing:  EOL AxisFunc");
                                          if (lpplLocalVars->bLookAhead)
@@ -1145,7 +1047,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     Drv1Func EOL                  {DbgMsgWP (L"%%StmtSing:  EOL Drv1Func");
                                          if (lpplLocalVars->bLookAhead)
@@ -1153,7 +1055,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |     Drv2Func EOL                  {DbgMsgWP (L"%%StmtSing:  EOL Drv2Func");
                                          if (lpplLocalVars->bLookAhead)
@@ -1161,7 +1063,7 @@ StmtSing:
                                              lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;              // Stop executing this line
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     ;
 
@@ -1203,36 +1105,35 @@ NameAnyOpN:
 FcnSpec:
 ////  error    ASSIGN NameAnyOpN        //--Conflicts
       LeftOper ASSIGN NameAnyOpN        {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"LeftOper");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
@@ -1240,36 +1141,35 @@ FcnSpec:
                                         }
 ////| error    ASSIGN NameAnyOpN        //--Conflicts
     | Drv1Func ASSIGN NameAnyOpN        {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
@@ -1277,36 +1177,35 @@ FcnSpec:
                                         }
 ////| error    ASSIGN NameAnyOpN        //--Conflicts
     | Drv2Func ASSIGN NameAnyOpN        {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
@@ -1314,167 +1213,172 @@ FcnSpec:
                                         }
 ////| error    ASSIGN NameAnyOpN        //--Conflicts
     | AxisFunc ASSIGN NameAnyOpN        {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"AxisFunc");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | MonOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func MonOp");
-
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYFcn =
+                                             lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-
-                                             lpplLocalVars->lpYYFcn =
+                                             lpplLocalVars->lpYYRes =
                                                MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp1, NAMETYPE_FN12, TRUE);
-                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
+
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     | MonOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func MonOp");
-
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYFcn =
+                                             lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-
-                                             lpplLocalVars->lpYYFcn =
+                                             lpplLocalVars->lpYYRes =
                                                MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp1, NAMETYPE_FN12, TRUE);
-                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
+
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     | AmbOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func AmbOp");
-
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Change the first token in the function strand
@@ -1483,63 +1387,67 @@ FcnSpec:
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYFcn =
+                                             lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-
-                                             lpplLocalVars->lpYYFcn =
+                                             lpplLocalVars->lpYYRes =
                                                MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp1, NAMETYPE_FN12, TRUE);
-                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
+
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     | AmbOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func AmbOp");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Change the first token in the function strand
@@ -1548,123 +1456,120 @@ FcnSpec:
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYFcn =
+                                             lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-
-                                             lpplLocalVars->lpYYFcn =
+                                             lpplLocalVars->lpYYRes =
                                                MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp1, NAMETYPE_FN12, TRUE);
-                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
+
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     ;
 
 Op1Spec:
       MonOp    ASSIGN NameAnyOpN        {DbgMsgWP (L"%%Op1Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"MonOp");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_OP1, TRUE);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$3.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = $1; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = $1;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
+
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
 // The following assignment can be made to work if we switch the order of the arguments
 //   to a dyadic operator in a function strand from D L R to D R L and make all corresponding
 //   changes elsewhere such as whenever parsing a function strand.
 ////| RightOper DydOp ASSIGN NameAnyOpN {DbgMsgWP (L"%%Op1Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"DydOp RightOper");
-////                                     if (lpplLocalVars->bCtrlBreak)
-////                                     {
-////                                         FreeResult (&$1.tkToken);
-////                                         FreeResult (&$2.tkToken);
-////                                         FreeResult (&$4.tkToken);               // Validation only
-////                                         YYERROR;
-////                                     } else
+////                                     // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
 ////                                     if (!lpplLocalVars->bLookAhead)
 ////                                     {
 ////                                         lpplLocalVars->lpYYOp2 =
 ////                                           PushFcnStrand_YY (&$2, 2, INDIRECT);  // Dyadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+////                                         FreeResult (&$2.tkToken);
 ////
 ////                                         lpplLocalVars->lpYYRht =
 ////                                           PushFcnStrand_YY (&$1, 1, INDIRECT);  // Right operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+////                                         FreeResult (&$1.tkToken);
 ////
 ////                                         if (!lpplLocalVars->lpYYOp2             // If not defined, free args and YYERROR
 ////                                          || !lpplLocalVars->lpYYRht)
@@ -1679,36 +1584,43 @@ Op1Spec:
 ////                                                 FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
 ////                                             } // End IF
 ////
-////                                             FreeResult (&$4.tkToken);           // Validation only
-////                                             YYERROR;
+//// ////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+////                                             YYERROR2
 ////                                         } // End IF
 ////
-////                                         lpplLocalVars->lpYYFcn =
+////                                         lpplLocalVars->lpYYRes =
 ////                                           MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp2, NAMETYPE_OP1, TRUE);
-////                                         FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-////                                         FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
 ////
-////                                         if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+////                                         if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
 ////                                         {
-////                                             FreeResult (&$4.tkToken);           // Validation only
-////                                             YYERROR;
+////                                             FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+////                                             FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+//// ////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+////                                             YYERROR2
 ////                                         } // End IF
 ////
-////                                         lpplLocalVars->bRet =
-////                                           AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-////                                         FreeResult (&$4.tkToken);               // Validation only
+////                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+////                                             lpplLocalVars->bRet = FALSE;
+////                                         else
+////                                             lpplLocalVars->bRet =
+////                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+//// ////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
+//// ////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 ////
 ////                                         if (!lpplLocalVars->bRet)
 ////                                         {
-////                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-////                                             YYERROR;
+////                                             YYERROR2
 ////                                         } // End IF
 ////
 ////                                         // The result is always the root of the function tree
-////                                         $$ = *lpplLocalVars->YYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+////                                         $$ = *lpplLocalVars->YYRes;
 ////
 ////                                         // Mark as already displayed
 ////                                         $$.tkToken.tkFlags.NoDisplay = TRUE;
+////
+////                                         YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+////                                         YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+////                                         YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
 ////                                     } // End IF
 ////                                    }
     ;
@@ -1716,36 +1628,35 @@ Op1Spec:
 // Dyadic operator specification
 Op2Spec:
       DydOp    ASSIGN NameAnyOpN        {DbgMsgWP (L"%%Op2Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"DydOp");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_OP2, TRUE);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
@@ -1757,45 +1668,38 @@ Op2Spec:
 // Ambiguous operator assignment
 AmbOpAssign:
       OP3ASSIGN                         {DbgMsgWP (L"%%AmbOpAssign:  OP3ASSIGN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimOp3_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);  // Ambiguous operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-
+                                             $$ = *lpplLocalVars->lpYYOp3;
+                                             YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
     | NAMEOP3ASSIGN                     {DbgMsgWP (L"%%AmbOpAssign:  NAMEOP3ASSIGN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
@@ -1803,111 +1707,99 @@ AmbOpAssign:
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp3;
+                                             YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
     | AmbOp                             {DbgMsgWP (L"%%AmbOpAssign:  (AmbOp)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYOp3 =
-                                               PushFcnStrand_YY (&$1, 1, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-
-                                             if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                         } // End IF
+                                             $$ = $1;
                                         }
     | AmbOpAssign OP3ASSIGN             {DbgMsgWP (L"%%AmbOpAssign:  OP3ASSIGN AmbOpAssign");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$2);
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimOp3_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Ambiguous operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp3;
 
-                                             lpplLocalVars->lpYYOp3 =
+                                             lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);  // Ambiguous operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
-                                             if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
     | AmbOpAssign NAMEOP3ASSIGN         {DbgMsgWP (L"%%AmbOpAssign:  NAMEOP3ASSIGN AmbOpAssign");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$2);
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Ambiguous operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-
-                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-                                                 YYERROR;
-                                             } // End IF
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-
-                                             lpplLocalVars->lpYYOp3 =
-                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
-                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                                 YYERROR2
                                              } // End IF
 
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp3;
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                                 YYERROR2
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
@@ -1917,38 +1809,37 @@ AmbOpAssign:
 // Ambiguous operator specification
 Op3Spec:
       AmbOpAssign   ASSIGN NameAnyOpN   {DbgMsgWP (L"%%Op3Spec:  NameAnyOpN" WS_UTF16_LEFTARROW L"AmbOp");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_OP3, TRUE);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = $1; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = $1;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              // Mark as already displayed
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
@@ -1970,41 +1861,47 @@ ArrExpr:
     | error   LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$2.tkToken);
+                                             // If this is not a named function, ...
+                                             if ($2.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
+                                                 FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| ArrExpr error                     //--Conflicts
     | ArrExpr LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             YYERROR;
+                                             YYERROR2
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | error   Drv1Func                  {DbgMsgWP (L"%%ArrExpr:  Drv1Func error");
@@ -2012,39 +1909,37 @@ ArrExpr:
                                          {
                                              FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| ArrExpr error                     //--Conflicts
     | ArrExpr Drv1Func                  {DbgMsgWP (L"%%ArrExpr:  Drv1Func ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | error   AxisFunc                  {DbgMsgWP (L"%%ArrExpr:  AxisFunc error");
@@ -2052,94 +1947,93 @@ ArrExpr:
                                          {
                                              FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| ArrExpr error                     //--Conflicts
     | ArrExpr AxisFunc                  {DbgMsgWP (L"%%ArrExpr:  AxisFunc ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | ArrExpr LeftOper error            {DbgMsgWP (L"%%ArrExpr:  error LeftOper ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
+                                             // If this is not a named function, ...
+                                             if ($2.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
+                                                 FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | error   LeftOper StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst LeftOper error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$2.tkToken);
+                                             // If this is not a named function, ...
+                                             if ($2.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
+                                                 FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| ArrExpr LeftOper error            //--Conflicts
 ////| ArrExpr error    StrandInst       //--Conflicts
     | ArrExpr LeftOper StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst LeftOper ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | ArrExpr AmbOp    error            {DbgMsgWP (L"%%ArrExpr:  error AmbOp ArrExpr");
@@ -2148,9 +2042,9 @@ ArrExpr:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | error   AmbOp StrandInst          {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOp error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -2158,9 +2052,9 @@ ArrExpr:
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr AmbOp NAMEOP3ASSIGN       {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOp ArrExpr");
                                          DbgBrk ();     // ***FIXME*** -- Can we ever get here??
@@ -2169,18 +2063,18 @@ ArrExpr:
 
                                         }
     | ArrExpr AmbOp OP3ASSIGN           {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOp ArrExpr");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$3);
-/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimOp3_YY
+                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Change the first token in the function strand
@@ -2189,62 +2083,61 @@ ArrExpr:
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (&$2, 2, INDIRECT);  // Ambiguous operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);  // Ambiguous operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                                 YYERROR2
                                              } // End IF
-
-                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp3, NAMETYPE_FN12, FALSE);
-                                             YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
+                                             } // End IF
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     | ArrExpr AmbOp StrandInst          {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOp ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Change the first token from ambiguous operator to a function
@@ -2254,18 +2147,17 @@ ArrExpr:
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Because MakeFcnStrand might have brought in a function strand from
@@ -2275,16 +2167,20 @@ ArrExpr:
                                              //   from ambiguous operator to a function
                                              AmbOpToFcn (lpplLocalVars->lpYYFcn);
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | ArrExpr AxisFunc error            {DbgMsgWP (L"%%ArrExpr:  error AxisFunc ArrExpr");
@@ -2293,9 +2189,9 @@ ArrExpr:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | error   AxisFunc StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst AxisFunc error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -2303,44 +2199,40 @@ ArrExpr:
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| ArrExpr AxisFunc error            //--Conflicts
 ////| ArrExpr error    StrandInst       //--Conflicts
     | ArrExpr AxisFunc StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst AxisFunc ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
@@ -2350,13 +2242,14 @@ SingVar:
                   NAMEUNK               {DbgMsgWP (L"%%SingVar:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$1.tkToken);
-                                             YYERROR;
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnValueError_EM (&$1.tkToken);
+                                             YYERROR2
                                          } // End IF
                                         }
     |             QUAD                  {DbgMsgWP (L"%%SingVar:  QUAD");
-                                         if (lpplLocalVars->bCtrlBreak || lpplLocalVars->bLookAhead)
-                                             YYERROR;
+                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR || lpplLocalVars->bLookAhead)
+                                             YYERROR2
                                          else
                                          {
                                              lpplLocalVars->lpYYRes =
@@ -2364,14 +2257,15 @@ SingVar:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     |             QUOTEQUAD             {DbgMsgWP (L"%%SingVar:  QUOTEQUAD");
-                                         if (lpplLocalVars->bCtrlBreak || lpplLocalVars->bLookAhead)
-                                             YYERROR;
+                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR || lpplLocalVars->bLookAhead)
+                                             YYERROR2
                                          else
                                          {
                                              lpplLocalVars->lpYYRes =
@@ -2379,9 +2273,10 @@ SingVar:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     |             SingTokn              {DbgMsgWP (L"%%SingVar:  SingTokn");
@@ -2392,9 +2287,9 @@ SingVar:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |         ')' ArrExpr '('           {DbgMsgWP (L"%%SingVar:  (ArrExpr)");
                                          if (!lpplLocalVars->bLookAhead)
@@ -2406,11 +2301,7 @@ SingVar:
 StrandRec:
 ////  error                             //--Conflicts
       SingVar                           {DbgMsgWP (L"%%StrandRec:  SingVar -- InitVarStrand/PushVarStrand_YY");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              InitVarStrand (&$1);
@@ -2422,10 +2313,11 @@ StrandRec:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | StrandRec   error                 {DbgMsgWP (L"%%StrandRec:  error StrandRec");
@@ -2436,22 +2328,17 @@ StrandRec:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             FreeResult (&lpplLocalVars->lpYYStr->tkToken); YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
 
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | StrandRec   SingVar               {DbgMsgWP (L"%%StrandRec:  SingVar StrandRec -- PushVarStrand_YY");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
@@ -2460,9 +2347,10 @@ StrandRec:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
@@ -2471,11 +2359,7 @@ StrandRec:
 StrandInst:
 ////  error                             //--Conflicts
       StrandRec                         {DbgMsgWP (L"%%StrandInst:  StrandRec -- MakeVarStrand_EM_YY");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYStr =
@@ -2483,9 +2367,10 @@ StrandInst:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYStr; YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+                                             $$ = *lpplLocalVars->lpYYStr;
+                                             YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
                                          } // End IF
                                         }
     | IndexListBR     error             {DbgMsgWP (L"%%StrandInst:  error IndexListBR");
@@ -2493,17 +2378,12 @@ StrandInst:
                                          {
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | IndexListBR     StrandRec         {DbgMsgWP (L"%%StrandInst:  StrandRec IndexListBR");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYStr =
@@ -2513,19 +2393,22 @@ StrandInst:
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ArrayIndexRef_EM_YY (&lpplLocalVars->lpYYStr->tkToken, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ArrayIndexRef_EM_YY (&lpplLocalVars->lpYYStr->tkToken, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&lpplLocalVars->lpYYStr->tkToken);
-                                             YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | error           StrandRec         {DbgMsgWP (L"%%StrandInst:  StrandRec error");
@@ -2536,14 +2419,14 @@ StrandInst:
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             FreeResult (&lpplLocalVars->lpYYStr->tkToken); YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
 
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | CONSTANT   ':'                    {DbgMsgWP (L"%%StrandInst:  :CONSTANT");
                                          if (!lpplLocalVars->bLookAhead)
@@ -2577,16 +2460,16 @@ StrandInst:
                                                  // Fill in the result token
                                                  $$ = $1;                               // Set common fields
                                                  $$.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                                                 $$.tkToken.tkFlags.ImmType   = 0;
+                                                 $$.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
                                                  $$.tkToken.tkFlags.NoDisplay = FALSE;
                                                  $$.tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbObj);
-                                             ////$$.tkToken.tkCharIndex       =         // Set in $$ = $1 above
+/////////////////////////////////////////////////$$.tkToken.tkCharIndex       =         // Set in $$ = $1 above
                                              } else
                                              {
                                                  // Signal an error
-                                                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                                                           &$2.tkToken);
-                                                 YYERROR;
+                                                 if (!lpplLocalVars->bYYERROR)
+                                                     PrimFnSyntaxError_EM (&$2.tkToken);
+                                                 YYERROR2
                                              } // End IF/ELSE
                                          } // End IF
                                         }
@@ -2598,28 +2481,27 @@ SimpExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN       QUAD         {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Mark as NOT already displayed
                                              $1.tkToken.tkFlags.NoDisplay = FALSE;
-                                             lpplLocalVars->bRet =
-                                               ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
@@ -2630,28 +2512,26 @@ SimpExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN       QUOTEQUAD    {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Mark as NOT already displayed
                                              $1.tkToken.tkFlags.NoDisplay = FALSE;
-                                             lpplLocalVars->bRet =
-                                               ArrayDisplay_EM (&$1.tkToken, FALSE, &lpplLocalVars->bCtrlBreak);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   ArrayDisplay_EM (&$1.tkToken, FALSE, &lpplLocalVars->bCtrlBreak);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
@@ -2661,290 +2541,318 @@ SimpExpr:
     | error   ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$3.tkToken);
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &$1.tkToken);
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   AssignName_EM (&$3.tkToken, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
-                                             FreeResult (&$3.tkToken);
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN IndexListBR  NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN IndexListBR  NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | ArrExpr ASSIGN IndexListBR NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+    | ArrExpr ASSIGN IndexListBR NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                             lpplLocalVars->bRet =
-                                               ArrayIndexSet_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken);
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   ArrayIndexSet_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN error        NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN error        NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | error ASSIGN IndexListBR  NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | ArrExpr ASSIGN IndexListBR  NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+    | ArrExpr ASSIGN IndexListBR  NAMEUNK
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$4.tkToken);
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnValueError_EM (&$4.tkToken);
 
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR;
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
+                                             YYERROR2
                                          } // End IF
                                         }
     | ArrExpr ASSIGN error      NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | error   ASSIGN   ')' SelectSpec '(' {DbgMsgWP (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN   ')' SelectSpec '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Mark as no longer doing Selective Specification
+                                             lpplLocalVars->bSelSpec = FALSE;
+
                                              FreeResult (&$4.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN   ')' error    '(' {DbgMsgWP (L"%%SimpExpr:  (error)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Mark as no longer doing Selective Specification
+                                             lpplLocalVars->bSelSpec = FALSE;
+
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN   ')' SelectSpec '('
                                         {DbgMsgWP (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$4.tkToken);
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->bRet =
-                                               AssignSelectSpec_EM (&$4.tkToken, &$1.tkToken);
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                             // If it's Selective Specification, ...
+                                             if (lpplLocalVars->bSelSpec)
+                                             {
+                                                 // Mark as no longer doing Selective Specification
+                                                 lpplLocalVars->bSelSpec = FALSE;
+
+                                                 lpplLocalVars->bRet =
+                                                   ArrayIndexSet_EM (&lpplLocalVars->tkSelSpec, &$4.tkToken, &$1.tkToken);
+                                             } else
+                                                 lpplLocalVars->bRet =
+                                                   AssignNamedVars_EM (&$4.tkToken, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeResult (&$4.tkToken);
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN   ')' IndexListBR NAMEVAR '(' {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN   ')' IndexListBR NAMEVAR '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Mark as no longer doing Selective Specification
+                                             lpplLocalVars->bSelSpec = FALSE;
+
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN   ')' IndexListBR NAMEVAR '('
                                         {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
+                                             // Mark as no longer doing Selective Specification
+                                             lpplLocalVars->bSelSpec = FALSE;
+
                                              $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                             lpplLocalVars->bRet =
-                                               ArrayIndexSet_EM (&$5.tkToken, &$4.tkToken, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   ArrayIndexSet_EM (&$5.tkToken, &$4.tkToken, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN   ')' error NAMEVAR '(' {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR error)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN   ')' error NAMEVAR '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR error)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Mark as no longer doing Selective Specification
+                                             lpplLocalVars->bSelSpec = FALSE;
+
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | error   ASSIGN   ')' IndexListBR NAMEUNK '(' {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN   ')' IndexListBR NAMEUNK '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Mark as no longer doing Selective Specification
+                                             lpplLocalVars->bSelSpec = FALSE;
+
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN   ')' IndexListBR NAMEUNK '('
                                         {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$5.tkToken);
+                                             // Mark as no longer doing Selective Specification
+                                             lpplLocalVars->bSelSpec = FALSE;
+
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnValueError_EM (&$5.tkToken);
 
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
-
-                                             YYERROR;
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
+                                             YYERROR2
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN   ')' error       NAMEUNK '(' {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK error)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN   ')' error       NAMEUNK '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK error)" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Mark as no longer doing Selective Specification
+                                             lpplLocalVars->bSelSpec = FALSE;
+
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | error   ASSIGN LeftOper  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| ArrExpr ASSIGN error     NAMEVAR  //--Conflicts
     | ArrExpr ASSIGN LeftOper  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  Used below
@@ -2952,61 +2860,60 @@ SimpExpr:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->bRet =
                                                AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
                                              FreeResult (&lpplLocalVars->lpYYRes->tkToken); YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN AxisFunc  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| ArrExpr ASSIGN error     NAMEVAR  //--Conflicts
     | ArrExpr ASSIGN AxisFunc  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  Used below
@@ -3014,64 +2921,61 @@ SimpExpr:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->bRet =
                                                AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
-                                             FreeResult (&lpplLocalVars->lpYYRes->tkToken); YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                             FreeResult (&$4.tkToken);               // Validation only
+                                             FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN LeftOper ')' NameVals '(' {DbgMsgWP (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN LeftOper ')' NameVals '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$5.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | ArrExpr ASSIGN LeftOper ')' error '(' {DbgMsgWP (L"%%SimpExpr:  (error) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftOper ')' error '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (error) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | ArrExpr ASSIGN error    ')' NameVals '(' {DbgMsgWP (L"%%SimpExpr:  (NameVals) error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN error    ')' NameVals '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) error" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$5.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN LeftOper ')' NameVals '('
                                         {DbgMsgWP (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$5.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYStrN =
@@ -3080,14 +2984,16 @@ SimpExpr:
 
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$3.tkToken);
+
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
 
                                              if (!lpplLocalVars->lpYYStrN            // If not defined, free args and YYERROR
                                               || !lpplLocalVars->lpYYFcn)
                                              {
                                                  if (lpplLocalVars->lpYYStrN)        // If defined, free it
                                                  {
-                                                     FreeResult (&lpplLocalVars->lpYYStrN->tkToken); YYFree (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
                                                  } // End IF
 
                                                  if (lpplLocalVars->lpYYFcn)         // If defined, free it
@@ -3096,263 +3002,267 @@ SimpExpr:
                                                  } // End IF
 
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               ModifyAssignNameVals_EM (&lpplLocalVars->lpYYStrN->tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   ModifyAssignNameVals_EM (&lpplLocalVars->lpYYStrN->tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
-                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&lpplLocalVars->lpYYStrN->tkToken); YYFree (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN AxisFunc ')' NameVals '(' {DbgMsgWP (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN AxisFunc ')' NameVals '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$5.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | ArrExpr ASSIGN AxisFunc ')' error '(' {DbgMsgWP (L"%%SimpExpr:  (error) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN AxisFunc ')' error '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (error) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| ArrExpr ASSIGN error ')' NameVals '(' //--Conflicts
     | ArrExpr ASSIGN AxisFunc ')' NameVals '('
                                         {DbgMsgWP (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$5.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
                                              lpplLocalVars->lpYYStrN =
                                                MakeNameStrand_EM_YY (&$5);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameStrand_EM_YY
 
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYStrN            // If not defined, free args and YYERROR
                                               || !lpplLocalVars->lpYYFcn)
                                              {
                                                  if (lpplLocalVars->lpYYStrN)        // If defined, free it
                                                  {
-                                                     FreeResult (&lpplLocalVars->lpYYStrN->tkToken); YYFree (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
                                                  } // End IF
 
                                                  if (lpplLocalVars->lpYYFcn)         // If defined, free it
                                                  {
-                                                     FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                                  } // End IF
 
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               ModifyAssignNameVals_EM (&lpplLocalVars->lpYYStrN->tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   ModifyAssignNameVals_EM (&lpplLocalVars->lpYYStrN->tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
-                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&lpplLocalVars->lpYYStrN->tkToken); YYFree (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN LeftOper IndexListBR NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN LeftOper IndexListBR NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | ArrExpr ASSIGN error    IndexListBR NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN error    IndexListBR NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR error" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ArrExpr ASSIGN LeftOper IndexListBR NAMEVAR
                                         {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$4.tkToken);
-                                                 FreeResult (&$5.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$5.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               ArrayIndexFcnSet_EM (&$5.tkToken, &$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   ArrayIndexFcnSet_EM (&$5.tkToken, &$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN LeftOper error NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftOper error NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$5.tkToken);
+                                             // If this is not a named function, ...
+                                             if ($3.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
+                                                 FreeResult (&$3.tkToken);
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | ArrExpr ASSIGN LeftOper error NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftOper error NAMEUNK
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$5.tkToken);
+                                             // If this is not a named function, ...
+                                             if ($3.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
+                                                 FreeResult (&$3.tkToken);
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | error   ASSIGN AxisFunc IndexListBR NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN AxisFunc IndexListBR NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-////| ArrExpr ASSIGN error    IndexListBR NAMEVAR -- Conflicts
+////| ArrExpr ASSIGN error    IndexListBR NAMEVAR //-- Conflicts:  redundant
     | ArrExpr ASSIGN AxisFunc IndexListBR NAMEVAR
                                         {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
+                                             // Copy as temporary var in case it's named
+                                             $$ = MakeTempCopy (&$1);
+
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$4.tkToken);
-                                                 FreeResult (&$5.tkToken);           // Validation only
-                                                 YYERROR;
+/////////////////////////////////////////////////FreeResult (&$5.tkToken);           // Validation only
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->bRet =
-                                               ArrayIndexFcnSet_EM (&$5.tkToken, &$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   ArrayIndexFcnSet_EM (&$5.tkToken, &$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Mark as already displayed
-                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
+                                             $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN AxisFunc error NAMEVAR {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN AxisFunc error NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$5.tkToken);
+/////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     ;
 
 // Selective specification
 SelectSpec:
       NameVars                          {DbgMsgWP (L"%%SelectSpec:  NameVars");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYStrN =
@@ -3360,103 +3270,172 @@ SelectSpec:
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameStrand_EM_YY
 
                                              if (!lpplLocalVars->lpYYStrN)           // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYStrN; YYFree (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
+                                             $$ = *lpplLocalVars->lpYYStrN;
+                                             YYFree (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
                                          } // End IF
                                         }
 ////| SelectSpec error                  //--Conflicts
     | SelectSpec LeftOper               {DbgMsgWP (L"%%SelectSpec:  LeftOper SelectSpec");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             PrimFnNonceError_EM (&$1.tkToken);
-                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$1.tkToken);
+                                             // Check on Selective Specification first (and only) name
+                                             if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR2
+                                             } // End IF
 
-                                             YYERROR;
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             FreeResult (&$1.tkToken);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
 ////| SelectSpec error                  //--Conflicts
-    | SelectSpec AxisFunc               {DbgMsgWP (L"%%SelectSpec:  AxisFunc SelectSpec");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             YYERROR;
-                                         } else
+    | SelectSpec Drv1Func               {DbgMsgWP (L"%%SelectSpec:  Drv1Func SelectSpec");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             PrimFnNonceError_EM (&$1.tkToken);
-                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$1.tkToken);
+                                             // Check on Selective Specification first (and only) name
+                                             if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR2
+                                             } // End IF
 
-                                             YYERROR;
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             FreeResult (&$1.tkToken);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    | SelectSpec AxisFunc               {DbgMsgWP (L"%%SelectSpec:  AxisFunc SelectSpec");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR2
+                                             } // End IF
+
+                                             // Check on Selective Specification first (and only) name
+                                             if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR2
+                                             } // End IF
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             FreeResult (&$1.tkToken);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | SelectSpec LeftOper error         {DbgMsgWP (L"%%SelectSpec:  error LeftOper SelectSpec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
+                                             // If this is not a named function, ...
+                                             if ($2.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
+                                                 FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| SelectSpec error    StrandInst    //--Conflicts
     | SelectSpec LeftOper StrandInst    {DbgMsgWP (L"%%SelectSpec:  StrandInst LeftOper SelectSpec");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             PrimFnNonceError_EM (&$1.tkToken);
+                                             // Check on Selective Specification first (and only) name
+                                             if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR2
+                                             } // End IF
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$1.tkToken);
 
-                                             YYERROR;
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | SelectSpec AxisFunc error         {DbgMsgWP (L"%%SelectSpec:  error AxisFunc SelectSpec");
@@ -3465,38 +3444,48 @@ SelectSpec:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| SelectSpec error    StrandInst    //--Conflicts
     | SelectSpec AxisFunc StrandInst    {DbgMsgWP (L"%%SelectSpec:  StrandInst AxisFunc SelectSpec");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             PrimFnNonceError_EM (&$1.tkToken);
+                                             // Check on Selective Specification first (and only) name
+                                             if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR2
+                                             } // End IF
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+                                             FreeResult (&$1.tkToken);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$1.tkToken);
 
-                                             YYERROR;
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
@@ -3505,55 +3494,62 @@ SelectSpec:
 // Skip Ctrl-Break checking here so the Name Strand processing isn't interrupted
 NameVals:
       NAMEVAR                           {DbgMsgWP (L"%%NameVals:  NAMEVAR");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
                                              InitNameStrand (&$1);
 
-                                             lpplLocalVars->lpYYRes = PushNameStrand_YY (&$1);
-                                             FreeResult (&$1.tkToken);               // Validation only
+                                             lpplLocalVars->lpYYRes =
+                                               PushNameStrand_YY (&$1);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | NAMEUNK                           {DbgMsgWP (L"%%NameVals:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$1.tkToken);
-                                             FreeResult (&$1.tkToken);               // Validation only
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnValueError_EM (&$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
-                                             YYERROR;
+                                             YYERROR2
                                          } // End IF
                                         }
     | NameVals       NAMEVAR            {DbgMsgWP (L"%%NameVals:  NAMEVAR NameVals");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                             lpplLocalVars->lpYYRes = PushNameStrand_YY (&$2);
-                                             FreeResult (&$2.tkToken);               // Validation only
+                                             lpplLocalVars->lpYYRes =
+                                               PushNameStrand_YY (&$2);
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | NameVals       NAMEUNK            {DbgMsgWP (L"%%NameVals:  NAMEUNK NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$2.tkToken);
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnValueError_EM (&$2.tkToken);
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
-                                             YYERROR;
+                                             YYERROR2
                                          } // End IF
                                         }
-    |       ')' IndexListBR NAMEVAR '('
-                                        {DbgMsgWP (L"%%NameVals:  (NAMEVAR IndexListBR)");
+    |       ')' IndexListBR NAMEVAR '(' {DbgMsgWP (L"%%NameVals:  (NAMEVAR IndexListBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $3.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -3561,41 +3557,41 @@ NameVals:
 
 
 
-                                             PrimFnNonceError_EM (&$2.tkToken);
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnNonceError_EM (&$2.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
+                                             YYERROR2
                                          } // End IF
                                         }
     |       ')' error       NAMEVAR '(' {DbgMsgWP (L"%%NameVals:  (NAMEVAR error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |       ')' IndexListBR NAMEUNK '('
                                         {DbgMsgWP (L"%%NameVals:  (NAMEUNK IndexListBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$2.tkToken);
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnValueError_EM (&$2.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
+                                             YYERROR2
                                          } // End IF
                                         }
     |       ')' error       NAMEUNK '(' {DbgMsgWP (L"%%NameVals:  (NAMEUNK error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | NameVals ')' IndexListBR NAMEVAR '('
                                         {DbgMsgWP (L"%%NameVals:  (NAMEVAR IndexListBR) NameVals");
@@ -3606,42 +3602,44 @@ NameVals:
 
 
 
-                                             PrimFnNonceError_EM (&$3.tkToken);
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnNonceError_EM (&$3.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR;
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
+                                             YYERROR2
                                          } // End IF
                                         }
     | NameVals ')' error    NAMEVAR '(' {DbgMsgWP (L"%%NameVals:  (NAMEVAR error) NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | NameVals ')' IndexListBR NAMEUNK '('
                                         {DbgMsgWP (L"%%NameVals:  (NAMEUNK IndexListBR) NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$4.tkToken);
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnValueError_EM (&$4.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
-                                             YYERROR;
+                                             YYERROR2
                                          } // End IF
                                         }
     | NameVals ')' error    NAMEUNK '(' {DbgMsgWP (L"%%NameVals:  (NAMEUNK error) NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&$4.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } // End IF
                                         }
     ;
@@ -3650,97 +3648,111 @@ NameVals:
 // Skip Ctrl-Break checking here so the Name Strand processing isn't interrupted
 NameVars:
       NAMEVAR                           {DbgMsgWP (L"%%NameVars:  NAMEVAR");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
                                              InitNameStrand (&$1);
 
-                                             lpplLocalVars->lpYYRes = PushNameStrand_YY (&$1);
-                                             FreeResult (&$1.tkToken);
+                                             lpplLocalVars->lpYYRes =
+                                               PushNameStrand_YY (&$1);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | NAMEUNK                           {DbgMsgWP (L"%%NameVars:  NAMEUNK");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              InitNameStrand (&$1);
 
-                                             lpplLocalVars->lpYYRes = PushNameStrand_YY (&$1);
-                                             FreeResult (&$1.tkToken);
+                                             lpplLocalVars->lpYYRes =
+                                               PushNameStrand_YY (&$1);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | ')' IndexListBR NAMEVAR '('       {DbgMsgWP (L"%%NameVars:  (NAMEVAR IndexListBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $3.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                             PrimFnNonceError_EM (&$3.tkToken);
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnNonceError_EM (&$3.tkToken);
 
 
                                              FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
+                                             YYERROR2
                                          } // End IF
                                         }
     | ')' error       NAMEVAR '('       {DbgMsgWP (L"%%NameVars:  (NAMEVAR error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$3.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | ')' IndexListBR NAMEUNK '('       {DbgMsgWP (L"%%NameVars:  (NAMEUNK IndexListBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$3.tkToken);
+                                             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                                                 PrimFnValueError_EM (&$3.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR;
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
+                                             YYERROR2
                                          } // End IF
                                         }
     | ')' error       NAMEUNK '('       {DbgMsgWP (L"%%NameVars:  (NAMEUNK error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$3.tkToken);               // Validation only
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | NameVars       NAMEVAR            {DbgMsgWP (L"%%NameVars:  NameVars NAMEVAR");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                             lpplLocalVars->lpYYRes = PushNameStrand_YY (&$2);
-                                             FreeResult (&$2.tkToken);
+                                             lpplLocalVars->lpYYRes =
+                                               PushNameStrand_YY (&$2);
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | NameVars       NAMEUNK            {DbgMsgWP (L"%%NameVars:  NameVars NAMEUNK");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->lpYYRes = PushNameStrand_YY (&$2);
-                                             FreeResult (&$2.tkToken);
+                                             lpplLocalVars->lpYYRes =
+                                               PushNameStrand_YY (&$2);
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
@@ -3754,53 +3766,52 @@ Drv1Func:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | RightOper DydOp StrandInst        {DbgMsgWP (L"%%Drv1Func:  StrandInst DydOp RightOper");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$3, 1, DIRECT);    // Left operand (Direct)
-/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
-
-                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, INDIRECT);  // Right operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
     |           MonOp error             {DbgMsgWP (L"%%Drv1Func:  error MonOp");
@@ -3808,39 +3819,39 @@ Drv1Func:
                                          {
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |           MonOp StrandInst        {DbgMsgWP (L"%%Drv1Func:  StrandInst MonOp");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, DIRECT);    // Left operand (Direct)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     ;
@@ -3852,65 +3863,64 @@ Drv2Func:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
+                                             FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | error      DydOp LeftOper         {DbgMsgWP (L"%%Drv2Func:  LeftOper DydOp error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | StrandInst DydOp LeftOper         {DbgMsgWP (L"%%Drv2Func:  LeftOper DydOp StrandInst");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
-
-                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, DIRECT);    // Right operand (Direct)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
     | error      DydOp AxisFunc         {DbgMsgWP (L"%%Drv2Func:  AxisFunc DydOp error");
@@ -3919,55 +3929,53 @@ Drv2Func:
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | StrandInst DydOp AxisFunc         {DbgMsgWP (L"%%Drv2Func:  AxisFunc DydOp StrandInst");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
-
-                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, DIRECT);    // Right operand (Direct)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
     | error      DydOp StrandInst       {DbgMsgWP (L"%%Drv2Func:  StrandInst DydOp error");
@@ -3976,56 +3984,54 @@ Drv2Func:
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
 ////| StrandInst DydOp error            --See above
     | StrandInst DydOp StrandInst       {DbgMsgWP (L"%%Drv2Func:  StrandInst DydOp StrandInst");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$3, 1, DIRECT);    // Left operand (Direct)
-/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
-
-                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, DIRECT);    // Right operand (Direct)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
     ;
@@ -4034,105 +4040,75 @@ Drv2Func:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 ParenFunc:
 ////  '>' error    '('                  //--Conflicts
-      '>' Drv2Func                 '('  {DbgMsgWP (L"%%ParenFunc:  (Drv2Func)");
+      '>' Drv2Func '('                  {DbgMsgWP (L"%%ParenFunc:  (Drv2Func)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYFcn =
-                                               PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR;
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                         } // End IF
+                                             $$ = $2;
                                         }
     | '>' LeftOper '('                  {DbgMsgWP (L"%%ParenFunc:  (LeftOper)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
                                              $$ = $2;
-////                                              lpplLocalVars->lpYYFcn =
-////                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-////                                              {
-////                                                  FreeResult (&$2.tkToken);
-////                                                  YYERROR;
-////                                              } // End IF
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                         } // End IF
                                         }
-////| '>' error    '('                  //--Conflicts
     | '>' AxisFunc '('                  {DbgMsgWP (L"%%ParenFunc:  (AxisFunc)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
                                              $$ = $2;
-////                                              lpplLocalVars->lpYYFcn =
-////                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                         } // End IF
                                         }
     | '>' FcnSpec '('                   {DbgMsgWP (L"%%ParenFunc:  (FcnSpec)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (&$2, 1, DIRECT);    // Function (Direct)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
-    |     '>' Op1Spec error    '('      {DbgMsgWP (L"%%ParenFunc:  (error Op1Spec)");
+    | '>' Op1Spec error    '('          {DbgMsgWP (L"%%ParenFunc:  (error Op1Spec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    |     '>' Op1Spec LeftOper '('      {DbgMsgWP (L"%%ParenFunc:  (LeftOper Op1Spec)");
+    | '>' Op1Spec LeftOper '('          {DbgMsgWP (L"%%ParenFunc:  (LeftOper Op1Spec)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$2, 2, DIRECT);    // Monadic operator (Direct)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     ;
@@ -4141,144 +4117,125 @@ ParenFunc:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 LeftOper:
           PRIMFCN                       {DbgMsgWP (L"%%LeftOper:  PRIMFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimFcn_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimFcn_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);// Function (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     |     NAMEFCN                       {DbgMsgWP (L"%%LeftOper:  NAMEFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);// Function (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     |     SYSFN12                       {DbgMsgWP (L"%%LeftOper:  SYSFN12");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);// Function (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     |     ParenFunc                     {DbgMsgWP (L"%%LeftOper:  ParenFunc");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
                                              $$ = $1;
-////                                              lpplLocalVars->lpYYFcn =
-////                                                PushFcnStrand_YY (&$1, 1, INDIRECT);  // Function (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                         } // End IF
                                         }
-    | '>' error                    '('  {DbgMsgWP (L"%%LeftOper:  (error)");
+    | '>' error    '('                  {DbgMsgWP (L"%%LeftOper:  (error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    | '>' Drv1Func                 '('  {DbgMsgWP (L"%%LeftOper:  (Drv1Func)");
+    | '>' Drv1Func '('                  {DbgMsgWP (L"%%LeftOper:  (Drv1Func)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
                                              $$ = $2;
-////                                              lpplLocalVars->lpYYFcn =
-////                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                         } // End IF
                                         }
     |     RightOper    JOTDOT           {DbgMsgWP (L"%%LeftOper:  " WS_UTF16_JOT L". RightOper");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$2, 2, DIRECT);    // Monadic operator (Direct)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, INDIRECT);  // Right operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     | NULLOP OP3                        {DbgMsgWP (L"%%LeftOper:  OP3 NULLOP");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Change the first token in the function strand
@@ -4287,99 +4244,98 @@ LeftOper:
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, DIRECT);    // Monadic operator (Direct)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (&$2, 1, DIRECT);    // Left operand (Direct)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
 ////|                  MonOp error      //--Conflicts
     |                  MonOp LeftOper   {DbgMsgWP (L"%%LeftOper:  LeftOper MonOp");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Left operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
 ////|                  MonOp error      //--Conflicts
     |                  MonOp AxisFunc   {DbgMsgWP (L"%%LeftOper:  AxisFunc MonOp");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Left operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
 ////|                  AmbOp error      //--Conflicts
     |                  AmbOp LeftOper   {DbgMsgWP (L"%%LeftOper:  LeftOper AmbOp"); //***FIXME***
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Change the first token in the function strand
@@ -4388,121 +4344,121 @@ LeftOper:
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Left operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
 ////|     RightOper DydOp error         //--Conflicts
     |     RightOper DydOp LeftOper      {DbgMsgWP (L"%%LeftOper:  LeftOper DydOp RightOper");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
-
-                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, INDIRECT);  // Right operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
+                                             } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
 ////|     RightOper DydOp error         //--Conflicts
     |     RightOper DydOp AxisFunc      {DbgMsgWP (L"%%LeftOper:  AxisFunc DydOp RightOper");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
-
-                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, INDIRECT);  // Right operand (Indirect)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
-                                                 FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
     ;
@@ -4511,44 +4467,38 @@ LeftOper:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 RightOper:
           PRIMFCN                       {DbgMsgWP (L"%%RightOper:  PRIMFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimFcn_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimFcn_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     |     NAMEFCN                       {DbgMsgWP (L"%%RightOper:  NAMEFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
@@ -4557,57 +4507,41 @@ RightOper:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     |     SYSFN12                       {DbgMsgWP (L"%%RightOper:  SYSFN12");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     |     ParenFunc                     {DbgMsgWP (L"%%RightOper:  ParenFunc");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
                                              $$ = $1;
-////                                              lpplLocalVars->lpYYFcn =
-////                                                PushFcnStrand_YY (&$1, 1, INDIRECT);  // Function (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-////                                              {
-////                                                  FreeResult (&$1.tkToken);
-////                                                  YYERROR;
-////                                              } // End IF
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                         } // End IF
                                         }
     ;
 
@@ -4619,37 +4553,36 @@ AxisFunc:
                                          {
                                              FreeResult (&$4.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | '}' ArrExpr '['  PRIMFCN          {DbgMsgWP (L"%%AxisFunc:  PRIMFCN[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimFcn_YY (&$4);
-/////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimFcn_YY
+                                             FreeResult (&$4.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 2, DIRECT); // Function (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
 
                                              lpplLocalVars->lpYYMak =
                                                MakeAxis_YY (&$2);
@@ -4657,59 +4590,59 @@ AxisFunc:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
-                                             FreeResult (&lpplLocalVars->lpYYMak->tkToken); YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
+                                             YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     | '}' error   '['  NAMEFCN          {DbgMsgWP (L"%%AxisFunc:  NAMEFCN[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$4.tkToken);
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | '}' ArrExpr '['  NAMEFCN          {DbgMsgWP (L"%%AxisFunc:  NAMEFCN[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$4);
-/////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 2, DIRECT); // Function (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
 
                                              lpplLocalVars->lpYYMak =
                                                MakeAxis_YY (&$2);
@@ -4717,59 +4650,59 @@ AxisFunc:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
-                                             FreeResult (&lpplLocalVars->lpYYMak->tkToken); YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
+                                             YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     | '}' error   '['  SYSFN12          {DbgMsgWP (L"%%AxisFunc:  SYSFN12[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$4.tkToken);
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | '}' ArrExpr '['  SYSFN12          {DbgMsgWP (L"%%AxisFunc:  SYSFN12[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$4);
-/////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 2, DIRECT); // Function (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
 
                                              lpplLocalVars->lpYYMak =
                                                MakeAxis_YY (&$2);
@@ -4777,21 +4710,22 @@ AxisFunc:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
-                                             FreeResult (&lpplLocalVars->lpYYMak->tkToken); YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
+                                             YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     | '}' error   '['  ParenFunc        {DbgMsgWP (L"%%AxisFunc:  ParenFunc[error]");
@@ -4799,18 +4733,26 @@ AxisFunc:
                                          {
                                              FreeResult (&$4.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | '}' ArrExpr '['  ParenFunc        {DbgMsgWP (L"%%AxisFunc:  ParenFunc[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (&$4, 2, INDIRECT);  // Function (Indirect)
+                                             FreeResult (&$4.tkToken);
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR2
+                                             } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = *lpplLocalVars->lpYYFcn;
 
                                              lpplLocalVars->lpYYMak =
                                                MakeAxis_YY (&$2);
@@ -4818,21 +4760,22 @@ AxisFunc:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
-                                             FreeResult (&lpplLocalVars->lpYYMak->tkToken); YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
+                                             YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     ;
@@ -4841,102 +4784,76 @@ AxisFunc:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 AmbOp:
           OP3                           {DbgMsgWP (L"%%AmbOp:  OP3");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimOp3_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
-
-                                             lpplLocalVars->lpYYOp3 =
-                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-
-                                             if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                         } // End IF
-                                        }
-    | NAMEOP3                           {DbgMsgWP (L"%%AmbOp:  NAMEOP3");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
-
-                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR;
-                                             } // End IF
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp3;
+                                             YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
-////|              error                //--Conflicts
-    |              AmbOpAxis            {DbgMsgWP (L"%%AmbOp:  AmbOpAxis");
+    |     NAMEOP3                       {DbgMsgWP (L"%%AmbOp:  NAMEOP3");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakeNameFcnOpr_YY (&$1);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             lpplLocalVars->lpYYOp3 =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp3;
+                                             YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                         } // End IF
+                                        }
+////|     error                         //--Conflicts
+    |     AmbOpAxis                     {DbgMsgWP (L"%%AmbOp:  AmbOpAxis");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
-////                                          {
-////                                              lpplLocalVars->lpYYOp3 =
-////                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Monadic operator (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-////                                          } // End IF
                                         }
-    |              '>' AmbOp '('        {DbgMsgWP (L"%%AmbOp:  (AmbOp)");
+    | '>' AmbOp '('                     {DbgMsgWP (L"%%AmbOp:  (AmbOp)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
-////                                          {
-////                                              lpplLocalVars->lpYYOp3 =
-////                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Monadic operator (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-////                                          } // End IF
                                         }
     | '>' Op3Spec '('                   {DbgMsgWP (L"%%AmbOp:  (Op3Spec)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
                                                PushFcnStrand_YY (&$2, 1, DIRECT);    // Ambiguous operator (Direct)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
@@ -4949,35 +4866,36 @@ AmbOpAxis:
                                          {
                                              FreeResult (&$4.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | '}' ArrExpr '['  AmbOp            {DbgMsgWP (L"%%AmbOpAxis:  AmbOp[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$4);
-/////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimOp3_YY
+                                             FreeResult (&$4.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 2, DIRECT);  // Ambiguous operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp3; YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp3;
 
                                              lpplLocalVars->lpYYMak =
                                                MakeAxis_YY (&$2);
@@ -4985,21 +4903,22 @@ AmbOpAxis:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
-                                             FreeResult (&lpplLocalVars->lpYYMak->tkToken); YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp3);  lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
     ;
@@ -5008,100 +4927,99 @@ AmbOpAxis:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 MonOp:
                        OP1              {DbgMsgWP (L"%%MonOp:  OP1");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp1_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimOp1_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR;
-
-                                             lpplLocalVars->lpYYOp1 =
-                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-
-                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR;
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                         } // End IF
-                                        }
-    |                  NULLOP           {DbgMsgWP (L"%%MonOp:  NULLOP");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYMak =
-                                               MakePrimOp1_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimOp1_YY
-
-                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR;
-
-                                             lpplLocalVars->lpYYOp1 =
-                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-
-                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR;
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                         } // End IF
-                                        }
-    |                  NAMEOP1          {DbgMsgWP (L"%%MonOp:  NAMEOP1");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
-
-                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                         } // End IF
+                                        }
+    |                  NULLOP           {DbgMsgWP (L"%%MonOp:  NULLOP");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakePrimOp1_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp1;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                         } // End IF
+                                        }
+    |                  NAMEOP1          {DbgMsgWP (L"%%MonOp:  NAMEOP1");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakeNameFcnOpr_YY (&$1);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp1;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
 ////|              error                //--Conflicts
     |              MonOpAxis            {DbgMsgWP (L"%%MonOp:  MonOpAxis");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
     |              '>' MonOp '('        {DbgMsgWP (L"%%MonOp:  (MonOp)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
                                              $$ = $2;
-////                                              lpplLocalVars->lpYYOp1 =
-////                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Monadic operator (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                              } // End IF
                                         }
     |              '>' Op1Spec '('      {DbgMsgWP (L"%%MonOp:  (Op1Spec)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$2, 1, DIRECT);    // Monadic operator (Direct)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     ;
@@ -5114,25 +5032,26 @@ MonOpAxis:
                                          {
                                              FreeResult (&$4.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | '}' ArrExpr '['  MonOp            {DbgMsgWP (L"%%MonOpAxis:  MonOp[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (&$4, 2, INDIRECT);  // Monadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$4.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              lpplLocalVars->lpYYMak =
                                                MakeAxis_YY (&$2);
@@ -5140,21 +5059,22 @@ MonOpAxis:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYRes =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
-                                             FreeResult (&lpplLocalVars->lpYYMak->tkToken); YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     ;
@@ -5163,90 +5083,76 @@ MonOpAxis:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 DydOp:
                        OP2              {DbgMsgWP (L"%%DydOp:  OP2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp2_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakePrimOp2_YY
+                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Dyadic operator (Direct)
-                                             FreeResult (&lpplLocalVars->lpYYMak->tkToken); YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
     |                  NAMEOP2          {DbgMsgWP (L"%%DydOp:  NAMEOP2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameFcnOpr_YY
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Dyadic operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
 ////|                  error            //--Conflicts
     |                  DydOpAxis        {DbgMsgWP (L"%%DydOp:  DydOpAxis");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
                                              $$ = $1;
-////                                              lpplLocalVars->lpYYOp2 =
-////                                                PushFcnStrand_YY (&$1, 1, INDIRECT);  // Dyadic operator (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                         } // End IF
                                         }
     |              '#' DydOp '('        {DbgMsgWP (L"%%DydOp:  (DydOp)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
                                              $$ = $2;
-////                                              lpplLocalVars->lpYYOp2 =
-////                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Dyadic operator (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                         } // End IF
                                         }
     |              '#' Op2Spec '('      {DbgMsgWP (L"%%DydOp:  (Op2Spec)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (&$2, 1, DIRECT);    // Dyadic operator (Direct)
-/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
     ;
@@ -5259,25 +5165,26 @@ DydOpAxis:
                                          {
                                              FreeResult (&$4.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | '?' ArrExpr '['  DydOp            {DbgMsgWP (L"%%DydOpAxis:  DydOp[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (&$4, 2, INDIRECT);  // Dyadic operator (Indirect)
-/////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+                                             FreeResult (&$4.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp2; YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                             $$ = *lpplLocalVars->lpYYOp2;
 
                                              lpplLocalVars->lpYYMak =
                                                MakeAxis_YY (&$2);
@@ -5285,62 +5192,57 @@ DydOpAxis:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              lpplLocalVars->lpYYRes =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
-                                             FreeResult (&lpplLocalVars->lpYYMak->tkToken); YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$4.tkToken);
-                                                 YYERROR;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
     ;
 
 // Index list w/brackets, allowing for A[A][A]...
 IndexListBR:
-           ']'      '['                 {DbgMsgWP (L"%%IndexListBR:  []");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
+                  ']'             '['   {DbgMsgWP (L"%%IndexListBR:  []");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYLst =
                                                InitList0_YY ();
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              lpplLocalVars->lpYYRes =
                                                MakeList_EM_YY (lpplLocalVars->lpYYLst, TRUE);
                                              YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |      ']' error       '['          {DbgMsgWP (L"%%IndexListBR:  [error]");
+    |             ']' error       '['   {DbgMsgWP (L"%%IndexListBR:  [error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
-    |      ']' IndexListWE '['          {DbgMsgWP (L"%%IndexListBR:  [IndexListWE]");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$2.tkToken);               // ***FIXME*** -- Do we need to free the list stack??
-                                             YYERROR;
-                                         } else
+    |             ']' IndexListWE '['   {DbgMsgWP (L"%%IndexListBR:  [IndexListWE]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYLst =
@@ -5348,17 +5250,14 @@ IndexListBR:
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYLst; YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+                                             $$ = *lpplLocalVars->lpYYLst;
+                                             YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
                                          } // End IF
                                         }
-    | IndexListBR ']'      '['          {DbgMsgWP (L"%%IndexListBR:  [] IndexListBR ");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);               // ***FIXME*** -- Do we need to free the list stack??
-                                             YYERROR;
-                                         } else
+    | IndexListBR ']'             '['   {DbgMsgWP (L"%%IndexListBR:  [] IndexListBR ");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
@@ -5366,17 +5265,12 @@ IndexListBR:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | IndexListBR ']' IndexListWE '['   {DbgMsgWP (L"%%IndexListBR:  [IndexListWE] IndexListBR ");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } else
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYLst =
@@ -5386,18 +5280,22 @@ IndexListBR:
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             lpplLocalVars->lpYYRes =
-                                               ListIndexRef_EM_YY (&lpplLocalVars->lpYYLst->tkToken, &$1.tkToken);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ListIndexRef_EM_YY (&lpplLocalVars->lpYYLst->tkToken, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
-                                             FreeResult (&lpplLocalVars->lpYYLst->tkToken); YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
@@ -5413,8 +5311,10 @@ IndexListWE:
                                         }
     ;
 
+// Index list, with empties, starting with a semicolon
 IndexListWE1:
                    ';'                  {DbgMsgWP (L"%%IndexListWE1:  ;");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with an empty item
@@ -5422,28 +5322,30 @@ IndexListWE1:
                                                InitList1_YY (NULL);
 
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
                                              // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
                                                PushList_YY (lpplLocalVars->lpYYLst, NULL);
-                                             FreeResult (&lpplLocalVars->lpYYLst->tkToken); YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     |              ';' error            {DbgMsgWP (L"%%IndexListWE1:  error;");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     |              ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE1:  ArrExpr;");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with an empty item
@@ -5453,25 +5355,24 @@ IndexListWE1:
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
                                              // Push an item onto the list
                                              lpplLocalVars->lpYYRes =
                                                PushList_YY (lpplLocalVars->lpYYLst, &$2);
 /////////////////////////////////////////////FreeResult (&$2.tkToken);               // Copied w/o IncrRefCnt in PushList_YY
-                                             FreeResult (&lpplLocalVars->lpYYLst->tkToken); YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-
-
-
     | IndexListWE1 ';'                  {DbgMsgWP (L"%%IndexListWE1:  ;IndexListWE1");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Push an empty item onto the list
@@ -5481,10 +5382,11 @@ IndexListWE1:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | IndexListWE1 ';' error            {DbgMsgWP (L"%%IndexListWE1:  error;IndexListWE1");
@@ -5492,11 +5394,12 @@ IndexListWE1:
                                          {
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | IndexListWE1 ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE1:  ArrExpr;IndexListWE1");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
@@ -5505,17 +5408,21 @@ IndexListWE1:
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
+                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
 
+// Index list, with empties, starting with an array expr
 IndexListWE2:
                        ArrExpr          {DbgMsgWP (L"%%IndexListWE2:  ArrExpr");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with the arg
@@ -5526,27 +5433,29 @@ IndexListWE2:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | IndexListWE2 ';'                  {DbgMsgWP (L"%%IndexListWE2:  ;IndexListWE2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
                                                PushList_YY (&$1, NULL);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | IndexListWE2 ';' error            {DbgMsgWP (L"%%IndexListWE2:  error;IndexListWE2");
@@ -5554,11 +5463,12 @@ IndexListWE2:
                                          {
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR;
+                                             YYERROR2
                                          } else
-                                             YYERROR;
+                                             YYERROR2
                                         }
     | IndexListWE2 ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE2:  ArrExpr;IndexListWE2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Push an item onto the list
@@ -5568,11 +5478,13 @@ IndexListWE2:
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
+                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR;
+                                                 YYERROR2
                                              } // End IF
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
@@ -5592,47 +5504,51 @@ SingTokn:
                                              $$ = $1;
                                         }
     | USRFN0                            {DbgMsgWP (L"%%SingTokn:  USRFN0");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->lpYYRes =
-                                               ExecuteFn0 (&$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecuteFn0 (&$1);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | SYSFN0                            {DbgMsgWP (L"%%SingTokn:  SYSFN0");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->lpYYRes =
-                                               ExecuteFn0 (&$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecuteFn0 (&$1);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     | STRING                            {DbgMsgWP (L"%%SingTokn:  STRING");
-                                         if (lpplLocalVars->bCtrlBreak)
-                                             YYERROR;
-                                         else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->lpYYStr = CopyString_EM_YY (&$1);
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYStr = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYStr =
+                                                   CopyString_EM_YY (&$1);
 
                                              if (!lpplLocalVars->lpYYStr)
-                                                 YYERROR;
+                                                 YYERROR2
 
-                                             $$ = *lpplLocalVars->lpYYStr; YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+                                             $$ = *lpplLocalVars->lpYYStr;
+                                             YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
                                          } // End IF
                                         }
     ;
@@ -5683,12 +5599,8 @@ EXIT_TYPES ParseLine
                  uCnt;              // Loop counter
 #define MVS_CNT     2
     MEMVIRTSTR   lclMemVirtStr[MVS_CNT] = {0};// Room for MVS_CNT GuardAllocs
-    HCURSOR     hCursorOld;         // Handle to previous cursor
-    UBOOL       bOldExecuting;      // Old value of bExecuting
-
-    // Set the cursor to an hourglass and indicate that we're executing
-    hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
-    bOldExecuting = bExecuting; bExecuting = TRUE;
+    HCURSOR      hCursorOld;        // Handle to previous cursor
+    UBOOL        bOldExecuting;     // Old value of bExecuting
 
     // Save the previous value of dwTlsType
     oldTlsType = PtrToUlong (TlsGetValue (dwTlsType));
@@ -5709,6 +5621,10 @@ EXIT_TYPES ParseLine
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Set the cursor to an hourglass and indicate that we're executing
+    hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
+    bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
 
     EnterCriticalSection (&CSOPL);
 
@@ -5773,15 +5689,23 @@ EXIT_TYPES ParseLine
 
     // Skip over TOKEN_HEADER
     plLocalVars.lptkStart = TokenBaseToStart (plLocalVars.t2.lpBase);
+    plLocalVars.lptkEnd   = &plLocalVars.lptkStart[uTokenCnt];
 
     Assert (plLocalVars.lptkStart->tkFlags.TknType EQ TKT_EOL
          || plLocalVars.lptkStart->tkFlags.TknType EQ TKT_EOS);
 
     // If we're not starting at the first token, ...
     if (uTknNum)
+    {
         // Skip to the starting token
         plLocalVars.lptkNext  = &plLocalVars.lptkStart[uTknNum];
-    else
+
+        // If this token is an EOS/EOL, skip to the end of the stmt
+        //   and start executing there
+        if (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOS
+         || plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOL)
+            plLocalVars.lptkNext = &plLocalVars.lptkNext[plLocalVars.lptkNext->tkData.tkIndex - 1];
+    } else
         // Skip to end of 1st stmt
         plLocalVars.lptkNext  = &plLocalVars.lptkStart[plLocalVars.lptkStart->tkData.tkIndex];
 
@@ -6210,8 +6134,14 @@ NORMAL_EXIT:
         } // End SWITCH
     } // End IF
 
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Restore the previous cursor and its state
-    SetCursor (hCursorOld); ShowCursor (FALSE); bExecuting = bOldExecuting;
+    SetCursor (hCursorOld); ShowCursor (FALSE); lpMemPTD->bExecuting = bOldExecuting;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     DBGLEAVE;
 
@@ -6507,7 +6437,9 @@ char LookaheadAdjacent
         case TKT_AXISARRAY:
         case TKT_LISTINT:
         case TKT_LISTPAR:
-        case TKT_LISTBR:
+        case TKT_LSTIMMED:
+        case TKT_LSTARRAY:
+        case TKT_LSTMULT:
         case TKT_LEFTBRACE:
         case TKT_RIGHTBRACE:
         case TKT_SOS:
@@ -6594,6 +6526,11 @@ BOOL LookaheadDyadicOp
         case TKT_SOS:
         case TKT_ASSIGN:
         case TKT_LISTSEP:
+        case TKT_LISTINT:
+        case TKT_LISTPAR:
+        case TKT_LSTIMMED:
+        case TKT_LSTARRAY:
+        case TKT_LSTMULT:
         case TKT_LABELSEP:
         case TKT_COLON:
         case TKT_FCNNAMED:
@@ -6731,6 +6668,8 @@ PL_YYLEX_START:
     lpYYLval->YYIndex        = ++YYIndex;
     lpYYLval->YYFlag         = TRUE;      // Mark as a pl_yylex Index
     lpYYLval->SILevel        = lpMemPTD->SILevel;
+    lpYYLval->lpFileName     = FileNameOnly (__FILE__);
+    lpYYLval->uLineNum       = __LINE__;
 
     // We no longer need this ptr
     MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
@@ -6762,15 +6701,13 @@ PL_YYLEX_START:
             // Test various cases mostly vased on the ObjType
             if (IsNameTypeVar (stFlags.stNameType))
             {
-////////////////lpYYLval->tkToken.tkFlags.TknType                     =
-////////////////lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_VARNAMED;    // Already set
+////////////////lpYYLval->tkToken.tkFlags.TknType = TKT_VARNAMED;   // Already set
 
                 return NAMEVAR;
             } else
             if (stFlags.stNameType EQ NAMETYPE_FN0)
             {
-                lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_VARNAMED; // Instead of TKT_FCNNAMED because it'll be executed right away
+////////////////lpYYLval->tkToken.tkFlags.TknType = TKT_VARNAMED;   // Already set
 
                 if (stFlags.ObjName EQ OBJNAME_SYS)
                     return SYSFN0;
@@ -6779,8 +6716,7 @@ PL_YYLEX_START:
             } else
             if (stFlags.stNameType EQ NAMETYPE_FN12)
             {
-                lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_FCNNAMED;
+                lpYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
 
                 if (stFlags.ObjName EQ OBJNAME_SYS)
                     return SYSFN12;
@@ -6789,22 +6725,19 @@ PL_YYLEX_START:
             } else
             if (stFlags.stNameType EQ NAMETYPE_OP1)
             {
-                lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP1NAMED;
+                lpYYLval->tkToken.tkFlags.TknType = TKT_OP1NAMED;
 
                 return NAMEOP1;
             } else
             if (stFlags.stNameType EQ NAMETYPE_OP2)
             {
-                lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP2NAMED;
+                lpYYLval->tkToken.tkFlags.TknType = TKT_OP2NAMED;
 
                 return NAMEOP2;
             } else
             if (stFlags.stNameType EQ NAMETYPE_OP3)
             {
-                lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP3NAMED;
+                lpYYLval->tkToken.tkFlags.TknType = TKT_OP3NAMED;
 
                 return NAMEOP3;
             } else
@@ -6815,6 +6748,17 @@ PL_YYLEX_START:
         } // End TKT_VARNAMED
 
         case TKT_ASSIGN:
+            // If the next token is a right paren, we're starting Selective Specification
+            if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_RIGHTPAREN)
+            {
+                // If we're already doing Selective Specification, signal an error
+                if (lpplLocalVars->bSelSpec)
+                    return UNK;
+                // Mark as doing Selective Specification
+                lpplLocalVars->bSelSpec =
+                lpplLocalVars->bIniSpec = TRUE;
+            } // End IF
+
             return ASSIGN;
 
         case TKT_LISTSEP:
@@ -7081,10 +7025,10 @@ PL_YYLEX_START:
             return ':';
 
         case TKT_LEFTBRACE:
-            return '{';
+            return LBRACE;
 
         case TKT_RIGHTBRACE:
-            return '}';
+            return RBRACE;
 
         case TKT_CS_ANDIF:          // Control structure:  ANDIF
             return CS_ANDIF;
@@ -7114,7 +7058,7 @@ PL_YYLEX_START:
             return CS_FOR;
 
         case TKT_CS_GOTO:           // Control Structure:  GOTO
-            return CS_GOTO;
+            return GOTO;
 
         case TKT_CS_IF:             // Control Structure:  IF
             return CS_IF;
@@ -7129,7 +7073,29 @@ PL_YYLEX_START:
             return CS_ORIF;
 
         case TKT_CS_RETURN:         // Control Structure:  RETURN
-            return CS_RETURN;
+            // If this is the first time through for this keyword,
+            //   return a CONSTANT
+            if (!lpplLocalVars->bReturn)
+            {
+                // Return a Boolean zero
+                lpYYLval->tkToken.tkFlags.TknType = TKT_VARIMMED;
+                lpYYLval->tkToken.tkFlags.ImmType = IMMTYPE_BOOL;
+                lpYYLval->tkToken.tkData.tkBoolean = 0;
+
+                // Increment so we see this token again
+                lpplLocalVars->lptkNext++;
+
+                // Mark for the next time
+                lpplLocalVars->bReturn = TRUE;
+
+                return CONSTANT;
+            } else
+            {
+                // Unmark for the next time
+                lpplLocalVars->bReturn = FALSE;
+
+                return GOTO;
+            } // End IF/ELSE
 
         case TKT_CS_SELECT:         // Control Structure:  SELECT
             return CS_SELECT;
@@ -7258,11 +7224,14 @@ void pl_yyerror                     // Called for Bison syntax error
     DbgMsg (s);
 #endif
 
-    // Skip this is we're in lookahead
+    // Skip this if we're in lookahead
     //   but save the char index
     if (lpplLocalVars->bLookAhead)
     {
-        lpplLocalVars->tkLACharIndex = lpplLocalVars->lptkNext[1].tkCharIndex;
+        if (lpplLocalVars->lptkEnd <= &lpplLocalVars->lptkNext[1])
+            lpplLocalVars->tkLACharIndex = NEG1U;
+        else
+            lpplLocalVars->tkLACharIndex = lpplLocalVars->lptkNext[1].tkCharIndex;
         lpplLocalVars->ExitType = EXITTYPE_ERROR;
 
         return;
@@ -7271,6 +7240,9 @@ void pl_yyerror                     // Called for Bison syntax error
     // Set the caret ptr and exit type
     if (lpplLocalVars->tkLACharIndex NE NEG1U)
         lpplLocalVars->tkErrorCharIndex = lpplLocalVars->tkLACharIndex;
+    else
+    if (lpplLocalVars->lptkEnd <= &lpplLocalVars->lptkNext[1])
+        lpplLocalVars->tkErrorCharIndex = NEG1U;
     else
         lpplLocalVars->tkErrorCharIndex = lpplLocalVars->lptkNext[1].tkCharIndex;
     lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -7471,7 +7443,7 @@ LPPL_YYSTYPE WaitForInput
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize ();
+    UnlocalizeSTEs ();
 
     // If we're resetting, ...
     if (lpMemPTD->lpSISCur
@@ -7705,8 +7677,9 @@ void ArrExprCheckCaller
         // Check for NoValue
         if (IsSymNoValue (lpYYArg->tkToken.tkData.tkSym))
         {
-            // Signal a VALUE ERROR
-            PrimFnValueError_EM (&lpYYArg->tkToken);
+            if (lpplLocalVars->bYYERROR)
+                // Signal a VALUE ERROR
+                PrimFnValueError_EM (&lpYYArg->tkToken);
 
             // Mark as in error
             lpplLocalVars->bRet = FALSE;
@@ -7733,6 +7706,155 @@ void ArrExprCheckCaller
         MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
 } // End ArrExprCheckCaller
+
+
+//***************************************************************************
+//  $CheckSelSpec_EM
+//
+//  Check on Selective Specification of the first (and only) name
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CheckSelSpec_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL CheckSelSpec_EM
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to local vars
+     LPTOKEN       lptkNameVars)        // Ptr to NameVars token
+
+{
+    HGLOBAL hGlbNameVars;               // NameVars global memory handle
+    LPTOKEN lpMemNameVars;              // Ptr to NameVars global memory
+    UBOOL   bRet;                       // TRUE iff the result is valid
+    UINT    uCharIndex;                 // Char index
+
+    // If it's Selective Specification, and
+    //   we have yet to see the first name, ...
+    if (lpplLocalVars->bSelSpec && lpplLocalVars->bIniSpec)
+    {
+        // Clear the flag
+        lpplLocalVars->bIniSpec = FALSE;
+
+        // Get the global memory handle
+        hGlbNameVars = lptkNameVars->tkData.tkGlbData;
+
+        Assert (IsGlbTypeNamDir (hGlbNameVars));
+
+        // Clear the type bits
+        hGlbNameVars = ClrPtrTypeDirAsGlb (lptkNameVars->tkData.tkGlbData);
+
+        // Lock the memory to get a ptr to it
+        lpMemNameVars = MyGlobalLock (hGlbNameVars);
+
+        // Ensure there is only one name
+        bRet = (((LPVARNAMED_HEADER) lpMemNameVars)->NELM EQ 1);
+        if (bRet)
+        {
+            LPPL_YYSTYPE lpYYRes,       // Ptr to result
+                         lpYYRes2;      // ...
+
+            // Skip over the header to the data
+            lpMemNameVars = VarNamedBaseToData (lpMemNameVars);
+
+            // Save the token
+            lpplLocalVars->tkSelSpec = *lpMemNameVars;
+
+            // Change the one (and only) token to an APA
+            //   which maps the indices of the array
+            lpYYRes2 =
+              PrimFnMonRho_EM_YY (&lpplLocalVars->tkSelSpec,
+                                  &lpplLocalVars->tkSelSpec,
+                                   NULL);
+            if (lpYYRes2)
+            {
+                lpYYRes =
+                  PrimFnMonIotaVector_EM_YY (&lpplLocalVars->tkSelSpec, // Ptr to function token
+                                             &lpYYRes2->tkToken,        // Ptr to right arg token
+                                              NULL);                    // Ptr to axis token (may be NULL)
+                FreeYYFcn1 (lpYYRes2); lpYYRes2 = NULL;
+
+                if (lpYYRes)
+                {
+                    // Save the char index
+                    uCharIndex = lptkNameVars->tkCharIndex;
+
+                    // Fill in the result token
+                    ZeroMemory (lptkNameVars, sizeof (lptkNameVars[0]));
+                    lptkNameVars->tkFlags.TknType   = TKT_VARARRAY;
+////////////////////lptkNameVars->tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from ZeroMemory
+////////////////////lptkNameVars->tkFlags.NoDisplay = FALSE;            // Already zero from ZeroMemory
+                    lptkNameVars->tkData.tkGlbData  = lpYYRes->tkToken.tkData.tkGlbData;
+                    lptkNameVars->tkCharIndex       = uCharIndex;
+
+                    YYFree (lpYYRes); lpYYRes = NULL;
+                } else
+                    // Mark as unsuccessful
+                    bRet = FALSE;
+            } else
+                // Mark as unsuccessful
+                bRet = FALSE;
+        } else
+        {
+            if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
+                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                           lptkNameVars);
+            lpplLocalVars->ExitType = EXITTYPE_ERROR;
+        } // End IF/ELSE
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbNameVars); lpMemNameVars = NULL;
+
+        return bRet;
+    } else
+        return TRUE;
+
+    return FALSE;
+} // End CheckSelSpec_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MakeTempCopy
+//
+//  Make a temporary copy of a named var
+//***************************************************************************
+
+PL_YYSTYPE MakeTempCopy
+    (LPPL_YYSTYPE lpYYTmp)              // Ptr to incoming var
+
+{
+    static PL_YYSTYPE YYTmp;
+
+    // If the token is not a named var, pass it on as the result
+    if (lpYYTmp->tkToken.tkFlags.TknType NE TKT_VARNAMED)
+        return *lpYYTmp;
+
+    // Copy the non-TOKEN fields
+    YYTmp = *lpYYTmp;
+
+    // If the named var is immediate, ...
+    if (lpYYTmp->tkToken.tkData.tkSym->stFlags.Imm)
+    {
+        // Fill in the result token
+        YYTmp.tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        YYTmp.tkToken.tkFlags.ImmType   = lpYYTmp->tkToken.tkData.tkSym->stFlags.ImmType;
+        YYTmp.tkToken.tkFlags.NoDisplay = FALSE;
+        YYTmp.tkToken.tkData.tkLongest  = lpYYTmp->tkToken.tkData.tkSym->stData.stLongest;
+////////YYTmp.tkToken.tkCharIndex       =                   // Set by above YYTmp =
+    } else
+    {
+        // Fill in the result token
+        YYTmp.tkToken.tkFlags.TknType   = TKT_VARARRAY;
+        YYTmp.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
+        YYTmp.tkToken.tkFlags.NoDisplay = FALSE;
+        YYTmp.tkToken.tkData.tkGlbData  = lpYYTmp->tkToken.tkData.tkSym->stData.stGlbData;
+////////YYTmp.tkToken.tkCharIndex       =                   // Set by above YYTmp =
+    } // End IF/ELSE
+
+    return YYTmp;
+} // End MakeTempCopy
 
 
 //***************************************************************************

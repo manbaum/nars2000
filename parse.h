@@ -69,44 +69,50 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     UNION_TOKEN  t2;                // 08:  Locked base of hGlbToken
     LPTOKEN      lptkStart,         // 0C:  Ptr to first available entry after the header
                  lptkNext,          // 10:  Ptr to next  ...
-                 lptkStop;          // 14:  Ptr to stop token if LookAhead
-    LPAPLCHAR    lpwszLine;         // 18:  Ptr to line text (zero-terminated)
-    UINT         tkErrorCharIndex,  // 1C:  Error char index
-                 tkLACharIndex;     // 20:  LookAhead char index
-    UINT         plNameType:4,      // 24:  0000000F:  Object name type (see NAME_TYPES)
+                 lptkEnd,           // 14:  Ptr to end of token stream
+                 lptkStop;          // 18:  Ptr to stop token if LookAhead
+    LPAPLCHAR    lpwszLine;         // 1C:  Ptr to line text (zero-terminated)
+    UINT         tkErrorCharIndex,  // 20:  Error char index
+                 tkLACharIndex;     // 24:  LookAhead char index
+    UINT         plNameType:4,      // 28:  0000000F:  Object name type (see NAME_TYPES)
                  bLookAhead:1,      //      00000010:  TRUE iff looking for object type within surrounding parens
                  ExitType:4,        //      000001E0:  Exit Type (see EXIT_TYPES)
                  bRet:1,            //      00000200   Various function results
                  bStopExec:1,       //      00000400   TRUE iff we're to stop executing this line
                  bRestart:1,        //      00000800   TRUE iff we're to restart from a Control Structure
                  bExec1Stmt:1,      //      00001000   TRUE iff we're to execute one stmt only
-                 Avail:19;          //      FFFFE000:  Available bits
-    UBOOL        bCtrlBreak;        // 28:  TRUE iff Ctrl-Break pressed
-    LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 2C:  Strand stack start (static)
-                 lpYYStrandBase [STRAND_LEN],   // 34:  ...          base (dynamic)
-                 lpYYStrandNext [STRAND_LEN];   // 3C:  ...          next token (dynamic)
-    HGLOBAL      hGlbPTD;           // 44:  Handle to PerTabData
-    HWND         hWndSM;            // 4C:  Window handle to Session Manager
-    LPPL_YYSTYPE lpYYStr,           // 50:  Ptr to PL_YYSTYPE strand
-                 lpYYStrL,          // 54:  ...               left strand
-                 lpYYStrR,          // 58:  ...               right strand
-                 lpYYStrN,          // 5C:  ...               name strand
-                 lpYYRes,           // 60:  ...               result
-                 lpYYFcn,           // 64:  ...               function strand
-                 lpYYLst,           // 68:  ...               list
-                 lpYYAxis,          // 6C:  ...               axis
-                 lpYYOp1,           // 70:  ...               monadic operator
-                 lpYYOp2,           // 74:  ...               dyadic  ...
-                 lpYYOp3,           // 78:  ...               ambiguous ...
-                 lpYYLft,           // 7C:  ...               left operand
-                 lpYYRht,           // 80:  ...               right operand
-                 lpYYMak;           // 84:  ...               MakeXXX function
+                 bReturn:1,         //      00002000   TRUE iff we're faking a :return as {goto} 0
+                 bYYERROR:1,        //      00004000   TRUE iff there's been a YYERROR
+                 bSelSpec:1,        //      00008000   TRUE iff we're inside Selective Specification
+                 bIniSpec:1,        //      00010000   TRUE iff we have yet to see the first name inside Selective Specification
+                 Avail:15;          //      FFFE0000:  Available bits
+    UBOOL        bCtrlBreak;        // 2C:  TRUE iff Ctrl-Break pressed
+    LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 30:  Strand stack start (static) (8 bytes)
+                 lpYYStrandBase [STRAND_LEN],   // 38:  ...          base (dynamic) ...
+                 lpYYStrandNext [STRAND_LEN];   // 40:  ...          next token (dynamic)
+    HGLOBAL      hGlbPTD;           // 48:  Handle to PerTabData
+    HWND         hWndSM;            // 50:  Window handle to Session Manager
+    LPPL_YYSTYPE lpYYStr,           // 54:  Ptr to PL_YYSTYPE strand
+                 lpYYStrL,          // 58:  ...               left strand
+                 lpYYStrR,          // 5C:  ...               right strand
+                 lpYYStrN,          // 60:  ...               name strand
+                 lpYYRes,           // 64:  ...               result
+                 lpYYFcn,           // 68:  ...               function strand
+                 lpYYLst,           // 6C:  ...               list
+                 lpYYAxis,          // 70:  ...               axis
+                 lpYYOp1,           // 74:  ...               monadic operator
+                 lpYYOp2,           // 78:  ...               dyadic  ...
+                 lpYYOp3,           // 7C:  ...               ambiguous ...
+                 lpYYLft,           // 80:  ...               left operand
+                 lpYYRht,           // 84:  ...               right operand
+                 lpYYMak;           // 88:  ...               MakeXXX function
     struct tagPLLOCALVARS
-                *lpPLPrev;          // 88:  Ptr to previous PLLOCALVARS struct
+                *lpPLPrev;          // 8C:  Ptr to previous PLLOCALVARS struct
                                     //      in thread creation order (NULL = none)
-    UINT         uLineNum;          // 8C:  Function line # (1 for execute or immexec)
-    HGLOBAL      hGlbDfnHdr;        // 90:  User-defined functio/operator global memory handle (NULL = execute/immexec)
-                                    // 94:  Length
+    UINT         uLineNum;          // 90:  Function line # (1 for execute or immexec)
+    HGLOBAL      hGlbDfnHdr;        // 94:  User-defined functio/operator global memory handle (NULL = execute/immexec)
+    TOKEN        tkSelSpec;         // 98:  TOKEN for Selective Specification (16 bytes)
+                                    // 9C:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

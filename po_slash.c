@@ -141,6 +141,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
 {
     APLSTYPE          aplTypeRht,           // Right arg storage type
+                      aplTypeTmp,           // Temp right arg ...
                       aplTypeRes;           // Result    ...
     APLNELM           aplNELMRht,           // Right arg NELM
                       aplNELMRes;           // Result    ...
@@ -153,9 +154,9 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       uDimLo,               // Product of dimensions below axis
                       uDimHi,               // ...                   above ...
                       uDimRht,              // Starting index in right arg of current vector
-                      uDimRes,              // ...               result    ...
                       uDimAxRht,            // Right arg axis dimension
                       uRht,                 // Right arg loop counter
+                      uPrv,                 // Previous right arg loop counter
                       uRes,                 // Result loop counter
                       ByteRes;              // # bytes in the result
     APLINT            iDim,                 // Integer dimension loop counter
@@ -168,6 +169,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
     APLFLOAT          aplFloatIdent;        // Identity element
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bPrimDydScal = FALSE, // TRUE iff the left operand is a Primitive Dyadic Scalar function
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
     LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
     LPPRIMFLAGS       lpPrimFlags;          // Ptr to corresponding PrimFlags entry
@@ -180,6 +182,14 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
     UINT              uBitIndex;            // Bit index for looping through Booleans
     LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
@@ -277,7 +287,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         uDimHi *= lpMemDimRht[uDim];
 
     // Calculate the result NELM
-    aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
+    aplNELMRes = _imul64 (uDimLo, uDimHi, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 
@@ -351,6 +361,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     //   calculate the storage type of the result,
     //   otherwise, assume it's ARRAY_NESTED
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+     && lpPrimFlags
      && lpPrimFlags->DydScalar)
     {
         // If the function is equal or not-equal, and the right
@@ -375,6 +386,9 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                                                        &aplTypeRht);
             if (aplTypeRes EQ ARRAY_ERROR)
                 goto DOMAIN_EXIT;
+
+            // Mark as a primitive scalar dyadic function
+            bPrimDydScal = TRUE;
         } // End IF/ELSE
     } else
         aplTypeRes = ARRAY_NESTED;
@@ -496,6 +510,117 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
         } // End IF
     } else
+    // If this is +/APA
+    if (IsSimpleAPA (aplTypeRht)
+     && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+     && lpYYFcnStrLft->tkToken.tkData.tkChar   EQ L'+')
+    {
+RESTART_EXCEPTION_APA:
+        // If the result is integer
+        if (IsSimpleInt (aplTypeRes))
+        {
+            // Loop through the right arg calling the
+            //   function strand between data, storing in the
+            //   result
+            for (uLo = 0; uLo < uDimLo; uLo++)
+            for (uHi = 0; uHi < uDimHi; uHi++)
+            {
+                // Calculate the starting index in the right arg of this vector
+                uDimRht = uLo * uDimHi * uDimAxRht + uHi;
+
+                // The indices of the right arg are
+                //   uDimRht + uDimHi * {iota} uDimAxRht
+
+                // The result is
+                //   +/apaOffRht + apaMulRht * (uDimRht + uDimHi * {iota} uDimAxRht)
+                // = +/apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * {iota} uDimAxRht
+                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) + +/apaMulRht * uDimHi *   {iota} uDimAxRht
+                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) +   apaMulRht * uDimHi * +/{iota} uDimAxRht
+                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) +   apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2
+                __try
+                {
+////////////////////*((LPAPLINT) lpMemRes)++ = uDimAxRht * (apaOffRht + apaMulRht * uDimRht)
+////////////////////                         + apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2;
+                    *((LPAPLINT) lpMemRes)++ = iadd64 (imul64 (uDimAxRht, iadd64 (apaOffRht, imul64 (apaMulRht, uDimRht))),
+                                                       imul64 (apaMulRht, imul64 (uDimHi, imul64 (uDimAxRht, isub64 (uDimAxRht, 1)) / 2)));
+                } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
+                {
+#ifdef DEBUG
+                    dprintfW (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                    // Split cases based upon the ExceptionCode
+                    switch (MyGetExceptionCode ())
+                    {
+                        case EXCEPTION_RESULT_FLOAT:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                            if (IsSimpleNum (aplTypeRes)
+                             && !IsSimpleFlt (aplTypeRes))
+                            {
+                                // It's now a FLOAT result
+                                aplTypeRes = ARRAY_FLOAT;
+
+                                // Tell the header about it
+                                lpMemHdrRes->ArrType = aplTypeRes;
+
+                                // Restart the pointer
+                                lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+#ifdef DEBUG
+                                dprintfW (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                                goto RESTART_EXCEPTION_APA;
+                            } // End IF
+
+                            // Fall through to never-never-land
+
+                        default:
+                            // Display message for unhandled exception
+                            DisplayException ();
+
+                            break;
+                    } // End SWITCH
+                } // End __try/__except
+            } // End FOR/FOR
+        } else
+        // The result is float
+        {
+            APLFLOAT uFltDimRht,
+                     apaFltOffRht,
+                     apaFltMulRht,
+                     uFltDimAxRht,
+                     uFltDimHi;
+
+            // Convert vars to float
+            apaFltOffRht = (APLFLOAT) apaOffRht;
+            apaFltMulRht = (APLFLOAT) apaMulRht;
+            uFltDimAxRht = (APLFLOAT) (APLINT) uDimAxRht;
+            uFltDimHi    = (APLFLOAT) (APLINT) uDimHi;
+
+            // Loop through the right arg calling the
+            //   function strand between data, storing in the
+            //   result
+            for (uLo = 0; uLo < uDimLo; uLo++)
+            for (uHi = 0; uHi < uDimHi; uHi++)
+            {
+                // Calculate the starting index in the right arg of this vector
+                uFltDimRht = (APLFLOAT) (APLINT) (uLo * uDimHi * uDimAxRht + uHi);
+
+                // The indices of the right arg are
+                //   uDimRht + uDimHi * {iota} uDimAxRht
+
+                // The result is
+                //   +/apaOffRht + apaMulRht * (uDimRht + uDimHi * {iota} uDimAxRht)
+                // = +/apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * {iota} uDimAxRht
+                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) + +/apaMulRht * uDimHi *   {iota} uDimAxRht
+                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) +   apaMulRht * uDimHi * +/{iota} uDimAxRht
+                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) +   apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2
+////////////////*((LPAPLINT) lpMemRes)++ = uDimAxRht * (apaOffRht + apaMulRht * uDimRht)
+////////////////                         + apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2;
+                *((LPAPLFLOAT) lpMemRes)++ = uFltDimAxRht * (apaFltOffRht + apaFltMulRht * uFltDimRht)
+                                           + apaFltMulRht * uFltDimHi * (uFltDimAxRht * (uFltDimAxRht - 1)) / 2;
+            } // End FOR/FOR
+        } // End IF/ELSE
+    } else
     {
         // Fill in the right arg token
 ////////tkRhtArg.tkFlags.TknType   =            // To be filled in below
@@ -520,72 +645,243 @@ RESTART_EXCEPTION:
         for (uLo = 0; uLo < uDimLo; uLo++)
         for (uHi = 0; uHi < uDimHi; uHi++)
         {
-            // Calculate the starting index in the right arg/result of this vector
+            // Calculate the starting index in the right arg of this vector
             uDimRht = uLo * uDimHi * uDimAxRht + uHi;
-            uDimRes = uLo * uDimHi * 1         + uHi;
 
             // Calculate the index of last element in this vector
             uRht = uDimRht + (uDimAxRht - 1) * uDimHi;
 
-            // Get the last element as the right arg
-            GetNextValueMemIntoToken (uRht,             // Index to use
-                                      lpMemRht,         // Ptr to global memory object to index
-                                      aplTypeRht,       // Storage type of the arg
-                                      apaOffRht,        // APA offset (if needed)
-                                      apaMulRht,        // APA multiplier (if needed)
-                                     &tkRhtArg);        // Ptr to token in which to place the value
-            // In case we blew up, check to see if we must blow up tkRhtArg
-            if (IsSimpleFlt (aplTypeRes)
-             && IsSimpleInt (aplTypeRht))
+            // Copy the right arg type to a temp so we can respecify
+            //   it in case we blow up
+            aplTypeTmp = aplTypeRht;
+
+            // If the left operand is a Primitive Dyadic Scalar function, ...
+            if (bPrimDydScal)
             {
-                // Change the immediate type & value
-                tkRhtArg.tkFlags.ImmType = IMMTYPE_FLOAT;
-                tkRhtArg.tkData.tkFloat  = (APLFLOAT) tkRhtArg.tkData.tkInteger;
-            } // End IF
+                APLINT   aplIntegerLft,             // Left arg as integer
+                         aplIntegerRht;             // Right ...
+                APLFLOAT aplFloatLft,               // Left arg as float
+                         aplFloatRht;               // Right ...
+                APLCHAR  aplCharLft,                // Left arg as char
+                         aplCharRht;                // Right ...
 
-            // Loop backwards through the elements along the specified axis
-            for (iDim = uDimAxRht - 2; iDim >= 0; iDim--)
-            {
-                // Calculate the index of the previous element in this vector
-                uRht = uDimRht + iDim * uDimHi;
-
-                // Get the previous element as the left arg
-                GetNextValueMemIntoToken (uRht,         // Index to use
-                                          lpMemRht,     // Ptr to global memory object to index
-                                          aplTypeRht,   // Storage type of the arg
-                                          apaOffRht,    // APA offset (if needed)
-                                          apaMulRht,    // APA multiplier (if needed)
-                                         &tkLftArg);    // Ptr to token in which to place the value
-                // Execute the left operand between the left & right args
-                if (lpPrimProtoLft)
-                    // Note that we cast the function strand to LPTOKEN
-                    //   to bridge the two types of calls -- one to a primitive
-                    //   function which takes a function token, and one to a
-                    //   primitive operator which takes a function strand
-                    lpYYRes = (*lpPrimProtoLft) (&tkLftArg,     // Ptr to left arg token
-                                        (LPTOKEN) lpYYFcnStrLft,// Ptr to left operand function strand
-                                                 &tkRhtArg,     // Ptr to right arg token
-                                                  NULL);        // Ptr to axis token (may be NULL)
-                else
-                    lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,     // Ptr to left arg token
-                                                  lpYYFcnStrLft,// Ptr to left operand function strand
-                                                 &tkRhtArg,     // Ptr to right arg token
-                                                  NULL);        // Ptr to axis token (may be NULL)
-                // Free the left & right arg tokens
-                FreeResult (&tkLftArg);
-                FreeResult (&tkRhtArg);
-
-                // If it succeeded, ...
-                if (lpYYRes)
+                // Split cases based upon the right arg storage type
+                switch (aplTypeRht)
                 {
-                    // Copy the result to the right arg token
-                    tkRhtArg = lpYYRes->tkToken;
+                    case ARRAY_BOOL:
+                        tkRhtArg.tkFlags.ImmType  = IMMTYPE_BOOL;
+                        tkRhtArg.tkData.tkInteger =
+                        aplIntegerRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
+                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
 
-                    // Free the YYRes (but not the storage)
-                    YYFree (lpYYRes); lpYYRes = NULL;
-                } else
-                    goto ERROR_EXIT;
-            } // End FOR
+                        break;
+
+                    case ARRAY_INT:
+                        tkRhtArg.tkFlags.ImmType  = IMMTYPE_INT;
+                        tkRhtArg.tkData.tkInteger =
+                        aplIntegerRht = ((LPAPLINT)   lpMemRht)[uRht];
+                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+
+                        break;
+
+                    case ARRAY_APA:
+                        tkRhtArg.tkFlags.ImmType  = IMMTYPE_INT;
+                        tkRhtArg.tkData.tkInteger =
+                        aplIntegerRht = apaOffRht + apaMulRht * uRht;
+                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                        tkRhtArg.tkFlags.ImmType = IMMTYPE_FLOAT;
+                        tkRhtArg.tkData.tkFloat  =
+                        aplFloatRht   = ((LPAPLFLOAT) lpMemRht)[uRht];
+
+                        break;
+
+                    case ARRAY_CHAR:
+                        tkRhtArg.tkFlags.ImmType = IMMTYPE_CHAR;
+                        tkRhtArg.tkData.tkChar   =
+                        aplCharRht    = ((LPAPLCHAR)  lpMemRht)[uRht];
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Set the token & immediate types in case uDimAxRht EQ 1
+                tkRhtArg.tkFlags.TknType = TKT_VARIMMED;
+
+                // Loop backwards through the elements along the specified axis
+                for (iDim = uDimAxRht - 2, uPrv = uDimRht + iDim * uDimHi; iDim >= 0; iDim--, uPrv -= uDimHi)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+////////////////////// Calculate the index of the previous element in this vector (now done in the FOR stmt)
+////////////////////uPrv = uDimRht + iDim * uDimHi;
+
+                    // Split cases based upon the left arg storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:
+                            aplIntegerLft = GetNextInteger (lpMemRht, aplTypeRht, uPrv);
+                            aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
+
+                            break;
+
+                        case ARRAY_INT:
+                            aplIntegerLft = ((LPAPLINT)   lpMemRht)[uPrv];
+                            aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
+
+                            break;
+
+                        case ARRAY_APA:
+                            aplIntegerLft = apaOffRht + apaMulRht * uPrv;
+                            aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            aplFloatLft   = ((LPAPLFLOAT) lpMemRht)[uPrv];
+
+                            break;
+
+                        case ARRAY_CHAR:
+                            aplCharLft    = ((LPAPLCHAR)  lpMemRht)[uPrv];
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Execute the Primitive Dyadic Scalar function
+                    //   between the args
+////#define FAST_TEST
+#ifdef FAST_TEST
+                    aplLongestRht += aplLongestLft;
+#else
+                    if (!PrimFnDydSiScSiScSub_EM (&tkRhtArg,
+                                                  &lpYYFcnStrLft->tkToken,
+                                                   aplTypeRes,
+                                                   aplTypeRht,
+                                                   aplIntegerLft,
+                                                   aplFloatLft,
+                                                   aplCharLft,
+                                                   aplTypeTmp,
+                                                   aplIntegerRht,
+                                                   aplFloatRht,
+                                                   aplCharRht,
+                                                   lpPrimSpec))
+                        goto ERROR_EXIT;
+
+                    Assert (tkRhtArg.tkFlags.TknType EQ TKT_VARIMMED);
+
+                    // Copy the result type as the temporary right arg type
+                    aplTypeTmp = aplTypeRes;
+
+                    // Split cases based upon the result immediate type
+                    switch (tkRhtArg.tkFlags.ImmType)
+                    {
+                        case IMMTYPE_BOOL:
+                            aplIntegerRht = (BIT0 &tkRhtArg.tkData.tkBoolean);
+                            aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+
+                            break;
+
+                        case IMMTYPE_INT:
+                            aplIntegerRht = tkRhtArg.tkData.tkInteger;
+                            aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+
+                            break;
+
+                        case IMMTYPE_FLOAT:
+                            aplFloatRht   = tkRhtArg.tkData.tkFloat;
+
+                            break;
+
+                        case IMMTYPE_CHAR:                          // Can't happen
+                        defstop
+                            break;
+                    } // End SWITCH
+#endif
+                } // End FOR
+
+#ifdef FAST_TEST
+                // Fill in the result token
+                tkRhtArg.tkFlags.TknType  = TKT_VARIMMED;
+                tkRhtArg.tkFlags.ImmType  = IMMTYPE_INT;
+                tkRhtArg.tkData.tkLongest = aplLongestRht;
+#endif
+            } else
+            {
+                // Get the last element as the right arg
+                GetNextValueMemIntoToken (uRht,             // Index to use
+                                          lpMemRht,         // Ptr to global memory object to index
+                                          aplTypeRht,       // Storage type of the arg
+                                          apaOffRht,        // APA offset (if needed)
+                                          apaMulRht,        // APA multiplier (if needed)
+                                         &tkRhtArg);        // Ptr to token in which to place the value
+                // In case we blew up, check to see if we must blow up tkRhtArg
+                if (IsSimpleFlt (aplTypeRes)
+                 && IsSimpleInt (aplTypeRht))
+                {
+                    // Change the immediate type & value
+                    tkRhtArg.tkFlags.ImmType = IMMTYPE_FLOAT;
+                    tkRhtArg.tkData.tkFloat  = (APLFLOAT) tkRhtArg.tkData.tkInteger;
+                } // End IF
+
+                // Loop backwards through the elements along the specified axis
+                for (iDim = uDimAxRht - 2; iDim >= 0; iDim--)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the index of the previous element in this vector
+                    uPrv = uDimRht + iDim * uDimHi;
+
+                    // Get the previous element as the left arg
+                    GetNextValueMemIntoToken (uPrv,         // Index to use
+                                              lpMemRht,     // Ptr to global memory object to index
+                                              aplTypeRht,   // Storage type of the arg
+                                              apaOffRht,    // APA offset (if needed)
+                                              apaMulRht,    // APA multiplier (if needed)
+                                             &tkLftArg);    // Ptr to token in which to place the value
+                    // Execute the left operand between the left & right args
+                    if (lpPrimProtoLft)
+                        // Note that we cast the function strand to LPTOKEN
+                        //   to bridge the two types of calls -- one to a primitive
+                        //   function which takes a function token, and one to a
+                        //   primitive operator which takes a function strand
+                        lpYYRes = (*lpPrimProtoLft) (&tkLftArg,     // Ptr to left arg token
+                                            (LPTOKEN) lpYYFcnStrLft,// Ptr to left operand function strand
+                                                     &tkRhtArg,     // Ptr to right arg token
+                                                      NULL);        // Ptr to axis token (may be NULL)
+                    else
+                        lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,     // Ptr to left arg token
+                                                      lpYYFcnStrLft,// Ptr to left operand function strand
+                                                     &tkRhtArg,     // Ptr to right arg token
+                                                      NULL);        // Ptr to axis token (may be NULL)
+                    // Free the left & right arg tokens
+                    FreeResult (&tkLftArg);
+                    FreeResult (&tkRhtArg);
+
+                    // If it succeeded, ...
+                    if (lpYYRes)
+                    {
+                        // Copy the result to the right arg token
+                        tkRhtArg = lpYYRes->tkToken;
+
+                        // Free the YYRes (but not the storage)
+                        YYFree (lpYYRes); lpYYRes = NULL;
+                    } else
+                        goto ERROR_EXIT;
+                } // End FOR
+            } // End IF/ELSE
 
             // Split cases based upon the token type of the right arg (result)
             switch (tkRhtArg.tkFlags.TknType)
@@ -690,8 +986,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
@@ -797,10 +1093,10 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRht);
-////////lpYYRes->tkToken.tkCharIndex       =        // Filled in below
+////////lpYYRes->tkToken.tkCharIndex       =                // Filled in below
     } else  // It's an immediate
     {
         // Allocate a new YYRes
@@ -815,8 +1111,17 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
             lpYYRes->tkToken.tkData.tkLongest  = 0;
         } else
         {
-            lpYYRes->tkToken.tkFlags.ImmType   = lptkRhtArg->tkFlags.ImmType;
-            lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkLongest;
+            if (IsTknNamed (lptkRhtArg->tkFlags.TknType))
+            {
+                Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                lpYYRes->tkToken.tkFlags.ImmType   = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
+                lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkSym->stData.stLongest;
+            } else
+            {
+                lpYYRes->tkToken.tkFlags.ImmType   = lptkRhtArg->tkFlags.ImmType;
+                lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkLongest;
+            } // End IF/ELSE
         } // End IF/ELSE
 
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
@@ -856,18 +1161,18 @@ void SymGlbToToken
         case PTRTYPE_STCONST:
             lptkArg->tkFlags.TknType   = TKT_VARIMMED;
             lptkArg->tkFlags.ImmType   = ((LPSYMENTRY) hSymGlb)->stFlags.ImmType;
-////////////lptkArg->tkFlags.NoDisplay = FALSE;     // Already zero by the caller
+////////////lptkArg->tkFlags.NoDisplay = FALSE;         // Already zero by the caller
             lptkArg->tkData.tkLongest  = ((LPSYMENTRY) hSymGlb)->stData.stLongest;
-////////////lptkArg->tkCharIndex       =            // Filled in by the caller
+////////////lptkArg->tkCharIndex       =                // Filled in by the caller
 
             break;
 
         case PTRTYPE_HGLOBAL:
             lptkArg->tkFlags.TknType   = TKT_VARARRAY;
-////////////lptkArg->tkFlags.ImmType   = 0;         // Already zero by caller
-////////////lptkArg->tkFlags.NoDisplay = FALSE;     // Already zero by the caller
+////////////lptkArg->tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero by caller
+////////////lptkArg->tkFlags.NoDisplay = FALSE;         // Already zero by the caller
             lptkArg->tkData.tkGlbData  = hSymGlb;
-////////////lptkArg->tkCharIndex       =            // Filled in by the caller
+////////////lptkArg->tkCharIndex       =                // Filled in by the caller
 
             break;
 
@@ -937,7 +1242,6 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                       uDimLo,               // Product of dimensions below axis
                       uDimHi,               // ...                   above ...
                       uDimRht,              // Starting index in right arg of current vector
-                      uDimRes,              // ...               result    ...
                       uDimAxRht,            // Right arg axis dimension length
                       uDimAxRes,            // Result    ...
                       uRht,                 // Right arg loop counter
@@ -958,6 +1262,14 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
     LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
@@ -1154,9 +1466,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         aplTypeRes = ARRAY_NESTED;
 
     // Calculate the result NELM
-    aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
+    aplNELMRes = _imul64 (uDimLo, uDimHi, &bRet);
     if (bRet || IsZeroDim (uDimAxRes))
-        aplNELMRes = imul64 (aplNELMRes, uDimAxRes, &bRet);
+        aplNELMRes = _imul64 (aplNELMRes, uDimAxRes, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 
@@ -1351,9 +1663,8 @@ RESTART_EXCEPTION:
             APLUINT uAx;            // Loop counter for uDimAxRes
             APLINT  iDim;           // Loop counter for aplIntegerLftAbs
 
-            // Calculate the starting index in the right arg/result of this vector
+            // Calculate the starting index in the right arg of this vector
             uDimRht = uLo * uDimHi * uDimAxRht + uHi;
-            uDimRes = uLo * uDimHi * uDimAxRes + uHi;
 
             // There are uDimAxRes elements in the result to be generated now
             for (uAx = 0; uAx < uDimAxRes; uAx++)
@@ -1388,6 +1699,10 @@ RESTART_EXCEPTION:
                     // Loop backwards through the elements along the specified axis
                     for (iDim = aplIntegerLftAbs - 2; iDim >= 0; iDim--)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Calculate the index of the previous element in this vector
                         uRht = uDimRht + (uAx + iDim) * uDimHi;
 
@@ -1452,6 +1767,10 @@ RESTART_EXCEPTION:
                     // Loop forwards through the elements along the specified axis
                     for (iDim = 1; iDim < aplIntegerLftAbs; iDim++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Calculate the index of the next element in this vector
                         uRht = uDimRht + (uAx + iDim) * uDimHi;
 
@@ -1591,8 +1910,8 @@ RESTART_EXCEPTION:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
@@ -1777,7 +2096,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-        lpYYRes->tkToken.tkFlags.ImmType   = 0;
+        lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbTmp);
 ////////lpYYRes->tkToken.tkCharIndex       =        // Already filled in by caller

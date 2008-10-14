@@ -32,11 +32,13 @@ typedef enum tagNAME_CLASS
     NAMECLASS_SYSVAR,       //  5 = System variable
     NAMECLASS_SYSFCN,       //  6 = System function
     NAMECLASS_SYSLBL,       //  7 = System label
-    NAMECLASS_LENp1,        //  8 = # valid entries + 1 (1-7)
+    NAMECLASS_MF,           //  8 = Magic Function
+    NAMECLASS_LENp1,        //  9 = # valid entries + 1 (1-8)
 } NAME_CLASS;
 // Note that )NMS in <sc_fnov.c> assumes that the Name Class
 //   is a single digit.  If you add enough classes to invalidate
-//   that assumptioon, be sure make )NMS work, too.
+//   that assumption, be sure make )NMS work, too.
+
 
 //***************************************************************************
 //  End of File: nameclass.h

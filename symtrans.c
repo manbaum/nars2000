@@ -74,20 +74,11 @@ UINT FcnTrans
 ////////case UTF16_EQUALUNDERBAR:           // 0x2261
 ////////    return (UCHAR) wchFcn;          // Use the low-order byte
 
-        case UTF16_DIERESISDOWNTACK:        // 0x2361
-            return INDEX_DIERESISDOWNTACK;  // Use special index
-
 ////////case UTF16_LEFTCARETUNDERBAR:       // 0x2264
 ////////    return (UCHAR) wchFcn;          // Use the low-order byte
 
-        case UTF16_DIERESISJOT:             // 0x2364
-            return INDEX_DIERESISJOT;       // Use special index
-
 ////////case UTF16_RIGHTCARETUNDERBAR:      // 0x2265
 ////////    return (UCHAR) wchFcn;          // Use the low-order byte
-
-        case UTF16_DIERESISCIRCLE:          // 0x2365
-            return INDEX_DIERESISCIRCLE;    // Use special index
 
         default:                            // All others
             return (UCHAR) wchFcn;          // Use the low-order byte
@@ -161,7 +152,7 @@ UINT SymTrans
         case TKT_OP2IMMED:
         case TKT_OP3IMMED:
         case TKT_OPJOTDOT:
-            // This caset works because TOKEN is the first element of PL_YYSTYPE
+            // This case works because TOKEN is the first element of PL_YYSTYPE
             lpMemFcn = (LPPL_YYSTYPE) lptkFunc;
 
             break;

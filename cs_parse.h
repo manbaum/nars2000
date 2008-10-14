@@ -27,7 +27,8 @@ typedef struct tagFORSTMT           // FOR stmt struc
     APLNELM    uNELM;               // 08:  NELM of    ...
     TOKEN      tkForI,              // 10:  Token for I   in ":FOR I :IN Arr" token (16 bytes)
                tkForArr;            // 20:  Token for Arr ...
-                                    // 30:  Length
+    UINT       uForStmtID;          // 30:  FOR stmt identifier
+                                    // 34:  Length
 } FORSTMT, *LPFORSTMT;
 
 

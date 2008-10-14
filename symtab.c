@@ -150,6 +150,21 @@ UBOOL HshTabFrisk
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;                 // Ptr to HshTab struc
+    static UBOOL bFrisk = FALSE;        // TRUE iff we're already frisking
+    UBOOL        bRet = FALSE;          // TRUE iff the result is valid
+
+    EnterCriticalSection (&CSOFrisk);
+
+    // Avoid recursion
+    if (bFrisk)
+        bRet = TRUE;
+    else
+        bFrisk = TRUE;
+
+    LeaveCriticalSection (&CSOFrisk);
+
+    if (bRet)
+        return bRet;
 
     if (bUseGlbHsh)
         // Get global values
@@ -362,6 +377,12 @@ UBOOL HshTabFrisk
         DisplayException ();
     } // End __try/__except
 
+    EnterCriticalSection (&CSOFrisk);
+
+    bFrisk = FALSE;
+
+    LeaveCriticalSection (&CSOFrisk);
+
     return TRUE;
 } // End HshTabFrisk
 #endif
@@ -485,7 +506,7 @@ UBOOL HshTabResize_EM
                  iHshTabNewSize;
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    UBOOL        bRet = TRUE;           // TRUE iff result is valid
+    UBOOL        bRet = FALSE;          // TRUE iff result is valid
     LPHSHTABSTR  lpHTS;                 // Ptr to HshTab struc
 
     if (bUseGlbHsh)
@@ -519,13 +540,7 @@ UBOOL HshTabResize_EM
                       MEM_COMMIT,
                       PAGE_READWRITE);
     if (!lpHshTabNew)
-    {
-        ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
-
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto HSHTAB_FULL_EXIT;
 
     Assert (lpHshTabNew EQ lpHTS->lpHshTab);
 
@@ -551,7 +566,19 @@ UBOOL HshTabResize_EM
     Assert (1 EQ gcdAplInt (lpHTS->iHshTabIncr, lpHTS->iHshTabTotalSize, NULL));
 
     Assert (HshTabFrisk (bUseGlbHsh));
+
+    // Mark as successful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+HSHTAB_FULL_EXIT:
+    ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (!bUseGlbHsh)
     {
         // We no longer need this ptr
@@ -581,9 +608,9 @@ UBOOL SymTabResize_EM
 {
     LPSYMENTRY   lpSymTabNew;
     int          i, iSymTabNewSize;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet = TRUE;   // TRUE iff result is valid
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    UBOOL        bRet = FALSE;      // TRUE iff result is valid
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -604,13 +631,7 @@ UBOOL SymTabResize_EM
                       MEM_COMMIT,
                       PAGE_READWRITE);
     if (!lpSymTabNew)
-    {
-        ErrorMessageIndirect (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME);
-
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto SYMTAB_FULL_EXIT;
 
     Assert (lpSymTabNew EQ lpMemPTD->lpSymTab);
 
@@ -627,7 +648,19 @@ UBOOL SymTabResize_EM
     lpMemPTD->iSymTabTotalSize = iSymTabNewSize;
 
     Assert (HshTabFrisk (FALSE));
+
+    // Mark as successful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+SYMTAB_FULL_EXIT:
+    ErrorMessageIndirect (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -774,7 +807,7 @@ UBOOL HshTabSplitNextEntry_EM
             //   preserving the destination's .PrinHash flag
             htFlags = lpHshEntrySrc->htFlags;
             htFlags.PrinHash = lpHshEntryDest->htFlags.PrinHash;
-            MoveMemory (lpHshEntryDest, lpHshEntrySrc, sizeof (HSHENTRY));
+            CopyMemory (lpHshEntryDest, lpHshEntrySrc, sizeof (HSHENTRY));
             lpHshEntryDest->htFlags = htFlags;
 
             // Repoint the matching symbol table entry
@@ -1917,6 +1950,12 @@ LPSYMENTRY SymTabLookupNameLength
                 break;
             } // End FOR/IF
 
+            // Ensure that the next char in the hash entry is a
+            //   valid second char in a name
+            if (iCmp EQ 0
+             && IsValid2ndCharInName (lpwGlbName[iLen]))
+                iCmp = 1;
+
             // We no longer need this ptr
             MyGlobalUnlock (lpHshEntry->htGlbName); lpwGlbName = NULL;
 
@@ -2538,17 +2577,19 @@ LPSYMENTRY SymTabAppendName_EM
     //    as we don't handle unknown system names
     if (!lpSymEntry)
     {
-        if (stFlags.ObjName EQ OBJNAME_SYS)
-        {
-            ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
-            return NULL;
-        } else
+        if (lpstFlags->ObjName EQ OBJNAME_SYS)
+            goto SYNTAX_EXIT;
+        else
             lpSymEntry =
               SymTabAppendNewName_EM (lpwszString, lpstFlags);
     } // End IF
 
     return lpSymEntry;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+
+    return NULL;
 } // End SymTabAppendName_EM
 #undef  APPEND_NAME
 
@@ -2629,13 +2670,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     // Allocate global memory for the name ("+1" for the terminating zero)
     lpHshEntryDest->htGlbName = DbgGlobalAlloc (GHND, (iLen + 1) * sizeof (WCHAR));
     if (!lpHshEntryDest->htGlbName)
-    {
-        ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-
-        lpSymEntryDest = NULL;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpwGlbName = MyGlobalLock (lpHshEntryDest->htGlbName);
@@ -2666,7 +2701,18 @@ LPSYMENTRY SymTabAppendNewName_EM
     lpSymEntryDest->stSILevel  = 0;
 
     Assert (HshTabFrisk (FALSE));
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+    lpSymEntryDest = NULL;
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 

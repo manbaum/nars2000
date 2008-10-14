@@ -123,7 +123,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
 
     // The right arg may be of three forms:
     //   1.  a scalar    name  as in 'a'
-    //   2.  a vector of name  as in 'a' (not 'a b c')
+    //   2.  a vector of names as in 'a' or 'a b c'
     //   3.  a matrix of names as in 3 1{rho}'abc'
 
     // Get the attributes (Type, NELM, and Rank)
@@ -131,7 +131,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
-    if (aplRankRht > 2)
+    if (IsRank3P (aplRankRht))
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -222,8 +222,8 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
             if (lpSymEntry)
                 *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
             else
-                *lpMemDataRes |= (ValidName ((LPAPLCHAR) &aplLongestRht,
-                                             1)) << uBitIndex;
+                *lpMemDataRes |= (IsValidName ((LPAPLCHAR) &aplLongestRht,
+                                               1)) << uBitIndex;
             break;
 
         case 1:
@@ -257,8 +257,8 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                     if (lpSymEntry)
                         *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
                     else
-                        *lpMemDataRes |= (ValidName (lpMemDataStart,
-                                                    (UINT) (&lpMemDataRht[uRht] - lpMemDataStart))) << uBitIndex;
+                        *lpMemDataRes |= (IsValidName (lpMemDataStart,
+                                                      (UINT) (&lpMemDataRht[uRht] - lpMemDataStart))) << uBitIndex;
                     // Check for end-of-byte
                     if (++uBitIndex EQ NBIB)
                     {
@@ -295,10 +295,10 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                 // If found, attempt to expunge the name
                 // If not found, return a one if it's a valid name, zero otherwise
                 if (lpSymEntry)
-                    *lpMemDataRes |= ExpungeName (lpSymEntry);
+                    *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
                 else
-                    *lpMemDataRes |= (ValidName (lpMemDataStart,
-                                                 (UINT) (aplNELMCol - uCol))) << uBitIndex;
+                    *lpMemDataRes |= (IsValidName (lpMemDataStart,
+                                                   (UINT) (aplNELMCol - uCol))) << uBitIndex;
                 // Check for end-of-byte
                 if (++uBitIndex EQ NBIB)
                 {
@@ -321,8 +321,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -373,9 +373,9 @@ APLBOOL ExpungeName
     if (!EraseableName (lpSymEntry))
         return 0;
 
-    // If the STE is not immediate, free the global memory handle
-    if (!lpSymEntry->stFlags.Imm)
-        FreeResultGlobalDFV (lpSymEntry->stData.stGlbData);
+    // If the STE is not immediate and has a value, free the global memory handle
+    if (!lpSymEntry->stFlags.Imm && lpSymEntry->stFlags.Value)
+        FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData);
 
     // Erase the Symbol Table Entry
     EraseSTE (lpSymEntry);
@@ -444,7 +444,7 @@ APLBOOL EraseableName
             lpMemName = MyGlobalLock (htGlbName);
 
             // Izit a valid name?
-            bRet = ValidName (lpMemName, lstrlenW (lpMemName));
+            bRet = IsValidName (lpMemName, lstrlenW (lpMemName));
 
             // Not if it's a system name
             bRet &= !IsSysName (lpMemName);

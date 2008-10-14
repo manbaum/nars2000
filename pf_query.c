@@ -79,6 +79,12 @@ PRIMSPEC PrimSpecQuery =
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
 #endif
 
+// Generate the next value of QuadRL
+#define NextQuadRL(a)   ((a) * DEF_QUADRL_CWS) % QUADRL_MODULUS;
+
+// Ye old Linear Congruential Generator
+#define LinConGen(a,b)  ((a) * (b)) / QUADRL_MODULUS
+
 
 //***************************************************************************
 //  $PrimFnQuery_EM_YY
@@ -203,8 +209,8 @@ APLINT PrimFnMonQueryIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLBOOL      bQuadIO;       // []IO
-    APLUINT      uQuadRL;       // []RL
+    APLBOOL bQuadIO;            // []IO
+    APLUINT uQuadRL;            // []RL
 
     // Get the current value of []IO & []RL
     bQuadIO = GetQuadIO ();
@@ -214,14 +220,14 @@ APLINT PrimFnMonQueryIisI
     if (aplIntegerRht < bQuadIO)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-    // Calculate new QuadRL
-    uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
+    // Calculate the next QuadRL
+    uQuadRL = NextQuadRL (uQuadRL);
 
     // Save uQuadRL back into lpPrimSpec
     lpPrimSpec->QuadRL = uQuadRL;
 
     // Ye old Linear Congruential Generator
-    return bQuadIO + (uQuadRL * aplIntegerRht) / QUADRL_MODULUS;
+    return bQuadIO + LinConGen (uQuadRL, aplIntegerRht);
 } // End PrimFnMonQueryIisI
 
 
@@ -271,30 +277,39 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // Right ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht;        // Right ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL;    // Result   ...
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL;   // Ptr to right ...
-    LPAPLINT     lpMemRes = NULL;   // Ptr to result   ...
-    APLINT       aplIntegerLft,     // Left arg temporary integer
-                 aplIntegerRht;     // Right ...
-    APLFLOAT     aplFloatLft,       // Left arg temporary float
-                 aplFloatRht;       // Right ...
-    APLUINT      ByteRes;           // # bytes in the result
-    APLINT       uLft,              // Left arg loop counter
-                 uRht,              // Right ...
-                 uTmp,              // Temporary ...
-                 uSub;              // Subarray  ...
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    APLBOOL      bQuadIO;           // []IO
+    APLSTYPE      aplTypeLft,       // Left arg storage type
+                  aplTypeRht;       // Right ...
+    APLNELM       aplNELMLft,       // Left arg NELM
+                  aplNELMRht;       // Right ...
+    APLRANK       aplRankLft,       // Left arg rank
+                  aplRankRht;       // Right ...
+    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
+                  hGlbRht = NULL,   // Right ...
+                  hGlbRes = NULL;   // Result   ...
+    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
+                  lpMemRht = NULL;  // Ptr to right ...
+    LPAPLINT      lpMemRes = NULL;  // Ptr to result   ...
+    APLINT        aplIntegerLft,    // Left arg temporary integer
+                  aplIntegerRht;    // Right ...
+    APLFLOAT      aplFloatLft,      // Left arg temporary float
+                  aplFloatRht;      // Right ...
+    APLUINT       ByteRes;          // # bytes in the result
+    APLUINT       uQuadRL;          // []RL
+    APLINT        uLft,             // Left arg loop counter
+                  uRht,             // Right ...
+                  uTmp,             // Temporary ...
+                  uSub;             // Subarray  ...
+    UBOOL         bRet;             // TRUE iff result is valid
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    APLBOOL       bQuadIO;          // []IO
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
@@ -307,8 +322,9 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     if (lptkAxis NE NULL)
         goto SYNTAX_EXIT;
 
-    // Get the current value of []IO
+    // Get the current value of []IO & []RL
     bQuadIO = GetQuadIO ();
+    uQuadRL = GetQuadRL ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -348,15 +364,12 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     // Check for LEFT/RIGHT DOMAIN ERRORs
     bRet = ((!IsSimpleChar (aplTypeLft))
          && (!IsSimpleChar (aplTypeRht)));
-    if (bRet)
-    {
-        if (IsSimpleFlt (aplTypeLft))
-            // Attempt to convert the float to an integer using System CT
-            aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
-        if (bRet && IsSimpleFlt (aplTypeRht))
-            // Attempt to convert the float to an integer using System CT
-            aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-    } // End IF
+    if (bRet && IsSimpleFlt (aplTypeLft))
+        // Attempt to convert the float to an integer using System CT
+        aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
+    if (bRet && IsSimpleFlt (aplTypeRht))
+        // Attempt to convert the float to an integer using System CT
+        aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
 
     if (!bRet
      || aplIntegerLft < 0
@@ -381,16 +394,6 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
@@ -403,6 +406,14 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplIntegerLft;
     lpHeader->Rank       = 1;
+
+    // Mark the result as a permutation vector if the
+    //   left and right args are the same.
+    if (aplIntegerLft EQ aplIntegerRht)
+    {
+        lpHeader->PV0 = (bQuadIO EQ 0);
+        lpHeader->PV1 = (bQuadIO EQ 1);
+    } // End IF
 #undef  lpHeader
 
     // Skip over the header to the dimension
@@ -411,8 +422,8 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     // Skip over the header and dimension to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-    // In order to make roll atomic, save the current []RL into lpPrimSpec
-    SavePrimSpecRL (lpPrimSpec);
+    // We make roll atomic by not saving any intermediate values
+    //   into lpMemPTD->lpSymQuadRL.
 
     // Split cases based upon the ratio of the left to right arg
     if (aplIntegerLft < (aplIntegerRht / 16))
@@ -420,8 +431,16 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
         // The short case
         for (uLft = 0; uLft < aplIntegerLft; uLft++)
         {
-            // Get a random number
-            uTmp = PrimFnMonQueryIisI (aplIntegerRht, lpPrimSpec);
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
+            // Calculate the next QuadRL
+            uQuadRL = NextQuadRL (uQuadRL);
+
+            // Get a random number using
+            // Ye old Linear Congruential Generator
+            uTmp = bQuadIO + LinConGen (uQuadRL, aplIntegerRht);
 
             // Search for it in the existing set
             for (uSub = 0; uSub < uLft; uSub++)
@@ -439,14 +458,24 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
         // The long case
 
         // Fill the result with {iota}aplIntegerRht
-        for (uLft = 0; uLft < aplIntegerRht; uLft++)    // Z {is} {iota} R
-            lpMemRes[uLft] = uLft + bQuadIO;
+        for (uRht = 0; uRht < aplIntegerRht; uRht++)    // Z {is} {iota} R
+            lpMemRes[uRht] = uRht + bQuadIO;
 
         // Loop through the elements
         for (uLft = 0; uLft < aplIntegerLft; uLft++)    // :for I :in ({iota} L) - {quad}IO
         {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
                                                         // J {is} I + (?R - I) - {quad}IO
-            uRht = uLft + PrimFnMonQueryIisI (aplIntegerRht - uLft, lpPrimSpec) - bQuadIO;
+            // Calculate the next QuadRL
+            uQuadRL = NextQuadRL (uQuadRL);
+
+            // Get a random number using
+            // Ye old Linear Congruential Generator
+            uRht = uLft + LinConGen (uQuadRL, aplIntegerRht - uLft);
+
+            // Swap the two values
             uTmp           = lpMemRes[uLft];            // Z[{quad}IO + I J] {is} Z[{quad}IO + J I]
             lpMemRes[uLft] = lpMemRes[uRht];
             lpMemRes[uRht] = uTmp;
@@ -460,11 +489,20 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
           MyGlobalReAlloc (hGlbRes,
                            MyGlobalSize (hGlbRes) - (__int3264) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
                            GHND);
-        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     } // End IF/ELSE
 
-    // Restore the value of []RL from lpPrimSpec
-    RestPrimSpecRL (lpPrimSpec);
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Save the value of uQuadRL as the new []RL
+    SetQuadRL (uQuadRL);
 
     goto NORMAL_EXIT;
 

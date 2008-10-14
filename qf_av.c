@@ -75,8 +75,8 @@ LPPL_YYSTYPE SysFnAV_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbAV);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -119,7 +119,7 @@ void MakeQuadAV
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
     lpHeader->PermNdx    = PERMNDX_QUADAV;  // So we don't free it
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
 ////lpHeader->RefCnt     = 0;               // Ignore as this is perm
     lpHeader->NELM       = QUADAV_LEN;
     lpHeader->Rank       = 1;

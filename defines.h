@@ -20,6 +20,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#ifdef DEBUG
+  ////#define DEBUG_REFCNT
+#endif
+
 // Default definitions
 #define DEF_TCFONTNAME      "Tahoma"            // Default TabCtrl font
 #define DEF_ASFONTNAME      "Arial Unicode MS"  // Default Alternate SM font
@@ -81,7 +85,7 @@
 #define DEF_DEBUG_MAXSIZE       (  16*1024)                 // Maximum ...
 #define DEF_WFORMAT_INITSIZE    (   4*1024)                 // Initial size of WCHAR Formatting storage
 #define DEF_WFORMAT_INCRSIZE    (   4*1024)                 // Incremental ...
-#define DEF_WFORMAT_MAXSIZE     ( 256*1024)                 // Maximum ...
+#define DEF_WFORMAT_MAXSIZE     (1024*1024)                 // Maximum ...
 #define DEF_UNDOBUF_INITSIZE    (   4*1024)                 // Initial size of Undo buffer
 #define DEF_UNDOBUF_INCRSIZE    (   4*1024)                 // Incremental ...
 #define DEF_UNDOBUF_MAXSIZE     (  64*1024)                 // Maximum ...
@@ -130,14 +134,14 @@
 #define DEF_RANGELIMIT_RL           TRUE
 
 
-// Empty assignment to []vars as _CWS value (TRUE) or .ini file value (FALSE)
-#define DEF_SETEMPTYCWS_CT          FALSE
-#define DEF_SETEMPTYCWS_FC          FALSE
-#define DEF_SETEMPTYCWS_IC          FALSE
-#define DEF_SETEMPTYCWS_IO          FALSE
-#define DEF_SETEMPTYCWS_PP          FALSE
-#define DEF_SETEMPTYCWS_PW          FALSE
-#define DEF_SETEMPTYCWS_RL          FALSE
+// Empty assignment to []vars as Fixed System value (TRUE) or .ini file value (FALSE)
+#define DEF_RESETVARS_CT            FALSE
+#define DEF_RESETVARS_FC            FALSE
+#define DEF_RESETVARS_IC            FALSE
+#define DEF_RESETVARS_IO            FALSE
+#define DEF_RESETVARS_PP            FALSE
+#define DEF_RESETVARS_PW            FALSE
+#define DEF_RESETVARS_RL            FALSE
 
 
 // Date/time formats

@@ -239,6 +239,63 @@ void CS_SetCLIndex
 
 
 //***************************************************************************
+//  $CS_SetTokenCLIndex
+//
+//  Set the CLIndex of the token pointed to by
+//    a given token to a given value (cs_yyparse)
+//***************************************************************************
+
+void CS_SetTokenCLIndex
+    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to local csLocalVars
+     LPTOKEN_DATA  lptdArg,             // Ptr to arg TOKEN_DATA
+     UINT          uCLIndex)            // The CLIndex to use
+
+{
+    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
+    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
+    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
+
+    // If this is execute or immexec, ...
+    if (lpcsLocalVars->hGlbImmExec NE NULL)
+    {
+        Assert (lptdArg->uLineNum EQ 1);
+
+        // Get the execute/immexec global memory handle
+        hGlbTknLine = lpcsLocalVars->hGlbImmExec;
+    } else
+    // It's a defined function/operator
+    {
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
+
+        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+        Assert (lptdArg->uLineNum > 0);
+
+        // Get the given line's tokenized global memory handle
+        hGlbTknLine = lpFcnLines[lptdArg->uLineNum - 1].hGlbTknLine;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF/ELSE
+
+    // Lock the memory to get a ptr to it
+    lpMemTknLine = MyGlobalLock (hGlbTknLine);
+
+    // Skip over the header to the data
+    lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+
+    // Set the CLIndex
+    lpMemTknLine[lptdArg->uTknNum].tkData.uCLIndex = uCLIndex;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+} // End CS_SetTokenCLIndex
+
+
+//***************************************************************************
 //  Above this point all the routines are called from cs_yyparse.
 //***************************************************************************
 //  Below this point all the routines are called from pl_yyparse.
@@ -348,6 +405,46 @@ UBOOL CS_ELSE_Stmt
 
 
 //***************************************************************************
+//  $FindMatchingForStmt
+//
+//  Find the matching FORSTMT ptr
+//***************************************************************************
+
+LPFORSTMT FindMatchingForStmt
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     UINT          uCLIndex)            // Matching CL index
+
+{
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPSIS_HEADER lpSISCur;              // Ptr to current SIS header
+    LPFORSTMT lpForStmtNext;            // Ptr to next available entry on FORSTMT stack
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+
+    // Copy ptr to current SI level
+    lpSISCur = lpMemPTD->lpSISCur;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+
+    // Check for uninitialized FORSTMT stack
+    if (lpSISCur->lpForStmtBase EQ lpSISCur->lpForStmtNext)
+        return NULL;
+
+    // Get ptr to current entry on FORSTMT stack
+    lpForStmtNext = &lpSISCur->lpForStmtNext[-1];
+
+    // Check that this level on the FORSTMT stack matches
+    //   this ENDFOR stmt
+    if (uCLIndex NE lpForStmtNext->uForStmtID)
+        return NULL;
+
+    return lpForStmtNext;
+} // End FindMatchingForStmt
+
+
+//***************************************************************************
 //  $CS_ENDFOR_Stmt
 //
 //  Process ENDFOR stmt (pl_yyparse)
@@ -358,17 +455,15 @@ UBOOL CS_ENDFOR_Stmt
      LPPL_YYSTYPE  lpYYEndForArg)       // Ptr to ENDFOR arg
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPFORSTMT    lpForStmtNext;         // Ptr to next available entry on FORSTMT stack
+    LPFORSTMT lpForStmtNext;            // Ptr to next available entry on FORSTMT stack
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
-
-    // Get ptr to current entry on FORSTMT stack
-    lpForStmtNext = &lpMemPTD->lpSISCur->lpForStmtNext[-1];
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+    // Find the matching FORSTMT ptr
+    lpForStmtNext =
+      FindMatchingForStmt (lpplLocalVars,
+                           lpYYEndForArg->tkToken.tkData.uCLIndex);
+    // If it's not found, it's a spurious branch to :endfor
+    if (lpForStmtNext EQ NULL)
+        goto UNINIT_EXIT;
 
     // Check the index against the limit
     if (lpForStmtNext->uIndex < lpForStmtNext->uNELM)
@@ -391,7 +486,7 @@ UBOOL CS_ENDFOR_Stmt
         CS_DoneFOR (lpplLocalVars);
 
         // By not changing the line/token #, we fall through to the next stmt
-
+UNINIT_EXIT:
     return TRUE;
 } // End CS_ENDFOR_Stmt
 
@@ -454,7 +549,7 @@ UBOOL CS_ENDREPEAT_Stmt
 
 
 //***************************************************************************
-//  CS_FOR_Stmt_EM
+//  $CS_FOR_Stmt_EM
 //
 //  Process FOR stmt (pl_yyparse)
 //***************************************************************************
@@ -476,6 +571,14 @@ UBOOL CS_FOR_Stmt_EM
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPFORSTMT    lpForStmtNext;         // Ptr to next available entry on FORSTMT stack
 
+    // Find the matching FORSTMT ptr
+    // If it's found, this is a branch to an active FOR stmt
+    //   and we must terminate it before activating it again
+    if (FindMatchingForStmt (lpplLocalVars,
+                             lpYYForArg->tkToken.tkData.uCLIndex))
+        // We're done with this FOR stmt
+        CS_DoneFOR (lpplLocalVars);
+
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
@@ -491,9 +594,10 @@ UBOOL CS_FOR_Stmt_EM
     AttrsOfToken (&lpYYRhtArg->tkToken, NULL, &lpForStmtNext->uNELM, NULL, NULL);
 
     // Save initial values on the FORSTMT stack
-    lpForStmtNext->uIndex   = 0;
-    lpForStmtNext->tkForI   = lpYYNameArg->tkToken;
-    lpForStmtNext->tkForArr = lpYYRhtArg->tkToken;
+    lpForStmtNext->uIndex     = 0;
+    lpForStmtNext->tkForI     = lpYYNameArg->tkToken;
+    lpForStmtNext->tkForArr   = lpYYRhtArg->tkToken;
+    lpForStmtNext->uForStmtID = lpYYForArg->tkToken.tkData.uCLIndex;
 
     // If the token is not immediate, ...
     if (!IsTknImmed (lpForStmtNext->tkForArr.tkFlags.TknType))
@@ -512,116 +616,6 @@ UBOOL CS_FOR_Stmt_EM
 
     return TRUE;
 } // End CS_FOR_Stmt_EM
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $CS_GOTO_Stmt_EM
-//
-//  Process GOTO stmt (pl_yyparse)
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_GOTO_Stmt_EM"
-#else
-#define APPEND_NAME
-#endif
-
-UBOOL CS_GOTO_Stmt_EM
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
-
-{
-    APLSTYPE   aplTypeRht;              // Right arg storage type
-    APLNELM    aplNELMRht;              // Right arg NELM
-    APLRANK    aplRankRht;              // Right arg rank
-    APLLONGEST aplLongestRht;           // Right arg longest if immediate
-    UBOOL      bRet;                    // TRUE iff the result is valid
-    TOKEN_DATA tdNxt = {0};             // TOKEN_DATA of the next stmt
-
-    // Get the attributes (Type, NELM, and Rank)
-    //   of the right arg
-    AttrsOfToken (&lpYYRhtArg->tkToken, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
-
-    // Check for RANK ERROR
-    if (IsMultiRank (aplRankRht))
-        goto RANK_EXIT;
-
-    // Check for LENGTH ERROR
-    if (IsMultiNELM (aplNELMRht))
-        goto LENGTH_EXIT;
-
-    // Check for empty right arg
-    if (IsEmpty (aplNELMRht))
-    {
-        if (!IsSimple (aplTypeRht))
-            goto DOMAIN_EXIT;
-    } else
-    {
-        // Split cases based upon the right arg storage type
-        switch (aplTypeRht)
-        {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
-            case ARRAY_APA:
-            case ARRAY_FLOAT:
-                GetFirstItemToken (&lpYYRhtArg->tkToken,
-                                   &aplLongestRht,
-                                    NULL,
-                                    NULL);
-                // If the storage type is float, ...
-                if (IsSimpleFlt (aplTypeRht))
-                {
-                    // Attempt to convert the float to an integer using System CT
-                    aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
-                    if (!bRet)
-                        goto DOMAIN_EXIT;
-                } // End IF
-
-                break;
-
-            case ARRAY_CHAR:
-            case ARRAY_HETERO:
-            case ARRAY_NESTED:
-                goto DOMAIN_EXIT;
-
-            defstop
-                break;
-        } // End SWITCH
-
-        // Set the values for the target stmt
-        tdNxt.uLineNum = (USHORT) aplLongestRht;
-////////tdNxt.uTknNum  = 0;                         // Already zero from = {0}
-
-        // In case aplLongestRht is wider than .uLineNum can hold, ...
-        if (tdNxt.uLineNum NE aplLongestRht)
-            tdNxt.uLineNum = 0;
-
-        // Tell the lexical analyzer to get the next token from
-        //   the preceding EOS token
-        CS_SetNextToken (lpplLocalVars, &tdNxt);
-    } // End IF
-
-    return TRUE;
-
-RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                              &lpYYRhtArg->tkToken);
-    goto ERROR_EXIT;
-
-LENGTH_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                              &lpYYRhtArg->tkToken);
-    goto ERROR_EXIT;
-
-DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                              &lpYYRhtArg->tkToken);
-    goto ERROR_EXIT;
-
-ERROR_EXIT:
-    return FALSE;
-} // End CS_GOTO_Stmt_EM
 #undef  APPEND_NAME
 
 
@@ -913,30 +907,6 @@ UBOOL CS_LEAVE_Stmt
 
 
 //***************************************************************************
-//  $CS_RETURN_Stmt
-//
-//  Process RETURN stmt (pl_yyparse)
-//***************************************************************************
-
-UBOOL CS_RETURN_Stmt
-    (LPPLLOCALVARS lpplLocalVars)       // Ptr to PL local vars
-
-{
-    TOKEN_DATA tdNxt = {0};             // TOKEN_DATA of the next stmt
-
-    // Set the values for the target stmt
-////tdNxt.uLineNum = 0;                 // Already zero from = {0}
-////tdNxt.uTknNum  = 0;                 // Already zero from = {0}
-
-    // Tell the lexical analyzer to get the next token from
-    //   the preceding EOS token
-    CS_SetNextToken (lpplLocalVars, &tdNxt);
-
-    return TRUE;
-} // End CS_RETURN_Stmt
-
-
-//***************************************************************************
 //  $CS_SELECT_Stmt_EM
 //
 //  Process SELECT stmt (pl_yyparse)
@@ -1224,22 +1194,23 @@ UBOOL CS_SKIPEND_Stmt
 //***************************************************************************
 //  $CS_GetNextToken
 //
-//  Get a ptr to the TOKEN_DATA of the token
-//    to where a given token points (pl_yyparse)
+//  Get the contents of the token pointed to by
+//    a given token (pl_yyparse)
 //***************************************************************************
 
 void CS_GetNextToken
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPTOKEN_DATA  lptdArg1,            // Ptr to arg TOKEN_DATA
      LPTOKEN       lptkRes,             // Ptr to result token
-     HGLOBAL      *lphGlbTknLine,       // Ptr to result tokenized line global memory handle
+     HGLOBAL      *lphGlbTknLine,       // Ptr to result tokenized line global memory handle (may be NULL)
      HGLOBAL      *lphGlbTxtLine)       // Ptr to result text      ...
 
 {
     LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
     LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
     HGLOBAL      hGlbTknLine,           // Tokenized line global memory handle
-                 hGlbTxtLine;           // Text line      ...
+                 hGlbTxtLine,           // Text line      ...
+                 hGlbDfnHdr;            // User-defined function/operator ...
     LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
 
     // If the stmts are on the same line, ...
@@ -1255,8 +1226,11 @@ void CS_GetNextToken
         hGlbTxtLine = lpplLocalVars->hGlbTxtLine;
     } else
     {
+        // Get the corresponding user-defined function/operator flobal memory handle
+        hGlbDfnHdr = GetDfnHdrHandle (lpplLocalVars);
+
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpplLocalVars->hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
@@ -1270,7 +1244,7 @@ void CS_GetNextToken
         hGlbTxtLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTxtLine;
 
         // We no longer need this ptr
-        MyGlobalUnlock (lpplLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         // Lock the memory to get a ptr to it
         lpMemTknLine = MyGlobalLock (hGlbTknLine);
@@ -1293,6 +1267,43 @@ void CS_GetNextToken
     if (lphGlbTxtLine)
         *lphGlbTxtLine = hGlbTxtLine;
 } // End CS_GetNextToken
+
+
+//***************************************************************************
+//  $GetDfnHdrHandle
+//
+//  Get the corresponding user-defined function/operator global memory handle
+//***************************************************************************
+
+HGLOBAL GetDfnHdrHandle
+    (LPPLLOCALVARS lpplLocalVars)       // Ptr to PL local vars
+
+{
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPSIS_HEADER lpSISCur;              // Ptr to current SIS header
+
+    // If the one in lpplLocalVars is valid, use that
+    if (lpplLocalVars->hGlbDfnHdr)
+        return lpplLocalVars->hGlbDfnHdr;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+
+    // Copy ptr to current SI level
+    lpSISCur = lpMemPTD->lpSISCur;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+
+    // Peel back to non-ImmExec, non-Execute, non-Quad layer
+    while (lpSISCur
+        && (lpSISCur->DfnType EQ DFNTYPE_IMM
+         || lpSISCur->DfnType EQ DFNTYPE_QUAD
+         || lpSISCur->DfnType EQ DFNTYPE_EXEC))
+        lpSISCur = lpSISCur->lpSISPrv;
+
+    return lpSISCur->hGlbDfnHdr;
+} // End GetDfnHdrHandle
 
 
 //***************************************************************************
@@ -1353,17 +1364,75 @@ void CS_SetThisStmt
 
 void CS_SetNextStmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1)            // Ptr to arg TOKEN_DATA
+     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
-    // The lptdArg1 token is at the start of the stmt
+    TOKEN       tkNxt;                  // Next TOKEN
+    TOKEN_DATA  tdNxt;                  // Next TOKEN_DATA
 
-    Assert (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_EOS
-         || lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_EOL);
+    // The lptdArg token is at the start of the stmt, i.e.
+    //   one token after EOS/EOL/LABELSEP.
 
-    // Tell the lexical analyzer to get the next token from
-    //   the preceding EOS token
-    CS_SetNextToken (lpplLocalVars, lptdArg1);
+    // Copy the target address (Line & Token #s)
+    tdNxt = *lptdArg;
+
+    // Back up to the preceding EOS/EOL/LABELSEP
+    tdNxt.uTknNum--;
+
+    // Get the contents of the token pointed to by tdNxt
+    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+
+    // Split cases based upon the pointed to token type
+    switch (tkNxt.tkFlags.TknType)
+    {
+        case TKT_EOL:
+        case TKT_EOS:
+            break;
+
+        case TKT_LABELSEP:
+            // Back up to the preceding EOS/EOL
+            tdNxt.uTknNum -= 2;
+
+            // Get the contents of the token pointed to by tdNxt
+            CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Split cases based upon the token type
+    switch (tkNxt.tkFlags.TknType)
+    {
+        case TKT_EOL:
+            // Skip to the next line #, token #0
+            tdNxt.uLineNum++;
+            tdNxt.uTknNum = 0;
+
+            break;
+
+        case TKT_EOS:
+            // Skip over this stmt
+            tdNxt.uTknNum += tkNxt.tkData.tkIndex;
+
+            // Get the contents of the token pointed to by tdNxt
+            CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+
+            // Skip over this stmt, backing off to the SOS
+            tdNxt.uTknNum += tkNxt.tkData.tkIndex - 1;
+
+            // We're restarting
+            lpplLocalVars->bRestart = TRUE;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Tell the lexical analyzer to get the next token from tdNxt
+    CS_SetNextToken (lpplLocalVars, &tdNxt);
 } // End CS_SetNextStmt
 
 
@@ -1394,7 +1463,7 @@ void CS_SetNextToken
           &lpplLocalVars->lptkStart[lptdArg1->uTknNum];
     else
     {
-        // Save as the next line & token #
+            // Save as the next line & token #
         lpMemPTD->lpSISCur->NxtLineNum = lptdArg1->uLineNum;
         lpMemPTD->lpSISCur->NxtTknNum  = lptdArg1->uTknNum;
 
@@ -1416,48 +1485,15 @@ void CS_SetNextToken
 
 TOKEN_TYPES CS_GetTokenType
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1)            // Ptr to arg TOKEN_DATA
+     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
-    TOKEN_TYPES  TknType;               // Return value token type
+    TOKEN tkNxt;                        // Next token
 
-    // If the stmts are on the same line, ...
-    if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
-       return lpplLocalVars->lptkStart[lptdArg1->uTknNum].tkFlags.TknType;
-    else
-    {
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpplLocalVars->hGlbDfnHdr);
+    // Get the contents of the token
+    CS_GetNextToken (lpplLocalVars, lptdArg, &tkNxt, NULL, NULL);
 
-        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
-
-        Assert (lptdArg1->uLineNum > 0);
-
-        // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTknLine;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpplLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
-
-        // Lock the memory to get a ptr to it
-        lpMemTknLine = MyGlobalLock (hGlbTknLine);
-
-        // Skip over the header to the data
-        lpMemTknLine = TokenBaseToStart (lpMemTknLine);
-
-        // Get the given token's type
-        TknType = lpMemTknLine[lptdArg1->uTknNum].tkFlags.TknType;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
-
-        return TknType;
-    } // End IF/ELSE
+    return tkNxt.tkFlags.TknType;
 } // End CS_GetTokenType
 
 
@@ -1470,62 +1506,18 @@ TOKEN_TYPES CS_GetTokenType
 
 UINT CS_GetEOSTokenLen
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1)            // Ptr to arg TOKEN_DATA
+     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
-    UINT         TknLen;                // Return value token length
+    TOKEN tkNxt;                        // Next token
 
-    // If the stmts are on the same line, ...
-    if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
-    {
-        // Get the address of the token
-        lpMemTknLine = &lpplLocalVars->lptkStart[lptdArg1->uTknNum];
+    // Get the contents of the token
+    CS_GetNextToken (lpplLocalVars, lptdArg, &tkNxt, NULL, NULL);
 
-        Assert (lpMemTknLine->tkFlags.TknType EQ TKT_EOS
-             || lpMemTknLine->tkFlags.TknType EQ TKT_EOL);
+    Assert (tkNxt.tkFlags.TknType EQ TKT_EOS
+         || tkNxt.tkFlags.TknType EQ TKT_EOL);
 
-        // Get the token length
-        TknLen = lpMemTknLine->tkData.tkIndex;
-    } else
-    {
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpplLocalVars->hGlbDfnHdr);
-
-        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
-
-        Assert (lptdArg1->uLineNum > 0);
-
-        // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTknLine;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpplLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
-
-        // Lock the memory to get a ptr to it
-        lpMemTknLine = MyGlobalLock (hGlbTknLine);
-
-        // Skip over the header to the data
-        lpMemTknLine = TokenBaseToStart (lpMemTknLine);
-
-        // Get the address of the token
-        lpMemTknLine = &lpMemTknLine[lptdArg1->uTknNum];
-
-        Assert (lpMemTknLine->tkFlags.TknType EQ TKT_EOS
-             || lpMemTknLine->tkFlags.TknType EQ TKT_EOL);
-
-        // Get the token length
-        TknLen = lpMemTknLine->tkData.tkIndex;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
-    } // End IF/ELSE
-
-    return TknLen;
+    return tkNxt.tkData.tkIndex;
 } // End CS_GetEOSTokenLen
 
 

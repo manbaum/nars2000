@@ -138,51 +138,59 @@ LPPL_YYSTYPE PrimFnMonDownArrow_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                // Ptr to left arg token
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,            // Left arg storage type
-                 aplTypeRht,            // Right ...
-                 aplTypeRes;            // Result   ...
-    APLNELM      aplNELMLft,            // Left arg NELM
-                 aplNELMRht,            // Right ...
-                 aplNELMRes,            // Result   ...
-                 aplNELMAxis;           // Axis     ...
-    APLRANK      aplRankLft,            // Left arg rank
-                 aplRankRht,            // Right ...
-                 aplRankRes;            // Result   ...
-    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
-                 hGlbRht = NULL,        // Right ...
-                 hGlbRes = NULL,        // Result   ...
-                 hGlbAxis = NULL;       // Axis     ...
-    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
-                 lpMemRht = NULL,       // Ptr to right ...
-                 lpMemRes = NULL;       // Ptr to result   ...
-    HGLOBAL      hGlbTmpLft = NULL,     // Left arg temporary values global memory handle
-                 hGlbOdoRht = NULL,     // Right arg odometer ...
-                 hGlbWVecRht = NULL;    // Right arg weighting vector ...
-    APLLONGEST   aplLongestLft,         // Left arg immediate value
-                 aplLongestRht;         // Right arg ...
-    APLINT       apaOffRht,             // Right arg APA offset
-                 apaMulRht,             // Right arg APA multiplier
-                 iRht,                  // Loop counter
-                 aplIntLft;             // Temporary left arg integer
-    APLUINT      ByteRes,               // # bytes in the result
-                 uRes,                  // Loop counter
-                 uRht,                  // Loop counter
-                 uOdo;                  // Loop counter
-    LPAPLDIM     lpMemDimRht = NULL;    // Ptr to right arg dimensions
-    LPAPLUINT    lpMemAxisHead,         // Ptr to axis values, fleshed out
-                 lpMemAxisTail = NULL,  // Ptr to grade up of AxisHead
-                 lpMemOdoRht = NULL,    // Ptr to right arg odometer global memory
-                 lpMemWVecRht = NULL;   // Ptr to right arg weighting vector global memory
-    LPAPLINT     lpMemTmpLft,           // Ptr to left arg temporary values global memory
-                 lpMemLoHiRht;          // Ptr to right arg low/high bounds
-    UINT         uBitMask;              // Bit mask for looping through Booleans
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht,           // Right ...
+                  aplTypeRes;           // Result   ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht,           // Right ...
+                  aplNELMRes,           // Result   ...
+                  aplNELMAxis;          // Axis     ...
+    APLRANK       aplRankLft,           // Left arg rank
+                  aplRankRht,           // Right ...
+                  aplRankRes;           // Result   ...
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL,       // Right ...
+                  hGlbRes = NULL,       // Result   ...
+                  hGlbAxis = NULL;      // Axis     ...
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL,      // Ptr to right ...
+                  lpMemRes = NULL;      // Ptr to result   ...
+    HGLOBAL       hGlbTmpLft = NULL,    // Left arg temporary values global memory handle
+                  hGlbOdoRht = NULL,    // Right arg odometer ...
+                  hGlbWVecRht = NULL;   // Right arg weighting vector ...
+    APLLONGEST    aplLongestLft,        // Left arg immediate value
+                  aplLongestRht;        // Right arg ...
+    APLINT        apaOffRht,            // Right arg APA offset
+                  apaMulRht,            // Right arg APA multiplier
+                  iRht,                 // Loop counter
+                  aplIntLft;            // Temporary left arg integer
+    APLUINT       ByteRes,              // # bytes in the result
+                  uRes,                 // Loop counter
+                  uRht,                 // Loop counter
+                  uOdo;                 // Loop counter
+    LPAPLDIM      lpMemDimRht = NULL;   // Ptr to right arg dimensions
+    LPAPLUINT     lpMemAxisHead,        // Ptr to axis values, fleshed out
+                  lpMemAxisTail = NULL, // Ptr to grade up of AxisHead
+                  lpMemOdoRht = NULL,   // Ptr to right arg odometer global memory
+                  lpMemWVecRht = NULL;  // Ptr to right arg weighting vector global memory
+    LPAPLINT      lpMemTmpLft,          // Ptr to left arg temporary values global memory
+                  lpMemLoHiRht;         // Ptr to right arg low/high bounds
+    UINT          uBitMask;             // Bit mask for looping through Booleans
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -249,7 +257,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeRht);
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -290,6 +298,9 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     if (!hGlbTmpLft)
         goto ERROR_EXIT;
 
+    // Lock the memory to get a ptr to it
+    lpMemTmpLft = MyGlobalLock (hGlbTmpLft);
+
     // The storage type of the result is the same as that of the right arg
     //   unless the right arg is hetero and the result is a singleton, or
     //   the right arg is APA
@@ -298,8 +309,14 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         aplTypeRes = TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType);
     else
     if (IsSimpleAPA (aplTypeRht))
-        aplTypeRes = ARRAY_INT;
-    else
+    {
+        // The (under-)drop of an APV is an APV
+        if (IsVector (aplRankRht)
+         && abs64 (lpMemTmpLft[0]) < (APLINT) aplNELMRht)
+            aplTypeRes = aplTypeRht;
+        else
+            aplTypeRes = ARRAY_INT;
+    } else
         aplTypeRes = aplTypeRht;
 
     // Calculate space needed for the result
@@ -320,7 +337,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -334,9 +351,6 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     else
         lpMemLft = &aplLongestLft;
-
-    // Lock the memory to get a ptr to it
-    lpMemTmpLft = MyGlobalLock (hGlbTmpLft);
 
     // Get ptr to low/high bounds
     lpMemLoHiRht = &lpMemTmpLft[aplRankRes];
@@ -369,11 +383,36 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         goto YYALLOC_EXIT;
     } // End IF
 
+    // If the right arg is an APA, ...
+    if (IsSimpleAPA (aplTypeRht))
+    {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
+        apaOffRht = lpAPA->Off;
+        apaMulRht = lpAPA->Mul;
+#undef  lpAPA
+    } // End IF
+
     // Copy the values from the right arg to the result
     //   taking into account
     //   1.  scalar right arg extension
     //   2.  negative values in the left arg
     //   3.  axis operator
+
+    // If the result is an APA, handle specially
+    if (IsSimpleAPA (aplTypeRes))
+    {
+        // If the left arg is positive, ...
+        if (lpMemTmpLft[0] > 0)
+#define lpAPA           ((LPAPLAPA) lpMemRes)
+            // Increase the offset by that amount times the multiplier
+            lpAPA->Off = apaOffRht + apaMulRht * lpMemTmpLft[0];
+        else
+            lpAPA->Off = apaOffRht;
+        lpAPA->Mul = apaMulRht;
+#undef  lpAPA
+        goto YYALLOC_EXIT;
+    } // End IF
 
     //***************************************************************
     // Allocate space for the right arg weighting vector which is
@@ -420,16 +459,6 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     // Initialize the odometer array
     CopyMemory (lpMemOdoRht, lpMemLoHiRht, (UINT) aplRankRes * sizeof (APLUINT));
 
-    // If the right arg is an APA, ...
-    if (IsSimpleAPA (aplTypeRht))
-    {
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-        // Get the APA parameters
-        apaOffRht = lpAPA->Off;
-        apaMulRht = lpAPA->Mul;
-#undef  lpAPA
-    } // End IF
-
     // If the right arg is an immediate, ...
     if (lpMemRht EQ NULL)
         lpMemRht = &aplLongestRht;
@@ -438,6 +467,10 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     //   common to the two from the right arg to the result
     for (uRes = 0; uRes < aplNELMRes; uRes++)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
         // Use the index in lpMemOdoRht to calculate the
         //   corresponding index in lpMemRht from which
         //   the next value comes.
@@ -456,7 +489,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
                 ((LPAPLBOOL)   lpMemRes)[uRes >> LOG2NBIB] |=
-                ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (MASKLOG2NBIB & (UINT) uRes);
+                ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE) << (MASKLOG2NBIB & (UINT) uRes);
 
                 break;
 
@@ -504,8 +537,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -752,7 +785,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
             for (uDim = 0; bRet && uDim < aplNELMLft; uDim++)
             {
                 // Get the left arg value
-                aplIntLft = (uBitMask & *(LPAPLBOOL) lpDataLft) ? 1 : 0;
+                aplIntLft = (uBitMask & *(LPAPLBOOL) lpDataLft) ? TRUE : FALSE;
 
                 // If there's an axis, ...
                 if (lpMemAxisTail)
@@ -938,7 +971,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
             } // End IF/ELSE
 
             // Multiply the two numbers as APLINTs so we can check for overflow
-            aplIntTmp = imul64 (*lpaplNELMRes, aplIntLft, &bRet);
+            aplIntTmp = _imul64 (*lpaplNELMRes, aplIntLft, &bRet);
 
             // Ensure the value fits into a dimension
             bRet = bRet && (aplIntTmp <= MAX_APLDIM);

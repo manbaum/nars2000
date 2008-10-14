@@ -229,7 +229,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
 
     // Copy the data to temporary storage so we can terminate it properly
     //   as well as translate it to/from APL2 charset
-    MoveMemory (lpwszTemp, lpMemRht, (__int3264) aplNELMRht * sizeof (lpMemRht[0]));
+    CopyMemory (lpwszTemp, lpMemRht, (__int3264) aplNELMRht * sizeof (lpMemRht[0]));
     lpwszTemp[aplNELMRht] = L'\0';
 
     if (hGlbRht && lpMemRht)
@@ -605,7 +605,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                                   *((LPAPLDIM) lpMemItm)++,     // The value to format
                                                   UTF16_OVERBAR);               // Char to use as overbar
                             // Copy the values to temp storage
-                            MoveMemory (lpwszTemp, lpMemItm, (__int3264) aplNELMItm * sizeof (APLCHAR));
+                            CopyMemory (lpwszTemp, lpMemItm, (__int3264) aplNELMItm * sizeof (APLCHAR));
 
                             // Skip over the copied values
                             lpwszTemp += aplNELMItm;
@@ -779,7 +779,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
         *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
         // Copy the memory to the result
-        MoveMemory (lpMemRes, lpwName, (__int3264) aplNELMRes * sizeof (lpwName[0]));
+        CopyMemory (lpMemRes, lpwName, (__int3264) aplNELMRes * sizeof (lpwName[0]));
 
         // Translate the data from NARS to APL2 charset
         if (bTranslateAPL2)
@@ -800,8 +800,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1067,7 +1067,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
     *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
     // Copy the name to the result
-    MoveMemory (lpMemRes, lpwszTemp, (__int3264) aplNELMRes * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, lpwszTemp, (__int3264) aplNELMRes * sizeof (APLCHAR));
 
     // Translate the name/data from NARS to APL2 charset
     if (bTranslateAPL2)
@@ -1087,8 +1087,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1249,10 +1249,11 @@ UBOOL TransferInverseFcn1_EM
     TF1_Params.lpMemRht = lpwData;
 
     // Fill in common values
-////SF_Fcns.bRet      =                     // Filled in by SaveFunctionCom
-////SF_Fcns.uErrLine  =                     // ...
-////SF_Fcns.lpSymName =                     // ...
-    SF_Fcns.lptkFunc  = lptkFunc;           // Ptr to function token
+    SF_Fcns.bDisplayErr = FALSE;            // DO NOT Display Errors
+////SF_Fcns.bRet        =                   // Filled in by SaveFunctionCom
+////SF_Fcns.uErrLine    =                   // ...
+////SF_Fcns.lpSymName   =                   // ...
+    SF_Fcns.lptkFunc    = lptkFunc;         // Ptr to function token
 
     // Fill in common values
     SF_Fcns.SF_LineLen      = SF_LineLenTF1;        // Ptr to line length function

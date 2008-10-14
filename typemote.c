@@ -108,19 +108,6 @@ void TypeDemote
     LPVARARRAY_HEADER lpMemRhtHdr;      //
     SIZE_T            dwSize;           //
 
-    // Note that neither ARRAY_APA not ARRAY_LIST can occur
-    //   as an argument to this function.
-    static APLSTYPE aplTypeArr[ARRAY_LENGTH][ARRAY_LENGTH] =
-    //      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        INIT
-    {{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_BOOL  },  // BOOL
-     {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_INT   },  // INT
-     {ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_FLOAT },  // FLOAT
-     {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_CHAR  },  // CHAR
-     {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_HETERO},  // HETERO
-     {ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED},  // NESTED
-     {ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_LIST  },  // INIT
-    };
-
     // Split cases based upon the arg token type
     switch (lptkRhtArg->tkFlags.TknType)
     {
@@ -287,7 +274,7 @@ void TypeDemote
                     aplTypeSub = ARRAY_FLOAT;
 
                 // Check storage type
-                aplTypeRes = aplTypeArr[aplTypeRes][aplTypeSub];
+                aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
 
                 // If we're back to the same type, quit
                 if (aplTypeRes EQ aplTypeRht)
@@ -298,9 +285,8 @@ void TypeDemote
 
         case ARRAY_HETERO:      // Demote to simple homogeneous
         case ARRAY_NESTED:      // Demote to simple homogeneous/heterogeneous
-            // Initialize the type (as ARRAY_LIST never occurs
-            //   in this context, we co-opt it).
-            aplTypeRes = ARRAY_LIST;
+            // Initialize the type
+            aplTypeRes = ARRAY_INIT;
 
             // Take into account nested prototypes
             if (IsNested (aplTypeRht))
@@ -350,7 +336,7 @@ void TypeDemote
                     } // End SWITCH
 
                     // Check storage type
-                    aplTypeRes = aplTypeArr[aplTypeRes][aplTypeSub];
+                    aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
 
                     // Check for no demotion
                     if (IsSimpleHet (aplTypeRes)
@@ -399,7 +385,7 @@ void TypeDemote
                 CopyMemory (lpMemRes, lpMemRht, dwSize);
 
 #ifdef DEBUG_REFCNT
-                dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %p (%S#%d)", lpMemRes, FNLN);
+                dprintfW9 (L"##RefCnt=1 in " APPEND_NAME L": %p(res=1) (%S#%d)", hGlbRes, FNLN);
 #endif
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
                 // Set the reference count and array type
@@ -579,6 +565,8 @@ void DemoteData
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
+                        Assert (IsBooleanValue (*(LPAPLINT) lpMemRht));
+
                         *((LPAPLBOOL) lpMemRes) |= (*((LPAPLINT) lpMemRht)++) << uBitIndex;
 
                         // Check for end-of-byte
@@ -595,6 +583,8 @@ void DemoteData
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
+                        Assert (IsBooleanValue (*(LPAPLFLOAT) lpMemRht));
+
                         *((LPAPLBOOL) lpMemRes) |= ((APLBOOL) *((LPAPLFLOAT) lpMemRht)++) << uBitIndex;
 
                         // Check for end-of-byte
@@ -616,16 +606,22 @@ void DemoteData
                         switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
                         {
                             case IMMTYPE_BOOL:
+                                Assert (IsBooleanValue ((*(LPAPLHETERO) lpMemRht)->stData.stBoolean));
+
                                 *((LPAPLBOOL) lpMemRes) |= ((*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean) << uBitIndex;
 
                                 break;
 
                             case IMMTYPE_INT:
+                                Assert (IsBooleanValue ((*(LPAPLHETERO) lpMemRht)->stData.stInteger));
+
                                 *((LPAPLBOOL) lpMemRes) |= ((*((LPAPLHETERO) lpMemRht)++)->stData.stInteger) << uBitIndex;
 
                                 break;
 
                             case IMMTYPE_FLOAT:
+                                Assert (IsBooleanValue ((*(LPAPLHETERO) lpMemRht)->stData.stFloat));
+
                                 *((LPAPLBOOL) lpMemRes) |= ((APLINT) (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat) << uBitIndex;
 
                                 break;
@@ -792,6 +788,8 @@ UBOOL TypePromote_EM
             switch (aplTypeRes)
             {
                 case ARRAY_INT:         // B -> I
+                    lpToken->tkData.tkInteger = lpToken->tkData.tkSym->stData.stBoolean;
+
                     break;
 
                 case ARRAY_FLOAT:       // B/I -> F
@@ -813,6 +811,8 @@ UBOOL TypePromote_EM
             switch (aplTypeRes)
             {
                 case ARRAY_INT:         // B -> I
+                    lpToken->tkData.tkInteger = lpToken->tkData.tkBoolean;
+
                     break;
 
                 case ARRAY_FLOAT:       // B/I -> F
@@ -867,7 +867,7 @@ UBOOL TypePromoteGlb_EM
 {
     HGLOBAL    hGlbArg,             // Arg    ...
                hGlbRes = NULL;      // Result global memory handle
-    UBOOL      bRet = TRUE;         // TRUE iff the result is valid
+    UBOOL      bRet = FALSE;        // TRUE iff the result is valid
     LPVOID     lpMemArg,            // Ptr to global memory
                lpMemRes = NULL;     // Ptr to result global memory
     APLSTYPE   aplTypeArg;          // Arg storage type of HGLOBAL
@@ -933,6 +933,31 @@ UBOOL TypePromoteGlb_EM
         APLHETERO lpSym0,               // LPSYMENTRY for 0
                   lpSym1;               // ...            1
 
+        case ARRAY_BOOL:                // A -> B
+            Assert (IsSimpleAPA (aplTypeArg));
+
+            // Split cases based upon the arg storage type
+            switch (aplTypeArg)
+            {
+                case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemArg)
+                    // Get the APA parameters
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
+                    Assert (apaMul EQ 0 && IsBooleanValue (apaOff));
+
+                    // Do something only for 1s
+                    if (apaOff EQ 1)
+                        FillBitMemory (lpMemRes, aplNELMArg);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
         case ARRAY_INT:                 // B/A -> I
             Assert (IsSimpleBool (aplTypeArg)
                  || IsSimpleAPA (aplTypeArg));
@@ -945,8 +970,9 @@ UBOOL TypePromoteGlb_EM
                     // Loop through the arg converting values to the result
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
                     {
-                        *((LPAPLINT) lpMemRes)++ =
-                          (uBitMask & *(LPAPLBOOL) lpMemArg) ? 1 : 0;
+                        if (uBitMask & *(LPAPLBOOL) lpMemArg)
+                            *((LPAPLINT) lpMemRes) = TRUE;
+                        ((LPAPLINT) lpMemRes)++;
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -991,8 +1017,9 @@ UBOOL TypePromoteGlb_EM
                     // Loop through the arg converting values to the result
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
                     {
-                        *((LPAPLFLOAT) lpMemRes)++ =
-                          (uBitMask & *(LPAPLBOOL) lpMemArg) ? 1.0 : 0.0;
+                        if (uBitMask & *(LPAPLBOOL) lpMemArg)
+                            *((LPAPLFLOAT) lpMemRes) = TRUE;
+                        ((LPAPLFLOAT) lpMemRes)++;
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -1146,9 +1173,11 @@ UBOOL TypePromoteGlb_EM
     FreeResultGlobalVar (hGlbArg); hGlbArg = NULL;
 
     // Save the new HGLOBAL
-    *lphGlbArg = MakePtrTypeGlb (hGlbRes);
-ERROR_EXIT:
+    *lphGlbArg = hGlbRes;
 NORMAL_EXIT:
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
     if (hGlbArg && lpMemArg)
     {
         // We no longer need this ptr

@@ -189,9 +189,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     LPAPLCHAR     lpaplChar,            // Ptr to output save area
                   lpaplCharStart;       // Ptr to start of output save area
     APLUINT       ByteRes;              // # bytes in the result
-    UBOOL         bRet = TRUE,          // TRUE iff result is valid
-                  bSimpleScalar;        // TRUE if right arg is a simple scalar
-    LPPL_YYSTYPE  lpYYRes;              // Ptr to the result
+    UBOOL         bSimpleScalar;        // TRUE if right arg is a simple scalar
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     HGLOBAL       hGlbPTD;              // PerTabData global memory handle
@@ -245,6 +244,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     if (lpMemRht)
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
+__try
+{
 #ifdef DEBUG
     // Fill lpwszFormat with FFs so we can tell what we actually wrote
     FillMemory (lpwszFormat, 4096, 0xFF);
@@ -309,8 +310,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                             NULL,           // Ptr to lpSym/Glb ...
                             NULL,           // Ptr to ...immediate type ...
                             NULL);          // Ptr to array type ...
-__try
-{
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
@@ -572,7 +571,7 @@ __try
 #undef  lpwszOut
 
     // Check for Ctrl-Break
-    if (*lpbCtrlBreak)
+    if (CheckCtrlBreak (*lpbCtrlBreak))
         goto ERROR_EXIT;
 NORMAL_EXIT:
     // Allocate a new YYRes
@@ -580,8 +579,8 @@ NORMAL_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -598,8 +597,6 @@ LIMIT_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    // Mark as in error
-    bRet = FALSE;
 QUICK_EXIT:
     if (hGlbRes && lpMemRes)
     {
@@ -613,10 +610,7 @@ QUICK_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnMonDownTackJot_EM_YY
 #undef  APPEND_NAME
 
@@ -2250,7 +2244,7 @@ void AppendBlankRows
             break;
 
         // Check for Ctrl-Break
-        if (*lpbCtrlBreak)
+        if (CheckCtrlBreak (*lpbCtrlBreak))
             return;
 
         AppendLine (L"", FALSE, TRUE);
@@ -2398,7 +2392,7 @@ LPAPLCHAR FormatArrSimple
                             *lpwszOut = L'\0';
 
                             // Check for Ctrl-Break
-                            if (*lpbCtrlBreak)
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
                                 return NULL;
 
                             // Output the line
@@ -2484,7 +2478,7 @@ LPAPLCHAR FormatArrSimple
             *lpwszOut = L'\0';
 
             // Check for Ctrl-Break
-            if (*lpbCtrlBreak)
+            if (CheckCtrlBreak (*lpbCtrlBreak))
                 return NULL;
 
             // Output the line
@@ -2607,7 +2601,7 @@ LPAPLCHAR FormatArrNested
                 } // End SWITCH
 
                 // Check for Ctrl-Break
-                if (*lpbCtrlBreak)
+                if (CheckCtrlBreak (*lpbCtrlBreak))
                     return NULL;
 
 ////////////////// Back off to start of row
@@ -3024,7 +3018,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
             for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
             {
-                aplIntegerLft = (uBitMask & *(LPAPLBOOL) lpMemLft) ? 1 : 0;
+                aplIntegerLft = (uBitMask & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
 ////////////////if ((!uPar) && aplIntegerLft < 0)   // Not needed on Booleans
 ////////////////    goto DOMAIN_EXIT;
                 *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
@@ -3165,7 +3159,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
                     case PTRTYPE_HGLOBAL:
                         // Get the attributes of the global memory handle
-                        AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]),
+                        AttrsOfGlb (((LPAPLNESTED) lpMemRht)[uRht],
                                    &aplTypeSubRht,
                                     NULL,
                                    &aplRankSubRht,
@@ -3479,8 +3473,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

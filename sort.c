@@ -351,13 +351,14 @@ void GnomeSort
 
 #define APLUINT APLUINT
 
-void sift_in
+UBOOL sift_in
     (APLUINT   uCount,
      LPAPLUINT lpDst,
      LPVOID    lpSrc,
      APLUINT   free_in,
      APLUINT   next,
-     APLINT (*ObjCmp) (LPVOID, APLUINT, APLUINT, LPVOID), // Ptr to comparison routine
+     APLINT  (*ObjCmp) (LPVOID, APLUINT, APLUINT, LPVOID), // Ptr to comparison routine
+     LPUBOOL   lpbCtrlBreak,    // Ptr to Ctrl-Break flag
      LPVOID    lpExtra)
 {
     APLUINT i,
@@ -366,6 +367,10 @@ void sift_in
     // Sift up the free node
     for (i = 2 * free; i < uCount; i += i)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
         if (data_i_LESS_THAN_ (lpDst[i + 1]))
             i++;
         MOVE_i_TO_free
@@ -377,22 +382,33 @@ void sift_in
     // Sift down the new item next
     while (((i = free / 2) >= free_in)
         && data_i_LESS_THAN_ (next))
+    {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
        MOVE_i_TO_free
+    } // End WHILE
 
     lpDst[free] = next;
+
+    return TRUE;
+ERROR_EXIT:
+    return FALSE;
 } // End sift_in
 
-void HeapSort
-    (LPAPLUINT lpDst,       // Destination
-     LPVOID    lpSrc,       // Source
-     APLUINT   uCount,      // # APLUINTs in the source
-     APLINT (*ObjCmp) (LPVOID, APLUINT, APLUINT, LPVOID), // Ptr to comparison routine
-     LPVOID    lpExtra)     // Ptr to extra data (passed to ObjCmp)
+UBOOL HeapSort
+    (LPAPLUINT lpDst,           // Destination
+     LPVOID    lpSrc,           // Source
+     APLUINT   uCount,          // # APLUINTs in the source
+     APLINT  (*ObjCmp) (LPVOID, APLUINT, APLUINT, LPVOID), // Ptr to comparison routine
+     LPUBOOL   lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPVOID    lpExtra)         // Ptr to extra data (passed to ObjCmp)
 {
     APLUINT j;
 
     if (uCount <= 1)
-        return;
+        return TRUE;
     // Map addresses to indices 1 til count
     lpDst -= 1;
 
@@ -401,7 +417,8 @@ void HeapSort
     {
        APLUINT next = lpDst[j];
 
-       sift_in (uCount, lpDst, lpSrc, j, next, ObjCmp, lpExtra);
+       if (!sift_in (uCount, lpDst, lpSrc, j, next, ObjCmp, lpbCtrlBreak, lpExtra))
+            goto ERROR_EXIT;
     } // End FOR
 
     // Search next by next remaining extremal element
@@ -412,8 +429,13 @@ void HeapSort
        // Extract extremal element from the heap
        lpDst[j + 1] = lpDst[1];
 
-       sift_in (j, lpDst, lpSrc, 1, next, ObjCmp, lpExtra);
+       if (!sift_in (j, lpDst, lpSrc, 1, next, ObjCmp, lpbCtrlBreak, lpExtra))
+            goto ERROR_EXIT;
     } // End FOR
+
+    return TRUE;
+ERROR_EXIT:
+    return FALSE;
 } // End HeapSort
 
 

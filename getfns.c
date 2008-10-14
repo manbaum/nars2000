@@ -109,15 +109,15 @@ void GetFirstItemToken
     } // End SWITCH
 
     // Handle the HGLOBAL case
-    GetFirstValueGlb (ClrPtrTypeDirAsGlb (hGlbData),    // The global memory handle
-                      NULL,                             // Ptr to integer (or Boolean) (may be NULL)
-                      NULL,                             // ...    float (may be NULL)
-                      NULL,                             // ...    char (may be NULL)
-                      lpaplLongest,                     // ...    longest (may be NULL)
-                      lpSymGlb,                         // ...    LPSYMENTRY or HGLOBAL (may be NULL)
-                      lpImmType,                        // ...    immediate type (see IMM_TYPES) (may be NULL)
-                      NULL,                             // ...    array type -- ARRAY_TYPES (may be NULL)
-                      FALSE);                           // TRUE iff we should expand LPSYMENTRY into immediate value
+    GetFirstValueGlb (hGlbData,         // The global memory handle
+                      NULL,             // Ptr to integer (or Boolean) (may be NULL)
+                      NULL,             // ...    float (may be NULL)
+                      NULL,             // ...    char (may be NULL)
+                      lpaplLongest,     // ...    longest (may be NULL)
+                      lpSymGlb,         // ...    LPSYMENTRY or HGLOBAL (may be NULL)
+                      lpImmType,        // ...    immediate type (see IMM_TYPES) (may be NULL)
+                      NULL,             // ...    array type -- ARRAY_TYPES (may be NULL)
+                      FALSE);           // TRUE iff we should expand LPSYMENTRY into immediate value
 } // End GetFirstItemToken
 
 
@@ -234,7 +234,7 @@ void GetNextValueTokenIntoToken
     {
         // Fill in the result token
         lptkRes->tkFlags.TknType   = TKT_VARARRAY;
-        lptkRes->tkFlags.ImmType   = 0;
+        lptkRes->tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////lptkRes->tkFlags.NoDisplay =                    // Filled in above
         lptkRes->tkData.tkGlbData  = MakePtrTypeGlb (hGlbSub);
 ////////lptkRes->tkCharIndex       =                    // Filled in above
@@ -268,7 +268,7 @@ void GetNextValueTokenIntoNamedVarToken
     FreeResultName (lptkRes);
 
     // Fill in common values
-    lptkRes->tkFlags.ImmType   = 0;
+    lptkRes->tkFlags.ImmType   = IMMTYPE_ERROR;
     lptkRes->tkFlags.NoDisplay = FALSE;
     lptkRes->tkCharIndex       = lptkArg->tkCharIndex;
 
@@ -380,7 +380,7 @@ void GetNextValueTokenIntoNamedVarToken
 ////////lptkRes->tkFlags.ImmType                  =     // Filled in above
 ////////lptkRes->tkFlags.NoDisplay                =     // Filled in above
         lptkRes->tkData.tkSym->stFlags.Imm        = FALSE;
-        lptkRes->tkData.tkSym->stFlags.ImmType    = 0;
+        lptkRes->tkData.tkSym->stFlags.ImmType    = IMMTYPE_ERROR;
         lptkRes->tkData.tkSym->stFlags.Value      = TRUE;
         lptkRes->tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
         lptkRes->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
@@ -588,15 +588,15 @@ void GetFirstValueToken
     } // End SWITCH
 
     // Handle the HGLOBAL case
-    GetFirstValueGlb (ClrPtrTypeDirAsGlb (hGlbData),    // The global memory handle
-                      lpaplInteger,                     // Ptr to integer (or Boolean) (may be NULL)
-                      lpaplFloat,                       // ...    float (may be NULL)
-                      lpaplChar,                        // ...    char (may be NULL)
-                      lpaplLongest,                     // ...    longest (may be NULL)
-                      lpSymGlb,                         // ...    LPSYMENTRY or HGLOBAL (may be NULL)
-                      lpImmType,                        // ...    immediate type (see IMM_TYPES) (may be NULL)
-                      lpArrType,                        // ...    array type -- ARRAY_TYPES (may be NULL)
-                      TRUE);                            // TRUE iff we should expand LPSYMENTRY into immediate value
+    GetFirstValueGlb (hGlbData,         // The global memory handle
+                      lpaplInteger,     // Ptr to integer (or Boolean) (may be NULL)
+                      lpaplFloat,       // ...    float (may be NULL)
+                      lpaplChar,        // ...    char (may be NULL)
+                      lpaplLongest,     // ...    longest (may be NULL)
+                      lpSymGlb,         // ...    LPSYMENTRY or HGLOBAL (may be NULL)
+                      lpImmType,        // ...    immediate type (see IMM_TYPES) (may be NULL)
+                      lpArrType,        // ...    array type -- ARRAY_TYPES (may be NULL)
+                      TRUE);            // TRUE iff we should expand LPSYMENTRY into immediate value
 } // End GetFirstValueToken
 
 
@@ -699,17 +699,41 @@ void GetFirstValueGlb
     APLCHAR    aplChar;             // ...  char
     LPSYMENTRY lpSym;               // Ptr to SYMENTRY in HETERO or NESTED cases
 
+    // Clear the type bits in case they are set on the way in
+    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-    // Get the Array Type and NELM
-    aplType = lpHeader->ArrType;
-    aplNELM = lpHeader->NELM;
+    // Split cases based upon the signature
+    switch (GetSignatureMem (lpMem))
+    {
+        case LSTARRAY_HEADER_SIGNATURE:
+#define lpHeader    ((LPLSTARRAY_HEADER) lpMem)
+            // Get the Array Type and NELM
+            aplType = ARRAY_LIST;
+            aplNELM = lpHeader->NELM;
 
-    // Skip over the header and dimensions to the data
-    lpMem = VarArrayBaseToData (lpMem, lpHeader->Rank);
+            // Skip over the header to the data
+            lpMem = LstArrayBaseToData (lpMem);
 #undef  lpHeader
+            break;
+
+        case VARARRAY_HEADER_SIGNATURE:
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+            // Get the Array Type and NELM
+            aplType = lpHeader->ArrType;
+            aplNELM = lpHeader->NELM;
+
+            // Skip over the header and dimensions to the data
+            lpMem = VarArrayBaseToData (lpMem, lpHeader->Rank);
+#undef  lpHeader
+            break;
+
+        case DFN_HEADER_SIGNATURE:
+        case FCNARRAY_HEADER_SIGNATURE:
+        defstop
+    } // End SWITCH
 
     if (lpImmType)
         *lpImmType = TranslateArrayTypeToImmType (aplType);
@@ -800,6 +824,59 @@ void GetFirstValueGlb
                 *lpaplLongest = aplChar;
             if (lpSymGlb)
                 *lpSymGlb = NULL;
+            break;
+
+        case ARRAY_LIST:
+#define lptkList        ((LPAPLLIST) lpMem)
+            // Split cases based upon the token type
+            switch (lptkList->tkFlags.TknType)
+            {
+                case TKT_VARIMMED:
+                    // Fill in default values
+                    if (lpSymGlb)
+                        *lpSymGlb = NULL;
+
+                    // Handle the immediate case
+                    GetFirstValueImm (lptkList->tkFlags.ImmType,
+                                      lptkList->tkData.tkLongest,
+                                      lpaplInteger,
+                                      lpaplFloat,
+                                      lpaplChar,
+                                      lpaplLongest,
+                                      lpImmType,
+                                      lpArrType);
+                    break;
+
+                case TKT_VARARRAY:
+                    // Handle the global case
+                    GetFirstValueGlb (lptkList->tkData.tkGlbData,   // The global memory handle
+                                      lpaplInteger,                 // Ptr to integer (or Boolean) (may be NULL)
+                                      lpaplFloat,                   // ...    float (may be NULL)
+                                      lpaplChar,                    // ...    char (may be NULL)
+                                      lpaplLongest,                 // ...    longest (may be NULL)
+                                      lpSymGlb,                     // ...    LPSYMENTRY or HGLOBAL (may be NULL)
+                                      lpImmType,                    // ...    immediate type (see IMM_TYPES) (may be NULL)
+                                      lpArrType,                    // ...    array type -- ARRAY_TYPES (may be NULL)
+                                      FALSE);                       // TRUE iff we should expand LPSYMENTRY into immediate value
+                    break;
+
+                case TKT_LISTSEP:
+                    if (lpaplInteger)
+                        *lpaplInteger = 0;
+                    if (lpaplFloat)
+                        *lpaplFloat   = 0;
+                    if (lpaplChar)
+                        *lpaplChar    = L'\0';
+                    if (lpaplLongest)
+                        *lpaplLongest = L'\0';
+                    if (lpSymGlb)
+                        *lpSymGlb = NULL;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+#undef  lptkList
             break;
 
         case ARRAY_HETERO:
@@ -937,7 +1014,7 @@ void GetNextValueMemIntoToken
 
                 case PTRTYPE_HGLOBAL:
                     lptkArg->tkFlags.TknType  = TKT_VARARRAY;
-                    lptkArg->tkFlags.ImmType  = 0;
+                    lptkArg->tkFlags.ImmType  = IMMTYPE_ERROR;
                     lptkArg->tkData.tkGlbData = CopySymGlbDir (((LPAPLNESTED) lpMemArg)[uArg]);
 
                     break;
@@ -1149,20 +1226,45 @@ void GetNextValueGlb
     // Lock the memory to get a ptr to it
     lpMemSub = MyGlobalLock (hGlbSub);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
-    // Get the Array Type and Rank
-    aplTypeSub = lpHeader->ArrType;
+    // Split cases based upon the signature
+    switch (GetSignatureMem (lpMemSub))
+    {
+        case LSTARRAY_HEADER_SIGNATURE:
+#define lpHeader        ((LPLSTARRAY_HEADER) lpMemSub)
+            // Get the Array Type and Rank
+            aplTypeSub = ARRAY_LIST;
 #ifdef DEBUG
-    aplNELMSub = lpHeader->NELM;
+            aplNELMSub = lpHeader->NELM;
 #endif
-    aplRankSub = lpHeader->Rank;
+            aplRankSub = 1;
 #undef  lpHeader
+            // Skip over the header and dimensions to the data
+            lpMemSub = LstArrayBaseToData (lpMemSub);
+
+            break;
+
+        case VARARRAY_HEADER_SIGNATURE:
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
+            // Get the Array Type and Rank
+            aplTypeSub = lpHeader->ArrType;
+#ifdef DEBUG
+            aplNELMSub = lpHeader->NELM;
+#endif
+            aplRankSub = lpHeader->Rank;
+#undef  lpHeader
+            // Skip over the header and dimensions to the data
+            lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+
+            break;
+
+        case DFN_HEADER_SIGNATURE:
+        case FCNARRAY_HEADER_SIGNATURE:
+        defstop
+            break;
+    } // End SWITCH
 
     Assert ((uSub < aplNELMSub)
          || ((uSub EQ 0) && IsNested (aplTypeSub)));
-
-    // Skip over the header and dimensions to the data
-    lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
 
     // Get next value from global memory
     GetNextValueMem (lpMemSub,              // Ptr to item global memory data
@@ -1243,11 +1345,12 @@ void GetNextValueMemSub
      HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
      APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
      IMM_TYPES  *lpimmTypeRes,          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-     UBOOL       bExpandSym,            // TRUE iff we should expand LPSYMENTRY intoimmediate value
+     UBOOL       bExpandSym,            // TRUE iff we should expand LPSYMENTRY into immediate value
      UBOOL       bGetItem)              // TRUE if we're returning item (not value)
 
 {
     APLHETERO lpSymSub;                 // Item as APLHETERO
+    LPAPLLIST lptkList;                 // Item as APLLIST
 
     // Assume the result is an immediate
     if (lphGlbRes)
@@ -1293,9 +1396,37 @@ void GetNextValueMemSub
 #undef  lpAPA
             break;
 
+        case ARRAY_LIST:
+            lptkList = &((LPAPLLIST) lpMemSub)[uSub];
+
+            // Split cases based upon the token type
+            switch (lptkList->tkFlags.TknType)
+            {
+                case TKT_VARIMMED:
+                    // Extract the immediate type & value
+                    if (lpaplLongestRes)
+                        *lpaplLongestRes = lptkList->tkData.tkLongest;
+                    if (lpimmTypeRes)
+                        *lpimmTypeRes    = lptkList->tkFlags.ImmType;
+                    break;
+
+                case TKT_VARARRAY:
+                    if (lpaplLongestRes)
+                        *lpaplLongestRes = 0;
+                    if (lpimmTypeRes)
+                        *lpimmTypeRes = IMMTYPE_ERROR;
+                    if (lphGlbRes)
+                        *lphGlbRes = ClrPtrTypeDirAsGlb (lptkList->tkData.tkGlbData);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-        case ARRAY_LIST:
             // Get the item
             lpSymSub = ((LPAPLNESTED) lpMemSub)[uSub];
 
@@ -1397,8 +1528,10 @@ APLLONGEST GetGlbPtrs_LOCK
      LPVOID  *lplpMem)          // Ptr to ptr to memory (may be NULL)
 
 {
-    LPVARARRAY_HEADER lpMem;        // Ptr to locked memory header
-    APLLONGEST        aplLongest;   // First value in the data (unless empty)
+    LPVOID     lpMem;           // Ptr to locked memory header
+    APLLONGEST aplLongest;      // First value in the data (unless empty)
+    APLSTYPE   aplTypeMem;      // Memory storage type
+    APLNELM    aplNELMMem;      // Memory NELM
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -1415,6 +1548,17 @@ APLLONGEST GetGlbPtrs_LOCK
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (*lphGlb));
 
+                // Handle the HGLOBAL case
+                *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
+
+                // Lock the memory to get a ptr to it
+                lpMem = MyGlobalLock (*lphGlb);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMem)
+                // Get the type & NELM
+                aplTypeMem = lpHeader->ArrType;
+                aplNELMMem = lpHeader->NELM;
+#undef  lpHeader
                 break;      // Continue with common HGLOBAL code
             } // End IF
 
@@ -1428,6 +1572,7 @@ APLLONGEST GetGlbPtrs_LOCK
 
         case TKT_VARIMMED:
         case TKT_AXISIMMED:
+        case TKT_LSTIMMED:
             *lphGlb  = NULL;
 
             if (lplpMem)
@@ -1437,27 +1582,51 @@ APLLONGEST GetGlbPtrs_LOCK
 
         case TKT_VARARRAY:
         case TKT_AXISARRAY:
-        case TKT_LISTBR:
+        case TKT_LSTARRAY:
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (*lphGlb));
 
+            // Handle the HGLOBAL case
+            *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
+
+            // Lock the memory to get a ptr to it
+            lpMem = MyGlobalLock (*lphGlb);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMem)
+            // Get the type & NELM
+            aplTypeMem = lpHeader->ArrType;
+            aplNELMMem = lpHeader->NELM;
+#undef  lpHeader
+            break;      // Continue with common HGLOBAL code
+
+        case TKT_LSTMULT:
+            *lphGlb = lpToken->tkData.tkGlbData;
+
+            // tkData is a valid HGLOBAL list array
+            Assert (IsGlbTypeLstDir (*lphGlb));
+
+            // Handle the HGLOBAL case
+            *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
+
+            // Lock the memory to get a ptr to it
+            lpMem = MyGlobalLock (*lphGlb);
+
+#define lpHeader        ((LPLSTARRAY_HEADER) lpMem)
+            // Get the type & NELM
+            aplTypeMem = ARRAY_LIST;
+            aplNELMMem = lpHeader->NELM;
+#undef  lpHeader
             break;      // Continue with common HGLOBAL code
 
         defstop
             break;
     } // End SWITCH
 
-    // Handle the HGLOBAL case
-    *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
-
-    // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (*lphGlb);
-
     // If the arg is non-empty & not a list, ...
-    if (!IsEmpty (lpMem->NELM)
-     && !IsList (lpMem->ArrType))
+    if (!IsEmpty (aplNELMMem)
+     && !IsList (aplTypeMem))
         GetFirstValueGlb (*lphGlb,          // The global memory handle
                           NULL,             // Ptr to integer (or Boolean) (may be NULL)
                           NULL,             // ...    float (may be NULL)
@@ -1867,7 +2036,7 @@ HGLOBAL GetTokenLineHandle
 
     // Ensure the line # is within range
     if (aplLineNum < 1
-     || aplLineNum >= lpMemDfnHdr->numFcnLines)
+     || aplLineNum > lpMemDfnHdr->numFcnLines)
         goto ERROR_EXIT;
 
     // Get ptr to array of function line structs (FCNLINE[numFcnLines])
@@ -1881,6 +2050,52 @@ ERROR_EXIT:
 
     return hGlbTknLine;
 } // End GetTokenLineHandle
+
+
+//***************************************************************************
+//  $GetImmedType
+//
+//  Get the immediate type from a token
+//***************************************************************************
+
+IMM_TYPES GetImmedType
+    (LPTOKEN lptkArg)               // Ptr to token
+
+{
+    if (IsTknNamed (lptkArg->tkFlags.TknType))
+        return lptkArg->tkData.tkSym->stFlags.ImmType;
+    else
+        return lptkArg->tkFlags.ImmType;
+} // End GetImmedType
+
+
+//***************************************************************************
+//  $GetSignatureGlb
+//
+//  Get the signature of a global object
+//***************************************************************************
+
+UINT GetSignatureGlb
+    (HGLOBAL hGlbLcl)
+
+{
+    LPHEADER_SIGNATURE lpMemLcl;            // Ptr to signature global memory
+    UINT               Sig;                 // The signature
+
+    // Clear the type bits in case they are set on the way in
+    hGlbLcl = ClrPtrTypeDirAsGlb (hGlbLcl);
+
+    // Lock the memory to get a ptr to it
+    lpMemLcl = MyGlobalLock (hGlbLcl);
+
+    // Get the signature
+    Sig = lpMemLcl->nature;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbLcl); lpMemLcl = NULL;
+
+    return Sig;
+} // End GetSignatureGlb
 
 
 //***************************************************************************

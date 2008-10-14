@@ -114,32 +114,40 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht,        // Right arg storage type
-                 aplTypeRes;        // Result    ...
-    APLNELM      aplNELMRht;        // Right arg NELM
-    APLRANK      aplRankRht;        // Right arg rank
-    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
-                 hGlbRes = NULL;    // Result    ...
-    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
-                 lpMemRes = NULL;   // Ptr to result    ...
-    LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
+    APLSTYPE      aplTypeRht,       // Right arg storage type
+                  aplTypeRes;       // Result    ...
+    APLNELM       aplNELMRht;       // Right arg NELM
+    APLRANK       aplRankRht;       // Right arg rank
+    HGLOBAL       hGlbRht = NULL,   // Right arg global memory handle
+                  hGlbRes = NULL;   // Result    ...
+    LPVOID        lpMemRht = NULL,  // Ptr to right arg global memory
+                  lpMemRes = NULL;  // Ptr to result    ...
+    LPAPLDIM      lpMemDimRht;      // Ptr to right arg dimensions
     LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
-    APLUINT      aplAxis,           // The (one and only) axis value
-                 uDim,              // Loop counter
-                 uLo,               // ...
-                 uDimLo,            // ...
-                 uAx,               // ...
-                 uDimAx,            // ...
-                 uHi,               // ...
-                 uDimHi,            // ...
-                 uRes,              // ...
-                 uRht;              // ...
-    APLINT       apaOffRht,         // Right arg APA offset
-                 apaMulRht;         // Right arg APA multiplier
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    UINT         ByteRes,           // # bytes in the result
-                 uBitMask,          // Bit mask when looping through Booleans
-                 uBitIndex;         // Bit index ...
+    APLUINT       aplAxis,          // The (one and only) axis value
+                  uDim,             // Loop counter
+                  uLo,              // ...
+                  uDimLo,           // ...
+                  uAx,              // ...
+                  uDimAx,           // ...
+                  uHi,              // ...
+                  uDimHi,           // ...
+                  uRes,             // ...
+                  uRht;             // ...
+    APLINT        apaOffRht,        // Right arg APA offset
+                  apaMulRht;        // Right arg APA multiplier
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    UINT          ByteRes,          // # bytes in the result
+                  uBitMask,         // Bit mask when looping through Booleans
+                  uBitIndex;        // Bit index ...
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
@@ -194,8 +202,13 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     // The type of the result is the same as the
     //   type of the right arg except APA -> INT
     if (IsSimpleAPA (aplTypeRht))
-        aplTypeRes = ARRAY_INT;
-    else
+    {
+        // The reverse of an APV is an APV
+        if (IsVector (aplRankRht))
+            aplTypeRes = aplTypeRht;
+        else
+            aplTypeRes = ARRAY_INT;
+    } else
         aplTypeRes = aplTypeRht;
 
     // Calculate space needed for the result
@@ -214,7 +227,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->PV0        = (lpMemHdrRht->PV0);
     lpHeader->PV1        = (lpMemHdrRht->PV1);
     lpHeader->RefCnt     = 1;
@@ -266,12 +279,16 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     uRes = uDim +                 uAx  * uDimHi;
                     uRht = uDim + ((uDimAx - 1) - uAx) * uDimHi;
                     uBitMask  = BIT0 << (UINT) (uRht % NBIB);
                     uBitIndex = (UINT) (uRes % NBIB);
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
-                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << uBitIndex;
+                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE) << uBitIndex;
                 } // End FOR
             } // End FOR/FOR
 
@@ -284,8 +301,14 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             {
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLINT) lpMemRes)[uDim +                 uAx  * uDimHi] =
                     ((LPAPLINT) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi];
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -297,8 +320,14 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             {
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLFLOAT) lpMemRes)[uDim +                 uAx  * uDimHi] =
                     ((LPAPLFLOAT) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi];
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -310,8 +339,14 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             {
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLCHAR) lpMemRes)[uDim +                 uAx  * uDimHi] =
                     ((LPAPLCHAR) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi];
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -322,15 +357,30 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
 #undef  lpAPA
+            // If the result is an APV, ...
+            if (IsSimpleAPA (aplTypeRes))
+            {
+                Assert (uDimAx EQ aplNELMRht);
+
+                // Calculate the new APA parameters
+                ((LPAPLAPA) lpMemRes)->Off = apaOffRht + apaMulRht * (aplNELMRht - 1);
+                ((LPAPLAPA) lpMemRes)->Mul = -apaMulRht;
+            } else
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
             {
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLINT) lpMemRes)[uDim +                 uAx  * uDimHi] =
                        apaOffRht + apaMulRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi);
-            } // End FOR/FOR
+                } // End FOR
+            } // End IF/ELSE/FOR/FOR
 
             break;
 
@@ -342,8 +392,14 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             {
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLNESTED) lpMemRes)[uDim +                 uAx  * uDimHi] = CopySymGlbDir
                    (((LPAPLNESTED) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi]);
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -365,8 +421,8 @@ NORMAL_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 IMMED_EXIT:
@@ -407,46 +463,54 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht,        // Right ...
-                 aplTypeRes;        // Result   ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht;        // Right ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL,    // Result   ...
-                 hGlbRot = NULL;    // Normalized left arg ...
-    LPAPLDIM     lpMemDimLft,       // Ptr to left arg dimensions
-                 lpMemDimRht;       // Ptr to right ...
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL,   // Ptr to right ...
-                 lpMemRes = NULL;   // Ptr to result   ...
+    APLSTYPE      aplTypeLft,       // Left arg storage type
+                  aplTypeRht,       // Right ...
+                  aplTypeRes;       // Result   ...
+    APLNELM       aplNELMLft,       // Left arg NELM
+                  aplNELMRht;       // Right ...
+    APLRANK       aplRankLft,       // Left arg rank
+                  aplRankRht;       // Right ...
+    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
+                  hGlbRht = NULL,   // Right ...
+                  hGlbRes = NULL,   // Result   ...
+                  hGlbRot = NULL;   // Normalized left arg ...
+    LPAPLDIM      lpMemDimLft,      // Ptr to left arg dimensions
+                  lpMemDimRht;      // Ptr to right ...
+    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
+                  lpMemRht = NULL,  // Ptr to right ...
+                  lpMemRes = NULL;  // Ptr to result   ...
     LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
-    LPAPLINT     lpMemRot = NULL;   // Ptr to normalized left arg ...
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
-    APLUINT      aplAxis,           // The (one and only) axis value
-                 ByteRes,           // # bytes in the result
-                 uLo,               // Loop counter
-                 uDimLo,            // ...
-                 uAx,               // ...
-                 uDimAx,            // ...
-                 uHi,               // ...
-                 uDimHi,            // ...
-                 uDim,              // ...
-                 uRes,              // ...
-                 uRht;              // ...
-    APLINT       aplIntegerLft,     // Temporary left arg integer
-                 apaOffLft,         // Left arg APA offset
-                 apaMulLft,         // Left arg APA multiplier
-                 apaOffRht,         // Right arg APA offset
-                 apaMulRht,         // Right arg APA multiplier
-                 aplRot;            //
-    APLLONGEST   aplLongestLft;     // Left arg immediate value
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    UINT         uBitMask,          // Bit mask when looping through Booleans
-                 uBitIndex;         // Bit index ...
+    LPAPLINT      lpMemRot = NULL;  // Ptr to normalized left arg ...
+    UBOOL         bRet = TRUE;      // TRUE iff result is valid
+    APLUINT       aplAxis,          // The (one and only) axis value
+                  ByteRes,          // # bytes in the result
+                  uLo,              // Loop counter
+                  uDimLo,           // ...
+                  uAx,              // ...
+                  uDimAx,           // ...
+                  uHi,              // ...
+                  uDimHi,           // ...
+                  uDim,             // ...
+                  uRes,             // ...
+                  uRht;             // ...
+    APLINT        aplIntegerLft,    // Temporary left arg integer
+                  apaOffLft,        // Left arg APA offset
+                  apaMulLft,        // Left arg APA multiplier
+                  apaOffRht,        // Right arg APA offset
+                  apaMulRht,        // Right arg APA multiplier
+                  aplRot;           //
+    APLLONGEST    aplLongestLft;    // Left arg immediate value
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    UINT          uBitMask,         // Bit mask when looping through Booleans
+                  uBitIndex;        // Bit index ...
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -547,7 +611,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
-                    *lpMemRot++ = (uBitMask & *(LPAPLBOOL) lpMemLft) ? 1 : 0;
+                    *lpMemRot++ = (uBitMask & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
 
                     // Shift over the left bit mask
                     uBitMask <<= 1;
@@ -635,7 +699,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
                 lpYYRes->tkToken.tkFlags.ImmType   = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkSym->stData.stLongest;
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -672,7 +736,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->PV0        = (lpMemHdrRht && lpMemHdrRht->PV0);
     lpHeader->PV1        = (lpMemHdrRht && lpMemHdrRht->PV1);
     lpHeader->RefCnt     = 1;
@@ -727,12 +791,16 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     uRes = uDim +                  uAx           * uDimHi;
                     uRht = uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi;
                     uBitMask  = BIT0 << (UINT) (uRht % NBIB);
                     uBitIndex = (UINT) (uRes % NBIB);
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
-                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << uBitIndex;
+                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE) << uBitIndex;
                 } // End FOR
             } // End FOR/FOR
 
@@ -749,8 +817,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLINT) lpMemRes)[uDim +                  uAx           * uDimHi] =
                     ((LPAPLINT) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi];
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -766,8 +840,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLFLOAT) lpMemRes)[uDim +                  uAx           * uDimHi] =
                     ((LPAPLFLOAT) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi];
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -783,8 +863,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLCHAR) lpMemRes)[uDim +                  uAx           * uDimHi] =
                     ((LPAPLCHAR) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi];
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -805,8 +891,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLINT) lpMemRes)[uDim +                  uAx           * uDimHi] =
                        apaOffRht + apaMulRht * (uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi);
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -823,8 +915,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
                 uDim = uLo * uDimHi * uDimAx + uHi;
                 for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     ((LPAPLNESTED) lpMemRes)[uDim +                  uAx           * uDimHi] = CopySymGlbDir
                    (((LPAPLNESTED) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi]);
+                } // End FOR
             } // End FOR/FOR
 
             break;
@@ -838,8 +936,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

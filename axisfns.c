@@ -343,7 +343,7 @@ UBOOL CheckAxisGlb
             for (u = 0; bRet && u < *lpaplNELM; u++)
             {
                 // Get the next bit value
-                aplRankLcl = (uBitMask & *(LPAPLBOOL) lpMem) ? 1 : 0;
+                aplRankLcl = (uBitMask & *(LPAPLBOOL) lpMem) ? TRUE : FALSE;
                 aplRankLcl -= bQuadIO; // Less the index origin
 
                 // Check for negative indices [-aplRankCmp, -1]

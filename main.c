@@ -60,9 +60,6 @@
 
 //************************** Data Area **************************************
 
-LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-
 typedef struct tagENUMSETFONTW
 {
     LPWCHAR lpwClassName;
@@ -1188,24 +1185,29 @@ LRESULT APIENTRY MFWndProc
 
                     // Get a ptr to the ws name
                     lpMemWSID = PointToWsName ((__int3264) (HANDLE_PTR) lpttt->hdr.idFrom);
-#ifndef DEBUG
-                    // Return a ptr to the stored tooltip text
-                    lstrcpyW (TooltipText, lpMemWSID);
-#else
+
                     // Get the PerTabData global memory handle
                     hGlbPTD = GetPerTabHandle ((__int3264) (HANDLE_PTR) lpttt->hdr.idFrom); Assert (hGlbPTD NE NULL);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
-
+#ifndef DEBUG
+                    // Return a ptr to the stored tooltip text
+                    lstrcpyW (TooltipText, lpMemWSID);
+#else
                     // Return a ptr to the stored tooltip text
                     wsprintfW (TooltipText,
                                L"hWndMC=%p: %s",
                                lpMemPTD->hWndMC,
                                lpMemWSID);
+#endif
+                    // If the tab is still executing, say so
+                    if (lpMemPTD->bExecuting)
+                        lstrcatW (TooltipText, L" (RUNNING)");
+
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-#endif
+
                     // Return the ptr to the caller
                     lpttt->lpszText = TooltipText;
 #undef  lpttt
@@ -2474,7 +2476,7 @@ UBOOL InitApplication
 
     // Fill in Edit Ctrl window class structure
     wcw.style           = CS_DBLCLKS;
-    wcw.lpfnWndProc     = (WNDPROC) EditWndProcW;
+    wcw.lpfnWndProc     = (WNDPROC) LclEditCtrlWndProc;
     wcw.cbClsExtra      = 0;
     wcw.cbWndExtra      = GWLEC_EXTRA;
     wcw.hInstance       = hInstance;
@@ -2757,12 +2759,22 @@ int PASCAL WinMain
     if (!InitApplication (hInstance))
         goto EXIT3;
 
-    // Allocate two Critical Section objects
-    //   for use in dtoa.c, and one
-    //   for use in parseLine.
+    // Allocate Critical Section objects
+    //   for use in dtoa.c (2),
+    //              parseLine, and
+    //              HshTabFrisk.
     InitializeCriticalSection (&CSO0);
     InitializeCriticalSection (&CSO1);
+#ifdef DEBUG
+    InitializeCriticalSection (&CSOFrisk);
+#endif
+#ifdef RESDEBUG
+    InitializeCriticalSection (&CSORsrc);
+#endif
     InitializeCriticalSection (&CSOPL);
+
+    // Mark as CSO defined
+    bCSO = TRUE;
 
     // Create various permanent variables
     MakePermVars ();
@@ -2840,6 +2852,16 @@ int PASCAL WinMain
 
     // GetMessageW returned FALSE for a Quit message
 EXIT4:
+    // Mark as all CSO deleted
+    bCSO = FALSE;
+
+    DeleteCriticalSection (&CSOPL);
+#ifdef RESDEBUG
+    DeleteCriticalSection (&CSORsrc);
+#endif
+#ifdef DEBUG
+    DeleteCriticalSection (&CSOFrisk);
+#endif
     DeleteCriticalSection (&CSO1);
     DeleteCriticalSection (&CSO0);
 EXIT3:

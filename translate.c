@@ -459,7 +459,17 @@ APLCHAR TranslateImmTypeToChar
     (IMM_TYPES immType)
 
 {
+#ifdef DEBUG
+    APLCHAR aplChar;
+
+    aplChar = ImmTypeAsChar[immType];
+
+    Assert (aplChar NE L'!' && aplChar NE L'?');
+
+    return aplChar;
+#else
     return ImmTypeAsChar[immType];
+#endif
 } // End TranslateImmTypeToChar
 
 

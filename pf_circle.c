@@ -285,7 +285,7 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return sqrt ((APLFLOAT) (1 + imul64 (aplIntegerRht, aplIntegerRht, NULL)));
+            return sqrt ((APLFLOAT) (1 + imul64 (aplIntegerRht, aplIntegerRht)));
 #endif
 
         case  3:        // tan (R)
@@ -359,7 +359,7 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return sqrt ((APLFLOAT) (1 - imul64 (aplIntegerRht, aplIntegerRht, NULL)));
+            return sqrt ((APLFLOAT) (1 - imul64 (aplIntegerRht, aplIntegerRht)));
 #endif
 
         case -4:        // R x (1 - R * -2) * 0.5 a.k.a. ((-1) + R * 2) * 0.5
@@ -381,7 +381,7 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return sqrt ((APLFLOAT) (imul64 (aplIntegerRht, aplIntegerRht, NULL) - 1));
+            return sqrt ((APLFLOAT) (imul64 (aplIntegerRht, aplIntegerRht) - 1));
 #endif
         default:
             return PrimFnDydCircleFisFvF ((APLFLOAT) aplIntegerLft,

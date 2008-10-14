@@ -216,8 +216,8 @@ UBOOL PrimFnMonPlusAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
     } // End IF
 
@@ -285,7 +285,7 @@ APLINT PrimFnDydPlusIisIvI
 
 {
     // Add the two integers and signal overflow exception in <iadd64>
-    return iadd64 (aplIntegerLft, aplIntegerRht, NULL);
+    return iadd64 (aplIntegerLft, aplIntegerRht);
 } // End PrimFnDydPlusIisIvI
 
 
@@ -353,9 +353,9 @@ UBOOL PrimFnDydPlusAPA_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-    APLRANK aplRankRes;         // Result rank
-    LPVOID  lpMemRes;           // Ptr to result global memory
-    UBOOL   bRet = FALSE;       // TRUE iff the result is valid
+    APLRANK aplRankRes;             // Result rank
+    LPVOID  lpMemRes;               // Ptr to result global memory
+    UBOOL   bRet = FALSE;           // TRUE iff the result is valid
 
     DBGENTER;
 
@@ -389,7 +389,7 @@ UBOOL PrimFnDydPlusAPA_EM
         DbgStop ();     // We should never get here
 
     if (!*lphGlbRes)
-        goto WSFULL_EXIT;
+        goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -411,20 +411,14 @@ UBOOL PrimFnDydPlusAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     } // End IF
 
     // Mark as successful
     bRet = TRUE;
-
-    goto NORMAL_EXIT;
-
-WSFULL_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                               lptkFunc);
-NORMAL_EXIT:
+ERROR_EXIT:
     DBGLEAVE;
 
     return bRet;

@@ -32,6 +32,7 @@
 #define KEYNAME_VERSION                 L"Version"
 #define KEYNAME_UNDO                    L"Undo"
 #define KEYNAME_SILEVEL                 L"SILevel"
+#define KEYNAME_MFTIMER                 L"MFTimer"
 #define KEYNAME_CREATIONTIME            L"CreationTime"
 #define KEYNAME_LASTMODTIME             L"LastModTime"
 #define KEYNAME_USERDEFINED             L"UserDefined"

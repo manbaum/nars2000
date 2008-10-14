@@ -193,13 +193,21 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
-    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
-                 hGlbMF1,               // Magic function #1 global memory handle
-                 hGlbMF2,               // Magic function #2 global memory handle
-                 hGlbOprRht;            // Right operand global memory handle
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to result
-    LPTOKEN      lptkAxis;              // Ptr to axis token
+    HGLOBAL       hGlbPTD,              // PerTabData global memory handle
+                  hGlbMF1,              // Magic function #1 global memory handle
+                  hGlbMF2,              // Magic function #2 global memory handle
+                  hGlbOprRht;           // Right operand global memory handle
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to result
+    LPTOKEN       lptkAxis;             // Ptr to axis token
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Check for axis operator if requested to do so
     if (bCheckAxis)
@@ -316,31 +324,37 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 
             // Loop through the result looking for the minimum/maximum rank items
             for (uRes = 0; uRes < aplNELMRes; uRes++)
-            // Split cases based the item ptr type
-            switch (GetPtrTypeDir (lpMemRes[uRes]))
             {
-                case PTRTYPE_STCONST:
-                    // Get the minimum rank
-                    uMinRank = min (uMinRank, 0);
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
 
-                    break;
+                // Split cases based the item ptr type
+                switch (GetPtrTypeDir (lpMemRes[uRes]))
+                {
+                    case PTRTYPE_STCONST:
+                        // Get the minimum rank
+                        uMinRank = min (uMinRank, 0);
 
-                case PTRTYPE_HGLOBAL:
-                    // Get the attributes (Type, NELM, and Rank)
-                    //   of the result global item
-                    AttrsOfGlb (ClrPtrTypeDirAsGlb (lpMemRes[uRes]), NULL, NULL, &aplRankItm, NULL);
+                        break;
 
-                    // Get the minimum rank
-                    uMinRank = min (uMinRank, aplRankItm);
+                    case PTRTYPE_HGLOBAL:
+                        // Get the attributes (Type, NELM, and Rank)
+                        //   of the result global item
+                        AttrsOfGlb (lpMemRes[uRes], NULL, NULL, &aplRankItm, NULL);
 
-                    // Get the maximum rank
-                    uMaxRank = max (uMaxRank, aplRankItm);
+                        // Get the minimum rank
+                        uMinRank = min (uMinRank, aplRankItm);
 
-                    break;
+                        // Get the maximum rank
+                        uMaxRank = max (uMaxRank, aplRankItm);
 
-                defstop
-                    break;
-            } // End FOR/SWITCH
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -387,37 +401,46 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
         } // End IF
     } // End IF
 
-    return lpYYRes;
+    goto NORMAL_EXIT;
 
 SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
-    return NULL;
+    goto ERROR_EXIT;
 
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 RIGHT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
-    return NULL;
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (lpYYRes)
+    {
+        // Free the first YYRes
+        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    return lpYYRes;
 } // End PrimOpDieresisJotCommon_EM_YY
 #undef  APPEND_NAME
 

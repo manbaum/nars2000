@@ -78,14 +78,14 @@ void DisplayHshTab
         lpHTS = &lpMemPTD->htsPTD;
     } // End IF/ELSE
 
-    DbgMsgW2 (L"********** Hash Table **********************************");
+    DbgMsgW (L"********** Hash Table **********************************");
 
     wsprintfW (wszTemp,
                L"lpHshTab = %p, SplitNext = %p, Last = %p",
                lpHTS->lpHshTab,
                lpHTS->lpHshTabSplitNext,
               &lpHTS->lpHshTab[lpHTS->iHshTabTotalSize]);
-    DbgMsgW2 (wszTemp);
+    DbgMsgW (wszTemp);
 
     // Display the hash table
     for (lpHshEntry = lpHTS->lpHshTab, i = 0;
@@ -95,10 +95,10 @@ void DisplayHshTab
         // Format the HTE
         FormatHTE (lpHshEntry, wszTemp, i);
 
-        DbgMsgW2 (wszTemp);
+        DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW2 (L"********** End Hash Table ******************************");
+    DbgMsgW (L"********** End Hash Table ******************************");
 
     UpdateDBWindow ();
 
@@ -244,10 +244,10 @@ void DisplaySymTab
 
     if (bDispAll)
     {
-        DbgMsgW2 (L"********** Symbol Table ********************************");
+        DbgMsgW (L"********** Symbol Table ********************************");
     } else
     {
-        DbgMsgW2 (L"********** Symbol Table Referenced Non-SysNames ********");
+        DbgMsgW (L"********** Symbol Table Referenced Non-SysNames ********");
     } // End IF/ELSE -- DO NOT REMOVE as the DbgMsgW2 macro needs
     //                  this because of the trailing semicolon
 
@@ -255,7 +255,7 @@ void DisplaySymTab
                L"lpSymTab = %p, Last = %p",
                lpMemPTD->lpSymTab,
               &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize]);
-    DbgMsgW2 (wszTemp);
+    DbgMsgW (wszTemp);
 
     // Display the symbol table
     for (lpSymEntry = lpMemPTD->lpSymTab, i = 0;
@@ -267,10 +267,10 @@ void DisplaySymTab
         // Format the STE
         FormatSTE (lpSymEntry, wszTemp);
 
-        DbgMsgW2 (wszTemp);
+        DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW2 (L"********** End Symbol Table ****************************");
+    DbgMsgW (L"********** End Symbol Table ****************************");
 
     UpdateDBWindow ();
 
@@ -489,6 +489,7 @@ void DisplayGlobals
 
     DbgMsgW (L"********** Globals *************************************");
 
+#define MAX_VAL_LEN     12
     for (i = 0; i < MAXOBJ; i++)
     if (hGlb = ahGLBALLOC[i])
     {
@@ -553,8 +554,8 @@ void DisplayGlobals
                         break;
 
                     case ARRAY_CHAR:
-                        lstrcpynW (aplArrChar, lpData, 1 + (__int3264) min (6, lpHeader->NELM));
-                        aplArrChar[min (6, lpHeader->NELM)] = L'\0';
+                        lstrcpynW (aplArrChar, lpData, 1 + (__int3264) min (MAX_VAL_LEN, lpHeader->NELM));
+                        aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = L'\0';
 
                         break;
 
@@ -608,6 +609,42 @@ void DisplayGlobals
             DbgMsgW (wszTemp);
         } else
 #undef  lpHeader
+#define lpHeader    ((LPDFN_HEADER) lpMem)
+        if (lpHeader->Sig.nature EQ DFN_HEADER_SIGNATURE)
+        {
+            LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
+            APLUINT      uNameLen;              // User-defined function/operator name length
+
+            // It's a valid HGLOBAL user-defined function/operator
+            Assert (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlb)));
+
+            // Lock to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlb);
+
+            // Copy the user-defined function/operator name
+            CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
+                         lpMemDfnHdr->steFcnName,   // Ptr to function symbol table entry
+                        &uNameLen);                 // Ptr to name length (may be NULL)
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlb); lpMemDfnHdr = NULL;
+
+            // Copy the name to local storage
+            lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (__int3264) min (MAX_VAL_LEN, uNameLen));
+            aplArrChar[min (MAX_VAL_LEN, uNameLen)] = L'\0';
+
+            wsprintfW (wszTemp,
+                       L"hGlb=%p DType=%c  NELM=%3d RC=%1d                 Lck=%d (%S#%4d) (%s)",
+                       hGlb,
+                       cDfnTypeStr[lpHeader->DfnType],
+                       lpHeader->numFcnLines,
+                       lpHeader->RefCnt,
+                       (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                       lpaFileNameGLBALLOC[i],
+                       auLinNumGLBALLOC[i],
+                       aplArrChar);
+            DbgMsgW (wszTemp);
+        } else
+#undef  lpHeader
         if (uDispGlb EQ 2)
         {
             wsprintfW (wszTemp,
@@ -619,6 +656,7 @@ void DisplayGlobals
         // We no longer need this ptr
         GlobalUnlock (hGlb); lpMem = NULL;
     } // End FOR/IF
+#undef  MAX_VAL_LEN
 
     DbgMsgW (L"********** End Globals *********************************");
 
@@ -781,17 +819,19 @@ static TOKENNAMES tokenNames[] =
  {"STRAND"      , TKT_STRAND        },  // 38: Strand accumulating (data is LPTOKEN)
  {"LISTINT"     , TKT_LISTINT       },  // 39: List in parens    (data is HGLOBAL)
  {"LISTPAR"     , TKT_LISTPAR       },  // 3A: List in parens    (data is HGLOBAL)
- {"LISTBR"      , TKT_LISTBR        },  // 3B: List in brackets  (data is HGLOBAL)
- {"FCNARRAY"    , TKT_FCNARRAY      },  // 3C: Array of functions (data is HGLOBAL)
- {"FCNNAMED"    , TKT_FCNNAMED      },  // 3D: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED"   , TKT_AXISIMMED     },  // 3E: An immediate axis specification (data is immediate)
- {"AXISARRAY"   , TKT_AXISARRAY     },  // 3F: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"    , TKT_OP1NAMED      },  // 40: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"    , TKT_OP2NAMED      },  // 41: ...     dyadic  ...
- {"OP3NAMED"    , TKT_OP3NAMED      },  // 42: ...     ambiguous ...
- {"STRNAMED"    , TKT_STRNAMED      },  // 43: ...     strand  ...
- {"CS_NEC"      , TKT_CS_NEC        },  // 44: Control Structure:  Special token
- {"CS_EOL"      , TKT_CS_EOL        },  // 45: ...                 Special token
+ {"LSTIMMED"    , TKT_LSTIMMED      },  // 3B: List in brackets, single element, immed (data is immediate)
+ {"LSTARRAY"    , TKT_LSTARRAY      },  // 3C: List in brackets, single element, array (data is HGLOBAL)
+ {"LSTMULT"     , TKT_LSTMULT       },  // 3D: List in brackets, multiple elements (data is HGLOBAL)
+ {"FCNARRAY"    , TKT_FCNARRAY      },  // 3E: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"    , TKT_FCNNAMED      },  // 3F: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED"   , TKT_AXISIMMED     },  // 40: An immediate axis specification (data is immediate)
+ {"AXISARRAY"   , TKT_AXISARRAY     },  // 41: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"    , TKT_OP1NAMED      },  // 42: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"    , TKT_OP2NAMED      },  // 43: ...     dyadic  ...
+ {"OP3NAMED"    , TKT_OP3NAMED      },  // 44: ...     ambiguous ...
+ {"STRNAMED"    , TKT_STRNAMED      },  // 45: ...     strand  ...
+ {"CS_NEC"      , TKT_CS_NEC        },  // 46: Control Structure:  Special token
+ {"CS_EOL"      , TKT_CS_EOL        },  // 47: ...                 Special token
 };
 
 // The # rows in the above table
@@ -804,7 +844,7 @@ static TOKENNAMES tokenNames[] =
         static char szTemp[64];
 
         wsprintf (szTemp,
-                  "GetTokenTypeName:  *** Unknown Token Type:  %d",
+                  "***Unknown Token Type:  %d***",
                   uType);
         return szTemp;
     } // End IF/ELSE

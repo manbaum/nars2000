@@ -139,63 +139,71 @@ LPPL_YYSTYPE PrimFnMonSlope_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnDydSlope_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                // Ptr to left arg token
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht,        // Right ...
-                 aplTypeRes;        // Result   ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht,        // Right ...
-                 aplNELMRes;        // Result ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht,        // Right ...
-                 aplRankRes;        // Result   ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL,    // Result   ...
-                 hGlbRep = NULL;    // Replicate ...
-    LPAPLDIM     lpMemDimRht = NULL;// Ptr to right arg dimensions
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL,   // Ptr to right ...
-                 lpMemRes = NULL;   // Ptr to result   ...
-    LPAPLINT     lpMemRep = NULL;   // Ptr to replicate ...
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
-    APLUINT      aplAxis,           // The (one and only) axis value
-                 ByteRes,           //
-                 uLo,               //
-                 uDimLo,            //
-                 uAx,               //
-                 uDimAxRht,         //
-                 uDimLftSum,        //
-                 uHi,               //
-                 uDimHi,            //
-                 uDim,              //
-                 uDimRht,           //
-                 uDimRes,           //
-                 uRes,              //
-                 uRht,              //
-                 uAcc,              //
-                 uLen;              //
-    APLINT       aplIntegerLft,     //
-                 aplIntegerRht,     //
-                 aplIntegerRep,     //
-                 apaOff,            //
-                 apaMul;            //
-    APLFLOAT     aplFloatLft,       //
-                 aplFloatRht,       //
-                 aplFloatRep;       //
-    APLCHAR      aplCharRht,        //
-                 aplCharRep;        //
-    APLNESTED    aplNestRht,        //
-                 aplNestRep,        //
-                 aplNestProto;      //
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    UINT         uBitMask,          //
-                 uBitIndex;         //
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht,           // Right ...
+                  aplTypeRes;           // Result   ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht,           // Right ...
+                  aplNELMRes;           // Result ...
+    APLRANK       aplRankLft,           // Left arg rank
+                  aplRankRht,           // Right ...
+                  aplRankRes;           // Result   ...
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL,       // Right ...
+                  hGlbRes = NULL,       // Result   ...
+                  hGlbRep = NULL;       // Replicate ...
+    LPAPLDIM      lpMemDimRht = NULL;   // Ptr to right arg dimensions
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL,      // Ptr to right ...
+                  lpMemRes = NULL;      // Ptr to result   ...
+    LPAPLINT      lpMemRep = NULL;      // Ptr to replicate ...
+    UBOOL         bRet;                 // TRUE iff result is valid
+    APLUINT       aplAxis,              // The (one and only) axis value
+                  ByteRes,              //
+                  uLo,                  //
+                  uDimLo,               //
+                  uAx,                  //
+                  uDimAxRht,            //
+                  uDimLftSum,           //
+                  uHi,                  //
+                  uDimHi,               //
+                  uDim,                 //
+                  uDimRht,              //
+                  uDimRes,              //
+                  uRes,                 //
+                  uRht,                 //
+                  uAcc,                 //
+                  uLen;                 //
+    APLINT        aplIntegerLft,        //
+                  aplIntegerRht,        //
+                  aplIntegerRep,        //
+                  apaOff,               //
+                  apaMul;               //
+    APLFLOAT      aplFloatLft,          //
+                  aplFloatRht,          //
+                  aplFloatRep;          //
+    APLCHAR       aplCharRht,           //
+                  aplCharRep;           //
+    APLNESTED     aplNestRht,           //
+                  aplNestRep,           //
+                  aplNestProto;         //
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    UINT          uBitMask,             //
+                  uBitIndex;            //
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -240,7 +248,8 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft))
+    if (!IsSimpleNum (aplTypeLft)
+     && !(IsSimpleChar (aplTypeLft) && IsEmpty (aplNELMLft)))
         goto LEFT_DOMAIN_EXIT;
 
         // Skip over the header to the dimensions
@@ -309,7 +318,9 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRep = MyGlobalLock (hGlbRep);
+        //   and check for empty (char) case
+        if (!IsEmpty (aplNELMLft))
+            lpMemRep = MyGlobalLock (hGlbRep);
 
         // Skip over the header to the data
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
@@ -325,7 +336,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
 
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
-                    aplIntegerLft = (uBitMask & *(LPAPLBOOL) lpMemLft) ? 1 : 0;
+                    aplIntegerLft = (uBitMask & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
                     uDimLftSum += aplIntegerLft;
                     *lpMemRep++ = aplIntegerLft;
 
@@ -389,13 +400,20 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
 
                 break;
 
+            case ARRAY_CHAR:
+                break;
+
             defstop
                 break;
         } // End SWITCH
 
         // Restore lpMemRep to the start of the block
-        MyGlobalUnlock (hGlbRep); lpMemRep = NULL;
-        lpMemRep = MyGlobalLock (hGlbRep);
+        //   and check for empty (char) case
+        if (!IsEmpty (aplNELMLft))
+        {
+            MyGlobalUnlock (hGlbRep); lpMemRep = NULL;
+            lpMemRep = MyGlobalLock (hGlbRep);
+        } // End IF
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
@@ -434,7 +452,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -492,6 +510,10 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
@@ -508,14 +530,14 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                             {
                                 uRht = uDimRht + uAcc++ * uDimHi;
                                 uBitMask  = BIT0 << (UINT) (uRht % NBIB);
-                                aplIntegerRep = (uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0;
+                                aplIntegerRep = (uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE;
                             } else
                                 aplIntegerRep = aplIntegerRht;
                             ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= aplIntegerRep << uBitIndex;
                         } // End IF/ELSE
 ////////////////////} else
 ////////////////////{
-////////////////////    ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= 0;      // Already filled in by GHND
+////////////////////    ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= FALSE;  // Already filled in by GHND
                     } // End IF/ELSE
                 } // End FOR
             } // End FOR/FOR
@@ -531,6 +553,10 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
@@ -566,6 +592,10 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
@@ -601,6 +631,10 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
@@ -634,8 +668,12 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
             {
                 uDimRht = uLo * uDimHi * uDimAxRht  + uHi;
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
-                for (uAcc = uAx = 0; uAx < uDimAxRht; uAx++)
+                for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
@@ -681,8 +719,12 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
             {
                 uDimRht = uLo * uDimHi * uDimAxRht  + uHi;
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
-                for (uAcc = uAx = 0; uAx < uDimAxRht; uAx++)
+                for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
@@ -715,8 +757,8 @@ PROTO_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -754,8 +796,6 @@ ERROR_EXIT:
         // We no longer need this storage
         FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
     } // End IF
-
-    bRet = FALSE;
 NORMAL_EXIT:
     if (hGlbRep)
     {
@@ -787,10 +827,7 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnDydSlope_EM_YY
 #undef  APPEND_NAME
 

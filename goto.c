@@ -31,6 +31,7 @@
 #include "dfnhdr.h"
 #include "pertab.h"
 #include "sis.h"
+#include "cs_parse.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -72,6 +73,9 @@ EXIT_TYPES GotoLine_EM
     LPSIS_HEADER  lpSISCur;         // Ptr to current SIS header
     TOKEN_TYPES   TknType;          // Target token type
     LPTOKEN       lpMemTknLine;     // Ptr to tokenized line global memory
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to PL local vars
+    TOKEN         tkNxt;            // Token of next stmt
+    UINT          uTknNum = 0;      // Starting token #
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -146,6 +150,8 @@ EXIT_TYPES GotoLine_EM
         hGlbTknLine = GetTokenLineHandle (lpSISCur->hGlbDfnHdr, aplIntegerRht);
     if (hGlbTknLine)
     {
+        UINT uStmtLen;
+
         // Lock the memory to get a ptr to it
         lpMemTknLine = MyGlobalLock (hGlbTknLine);
 
@@ -154,24 +160,54 @@ EXIT_TYPES GotoLine_EM
 
         Assert (lpMemTknLine->tkFlags.TknType EQ TKT_EOS
              || lpMemTknLine->tkFlags.TknType EQ TKT_EOL);
+        // Get the EOS/EOL token length and skip over it
+        uStmtLen = lpMemTknLine->tkData.tkIndex;
         lpMemTknLine++;
 
         // Check for and skip over line label
         if (lpMemTknLine[1].tkFlags.TknType EQ TKT_LABELSEP)
             lpMemTknLine += 2;
 
-        // Get the next token type
-        TknType = lpMemTknLine->tkFlags.TknType;
+        // Get the next token and its type
+        tkNxt = *lpMemTknLine;
+        TknType = tkNxt.tkFlags.TknType;
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
 
         // Check for branch to non-restartable Control Structure tokens:
-        //   CASE, CASELIST (both covered by SKIPCASE), ELSE, or ENDFOR
-        if (TknType EQ TKT_CS_SKIPCASE
-         || TknType EQ TKT_CS_ELSE
-         || TknType EQ TKT_CS_ENDFOR)
+        //   CASE, CASELIST (both covered by SKIPCASE)
+        if (TknType EQ TKT_CS_SKIPCASE)
             goto DESTIN_EXIT;
+
+        // Get a ptr to the PL local vars
+        lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+        // If the target is an ELSE stmt, skip to the next stmt
+        //   and execute that one
+        if (TknType EQ TKT_CS_ELSE)
+            // Skip over the ELSE stmt
+            uTknNum = uStmtLen;
+        else
+        // If the target is a FOR stmt, ensure that the identifier
+        //  on the FORSTMT stack is the same as the one in the EndFor
+        //  token.
+        if (TknType EQ TKT_CS_ENDFOR)
+        {
+            // If there's no previous entry on the FORSTMT stack, ...
+            if (lpSISCur EQ NULL
+             || lpSISCur->lpForStmtBase EQ lpSISCur->lpForStmtNext)
+                goto DESTIN_EXIT;
+
+            // Compare the current FOR stmt identifier from the FORSTMT stack
+            //   with the CLIndex in the ENDFOR stmt -- if they are unequal,
+            //   then this ENDFOR stmt is not restartable (we're starting in
+            //   the middle of a FOR stmt which has not been initialized
+            //   or is out of nested sequence).
+            if (lpSISCur->lpForStmtNext[-1].uForStmtID
+             NE tkNxt.tkData.uCLIndex)
+                goto DESTIN_EXIT;
+        } // End IF/ELSE/IF
     } // End IF
 
     // Save the exit type
@@ -184,8 +220,9 @@ EXIT_TYPES GotoLine_EM
             // If there's a suspended function, ...
             if (lpMemPTD->lpSISCur->lpSISPrv)
             {
-                // Save as the next line #
+                // Save as the next line & token #s
                 lpMemPTD->lpSISCur->lpSISPrv->NxtLineNum = (UINT) aplIntegerRht;
+                lpMemPTD->lpSISCur->lpSISPrv->NxtTknNum  = uTknNum;
 
                 // Mark as no longer suspended
                 lpMemPTD->lpSISCur->lpSISPrv->Suspended = FALSE;
@@ -199,8 +236,9 @@ EXIT_TYPES GotoLine_EM
             // If there's a suspended function, ...
             if (lpMemPTD->lpSISCur)
             {
-                // Save as the next line #
+                // Save as the next line & token #s
                 lpMemPTD->lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
+                lpMemPTD->lpSISCur->NxtTknNum  = uTknNum;
 
                 // Mark as no longer suspended
                 lpMemPTD->lpSISCur->Suspended = FALSE;
@@ -220,8 +258,9 @@ EXIT_TYPES GotoLine_EM
               || lpSISCur->DfnType EQ DFNTYPE_OP2
               || lpSISCur->DfnType EQ DFNTYPE_FCN))
             {
-                // Save as the next line #
+                // Save as the next line & token #s
                 lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
+                lpSISCur->NxtTknNum  = uTknNum;
 
                 // Mark as no longer suspended
                 lpSISCur->Suspended = FALSE;

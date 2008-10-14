@@ -328,6 +328,10 @@ EXIT_TYPES ImmExecStmt
     // We no longer need this ptr
     MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
 
+    // Check for LIMIT ERROR
+    if (hThread EQ NULL)
+        goto LIMIT_EXIT;
+
     // Should we wait until finished?
     if (bWaitUntilFini)
     {
@@ -368,6 +372,17 @@ EXIT_TYPES ImmExecStmt
         exitType = EXITTYPE_NONE;
     } // End IF/ELSE
 
+    goto NORMAL_EXIT;
+
+LIMIT_EXIT:
+    ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
+
+    exitType = EXITTYPE_ERROR;
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
     return exitType;
 } // End ImmExecStmt
 #undef  APPEND_NAME
@@ -403,12 +418,15 @@ DWORD WINAPI ImmExecStmtInThread
     UBOOL         bFreeLine,            // TRUE iff we should free lpszCompLine on completion
                   bWaitUntilFini,       // TRUE iff wait until finished
                   bActOnErrors,         // TRUE iff errors are acted upon
-                  bQuadPrompt = FALSE;  // TRUE iff Quad Prompt has been displayed
+                  bDispPrompt = TRUE;   // TRUE iff prompt should be displayed
     EXIT_TYPES    exitType;             // Return code from ParseLine
     LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
     LPSIS_HEADER  lpSISPrv;             // Ptr to previous SIS header
     LPTOKEN       lptkCSBeg;            // Ptr to next token on the CS stack
     CSLOCALVARS   csLocalVars = {0};    // CS local vars
+#ifdef DEBUG
+    UINT          uDispPrompt = 0;
+#endif
 
     __try
     {
@@ -433,8 +451,9 @@ DWORD WINAPI ImmExecStmtInThread
         // Get the window handle of the Session Manager
         hWndSM = GetParent (hWndEC);
 
-        // Initialize the Reset Flag
+        // Initialize the Reset Flag & Exit Type
         resetFlag = RESETFLAG_NONE;
+        exitType  = EXITTYPE_NONE;
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -605,8 +624,11 @@ DWORD WINAPI ImmExecStmtInThread
                     // Tell SM to display the Quad Prompt
                     PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
 
-                    // Mark as displayed
-                    bQuadPrompt = TRUE;
+                    // Do not display the prompt again
+                    bDispPrompt = FALSE;
+#ifdef DEBUG
+                    uDispPrompt = 1;
+#endif
                 } // End IF
 
                 break;
@@ -657,6 +679,11 @@ DWORD WINAPI ImmExecStmtInThread
                     // Display the default prompt
                     DisplayPrompt (hWndEC, 6);
 
+                    // Do not display the prompt again
+                    bDispPrompt = FALSE;
+#ifdef DEBUG
+                    uDispPrompt = 2;
+#endif
                     break;
                 } // End IF
 
@@ -682,6 +709,12 @@ DWORD WINAPI ImmExecStmtInThread
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+
+                    // Do not display the prompt again
+                    bDispPrompt = FALSE;
+#ifdef DEBUG
+                    uDispPrompt = 3;
+#endif
                 } // End IF
 
                 break;
@@ -695,7 +728,7 @@ DWORD WINAPI ImmExecStmtInThread
 
         // Unlocalize the STEs on the innermost level
         //   and strip off one level
-        Unlocalize ();
+        UnlocalizeSTEs ();
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -729,17 +762,19 @@ ERROR_EXIT:
         //   Quad Prompt was not displayed, and
         //   there's no semaphore to signal
 #ifdef DEBUG
-        dprintfW (L"--Before DisplayPrompt (3):  resetFlag = %d, bWaitUntilFini = %d, exitType = %d, bQuadPrompt = %d, hSigaphore = %p",
+        dprintfW (L"--Before DisplayPrompt (3):  resetFlag = %d, bWaitUntilFini = %d, exitType = %d, bDispPrompt = %d",
                   resetFlag,
                   bWaitUntilFini,
                   exitType,
-                  bQuadPrompt,
+                  bDispPrompt);
+        dprintfW (L"--                           uDispPrompt = %d, hSigaphore = %p",
+                  uDispPrompt,
                   hSigaphore);
 #endif
         if (resetFlag EQ RESETFLAG_NONE
          && !bWaitUntilFini
 /////////&& exitType NE EXITTYPE_ERROR
-         && !bQuadPrompt
+         && bDispPrompt
          && bActOnErrors
          && hSigaphore EQ NULL)
             DisplayPrompt (hWndEC, 3);

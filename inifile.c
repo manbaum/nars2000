@@ -26,6 +26,7 @@
 
 #include "main.h"
 #include "resdebug.h"
+#include "resource.h"
 #include "sysvars.h"
 #include "externs.h"
 #include "unitranshdr.h"
@@ -42,7 +43,7 @@
 #define SECTNAME_FONTS                  L"Fonts"
 #define SECTNAME_OPTIONS                L"Options"
 #define SECTNAME_RANGELIMITS            L"RangeLimits"
-#define SECTNAME_SETEMPTYCWS            L"SetEmptyCWS"
+#define SECTNAME_RESETVARS              L"ResetVars"
 #define SECTNAME_SAMEFONTAS             L"SameFontAs"
 
 // Key names
@@ -61,6 +62,7 @@
 #define KEYNAME_QUADIC                  L"QuadIC"
 #define KEYNAME_QUADIO                  L"QuadIO"
 #define KEYNAME_QUADLX                  L"QuadLX"
+#define KEYNAME_QUADMF                  L"QuadMF"
 #define KEYNAME_QUADPP                  L"QuadPP"
 #define KEYNAME_QUADPR                  L"QuadPR"
 #define KEYNAME_QUADPW                  L"QuadPW"
@@ -356,6 +358,12 @@ void ReadIniFileGlb
                                  DEF_QUADLX_CWS,    // Ptr to default value
                                  DEF_QUADLX_GLB,    // HGLOBAL of the result
                                  lpwszIniFile);     // Ptr to the file name
+    // Read in []MF
+    uQuadMF_CWS =
+      GetPrivateProfileIntW (SECTNAME_SYSVARS,      // Ptr to the section name
+                             KEYNAME_QUADMF,        // Ptr to the key name
+                             DEF_QUADMF_CWS,        // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
     // Read in []PP
     uQuadPP_CWS =
       GetPrivateProfileIntW (SECTNAME_SYSVARS,      // Ptr to the section name
@@ -467,50 +475,50 @@ void ReadIniFileGlb
                              lpwszIniFile);         // Ptr to the file name
 
     //***************************************************************
-    // Read in the [SetEmptyCWS] section
+    // Read in the [ResetVars] section
     //***************************************************************
 
-    // Read in bSysOrIni.CT
-    bSysOrIni.CT =
-      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+    // Read in bResetVars.CT
+    bResetVars.CT =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADCT,        // Ptr to the key name
-                             DEF_SETEMPTYCWS_CT,    // Default value if not found
+                             DEF_RESETVARS_CT,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bSysOrIni.FC
-    bSysOrIni.FC =
-      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+    // Read in bResetVars.FC
+    bResetVars.FC =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADFC,        // Ptr to the key name
-                             DEF_SETEMPTYCWS_FC,    // Default value if not found
+                             DEF_RESETVARS_FC,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bSysOrIni.IC
-    bSysOrIni.IC =
-      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+    // Read in bResetVars.IC
+    bResetVars.IC =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADIC,        // Ptr to the key name
-                             DEF_SETEMPTYCWS_IC,    // Default value if not found
+                             DEF_RESETVARS_IC,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bSysOrIni.IO
-    bSysOrIni.IO =
-      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+    // Read in bResetVars.IO
+    bResetVars.IO =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADIO,        // Ptr to the key name
-                             DEF_SETEMPTYCWS_IO,    // Default value if not found
+                             DEF_RESETVARS_IO,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bSysOrIni.PP
-    bSysOrIni.PP =
-      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+    // Read in bResetVars.PP
+    bResetVars.PP =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADPP,        // Ptr to the key name
-                             DEF_SETEMPTYCWS_PP,    // Default value if not found
+                             DEF_RESETVARS_PP,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bSysOrIni.PW
-    bSysOrIni.PW =
-      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+    // Read in bResetVars.PW
+    bResetVars.PW =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADPW,        // Ptr to the key name
-                             DEF_SETEMPTYCWS_PW,    // Default value if not found
+                             DEF_RESETVARS_PW,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bSysOrIni.RL
-    bSysOrIni.RL =
-      GetPrivateProfileIntW (SECTNAME_SETEMPTYCWS,  // Ptr to the section name
+    // Read in bResetVars.RL
+    bResetVars.RL =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADRL,        // Ptr to the key name
-                             DEF_SETEMPTYCWS_RL,    // Default value if not found
+                             DEF_RESETVARS_RL,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
 #undef  TEMPBUFLEN
 } // End ReadIniFileGlb
@@ -1255,6 +1263,20 @@ void SaveIniFile
                                  KEYNAME_QUADLX,
                                  hGlbQuadLX_CWS,
                                  lpwszIniFile);
+    //************************ []MF ***************************
+    // Format []MF
+    lpaplChar =
+      FormatAplintFC (wszTemp,                      // Ptr to output save area
+                      uQuadMF_CWS,                  // The value to format
+                      L'-');                        // Char to use as overbar
+    // Zap the trailing blank
+    lpaplChar[-1] = L'\0';
+
+    // Write out []MF
+    WritePrivateProfileStringW (SECTNAME_SYSVARS,   // Ptr to the section name
+                                KEYNAME_QUADMF,     // Ptr to the key name
+                                wszTemp,            // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
     //************************ []PP ***************************
     // Format []PP
     lpaplChar =
@@ -1385,69 +1407,69 @@ void SaveIniFile
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
     //*********************************************************
-    // Write out [SetEmptyCWS] section entries
+    // Write out [ResetVars] section entries
     //*********************************************************
 
-    //******************* bSysOrIni.CT **********************
-    wszTemp[0] = L'0' + bSysOrIni.CT;
+    //****************** bResetVars.CT **********************
+    wszTemp[0] = L'0' + bResetVars.CT;
     wszTemp[1] = L'\0';
 
-    // Write out bSysOrIni.CT
-    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+    // Write out bResetVars.CT
+    WritePrivateProfileStringW (SECTNAME_RESETVARS, // Ptr to the section name
                                 KEYNAME_QUADCT,     // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
-    //******************* bSysOrIni.FC **********************
-    wszTemp[0] = L'0' + bSysOrIni.FC;
+    //****************** bResetVars.FC **********************
+    wszTemp[0] = L'0' + bResetVars.FC;
     wszTemp[1] = L'\0';
 
-    // Write out bSysOrIni.FC
-    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+    // Write out bResetVars.FC
+    WritePrivateProfileStringW (SECTNAME_RESETVARS, // Ptr to the section name
                                 KEYNAME_QUADFC,     // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
-    //******************* bSysOrIni.IC **********************
-    wszTemp[0] = L'0' + bSysOrIni.IC;
+    //****************** bResetVars.IC **********************
+    wszTemp[0] = L'0' + bResetVars.IC;
     wszTemp[1] = L'\0';
 
-    // Write out bSysOrIni.IC
-    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+    // Write out bResetVars.IC
+    WritePrivateProfileStringW (SECTNAME_RESETVARS, // Ptr to the section name
                                 KEYNAME_QUADIC,     // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
-    //******************* bSysOrIni.IO **********************
-    wszTemp[0] = L'0' + bSysOrIni.IO;
+    //****************** bResetVars.IO **********************
+    wszTemp[0] = L'0' + bResetVars.IO;
     wszTemp[1] = L'\0';
 
-    // Write out bSysOrIni.IO
-    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+    // Write out bResetVars.IO
+    WritePrivateProfileStringW (SECTNAME_RESETVARS, // Ptr to the section name
                                 KEYNAME_QUADIO,     // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
-    //******************* bSysOrIni.PP **********************
-    wszTemp[0] = L'0' + bSysOrIni.PP;
+    //****************** bResetVars.PP **********************
+    wszTemp[0] = L'0' + bResetVars.PP;
     wszTemp[1] = L'\0';
 
-    // Write out bSysOrIni.PP
-    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+    // Write out bResetVars.PP
+    WritePrivateProfileStringW (SECTNAME_RESETVARS, // Ptr to the section name
                                 KEYNAME_QUADPP,     // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
-    //******************* bSysOrIni.PW **********************
-    wszTemp[0] = L'0' + bSysOrIni.PW;
+    //****************** bResetVars.PW **********************
+    wszTemp[0] = L'0' + bResetVars.PW;
     wszTemp[1] = L'\0';
 
-    // Write out bSysOrIni.PW
-    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+    // Write out bResetVars.PW
+    WritePrivateProfileStringW (SECTNAME_RESETVARS, // Ptr to the section name
                                 KEYNAME_QUADPW,     // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name
-    //******************* bSysOrIni.RL **********************
-    wszTemp[0] = L'0' + bSysOrIni.RL;
+    //****************** bResetVars.RL **********************
+    wszTemp[0] = L'0' + bResetVars.RL;
     wszTemp[1] = L'\0';
 
-    // Write out bSysOrIni.RL
-    WritePrivateProfileStringW (SECTNAME_SETEMPTYCWS, // Ptr to the section name
+    // Write out bResetVars.RL
+    WritePrivateProfileStringW (SECTNAME_RESETVARS, // Ptr to the section name
                                 KEYNAME_QUADRL,     // Ptr to the key name
                                 wszTemp,            // Ptr to the key value
                                 lpwszIniFile);      // Ptr to the file name

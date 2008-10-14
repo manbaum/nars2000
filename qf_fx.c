@@ -140,10 +140,11 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
     FX_Params.aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &FX_Params.hGlbRht, &lpMemRht);
 
     // Fill in common values
-////SF_Fcns.bRet      =                     // Filled in by SaveFunctionCom
-////SF_Fcns.uErrLine  =                     // ...
-////SF_Fcns.lpSymName =                     // ...
-    SF_Fcns.lptkFunc  = lptkFunc;           // Ptr to function token
+    SF_Fcns.bDisplayErr = FALSE;            // DO NOT Display Errors
+////SF_Fcns.bRet        =                   // Filled in by SaveFunctionCom
+////SF_Fcns.uErrLine    =                   // ...
+////SF_Fcns.lpSymName   =                   // ...
+    SF_Fcns.lptkFunc    = lptkFunc;         // Ptr to function token
 
     // Check for RIGHT RANK/DOMAIN ERRORs
     switch (FX_Params.aplRankRht)
@@ -345,8 +346,8 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else

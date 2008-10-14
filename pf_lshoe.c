@@ -212,7 +212,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeCon_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = ImmType;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -239,36 +239,44 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL      hGlbRes = NULL,
-                 hGlbAxis = NULL,
-                 hGlbSub = NULL,
-                 hGlbProto = NULL,
-                 hGlbRhtProto = NULL,
-                 hGlbOdo = NULL,
-                 hGlbWVec = NULL;
-    LPVOID       lpMemRes = NULL,
-                 lpMemRht = NULL,
-                 lpMemSub = NULL,
-                 lpMemProto = NULL;
-    LPAPLDIM     lpMemDimRht = NULL;
-    LPAPLINT     lpMemAxis = NULL,
-                 lpMemGrUp = NULL,
-                 lpMemOdo = NULL,
-                 lpMemWVec = NULL;
-    APLUINT      ByteRes;           // # bytes in the result
-    APLNELM      aplNELMAxis,
-                 aplNELMRes,
-                 aplNELMRht,
-                 aplNELMSub;
-    APLRANK      aplRankRht,
-                 aplRankRes;
-    UBOOL        bRet = TRUE;
-    APLNELM      uRes, uRht, uSub, uOdo, uRhtOff;
-    APLSTYPE     aplTypeRht;
-    APLNELMSIGN  iRht;
-    APLINT       apaOff,
-                 apaMul;
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    HGLOBAL       hGlbRes = NULL,
+                  hGlbAxis = NULL,
+                  hGlbSub = NULL,
+                  hGlbProto = NULL,
+                  hGlbRhtProto = NULL,
+                  hGlbOdo = NULL,
+                  hGlbWVec = NULL;
+    LPVOID        lpMemRes = NULL,
+                  lpMemRht = NULL,
+                  lpMemSub = NULL,
+                  lpMemProto = NULL;
+    LPAPLDIM      lpMemDimRht = NULL;
+    LPAPLINT      lpMemAxis = NULL,
+                  lpMemGrUp = NULL,
+                  lpMemOdo = NULL,
+                  lpMemWVec = NULL;
+    APLUINT       ByteRes;          // # bytes in the result
+    APLNELM       aplNELMAxis,
+                  aplNELMRes,
+                  aplNELMRht,
+                  aplNELMSub;
+    APLRANK       aplRankRht,
+                  aplRankRes;
+    UBOOL         bRet = TRUE;
+    APLNELM       uRes, uRht, uSub, uOdo, uRhtOff;
+    APLSTYPE      aplTypeRht;
+    APLNELMSIGN   iRht;
+    APLINT        apaOff,
+                  apaMul;
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -311,8 +319,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbRht);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -394,7 +402,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_NESTED;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -488,7 +496,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                         lpHeader->ArrType    = ARRAY_NESTED;
 ////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////////////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
                         lpHeader->RefCnt     = 1;
                         lpHeader->NELM       = aplNELMSub;
                         lpHeader->Rank       = aplNELMAxis;
@@ -539,22 +547,43 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 case ARRAY_FLOAT:
                 case ARRAY_APA:
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Save the HGLOBAL in the result
                         *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbZilde);
+                    } // End FOR
+
                     break;
 
                 case ARRAY_CHAR:
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Save the HGLOBAL in the result
                         *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbV0Char);
+                    } // End FOR
+
                     break;
 
                 case ARRAY_NESTED:
                 case ARRAY_HETERO:
                     // Fill in the values
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         // Save the value in the prototype
                         *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemRht);
+                    } // End FOR
+
                     break;
 
                 defstop
@@ -661,6 +690,10 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 {
                     UINT uBitMask;
 
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -675,7 +708,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] |=
-                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (MASKLOG2NBIB & (UINT) uSub);
+                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE) << (MASKLOG2NBIB & (UINT) uSub);
                 } // End FOR
 
                 // We no longer need this ptr
@@ -713,6 +746,10 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 // Traverse the subarray
                 for (uSub = 0; uSub < aplNELMSub; uSub++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -762,6 +799,10 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 // Traverse the subarray
                 for (uSub = 0; uSub < aplNELMSub; uSub++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -811,6 +852,10 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 // Traverse the subarray
                 for (uSub = 0; uSub < aplNELMSub; uSub++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -860,6 +905,10 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 // Traverse the subarray
                 for (uSub = 0; uSub < aplNELMSub; uSub++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -911,6 +960,10 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 // Traverse the subarray
                 for (uSub = 0; uSub < aplNELMSub; uSub++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -963,6 +1016,10 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 // Traverse the subarray
                 for (uSub = 0; uSub < aplNELMSub; uSub++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -999,15 +1056,15 @@ NORMAL_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
     TypeDemote (&lpYYRes->tkToken);
 
-    goto EXIT;
+    goto UNLOCK_EXIT;
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -1015,7 +1072,7 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-EXIT:
+UNLOCK_EXIT:
     if (lpMemRes)
     {
         // We no longer need this ptr
@@ -1117,7 +1174,7 @@ UBOOL PrimFnMonLeftShoeProto_EM
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplType;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;// ALready zero from GHND
-////////lpHeader->SysVar     = 0;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMSub;
         lpHeader->Rank       = aplNELMAxis;
@@ -1196,7 +1253,7 @@ UBOOL PrimFnMonLeftShoeGlbSub_EM
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeSub;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMSub;
     lpHeader->Rank       = aplNELMAxis;

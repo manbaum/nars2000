@@ -273,7 +273,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = 1;
     lpHeader->Rank       = aplRankRes;
@@ -323,8 +323,8 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -351,43 +351,51 @@ WSFULL_EXIT:
 #endif
 
 LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
-    (HGLOBAL       hGlbRht,         // Handle to right arg
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPTOKEN       lptkFunc)        // Ptr to function token
+    (HGLOBAL       hGlbRht,             // Handle to right arg
+     LPTOKEN       lptkAxis,            // Ptr to axis token (may be NULL)
+     LPTOKEN       lptkFunc)            // Ptr to function token
 
 {
-    HGLOBAL      hGlbRes = NULL,    // Result global memory handle
-                 hGlbAxis = NULL,   // Axis ...
-                 hGlbOdo = NULL,    // Odometer ...
-                 hGlbWVec = NULL;   // Weighting vector ...
-    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
-                 lpMemRes = NULL;   // Ptr to result    ...
-    LPAPLDIM     lpMemDimRht = NULL;// Ptr to right arg dimensions
-    LPAPLUINT    lpMemAxis = NULL,  // Ptr to axis global memory
-                 lpMemGrUp = NULL,  // Ptr to grade up ...
-                 lpMemOdo = NULL,   // Ptr to odometer ...
-                 lpMemWVec = NULL;  // Ptr to weighting vector ...
-    APLUINT      ByteRes;           // # bytes in the result
-    APLNELM      aplNELMRht,        // Right arg NELM
-                 aplNELMAxis;       // Axis      ...
-    APLRANK      aplRankRht,        // Right arg rank
-                 aplRankRes;        // Result    ...
-    APLNELM      uRht,              // Right arg loop counter
-                 uRes,              // Result    ...
-                 uOdo;              // Odometer  ...
-    APLDIM       aplDimNew;         //
-    APLSTYPE     aplTypeRht,        // Right arg storage type
-                 aplTypeRes;        // Result    ...
-    APLNELMSIGN  iRht;              // Right arg loop counter
-    APLINT       apaOffRht,         // Right arg APA offset
-                 apaMulRht;         // ...           multiplier
-    APLUINT      aplFirstAxis,      // First axis value (if contiguous, then lowest)
-                 aplLastAxis;       // Last ...                              highest
-    UBOOL        bFract = FALSE,    // TRUE iff axis has fractional values
-                 bTableRes,         // TRUE iff function is UTF16_COMMABAR
-                 bReorder = FALSE;  // TRUE iff result values are reordered
-                                    //   from those in the right arg
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    HGLOBAL       hGlbRes = NULL,       // Result global memory handle
+                  hGlbAxis = NULL,      // Axis ...
+                  hGlbOdo = NULL,       // Odometer ...
+                  hGlbWVec = NULL;      // Weighting vector ...
+    LPVOID        lpMemRht = NULL,      // Ptr to right arg global memory
+                  lpMemRes = NULL;      // Ptr to result    ...
+    LPAPLDIM      lpMemDimRht = NULL;   // Ptr to right arg dimensions
+    LPAPLUINT     lpMemAxis = NULL,     // Ptr to axis global memory
+                  lpMemGrUp = NULL,     // Ptr to grade up ...
+                  lpMemOdo = NULL,      // Ptr to odometer ...
+                  lpMemWVec = NULL;     // Ptr to weighting vector ...
+    APLUINT       ByteRes;              // # bytes in the result
+    APLNELM       aplNELMRht,           // Right arg NELM
+                  aplNELMAxis;          // Axis      ...
+    APLRANK       aplRankRht,           // Right arg rank
+                  aplRankRes;           // Result    ...
+    APLNELM       uRht,                 // Right arg loop counter
+                  uRes,                 // Result    ...
+                  uOdo;                 // Odometer  ...
+    APLDIM        aplDimNew;            //
+    APLSTYPE      aplTypeRht,           // Right arg storage type
+                  aplTypeRes;           // Result    ...
+    APLNELMSIGN   iRht;                 // Right arg loop counter
+    APLINT        apaOffRht,            // Right arg APA offset
+                  apaMulRht;            // ...           multiplier
+    APLUINT       aplFirstAxis,         // First axis value (if contiguous, then lowest)
+                  aplLastAxis;          // Last ...                              highest
+    UBOOL         bFract = FALSE,       // TRUE iff axis has fractional values
+                  bTableRes,            // TRUE iff function is UTF16_COMMABAR
+                  bReorder = FALSE;     // TRUE iff result values are reordered
+                                        //   from those in the right arg
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -554,7 +562,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRes;
@@ -636,7 +644,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
             // Loop through the right arg
             for (uRht = 0; uRht < aplNELM; uRht++)
-                IncrRefCntDir (((LPAPLNESTED) lpMemRht)[uRht]);
+                DbgIncrRefCntDir (((LPAPLNESTED) lpMemRht)[uRht]);
         } // End IF
 
         // Account for the header and dimensions
@@ -704,6 +712,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                 {
                     UINT uBitMask;
 
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -718,7 +730,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
-                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (MASKLOG2NBIB & (UINT) uRes);
+                      ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE) << (MASKLOG2NBIB & (UINT) uRes);
                 } // End FOR
 
                 break;
@@ -726,6 +738,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             case ARRAY_INT:
                 for (uRes = 0; uRes < aplNELMRht; uRes++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -745,6 +761,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             case ARRAY_FLOAT:
                 for (uRes = 0; uRes < aplNELMRht; uRes++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -764,6 +784,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             case ARRAY_CHAR:
                 for (uRes = 0; uRes < aplNELMRht; uRes++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -783,6 +807,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             case ARRAY_HETERO:
                 for (uRes = 0; uRes < aplNELMRht; uRes++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -804,6 +832,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             case ARRAY_NESTED:
                 for (uRes = 0; uRes < aplNELMRht; uRes++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -826,6 +858,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             case ARRAY_APA:
                 for (uRes = 0; uRes < aplNELMRht; uRes++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Use the index in lpMemOdo to calculate the
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
@@ -852,8 +888,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -938,59 +974,67 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
      LPTOKEN       lptkAxis)        // Ptr to axis token (may be NULL)
 
 {
-    APLUINT      aplAxis,           // The (one and only) axis value
-                 uLft,
-                 uRht,
-                 uBeg,
-                 uEnd,
-                 uEndLft,
-                 uEndRht,
-                 ByteRes;
-    APLRANK      aplRankLft,        // The rank of the left arg
-                 aplRankRht,        // ...             right ...
-                 aplRankRes,        // ...             result
-                 aplRankTmp;
-    APLSTYPE     aplTypeLft,
-                 aplTypeRht,
-                 aplTypeRes;
-    APLNELM      aplNELMLft,
-                 aplNELMRht,
-                 aplNELMRes;
-    HGLOBAL      hGlbLft = NULL,
-                 hGlbRht = NULL,
-                 hGlbRes = NULL,
-                 hGlbTmp;
-    LPVOID       lpMemLft = NULL,
-                 lpMemRht = NULL,
-                 lpMemRes = NULL,
-                 lpSymGlbLft,
-                 lpSymGlbRht;
-    LPAPLDIM     lpMemDimLft,
-                 lpMemDimRht,
-                 lpMemDimRes,
-                 lpMemDimDir;
-    APLDIM       aplDimTmp,
-                 aplDimBeg,
-                 aplDimLftEnd,
-                 aplDimRhtEnd,
-                 aplDim1 = 1;
-    UBOOL        bFract = FALSE;
-    UINT         uBitMaskLft,
-                 uBitMaskRht,
-                 uBitIndexRes;
-    APLINT       aplIntegerLft,
-                 aplIntegerRht,
-                 apaOffLft,
-                 apaOffRht,
-                 apaMulLft,
-                 apaMulRht;
-    APLFLOAT     aplFloatLft,
-                 aplFloatRht;
-    APLCHAR      aplCharLft,
-                 aplCharRht;
-    APLLONGEST   aplVal;
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    LPSYMENTRY   lpSymTmp;          // Ptr to temporary LPSYMENTRY
+    APLUINT       aplAxis,          // The (one and only) axis value
+                  uLft,
+                  uRht,
+                  uBeg,
+                  uEnd,
+                  uEndLft,
+                  uEndRht,
+                  ByteRes;
+    APLRANK       aplRankLft,       // The rank of the left arg
+                  aplRankRht,       // ...             right ...
+                  aplRankRes,       // ...             result
+                  aplRankTmp;
+    APLSTYPE      aplTypeLft,
+                  aplTypeRht,
+                  aplTypeRes;
+    APLNELM       aplNELMLft,
+                  aplNELMRht,
+                  aplNELMRes;
+    HGLOBAL       hGlbLft = NULL,
+                  hGlbRht = NULL,
+                  hGlbRes = NULL,
+                  hGlbTmp;
+    LPVOID        lpMemLft = NULL,
+                  lpMemRht = NULL,
+                  lpMemRes = NULL,
+                  lpSymGlbLft,
+                  lpSymGlbRht;
+    LPAPLDIM      lpMemDimLft,
+                  lpMemDimRht,
+                  lpMemDimRes,
+                  lpMemDimDir;
+    APLDIM        aplDimTmp,
+                  aplDimBeg,
+                  aplDimLftEnd,
+                  aplDimRhtEnd,
+                  aplDim1 = 1;
+    UBOOL         bFract = FALSE;
+    UINT          uBitMaskLft,
+                  uBitMaskRht,
+                  uBitIndexRes;
+    APLINT        aplIntegerLft,
+                  aplIntegerRht,
+                  apaOffLft,
+                  apaOffRht,
+                  apaMulLft,
+                  apaMulRht;
+    APLFLOAT      aplFloatLft,
+                  aplFloatRht;
+    APLCHAR       aplCharLft,
+                  aplCharRht;
+    APLLONGEST    aplVal;
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    LPSYMENTRY    lpSymTmp;         // Ptr to temporary LPSYMENTRY
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1282,7 +1326,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -1354,6 +1398,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     //   and get the APA values if appropriate
     if (!IsScalar (aplRankLft))
     {
+        // Skip over the header and dimensions to the data
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
         // If the left arg is an APA, ...
@@ -1373,9 +1418,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     //   and get the APA values if appropriate
     if (!IsScalar (aplRankRht))
     {
+        // Skip over the header and dimensions to the data
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-        // If the left arg is an APA, ...
+        // If the right arg is an APA, ...
         if (IsSimpleAPA (aplTypeRht))
         {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
@@ -1391,7 +1437,11 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     switch (aplTypeRes)
     {
         case ARRAY_BOOL:                // Res = BOOL, Lft/Rht = BOOL
-            // If the result is Boolean, then both args are Boolean
+            // If the result is Boolean, then both args are Boolean-valued
+            //   (either or both could be a Boolean-valued APA)
+
+            Assert (!IsSimpleAPA (aplTypeLft) || (aplNELMLft EQ 0) || (apaMulLft EQ 0 && IsBooleanValue (apaOffLft)));
+            Assert (!IsSimpleAPA (aplTypeRht) || (aplNELMRht EQ 0) || (apaMulRht EQ 0 && IsBooleanValue (apaOffRht)));
 
             // Loop through the leading dimensions
             for (uBeg = 0; uBeg < aplDimBeg; uBeg++)
@@ -1401,6 +1451,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     // Loop through the left arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLBOOL) lpMemRes) |= (APLBOOL) (aplIntegerLft << uBitIndexRes);
 
                         // Increment the result bit index
@@ -1417,7 +1471,14 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     // Loop through the left arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                     {
-                        *((LPAPLBOOL) lpMemRes) |= ((uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? 1 : 0) << uBitIndexRes;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (IsSimpleAPA (aplTypeLft))
+                            *((LPAPLBOOL) lpMemRes) |= apaOffLft << uBitIndexRes;
+                        else
+                            *((LPAPLBOOL) lpMemRes) |= ((uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE) << uBitIndexRes;
 
                         // Increment the result bit index
                         uBitIndexRes++;
@@ -1445,6 +1506,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     // Loop through the right arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLBOOL) lpMemRes) |= (APLBOOL) (aplIntegerRht << uBitIndexRes);
 
                         // Increment the result bit index
@@ -1461,7 +1526,14 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     // Loop through the right arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                     {
-                        *((LPAPLBOOL) lpMemRes) |= ((uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? 1 : 0) << uBitIndexRes;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        if (IsSimpleAPA (aplTypeRht))
+                            *((LPAPLBOOL) lpMemRes) |= apaOffRht << uBitIndexRes;
+                        else
+                            *((LPAPLBOOL) lpMemRes) |= ((uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE) << uBitIndexRes;
 
                         // Increment the result bit index
                         uBitIndexRes++;
@@ -1499,12 +1571,22 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLINT) lpMemRes)++ = aplIntegerLft;
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
-                                *((LPAPLINT) lpMemRes)++ = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? 1 : 0;
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLINT) lpMemRes)++ = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE;
 
                                 // Shift over the bit mask
                                 uBitMaskLft <<= 1;
@@ -1523,17 +1605,36 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLINT) lpMemRes)++ = aplIntegerLft;
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLINT) lpMemRes)++ = *((LPAPLINT) lpMemLft)++;
+                            } // End FOR
                         break;
 
                     case ARRAY_APA:     // Res = INT, Lft = APA
                         // Loop through the right arg's trailing dimensions
                         for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
                             *((LPAPLINT) lpMemRes)++ = apaOffLft + apaMulLft * uEndLft++;
+                        } // End FOR
+
                         break;
 
                     defstop
@@ -1548,12 +1649,22 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLINT) lpMemRes)++ = aplIntegerRht;
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
-                                *((LPAPLINT) lpMemRes)++ = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLINT) lpMemRes)++ = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE;
 
                                 // Shift over the bit mask
                                 uBitMaskRht <<= 1;
@@ -1572,17 +1683,36 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLINT) lpMemRes)++ = aplIntegerRht;
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLINT) lpMemRes)++ = *((LPAPLINT) lpMemRht)++;
+                            } // End FOR
                         break;
 
                     case ARRAY_APA:     // Res = INT, Rht = APA
                         // Loop through the right arg's trailing dimensions
                         for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
                             *((LPAPLINT) lpMemRes)++ = apaOffRht + apaMulRht * uEndRht++;
+                        } // End FOR
+
                         break;
 
                     defstop
@@ -1604,12 +1734,22 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatLft;
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
-                                *((LPAPLFLOAT) lpMemRes)++ = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? 1 : 0;
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLFLOAT) lpMemRes)++ = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE;
 
                                 // Shift over the bit mask
                                 uBitMaskLft <<= 1;
@@ -1628,11 +1768,23 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatLft;
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) *((LPAPLINT) lpMemLft)++;
+                            } // End FOR
                         break;
 
                     case ARRAY_FLOAT:   // Res = FLOAT, Lft = FLOAT
@@ -1640,17 +1792,36 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatLft;
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = *((LPAPLFLOAT) lpMemLft)++;
+                            } // End FOR
                         break;
 
                     case ARRAY_APA:     // Res = FLOAT, Lft = APA
                         // Loop through the left arg's trailing dimensions
                         for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
                             *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (APLINT) (apaOffLft + apaMulLft * uEndLft++);
+                        } // End FOR
+
                         break;
 
                     defstop
@@ -1665,12 +1836,22 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatRht;
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
-                                *((LPAPLFLOAT) lpMemRes)++ = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLFLOAT) lpMemRes)++ = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE;
 
                                 // Shift over the bit mask
                                 uBitMaskRht <<= 1;
@@ -1689,11 +1870,23 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatRht;
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) *((LPAPLINT) lpMemRht)++;
+                            } // End FOR
                         break;
 
                     case ARRAY_FLOAT:   // Res = FLOAT, Rht = FLOAT
@@ -1701,17 +1894,36 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatRht;
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLFLOAT) lpMemRes)++ = *((LPAPLFLOAT) lpMemRht)++;
+                            } // End FOR
                         break;
 
                     case ARRAY_APA:     // Res = FLOAT, Rht = APA
                         // Loop through the right arg's trailing dimensions
                         for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
                             *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uEndRht++);
+                        } // End FOR
+
                         break;
 
                     defstop
@@ -1729,21 +1941,45 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 if (IsScalar (aplRankLft))
                     // Loop through the left arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLCHAR) lpMemRes)++ = aplCharLft;
+                    } // End FOR
                 else
                     // Loop through the left arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLCHAR) lpMemRes)++ = *((LPAPLCHAR) lpMemLft)++;
+                    } // End FOR
 
                 // If the right arg is a scalar, ...
                 if (IsScalar (aplRankRht))
                     // Loop through the right arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLCHAR) lpMemRes)++ = aplCharRht;
+                    } // End FOR
                 else
                     // Loop through the right arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLCHAR) lpMemRes)++ = *((LPAPLCHAR) lpMemRht)++;
+                    } // End FOR
             } // End FOR
 
             break;
@@ -1837,12 +2073,22 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
-                                aplVal = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? 1 : 0;
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                aplVal = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE;
                                 *((LPAPLNESTED) lpMemRes)++ =
                                 lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
@@ -1867,11 +2113,21 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 aplVal = *((LPAPLINT) lpMemLft)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
                                 lpSymTmp =
@@ -1888,11 +2144,21 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 aplVal = *((LPAPLINT) lpMemLft)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
                                 lpSymTmp =
@@ -1909,11 +2175,21 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 aplVal = *((LPAPLCHAR) lpMemLft)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
                                 lpSymTmp =
@@ -1929,6 +2205,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         // Loop through the left arg's trailing dimensions
                         for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                         {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
                             aplVal = apaOffLft + apaMulLft * uEndLft++;
                             *((LPAPLNESTED) lpMemRes)++ =
                             lpSymTmp =
@@ -1947,11 +2227,23 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                            } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (*((LPAPLNESTED) lpMemLft)++);
+                            } // End FOR
                         break;
 
                     defstop
@@ -1966,12 +2258,22 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
-                                aplVal = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                aplVal = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE;
                                 *((LPAPLNESTED) lpMemRes)++ =
                                 lpSymTmp =
                                   MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
@@ -1997,11 +2299,21 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 aplVal = *((LPAPLINT) lpMemRht)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
                                 lpSymTmp =
@@ -2018,11 +2330,21 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 aplVal = *((LPAPLINT) lpMemRht)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
                                 lpSymTmp =
@@ -2039,11 +2361,21 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 aplVal = *((LPAPLCHAR) lpMemRht)++;
                                 *((LPAPLNESTED) lpMemRes)++ =
                                 lpSymTmp =
@@ -2059,6 +2391,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         // Loop through the right arg's trailing dimensions
                         for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                         {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
                             aplVal = apaOffRht + apaMulRht * uEndRht++;
                             *((LPAPLNESTED) lpMemRes)++ =
                             lpSymTmp =
@@ -2077,11 +2413,23 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                            } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (*((LPAPLNESTED) lpMemRht)++);
+                            } // End FOR
                         break;
 
                     defstop
@@ -2101,8 +2449,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

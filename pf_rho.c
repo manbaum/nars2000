@@ -190,8 +190,8 @@ LPPL_YYSTYPE PrimFnMonRhoCon_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbZilde);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -289,8 +289,8 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -335,9 +335,9 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     APLNELM      aplNELMRht,        // Right arg NELM
                  aplNELMRes;        // Result ...
     APLRANK      aplRankRes;        // Result rank
-    HGLOBAL      hGlbRes,           // Handle of result's global memory
+    HGLOBAL      hGlbRes = NULL,    // Handle of result's global memory
                  hGlbProto;         // ...                prototype
-    LPVOID       lpMemRes;          // Ptr to result's global memory
+    LPVOID       lpMemRes = NULL;   // Ptr to result's global memory
     UBOOL        bRet = TRUE,       // TRUE iff result is valid
                  bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
                  bPrototype = FALSE; // TRUE iff we're to generate a prototype
@@ -351,7 +351,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                                  &aplRankRes,       // Ptr to result rank
                                  &aplNELMRes,       // Ptr to result NELM
                                   lptkFunc))        // Ptr to function token
-        return NULL;
+        goto ERROR_EXIT;
 
     //***************************************************************
     // Get the attributes (Type, NELM, and Rank) of the right arg
@@ -460,7 +460,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                 break;
 
             defstop
-                return NULL;
+                goto ERROR_EXIT;
         } // End SWITCH
     } // End IF
 
@@ -588,8 +588,8 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -597,23 +597,33 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         TypeDemote (&lpYYRes->tkToken);
 
         return lpYYRes;
-    } else
-    // If we failed, release the allocated storage
-    {
-        // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
-
-        return NULL;
     } // End IF
+
+    goto ERROR_EXIT;
 
 LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkFunc);
-    return NULL;
+    goto ERROR_EXIT;
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+
     return NULL;
 } // End PrimFnDydRho_EM_YY
 #undef  APPEND_NAME
@@ -634,8 +644,16 @@ UBOOL PrimFnDydRhoRhtCopyData
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    UBOOL  bRet = TRUE;     // TRUE iff result is valid
-    UINT   uRes;            // Loop counter
+    UBOOL         bRet = TRUE;      // TRUE iff result is valid
+    UINT          uRes;             // Loop counter
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
@@ -691,7 +709,13 @@ UBOOL PrimFnDydRhoRhtCopyData
                     //   except possibly for the last byte
                     uNELM = aplNELMRes >> LOG2NBIB;
                     for (uRes = 0; uRes < uNELM; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLBOOL) lpMemRes)++ = aplBool;
+                    } // End FOR
 
                     // # valid bits in last byte
                     uBits = MASKLOG2NBIB & (UINT) aplNELMRes;
@@ -710,7 +734,14 @@ UBOOL PrimFnDydRhoRhtCopyData
                     aplInt = lptkRhtArg->tkData.tkSym->stData.stInteger;
 
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLINT) lpMemRes)++ = aplInt;
+                    } // End FOR
+
                     break;
                 } // End IMMTYPE_INT
 
@@ -724,7 +755,14 @@ UBOOL PrimFnDydRhoRhtCopyData
                     aplFloat = lptkRhtArg->tkData.tkSym->stData.stFloat;
 
                     for (uRes = 0; bRet && uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLFLOAT) lpMemRes)++ = aplFloat;
+                    } // End FOR
+
                     break;
                 } // End IMMTYPE_FLOAT
 
@@ -738,7 +776,14 @@ UBOOL PrimFnDydRhoRhtCopyData
                     aplChar = lptkRhtArg->tkData.tkSym->stData.stChar;
 
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLCHAR) lpMemRes)++ = aplChar;
+                    } // End FOR
+
                     break;
                 } // End IMMTYPE_CHAR
 
@@ -771,7 +816,13 @@ UBOOL PrimFnDydRhoRhtCopyData
                     //   except possibly for the last byte
                     uNELM = aplNELMRes >> LOG2NBIB;
                     for (uRes = 0; uRes < uNELM; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLBOOL) lpMemRes)++ = aplBool;
+                    } // End FOR
 
                     // # valid bits in last byte
                     uBits = MASKLOG2NBIB & (UINT) aplNELMRes;
@@ -790,7 +841,14 @@ UBOOL PrimFnDydRhoRhtCopyData
                     aplInt = lptkRhtArg->tkData.tkInteger;
 
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLINT) lpMemRes)++ = aplInt;
+                    } // End FOR
+
                     break;
                 } // End IMMTYPE_INT
 
@@ -804,7 +862,14 @@ UBOOL PrimFnDydRhoRhtCopyData
                     aplFloat = lptkRhtArg->tkData.tkFloat;
 
                     for (uRes = 0; bRet && uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLFLOAT) lpMemRes)++ = aplFloat;
+                    } // End FOR
+
                     break;
                 } // End IMMTYPE_FLOAT
 
@@ -818,7 +883,14 @@ UBOOL PrimFnDydRhoRhtCopyData
                     aplChar = lptkRhtArg->tkData.tkChar;
 
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *((LPAPLCHAR) lpMemRes)++ = aplChar;
+                    } // End FOR
+
                     break;
                 } // End IMMTYPE_CHAR
 
@@ -844,6 +916,8 @@ UBOOL PrimFnDydRhoRhtCopyData
     } // End SWITCH
 
     return bRet;
+ERROR_EXIT:
+    return FALSE;
 } // End PrimFnDydRhoRhtCopyData
 
 
@@ -1213,7 +1287,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         goto DOMAIN_EXIT;
 
                     // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+                    aplIntTmp = _imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
 
                     // Check for overflow
                     bRet = bRet && (aplIntTmp <= MAX_APLNELM);
@@ -1254,7 +1328,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         goto DOMAIN_EXIT;
 
                     // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+                    aplIntTmp = _imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
 
                     // Check for overflow
                     bRet = bRet && (aplIntTmp <= MAX_APLNELM);
@@ -1403,7 +1477,7 @@ void PrimFnDydRhoLftGlbCopyDim
             uBitMaskLft = 0x01;
             for (uLft = 0; uLft < aplNELMLft; uLft++)
             {
-                *lpaplDim++ = (uBitMaskLft & *(LPAPLBOOL) lpDataLft) ? 1 : 0;
+                *lpaplDim++ = (uBitMaskLft & *(LPAPLBOOL) lpDataLft) ? TRUE : FALSE;
 
                 // Shift over the left arg's bit mask
                 uBitMaskLft <<= 1;
@@ -1473,15 +1547,23 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
      LPTOKEN   lptkFunc)
 
 {
-    LPVOID  lpMemRhtBase,
-            lpMemRhtData,
-            lpMemRhtNext;
-    APLINT  uRes,
-            uRht;
-    UINT    uBitMaskRes,
-            uBitMaskRht;
-    UBOOL   bRet = TRUE;
-    APLINT  aplNELMRht;
+    LPVOID        lpMemRhtBase,
+                  lpMemRhtData,
+                  lpMemRhtNext;
+    APLINT        uRes,
+                  uRht;
+    UINT          uBitMaskRes,
+                  uBitMaskRht;
+    UBOOL         bRet = TRUE;
+    APLINT        aplNELMRht;
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Lock the memory to get a ptr to it
     lpMemRhtBase = MyGlobalLock (hGlbRht);
@@ -1504,6 +1586,10 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             // Loop through the result and right arg copying the data
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Check to see if we should start over again
                 //   the right arg's counter and ptr
                 if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
@@ -1542,6 +1628,10 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             // Loop through the result and right arg copying the data
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Check to see if we should start the right arg's
                 //   counter and ptr over again
                 if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
@@ -1559,6 +1649,10 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             // Loop through the result and right arg copying the data
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Check to see if we should start the right arg's
                 //   counter and ptr over again
                 if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
@@ -1576,6 +1670,10 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             // Loop through the result and right arg copying the data
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Check to see if we should start the right arg's
                 //   counter and ptr over again
                 if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
@@ -1596,6 +1694,10 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             // Loop through the result and right arg copying the data
             for (uRes = uRht = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Check to see if we should start the right arg's
                 //   counter and ptr over again
                 if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
@@ -1664,6 +1766,10 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                 // Loop through the result and right arg copying the data
                 for (apaLen = uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, apaLen++)
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Check to see if we should start the right arg's
                     //   counter over again
                     if (apaLen EQ lpHeader->NELM)
@@ -1686,6 +1792,8 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
     MyGlobalUnlock (hGlbRht); lpMemRhtBase = lpMemRhtNext = lpMemRhtData = NULL;
 
     return bRet;
+ERROR_EXIT:
+    return FALSE;
 } // End PrimFnDydRhoRhtGlbCopyData_EM
 
 

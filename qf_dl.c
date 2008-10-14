@@ -180,7 +180,7 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkFloat    = aplFloatRht;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

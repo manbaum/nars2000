@@ -156,38 +156,46 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht,        // Right ...
-                 aplTypeRes;        // Result   ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht,        // Right ...
-                 aplNELMRes;        // Result   ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht,        // Right ...
-                 aplRankRes;        // Result   ...
-    APLDIM       aplColsLft,        // Left arg last dim
-                 aplRestLft,        // Left arg product of remaining dims
-                 aplFrstRht,        // Right arg 1st dim
-                 aplRestRht,        // Right arg product of remaining dims
-                 aplInnrMax;        // Larger of inner dimensions
-    APLLONGEST   aplLongestLft,     // Left arg immediate value
-                 aplLongestRht;     // Right ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL;    // Result   ...
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL,   // Ptr to right ...
-                 lpMemRes = NULL;   // Ptr to result   ...
-    LPAPLDIM     lpMemDimLft,       // Ptr to left arg dimensions
-                 lpMemDimRht,       // Ptr to right ...
-                 lpMemDimRes;       // Ptr to result   ...
-    APLUINT      ByteRes,           // # bytes in the result
-                 uRes,              // Loop counter
-                 uOutLft,           // Loop counter
-                 uOutRht,           // Loop counter
-                 uDimCopy;          // # dimensions to copy
-    APLINT       iInnMax;           // Loop counter
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    APLSTYPE      aplTypeLft,       // Left arg storage type
+                  aplTypeRht,       // Right ...
+                  aplTypeRes;       // Result   ...
+    APLNELM       aplNELMLft,       // Left arg NELM
+                  aplNELMRht,       // Right ...
+                  aplNELMRes;       // Result   ...
+    APLRANK       aplRankLft,       // Left arg rank
+                  aplRankRht,       // Right ...
+                  aplRankRes;       // Result   ...
+    APLDIM        aplColsLft,       // Left arg last dim
+                  aplRestLft,       // Left arg product of remaining dims
+                  aplFrstRht,       // Right arg 1st dim
+                  aplRestRht,       // Right arg product of remaining dims
+                  aplInnrMax;       // Larger of inner dimensions
+    APLLONGEST    aplLongestLft,    // Left arg immediate value
+                  aplLongestRht;    // Right ...
+    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
+                  hGlbRht = NULL,   // Right ...
+                  hGlbRes = NULL;   // Result   ...
+    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
+                  lpMemRht = NULL,  // Ptr to right ...
+                  lpMemRes = NULL;  // Ptr to result   ...
+    LPAPLDIM      lpMemDimLft,      // Ptr to left arg dimensions
+                  lpMemDimRht,      // Ptr to right ...
+                  lpMemDimRes;      // Ptr to result   ...
+    APLUINT       ByteRes,          // # bytes in the result
+                  uRes,             // Loop counter
+                  uOutLft,          // Loop counter
+                  uOutRht,          // Loop counter
+                  uDimCopy;         // # dimensions to copy
+    APLINT        iInnMax;          // Loop counter
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the attributes (Type,NELM, and Rank)
     //   of the left & right args
@@ -391,6 +399,10 @@ RESTART_EXCEPTION:
             APLUINT uInnLft,            // Index into left arg
                     uInnRht;            // ...        right ...
 
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
             // Calc left inner index, taking into account scalar extension
             if (IsUnitDim (aplColsLft))
                 uInnLft = 1 * 0       + aplColsLft * uOutLft;
@@ -462,7 +474,7 @@ RESTART_EXCEPTION:
                 __try
                 {
                     // Add into accumulator
-                    aplIntAcc = iadd64 (aplIntAcc, imul64 (InnValInt, aplLongestRht, NULL), NULL);
+                    aplIntAcc = iadd64 (aplIntAcc, imul64 (InnValInt, aplLongestRht));
 
                     // Get the next left arg value
                     if (hGlbLft)
@@ -475,7 +487,7 @@ RESTART_EXCEPTION:
                     } // End IF
 
                     // Multiply into the weighting value
-                    InnValInt = imul64 (InnValInt, aplLongestLft, NULL);
+                    InnValInt = imul64 (InnValInt, aplLongestLft);
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
                 {
                     switch (MyGetExceptionCode ())
@@ -525,8 +537,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

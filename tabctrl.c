@@ -516,11 +516,6 @@ NORMAL_EXIT:
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    if (lpMemPTD->hWndSM)
-        // Unhook the LclEditCtrlWndProc
-        SetWindowLongPtrW ((HWND) (HANDLE_PTR) GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC),
-                           GWL_WNDPROC,
-                           (__int3264) (LONG_PTR) lpMemPTD->lpfnOldEditCtrlWndProc);
     // Destroy any windows we might have created
     if (lpMemPTD && lpMemPTD->hWndMC)
     {
@@ -684,6 +679,9 @@ LRESULT WINAPI LclTabCtrlWndProc
         case WM_RBUTTONDOWN:                // fwKeys = wParam;        // Key flags
                                             // xPos = LOWORD(lParam);  // Horizontal position of cursor
                                             // yPos = HIWORD(lParam);  // Vertical position of cursor
+        {
+            UBOOL bExecuting;               // TRUE iff we're waiting for an execution to complete
+
             if (bCaptured)
             {
                 SendMessageW (hWnd, WM_MOUSELEAVE, wParam, lParam);
@@ -705,14 +703,34 @@ LRESULT WINAPI LclTabCtrlWndProc
             hMenu = CreatePopupMenu ();
 
             // If we're not over a tab, disallow any actions
-            //   which require a valid tab indsex
+            //   which require a valid tab index
             uOverTabState = (gOverTabIndex EQ -1)
                           ? MF_GRAYED
                           : MF_ENABLED;
 
+            // Get the outgoing per tab global memory handle
+            hGlbPTD = GetPerTabHandle (gOverTabIndex);
+
+            // If it's invalid, we're closing out the last tab, so ignore
+            if (hGlbPTD NE NULL)
+            {
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Get the executing state flag
+                bExecuting = lpMemPTD->bExecuting;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+            } else
+                bExecuting = FALSE;
+
             // If we're not over a tab or this is the last open tab,
+            //   or this tab is executing,
             //   disallow closing the WS
-            uCloseState = (gOverTabIndex EQ -1 || TabCtrl_GetItemCount (hWnd) EQ 1)
+            uCloseState = (gOverTabIndex EQ -1
+                        || TabCtrl_GetItemCount (hWnd) EQ 1
+                        || bExecuting)
                         ? MF_GRAYED
                         : MF_ENABLED;
 
@@ -750,6 +768,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             DestroyMenu (hMenu);
 
             break;
+        } // End WM_RBUTTONDOWN
 
         case WM_LBUTTONUP:                  // fwKeys = wParam;        // Key flags
                                             // xPos = LOWORD(lParam);  // Horizontal position of cursor
@@ -764,11 +783,31 @@ LRESULT WINAPI LclTabCtrlWndProc
         {
             int     iNewTabIndex,               // Index of new tab (after deleting this one)
                     iDelTabIndex;               // Index of tab to delete
-            HWND    hWndEC;                     // Edit Ctrl window handle
             LRESULT lResult;                    // Result from CallWindowProc
+            UBOOL   bExecuting;                 // TRUE iff we're waiting for an execution to complete
 
             // Save the tab index to delete
             iDelTabIndex = (int) wParam;
+
+            // Get the outgoing per tab global memory handle
+            hGlbPTD = GetPerTabHandle (iDelTabIndex);
+
+            // If it's invalid, we're closing out the last tab, so just quit
+            if (hGlbPTD EQ NULL)
+                break;
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Get the execution state
+            bExecuting = lpMemPTD->bExecuting;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            // If this tab is still executing, ignore this action
+            if (bExecuting)
+                break;
 
             // If gOverTabIndex is this tab or to the right of it,
             //    decrement gOverTabIndex.
@@ -790,13 +829,6 @@ LRESULT WINAPI LclTabCtrlWndProc
                 else
                     iNewTabIndex++;
             } // End IF
-
-            // Get the outgoing per tab global memory handle
-            hGlbPTD = GetPerTabHandle (iDelTabIndex);
-
-            // If it's invalid, we're closing out the last tab, so just quit
-            if (hGlbPTD EQ NULL)
-                break;
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -825,18 +857,6 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
 #undef  APPEND_NAME
-
-            // If the SM handle is valid, ...
-            if (lpMemPTD->hWndSM)
-            {
-                // Get the Edit Ctrl window handle
-                (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
-
-                // Unhook the LclEditCtrlWndProc
-                SetWindowLongPtrW (hWndEC,
-                                   GWL_WNDPROC,
-                                   (__int3264) (LONG_PTR) lpMemPTD->lpfnOldEditCtrlWndProc);
-            } // End IF
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

@@ -157,27 +157,28 @@ typedef struct tagHSHENTRY
 
 typedef enum tagIMM_TYPES
 {
-    IMMTYPE_BOOL = 0,       // 00:  Boolean
-    IMMTYPE_INT,            // 01:  Integer
-    IMMTYPE_FLOAT,          // 02:  Floating point
-    IMMTYPE_CHAR,           // 03:  Character
-    IMMTYPE_PRIMFCN,        // 04:  Primitive monadic/dyadic function
-    IMMTYPE_PRIMOP1,        // 05:  Primitive monadic operator
-    IMMTYPE_PRIMOP2,        // 06:  ...       dyadic  ...
-    IMMTYPE_PRIMOP3,        // 07:  ...       ambiguous ...
-                            // 08-0E:  Available entries (4 bits)
-    IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type)
+    IMMTYPE_ERROR = 0,      // 00:  Error (not an immediate type)
+    IMMTYPE_BOOL,           // 01:  Boolean
+    IMMTYPE_INT,            // 02:  Integer
+    IMMTYPE_FLOAT,          // 03:  Floating point
+    IMMTYPE_CHAR,           // 04:  Character
+    IMMTYPE_PRIMFCN,        // 05:  Primitive monadic/dyadic function
+    IMMTYPE_PRIMOP1,        // 06:  Primitive monadic operator
+    IMMTYPE_PRIMOP2,        // 07:  ...       dyadic  ...
+    IMMTYPE_PRIMOP3,        // 08:  ...       ambiguous ...
+                            // 09-0F:  Available entries (4 bits)
 } IMM_TYPES, *LPIMM_TYPES;
 
 // N.B.:  Whenever changing the above enum (IMM_TYPES),
 //   be sure to make a corresponding change to
-//   the macros <IsImmXXX> in <macros.h>, and the]
+//   <TranslateImmTypeToChar> in <translate.c>,
+//   the macros <IsImmXXX> in <macros.h>, the
 //   #define ImmTypeAsChar just below here.
 
 // Translate an immediate type to a char
 // Note that the order of the chars in this #define
 //   depends upon the ordering of the above enum
-#define ImmTypeAsChar   L"BIFC?123"
+#define ImmTypeAsChar   L"!BIFC?123"
 
 // Name types
 typedef enum tagNAME_TYPES
@@ -196,6 +197,7 @@ typedef enum tagNAME_TYPES
 
 // N.B.:  Whenever changing the above enum (NAME_TYPES),
 //   be sure to make a corresponding change to
+//   NAMETYPEMASK_FN and NAMETYPEMASK_OP, and
 //   the macros <IsNameTypeXXX> in <macros.h>.
 
 #define NAMETYPE_STRING     "?VNF123?L"
@@ -278,7 +280,7 @@ typedef struct tagSYMENTRY
 {
     STFLAGS     stFlags;        // 00:  Flags
     SYMTAB_DATA stData;         // 04:  For immediates, the data value;
-                                //        for others, the HGLOBAL
+                                //        for others, the HGLOBAL (8 bytes)
     LPHSHENTRY  stHshEntry;     // 0C:  Ptr to the matching HSHENTRY
     structSYMENTRY *stPrvEntry, // 10:  Ptr to previous (shadowed) STE (NULL = none)
                    *stSymLink;  // 14:  Ptr to next entry in linked list of

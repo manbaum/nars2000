@@ -127,7 +127,7 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
-    if (aplRankRht > 2)
+    if (IsRank3P (aplRankRht))
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -289,8 +289,8 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -412,6 +412,8 @@ APLINT CalcSymentrySize
                                              + lpMemDfnHdr->numRhtArgSTE
                                              + lpMemDfnHdr->numLocalsSTE)
                       + sizeof (FCNLINE) * lpMemDfnHdr->numFcnLines;
+            if (lpMemDfnHdr->hGlbMonInfo)
+                aplSize += MyGlobalSize (lpMemDfnHdr->hGlbMonInfo);
             // Get ptr to array of function line structs (FCNLINE[numFcnLines])
             lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
@@ -426,9 +428,6 @@ APLINT CalcSymentrySize
 
                 if (lpFcnLines->hGlbTknLine)
                     aplSize += MyGlobalSize (lpFcnLines->hGlbTknLine);
-
-                if (lpFcnLines->hGlbMonInfo)
-                    aplSize += MyGlobalSize (lpFcnLines->hGlbMonInfo);
 
                 // Skip to the next struct
                 lpFcnLines++;

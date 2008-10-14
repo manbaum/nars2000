@@ -395,9 +395,7 @@ void FastBoolScanQual
             {
                 if (uFBFNIndex EQ PF_INDEX_EQUAL)
                 // Fill with constant byte of 1s (0s already done by GHND)
-                    FillMemory (lpMemRes,
-                                (UINT) ((uDimLo * uDimAxRht + (NBIB - 1)) >> LOG2NBIB),
-                                0xFF);
+                    FillBitMemory (lpMemRes, uDimLo * uDimAxRht);
                 return;
             } else
                 apaByte = (lpAPA->Off) ? 0xFF : 0x00;
@@ -557,18 +555,14 @@ void FastBoolRed
                 // Marker bit found in the first position:  the index is 0
                 // Fill with uInfix EQ uSuffix
                 if (uInfix EQ uSuffix)
-                    FillMemory ((LPAPLBOOL) lpMemRes,
-                                (UINT) ((uDimLo + (NBIB - 1)) >> LOG2NBIB),
-                                0xFF);
+                    FillBitMemory (lpMemRes, uDimLo);
             } else
             {
                 // Marker bit not found:  the index is uDimAxRht
                 // If the index is odd, use uNotMarker
                 //   otherwise, use uIdentElem
                 if ((BIT0 & uDimAxRht) ? uNotMarker : uIdentElem)
-                    FillMemory ((LPAPLBOOL) lpMemRes,
-                                (UINT) ((uDimLo + (NBIB - 1)) >> LOG2NBIB),
-                                0xFF);
+                    FillBitMemory (lpMemRes, uDimLo);
             } // End IF/ELSE
 #undef  lpAPA
         } else
@@ -725,9 +719,7 @@ void FastBoolRedQual
         if (lpAPA->Mul EQ 0)
         {
             if ((uFBFNIndex EQ PF_INDEX_NOTEQUAL) EQ (BIT0 & uDimAxRht))
-                FillMemory (lpMemRes,
-                            (UINT) ((uDimLo + (NBIB - 1)) >> LOG2NBIB),
-                            0xFF);
+                FillBitMemory (lpMemRes, uDimLo);
         } else
             DbgStop ();         // We should never get here
 #undef  lpAPA

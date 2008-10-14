@@ -588,7 +588,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize ();
+    UnlocalizeSTEs ();
 
     // If this hSigaphore is not for this level, pass it on up the line
     if (lphSigaphore)

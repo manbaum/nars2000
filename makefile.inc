@@ -241,6 +241,7 @@ $(O)qf_et.DEP           \
 $(O)qf_ex.DEP           \
 $(O)qf_fx.DEP           \
 $(O)qf_lc.DEP           \
+$(O)qf_mf.DEP           \
 $(O)qf_nc.DEP           \
 $(O)qf_nl.DEP           \
 $(O)qf_size.DEP         \
@@ -627,6 +628,9 @@ $(O)yyfns.DEP
 !if exist ($(O)qf_lc.DEP)
 !       include $(O)qf_lc.DEP
 !endif
+!if exist ($(O)qf_mf.DEP)
+!       include $(O)qf_mf.DEP
+!endif
 !if exist ($(O)qf_nc.DEP)
 !       include $(O)qf_nc.DEP
 !endif
@@ -867,6 +871,7 @@ $(O)qf_et.PRO           \
 $(O)qf_ex.PRO           \
 $(O)qf_fx.PRO           \
 $(O)qf_lc.PRO           \
+$(O)qf_mf.PRO           \
 $(O)qf_nc.PRO           \
 $(O)qf_nl.PRO           \
 $(O)qf_size.PRO         \
@@ -1064,6 +1069,7 @@ $(O)qf_et.OBJ:          $(@B).C         $(QF_ET_DEP)
 $(O)qf_ex.OBJ:          $(@B).C         $(QF_EX_DEP)
 $(O)qf_fx.OBJ:          $(@B).C         $(QF_FX_DEP)
 $(O)qf_lc.OBJ:          $(@B).C         $(QF_LC_DEP)
+$(O)qf_mf.OBJ:          $(@B).C         $(QF_MF_DEP)
 $(O)qf_nc.OBJ:          $(@B).C         $(QF_NC_DEP)
 $(O)qf_nl.OBJ:          $(@B).C         $(QF_NL_DEP)
 $(O)qf_size.OBJ:        $(@B).C         $(QF_SIZE_DEP)
@@ -1229,6 +1235,7 @@ OBJS=                       \
      $(O)qf_ex.OBJ          \
      $(O)qf_fx.OBJ          \
      $(O)qf_lc.OBJ          \
+     $(O)qf_mf.OBJ          \
      $(O)qf_nc.OBJ          \
      $(O)qf_nl.OBJ          \
      $(O)qf_size.OBJ        \

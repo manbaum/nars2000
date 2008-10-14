@@ -377,21 +377,21 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     |        AxisList  RhtArg   {DbgMsgWP (L"%%NoResHdr:  AxisList RhtArg");        // Mon/Dyd operator, monadic derived function w/axis operator
-                                 if (!GetOprName (&$1))
+                                 if (!GetOprName_EM (&$1))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
     |         List     RhtArg   {DbgMsgWP (L"%%NoResHdr:  List RhtArg");            // Mon/Dyd operator, monadic derived function
-                                 if (!GetOprName (&$1))
+                                 if (!GetOprName_EM (&$1))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
     | NAMEUNK AxisList RhtArg   {DbgMsgWP (L"%%NoResHdr:  NAMEUNK AxisList RhtArg");// Mon/Dyd operator, dyadic derived function w/axis operator
-                                 if (!GetOprName (&$2))
+                                 if (!GetOprName_EM (&$2))
                                      YYERROR;
 
                                  InitHdrStrand (&$1);
@@ -403,7 +403,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
     | NAMEUNK List     RhtArg   {DbgMsgWP (L"%%NoResHdr:  NAMEUNK List RhtArg");    // Mon/Dyd operator, dyadic derived function
-                                 if (!GetOprName (&$2))
+                                 if (!GetOprName_EM (&$2))
                                      YYERROR;
 
                                  InitHdrStrand (&$1);
@@ -415,7 +415,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
     | List    AxisList RhtArg   {DbgMsgWP (L"%%NoResHdr:  List AxisList RhtArg");   // Mon/Dyd operator, dyadic derived function w/axis operator
-                                 if (!GetOprName (&$2))
+                                 if (!GetOprName_EM (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
@@ -424,7 +424,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | List    List     RhtArg   {DbgMsgWP (L"%%NoResHdr:  List List RhtArg");       // Mon/Dyd operator, dyadic derived function
-                                 if (!GetOprName (&$2))
+                                 if (!GetOprName_EM (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
@@ -433,7 +433,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | OptArg  AxisList RhtArg   {DbgMsgWP (L"%%NoResHdr:  OptArg AxisList RhtArg"); // Mon/Dyd operator, ambivalent derived function w/axis operator
-                                 if (!GetOprName (&$2))
+                                 if (!GetOprName_EM (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
@@ -442,7 +442,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | OptArg  List     RhtArg   {DbgMsgWP (L"%%NoResHdr:  OptArg List RhtArg");     // Mon/Dyd operator, ambivalent derived function
-                                 if (!GetOprName (&$2))
+                                 if (!GetOprName_EM (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
@@ -571,13 +571,13 @@ BOOL ParseHeader
     lpfhLocalVars->lpYYStrandNext = lpfhLocalVars->lpYYStrandStart;
 
     // Skip over TOKEN_HEADER
-    lpfhLocalVars->lpStart = TokenBaseToStart (lpfhLocalVars->t2.lpBase);
+    lpfhLocalVars->lptkStart = TokenBaseToStart (lpfhLocalVars->t2.lpBase);
 
     // Skip over the starting EOL
-    lpfhLocalVars->lpNext  = &lpfhLocalVars->lpStart[1];
+    lpfhLocalVars->lptkNext  = &lpfhLocalVars->lptkStart[1];
 
     // Mark the stopping point
-    lpfhLocalVars->lpStop  = &lpfhLocalVars->lpStart[lpfhLocalVars->lpStart->tkData.tkChar];
+    lpfhLocalVars->lptkStop  = &lpfhLocalVars->lptkStart[lpfhLocalVars->lptkStart->tkData.tkChar];
 
     // Start off with no error
     lpfhLocalVars->tkErrorCharIndex = NEG1U;
@@ -645,18 +645,17 @@ int fh_yylex
 
 {
     // Check for stopping point
-    if (lpfhLocalVars->lpStop EQ lpfhLocalVars->lpNext)
+    if (lpfhLocalVars->lptkStop EQ lpfhLocalVars->lptkNext)
         return '\0';
 
 #if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
     dprintfW (L"==fh_yylex:  TknType = %S, CharIndex = %d",
               GetTokenTypeName (lpfhLocalVars->lptkNext->tkFlags.TknType),
               lpfhLocalVars->lptkNext->tkCharIndex);
-    DbgBrk ();
 #endif
 
     // Return the current token
-    lpYYLval->tkToken            = *lpfhLocalVars->lpNext;
+    lpYYLval->tkToken            = *lpfhLocalVars->lptkNext;
     lpYYLval->uStrandLen         =
     lpYYLval->Indirect           = FALSE;
     lpYYLval->List               = FALSE;
@@ -664,16 +663,16 @@ int fh_yylex
     lpYYLval->lpYYStrandBase     = lpfhLocalVars->lpYYStrandBase;
 
     // Split cases based upon the token type
-    switch (lpfhLocalVars->lpNext++->tkFlags.TknType)
+    switch (lpfhLocalVars->lptkNext++->tkFlags.TknType)
     {
         case TKT_VARNAMED:
             // If the token is a sysname, return NAMESYS
-            if (lpfhLocalVars->lpNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
+            if (lpfhLocalVars->lptkNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
                 return NAMESYS;
             else
             {
                 // If the next token is a left bracket, return NAMEOPR
-                if (lpfhLocalVars->lpNext->tkFlags.TknType EQ TKT_LEFTBRACKET)
+                if (lpfhLocalVars->lptkNext->tkFlags.TknType EQ TKT_LEFTBRACKET)
                     return NAMEOPR;
                 else
                     return NAMEUNK;
@@ -732,86 +731,90 @@ void fh_yyerror                     // Called for Bison syntax error
      LPCHAR        s)               // Ptr to error msg
 
 {
-    char szTemp[1024], *p;
+    char   szTemp[1024];
+    WCHAR wszTemp[1024], *wp;
     UINT uCharIndex;
 
 #ifdef DEBUG
     DbgMsg (s);
 #endif
-
     // Get and save the character index position
-    uCharIndex = lpfhLocalVars->lpNext->tkCharIndex;
+    uCharIndex = lpfhLocalVars->lptkNext->tkCharIndex;
     lpfhLocalVars->tkErrorCharIndex = uCharIndex;
 
-    // If the caller wants error messages displayed, ...
-    if (lpfhLocalVars->DisplayErr)
-    {
-        // Check for SYNTAX ERROR
+    // Check for SYNTAX ERROR
 #define ERR     "syntax error"
-        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
-        if (lstrcmp (szTemp, ERR) EQ 0)
-        {
-            wsprintf (szTemp, "SYNTAX ERROR in line 0, position %d -- function NOT saved.", uCharIndex);
-            p = szTemp;
+    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+    if (lstrcmp (szTemp, ERR) EQ 0)
+    {
+        wsprintfW (wszTemp, L"SYNTAX ERROR in header position %d -- function NOT saved.", uCharIndex);
+        wp = wszTemp;
 
-            goto DISPLAYCAT;
+        goto DISPLAYCAT;
 #undef  ERR
-        } // End IF
+    } // End IF
 
-        // Check for VALUE ERROR
+    // Check for VALUE ERROR
 #define ERR     "value error"
-        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
-        if (lstrcmp (szTemp, ERR) EQ 0)
-        {
-            wsprintf (szTemp, "VALUE ERROR in line 0, position %d -- function NOT saved.", uCharIndex);
-            p = szTemp;
+    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+    if (lstrcmp (szTemp, ERR) EQ 0)
+    {
+        wsprintfW (wszTemp, L"VALUE ERROR in header position %d -- function NOT saved.", uCharIndex);
+        wp = wszTemp;
 
-            goto DISPLAYCAT;
+        goto DISPLAYCAT;
 #undef  ERR
-        } // End IF
+    } // End IF
 
-        // Check for LENGTH ERROR
+    // Check for LENGTH ERROR
 #define ERR     "length error"
-        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
-        if (lstrcmp (szTemp, ERR) EQ 0)
-        {
-            wsprintf (szTemp, "LENGTH ERROR in line 0, position %d -- function NOT saved.", uCharIndex);
-            p = szTemp;
+    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+    if (lstrcmp (szTemp, ERR) EQ 0)
+    {
+        wsprintfW (wszTemp, L"LENGTH ERROR in header position %d -- function NOT saved.", uCharIndex);
+        wp = wszTemp;
 
-            goto DISPLAYCAT;
+        goto DISPLAYCAT;
 #undef  ERR
-        } // End IF
-    } else
-        return;
+    } // End IF
 
 #define ERR     "memory exhausted"
     lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
-        wsprintf (szTemp, "Insufficient memory -- function NOT saved.");
-        p = szTemp;
+        wsprintfW (wszTemp, L"Insufficient memory to parse header -- function NOT saved.");
+        wp = wszTemp;
 
         goto DISPLAYCAT;
 #undef  ERR
     } // End IF
 
     // Use the error message as given
-    p = s;
+    wsprintfW (wszTemp, L"%S", s);
+    wp = wszTemp;
 
     goto DISPLAY;
 
 DISPLAYCAT:
+    // If the caller doesn't wants error messages displayed, ...
+    if (!lpfhLocalVars->DisplayErr)
+    {
+        // Pass the error message back to the caller
+        lstrcpyW (lpfhLocalVars->wszErrMsg, wszTemp);
+
+        return;
+    } // End IF
+
 #ifdef DEBUG
-    lstrcat (szTemp, "(");
-    lstrcat (szTemp,  s );
-    lstrcat (szTemp, ")");
+    // Append the original error message
+    wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"(%S)", s);
 #endif
 DISPLAY:
     // Display a message box
-    MessageBox (lpfhLocalVars->hWndEC,
-                p,
-                lpszAppName,
-                MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+    MessageBoxW (lpfhLocalVars->hWndEC,
+                 wp,
+                 lpwszAppName,
+                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
 } // End fh_yyerror
 #undef  APPEND_NAME
 
@@ -959,12 +962,12 @@ LPFH_YYSTYPE MakeHdrStrand_YY
 
 
 //***************************************************************************
-//  $GetOprName
+//  $GetOprName_EM
 //
 //  Extract the function/operator/operand names from a list
 //***************************************************************************
 
-BOOL GetOprName
+BOOL GetOprName_EM
     (LPFH_YYSTYPE lpYYArg)
 
 {
@@ -1000,13 +1003,13 @@ BOOL GetOprName
         default:
             if (lpfhLocalVars->DisplayErr)
             {
-                lpfhLocalVars->lpNext->tkCharIndex = lpYYArg->tkToken.tkCharIndex;
+                lpfhLocalVars->lptkNext->tkCharIndex = lpYYArg->tkToken.tkCharIndex;
                 fh_yyerror (lpfhLocalVars, "syntax error");
             } // End IF
 
             return FALSE;
     } // End SWITCH
-} // End GetOprName
+} // End GetOprName_EM
 
 
 //***************************************************************************

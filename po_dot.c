@@ -166,50 +166,63 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    APLSTYPE     aplTypeLft,            // Left arg storage type
-                 aplTypeRht,            // Right ...
-                 aplTypeRes;            // Result   ...
-    APLNELM      aplNELMLft,            // Left arg NELM
-                 aplNELMRht,            // Right ...
-                 aplNELMRes;            // Result   ...
-    APLRANK      aplRankLft,            // Left arg rank
-                 aplRankRht,            // Right ...
-                 aplRankRes;            // Result   ...
-    APLDIM       aplColsLft,            // Left arg last dim
-                 aplRestLft,            // Left arg product of remaining dims
-                 aplFrstRht,            // Right arg 1st dim
-                 aplRestRht,            // Right arg product of remaining dims
-                 aplInnrMax;            // Larger of inner dimensions
-    APLLONGEST   aplLongestLft,         // Left arg immediate value
-                 aplLongestRht;         // Right ...
-    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
-                 hGlbRht = NULL,        // Right ...
-                 hGlbRes = NULL,        // Result   ...
-                 hGlbItm;               // Arg item ...
-    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
-                 lpMemRht = NULL,       // Ptr to right ...
-                 lpMemRes = NULL;       // Ptr to result   ...
-    LPAPLDIM     lpMemDimLft,           // Ptr to left arg dimensions
-                 lpMemDimRht,           // Ptr to right ...
-                 lpMemDimRes;           // Ptr to result   ...
-    APLUINT      ByteRes,               // # bytes in the result
-                 uRes,                  // Loop counter
-                 uOutLft,               // Loop counter
-                 uOutRht,               // Loop counter
-                 uDimCopy;              // # dimensions to copy
-    APLINT       iInnMax;               // Loop counter
-    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
-                 lpYYRes2,              // Ptr to secondary result
-                 lpYYFcnStrLft,         // Ptr to left operand function strand
-                 lpYYFcnStrRht;         // Ptr to right ...
-    LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
-    LPPRIMFNS    lpPrimProtoLft,        // Ptr to left operand prototype function
-                 lpPrimProtoRht;        // Ptr to right ...
-    TOKEN        tkItmLft = {0},        // Left arg item token
-                 tkItmRht = {0},        // Right ...
-                 tkItmRed;              // Reduction ...
-    IMM_TYPES    immTypeItm;            // Arg item immediate type
-    LPSYMENTRY   lpSymTmp;              // Ptr to temporary LPSYMENTRY
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht,           // Right ...
+                  aplTypeCmp,           // Comparison ...
+                  aplTypeRes;           // Result   ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht,           // Right ...
+                  aplNELMRes;           // Result   ...
+    APLRANK       aplRankLft,           // Left arg rank
+                  aplRankRht,           // Right ...
+                  aplRankRes;           // Result   ...
+    APLDIM        aplColsLft,           // Left arg last dim
+                  aplRestLft,           // Left arg product of remaining dims
+                  aplFrstRht,           // Right arg 1st dim
+                  aplRestRht,           // Right arg product of remaining dims
+                  aplInnrMax;           // Larger of inner dimensions
+    APLLONGEST    aplLongestLft,        // Left arg immediate value
+                  aplLongestRht;        // Right ...
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL,       // Right ...
+                  hGlbRes = NULL,       // Result   ...
+                  hGlbItm;              // Arg item ...
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL,      // Ptr to right ...
+                  lpMemRes = NULL;      // Ptr to result   ...
+    LPAPLDIM      lpMemDimLft,          // Ptr to left arg dimensions
+                  lpMemDimRht,          // Ptr to right ...
+                  lpMemDimRes;          // Ptr to result   ...
+    APLUINT       ByteRes,              // # bytes in the result
+                  uRes,                 // Loop counter
+                  uOutLft,              // Loop counter
+                  uOutRht,              // Loop counter
+                  uDimCopy;             // # dimensions to copy
+    APLINT        iInnMax;              // Loop counter
+    LPPL_YYSTYPE  lpYYRes = NULL,       // Ptr to the result
+                  lpYYRes2,             // Ptr to secondary result
+                  lpYYFcnStrLft,        // Ptr to left operand function strand
+                  lpYYFcnStrRht;        // Ptr to right ...
+    LPTOKEN       lptkAxis;             // Ptr to axis token (may be NULL)
+    LPPRIMFNS     lpPrimProtoLft,       // Ptr to left operand prototype function
+                  lpPrimProtoRht;       // Ptr to right ...
+    TOKEN         tkItmLft = {0},       // Left arg item token
+                  tkItmRht = {0},       // Right ...
+                  tkItmRed;             // Reduction ...
+    IMM_TYPES     immTypeItm;           // Arg item immediate type
+    LPSYMENTRY    lpSymTmp;             // Ptr to temporary LPSYMENTRY
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPRIMSPEC    lpPrimSpecLft,        // Ptr to left arg local PRIMSPEC
+                  lpPrimSpecRht;        // ...    right ...
+    LPPRIMFLAGS   lpPrimFlagsLft,       // Ptr to left arg PrimFlags entry
+                  lpPrimFlagsRht;       // ...    right ...
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
@@ -250,6 +263,10 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     } else
         lpPrimProtoLft = lpPrimProtoRht = NULL;
 
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlagsLft = GetPrimFlagsPtr (lpYYFcnStrLft);
+    lpPrimFlagsRht = GetPrimFlagsPtr (lpYYFcnStrRht);
+
     // Get the attributes (Type,NELM, and Rank)
     //   of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, &aplColsLft);
@@ -267,8 +284,8 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
 
     // Check for LENGTH ERROR
     if (aplColsLft NE aplFrstRht
-     && !IsUnitDim (aplColsLft)
-     && !IsUnitDim (aplFrstRht))
+     && !IsUnitDim (aplColsLft)     // Note that the EAS extends scalars or one-element vectors only
+     && !IsUnitDim (aplFrstRht))    // ...
         goto LENGTH_EXIT;
 
     // Calc larger of inner dimensions (in case of scalar extension)
@@ -294,13 +311,47 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // Calc result NELM
     aplNELMRes = aplRestLft * aplRestRht;
 
-    // ***FIXME*** -- In case anyone wants to do this, we could optimize
-    //   the result type by checking the left & right function operands
-    //   vs. the left and right args.
+    // If the comparison function is scalar dyadic, and
+    //   both args are simple non-hetero, and
+    //   the reduction function is scalar dyadic, ...
+    if (lpPrimFlagsRht->DydScalar
+     && IsSimpleNH (aplTypeLft)
+     && IsSimpleNH (aplTypeRht)
+     && lpPrimFlagsLft->DydScalar)
+    {
+        // Get the left & right arg lpPrimSpec
+        lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        lpPrimSpecRht = PrimSpecTab[SymTrans (&lpYYFcnStrRht->tkToken)];
 
-    // Calc result type
-    aplTypeRes = ARRAY_NESTED;
+        // Calculate the storage type of the comparison result
+        aplTypeCmp = (*lpPrimSpecRht->StorageTypeDyd) (aplColsLft,
+                                                      &aplTypeLft,
+                                                      &lpYYFcnStrRht->tkToken,
+                                                       aplFrstRht,
+                                                      &aplTypeRht);
+        if (aplTypeCmp EQ ARRAY_ERROR)
+            goto DOMAIN_EXIT;
+        // For the moment, APA is treated as INT
+        if (IsSimpleAPA (aplTypeCmp))
+            aplTypeCmp = ARRAY_INT;
+RESTART_INNERPROD_CMP:
+        // Calculate the storage type of the reduction result
+        aplTypeRes = (*lpPrimSpecLft->StorageTypeDyd) (aplInnrMax,
+                                                      &aplTypeCmp,
+                                                      &lpYYFcnStrLft->tkToken,
+                                                       aplInnrMax,
+                                                      &aplTypeCmp);
+        if (aplTypeRes EQ ARRAY_ERROR)
+            goto DOMAIN_EXIT;
 
+        // If the result is empty, make it Boolean
+        if (IsEmpty (aplNELMRes))
+            aplTypeRes = ARRAY_BOOL;
+    } else
+        // The result storage type is assumed to be NESTED,
+        //   but we'll call TypeDemote at the end just in case.
+        aplTypeRes = ARRAY_NESTED;
+RESTART_INNERPROD_RES:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -412,19 +463,19 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                     case ARRAY_INT:
                     case ARRAY_FLOAT:
                         // Fill in the left arg item token
-                        tkItmLft.tkFlags.TknType = TKT_VARIMMED;
-                        tkItmLft.tkFlags.ImmType = IMMTYPE_BOOL;
+                        tkItmLft.tkFlags.TknType   = TKT_VARIMMED;
+                        tkItmLft.tkFlags.ImmType   = IMMTYPE_BOOL;
 ////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                        tkItmLft.tkData.tkLongest = 0;
+                        tkItmLft.tkData.tkLongest  = 0;
 
                         break;
 
                     case ARRAY_CHAR:
                         // Fill in the left arg item token
-                        tkItmLft.tkFlags.TknType = TKT_VARIMMED;
-                        tkItmLft.tkFlags.ImmType = IMMTYPE_CHAR;
+                        tkItmLft.tkFlags.TknType   = TKT_VARIMMED;
+                        tkItmLft.tkFlags.ImmType   = IMMTYPE_CHAR;
 ////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                        tkItmLft.tkData.tkLongest = L' ';
+                        tkItmLft.tkData.tkLongest  = L' ';
 
                         break;
 
@@ -436,17 +487,17 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                         if (hGlbItm)
                         {
                             // Fill in the left arg item token
-                            tkItmLft.tkFlags.TknType = TKT_VARARRAY;
-                            tkItmLft.tkFlags.ImmType = IMMTYPE_ERROR;
+                            tkItmLft.tkFlags.TknType   = TKT_VARARRAY;
+                            tkItmLft.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                            tkItmLft.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
+                            tkItmLft.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbItm);
                         } else
                         {
                             // Fill in the left arg item token
-                            tkItmLft.tkFlags.TknType = TKT_VARIMMED;
-                            tkItmLft.tkFlags.ImmType = immTypeItm;
+                            tkItmLft.tkFlags.TknType   = TKT_VARIMMED;
+                            tkItmLft.tkFlags.ImmType   = immTypeItm;
 ////////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                            tkItmLft.tkData.tkLongest = aplLongestLft;
+                            tkItmLft.tkData.tkLongest  = aplLongestLft;
                         } // End IF/ELSE
 
                         break;
@@ -464,17 +515,17 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                 if (hGlbItm)
                 {
                     // Fill in the left arg item token
-                    tkItmLft.tkFlags.TknType = TKT_VARARRAY;
-                    tkItmLft.tkFlags.ImmType = IMMTYPE_ERROR;
+                    tkItmLft.tkFlags.TknType   = TKT_VARARRAY;
+                    tkItmLft.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmLft.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
+                    tkItmLft.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbItm);
                 } else
                 {
                     // Fill in the left arg item token
-                    tkItmLft.tkFlags.TknType = TKT_VARIMMED;
-                    tkItmLft.tkFlags.ImmType = immTypeItm;
+                    tkItmLft.tkFlags.TknType   = TKT_VARIMMED;
+                    tkItmLft.tkFlags.ImmType   = immTypeItm;
 ////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmLft.tkData.tkLongest = aplLongestLft;
+                    tkItmLft.tkData.tkLongest  = aplLongestLft;
                 } // End IF/ELSE
             } // End IF/ELSE
         } // End IF
@@ -492,19 +543,19 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                     case ARRAY_INT:
                     case ARRAY_FLOAT:
                         // Fill in the right arg item token
-                        tkItmRht.tkFlags.TknType = TKT_VARIMMED;
-                        tkItmRht.tkFlags.ImmType = IMMTYPE_BOOL;
+                        tkItmRht.tkFlags.TknType   = TKT_VARIMMED;
+                        tkItmRht.tkFlags.ImmType   = IMMTYPE_BOOL;
 ////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                        tkItmRht.tkData.tkLongest = 0;
+                        tkItmRht.tkData.tkLongest  = 0;
 
                         break;
 
                     case ARRAY_CHAR:
                         // Fill in the right arg item token
-                        tkItmRht.tkFlags.TknType = TKT_VARIMMED;
-                        tkItmRht.tkFlags.ImmType = IMMTYPE_CHAR;
+                        tkItmRht.tkFlags.TknType   = TKT_VARIMMED;
+                        tkItmRht.tkFlags.ImmType   = IMMTYPE_CHAR;
 ////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                        tkItmRht.tkData.tkLongest = L' ';
+                        tkItmRht.tkData.tkLongest  = L' ';
 
                         break;
 
@@ -516,17 +567,17 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                         if (hGlbItm)
                         {
                             // Fill in the left arg item token
-                            tkItmRht.tkFlags.TknType = TKT_VARARRAY;
-                            tkItmRht.tkFlags.ImmType = IMMTYPE_ERROR;
+                            tkItmRht.tkFlags.TknType   = TKT_VARARRAY;
+                            tkItmRht.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                            tkItmRht.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
+                            tkItmRht.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbItm);
                         } else
                         {
                             // Fill in the left arg item token
-                            tkItmRht.tkFlags.TknType = TKT_VARIMMED;
-                            tkItmRht.tkFlags.ImmType = immTypeItm;
+                            tkItmRht.tkFlags.TknType   = TKT_VARIMMED;
+                            tkItmRht.tkFlags.ImmType   = immTypeItm;
 ////////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                            tkItmRht.tkData.tkLongest = aplLongestRht;
+                            tkItmRht.tkData.tkLongest  = aplLongestRht;
                         } // End IF/ELSE
 
                         break;
@@ -537,24 +588,24 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                 } // End SWITCH
             } else
             {
-                // Get the first left arg value
-                GetNextValueGlb (hGlbLft, 0, &hGlbItm, &aplLongestLft, &immTypeItm);
+                // Get the first right arg value
+                GetNextValueGlb (hGlbRht, 0, &hGlbItm, &aplLongestRht, &immTypeItm);
 
                 // If the item is an array, ...
                 if (hGlbItm)
                 {
-                    // Fill in the left arg item token
-                    tkItmLft.tkFlags.TknType = TKT_VARARRAY;
-                    tkItmLft.tkFlags.ImmType = IMMTYPE_ERROR;
-////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmLft.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
+                    // Fill in the right arg item token
+                    tkItmRht.tkFlags.TknType   = TKT_VARARRAY;
+                    tkItmRht.tkFlags.ImmType   = IMMTYPE_ERROR;
+////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+                    tkItmRht.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbItm);
                 } else
                 {
-                    // Fill in the left arg item token
-                    tkItmLft.tkFlags.TknType = TKT_VARIMMED;
-                    tkItmLft.tkFlags.ImmType = immTypeItm;
-////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmLft.tkData.tkLongest = aplLongestLft;
+                    // Fill in the right arg item token
+                    tkItmRht.tkFlags.TknType   = TKT_VARIMMED;
+                    tkItmRht.tkFlags.ImmType   = immTypeItm;
+////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+                    tkItmRht.tkData.tkLongest  = aplLongestRht;
                 } // End IF/ELSE
             } // End IF/ELSE
         } // End IF
@@ -585,19 +636,23 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         // If it succeeded, ...
         if (lpYYRes)
         {
-            // If the result is an immediate, ...
-            if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
+            // If the result is nested, ...
+            if (IsNested (aplTypeRes))
             {
-                *((LPAPLNESTED) lpMemRes)++ =
-                lpSymTmp =
-                  MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
-                                  &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
-                                  &lpYYRes->tkToken);                   // Ptr to function token
-                if (!lpSymTmp)
-                    goto ERROR_EXIT;
-            } else
-                *((LPAPLNESTED) lpMemRes)++ =
-                  CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
+                // If the result is an immediate, ...
+                if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
+                {
+                    *((LPAPLNESTED) lpMemRes)++ =
+                    lpSymTmp =
+                      MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
+                                      &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
+                                      &lpYYRes->tkToken);                   // Ptr to function token
+                    if (!lpSymTmp)
+                        goto ERROR_EXIT;
+                } else
+                    *((LPAPLNESTED) lpMemRes)++ =
+                      CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
+            } // End IF
 
             // Free the result item
             FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
@@ -613,169 +668,501 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // The right arg is treated as a two-dimensional array of shape
     //   aplFrstRht aplRestRht
 
-    // Trundle through the left & right arg remaining dimensions
-    for (uOutLft = 0; uOutLft < aplRestLft; uOutLft++)
-    for (uOutRht = 0; uOutRht < aplRestRht; uOutRht++)
+    // If the result is simple non-hetero, ...
+    if (IsSimpleNH (aplTypeRes))
     {
-        // Calc result index
-        uRes = 1 * uOutRht + aplRestRht * uOutLft;
+        APLINT   apaOffLft,         // Left arg APA offset
+                 apaMulLft,         // ...          multiplier
+                 apaOffRht,         // Right arg APA offset
+                 apaMulRht;         // ...           multiplier
+        APLUINT  uInnLft,           // Index into left arg
+                 uInnRht;           // ...        right ...
+        TOKEN    tkRes = {0};       // Temporary token result
+        APLINT   aplIntegerLft,     // Left arg integer
+                 aplIntegerRht,     // Right ...
+                 aplIntegerCmpLft,  // Left comparison arg integer
+                 aplIntegerCmpRht;  // Right ...
+        APLFLOAT aplFloatLft,       // Left arg float
+                 aplFloatRht,       // Right ...
+                 aplFloatCmpLft,    // Left comparison arg float
+                 aplFloatCmpRht;    // Right ...
+        APLCHAR  aplCharLft,        // Left arg char
+                 aplCharRht;        // Right ...
+        UINT     uBitIndex;         // Bit index for looping through Boolean result
 
-        // Trundle through the inner dimensions, back to front
-        for (iInnMax = aplInnrMax - 1; iInnMax >= 0; iInnMax--)
+        // Initialize the bit index
+        uBitIndex = 0;
+
+        // If the left arg is not immediate, ...
+        if (lpMemLft)
+            lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        else
+            lpMemLft = &aplLongestLft;
+
+        // If the right arg is not immediate, ...
+        if (lpMemRht)
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        else
+            lpMemRht = &aplLongestRht;
+
+        // If the left arg is APA, fill in the offset and multiplier
+        if (IsSimpleAPA (aplTypeLft))
         {
-            APLUINT uInnLft,            // Index into left arg
-                    uInnRht;            // ...        right ...
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+            // Get the APA parameters
+            apaOffLft = lpAPA->Off;
+            apaMulLft = lpAPA->Mul;
+#undef  lpAPA
+        } // End IF
 
-            // Calc left inner index, taking into account scalar extension
-            if (IsUnitDim (aplColsLft))
-                uInnLft = 1 * 0       + aplColsLft * uOutLft;
-            else
-                uInnLft = 1 * iInnMax + aplColsLft * uOutLft;
+        // If the right arg is APA, fill in the offset and multiplier
+        if (IsSimpleAPA (aplTypeRht))
+        {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+            // Get the APA parameters
+            apaOffRht = lpAPA->Off;
+            apaMulRht = lpAPA->Mul;
+#undef  lpAPA
+        } // End IF
 
-            // Calc right inner index, taking into account scalar extension
-            if (IsUnitDim (aplFrstRht))
-                uInnRht = 1 * uOutRht + aplRestRht * 0      ;
-            else
-                uInnRht = 1 * uOutRht + aplRestRht * iInnMax;
-
-            // If the left arg is an array, ...
-            if (hGlbLft)
+        // Trundle through the left & right arg remaining dimensions
+        for (uOutLft = 0; uOutLft < aplRestLft; uOutLft++)
+        for (uOutRht = 0; uOutRht < aplRestRht; uOutRht++)
+        {
+////////////// Calc result index -- unneeded as we compute the result in row major order
+////////////uRes = 1 * uOutRht + aplRestRht * uOutLft;
+////////////
+            // Trundle through the inner dimensions, back to front
+            for (iInnMax = aplInnrMax - 1; iInnMax >= 0; iInnMax--)
             {
-                // Get the next left arg value
-                GetNextValueGlb (hGlbLft, uInnLft, &hGlbItm, &aplLongestLft, &immTypeItm);
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
 
-                // If the item is an array, ...
-                if (hGlbItm)
+                // Calc left inner index, taking into account scalar extension
+                if (IsUnitDim (aplColsLft))
+                    uInnLft = 1 * 0       + aplColsLft * uOutLft;
+                else
+                    uInnLft = 1 * iInnMax + aplColsLft * uOutLft;
+
+                // Calc right inner index, taking into account scalar extension
+                if (IsUnitDim (aplFrstRht))
+                    uInnRht = 1 * uOutRht + aplRestRht * 0      ;
+                else
+                    uInnRht = 1 * uOutRht + aplRestRht * iInnMax;
+
+                // Split cases based upon the left arg storage type
+                switch (aplTypeLft)
                 {
-                    // Fill in the left arg item token
-                    tkItmLft.tkFlags.TknType = TKT_VARARRAY;
-                    tkItmLft.tkFlags.ImmType = IMMTYPE_ERROR;
-////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmLft.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
-                } else
+                    case ARRAY_BOOL:
+                        aplIntegerLft = GetNextInteger (lpMemLft, aplTypeLft, uInnLft);
+                        aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
+
+                        break;
+
+                    case ARRAY_INT:
+                        aplIntegerLft = ((LPAPLINT)   lpMemLft)[uInnLft];
+                        aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
+
+                        break;
+
+                    case ARRAY_APA:
+                        aplIntegerLft = apaOffLft + apaMulLft * uInnLft;
+                        aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                        aplFloatLft   = ((LPAPLFLOAT) lpMemLft)[uInnLft];
+
+                        break;
+
+                    case ARRAY_CHAR:
+                        aplCharLft    = ((LPAPLCHAR)  lpMemLft)[uInnLft];
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Split cases based upon the right arg storage type
+                switch (aplTypeRht)
                 {
-                    // Fill in the left arg item token
-                    tkItmLft.tkFlags.TknType = TKT_VARIMMED;
-                    tkItmLft.tkFlags.ImmType = immTypeItm;
-////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmLft.tkData.tkLongest = aplLongestLft;
-                } // End IF/ELSE
-            } // End IF
+                    case ARRAY_BOOL:
+                        aplIntegerRht = GetNextInteger (lpMemRht, aplTypeRht, uInnRht);
+                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
 
-            // If the right arg is an array, ...
-            if (hGlbRht)
-            {
-                // Get the next right arg value
-                GetNextValueGlb (hGlbRht, uInnRht, &hGlbItm, &aplLongestRht, &immTypeItm);
+                        break;
 
-                // If the item is an array, ...
-                if (hGlbItm)
+                    case ARRAY_INT:
+                        aplIntegerRht = ((LPAPLINT)   lpMemRht)[uInnRht];
+                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+
+                        break;
+
+                    case ARRAY_APA:
+                        aplIntegerRht = apaOffRht + apaMulRht * uInnRht;
+                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                        aplFloatRht   = ((LPAPLFLOAT) lpMemRht)[uInnRht];
+
+                        break;
+
+                    case ARRAY_CHAR:
+                        aplCharRht    = ((LPAPLCHAR)  lpMemRht)[uInnRht];
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Execute the comparison function between the left and right args
+                if (PrimFnDydSiScSiScSub_EM (&tkRes,                        // Result token
+                                             &lpYYFcnStrRht->tkToken,       // Comparison function
+                                              aplTypeCmp,                   // Comparison storage type
+                                              aplTypeLft,                   // Left arg storage type
+                                              aplIntegerLft,                // ...      Boolean/Integer
+                                              aplFloatLft,                  // ...      Float
+                                              aplCharLft,                   // ...      Char
+                                              aplTypeRht,                   // Right arg storage type
+                                              aplIntegerRht,                // ...      Boolean/Integer
+                                              aplFloatRht,                  // ...      Float
+                                              aplCharRht,                   // ...      Char
+                                              lpPrimSpecRht))               // Ptr to comparison function PRIMSPEC
                 {
-                    // Fill in the right arg item token
-                    tkItmRht.tkFlags.TknType = TKT_VARARRAY;
-                    tkItmRht.tkFlags.ImmType = IMMTYPE_ERROR;
-////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmRht.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
-                } else
-                {
-                    // Fill in the right arg item token
-                    tkItmRht.tkFlags.TknType = TKT_VARIMMED;
-                    tkItmRht.tkFlags.ImmType = immTypeItm;
-////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmRht.tkData.tkLongest = aplLongestRht;
-                } // End IF/ELSE
-            } // End IF
+                    Assert (tkRes.tkFlags.TknType EQ TKT_VARIMMED);
 
-            // Execute the right operand between the left & right items
-            if (lpPrimProtoRht)
-                // Note that we cast the function strand to LPTOKEN
-                //   to bridge the two types of calls -- one to a primitive
-                //   function which takes a function token, and one to a
-                //   primitive operator which takes a function strand
-                lpYYRes = (*lpPrimProtoRht) (&tkItmLft,         // Ptr to left arg token
-                                    (LPTOKEN) lpYYFcnStrRht,    // Ptr to right operand function strand
-                                             &tkItmRht,         // Ptr to right arg token
-                                              lptkAxis);        // Ptr to axis token (may be NULL)
-            else
-                lpYYRes = ExecFuncStr_EM_YY (&tkItmLft,         // Ptr to left arg token
-                                              lpYYFcnStrRht,    // Ptr to right operand function strand
-                                             &tkItmRht,         // Ptr to right arg token
-                                              lptkAxis);        // Ptr to axis token (may be NULL)
-            // Free the left & right arg tokens
-            FreeResult (&tkItmLft);
-            FreeResult (&tkItmRht);
-
-            // If it succeeded, ...
-            if (lpYYRes)
-            {
-                // If this is the first time, there's no reduction
-                if (iInnMax EQ (APLINT) (aplInnrMax - 1))
-                {
-                    // Copy the result to the accumulated reduction token
-                    tkItmRed = lpYYRes->tkToken;
-
-                    // Free the result item (but not the storage)
-                    YYFree (lpYYRes); lpYYRes = NULL;
-                } else
-                {
-                    // Execute the left operand between the item result and the accumulated reduction
-                    if (lpPrimProtoLft)
-                        // Note that we cast the function strand to LPTOKEN
-                        //   to bridge the two types of calls -- one to a primitive
-                        //   function which takes a function token, and one to a
-                        //   primitive operator which takes a function strand
-                        lpYYRes2 = (*lpPrimProtoLft) (&lpYYRes->tkToken, // Ptr to left arg token
-                                             (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
-                                                      &tkItmRed,         // Ptr to right arg token
-                                                       lptkAxis);        // Ptr to axis token (may be NULL)
-                    else
-                        lpYYRes2 = ExecFuncStr_EM_YY (&lpYYRes->tkToken, // Ptr to left arg token
-                                                       lpYYFcnStrLft,    // Ptr to left operand function strand
-                                                      &tkItmRed,         // Ptr to right arg token
-                                                       lptkAxis);        // Ptr to axis token (may be NULL)
-                    // Free the result item & reduction tokens
-                    FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
-                    FreeResult (&tkItmRed);
-
-                    // If it succeeded, ...
-                    if (lpYYRes2)
+                    // Check for type promotion
+                    if (aplTypeCmp NE TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType))
                     {
-                        // Copy the result to the accumulated reduction token
-                        tkItmRed = lpYYRes2->tkToken;
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-                        // Free the result item (but not the storage)
-                        YYFree (lpYYRes2); lpYYRes2 = NULL;
+                        // We no longer need this resource
+                        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+
+                        if (hGlbLft && lpMemLft)
+                        {
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+                        } // End IF
+
+                        if (hGlbRht && lpMemRht)
+                        {
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+                        } // End IF
+
+                        // Save as the new storage type
+                        aplTypeCmp = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
+
+                        goto RESTART_INNERPROD_CMP;
+                    } // End IF
+                } else
+                    goto ERROR_EXIT;
+
+                // If this is not the first time, do the reduction
+                if (iInnMax NE (APLINT) (aplInnrMax - 1))
+                {
+                    // Split cases based upon the comparison immediate type
+                    switch (tkRes.tkFlags.ImmType)
+                    {
+                        case IMMTYPE_BOOL:
+                            aplIntegerCmpLft = (BIT0 & tkRes.tkData.tkBoolean);
+
+                            break;
+
+                        case IMMTYPE_INT:
+                            aplIntegerCmpLft = tkRes.tkData.tkInteger;
+
+                            break;
+
+                        case IMMTYPE_FLOAT:
+                            aplFloatCmpLft   = tkRes.tkData.tkFloat;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Execute the left operand between the item result and the accumulated reduction
+                    if (PrimFnDydSiScSiScSub_EM (&tkRes,                    // Result token
+                                                 &lpYYFcnStrLft->tkToken,   // Reduction function
+                                                  aplTypeRes,               // Result storage type
+                                                  aplTypeCmp,               // Comparison storage type
+                                                  aplIntegerCmpLft,         // Left comparison arg Boolean/Integer
+                                                  aplFloatCmpLft,           // ...                 Float
+                                                  0,                        // No primitive scalar dyadic function returns a char
+                                                  aplTypeCmp,               // Comparison storage type
+                                                  aplIntegerCmpRht,         // Right comparison arg Boolean/Integer
+                                                  aplFloatCmpRht,           // ...                  Float
+                                                  0,                        // No primitive scalar dyadic function returns a char
+                                                  lpPrimSpecLft))           // Ptr to reduction function PRIMSPEC
+                    {
+                        Assert (tkRes.tkFlags.TknType EQ TKT_VARIMMED);
+
+                        // Check for type promotion
+                        if (aplTypeRes NE TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType))
+                        {
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                            // We no longer need this resource
+                            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+
+                            if (hGlbLft && lpMemLft)
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+                            } // End IF
+
+                            if (hGlbRht && lpMemRht)
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+                            } // End IF
+
+                            // Save as the new storage type
+                            aplTypeRes = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
+
+                            goto RESTART_INNERPROD_RES;
+                        } // End IF
                     } else
                         goto ERROR_EXIT;
-                } // End IF/ELSE
-            } else
+                } // End IF
+
+                // Copy the last reduction result as the new reduction right arg
+                // Split cases based upon the previous result immediate type
+                switch (tkRes.tkFlags.ImmType)
+                {
+                    case IMMTYPE_BOOL:
+                        aplIntegerCmpRht = (BIT0 &tkRes.tkData.tkBoolean);
+
+                        break;
+
+                    case IMMTYPE_INT:
+                        aplIntegerCmpRht = tkRes.tkData.tkInteger;
+
+                        break;
+
+                    case IMMTYPE_FLOAT:
+                        aplFloatCmpRht   = tkRes.tkData.tkFloat;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+
+            // Split cases based upon the result storage type
+            switch (aplTypeRes)
             {
-                // If this is not the first time, free the reduction result
-                if (iInnMax EQ (APLINT) (aplInnrMax - 1))
-                    FreeResult (&tkItmRed);
+                case ARRAY_BOOL:
+                    // Save in the result
+                    *((LPAPLBOOL) lpMemRes) |= (BIT0 & aplIntegerCmpRht) << uBitIndex;
 
-                goto ERROR_EXIT;
-            } // End IF/ELSE
-        } // End FOR
+                    // Check for end-of-byte
+                    if (++uBitIndex EQ NBIB)
+                    {
+                        uBitIndex = 0;              // Start over
+                        ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                    } // End IF
 
-        // Save the accumulated reduction in the result
+                    break;
 
-        // If the accumulated reduction is an immediate, ...
-        if (tkItmRed.tkFlags.TknType EQ TKT_VARIMMED)
+                case ARRAY_INT:
+                    // Save the accumulated reduction in the result
+                    *((LPAPLINT)   lpMemRes)++ = aplIntegerCmpRht;
+
+                    break;
+
+                case ARRAY_FLOAT:
+                    // Save the accumulated reduction in the result
+                    *((LPAPLFLOAT) lpMemRes)++ = aplFloatCmpRht;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End FOR/FOR
+    } else
+    {
+        // Trundle through the left & right arg remaining dimensions
+        for (uOutLft = 0; uOutLft < aplRestLft; uOutLft++)
+        for (uOutRht = 0; uOutRht < aplRestRht; uOutRht++)
         {
-            *((LPAPLNESTED) lpMemRes)++ =
-            lpSymTmp =
-              MakeSymEntry_EM (tkItmRed.tkFlags.ImmType,    // Immediate type
-                              &tkItmRed.tkData.tkLongest,   // Ptr to immediate value
-                              &tkItmRed);                   // Ptr to function token
-            if (!lpSymTmp)
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
                 goto ERROR_EXIT;
-        } else
-            *((LPAPLNESTED) lpMemRes)++ =
-              CopySymGlbDir (tkItmRed.tkData.tkGlbData);
-        // Free the accumulated reduction token
-        FreeResult (&tkItmRed);
-    } // End FOR/FOR
+
+////////////// Calc result index -- unneeded as we compute the result in row major order
+////////////uRes = 1 * uOutRht + aplRestRht * uOutLft;
+////////////
+            // Trundle through the inner dimensions, back to front
+            for (iInnMax = aplInnrMax - 1; iInnMax >= 0; iInnMax--)
+            {
+                APLUINT uInnLft,            // Index into left arg
+                        uInnRht;            // ...        right ...
+
+                // Calc left inner index, taking into account scalar extension
+                if (IsUnitDim (aplColsLft))
+                    uInnLft = 1 * 0       + aplColsLft * uOutLft;
+                else
+                    uInnLft = 1 * iInnMax + aplColsLft * uOutLft;
+
+                // Calc right inner index, taking into account scalar extension
+                if (IsUnitDim (aplFrstRht))
+                    uInnRht = 1 * uOutRht + aplRestRht * 0      ;
+                else
+                    uInnRht = 1 * uOutRht + aplRestRht * iInnMax;
+
+                // If the left arg is an array, ...
+                if (hGlbLft)
+                {
+                    // Get the next left arg value
+                    GetNextValueGlb (hGlbLft, uInnLft, &hGlbItm, &aplLongestLft, &immTypeItm);
+
+                    // If the item is an array, ...
+                    if (hGlbItm)
+                    {
+                        // Fill in the left arg item token
+                        tkItmLft.tkFlags.TknType = TKT_VARARRAY;
+                        tkItmLft.tkFlags.ImmType = IMMTYPE_ERROR;
+////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+                        tkItmLft.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
+                    } else
+                    {
+                        // Fill in the left arg item token
+                        tkItmLft.tkFlags.TknType = TKT_VARIMMED;
+                        tkItmLft.tkFlags.ImmType = immTypeItm;
+////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+                        tkItmLft.tkData.tkLongest = aplLongestLft;
+                    } // End IF/ELSE
+                } // End IF
+
+                // If the right arg is an array, ...
+                if (hGlbRht)
+                {
+                    // Get the next right arg value
+                    GetNextValueGlb (hGlbRht, uInnRht, &hGlbItm, &aplLongestRht, &immTypeItm);
+
+                    // If the item is an array, ...
+                    if (hGlbItm)
+                    {
+                        // Fill in the right arg item token
+                        tkItmRht.tkFlags.TknType = TKT_VARARRAY;
+                        tkItmRht.tkFlags.ImmType = IMMTYPE_ERROR;
+////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+                        tkItmRht.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
+                    } else
+                    {
+                        // Fill in the right arg item token
+                        tkItmRht.tkFlags.TknType = TKT_VARIMMED;
+                        tkItmRht.tkFlags.ImmType = immTypeItm;
+////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+                        tkItmRht.tkData.tkLongest = aplLongestRht;
+                    } // End IF/ELSE
+                } // End IF
+
+                // Execute the right operand between the left & right items
+                if (lpPrimProtoRht)
+                    // Note that we cast the function strand to LPTOKEN
+                    //   to bridge the two types of calls -- one to a primitive
+                    //   function which takes a function token, and one to a
+                    //   primitive operator which takes a function strand
+                    lpYYRes = (*lpPrimProtoRht) (&tkItmLft,         // Ptr to left arg token
+                                        (LPTOKEN) lpYYFcnStrRht,    // Ptr to right operand function strand
+                                                 &tkItmRht,         // Ptr to right arg token
+                                                  lptkAxis);        // Ptr to axis token (may be NULL)
+                else
+                    lpYYRes = ExecFuncStr_EM_YY (&tkItmLft,         // Ptr to left arg token
+                                                  lpYYFcnStrRht,    // Ptr to right operand function strand
+                                                 &tkItmRht,         // Ptr to right arg token
+                                                  lptkAxis);        // Ptr to axis token (may be NULL)
+                // Free the left & right arg tokens
+                FreeResult (&tkItmLft);
+                FreeResult (&tkItmRht);
+
+                // If it succeeded, ...
+                if (lpYYRes)
+                {
+                    // If this is the first time, there's no reduction
+                    if (iInnMax EQ (APLINT) (aplInnrMax - 1))
+                    {
+                        // Copy the result to the accumulated reduction token
+                        tkItmRed = lpYYRes->tkToken;
+
+                        // Free the result item (but not the storage)
+                        YYFree (lpYYRes); lpYYRes = NULL;
+                    } else
+                    {
+                        // Execute the left operand between the item result and the accumulated reduction
+                        if (lpPrimProtoLft)
+                            // Note that we cast the function strand to LPTOKEN
+                            //   to bridge the two types of calls -- one to a primitive
+                            //   function which takes a function token, and one to a
+                            //   primitive operator which takes a function strand
+                            lpYYRes2 = (*lpPrimProtoLft) (&lpYYRes->tkToken, // Ptr to left arg token
+                                                 (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
+                                                          &tkItmRed,         // Ptr to right arg token
+                                                           lptkAxis);        // Ptr to axis token (may be NULL)
+                        else
+                            lpYYRes2 = ExecFuncStr_EM_YY (&lpYYRes->tkToken, // Ptr to left arg token
+                                                           lpYYFcnStrLft,    // Ptr to left operand function strand
+                                                          &tkItmRed,         // Ptr to right arg token
+                                                           lptkAxis);        // Ptr to axis token (may be NULL)
+                        // Free the result item & reduction tokens
+                        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+                        FreeResult (&tkItmRed);
+
+                        // If it succeeded, ...
+                        if (lpYYRes2)
+                        {
+                            // Copy the result to the accumulated reduction token
+                            tkItmRed = lpYYRes2->tkToken;
+
+                            // Free the result item (but not the storage)
+                            YYFree (lpYYRes2); lpYYRes2 = NULL;
+                        } else
+                            goto ERROR_EXIT;
+                    } // End IF/ELSE
+                } else
+                {
+                    // If this is not the first time, free the reduction result
+                    if (iInnMax EQ (APLINT) (aplInnrMax - 1))
+                        FreeResult (&tkItmRed);
+
+                    goto ERROR_EXIT;
+                } // End IF/ELSE
+            } // End FOR
+
+            // Save the accumulated reduction in the result
+
+            // If the accumulated reduction is an immediate, ...
+            if (tkItmRed.tkFlags.TknType EQ TKT_VARIMMED)
+            {
+                *((LPAPLNESTED) lpMemRes)++ =
+                lpSymTmp =
+                  MakeSymEntry_EM (tkItmRed.tkFlags.ImmType,    // Immediate type
+                                  &tkItmRed.tkData.tkLongest,   // Ptr to immediate value
+                                  &tkItmRed);                   // Ptr to function token
+                if (!lpSymTmp)
+                    goto ERROR_EXIT;
+            } else
+                *((LPAPLNESTED) lpMemRes)++ =
+                  CopySymGlbDir (tkItmRed.tkData.tkGlbData);
+            // Free the accumulated reduction token
+            FreeResult (&tkItmRed);
+        } // End FOR/FOR
+    } // End IF
 YYALLOC_EXIT:
     // Unlock the result global memory in case TypeDemote actually demotes
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -785,8 +1172,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
@@ -822,6 +1209,11 @@ RIGHT_NONCE_EXIT:
 
 LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 

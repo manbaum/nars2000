@@ -27,9 +27,6 @@ typedef struct tagSTART_ADDRESSES
 } START_ADDRESSES, *LPSTART_ADDRESSES;
 
 
-LRESULT WINAPI EditWndProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 #ifndef PROTO
   START_ADDRESSES StartAddresses[] =
   {
@@ -37,7 +34,7 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "AssignName_EM"             , (LPUCHAR) &AssignName_EM              ,
     "GetNameType"               , (LPUCHAR) &GetNameType                ,
     "AssignArrayCommon"         , (LPUCHAR) &AssignArrayCommon          ,
-    "AssignSelectSpec_EM"       , (LPUCHAR) &AssignSelectSpec_EM        ,
+    "AssignNamedVars_EM"        , (LPUCHAR) &AssignNamedVars_EM         ,
     "ModifyAssignNameVals_EM"   , (LPUCHAR) &ModifyAssignNameVals_EM    ,
 
     // axisfns.c
@@ -69,11 +66,11 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "CS_CASE_Stmt"              , (LPUCHAR) &CS_CASE_Stmt               ,
     "CS_CONTINUE_Stmt"          , (LPUCHAR) &CS_CONTINUE_Stmt           ,
     "CS_ELSE_Stmt"              , (LPUCHAR) &CS_ELSE_Stmt               ,
+    "CS_ENDFOR_Stmt"            , (LPUCHAR) &CS_ENDFOR_Stmt             ,
     "CS_ENDREPEAT_Stmt"         , (LPUCHAR) &CS_ENDREPEAT_Stmt          ,
-    "CS_GOTO_Stmt_EM"           , (LPUCHAR) &CS_GOTO_Stmt_EM            ,
+    "CS_FOR_Stmt_EM"            , (LPUCHAR) &CS_FOR_Stmt_EM             ,
     "CS_IF_Stmt_EM"             , (LPUCHAR) &CS_IF_Stmt_EM              ,
     "CS_LEAVE_Stmt"             , (LPUCHAR) &CS_LEAVE_Stmt              ,
-    "CS_RETURN_Stmt"            , (LPUCHAR) &CS_RETURN_Stmt             ,
     "CS_SELECT_Stmt_EM"         , (LPUCHAR) &CS_SELECT_Stmt_EM          ,
     "CS_SKIPCASE_Stmt"          , (LPUCHAR) &CS_SKIPCASE_Stmt           ,
     "CS_SKIPEND_Stmt"           , (LPUCHAR) &CS_SKIPEND_Stmt            ,
@@ -122,7 +119,14 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "FormatSTE"                 , (LPUCHAR) &FormatSTE                  ,
 
     // display.c
+    "ArrayDisplay_EM"           , (LPUCHAR) &ArrayDisplay_EM            ,
     "DisplayGlbArr_EM"          , (LPUCHAR) &DisplayGlbArr_EM           ,
+    "FormatImmed"               , (LPUCHAR) &FormatImmed                ,
+    "FormatImmedFC"             , (LPUCHAR) &FormatImmedFC              ,
+    "FormatAplint"              , (LPUCHAR) &FormatAplint               ,
+    "FormatAplintFC"            , (LPUCHAR) &FormatAplintFC             ,
+    "FormatFloat"               , (LPUCHAR) &FormatFloat                ,
+    "FormatFloatFC"             , (LPUCHAR) &FormatFloatFC              ,
 
     // dtoa.c
 
@@ -169,10 +173,11 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "DisplayFcnLine"            , (LPUCHAR) &DisplayFcnLine             ,
   #endif
     "CheckDfnExitError_EM"      , (LPUCHAR) &CheckDfnExitError_EM       ,
-    "Unlocalize"                , (LPUCHAR) &Unlocalize                 ,
+    "UnlocalizeSTEs"            , (LPUCHAR) &UnlocalizeSTEs             ,
     "LocalizeLabels"            , (LPUCHAR) &LocalizeLabels             ,
     "InitVarSTEs"               , (LPUCHAR) &InitVarSTEs                ,
     "InitFcnSTEs"               , (LPUCHAR) &InitFcnSTEs                ,
+    "UninitOprSTEs"             , (LPUCHAR) &UninitOprSTEs              ,
     "LocalizeSymEntries"        , (LPUCHAR) &LocalizeSymEntries         ,
 
     // execfns.c
@@ -196,6 +201,23 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // getfns.c
     "GetFirstItemToken"         , (LPUCHAR) &GetFirstItemToken          ,
+    "GetNextValueTokenIntoToken", (LPUCHAR) &GetNextValueTokenIntoToken ,
+    "GetNextValueToken"         , (LPUCHAR) &GetNextValueToken          ,
+    "GetFirstValueToken"        , (LPUCHAR) &GetFirstValueToken         ,
+    "GetFirstValueImm"          , (LPUCHAR) &GetFirstValueImm           ,
+    "GetFirstValueGlb"          , (LPUCHAR) &GetFirstValueGlb           ,
+    "GetNextValueMemIntoToken"  , (LPUCHAR) &GetNextValueMemIntoToken   ,
+    "GetNextInteger"            , (LPUCHAR) &GetNextInteger             ,
+    "GetNextFloat"              , (LPUCHAR) &GetNextFloat               ,
+    "GetNextHetero"             , (LPUCHAR) &GetNextHetero              ,
+    "GetNextItemGlb"            , (LPUCHAR) &GetNextItemGlb             ,
+    "GetNextValueGlb"           , (LPUCHAR) &GetNextValueGlb            ,
+    "GetNextValueMem"           , (LPUCHAR) &GetNextValueMem            ,
+    "GetNextItemMem"            , (LPUCHAR) &GetNextItemMem             ,
+    "GetNextValueMemSub"        , (LPUCHAR) &GetNextValueMemSub         ,
+    "GetGlbHandle"              , (LPUCHAR) &GetGlbHandle               ,
+    "GetGlbPtrs"                , (LPUCHAR) &GetGlbPtrs                 ,
+    "GetGlbPtrs_LOCK"           , (LPUCHAR) &GetGlbPtrs_LOCK            ,
 
     // getreent.c
     "__getreent"                , (LPUCHAR) &__getreent                 ,
@@ -229,6 +251,13 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                 ,
 
     // pf_*.c
+
+    // pf_deltastile.c
+    "PrimFnMonGradeCommon_EM_YY", (LPUCHAR) &PrimFnMonGradeCommon_EM_YY ,
+    "PermVecGrade"              , (LPUCHAR) &PermVecGrade               ,
+    "BoolVecGrade"              , (LPUCHAR) &BoolVecGrade               ,
+    "PrimFnDydGradeCommon_EM_YY", (LPUCHAR) &PrimFnDydGradeCommon_EM_YY ,
+    "PrimFnGradeCompare"        , (LPUCHAR) &PrimFnGradeCompare         ,
 
     // pf_dtack.c
     "PrimFnDownTack_EM_YY"      , (LPUCHAR) &PrimFnDownTack_EM_YY       ,
@@ -269,6 +298,13 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     // pf_query.c
     "PrimFnQuery_EM_YY"         , (LPUCHAR) &PrimFnQuery_EM_YY          ,
     "PrimFnDydQuery_EM_YY"      , (LPUCHAR) &PrimFnDydQuery_EM_YY       ,
+
+    // pf_squad.c
+    "PrimFnSquad_EM_YY"         , (LPUCHAR) &PrimFnSquad_EM_YY          ,
+    "PrimProtoFnSquad_EM_YY"    , (LPUCHAR) &PrimProtoFnSquad_EM_YY     ,
+    "PrimFnMonSquad_EM_YY"      , (LPUCHAR) &PrimFnMonSquad_EM_YY       ,
+    "PrimFnDydSquad_EM_YY"      , (LPUCHAR) &PrimFnDydSquad_EM_YY       ,
+    "PrimFnDydSquadGlb_EM_YY"   , (LPUCHAR) &PrimFnDydSquadGlb_EM_YY    ,
 
     // pf_utack.c
     "PrimFnUpTack_EM_YY"        , (LPUCHAR) &PrimFnUpTack_EM_YY         ,
@@ -334,15 +370,15 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     "CopySymGlbInd"             , (LPUCHAR) &CopySymGlbInd              ,
     "CopySymGlbDirAsGlb"        , (LPUCHAR) &CopySymGlbDirAsGlb         ,
     "CopyArray_EM"              , (LPUCHAR) &CopyArray_EM               ,
-    "CopyGlbAsType"             , (LPUCHAR) &CopyGlbAsType              ,
+    "CopyGlbAsType_EM"          , (LPUCHAR) &CopyGlbAsType_EM           ,
     "CheckRankLengthError_EM"   , (LPUCHAR) &CheckRankLengthError_EM    ,
     "RoundUpBits8"              , (LPUCHAR) &RoundUpBits8               ,
     "RoundUpBitsInArray"        , (LPUCHAR) &RoundUpBitsInArray         ,
     "BytesIn"                   , (LPUCHAR) &BytesIn                    ,
     "abs64"                     , (LPUCHAR) &abs64                      ,
-    "iadd64"                    , (LPUCHAR) &iadd64                     ,
-    "isub64"                    , (LPUCHAR) &isub64                     ,
-    "imul64"                    , (LPUCHAR) &imul64                     ,
+    "_iadd64"                   , (LPUCHAR) &_iadd64                    ,
+    "_isub64"                   , (LPUCHAR) &_isub64                    ,
+    "_imul64"                   , (LPUCHAR) &_imul64                    ,
     "CalcArraySize"             , (LPUCHAR) &CalcArraySize              ,
     "CalcHeaderSize"            , (LPUCHAR) &CalcHeaderSize             ,
     "CalcFcnSize"               , (LPUCHAR) &CalcFcnSize                ,
@@ -442,14 +478,16 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
   #ifdef DEBUG
     "HshTabFrisk"               , (LPUCHAR) &HshTabFrisk                ,
   #endif
-    "MaskTheHash"               , (LPUCHAR) &MaskTheHash               ,
-    "HshTabDelink"              , (LPUCHAR) &HshTabDelink              ,
-    "HshTabLink"                , (LPUCHAR) &HshTabLink                ,
-    "HshTabResize_EM"           , (LPUCHAR) &HshTabResize_EM           ,
-    "SymTabResize_EM"           , (LPUCHAR) &SymTabResize_EM           ,
-    "HshTabSplitNextEntry_EM"   , (LPUCHAR) &HshTabSplitNextEntry_EM   ,
+    "MaskTheHash"               , (LPUCHAR) &MaskTheHash                ,
+    "HshTabDelink"              , (LPUCHAR) &HshTabDelink               ,
+    "HshTabLink"                , (LPUCHAR) &HshTabLink                 ,
+    "HshTabResize_EM"           , (LPUCHAR) &HshTabResize_EM            ,
+    "SymTabResize_EM"           , (LPUCHAR) &SymTabResize_EM            ,
+    "HshTabSplitNextEntry_EM"   , (LPUCHAR) &HshTabSplitNextEntry_EM    ,
     "FindNextFreeUsingHash_SPLIT_EM", (LPUCHAR) FindNextFreeUsingHash_SPLIT_EM ,
-    "FindNextFreeUsingHTE_EM"   , (LPUCHAR) &FindNextFreeUsingHTE_EM   ,
+    "FindNextFreeUsingHTE_EM"   , (LPUCHAR) &FindNextFreeUsingHTE_EM    ,
+    "SymTabLookupNameLength"    , (LPUCHAR) &SymTabLookupNameLength     ,
+    "MakeSymEntry_EM"           , (LPUCHAR) &MakeSymEntry_EM            ,
 
     // symtrans.c
     "FcnTrans"                  , (LPUCHAR) &FcnTrans                   ,

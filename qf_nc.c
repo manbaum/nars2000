@@ -121,7 +121,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
     // The right arg may be of three forms:
     //   1.  a scalar    name  as in 'a'
-    //   2.  a vector of name  as in 'a' (not 'a b c')
+    //   2.  a vector of names as in 'a' or 'a b c'
     //   3.  a matrix of names as in 3 1{rho}'abc'
 
     // Get the attributes (Type, NELM, and Rank)
@@ -129,7 +129,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
-    if (aplRankRht > 2)
+    if (IsRank3P (aplRankRht))
         goto RANK_EXIT;
 
     // Check for DOMAIN ERROR
@@ -206,7 +206,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                                                 &stFlags);
             // If not found, return NAMECLASS_INV or NAMECLASS_AVL
             if (!lpSymEntry)
-                *lpMemDataRes++ = ValidName ((LPAPLCHAR) &aplLongestRht, 1)
+                *lpMemDataRes++ = IsValidName ((LPAPLCHAR) &aplLongestRht, 1)
                                 ? NAMECLASS_AVL : NAMECLASS_INV;
             else
                 *lpMemDataRes++ = CalcNameClass (lpSymEntry);
@@ -240,7 +240,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                                                         &stFlags);
                     // If not found, return NAMECLASS_INV or NAMECLASS_AVL
                     if (!lpSymEntry)
-                        *lpMemDataRes++ = ValidName (lpMemDataStart, (UINT) (&lpMemDataRht[uRht] - lpMemDataStart))
+                        *lpMemDataRes++ = IsValidName (lpMemDataStart, (UINT) (&lpMemDataRht[uRht] - lpMemDataStart))
                                         ? NAMECLASS_AVL : NAMECLASS_INV;
                     else
                         *lpMemDataRes++ = CalcNameClass (lpSymEntry);
@@ -273,7 +273,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                                                      &stFlags);
                 // If not found, return NAMECLASS_INV or NAMECLASS_AVL
                 if (!lpSymEntry)
-                    *lpMemDataRes++ = ValidName (&lpMemDataStart[uCol], (UINT) (aplNELMCol - uCol))
+                    *lpMemDataRes++ = IsValidName (&lpMemDataStart[uCol], (UINT) (aplNELMCol - uCol))
                                     ? NAMECLASS_AVL : NAMECLASS_INV;
                 else
                     *lpMemDataRes++ = CalcNameClass (lpSymEntry);
@@ -293,8 +293,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -346,90 +346,83 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $ValidName
+//  $IsValidName
 //
 //  Determine if a name is validly constructed
 //
 //  A name is validly constructed if
 //
 //   first:  QUAD | QUOTEQUAD | ALPHABETIC;
-//   second: ALPHABETIC | NUMERIC | OVERBAR;
-//   name:   OVERBAR | ALPHA | OMEGA | first second;
+//   second: ALPHABETIC | NUMERIC | UNDERBAR | OVERBAR;
+//   name:   ALPHA | OMEGA | first second;
 //
 //***************************************************************************
 
-UBOOL ValidName
+UBOOL IsValidName
     (LPAPLCHAR lpaplChar,
      UINT      uLen)
 
 {
     UINT uNam;
 
+    // Ensure non-empty
+    if (uLen EQ 0)
+        return FALSE;
+
+    // Check for direct names
+    if (uLen EQ 1 && IsDirectName (lpaplChar[0]))
+        return TRUE;
+
     // Check the first char
     if (IsSysName (lpaplChar)
-     || Valid1stCharInName (lpaplChar[0]))
+     || IsValid1stCharInName (lpaplChar[0]))
     {
-        // If the first char is overbar | alpha | omega,
-        //   it must be the only char
-        if ((lpaplChar[0] EQ UTF16_OVERBAR
-          || lpaplChar[0] EQ UTF16_ALPHA
-          || lpaplChar[0] EQ UTF16_OMEGA)
-         && uLen NE 1)
-            return FALSE;
-
         // Loop through the rest of the chars
         for (uNam = 1; uNam < uLen; uNam++)
-        if (!Valid2ndCharInName (lpaplChar[uNam]))
+        if (!IsValid2ndCharInName (lpaplChar[uNam]))
             return FALSE;
         return TRUE;
     } // End IF
 
     return FALSE;
-} // End ValidName
+} // End IsValidName
 
 
 //***************************************************************************
-//  $Valid1stCharInName
+//  $IsValid1stCharInName
 //
 //  Return TRUE iff the given char is valid as a first char in a name
 //***************************************************************************
 
-UBOOL Valid1stCharInName
+UBOOL IsValid1stCharInName
     (WCHAR wch)
 
 {
     return (wch EQ UTF16_DELTA
          || wch EQ UTF16_DELTAUNDERBAR
-         || wch EQ UTF16_OVERBAR
-         || wch EQ UTF16_ALPHA
-         || wch EQ UTF16_OMEGA
          || (L'a' <= wch
           &&         wch <= L'z')
          || (L'A' <= wch
           &&         wch <= L'Z'));
-} // End Valid1stCharInName
+} // End IsValid1stCharInName
 
 
 //***************************************************************************
-//  $Valid2ndCharInName
+//  $IsValid2ndCharInName
 //
 //  Return TRUE iff the given char is valid as a second char in a name
 //***************************************************************************
 
-UBOOL Valid2ndCharInName
+UBOOL IsValid2ndCharInName
     (WCHAR wch)
 
 {
-    return (wch EQ UTF16_DELTA
-         || wch EQ UTF16_DELTAUNDERBAR
+    return (IsValid1stCharInName (wch)
+         || wch EQ UTF16_UNDERBAR
          || wch EQ UTF16_OVERBAR
-         || (L'a' <= wch
-          &&         wch <= L'z')
-         || (L'A' <= wch
-          &&         wch <= L'Z')
          || (L'0' <= wch
           &&         wch <= L'9'));
-} // End Valid2ndCharInName
+} // End IsValid2ndCharInName
 
 
 //***************************************************************************
@@ -446,6 +439,7 @@ UBOOL Valid2ndCharInName
 //   5 = System variable
 //   6 = System function
 //   7 = System label
+//   8 = Magic Function
 //
 //  Note that )NMS in <syscmds.c> assumes that the Name Class
 //    is a single digit.  If you add enough classes to invalidate
@@ -460,7 +454,11 @@ APLINT CalcNameClass
     switch (lpSymEntry->stFlags.stNameType)
     {
         case NAMETYPE_UNK:
-            return NAMECLASS_AVL;
+            // Check for Magic Functions
+            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MF)
+                return NAMECLASS_MF;
+            else
+                return NAMECLASS_AVL;
 
         case NAMETYPE_VAR:
             if (lpSymEntry->stFlags.DfnLabel)
@@ -526,7 +524,8 @@ UBOOL CalcNumIDs
     (APLNELM    aplNELMRht,         // Right arg NELM
      APLRANK    aplRankRht,         // Right arg rank
      APLLONGEST aplLongestRht,      // Right arg longest
-     UBOOL      bVectorOfNames,     // TRUE iff we allow multiple names in a vector (e.g., 'a b c')
+     UBOOL      bMultipleNames,     // TRUE iff we allow multiple names in
+                                    //   a vector (e.g., 'a b c') or a matrix
      LPAPLCHAR  lpMemRht,           // Ptr to right arg global memory
      LPAPLNELM  lpaplNELMRes,       // Ptr to # right arg IDs
      LPAPLNELM  lpaplNELMCol)       // Ptr to # right arg cols (matrix only)
@@ -559,7 +558,7 @@ UBOOL CalcNumIDs
                 {
                     // If multiple names in a vector are not allowed
                     //   and this is the second name, ...
-                    if (!bVectorOfNames
+                    if (!bMultipleNames
                      && IsSingleton (*lpaplNELMRes))
                         return FALSE;
 
@@ -576,13 +575,15 @@ UBOOL CalcNumIDs
             break;
 
         case 2:
+            if (!bMultipleNames)
+                return FALSE;
             *lpaplNELMRes = (VarArrayBaseToDim (lpMemRht))[0];
             *lpaplNELMCol = (VarArrayBaseToDim (lpMemRht))[1];
 
             break;
 
         defstop
-            break;
+            return FALSE;
     } // End IF
 
     return TRUE;

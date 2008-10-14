@@ -470,7 +470,7 @@ UBOOL DisplayGlbArr_EM
         } // End SWITCH
 
         // Check for Ctrl-Break
-        if (*lpbCtrlBreak)
+        if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Propagate the row & col count up the line
@@ -556,7 +556,7 @@ UBOOL DisplayGlbArr_EM
         } // End SWITCH
 
         // Check for Ctrl-Break
-        if (*lpbCtrlBreak)
+        if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // If we didn't use raw output in the
@@ -596,7 +596,7 @@ UBOOL DisplayGlbArr_EM
                 while (aplDimTmp > uQuadPW)
                 {
                     // Check for Ctrl-Break
-                    if (*lpbCtrlBreak)
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Because AppendLine works on single zero-terminated lines,
@@ -615,7 +615,7 @@ UBOOL DisplayGlbArr_EM
                 } // End WHILE
 
                 // Check for Ctrl-Break
-                if (*lpbCtrlBreak)
+                if (CheckCtrlBreak (*lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Output whatever remains

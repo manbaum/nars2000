@@ -222,7 +222,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = 1;
     lpHeader->Rank       = 1;
@@ -273,8 +273,8 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -322,7 +322,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     // Traverse the array counting the # simple scalars
     //   and keeping track of the common storage type --
     //   it'll be simple homogeneous or heterogeneous.
-    aplTypeRes = ARRAY_LIST;    // Initialize storage type
+    aplTypeRes = ARRAY_INIT;    // Initialize storage type
     aplNELMRes = 0;             // ...        count
     PrimFnMonEpsilonGlbCount (hGlbRht, &aplTypeRes, &aplNELMRes, &aplTypePro);
 
@@ -348,7 +348,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -375,8 +375,8 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -424,17 +424,6 @@ void PrimFnMonEpsilonGlbCount
     APLNELM  aplNELMRht;
     APLRANK  aplRankRht;
     APLUINT  uRht;
-    static APLSTYPE aplTypeArr[ARRAY_LENGTH][ARRAY_LENGTH] =
-    //      BOOL          INT           FLOAT         CHAR          HETERO        NESTED        INIT          APA
-    {{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_BOOL  , ARRAY_INT   },  // BOOL
-     {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_INT   , ARRAY_INT   },  // INT
-     {ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_FLOAT , ARRAY_FLOAT },  // FLOAT
-     {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_CHAR  , ARRAY_HETERO},  // CHAR
-     {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_HETERO, ARRAY_HETERO},  // HETERO
-     {ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED},  // NESTED
-     {ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_LIST  , ARRAY_INT   },  // INIT
-     {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_INT   , ARRAY_INT   },  // APA
-    };
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -459,10 +448,10 @@ void PrimFnMonEpsilonGlbCount
         case ARRAY_HETERO:
             // Empty args don't contribute to the result,
             //   so we don't want to risk changing the storage
-            //   type to HETERO by running through aplTypeArr.
+            //   type to HETERO by running through aTypePromote.
             if (!IsEmpty (aplNELMRht))
             {
-                *lpaplTypeRes = aplTypeArr[*lpaplTypeRes][aplTypeRht];
+                *lpaplTypeRes = aTypePromote[*lpaplTypeRes][aplTypeRht];
                 (*lpaplNELMRes) += aplNELMRht;
             } else
                 *lpaplTypePro = aplTypeRht;
@@ -482,7 +471,7 @@ void PrimFnMonEpsilonGlbCount
             switch (GetPtrTypeInd (lpMemRht))
             {
                 case PTRTYPE_STCONST:
-                    *lpaplTypeRes = aplTypeArr[*lpaplTypeRes][TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)];
+                    *lpaplTypeRes = aTypePromote[*lpaplTypeRes][TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)];
                     (*lpaplNELMRes)++;
 
                     break;
@@ -526,18 +515,26 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    APLSTYPE   aplTypeRht;          // Right arg storage type
-    APLNELM    aplNELMRht;          // Right arg NELM
-    APLRANK    aplRankRht;          // Right arg rank
-    LPVOID     lpMemRht;            // Ptr to right arg global memory
-    UINT       uBitMask = 0x01;     // Bit mask for marching through Booleans
-    APLUINT    uRht;                // Right arg loop counter
-    APLUINT    ByteRes;             // # bytes in the result
-    APLINT     apaOffRht,           // Right arg APA offset
-               apaMulRht;           // ...           multiplier
-    APLLONGEST aplVal;              // Temporary value
-    UBOOL      bRet = FALSE;        // TRUE iff the result is valid
-    LPSYMENTRY lpSymTmp;            // Ptr to temporary LPSYMENTRY
+    APLSTYPE      aplTypeRht;       // Right arg storage type
+    APLNELM       aplNELMRht;       // Right arg NELM
+    APLRANK       aplRankRht;       // Right arg rank
+    LPVOID        lpMemRht;         // Ptr to right arg global memory
+    UINT          uBitMask = 0x01;  // Bit mask for marching through Booleans
+    APLUINT       uRht;             // Right arg loop counter
+    APLUINT       ByteRes;          // # bytes in the result
+    APLINT        apaOffRht,        // Right arg APA offset
+                  apaMulRht;        // ...           multiplier
+    APLLONGEST    aplVal;           // Temporary value
+    UBOOL         bRet = FALSE;     // TRUE iff the result is valid
+    LPSYMENTRY    lpSymTmp;         // Ptr to temporary LPSYMENTRY
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -594,7 +591,11 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         // Loop through the elements
                         for (uRht = 0; uRht < aplNELMRht; uRht++)
                         {
-                            *(*(LPAPLBOOL *) lplpMemRes) |= ((uBitMask & *((LPAPLBOOL) lpMemRht)) ? 1 : 0) << *lpuBitIndex;
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *(*(LPAPLBOOL *) lplpMemRes) |= ((uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE) << *lpuBitIndex;
 
                             // Check for end-of-byte
                             if (++*lpuBitIndex EQ NBIB)
@@ -620,50 +621,56 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_NESTED:                  // Res = BOOL  , Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
-                    // Split cases based upon the ptr type
-                    switch (GetPtrTypeInd (lpMemRht))
                     {
-                        case PTRTYPE_STCONST:       // Res = BOOL  , Rht = NESTED:BOOL/INT/FLOAT/CHAR
-                            // Split cases based upon the right arg's immediate type
-                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
-                            {
-                                case IMMTYPE_BOOL:  // Res = BOOL  , Rht = NESTED:BOOL
-                                    *(*(LPAPLBOOL *) lplpMemRes) |= ((*(LPAPLHETERO) lpMemRht)->stData.stBoolean) << *lpuBitIndex;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
 
-                                    // Check for end-of-byte
-                                    if (++*lpuBitIndex EQ NBIB)
-                                    {
-                                        *lpuBitIndex = 0;               // Start over
-                                        (*(LPAPLBOOL *) lplpMemRes)++;  // Skip to next byte
-                                    } // End IF
+                        // Split cases based upon the ptr type
+                        switch (GetPtrTypeInd (lpMemRht))
+                        {
+                            case PTRTYPE_STCONST:       // Res = BOOL  , Rht = NESTED:BOOL/INT/FLOAT/CHAR
+                                // Split cases based upon the right arg's immediate type
+                                switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:  // Res = BOOL  , Rht = NESTED:BOOL
+                                        *(*(LPAPLBOOL *) lplpMemRes) |= ((*(LPAPLHETERO) lpMemRht)->stData.stBoolean) << *lpuBitIndex;
 
-                                    break;
+                                        // Check for end-of-byte
+                                        if (++*lpuBitIndex EQ NBIB)
+                                        {
+                                            *lpuBitIndex = 0;               // Start over
+                                            (*(LPAPLBOOL *) lplpMemRes)++;  // Skip to next byte
+                                        } // End IF
 
-                                case IMMTYPE_INT:   // Res = BOOL  , Rht = NESTED:INT    (Can't happen w/Boolean result)
-                                case IMMTYPE_FLOAT: // Res = BOOL  , Rht = NESTED:FLOAT  (...)
-                                case IMMTYPE_CHAR:  // Res = BOOL  , Rht = NESTED:CHAR   (...)
-                                defstop
-                                    break;
-                            } // End SWITCH
+                                        break;
 
-                            break;
+                                    case IMMTYPE_INT:   // Res = BOOL  , Rht = NESTED:INT    (Can't happen w/Boolean result)
+                                    case IMMTYPE_FLOAT: // Res = BOOL  , Rht = NESTED:FLOAT  (...)
+                                    case IMMTYPE_CHAR:  // Res = BOOL  , Rht = NESTED:CHAR   (...)
+                                    defstop
+                                        break;
+                                } // End SWITCH
 
-                        case PTRTYPE_HGLOBAL:       // Res = BOOL  , Rht = NESTED:NESTED
-                            // It's a valid HGLOBAL variable array
-                            Assert (IsGlbTypeVarInd (lpMemRht));
+                                break;
 
-                            // Copy the data to the result
-                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
-                                                             lplpMemRes,
-                                                             lpuBitIndex,
-                                                             ClrPtrTypeIndAsGlb (lpMemRht),
-                                                             lptkFunc))
-                                goto ERROR_EXIT;
-                            break;
+                            case PTRTYPE_HGLOBAL:       // Res = BOOL  , Rht = NESTED:NESTED
+                                // It's a valid HGLOBAL variable array
+                                Assert (IsGlbTypeVarInd (lpMemRht));
 
-                        defstop
-                            break;
-                    } // End FOR/SWITCH
+                                // Copy the data to the result
+                                if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                                 lplpMemRes,
+                                                                 lpuBitIndex,
+                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 lptkFunc))
+                                    goto ERROR_EXIT;
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
 
                     break;
 
@@ -686,7 +693,11 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
-                        *(*(LPAPLINT *) lplpMemRes)++ = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        *(*(LPAPLINT *) lplpMemRes)++ = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE;
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -715,53 +726,66 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_APA:                     // Res = INT   , Rht = APA
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *(*(LPAPLINT *) lplpMemRes)++ = apaOffRht + apaMulRht * uRht;
+                    } // End FOR
+
                     break;
 
                 case ARRAY_NESTED:                  // Res = INT   , Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
-                    // Split cases based upon the ptr type
-                    switch (GetPtrTypeInd (lpMemRht))
                     {
-                        case PTRTYPE_STCONST:       // Res = INT   , Rht = NESTED:BOOL/INT/FLOAT/CHAR
-                            // Split cases based upon the right arg's immediate type
-                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
-                            {
-                                case IMMTYPE_BOOL:  // Res = INT   , Rht = NESTED:BOOL
-                                    *(*(LPAPLINT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
 
-                                    break;
+                        // Split cases based upon the ptr type
+                        switch (GetPtrTypeInd (lpMemRht))
+                        {
+                            case PTRTYPE_STCONST:       // Res = INT   , Rht = NESTED:BOOL/INT/FLOAT/CHAR
+                                // Split cases based upon the right arg's immediate type
+                                switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:  // Res = INT   , Rht = NESTED:BOOL
+                                        *(*(LPAPLINT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
 
-                                case IMMTYPE_INT:   // Res = INT   , Rht = NESTED:INT
-                                    *(*(LPAPLINT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
+                                        break;
 
-                                    break;
+                                    case IMMTYPE_INT:   // Res = INT   , Rht = NESTED:INT
+                                        *(*(LPAPLINT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
 
-                                case IMMTYPE_FLOAT: // Res = INT   , Rht = NESTED:FLOAT  (Can't happen w/Integer result)
-                                case IMMTYPE_CHAR:  // Res = INT   , Rht = NESTED:CHAR   (...)
-                                defstop
-                                    break;
-                            } // End SWITCH
+                                        break;
 
-                            break;
+                                    case IMMTYPE_FLOAT: // Res = INT   , Rht = NESTED:FLOAT  (Can't happen w/Integer result)
+                                    case IMMTYPE_CHAR:  // Res = INT   , Rht = NESTED:CHAR   (...)
+                                    defstop
+                                        break;
+                                } // End SWITCH
 
-                        case PTRTYPE_HGLOBAL:       // Res = INT   , Rht = NESTED:NESTED
-                            // It's a valid HGLOBAL variable array
-                            Assert (IsGlbTypeVarInd (lpMemRht));
+                                break;
 
-                            // Copy the data to the result
-                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
-                                                             lplpMemRes,
-                                                             lpuBitIndex,
-                                                             ClrPtrTypeIndAsGlb (lpMemRht),
-                                                             lptkFunc))
-                                goto ERROR_EXIT;
-                            break;
+                            case PTRTYPE_HGLOBAL:       // Res = INT   , Rht = NESTED:NESTED
+                                // It's a valid HGLOBAL variable array
+                                Assert (IsGlbTypeVarInd (lpMemRht));
 
-                        defstop
-                            break;
-                    } // End FOR/SWITCH
+                                // Copy the data to the result
+                                if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                                 lplpMemRes,
+                                                                 lpuBitIndex,
+                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 lptkFunc))
+                                    goto ERROR_EXIT;
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
 
                     break;
 
@@ -782,7 +806,11 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
-                        *(*(LPAPLFLOAT *) lplpMemRes)++ = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        *(*(LPAPLFLOAT *) lplpMemRes)++ = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE;
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -800,7 +828,14 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_INT:                     // Res = FLOAT , Rht = INT
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *(*(LPAPLFLOAT *) lplpMemRes)++ = (APLFLOAT) *((LPAPLINT) lpMemRht)++;
+                    } // End FOR
+
                     break;
 
                 case ARRAY_FLOAT:                   // Res = FLOAT , Rht = FLOAT
@@ -817,57 +852,70 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_APA:                     // Res = FLOAT , Rht = APA
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         *(*(LPAPLFLOAT *) lplpMemRes)++ = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uRht);
+                    } // End FOR
+
                     break;
 
                 case ARRAY_NESTED:                  // Res = FLOAT , Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
-                    // Split cases based upon the ptr type
-                    switch (GetPtrTypeInd (lpMemRht))
                     {
-                        case PTRTYPE_STCONST:       // Res = FLOAT , Rht = NESTED:BOOL/INT/FLOAT/CHAR
-                            // Split cases based upon the right arg's immediate type
-                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
-                            {
-                                case IMMTYPE_BOOL:  // Res = FLOAT , Rht = NESTED:BOOL
-                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
 
-                                    break;
+                        // Split cases based upon the ptr type
+                        switch (GetPtrTypeInd (lpMemRht))
+                        {
+                            case PTRTYPE_STCONST:       // Res = FLOAT , Rht = NESTED:BOOL/INT/FLOAT/CHAR
+                                // Split cases based upon the right arg's immediate type
+                                switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:  // Res = FLOAT , Rht = NESTED:BOOL
+                                        *(*(LPAPLFLOAT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
 
-                                case IMMTYPE_INT:   // Res = FLOAT , Rht = NESTED:INT
-                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (APLFLOAT) (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
+                                        break;
 
-                                    break;
+                                    case IMMTYPE_INT:   // Res = FLOAT , Rht = NESTED:INT
+                                        *(*(LPAPLFLOAT *) lplpMemRes)++ = (APLFLOAT) (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
 
-                                case IMMTYPE_FLOAT: // Res = FLOAT , Rht = NESTED:FLOAT
-                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stFloat;
+                                        break;
 
-                                    break;
+                                    case IMMTYPE_FLOAT: // Res = FLOAT , Rht = NESTED:FLOAT
+                                        *(*(LPAPLFLOAT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stFloat;
 
-                                case IMMTYPE_CHAR:  // Res = FLOAT , Rht = NESTED:CHAR   (Can't happen w/Float result)
-                                defstop
-                                    break;
-                            } // End SWITCH
+                                        break;
 
-                            break;
+                                    case IMMTYPE_CHAR:  // Res = FLOAT , Rht = NESTED:CHAR   (Can't happen w/Float result)
+                                    defstop
+                                        break;
+                                } // End SWITCH
 
-                        case PTRTYPE_HGLOBAL:       // Res = FLOAT , Rht = NESTED:NESTED
-                            // It's a valid HGLOBAL variable array
-                            Assert (IsGlbTypeVarInd (lpMemRht));
+                                break;
 
-                            // Copy the data to the result
-                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
-                                                             lplpMemRes,
-                                                             lpuBitIndex,
-                                                             ClrPtrTypeIndAsGlb (lpMemRht),
-                                                             lptkFunc))
-                                goto ERROR_EXIT;
-                            break;
+                            case PTRTYPE_HGLOBAL:       // Res = FLOAT , Rht = NESTED:NESTED
+                                // It's a valid HGLOBAL variable array
+                                Assert (IsGlbTypeVarInd (lpMemRht));
 
-                        defstop
-                            break;
-                    } // End FOR/SWITCH
+                                // Copy the data to the result
+                                if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                                 lplpMemRes,
+                                                                 lpuBitIndex,
+                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 lptkFunc))
+                                    goto ERROR_EXIT;
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
 
                     break;
 
@@ -897,43 +945,49 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_NESTED:                  // Res = CHAR  , Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
-                    // Split cases based upon the ptr type
-                    switch (GetPtrTypeInd (lpMemRht))
                     {
-                        case PTRTYPE_STCONST:       // Res = CHAR  , Rht = NESTED:BOOL/INT/FLOAT/CHAR
-                            // Split cases based upon the right arg's immediate type
-                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
-                            {
-                                case IMMTYPE_CHAR:  // Res = CHAR  , Rht = NESTED:CHAR
-                                    *(*(LPAPLCHAR *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stChar;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
 
-                                    break;
+                        // Split cases based upon the ptr type
+                        switch (GetPtrTypeInd (lpMemRht))
+                        {
+                            case PTRTYPE_STCONST:       // Res = CHAR  , Rht = NESTED:BOOL/INT/FLOAT/CHAR
+                                // Split cases based upon the right arg's immediate type
+                                switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_CHAR:  // Res = CHAR  , Rht = NESTED:CHAR
+                                        *(*(LPAPLCHAR *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stChar;
 
-                                case IMMTYPE_BOOL:  // Res = CHAR  , Rht = NESTED:BOOL    (Can't happen w/Char result)
-                                case IMMTYPE_INT:   // Res = CHAR  , Rht = NESTED:INT     (...)
-                                case IMMTYPE_FLOAT: // Res = CHAR  , Rht = NESTED:FLOAT   (...)
-                                defstop
-                                    break;
-                            } // End SWITCH
+                                        break;
 
-                            break;
+                                    case IMMTYPE_BOOL:  // Res = CHAR  , Rht = NESTED:BOOL    (Can't happen w/Char result)
+                                    case IMMTYPE_INT:   // Res = CHAR  , Rht = NESTED:INT     (...)
+                                    case IMMTYPE_FLOAT: // Res = CHAR  , Rht = NESTED:FLOAT   (...)
+                                    defstop
+                                        break;
+                                } // End SWITCH
 
-                        case PTRTYPE_HGLOBAL:       // Res = CHAR  , Rht = NESTED:NESTED
-                            // It's a valid HGLOBAL variable array
-                            Assert (IsGlbTypeVarInd (lpMemRht));
+                                break;
 
-                            // Copy the data to the result
-                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
-                                                             lplpMemRes,
-                                                             lpuBitIndex,
-                                                             ClrPtrTypeIndAsGlb (lpMemRht),
-                                                             lptkFunc))
-                                goto ERROR_EXIT;
-                            break;
+                            case PTRTYPE_HGLOBAL:       // Res = CHAR  , Rht = NESTED:NESTED
+                                // It's a valid HGLOBAL variable array
+                                Assert (IsGlbTypeVarInd (lpMemRht));
 
-                        defstop
-                            break;
-                    } // End FOR/SWITCH
+                                // Copy the data to the result
+                                if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                                 lplpMemRes,
+                                                                 lpuBitIndex,
+                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 lptkFunc))
+                                    goto ERROR_EXIT;
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
 
                     break;
 
@@ -955,7 +1009,11 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
-                        aplVal = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        aplVal = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
                         lpSymTmp =
                           MakeSymEntry_EM (IMMTYPE_BOOL,            // Immediate type
@@ -980,6 +1038,10 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         aplVal = *((LPAPLINT) lpMemRht)++;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
                         lpSymTmp =
@@ -996,6 +1058,10 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         aplVal = *(LPAPLLONGEST) ((LPAPLFLOAT) lpMemRht)++;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
                         lpSymTmp =
@@ -1012,6 +1078,10 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         aplVal = apaOffRht + apaMulRht * uRht;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
                         lpSymTmp =
@@ -1028,6 +1098,10 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
                         aplVal = *((LPAPLCHAR) lpMemRht)++;
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
                         lpSymTmp =
@@ -1054,80 +1128,86 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_NESTED:                  // Res = HETERO, Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
-                    // Split cases based upon the ptr type
-                    switch (GetPtrTypeInd (lpMemRht))
                     {
-                        case PTRTYPE_STCONST:       // Res = HETERO, Rht = NESTED:BOOL/INT/FLOAT/CHAR
-                            // Split cases based upon the right arg's immediate type
-                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
-                            {
-                                case IMMTYPE_BOOL:  // Res = HETERO, Rht = NESTED:BOOL
-                                    aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ =
-                                    lpSymTmp =
-                                      MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
-                                                      &aplVal,          // Ptr to immediate value
-                                                       lptkFunc);       // Ptr to function token
-                                    if (!lpSymTmp)
-                                        goto ERROR_EXIT;
-                                    break;
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
 
-                                case IMMTYPE_INT:   // Res = HETERO, Rht = NESTED:INT
-                                    aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ =
-                                    lpSymTmp =
-                                      MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
-                                                      &aplVal,          // Ptr to immediate value
-                                                       lptkFunc);       // Ptr to function token
-                                    if (!lpSymTmp)
-                                        goto ERROR_EXIT;
-                                    break;
+                        // Split cases based upon the ptr type
+                        switch (GetPtrTypeInd (lpMemRht))
+                        {
+                            case PTRTYPE_STCONST:       // Res = HETERO, Rht = NESTED:BOOL/INT/FLOAT/CHAR
+                                // Split cases based upon the right arg's immediate type
+                                switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:  // Res = HETERO, Rht = NESTED:BOOL
+                                        aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
+                                        *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                        lpSymTmp =
+                                          MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
+                                                          &aplVal,          // Ptr to immediate value
+                                                           lptkFunc);       // Ptr to function token
+                                        if (!lpSymTmp)
+                                            goto ERROR_EXIT;
+                                        break;
 
-                                case IMMTYPE_FLOAT: // Res = HETERO, Rht = NESTED:FLOAT
-                                    aplVal = *(LPAPLLONGEST) &(*(LPAPLHETERO) lpMemRht)->stData.stFloat;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ =
-                                    lpSymTmp =
-                                      MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
-                                                      &aplVal,          // Ptr to immediate value
-                                                       lptkFunc);       // Ptr to function token
-                                    if (!lpSymTmp)
-                                        goto ERROR_EXIT;
-                                    break;
+                                    case IMMTYPE_INT:   // Res = HETERO, Rht = NESTED:INT
+                                        aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
+                                        *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                        lpSymTmp =
+                                          MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
+                                                          &aplVal,          // Ptr to immediate value
+                                                           lptkFunc);       // Ptr to function token
+                                        if (!lpSymTmp)
+                                            goto ERROR_EXIT;
+                                        break;
+
+                                    case IMMTYPE_FLOAT: // Res = HETERO, Rht = NESTED:FLOAT
+                                        aplVal = *(LPAPLLONGEST) &(*(LPAPLHETERO) lpMemRht)->stData.stFloat;
+                                        *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                        lpSymTmp =
+                                          MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
+                                                          &aplVal,          // Ptr to immediate value
+                                                           lptkFunc);       // Ptr to function token
+                                        if (!lpSymTmp)
+                                            goto ERROR_EXIT;
+                                        break;
 
 
-                                case IMMTYPE_CHAR:  // Res = HETERO, Rht = NESTED:CHAR
-                                    aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stChar;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ =
-                                    lpSymTmp =
-                                      MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
-                                                      &aplVal,          // Ptr to immediate value
-                                                      lptkFunc);        // Ptr to function token
-                                    if (!lpSymTmp)
-                                        goto ERROR_EXIT;
-                                    break;
+                                    case IMMTYPE_CHAR:  // Res = HETERO, Rht = NESTED:CHAR
+                                        aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stChar;
+                                        *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                        lpSymTmp =
+                                          MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
+                                                          &aplVal,          // Ptr to immediate value
+                                                          lptkFunc);        // Ptr to function token
+                                        if (!lpSymTmp)
+                                            goto ERROR_EXIT;
+                                        break;
 
-                                defstop
-                                    break;
-                            } // End SWITCH
+                                    defstop
+                                        break;
+                                } // End SWITCH
 
-                            break;
+                                break;
 
-                        case PTRTYPE_HGLOBAL:       // Res = HETERO, Rht = NESTED:NESTED
-                            // It's a valid HGLOBAL variable array
-                            Assert (IsGlbTypeVarInd (lpMemRht));
+                            case PTRTYPE_HGLOBAL:       // Res = HETERO, Rht = NESTED:NESTED
+                                // It's a valid HGLOBAL variable array
+                                Assert (IsGlbTypeVarInd (lpMemRht));
 
-                            // Copy the data to the result
-                            if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
-                                                             lplpMemRes,
-                                                             lpuBitIndex,
-                                                             ClrPtrTypeIndAsGlb (lpMemRht),
-                                                             lptkFunc))
-                                goto ERROR_EXIT;
-                            break;
+                                // Copy the data to the result
+                                if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
+                                                                 lplpMemRes,
+                                                                 lpuBitIndex,
+                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 lptkFunc))
+                                    goto ERROR_EXIT;
+                                break;
 
-                        defstop
-                            break;
-                    } // End FOR/SWITCH
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
 
                     break;
 
@@ -1172,22 +1252,30 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // Right ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht;        // Right ...
-    HGLOBAL      hGlbLft,           // Left arg global memory handle
-                 hGlbRht,           // Right ...
-                 hGlbRes;           // Result   ...
-    LPVOID       lpMemLft,          // Ptr to left arg global memory
-                 lpMemRht;          // Ptr to right ...
-    LPAPLBOOL    lpMemRes = NULL;   // Ptr to result   ...
-    APLUINT      ByteRes;           // # bytes in the result
-    APLLONGEST   aplLongestLft,     // Left arg immediate value
-                 aplLongestRht;     // Right ...
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    APLSTYPE      aplTypeLft,       // Left arg storage type
+                  aplTypeRht;       // Right ...
+    APLNELM       aplNELMLft,       // Left arg NELM
+                  aplNELMRht;       // Right ...
+    APLRANK       aplRankLft,       // Left arg rank
+                  aplRankRht;       // Right ...
+    HGLOBAL       hGlbLft,          // Left arg global memory handle
+                  hGlbRht,          // Right ...
+                  hGlbRes;          // Result   ...
+    LPVOID        lpMemLft,         // Ptr to left arg global memory
+                  lpMemRht;         // Ptr to right ...
+    LPAPLBOOL     lpMemRes = NULL;  // Ptr to result   ...
+    APLUINT       ByteRes;          // # bytes in the result
+    APLLONGEST    aplLongestLft,    // Left arg immediate value
+                  aplLongestRht;    // Right ...
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -1227,7 +1315,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMLft;
     lpHeader->Rank       = aplRankLft;
@@ -1269,13 +1357,16 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     {
         // Split cases based upon the left & right arg storage types
         if (IsSimpleBool (aplTypeLft) && IsSimpleBool (aplTypeRht))
+        {
             // Handle APLBOOL vs. APLBOOL
-            PrimFnDydEpsilonBvB (lpMemRes,              // Ptr to result global memory data
-                                 aplNELMLft,            // Left arg NELM
-                                 lpMemLft,              // Ptr to left arg global memory data
-                                 aplNELMRht,            // Right arg NELM
-                                 lpMemRht);             // Ptr to right arg global memory data
-        else
+            if (!PrimFnDydEpsilonBvB (lpMemRes,         // Ptr to result global memory data
+                                      aplNELMLft,       // Left arg NELM
+                                      lpMemLft,         // Ptr to left arg global memory data
+                                      aplNELMRht,       // Right arg NELM
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      lpbCtrlBreak))    // Ptr to Ctrl-Break flag
+                goto ERROR_EXIT;
+        } else
         if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
         {
             // Handle APLBOOL/APLINT/APLAPA vs. APLBOOL/APLINT/APLAPA
@@ -1286,6 +1377,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
                                          aplTypeRht,    // Right arg storage type
                                          aplNELMRht,    // Right arg NELM
                                          lpMemRht,      // Ptr to right arg global memory data
+                                         lpbCtrlBreak,  // Ptr to Ctrl-Break flag
                                          lptkFunc))     // Ptr to function token
                 goto ERROR_EXIT;
         } else
@@ -1297,18 +1389,23 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
                                          lpMemLft,      // Ptr to left arg global memory data
                                          aplNELMRht,    // Right arg NELM
                                          lpMemRht,      // Ptr to right arg global memory data
+                                         lpbCtrlBreak,  // Ptr to Ctrl-Break flag
                                          lptkFunc))     // Ptr to function token
                 goto ERROR_EXIT;
         } else
+        {
             // Handle all other combinations
-            PrimFnDydEpsilonOther (lpMemRes,            // Ptr to result global memory data
-                                   aplTypeLft,          // Left arg storage type
-                                   aplNELMLft,          // Left arg NELM
-                                   lpMemLft,            // Ptr to left arg global memory data
-                                   aplTypeRht,          // Right arg storage type
-                                   aplNELMRht,          // Right arg NELM
-                                   lpMemRht,            // Ptr to right arg global memory data
-                                   lptkFunc);           // Ptr to function token
+            if (!PrimFnDydEpsilonOther (lpMemRes,       // Ptr to result global memory data
+                                        aplTypeLft,     // Left arg storage type
+                                        aplNELMLft,     // Left arg NELM
+                                        lpMemLft,       // Ptr to left arg global memory data
+                                        aplTypeRht,     // Right arg storage type
+                                        aplNELMRht,     // Right arg NELM
+                                        lpMemRht,       // Ptr to right arg global memory data
+                                        lpbCtrlBreak,   // Ptr to Ctrl-Break flag
+                                        lptkFunc))      // Ptr to function token
+                goto ERROR_EXIT;
+        } // End IF/ELSE/...
     } // End IF
 
     // We no longer need this ptr
@@ -1319,8 +1416,8 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1372,12 +1469,13 @@ NORMAL_EXIT:
 //  Dyadic epsilon between Boolean args
 //***************************************************************************
 
-void PrimFnDydEpsilonBvB
+UBOOL PrimFnDydEpsilonBvB
     (LPAPLBOOL lpMemRes,            // Ptr to result global memory data
      APLNELM   aplNELMLft,          // Left arg (and result) NELM
      LPAPLBOOL lpMemLft,            // Ptr to left arg global memory data
      APLNELM   aplNELMRht,          // Right arg NELM
-     LPAPLBOOL lpMemRht)            // Ptr to right arg global memory data
+     LPAPLBOOL lpMemRht,            // Ptr to right arg global memory data
+     LPUBOOL   lpbCtrlBreak)        // Ptr to Ctrl-Break flag
 
 {
     UBOOL   Found0,                 // TRUE iff there is at least one 0 in the right arg
@@ -1400,12 +1498,18 @@ void PrimFnDydEpsilonBvB
 
     // Search the right arg for a 0
     for (Found0 = FALSE, uRht = 0; uRht < (BytesInRhtBits - 1); uRht++)
-    if (FastBoolTrans[lpMemRht[uRht]][0] < NBIB)
     {
-        Found0 = TRUE;
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
 
-        break;
-    } // End FOR/IF
+        if (FastBoolTrans[lpMemRht[uRht]][0] < NBIB)
+        {
+            Found0 = TRUE;
+
+            break;
+        } // End IF
+    } // End FOR
 
     // If we didn't find a 0, check the last byte (may be short)
     if (!Found0)
@@ -1413,12 +1517,18 @@ void PrimFnDydEpsilonBvB
 
     // Search the right arg for a 1
     for (Found1 = FALSE, uRht = 0; uRht < (BytesInRhtBits - 1); uRht++)
-    if (FastBoolTrans[lpMemRht[uRht]][1] < NBIB)
     {
-        Found1 = TRUE;
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
 
-        break;
-    } // End FOR/IF
+        if (FastBoolTrans[lpMemRht[uRht]][1] < NBIB)
+        {
+            Found1 = TRUE;
+
+            break;
+        } // End IF
+    } // End FOR
 
     // If we didn't find a 1, check the last byte (may be short)
     if (!Found1)
@@ -1426,19 +1536,20 @@ void PrimFnDydEpsilonBvB
 
     // If we found both a 0 and a 1, the result is all 1s
     if (Found0 && Found1)
-    {
-        // Fill in all but the last byte
-        FillMemory (lpMemRes, (UINT) BytesInLftBits - 1, 0xFF);
-
-        // Handle the last byte specially
-        lpMemRes[BytesInLftBits - 1] |= (BIT0 << (MASKLOG2NBIB & aplNELMLft)) - 1;
-    } else
+        FillBitMemory (lpMemRes, aplNELMLft);
+    else
     // If we found only 0s, the result is the complement of the left arg
     if (Found0)
     {
         // Copy all but the last byte
         for (uLft = 0; uLft < (BytesInLftBits - 1); uLft++)
+        {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
             *lpMemRes++ = ~*lpMemLft++;
+        } // End FOR
 
         // Handle the last byte specially
         lpMemRes[BytesInLftBits - 1] |= ((BIT0 << (MASKLOG2NBIB & aplNELMLft)) - 1) & ~*lpMemLft;
@@ -1446,6 +1557,10 @@ void PrimFnDydEpsilonBvB
     // If we found only 1s, the result is the same as the left arg
     if (Found1)
         CopyMemory (lpMemRes, lpMemLft, (UINT) BytesInLftBits);
+
+    return TRUE;
+ERROR_EXIT:
+    return FALSE;
 } // End PrimFnDydEpsilonBvB
 
 
@@ -1463,6 +1578,7 @@ UBOOL PrimFnDydEpsilonIvI_EM
      APLSTYPE  aplTypeRht,          // Right arg storage type
      APLNELM   aplNELMRht,          // Right arg NELM
      LPVOID    lpMemRht,            // Ptr to right arg global memory data
+     LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
@@ -1488,6 +1604,10 @@ UBOOL PrimFnDydEpsilonIvI_EM
         // Loop through the right arg
         for (uRht = 0; uRht < aplNELMRht; uRht++)
         {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
             aplIntegerRht =
               GetNextInteger (lpMemRht,
                               aplTypeRht,
@@ -1510,6 +1630,8 @@ UBOOL PrimFnDydEpsilonIvI_EM
     } // End FOR
 
     return TRUE;
+ERROR_EXIT:
+    return FALSE;
 } // End PrimFnDydEpsilonIvI_EM
 
 
@@ -1531,6 +1653,7 @@ UBOOL PrimFnDydEpsilonCvC_EM
      LPAPLCHAR lpMemLft,            // Ptr to left arg global memory data
      APLNELM   aplNELMRht,          // Right arg NELM
      LPAPLCHAR lpMemRht,            // Ptr to right arg global memory data
+     LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
@@ -1554,6 +1677,10 @@ UBOOL PrimFnDydEpsilonCvC_EM
     // Trundle through the right arg marking the TT
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
         // Get the APLCHAR from the right arg
         aplChar = *lpMemRht++;
 
@@ -1565,6 +1692,10 @@ UBOOL PrimFnDydEpsilonCvC_EM
     uBitIndex = 0;
     for (uLft = 0; uLft < aplNELMLft; uLft++)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
         // Get the APLCHAR from the left arg
         aplChar = *lpMemLft++;
 
@@ -1587,6 +1718,9 @@ UBOOL PrimFnDydEpsilonCvC_EM
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydEpsilonCvC_EM
 #undef  APPEND_NAME
@@ -1598,7 +1732,7 @@ WSFULL_EXIT:
 //  Dyadic epsilon between all other arg combinations
 //***************************************************************************
 
-void PrimFnDydEpsilonOther
+UBOOL PrimFnDydEpsilonOther
     (LPAPLBOOL lpMemRes,            // Ptr to result global memory data
      APLSTYPE  aplTypeLft,          // Left arg storage type
      APLNELM   aplNELMLft,          // Left arg NELM
@@ -1606,6 +1740,7 @@ void PrimFnDydEpsilonOther
      APLSTYPE  aplTypeRht,          // Right arg storage type
      APLNELM   aplNELMRht,          // Right arg NELM
      LPVOID    lpMemRht,            // Ptr to right arg global memory data
+     LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
@@ -1646,6 +1781,10 @@ void PrimFnDydEpsilonOther
         // Loop through the right arg
         for (uRht = 0; uRht < aplNELMRht; uRht++)
         {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
             // Get the next value from the right arg
             GetNextValueMem (lpMemRht,              // Ptr to right arg global memory
                              aplTypeRht,            // Right arg storage type
@@ -1661,15 +1800,15 @@ void PrimFnDydEpsilonOther
 
                 // Fill in the left arg item token
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
-////////////////tkSubLft.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////////////tkSubLft.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////////////tkSubLft.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////////////tkSubLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
                 tkSubLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubLft);
                 tkSubLft.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // Fill in the right arg item token
                 tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
-////////////////tkSubRht.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////////////tkSubRht.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+////////////////tkSubRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////////////tkSubRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
                 tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
                 tkSubRht.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1794,6 +1933,10 @@ SET_RESULT_BIT:
             lpMemRes++;         // Skip to next byte
         } // End IF
     } // End FOR
+
+    return TRUE;
+ERROR_EXIT:
+    return FALSE;
 } // End PrimFnDydEpsilonOther
 
 

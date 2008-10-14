@@ -90,8 +90,8 @@ UBOOL CmdErase_EM
                     ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
             } else
             {
-                if (!ValidName (lpMemDataStart,
-                               (UINT) (&lpwszTail[uRht] - lpMemDataStart)))
+                if (!IsValidName (lpMemDataStart,
+                                 (UINT) (&lpwszTail[uRht] - lpMemDataStart)))
                     ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
             } // End IF/ELSE
         } else

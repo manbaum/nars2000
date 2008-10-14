@@ -130,7 +130,7 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
             switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    lpYYRes->tkToken.tkData.tkBoolean = 0;
+                    lpYYRes->tkToken.tkData.tkBoolean = FALSE;
 
                     return lpYYRes;
 
@@ -163,7 +163,7 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
             switch (lptkRhtArg->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    lpYYRes->tkToken.tkData.tkBoolean = 0;
+                    lpYYRes->tkToken.tkData.tkBoolean = FALSE;
 
                     return lpYYRes;
 
@@ -212,8 +212,8 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

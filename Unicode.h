@@ -63,6 +63,7 @@
 #define UTF16_RIGHTSINGLEQUOTE   0x2019         // Right ...
 #define UTF16_DELTILDE           0x236B         // Del-tilde
 #define UTF16_HORIZELLIPSIS      0x2026         // Horizontal ellipsis
+#define UTF16_CHECKMARK          0x221A         // Check mark
 #define UTF16_REPLACEMENTCHAR    0xFFFD         // Replacement char for unknown
 
 // The alphabet, unshifted
@@ -249,6 +250,7 @@
 #define WS_UTF16_QUADDOWNARROW      L"\x2357"   //
 #define WS_UTF16_DELTILDE           L"\x236B"   // Del-tilde
 #define WS_UTF16_HORIZELLIPSIS      L"\x2026"   // Horizontal ellipsis
+#define WS_UTF16_CHECKMARK          L"\x221A"   // Check mark
 #define WS_UTF16_REPLACEMENTCHAR    L"\xFFFD"   // Replacement char for unknown
 
 // The alphabet, unshifted

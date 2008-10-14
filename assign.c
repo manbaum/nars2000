@@ -68,6 +68,11 @@ UBOOL AssignName_EM
          || lptkNam->tkFlags.TknType EQ TKT_OP2NAMED
          || lptkNam->tkFlags.TknType EQ TKT_OP3NAMED);
 
+    // If the target is a NotValue perm (from assign to unknown sysname)
+    if (!lptkNam->tkData.tkSym->stFlags.Value
+     && lptkNam->tkData.tkSym->stFlags.Perm)
+        goto SYNTAX_EXIT;
+
     // If the target is a system var, validate the assignment
     //   before we free the old value
     if (IsNameTypeVar (lptkNam->tkData.tkSym->stFlags.stNameType)
@@ -153,7 +158,7 @@ UBOOL AssignName_EM
 
                 // Clear the immediate flag
                 lptkNam->tkData.tkSym->stFlags.Imm = FALSE;
-                lptkNam->tkData.tkSym->stFlags.ImmType = 0;
+                lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_ERROR;
 
                 // Copy the "Accepts Axis Operator" flag
                 lptkNam->tkData.tkSym->stFlags.DfnAxis =
@@ -547,28 +552,28 @@ void AssignArrayCommon
 
 
 //***************************************************************************
-//  $AssignSelectSpec_EM
+//  $AssignNamedVars_EM
 //
-//  Assign values to selective specification (currently a name strand)
+//  Assign values to a name strand
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- AssignSelectSpec_EM"
+#define APPEND_NAME     L" -- AssignNamedVars_EM"
 #else
 #define APPEND_NAME
 #endif
 
-UBOOL AssignSelectSpec_EM
+UBOOL AssignNamedVars_EM
     (LPTOKEN       lptkStr,         // Ptr to named strand token
      LPTOKEN       lptkVal)         // Ptr to value token
 
 {
     UBOOL      bRet = TRUE;     // TRUE iff result is valid
     HGLOBAL    hGlbStr,         // Name strand global memory handle
-               hGlbVal,         // Value       ...
+               hGlbVal = NULL,  // Value       ...
                hGlbSub;         // Subarray    ...
     LPVOID     lpMemNam,        // Ptr to name strand global memory
-               lpMemVal;        // Ptr to value
+               lpMemVal = NULL; // Ptr to value
     APLNELM    aplNELMNam,      // Name strand NELM
                aplNELMVal,      // Value ...
                aplName;         // Loop counter
@@ -695,7 +700,7 @@ UBOOL AssignSelectSpec_EM
             for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
                 // Save the next value into the token
-                tkToken.tkData.tkBoolean = (uBitMaskVal & *(LPAPLBOOL) lpMemVal) ? 1 : 0;
+                tkToken.tkData.tkBoolean = (uBitMaskVal & *(LPAPLBOOL) lpMemVal) ? TRUE : FALSE;
 
                 // Assign this token to this name
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
@@ -829,7 +834,7 @@ UBOOL AssignSelectSpec_EM
 
                         // Fill in the value token
                         tkToken.tkFlags.TknType  = TKT_VARARRAY;
-                        tkToken.tkFlags.ImmType  = 0;
+                        tkToken.tkFlags.ImmType  = IMMTYPE_ERROR;
                         tkToken.tkData.tkGlbData = hGlbSub;     // The call to AssignName_EM increments the RefCnt
 
                         break;
@@ -900,7 +905,7 @@ NORMAL_EXIT:
     DBGLEAVE;
 
     return bRet;
-} // End AssignSelectSpec_EM
+} // End AssignNamedVars_EM
 #undef  APPEND_NAME
 
 

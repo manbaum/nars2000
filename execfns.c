@@ -64,7 +64,7 @@ LPPL_YYSTYPE ExecuteFn0
              || IsGlbTypeDfnDir (lpNameFcn));
 
         // Split cases based upon the array signature
-        switch (GetSignatureGlb (ClrPtrTypeDirAsGlb (lpNameFcn)))
+        switch (GetSignatureGlb (lpNameFcn))
         {
             case FCNARRAY_HEADER_SIGNATURE:
                 // Execute a function array global memory handle
@@ -197,7 +197,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     // Fill in for PrimFn*** test
                     tkFn.tkFlags.TknType   = TKT_FCNIMMED;
                     tkFn.tkFlags.ImmType   = GetImmTypeFcn (lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar);
-////////////////////tkFn.tkFlags.NoDisplay = 0;     // Already zero from {0}
+////////////////////tkFn.tkFlags.NoDisplay = FALSE; // Already zero from {0}
                     tkFn.tkData.tkChar     = lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar;
                     tkFn.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
 
@@ -218,7 +218,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                  || IsGlbTypeDfnDir (hGlbFcn));
 
             // If it's a user-defined function/operator, ...
-            switch (GetSignatureGlb (ClrPtrTypeDirAsGlb (hGlbFcn)))
+            switch (GetSignatureGlb (hGlbFcn))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Execute a function array global memory handle
@@ -395,7 +395,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                  || IsGlbTypeDfnDir (hGlbFcn));
 
             // Split cases based upon the array signature
-            switch (GetSignatureGlb (ClrPtrTypeDirAsGlb (hGlbFcn)))
+            switch (GetSignatureGlb (hGlbFcn))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Check for axis operator

@@ -44,11 +44,7 @@
         MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl-A",         IDM_SELECTALL
         MENUITEM SEPARATOR
-#ifdef DEBUG
         MENUITEM "Customi&ze...",               IDM_CUSTOMIZE
-#else
-        MENUITEM "Customi&ze...",               IDM_CUSTOMIZE   , INACTIVE GRAYED
-#endif
 
 
 //***************************************************************************

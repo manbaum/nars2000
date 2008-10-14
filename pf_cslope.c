@@ -161,7 +161,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_APA;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplRankRht;
     lpHeader->Rank       = 1;
@@ -186,8 +186,8 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
 
     // Fill in the left arg token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLft);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -233,41 +233,49 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht,        // Right ...
-                 aplTypeRes;        // Result   ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht,        // Right ...
-                 aplNELMRes;        // Result   ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht,        // Right ...
-                 aplRankRes;        // Result   ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL,    // Result   ...
-                 hGlbAxis = NULL,   // Axis     ...
-                 hGlbWVec = NULL,   // Weighting vector ...
-                 hGlbOdo = NULL;    // Odometer ...
-    LPAPLDIM     lpMemDimRht,       // Ptr to right arg dimensions
-                 lpMemDimRes;       // Ptr to result    ...
-    APLDIM       uMinDim;           //
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL,   // Ptr to right ...
-                 lpMemRes = NULL;   // Ptr to result   ...
-    LPAPLUINT    lpMemAxis = NULL,  // Ptr to axis global memory
-                 lpMemGrUp,         // Ptr to grade up ...
-                 lpMemWVec = NULL,  // Ptr to weighting vector ...
-                 lpMemOdo = NULL;   // Ptr to odometer ...
-    APLUINT      ByteRes,           // # bytes in the result
-                 uRht,              // Right arg loop counter
-                 uRes,              // Result    ...
-                 uOdo;              // Odometer  ...
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    UINT         uBitIndex,         // Bit index for marching through Booleans
-                 uBitMask;          // Bit mask  ...
-    APLINT       iDim,              // Dimension loop counter
-                 apaOffRht,         // Right arg APA offset
-                 apaMulRht;         // ...           multiplier
+    APLSTYPE      aplTypeLft,       // Left arg storage type
+                  aplTypeRht,       // Right ...
+                  aplTypeRes;       // Result   ...
+    APLNELM       aplNELMLft,       // Left arg NELM
+                  aplNELMRht,       // Right ...
+                  aplNELMRes;       // Result   ...
+    APLRANK       aplRankLft,       // Left arg rank
+                  aplRankRht,       // Right ...
+                  aplRankRes;       // Result   ...
+    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
+                  hGlbRht = NULL,   // Right ...
+                  hGlbRes = NULL,   // Result   ...
+                  hGlbAxis = NULL,  // Axis     ...
+                  hGlbWVec = NULL,  // Weighting vector ...
+                  hGlbOdo = NULL;   // Odometer ...
+    LPAPLDIM      lpMemDimRht,      // Ptr to right arg dimensions
+                  lpMemDimRes;      // Ptr to result    ...
+    APLDIM        uMinDim;          //
+    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
+                  lpMemRht = NULL,  // Ptr to right ...
+                  lpMemRes = NULL;  // Ptr to result   ...
+    LPAPLUINT     lpMemAxis = NULL, // Ptr to axis global memory
+                  lpMemGrUp,        // Ptr to grade up ...
+                  lpMemWVec = NULL, // Ptr to weighting vector ...
+                  lpMemOdo = NULL;  // Ptr to odometer ...
+    APLUINT       ByteRes,          // # bytes in the result
+                  uRht,             // Right arg loop counter
+                  uRes,             // Result    ...
+                  uOdo;             // Odometer  ...
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    UINT          uBitIndex,        // Bit index for marching through Booleans
+                  uBitMask;         // Bit mask  ...
+    APLINT        iDim,             // Dimension loop counter
+                  apaOffRht,        // Right arg APA offset
+                  apaMulRht;        // ...           multiplier
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -340,7 +348,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
                 lpYYRes->tkToken.tkFlags.ImmType   = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkSym->stData.stLongest;
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -415,7 +423,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -518,6 +526,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Use the index in lpMemOdo to calculate the
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
@@ -531,7 +543,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                *((LPAPLBOOL) lpMemRes) |= ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << uBitIndex;
+                *((LPAPLBOOL) lpMemRes) |= ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE) << uBitIndex;
 
                 // Check for end-of-byte
                 if (++uBitIndex EQ NBIB)
@@ -547,6 +559,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Use the index in lpMemOdo to calculate the
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
@@ -567,6 +583,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Use the index in lpMemOdo to calculate the
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
@@ -592,6 +612,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Use the index in lpMemOdo to calculate the
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
@@ -612,6 +636,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Use the index in lpMemOdo to calculate the
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
@@ -633,6 +661,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Use the index in lpMemOdo to calculate the
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
@@ -665,8 +697,8 @@ PROTO_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

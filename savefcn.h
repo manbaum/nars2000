@@ -22,7 +22,9 @@
 
 typedef struct tagSF_FCNS
 {
-    UBOOL      bRet;                // 00:  TRUE iff result is valid
+    UINT       bDisplayErr:1,       // 00:  00000001  TRUE iff we should display errors
+               bRet:1;              //      00000002  TRUE iff result is valid
+                                    //      FFFFFFFC  Available bits
     UINT       uErrLine;            // 04:  If (!bRet), the line in error (origin-0) (NEG1U = Error Message valid)
     LPSYMENTRY lpSymName;           // 08:  If (bRet), ptr to SYMENTRY of the function name
     LPTOKEN    lptkFunc;            // 0C:  Ptr to function token
@@ -33,7 +35,8 @@ typedef struct tagSF_FCNS
     void (*SF_CreationTime) (LPVOID, SYSTEMTIME *, FILETIME *); // 20:  Ptr to get function creation time
     void (*SF_LastModTime)  (LPVOID, SYSTEMTIME *, FILETIME *); // 24:  Ptr to get function last mod time
     HGLOBAL (*SF_UndoBuffer) (HWND, LPVOID);                    // 28:  Ptr to get function Undo Buffer global memory handle
-                                    // 2C:  Length of struc
+    WCHAR      wszErrMsg[256];      // 2C:  Save area for error message
+                                    //12C:  Length of struc
 } SF_FCNS, *LPSF_FCNS;
 
 

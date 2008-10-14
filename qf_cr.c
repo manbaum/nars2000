@@ -264,7 +264,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     aplNELMRes = lpMemTxtLine->U;
 
                     // Copy the function line text to global memory
-                    MoveMemory (lpwszTemp, &lpMemTxtLine->C, (__int3264) aplNELMRes * sizeof (lpMemTxtLine->C));
+                    CopyMemory (lpwszTemp, &lpMemTxtLine->C, (__int3264) aplNELMRes * sizeof (lpMemTxtLine->C));
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -426,8 +426,8 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -552,7 +552,7 @@ LPVOID SysFnCR_Copy_EM
         lpMemCpy = VarArrayBaseToData (lpMemCpy, 1);
 
         // Copy the text
-        MoveMemory (lpMemCpy, &lpMemTxtLine->C, lpMemTxtLine->U * sizeof (APLCHAR));
+        CopyMemory (lpMemCpy, &lpMemTxtLine->C, lpMemTxtLine->U * sizeof (APLCHAR));
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbCpy); lpMemCpy = NULL;
@@ -565,7 +565,7 @@ LPVOID SysFnCR_Copy_EM
         uLineLen = lpMemTxtLine->U;
 #define lpMemResChar        ((LPAPLCHAR) lpMemRes)
         // Copy the function header text to the result
-        MoveMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
+        CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
 
         // Fill the remainder of the line with blanks
         // Could use FillMemoryW ??
@@ -663,7 +663,7 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     if (lpw)
     {
         // Copy the function text to the result
-        MoveMemory (lpMemRes, lpw, (__int3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemory (lpMemRes, lpw, (__int3264) aplNELMRes * sizeof (APLCHAR));
     } // End IF
 
     // We no longer need this ptr
@@ -701,7 +701,7 @@ LPAPLCHAR CopySteName
     uNameLen = lstrlenW (lpMemName);
 
     // Copy the name to the output area
-    MoveMemory (lpMemRes, lpMemName, uNameLen * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, lpMemName, uNameLen * sizeof (APLCHAR));
 
     // Skip over the name
     lpMemRes += uNameLen;

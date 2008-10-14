@@ -353,7 +353,8 @@ HGLOBAL Init1MagicFunction
                                   : NULL;
         lpMemDfnHdr->hGlbTxtHdr   = hGlbTxtHdr;
         lpMemDfnHdr->hGlbTknHdr   = hGlbTknHdr;
-        lpMemDfnHdr->hGlbUndoBuff = NULL;
+////////lpMemDfnHdr->hGlbUndoBuff = NULL;       // Already zero from GHND
+////////lpMemDfnHdr->hGlbMonInfo  = NULL;       // Already zero from GHND
 
         // Save the dynamic parts of the function into global memory
 
@@ -506,9 +507,6 @@ HGLOBAL Init1MagicFunction
 
 
             } // End IF
-
-            // No monitor info as yet
-            lpFcnLines->hGlbMonInfo = NULL;
 
             // Transfer Stop & Trace info
             lpFcnLines->bStop  =

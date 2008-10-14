@@ -342,7 +342,7 @@ const struct builtin_class_descr EDIT_builtin_class =
 static inline BOOL EDIT_EM_CanUndo(EDITSTATE *es)
 {
     return (es->undo_insert_count || strlenW(es->undo_text));
-}
+} // End EDIT_EM_CanUndo
 
 
 /*********************************************************************
@@ -354,7 +354,7 @@ static inline void EDIT_EM_EmptyUndoBuffer(EDITSTATE *es)
 {
     es->undo_insert_count = 0;
     *es->undo_text = '\0';
-}
+} // End EDIT_EM_EmptyUndoBuffer
 
 
 /*********************************************************************
@@ -371,7 +371,7 @@ static inline void EDIT_WM_Clear(EDITSTATE *es)
         return;
 
     EDIT_EM_ReplaceSel(es, TRUE, empty_stringW, TRUE, TRUE);
-}
+} // End EDIT_WM_Clear
 
 
 /*********************************************************************
@@ -383,7 +383,7 @@ static inline void EDIT_WM_Cut(EDITSTATE *es)
 {
     EDIT_WM_Copy(es);
     EDIT_WM_Clear(es);
-}
+} // End EDIT_WM_Cut
 
 
 /**********************************************************************
@@ -419,19 +419,22 @@ static DWORD get_app_version(void)
         version = dwProcVersion < dwEmulatedVersion ? dwProcVersion : dwEmulatedVersion;
     }
     return version;
-}
+} // End get_app_version
+
 
 static inline UINT get_text_length(EDITSTATE *es)
 {
     if(es->text_length == (UINT)-1)
         es->text_length = strlenW(es->text);
     return es->text_length;
-}
+} // End get_text_length
+
 
 static inline void text_buffer_changed(EDITSTATE *es)
 {
     es->text_length = (UINT)-1;
-}
+} // End text_buffer_changed
+
 
 static HBRUSH EDIT_NotifyCtlColor(EDITSTATE *es, HDC hdc)
 {
@@ -1190,7 +1193,8 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
 //      TRACE("hwnd=%p msg=%x (%s) -- 0x%08lx\n", hwnd, msg, SPY_GetMsgName(msg, hwnd), result);
 
     return result;
-}
+} // End EditWndProc_common
+
 
 /*********************************************************************
  *
@@ -1198,8 +1202,10 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
  */
 LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+////LCLODSAPI ("EC: ", hWnd, uMsg, wParam, lParam);
     return EditWndProc_common(hWnd, uMsg, wParam, lParam, TRUE);
-}
+} // End EditWndProcW
+
 
 /*********************************************************************
  *
@@ -1208,7 +1214,8 @@ LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 LRESULT WINAPI EditWndProcA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     return EditWndProc_common(hWnd, uMsg, wParam, lParam, FALSE);
-}
+} // End EditWndProcA
+
 
 /*********************************************************************
  *
@@ -1490,6 +1497,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
     ReleaseDC(es->hwndSelf, dc); dc = NULL;
 } // End EDIT_BuildLineDefs_ML
 
+
 /*********************************************************************
  *
  *  EDIT_CalcLineWidth_SL
@@ -1519,6 +1527,7 @@ static void EDIT_CalcLineWidth_SL(EDITSTATE *es)
 
     es->text_width = size.cx;
 } // End EDIT_CalcLineWidth_SL
+
 
 /*********************************************************************
  *
@@ -1589,7 +1598,7 @@ static INT EDIT_CallWordBreakProc(EDITSTATE *es, INT start, INT index, INT count
             ret = EDIT_WordBreakProc(es->text + start, index, count, action);
 
     return ret;
-}
+} // End EDIT_CallWordBreakProc
 
 
 /*********************************************************************
@@ -1732,7 +1741,7 @@ static INT EDIT_CharFromPos(EDITSTATE *es, INT x, INT y, LPBOOL after_wrap)
         SelectObject(dc, old_font);
     ReleaseDC(es->hwndSelf, dc); dc = NULL;
     return index;
-}
+} // End EDIT_CharFromPos
 
 
 /*********************************************************************
@@ -1747,7 +1756,7 @@ static void EDIT_ConfinePoint(EDITSTATE *es, LPINT x, LPINT y)
 {
     *x = min(max(*x, es->format_rect.left), es->format_rect.right - 1);
     *y = min(max(*y, es->format_rect.top), es->format_rect.bottom - 1);
-}
+} // End EDIT_ConfinePoint
 
 
 /*********************************************************************
@@ -1769,7 +1778,7 @@ static void EDIT_GetLineRect(EDITSTATE *es, INT line, INT scol, INT ecol, LPRECT
     rc->bottom = rc->top + es->line_height;
     rc->left = (scol == 0) ? es->format_rect.left : (short)LOWORD(EDIT_EM_PosFromChar(es, line_index + scol, TRUE));
     rc->right = (ecol == -1) ? es->format_rect.right : (short)LOWORD(EDIT_EM_PosFromChar(es, line_index + ecol, TRUE));
-}
+} // End EDIT_GetLineRect
 
 
 /*********************************************************************
@@ -1789,7 +1798,7 @@ static LPWSTR EDIT_GetPasswordPointer_SL(EDITSTATE *es)
         return text;
     } else
         return es->text;
-}
+} // End EDIT_GetPasswordPointer_SL
 
 
 /*********************************************************************
@@ -2003,7 +2012,7 @@ static void EDIT_InvalidateText(EDITSTATE *es, INT start, INT end)
         EDIT_ML_InvalidateText(es, start, end);
     else
         EDIT_SL_InvalidateText(es, start, end);
-}
+} // End EDIT_InvalidateText
 
 
 /*********************************************************************
@@ -2043,7 +2052,7 @@ static BOOL EDIT_MakeFit(EDITSTATE *es, UINT size)
 //      TRACE("We now have %d+1\n", es->buffer_size);
         return TRUE;
     }
-}
+} // End EDIT_MakeFit
 
 
 /*********************************************************************
@@ -2072,7 +2081,7 @@ static BOOL EDIT_MakeUndoFit(EDITSTATE *es, UINT size)
 //      WARN("FAILED !  We now have %d+1\n", es->undo_buffer_size);
         return FALSE;
     }
-}
+} // End EDIT_MakeUndoFit
 
 
 /*********************************************************************
@@ -2095,7 +2104,7 @@ static void EDIT_MoveBackward(EDITSTATE *es, BOOL extend)
     }
     EDIT_EM_SetSel(es, extend ? es->selection_start : e, e, FALSE);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveBackward
 
 
 /*********************************************************************
@@ -2121,7 +2130,7 @@ static void EDIT_MoveDown_ML(EDITSTATE *es, BOOL extend)
         s = e;
     EDIT_EM_SetSel(es, s, e, after_wrap);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveDown_ML
 
 
 /*********************************************************************
@@ -2142,7 +2151,7 @@ static void EDIT_MoveEnd(EDITSTATE *es, BOOL extend)
         e = get_text_length(es);
     EDIT_EM_SetSel(es, extend ? es->selection_start : e, e, after_wrap);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveEnd
 
 
 /*********************************************************************
@@ -2165,7 +2174,7 @@ static void EDIT_MoveForward(EDITSTATE *es, BOOL extend)
     }
     EDIT_EM_SetSel(es, extend ? es->selection_start : e, e, FALSE);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveForward
 
 
 /*********************************************************************
@@ -2187,7 +2196,7 @@ static void EDIT_MoveHome(EDITSTATE *es, BOOL extend)
         e = 0;
     EDIT_EM_SetSel(es, extend ? es->selection_start : e, e, FALSE);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveHome
 
 
 /*********************************************************************
@@ -2215,7 +2224,7 @@ static void EDIT_MovePageDown_ML(EDITSTATE *es, BOOL extend)
         s = e;
     EDIT_EM_SetSel(es, s, e, after_wrap);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MovePageDown_ML
 
 
 /*********************************************************************
@@ -2243,7 +2252,7 @@ static void EDIT_MovePageUp_ML(EDITSTATE *es, BOOL extend)
         s = e;
     EDIT_EM_SetSel(es, s, e, after_wrap);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MovePageUp_ML
 
 
 /*********************************************************************
@@ -2269,7 +2278,7 @@ static void EDIT_MoveUp_ML(EDITSTATE *es, BOOL extend)
         s = e;
     EDIT_EM_SetSel(es, s, e, after_wrap);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveUp_ML
 
 
 /*********************************************************************
@@ -2284,7 +2293,7 @@ static void EDIT_MoveBufferHome_ML(EDITSTATE *es)
 {
     EDIT_EM_SetSel(es, 0, 0, FALSE);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveBufferHome_ML
 
 
 /*********************************************************************
@@ -2300,7 +2309,7 @@ static void EDIT_MoveBufferEnd_ML(EDITSTATE *es)
     INT e = get_text_length(es);
     EDIT_EM_SetSel(es, e, e, TRUE);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveBufferEnd_ML
 
 
 /*********************************************************************
@@ -2332,7 +2341,7 @@ static void EDIT_MoveWordBackward(EDITSTATE *es, BOOL extend)
         s = e;
     EDIT_EM_SetSel(es, s, e, FALSE);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveWordBackward
 
 
 /*********************************************************************
@@ -2362,7 +2371,7 @@ static void EDIT_MoveWordForward(EDITSTATE *es, BOOL extend)
         s = e;
     EDIT_EM_SetSel(es, s, e, FALSE);
     EDIT_EM_ScrollCaret(es);
-}
+} // End EDIT_MoveWordForward
 
 
 /*********************************************************************
@@ -2425,6 +2434,12 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev, long lFlag
         rc2.right  = 0x7FFFFFFF;    // Largest positive #
         rc2.bottom = y + es->line_height;
         IntersectRect (&rc1, &rc2, &es->format_rect);
+
+        // If rc1.bottom is at the bottom of the formatting rectangle,
+        //   add in a char line height to clear the bottom half line
+        if ((rc1.bottom + es->line_height) >= es->format_rect.bottom)
+            rc1.bottom += es->line_height;
+
         FillRect (dc, &rc1, hBrush);
     } // End IF
 } // End EDIT_PaintLine
@@ -2486,7 +2501,13 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
                         es->tabs_count, es->tabs, es->format_rect.left - es->x_offset));
     } else {
         LPWSTR text = EDIT_GetPasswordPointer_SL(es);
-        TextOutW(dc, x, y, text + li + col, count);
+        LPPAINTHOOK lpPaintHook;
+
+        (HANDLE_PTR) lpPaintHook = GetWindowLongPtrW (es->hwndSelf, GWLEC_PAINTHOOK);
+        if (lpPaintHook)
+            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, text + li, col, count, lFlags, es->line_height, es->char_width));
+        else
+            TextOutW(dc, x, y, text + li + col, count);
         GetTextExtentPoint32W(dc, text + li + col, count, &size);
         ret = size.cx;
         if (es->style & ES_PASSWORD)
@@ -2737,7 +2758,7 @@ static void EDIT_UnlockBuffer(EDITSTATE *es, BOOL force)
         }
     }
     es->lock_count--;
-}
+} // End EDIT_UnlockBuffer
 
 
 /*********************************************************************
@@ -2774,7 +2795,8 @@ static void EDIT_UpdateScrollInfo(EDITSTATE *es)
 //      si.nMin, si.nMax, si.nPage, si.nPos);
     SetScrollInfo(es->hwndSelf, SB_HORZ, &si, TRUE);
     }
-}
+} // End EDIT_UpdateScrollInfo
+
 
 /*********************************************************************
  *
@@ -2840,7 +2862,7 @@ static INT CALLBACK EDIT_WordBreakProc(LPWSTR s, INT index, INT count, INT actio
         break;
     }
     return ret;
-}
+} // End EDIT_WordBreakProc
 
 
 /*********************************************************************
@@ -2868,7 +2890,7 @@ static LRESULT EDIT_EM_CharFromPos(EDITSTATE *es, INT x, INT y)
 
     index = EDIT_CharFromPos(es, x, y, NULL);
     return MAKELONG(index, EDIT_EM_LineFromChar(es, index));
-}
+} // End EDIT_EM_CharFromPos
 
 
 /*********************************************************************
@@ -2890,7 +2912,7 @@ static BOOL EDIT_EM_FmtLines(EDITSTATE *es, BOOL add_eol)
 //      FIXME("soft break enabled, not implemented\n");
     }
     return add_eol;
-}
+} // End EDIT_EM_FmtLines
 
 
 /*********************************************************************
@@ -2937,7 +2959,7 @@ static HLOCAL EDIT_EM_GetHandle(EDITSTATE *es)
         es->flags |= EF_APP_HAS_HANDLE;
 //  TRACE("Returning %p, LocalSize() = %ld\n", hLocal, LocalSize(hLocal));
     return hLocal;
-}
+} // End EDIT_EM_GetHandle
 
 
 #ifdef _WIN16
@@ -3007,7 +3029,7 @@ static HLOCAL16 EDIT_EM_GetHandle16(EDITSTATE *es)
 done:
     stack16->ds = oldDS;
     return es->hloc16;
-}
+} // End EDIT_EM_GetHandle16
 #endif
 
 
@@ -3054,7 +3076,7 @@ static INT EDIT_EM_GetLine(EDITSTATE *es, INT line, LPWSTR dst, BOOL unicode)
         ((LPSTR)dst)[ret] = 0;
         return ret;
     }
-}
+} // End EDIT_EM_GetLine
 
 
 /*********************************************************************
@@ -3073,7 +3095,7 @@ static LRESULT EDIT_EM_GetSel(EDITSTATE *es, PUINT start, PUINT end)
     if (end)
         *end = e;
     return MAKELONG(s, e);
-}
+} // End EDIT_EM_GetSel
 
 
 /*********************************************************************
@@ -3090,7 +3112,7 @@ static LRESULT EDIT_EM_GetThumb(EDITSTATE *es)
 {
     return MAKELONG(EDIT_WM_VScroll(es, EM_GETTHUMB16, 0),
         EDIT_WM_HScroll(es, EM_GETTHUMB16, 0));
-}
+} // End EDIT_EM_GetThumb
 
 
 /*********************************************************************
@@ -3119,7 +3141,7 @@ static INT EDIT_EM_LineFromChar(EDITSTATE *es, INT index)
         index -= line_def->length;
     }
     return line;
-}
+} // End EDIT_EM_LineFromChar
 
 
 /*********************************************************************
@@ -3154,7 +3176,7 @@ static INT EDIT_EM_LineIndex(EDITSTATE *es, INT line)
         }
     }
     return line_index;
-}
+} // End EDIT_EM_LineIndex
 
 
 /*********************************************************************
@@ -3190,7 +3212,7 @@ static INT EDIT_EM_LineLength(EDITSTATE *es, INT index)
         index -= line_def->length;
     }
     return line_def->net_length;
-}
+} // End EDIT_EM_LineLength
 
 
 /*********************************************************************
@@ -3369,7 +3391,7 @@ static LRESULT EDIT_EM_PosFromChar(EDITSTATE *es, INT index, BOOL after_wrap)
         SelectObject(dc, old_font);
     ReleaseDC(es->hwndSelf, dc); dc = NULL;
     return MAKELONG((INT16)x, (INT16)y);
-}
+} // End EDIT_EM_PosFromChar
 
 
 /*********************************************************************
@@ -3797,6 +3819,7 @@ static void EDIT_EM_SetHandle(EDITSTATE *es, HLOCAL hloc)
     EDIT_UpdateScrollInfo(es);
 } // End EDIT_EM_SetHandle
 
+
 #ifdef _WIN16
 /*********************************************************************
  *
@@ -3883,7 +3906,7 @@ static void EDIT_EM_SetLimitText(EDITSTATE *es, INT limit)
     if (!limit) limit = ~0u;
     if (!(es->style & ES_MULTILINE)) limit = min(limit, 0x7ffffffe);
     es->buffer_limit = limit;
-}
+} // End EDIT_EM_SetLimitText
 
 
 /*********************************************************************
@@ -4088,7 +4111,7 @@ static BOOL EDIT_EM_SetTabStops(EDITSTATE *es, INT count, LPINT tabs)
         memcpy(es->tabs, tabs, count * sizeof(INT));
     }
     return TRUE;
-}
+} // End EDIT_EM_SetTabStops
 
 
 #ifdef _WIN16
@@ -4112,7 +4135,7 @@ static BOOL EDIT_EM_SetTabStops16(EDITSTATE *es, INT count, LPINT16 tabs)
             es->tabs[i] = *tabs++;
     }
     return TRUE;
-}
+} // End EDIT_EM_SetTabStops16
 #endif
 
 
@@ -4195,7 +4218,7 @@ static BOOL EDIT_EM_Undo(EDITSTATE *es)
 //  TRACE("after UNDO:insertion length = %d, deletion buffer = %s\n",
 //          es->undo_insert_count, debugstr_w(es->undo_text));
     return TRUE;
-}
+} // End EDIT_WM_Undo
 
 
 /*********************************************************************
@@ -4276,7 +4299,7 @@ static void EDIT_WM_Char(EDITSTATE *es, WCHAR c)
         }
         break;
     }
-}
+} // End EDIT_WM_Char
 
 
 /*********************************************************************
@@ -4333,7 +4356,7 @@ static void EDIT_WM_Command(EDITSTATE *es, INT code, INT id, HWND control)
 //          ERR("unknown menu item, please report\n");
             break;
     }
-}
+} // End EDIT_WM_Command
 
 
 /*********************************************************************
@@ -4380,15 +4403,15 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     /* copy PC/3270 */
     EnableMenuItem(popup, IDM_COPY_PC3270 , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* paste */
-    EnableMenuItem(popup, IDM_PASTE       , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_PASTE       , ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste APL+WIN */
-    EnableMenuItem(popup, IDM_PASTE_APLWIN, (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_PASTE_APLWIN, ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste APL2 */
-    EnableMenuItem(popup, IDM_PASTE_APL2  , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_PASTE_APL2  , ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste ISO */
-    EnableMenuItem(popup, IDM_PASTE_ISO   , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_PASTE_ISO   , ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste PC/3270 */
-    EnableMenuItem(popup, IDM_PASTE_PC3270, (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_PASTE_PC3270, ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* delete */
     EnableMenuItem(popup, IDM_DELETE      , ((end - start) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* select all */
@@ -4448,7 +4471,7 @@ static void EDIT_WM_Copy(EDITSTATE *es)
     EmptyClipboard();
     SetClipboardData(CF_UNICODETEXT, hdst);
     CloseClipboard();
-}
+} // End EDIT_WM_Copy
 
 
 /*********************************************************************
@@ -4542,7 +4565,7 @@ static LRESULT EDIT_WM_Destroy(EDITSTATE *es)
     HeapFree(GetProcessHeap(), 0, es);
 
     return 0;
-}
+} // End EDIT_WM_Destroy
 
 
 /*********************************************************************
@@ -4554,7 +4577,7 @@ static LRESULT EDIT_WM_EraseBkGnd(EDITSTATE *es, HDC dc)
 {
     /* we do the proper erase in EDIT_WM_Paint */
     return 1;
-}
+} // End EDIT_WM_EraseBkGnd
 
 
 /*********************************************************************
@@ -4578,7 +4601,8 @@ static size_t EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode
             textA[count - 1] = 0; /* ensure 0 termination */
     return strlen(textA);
     }
-}
+} // End EDIT_WM_GetText
+
 
 /*********************************************************************
  *
@@ -4714,7 +4738,7 @@ static LRESULT EDIT_WM_HScroll(EDITSTATE *es, INT action, INT pos)
         EDIT_EM_LineScroll_internal(es, dx, 0);
     }
     return 0;
-}
+} // End EDIT_WM_HScroll
 
 
 /*********************************************************************
@@ -4956,7 +4980,7 @@ static LRESULT EDIT_WM_LButtonDblClk(EDITSTATE *es)
     es->region_posx = es->region_posy = 0;
     SetTimer(es->hwndSelf, 0, 100, NULL);
     return 0;
-}
+} // End EDIT_WM_LButtonDblClk
 
 
 /*********************************************************************
@@ -4982,7 +5006,7 @@ static LRESULT EDIT_WM_LButtonDown(EDITSTATE *es, DWORD keys, INT x, INT y)
             SetFocus(es->hwndSelf);
 
     return 0;
-}
+} // End EDIT_WM_LButtonDown
 
 
 /*********************************************************************
@@ -4998,7 +5022,7 @@ static LRESULT EDIT_WM_LButtonUp(EDITSTATE *es)
     }
     es->bCaptureState = FALSE;
     return 0;
-}
+} // End EDIT_WM_LButtonUp
 
 
 /*********************************************************************
@@ -5010,7 +5034,7 @@ static LRESULT EDIT_WM_MButtonDown(EDITSTATE *es)
 {
     SendMessageW(es->hwndSelf, WM_PASTE, 0, 0);
     return 0;
-}
+} // End EDIT_WM_MButtonDown
 
 
 /*********************************************************************
@@ -5146,6 +5170,7 @@ static LRESULT EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode)
 
     return TRUE;
 } // End EDIT_WM_NCCreate
+
 
 /*********************************************************************
  *
@@ -5293,8 +5318,6 @@ static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg, long lFlags)
         INT nLOP = (rcClient.bottom - rcClient.top) / es->line_height;
         for (i = es->y_offset ; i <= min(es->y_offset + vlc, es->y_offset + es->line_count - 1) ; i++) {
             EDIT_GetLineRect(es, i, 0, -1, &rcLine);
-            // ***FIXME*** -- Handle printing Selection only    (lFlags & PRF_SELECTION)
-            // ***FIXME*** -- Handle printing Current Page only (lFlags & PRF_CURRENTPAGE)
             if (lFlags & PRF_SELECTION  )
             {
                 if (LineHasSelection (es, i))
@@ -5523,7 +5546,7 @@ static void EDIT_WM_SetText(EDITSTATE *es, LPCWSTR text, BOOL unicode)
     text = textW;
     }
 
-    if (es->flags & EF_UPDATE)
+//  if (es->flags & EF_UPDATE)
     /* fixed this bug once; complain if we see it about to happen again. */
 //  ERR("SetSel may generate UPDATE message whose handler may reset "
 //      "selection.\n");
@@ -5557,7 +5580,7 @@ static void EDIT_WM_SetText(EDITSTATE *es, LPCWSTR text, BOOL unicode)
     }
     EDIT_EM_ScrollCaret(es);
     EDIT_UpdateScrollInfo(es);
-}
+} // End EDIT_WM_SetText
 
 
 /*********************************************************************
@@ -5677,7 +5700,8 @@ static LRESULT  EDIT_WM_StyleChanged ( EDITSTATE *es, WPARAM which, const STYLES
         }
 
         return 0;
-}
+} // End EDIT_WM_StyleChanged
+
 
 /*********************************************************************
  *
@@ -5697,7 +5721,7 @@ static LRESULT EDIT_WM_SysKeyDown(EDITSTATE *es, INT key, DWORD key_data)
             return 0;
     }
     return DefWindowProcW(es->hwndSelf, WM_SYSKEYDOWN, (WPARAM)key, (LPARAM)key_data);
-}
+} // End EDIT_WM_SysKeyDown
 
 
 /*********************************************************************
@@ -5716,7 +5740,8 @@ static void EDIT_WM_Timer(EDITSTATE *es)
  *  FIXME: gotta do some vertical scrolling here, like
  *      EDIT_EM_LineScroll(hwnd, 0, 1);
  */
-}
+} // End EDIT_WM_Timer
+
 
 /*********************************************************************
  *
@@ -5836,7 +5861,8 @@ static LRESULT EDIT_WM_VScroll(EDITSTATE *es, INT action, INT pos)
     if (dy)
         EDIT_EM_LineScroll(es, 0, dy);
     return 0;
-}
+} // End EDIT_WM_VScroll
+
 
 /*********************************************************************
  *
@@ -6009,5 +6035,5 @@ static void EDIT_ImeComposition(HWND hwnd, LPARAM CompFlag, EDITSTATE *es)
         EDIT_GetResultStr(hwnd,es);
     if (CompFlag & GCS_COMPSTR)
         EDIT_GetCompositionStr(hwnd, CompFlag, es);
-}
+} // End EDIT_ImeComposition
 #endif

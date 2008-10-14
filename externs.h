@@ -71,8 +71,8 @@ LPWCHAR icIndexValues[ICVAL_LENGTH]
 = {L"0",
    L"1",
    L"DOMAIN ERROR",
-   WS_UTF16_INFINITY,
-   WS_UTF16_OVERBAR WS_UTF16_INFINITY,
+   L"+Infinity",     // WS_UTF16_INFINITY,
+   L"-Infinity",     // WS_UTF16_OVERBAR WS_UTF16_INFINITY,
   }
 #endif
 ;
@@ -160,6 +160,9 @@ EXTERN
 APLBOOL  bQuadIO_CWS        ;           // []IO
 
 EXTERN
+APLINT   uQuadMF_CWS        ;           // []MF
+
+EXTERN
 APLUINT  uQuadPP_CWS        ,           // []PP
          uQuadPW_CWS        ,           // []PW
          uQuadRL_CWS        ;           // []RL
@@ -196,7 +199,7 @@ RANGELIMIT bRangeLimit
 //   when an empty vector is assigned to it is the system default
 //   constant such as DEF_QUADxx_CWS (TRUE) or the value saved
 //   in the .ini file (FALSE)
-typedef struct tagSYS_OR_INI
+typedef struct tagRESET_VARS
 {
     UBOOL CT:1,
           FC:1,
@@ -205,18 +208,18 @@ typedef struct tagSYS_OR_INI
           PP:1,
           PW:1,
           RL:1;
-} SYS_OR_INI;
+} RESET_VARS;
 
 EXTERN
-SYS_OR_INI bSysOrIni
+RESET_VARS bResetVars
 #ifdef DEFINE_VALUES
-= {DEF_SETEMPTYCWS_CT,      // []CT
-   DEF_SETEMPTYCWS_FC,      // []FC
-   DEF_SETEMPTYCWS_IC,      // []IC
-   DEF_SETEMPTYCWS_IO,      // []IO
-   DEF_SETEMPTYCWS_PP,      // []PP
-   DEF_SETEMPTYCWS_PW,      // []PW
-   DEF_SETEMPTYCWS_RL,      // []RL
+= {DEF_RESETVARS_CT,        // []CT
+   DEF_RESETVARS_FC,        // []FC
+   DEF_RESETVARS_IC,        // []IC
+   DEF_RESETVARS_IO,        // []IO
+   DEF_RESETVARS_PP,        // []PP
+   DEF_RESETVARS_PW,        // []PW
+   DEF_RESETVARS_RL,        // []RL
   }
 #endif
 ;
@@ -267,9 +270,21 @@ LPWCHAR lpwszIniFile,                   // Ptr to "APPNAME.ini" file
         lpwszWorkDir;                   // Ptr to WS_WKSNAME dir
 
 EXTERN
+UBOOL bCSO;                             // TRUE iff Critical Sections defined
+
+EXTERN
 CRITICAL_SECTION CSO0,                  // Critical Section Object #0
                  CSO1,                  // ...                     #1
+#ifdef DEBUG
+                 CSOFrisk,              // ...                     for HshTabFrisk
+#endif
+#ifdef RESDEBUG
+                 CSORsrc,               // ...                     for _SaveObj/_DeleObj
+#endif
                  CSOPL;                 // ...                     for ParseLine
+
+LRESULT WINAPI EditWndProcA (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT WINAPI EditWndProcW (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
 //***************************************************************************
@@ -724,13 +739,6 @@ WCHAR wszIndent[DEF_INDENT + 1]
 ;
 
 EXTERN
-UBOOL bExecuting                        // TRUE iff we 're waiting for an execution to complete
-#ifdef DEFINE_VALUES
- = FALSE
-#endif
-;
-
-EXTERN
 int gLstTabID                           // ID of the previous (outgoing) tab (-1 = none)
 #ifdef DEFINE_VALUES
  = -1
@@ -1069,18 +1077,19 @@ UINT uTypeMap[]
 #endif
 ;
 
-APLSTYPE aTypePromote[ARRAY_LENGTH][ARRAY_LENGTH]
+APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #ifdef DEFINE_VALUES
 =
-//      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA
-{{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // BOOL
- {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // INT
- {ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_FLOAT },  // FLOAT
- {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO},  // CHAR
- {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO},  // HETERO
- {ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_ERROR , ARRAY_NESTED},  // NESTED
- {ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR },  // LIST
- {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // APA
+//      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA              INIT
+{{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_BOOL  },  // BOOL
+ {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_INT   },  // INT
+ {ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_FLOAT , ARRAY_FLOAT },  // FLOAT
+ {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO, ARRAY_CHAR  },  // CHAR
+ {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO, ARRAY_HETERO},  // HETERO
+ {ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_ERROR , ARRAY_NESTED, ARRAY_NESTED},  // NESTED
+ {ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR },  // LIST
+ {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_INT   },  // APA
+ {ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_ERROR },  // INIT
 }
 #endif
 ;
@@ -1390,14 +1399,14 @@ EXTERN
 CUSTOMIZE custStruc[]
 #ifdef DEFINE_VALUES
  =
-{{L"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
- {L"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
- {L"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
- {L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 03
- {L"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 04
- {L"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 05
- {L"Tab Colors"              , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 06
- {L"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 07
+{   {L"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
+////{L"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
+    {L"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
+    {L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 03
+////{L"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 04
+    {L"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 05
+////{L"Tab Colors"              , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 06
+    {L"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 07
 }
 #endif
 ;
@@ -1409,7 +1418,7 @@ UINT custStrucLen
 #endif
 ;
 
-#define DEF_INIT_CATEGORY   2       // Fonts
+#define DEF_INIT_CATEGORY   (IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START)   // Fonts
 
 EXTERN
 int gInitCustomizeCategory

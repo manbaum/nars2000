@@ -366,6 +366,27 @@ LPWCHAR FillMemoryW
 
 
 //***************************************************************************
+//  $FillBitMemory
+//
+//  Fill in memory with all 1s handling the last byte specially
+//***************************************************************************
+
+void FillBitMemory
+    (LPAPLBOOL lpMemRes,                // Ptr to memory to fill
+     APLNELM   aplNELMRes)              // # bits to fill
+
+{
+    // Fill the leading bytes with 0xFF
+    FillMemory (lpMemRes, (__int3264) aplNELMRes >> LOG2NBIB, 0xFF);
+
+    // If there are extra bits at the end, ...
+    if (MASKLOG2NBIB & (UINT) aplNELMRes)
+        lpMemRes[aplNELMRes >> LOG2NBIB] =
+          ((BIT0 << (MASKLOG2NBIB & (UINT) aplNELMRes)) - 1);
+} // End FillBitMemory
+
+
+//***************************************************************************
 //  $nop
 //***************************************************************************
 

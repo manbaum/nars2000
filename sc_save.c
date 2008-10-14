@@ -653,6 +653,15 @@ void CleanupAfterSave
                                 KEYNAME_SILEVEL,                // Ptr to the key name
                                 wszCount,                       // Ptr to the key value
                                 lpMemSaveWSID);                 // Ptr to the file name
+    // Format to []MF timer #
+    wsprintfW (wszCount,
+               L"%d",
+               lpMemPTD->uQuadMF);
+    // Write out the []MF timer # to the [General] section
+    WritePrivateProfileStringW (SECTNAME_GENERAL,               // Ptr to the section name
+                                KEYNAME_MFTIMER,                // Ptr to the key name
+                                wszCount,                       // Ptr to the key value
+                                lpMemSaveWSID);                 // Ptr to the file name
     // Format the [Globals] count
     wsprintfW (wszCount,
                L"%d",
@@ -949,13 +958,31 @@ LPAPLCHAR SavedWsFormGlbFcn
                                         KEYNAME_UNDO,           // Ptr to the key name
                                         lpUndoIni,              // Ptr to the key value
                                         lpMemSaveWSID);         // Ptr to the file name
-            // ***FIXME*** -- Write out the stop/trace bits
+            // ***FINISHME*** -- Write out the stop/trace bits
 
 
 
 
 
 
+
+
+
+
+            if (lpMemDfnHdr->hGlbMonInfo)
+            {
+                DbgBrk ();          // ***FINISHME***
+
+
+
+
+
+
+
+
+
+
+            } // End IF
 
             // Copy creation time
             ftCreation = lpMemDfnHdr->ftCreation;
@@ -1362,7 +1389,7 @@ LPAPLCHAR SavedWsFormGlbVar
                     } else
                     {
                         // Get the global's Type
-                        AttrsOfGlb (ClrPtrTypeDirAsGlb (hGlbSub), &aplTypeSub, NULL, NULL, NULL);
+                        AttrsOfGlb (hGlbSub, &aplTypeSub, NULL, NULL, NULL);
 
                         // Convert the variable in global memory to saved ws form
                         lpaplChar =

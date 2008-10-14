@@ -131,6 +131,11 @@ UBOOL CmdSiSinlCom_EM
             case DFNTYPE_OP1:
             case DFNTYPE_OP2:
             case DFNTYPE_FCN:
+#ifndef DEBUG
+                // If it's a Magic Function, skip it
+                if (lpSISCur->PermFn)
+                    break;
+#endif
                 // Lock the memory to get a ptr to it
                 lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 

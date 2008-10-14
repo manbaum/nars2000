@@ -106,30 +106,34 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkData.tkInteger  =   (filled in below)
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-#define DR_CHAR2INT        -2   // Convert a character representation of an integer to an integer
-#define DR_CHAR2FLOAT      -1   // Convert a character representation of a float to a float
 #define DR_SHOW             0   // Return a character vector representation
-#define DR_FLOAT2CHAR       1   // Convert a float to its 16-digit hexadecimal character representation
-#define DR_INT2CHAR         2   // Convert an integer to its 16-digit hexadecimal character representation
-#define DR_BOOL           100   //  1 bit  per value
-#define DR_CHAR          1601   // 16 bits ...
-#define DR_INT           6402   // 64 ...
-#define DR_FLOAT         6403   // 64 ...
-#define DR_APA           6404   // 64 ... offset & multiplier
-#define DR_COMPLEX       6405   // 64 ... real & imaginary
-#define DR_QUATERNIONS   6406   // 64 ... real & ...
-#define DR_OCTONIONS     6407   // 64 ... real & ...
-#define DR_HETERO32      3208   // 32 ... per item
-#define DR_HETERO64      6409   // 64 ... ...
-#define DR_NESTED32      3210   // 32 ... ...
-#define DR_NESTED64      6411   // 64 ... ...
-#define DR_LIST32        3212   // 32 ... ...
-#define DR_LIST64        6413   // 64 ... ...
-#define DR_RATIONAL        14   // ??
+#define DR_FLOAT2CHAR       1   // Convert between float   and its 16-digit hexadecimal character representation
+#define DR_INT2CHAR         2   // Convert between integer and its 16-digit hexadecimal character representation
+#define DR_BOOL           100   //   1 bit  per value
+#define DR_CHAR8          801   //   8 bits ...
+#define DR_CHAR16        1601   //  16 ...
+#define DR_CHAR32        3201   //  32 ...
+#define DR_INT8           802   //   8 ...
+#define DR_INT16         1602   //  16 ...
+#define DR_INT32         3202   //  32 ...
+#define DR_INT64         6402   //  64 ...
+#define DR_FLOAT         6403   //  64 ...
+#define DR_APA           6404   //  64 ... offset & multiplier
+#define DR_COMPLEX      12805   // 128 ... real & imaginary
+#define DR_QUATERNIONS  25606   // 256 ... ...              & ...
+#define DR_OCTONIONS    51207   // 512 ... ...                ... & ...
+#define DR_HETERO32      3208   //  32 ... per item
+#define DR_HETERO64      6408   //  64 ... ...
+#define DR_NESTED32      3209   //  32 ... ...
+#define DR_NESTED64      6409   //  64 ... ...
+#define DR_LIST32        3210   //  32 ... ...
+#define DR_LIST64        6410   //  64 ... ...
+#define DR_RATIONAL        11   //  ??
+#define DR_EXTPREC         12   //  ??
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -145,7 +149,7 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
             break;
 
         case ARRAY_INT:
-            lpYYRes->tkToken.tkData.tkInteger = DR_INT;
+            lpYYRes->tkToken.tkData.tkInteger = DR_INT64;
 
             break;
 
@@ -155,7 +159,7 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
             break;
 
         case ARRAY_CHAR:
-            lpYYRes->tkToken.tkData.tkInteger = DR_CHAR;
+            lpYYRes->tkToken.tkData.tkInteger = DR_CHAR16;
 
             break;
 
@@ -207,18 +211,20 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft;        // Left arg storage type
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // Right ...
     APLNELM      aplNELMLft;        // Left arg NELM
     APLRANK      aplRankLft;        // Left arg rank
     HGLOBAL      hGlbRes = NULL;    // Result global memory handle
     APLINT       aplIntegerLft;     // Left arg as integer
     APLFLOAT     aplFloatLft;       // Left arg as float
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    UBOOL        bScalar = FALSE;   // TRUE if the result si a simple scalar
+    UBOOL        bScalar = FALSE;   // TRUE if the result is a simple scalar
 
     // Get the attributes (Type, NELM, and Rank)
-    //   of the left arg
+    //   of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht,  NULL      ,  NULL      , NULL);
 
     // Check for LEFT RANK ERROR
     if (IsMultiRank (aplRankLft))
@@ -256,41 +262,35 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     // Ensure the left arg is valid
     switch (aplIntegerLft)
     {
-        case DR_CHAR2INT:
-            // Convert a character representation of an integer to an integer
-            hGlbRes = SysFnDR_CharToInt_EM (lptkRhtArg, lptkFunc, &bScalar);
-
-            break;
-
-        case DR_CHAR2FLOAT:
-            // Convert a character representation of a float to a float
-            hGlbRes = SysFnDR_CharToFloat_EM (lptkRhtArg, lptkFunc, &bScalar);
-
-            break;
-
         case DR_SHOW:
             // Return a character vector representation
             return SysFnDR_Show_EM_YY (lptkRhtArg, lptkFunc);
 
         case DR_FLOAT2CHAR:
-            // Convert a float to its 16-digit hexadecimal character representation
-            hGlbRes = SysFnDR_FloatToChar_EM (lptkRhtArg, lptkFunc);
-
+            if (IsSimpleNum (aplTypeRht))
+                // Convert a float to its 16-digit hexadecimal character representation
+                hGlbRes = SysFnDR_FloatToChar_EM (lptkRhtArg, lptkFunc);
+            else
+                // Convert a character representation of a float to a float
+                hGlbRes = SysFnDR_CharToFloat_EM (lptkRhtArg, lptkFunc, &bScalar);
             break;
 
         case DR_INT2CHAR:
-            // Convert an integer to its 16-digit hexadecimal character representation
-            hGlbRes = SysFnDR_IntToChar_EM (lptkRhtArg, lptkFunc);
-
+            if (IsSimpleNum (aplTypeRht))
+                // Convert an integer to its 16-digit hexadecimal character representation
+                hGlbRes = SysFnDR_IntToChar_EM (lptkRhtArg, lptkFunc);
+            else
+                // Convert a character representation of an integer to an integer
+                hGlbRes = SysFnDR_CharToInt_EM (lptkRhtArg, lptkFunc, &bScalar);
             break;
 
         case DR_BOOL:
             return SysFnDR_Convert_EM_YY (ARRAY_BOOL,  lptkRhtArg, lptkFunc);
 
-        case DR_CHAR:
+        case DR_CHAR16:
             return SysFnDR_Convert_EM_YY (ARRAY_CHAR,  lptkRhtArg, lptkFunc);
 
-        case DR_INT:
+        case DR_INT64:
             return SysFnDR_Convert_EM_YY (ARRAY_INT,   lptkRhtArg, lptkFunc);
 
         case DR_FLOAT:
@@ -308,6 +308,11 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         default:
             return PrimFnDomainError_EM (lptkFunc);
 
+        case DR_CHAR8:
+        case DR_CHAR32:
+        case DR_INT8:
+        case DR_INT16:
+        case DR_INT32:
         case DR_COMPLEX:
         case DR_QUATERNIONS:
         case DR_OCTONIONS:
@@ -340,7 +345,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkLongest  = aplLongestRes;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -350,8 +355,8 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     {
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE
@@ -489,7 +494,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
                 goto RIGHT_DOMAIN_EXIT;
 
             // Save in NELM
-            aplNELMRes = imul64 (aplNELMRes, iAccum, &bRet);
+            aplNELMRes = _imul64 (aplNELMRes, iAccum, &bRet);
 
             // Check for overflow
             if (!bRet)
@@ -543,7 +548,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
@@ -609,8 +614,8 @@ YYALLOC_EXIT:
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
@@ -756,7 +761,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         case ARRAY_INT:
             wsprintfW (wszTemp,
                       L"Integer (%d):  64 bits per element",
-                       DR_INT);
+                       DR_INT64);
             break;
 
         case ARRAY_FLOAT:
@@ -768,7 +773,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         case ARRAY_CHAR:
             wsprintfW (wszTemp,
                       L"Character (%d):  16 bits per element",
-                       DR_CHAR);
+                       DR_CHAR16);
             break;
 
         case ARRAY_APA:
@@ -820,7 +825,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -843,8 +848,8 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1012,7 +1017,7 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht * 16;
     lpHeader->Rank       = aplRankRht + 1;
@@ -1238,7 +1243,7 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = 0;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;

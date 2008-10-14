@@ -527,7 +527,7 @@ UBOOL LoadWorkspace_EM
                     if (bImmed)
                         lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
                     else
-                        lpSymEntry->stFlags.ImmType  = 0;
+                        lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
                     // Set the common values
                     lpSymEntry->stFlags.Imm        = bImmed;
                     lpSymEntry->stFlags.Value      = TRUE;
@@ -797,7 +797,7 @@ UBOOL ParseSavedWsFcn_EM
     if (hGlbOld)
     {
         // Free the old value
-        FreeResultGlobalDFV (hGlbOld); hGlbOld = NULL;
+        FreeResultGlobalDFLV (hGlbOld); hGlbOld = NULL;
     } // End IF
 
     return TRUE;
@@ -1460,6 +1460,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                             uMaxSize - (UINT) ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart), // Maximum size of lpMemUndoTxt
                                             lpwszDPFE);         // Ptr to the file name
                 // Fill in common values
+                SF_Fcns.bDisplayErr     = TRUE;             // Display Errors
 ////////////////SF_Fcns.bRet            =                   // Filled in by SaveFunctionCom
 ////////////////SF_Fcns.uErrLine        =                   // ...
 ////////////////SF_Fcns.lpSymName       =                   // ...

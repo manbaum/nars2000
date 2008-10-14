@@ -141,7 +141,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY     , 0          },  // Function Fix
 ////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM_YY , 0          },  // Identifier List
 ////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM_YY  , 0          },  // Identifier Localization
-////{WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY     , 0          },  // Monitor Function
+    {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY     , 0          },  // Monitor Function
     {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM_YY     , 0          },  // Name Classification
     {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM_YY     , 0          },  // Name List
     {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM_YY   , 0          },  // Size of an object
@@ -1749,7 +1749,7 @@ UBOOL ValidateIntegerVector_EM
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 // Get the value
-                aplInteger = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
+                aplInteger = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
 
                 // Test the value
                 bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
@@ -2098,7 +2098,7 @@ UBOOL ValidSetCT_EM
     return ValidateFloat_EM (lptkNamArg,            // Ptr to name arg token
                              lptkRhtArg,            // Ptr to right arg token
                              DEF_MIN_QUADCT,        // Minimum value
-              bSysOrIni.CT ? DEF_QUADCT_CWS : fQuadCT_CWS, // Default ...
+              bResetVars.CT ? DEF_QUADCT_CWS : fQuadCT_CWS, // Default ...
                              DEF_MAX_QUADCT,        // Maximum ...
                              bRangeLimit.CT);       // TRUE iff range limiting
 } // End ValidSetCT_EM
@@ -2199,7 +2199,7 @@ UBOOL ValidSetFC_EM
         FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (bSysOrIni.FC ? hGlbQuadFC_SYS : hGlbQuadFC_CWS);
+        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (bResetVars.FC ? hGlbQuadFC_SYS : hGlbQuadFC_CWS);
         lptkNamArg->tkFlags.NoDisplay = TRUE;
 
         return TRUE;
@@ -2243,7 +2243,7 @@ UBOOL ValidSetIC_EM
         FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (bSysOrIni.IC ? hGlbQuadIC_SYS : hGlbQuadIC_CWS);
+        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (bResetVars.IC ? hGlbQuadIC_SYS : hGlbQuadIC_CWS);
         lptkNamArg->tkFlags.NoDisplay = TRUE;
 
         return TRUE;
@@ -2329,7 +2329,7 @@ UBOOL ValidSetIO_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADIO,      // Minimum value
-                bSysOrIni.IO ? DEF_QUADIO_CWS : bQuadIO_CWS, // Default ...
+                bResetVars.IO ? DEF_QUADIO_CWS : bQuadIO_CWS, // Default ...
                                DEF_MAX_QUADIO,      // Maximum ...
                                bRangeLimit.IO);     // TRUE iff range limiting
 } // End ValidSetIO_EM
@@ -2422,7 +2422,7 @@ UBOOL ValidSetPP_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADPP,      // Minimum value
-                bSysOrIni.PP ? DEF_QUADPP_CWS : (UINT) uQuadPP_CWS, // Default ...
+                bResetVars.PP ? DEF_QUADPP_CWS : (UINT) uQuadPP_CWS, // Default ...
                                DEF_MAX_QUADPP,      // Maximum ...
                                bRangeLimit.PP);     // TRUE iff range limiting
 } // End ValidSetPP_EM
@@ -2688,7 +2688,7 @@ UBOOL ValidSetPW_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADPW,      // Minimum value
-                bSysOrIni.PW ? DEF_QUADPW_CWS : (UINT) uQuadPW_CWS, // Default ...
+                bResetVars.PW ? DEF_QUADPW_CWS : (UINT) uQuadPW_CWS, // Default ...
                                DEF_MAX_QUADPW,      // Maximum ...
                                bRangeLimit.PW);     // TRUE iff range limiting
 } // End ValidSetPW_EM
@@ -2763,7 +2763,7 @@ UBOOL ValidSetRL_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADRL,      // Minimum value
-                bSysOrIni.RL ? DEF_QUADRL_CWS : (UINT) uQuadRL_CWS, // Default ...
+                bResetVars.RL ? DEF_QUADRL_CWS : (UINT) uQuadRL_CWS, // Default ...
                                DEF_MAX_QUADRL,      // Maximum ...
                                bRangeLimit.RL);     // TRUE iff range limiting
 } // End ValidSetRL_EM

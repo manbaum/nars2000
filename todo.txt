@@ -16,7 +16,6 @@ TO DO:  General:  Less Important (post-alpha)
 * Get permission to redistribute APL385 Unicode or SimPL font
 * Reference count on symbol table entries???
 * Strings in the symbol table???
-* Implement user/session options dialog
 * Implement Redo (Ctrl-Y)
 * Allow SI Damage to be more forgiving
 * Allow [first][-][last] as arg to )LIB/VARS/FNS/OPS/NMS
@@ -26,17 +25,19 @@ TO DO:  General:  Less Important (post-alpha)
 * Need an installation program which also sets up file associations for .ws.nars
 * Never fail Tokenize_EM on SYNTAX ERROR
 * When editing a function, check to see if it's already open for editing
-* Rename PARSE.* to PL_PARSE.* and DFNHDR.* to FH_PARSE.*.
 * Implement :forlcl stmt which localizes the varname to the FOR loop
-* Boolean grade up/down??
 * Write the function name in the function editor title.
-* When removing a tab, )RESET and then remove all globals.
+* When removing a tab, )RESET, terminate all threads, and then delete
+  all globals.
 * User preference to avoid saving Undo buffer with user-defined functions/operators.
 * Convert from ARRAY_CHAR (UCS-2) to ARRAY_CHAR8  for 0x00-0x7F,
                                      ARRAY_CHAR16 for 0x0000-0xFFFF, and
                                      ARRAY_CHAR32 for the rest so as to handle Unicode.
+* Convert from ARRAY_INT to ARRAY_INT64 and also allow narrower integer types
+  ARRAY_INT8, ARRAY_INT16, and ARRAY_INT32 to be created by []DR.  If they
+  are passed to any function but []DR or the native file functions, promote
+  the narrower formats to ARRAY_INT64.
 * Implement these features:
-* ...       selective assignment
 * ...       dynamic functions
 * ...       user-defined magic functions for primitive functions
 * ...       user-defined magic functions for primitive operators
@@ -48,7 +49,6 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       extended precision
 * ...       array predicates beyond Permutation Vectors
 * ...       syntax highlighting
-* ...       control structures
 * ...       []L and []R
 * ...       expanded set of system functions, to wit:
 * ...         []CALL R
@@ -65,8 +65,6 @@ TO DO:  General:  Less Important (post-alpha)
 * ...         []IDLIST R
 * ...       L []IDLIST R
 * ...         []IDLOC R
-* ...         []MF R
-* ...       L []MF R
 * ...         []SI
 * ...         []SINL
 * ...       L []SS R
@@ -78,6 +76,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...         []VR R
 * ...       extend associativity to derived functions such as {jot}{dot}+ ???
 * ...       component file system
+* ...       native file access
 * ...       dyadic down tack jot        (format by example)
 * ...       dyadic left shoe            (partitioned enclose)
 * ...       dyadic epsilon underbar     (find)
@@ -97,6 +96,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       finish []SA
 * ...       )COPY :nnn [objs]   to copy objects from another tab
 * ...       exploit parallelism
+* ...       finish []MF
 * ...
 
 
@@ -104,21 +104,15 @@ TO DO:  Session Manager
 ---------------------
 * Ensure APL font is installed
 * Language bar to speed entry of APL chars
-* When closing a tab, ensure that all threads under it are terminated
 * Support different keyboard layouts
 *
 
 
 TO DO:  Options Menu
 --------------------
-* Fonts
 * Syntax Colors         (.ini file, too)
 * Tab Colors            (.ini file, too)
-* CLEAR WS values
 * Directory preferences
-* User preferences
-* Range limited []vars
-* CWS vs. System for empty set
 *
 
 
@@ -219,6 +213,10 @@ DONE:  General
 * ...       dieresis-circle             (monadic op -- rank w/Axis)
 * ...       []Z as a system var
 * ...       L []TF R    (Transfer Form) (EAS)
+* ...       control structures
+* ...       selective assignment
+* ...         []MF R
+* ...       L []MF R
 * []SysVar indexed assignment with range limiting validation
 * []SysVar {is} '' assigns the system default to the system var
 * When adding two empty vectors whose prototypes are
@@ -259,6 +257,9 @@ DONE:  General
 * Optimize L[R] as it uses up a STE.
 * Unlocalize in one pass (and clear .Value), and restore
   in another pass to handle duplicate localized names
+* Implement user/session options dialog
+* Optimize Boolean grade up/down
+* Rename PARSE.* to PL_PARSE.* and DFNHDR.* to FH_PARSE.*.
 
 
 DONE:  Session Manager

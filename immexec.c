@@ -29,7 +29,7 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "pertab.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 #include "sis.h"
 #include "threads.h"
 #include "cs_parse.h"

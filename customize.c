@@ -484,8 +484,8 @@ __int3264 CALLBACK CustomizeDlgProc
                         hWndProp1 = GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB);
 
                         // Append the possible values
-                        SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) L"1");
-                        SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) L"2");
+                        SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) L"Millisecond Timer");
+                        SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) L"High Resolution Timer");
 
                         // Set the current selection to the CLEAR WS value
                         SendMessageW (hWndProp1, CB_SETCURSEL, (APLU3264) uQuadMF_CWS - 1, 0);

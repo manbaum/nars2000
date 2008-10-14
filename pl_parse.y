@@ -40,7 +40,7 @@ in the lexical analyser (pl_yylex).
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 #include "pertab.h"
 #include "sis.h"
 #include "threads.h"
@@ -7858,5 +7858,5 @@ PL_YYSTYPE MakeTempCopy
 
 
 //***************************************************************************
-//  End of File: parse.y
+//  End of File: pl_parse.y
 //***************************************************************************

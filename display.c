@@ -32,7 +32,7 @@
 #include "display.h"
 #include "sysvars.h"
 #include "pertab.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

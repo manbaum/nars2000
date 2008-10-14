@@ -101,7 +101,7 @@ typedef struct tagSTART_ADDRESSES
     "FileNameOnly"              , (LPUCHAR) &FileNameOnly               ,
   #endif
 
-    // dfnhdr.c/y
+    // fh_parse.c/y
 
     // dispdbg.c
   #ifdef DEBUG
@@ -236,7 +236,7 @@ typedef struct tagSTART_ADDRESSES
     "EnumCallbackPassMsg"       , (LPUCHAR) &EnumCallbackPassMsg        ,
     "MFWndProc"                 , (LPUCHAR) &MFWndProc                  ,
 
-    // parse.c/y
+    // pl_parse.c/y
     "pl_yyparse"                , (LPUCHAR) &pl_yyparse                 ,
     "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
     "SymbTypeVFO"               , (LPUCHAR) &SymbTypeVFO                ,

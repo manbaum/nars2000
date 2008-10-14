@@ -144,7 +144,6 @@ $(O)cs_parse.DEP        \
 $(O)cs_proc.DEP         \
 $(O)customize.DEP       \
 $(O)debug.DEP           \
-$(O)dfnhdr.DEP          \
 $(O)dispdbg.DEP         \
 $(O)display.DEP         \
 $(O)dtoa.DEP            \
@@ -160,6 +159,7 @@ $(O)execfns.DEP         \
 $(O)execfns.DEP         \
 $(O)execmfn.DEP         \
 $(O)fastbool.DEP        \
+$(O)fh_parse.DEP        \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
 $(O)getfns.DEP          \
@@ -168,7 +168,6 @@ $(O)immexec.DEP         \
 $(O)inifile.DEP         \
 $(O)initdata.DEP        \
 $(O)main.DEP            \
-$(O)parse.DEP           \
 $(O)pf_bar.DEP          \
 $(O)pf_circle.DEP       \
 $(O)pf_colonbar.DEP     \
@@ -216,6 +215,7 @@ $(O)pf_ucaret.DEP       \
 $(O)pf_ustile.DEP       \
 $(O)pf_utack.DEP        \
 $(O)pf_utackjot.DEP     \
+$(O)pl_parse.DEP        \
 $(O)po_cmiddot.DEP      \
 $(O)po_dicircle.DEP     \
 $(O)po_dieresis.DEP     \
@@ -340,9 +340,6 @@ $(O)yyfns.DEP
 !if exist ($(O)debug.DEP)
 !       include $(O)debug.DEP
 !endif
-!if exist ($(O)dfnhdr.DEP)
-!       include $(O)dfnhdr.DEP
-!endif
 !if exist ($(O)dispdbg.DEP)
 !       include $(O)dispdbg.DEP
 !endif
@@ -382,6 +379,9 @@ $(O)yyfns.DEP
 !if exist ($(O)fastbool.DEP)
 !       include $(O)fastbool.DEP
 !endif
+!if exist ($(O)fh_parse.DEP)
+!       include $(O)fh_parse.DEP
+!endif
 !if exist ($(O)free.DEP)
 !       include $(O)free.DEP
 !endif
@@ -408,9 +408,6 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)main.DEP)
 !       include $(O)main.DEP
-!endif
-!if exist ($(O)parse.DEP)
-!       include $(O)parse.DEP
 !endif
 !if exist ($(O)pf_bar.DEP)
 !       include $(O)pf_bar.DEP
@@ -552,6 +549,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)pf_utackjot.DEP)
 !       include $(O)pf_utackjot.DEP
+!endif
+!if exist ($(O)pl_parse.DEP)
+!       include $(O)pl_parse.DEP
 !endif
 !if exist ($(O)po_cmiddot.DEP)
 !       include $(O)po_cmiddot.DEP
@@ -775,7 +775,6 @@ $(O)cs_parse.PRO        \
 $(O)cs_proc.PRO         \
 $(O)customize.PRO       \
 $(O)debug.PRO           \
-$(O)dfnhdr.PRO          \
 $(O)dispdbg.PRO         \
 $(O)display.PRO         \
 $(O)dtoa.PRO            \
@@ -789,6 +788,7 @@ $(O)execdfn.PRO         \
 $(O)execfns.PRO         \
 $(O)execmfn.PRO         \
 $(O)fastbool.PRO        \
+$(O)fh_parse.PRO        \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
 $(O)getreent.PRO        \
@@ -798,7 +798,6 @@ $(O)immexec.PRO         \
 $(O)inifile.PRO         \
 $(O)initdata.PRO        \
 $(O)main.PRO            \
-$(O)parse.PRO           \
 $(O)pf_bar.PRO          \
 $(O)pf_circle.PRO       \
 $(O)pf_colonbar.PRO     \
@@ -846,6 +845,7 @@ $(O)pf_ucaret.PRO       \
 $(O)pf_ustile.PRO       \
 $(O)pf_utack.PRO        \
 $(O)pf_utackjot.PRO     \
+$(O)pl_parse.PRO        \
 $(O)po_cmiddot.PRO      \
 $(O)po_dicircle.PRO     \
 $(O)po_dieresis.PRO     \
@@ -961,10 +961,10 @@ $(O)g_fmt.OBJ:          $(@B).C         $(G_FMT_DEP)
 ## Bison-generated files
 $(O)cs_parse.C:         $(@B).Y
 $(O)cs_parse.OBJ:       $(O)$(@B).C     $(CS_PARSE_DEP)
-$(O)dfnhdr.C:           $(@B).Y
-$(O)dfnhdr.OBJ:         $(O)$(@B).C     $(DFNHDR_DEP)
-$(O)parse.C:            $(@B).Y
-$(O)parse.OBJ:          $(O)$(@B).C     $(PARSE_DEP)
+$(O)fh_parse.C:         $(@B).Y
+$(O)fh_parse.OBJ:       $(O)$(@B).C     $(FH_PARSE_DEP)
+$(O)pl_parse.C:         $(@B).Y
+$(O)pl_parse.OBJ:       $(O)$(@B).C     $(PL_PARSE_DEP)
 
 ## WineHQ-specific files
 $(O)editctrl.OBJ:       $(WS)$(@B).C    $(EDITCTRL_DEP)
@@ -1139,7 +1139,6 @@ OBJS=                       \
      $(O)cs_proc.OBJ        \
      $(O)customize.OBJ      \
      $(O)debug.OBJ          \
-     $(O)dfnhdr.OBJ         \
      $(O)dispdbg.OBJ        \
      $(O)display.OBJ        \
      $(O)dtoa.obj           \
@@ -1153,6 +1152,7 @@ OBJS=                       \
      $(O)execfns.OBJ        \
      $(O)execmfn.OBJ        \
      $(O)fastbool.OBJ       \
+     $(O)fh_parse.OBJ       \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
      $(O)getreent.OBJ       \
@@ -1162,7 +1162,7 @@ OBJS=                       \
      $(O)inifile.OBJ        \
      $(O)initdata.OBJ       \
      $(O)main.OBJ           \
-     $(O)parse.OBJ          \
+     $(O)pl_parse.OBJ       \
      $(O)pf_bar.OBJ         \
      $(O)pf_circle.OBJ      \
      $(O)pf_colonbar.OBJ    \

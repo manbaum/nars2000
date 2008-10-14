@@ -29,7 +29,7 @@
 #include "externs.h"
 #include "pertab.h"
 #include "sis.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 #include "eventtypes.h"
 
 // Include prototypes unless prototyping

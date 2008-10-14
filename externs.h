@@ -26,7 +26,7 @@
 #include "tokens.h"
 #include "primfns.h"
 #include "symtab.h"
-#include "parse.h"
+#include "pl_parse.h"
 #include "Unicode.h"
 
 // Define variables which are also used in the per tab structure

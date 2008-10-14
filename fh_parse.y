@@ -33,7 +33,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -1013,5 +1013,5 @@ BOOL GetOprName_EM
 
 
 //***************************************************************************
-//  End of File: dfnhdr.y
+//  End of File: fh_parse.y
 //***************************************************************************

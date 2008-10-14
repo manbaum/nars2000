@@ -36,7 +36,7 @@
 #include "editctrl.h"
 #include "unitranshdr.h"
 #include "unitranstab.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 #include "pertab.h"
 #include "sis.h"
 

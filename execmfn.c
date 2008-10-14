@@ -29,7 +29,7 @@
 #include "sysvars.h"
 #include "externs.h"
 #include "pertab.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 #include "sis.h"
 #include "execmfn.h"
 #include "cs_parse.h"

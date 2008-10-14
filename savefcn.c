@@ -28,7 +28,7 @@
 #include "main.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 #include "pertab.h"
 #include "sis.h"
 #include "savefcn.h"

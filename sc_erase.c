@@ -30,7 +30,7 @@
 #include "externs.h"
 #include "aplerrors.h"
 #include "pertab.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 #include "sis.h"
 
 // Include prototypes unless prototyping

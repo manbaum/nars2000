@@ -25,7 +25,7 @@
 #include "main.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "dfnhdr.h"
+#include "fh_parse.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

@@ -965,7 +965,7 @@ UBOOL TypePromoteGlb_EM
             switch (aplTypeArg)
             {
                 case ARRAY_BOOL:
-                    uBitMask = 0x01;
+                    uBitMask = BIT0;
 
                     // Loop through the arg converting values to the result
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
@@ -980,7 +980,7 @@ UBOOL TypePromoteGlb_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -1012,7 +1012,7 @@ UBOOL TypePromoteGlb_EM
             switch (aplTypeArg)
             {
                 case ARRAY_BOOL:
-                    uBitMask = 0x01;
+                    uBitMask = BIT0;
 
                     // Loop through the arg converting values to the result
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
@@ -1027,7 +1027,7 @@ UBOOL TypePromoteGlb_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -1068,7 +1068,7 @@ UBOOL TypePromoteGlb_EM
             switch (aplTypeArg)
             {
                 case ARRAY_BOOL:
-                    uBitMask = 0x01;
+                    uBitMask = BIT0;
                     lpSym0 = GetSteZero ();
                     lpSym1 = GetSteOne ();
 
@@ -1084,7 +1084,7 @@ UBOOL TypePromoteGlb_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
                         } // End IF
                     } // End FOR

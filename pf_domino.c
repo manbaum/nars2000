@@ -327,7 +327,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
             switch (aplTypeRht)
             {
                 case ARRAY_BOOL:
-                    uBitMask = 0x01;
+                    uBitMask = BIT0;
 
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
                     {
@@ -343,7 +343,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -814,7 +814,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             switch (aplTypeRht)
             {
                 case ARRAY_BOOL:
-                    uBitMask = 0x01;
+                    uBitMask = BIT0;
 
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
                     {
@@ -830,7 +830,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -917,7 +917,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         switch (aplTypeLft)
         {
             case ARRAY_BOOL:
-                uBitMask = 0x01;
+                uBitMask = BIT0;
 
                 Assert (uNumRowsLft EQ lpGslVectorB->size);
                 for (uRow = 0; uRow < uNumRowsLft; uRow++)
@@ -934,7 +934,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                     // Check for end-of-byte
                     if (uBitMask EQ END_OF_BYTE)
                     {
-                        uBitMask = 0x01;            // Start over
+                        uBitMask = BIT0;            // Start over
                         ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                     } // End IF
                 } // End FOR

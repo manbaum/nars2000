@@ -1390,7 +1390,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
             aplDimRhtEnd *= lpMemDimRht[uEnd];
 
     // Initialize the bit masks and index for Boolean arguments
-    uBitMaskLft = uBitMaskRht = 0x01;
+    uBitMaskLft = uBitMaskRht = BIT0;
     uBitIndexRes = 0;
 
     // If the left arg is not a scalar,
@@ -1496,7 +1496,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         // Check for end-of-byte
                         if (uBitMaskLft EQ END_OF_BYTE)
                         {
-                            uBitMaskLft = 0x01;         // Start over
+                            uBitMaskLft = BIT0;         // Start over
                             ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -1551,7 +1551,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         // Check for end-of-byte
                         if (uBitMaskRht EQ END_OF_BYTE)
                         {
-                            uBitMaskRht = 0x01;         // Start over
+                            uBitMaskRht = BIT0;         // Start over
                             ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                         } // End IF
                 } // End FOR
@@ -1594,7 +1594,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 // Check for end-of-byte
                                 if (uBitMaskLft EQ END_OF_BYTE)
                                 {
-                                    uBitMaskLft = 0x01;         // Start over
+                                    uBitMaskLft = BIT0;         // Start over
                                     ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                                 } // End IF
                             } // End FOR
@@ -1672,7 +1672,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 // Check for end-of-byte
                                 if (uBitMaskRht EQ END_OF_BYTE)
                                 {
-                                    uBitMaskRht = 0x01;         // Start over
+                                    uBitMaskRht = BIT0;         // Start over
                                     ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                                 } // End IF
                             } // End FOR
@@ -1757,7 +1757,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 // Check for end-of-byte
                                 if (uBitMaskLft EQ END_OF_BYTE)
                                 {
-                                    uBitMaskLft = 0x01;         // Start over
+                                    uBitMaskLft = BIT0;         // Start over
                                     ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                                 } // End IF
                             } // End FOR
@@ -1859,7 +1859,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 // Check for end-of-byte
                                 if (uBitMaskRht EQ END_OF_BYTE)
                                 {
-                                    uBitMaskRht = 0x01;         // Start over
+                                    uBitMaskRht = BIT0;         // Start over
                                     ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                                 } // End IF
                             } // End FOR
@@ -2102,7 +2102,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 // Check for end-of-byte
                                 if (uBitMaskLft EQ END_OF_BYTE)
                                 {
-                                    uBitMaskLft = 0x01;         // Start over
+                                    uBitMaskLft = BIT0;         // Start over
                                     ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                                 } // End IF
                             } // End FOR
@@ -2288,7 +2288,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 // Check for end-of-byte
                                 if (uBitMaskRht EQ END_OF_BYTE)
                                 {
-                                    uBitMaskRht = 0x01;         // Start over
+                                    uBitMaskRht = BIT0;         // Start over
                                     ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                                 } // End IF
                             } // End FOR

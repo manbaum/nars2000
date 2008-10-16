@@ -821,7 +821,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     lpMemAxisEli = &lpMemAxis[aplRankRht - aplNELMAxis - 1];
 
     // Initialize bit mask when looping through Booleans
-    uBitMask = 0x01;
+    uBitMask = BIT0;
 
     //***************************************************************
     // Calculate each index into the right arg using a weighting value
@@ -979,7 +979,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
 
                         } // End IF

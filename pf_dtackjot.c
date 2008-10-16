@@ -671,7 +671,7 @@ LPAPLCHAR CompileArrBool
     } // End FOR
 
     // Initialize bit mask for all references to lpMem
-    uBitMask = 0x01;
+    uBitMask = BIT0;
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -713,7 +713,7 @@ LPAPLCHAR CompileArrBool
             // Check for end-of-byte
             if (uBitMask EQ END_OF_BYTE)
             {
-                uBitMask = 0x01;        // Start over
+                uBitMask = BIT0;        // Start over
                 lpMem++;                // Skip to next byte
             } // End IF
         } // End FOR
@@ -3014,7 +3014,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     switch (aplTypeLft)
     {
         case ARRAY_BOOL:
-            uBitMask = 0x01;
+            uBitMask = BIT0;
 
             for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
             {
@@ -3029,7 +3029,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                 // Check for end-of-byte
                 if (uBitMask EQ END_OF_BYTE)
                 {
-                    uBitMask = 0x01;            // Start over
+                    uBitMask = BIT0;            // Start over
                     ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                 } // End IF
             } // End FOR

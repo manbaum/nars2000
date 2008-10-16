@@ -232,7 +232,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:
-            uBitMask = 0x01;
+            uBitMask = BIT0;
 
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
@@ -245,7 +245,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                 // Check for end-of-byte
                 if (uBitMask EQ END_OF_BYTE)
                 {
-                    uBitMask = 0x01;            // Start over
+                    uBitMask = BIT0;            // Start over
                     ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                 } // End IF
             } // End FOR

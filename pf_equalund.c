@@ -539,7 +539,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
     APLINT        uDim,
                   apaOff,
                   apaMul;
-    UINT          uBitMask = 0x01;
+    UINT          uBitMask = BIT0;
     APLINT        aplIntegerLft,
                   aplIntegerRht;
     APLFLOAT      aplFloatLft,
@@ -609,7 +609,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             // Check for end-of-byte
                             if (uBitMask EQ END_OF_BYTE)
                             {
-                                uBitMask = 0x01;            // Start over
+                                uBitMask = BIT0;            // Start over
                                 ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                                 ((LPAPLBOOL) lpMemRht)++;   // ...
                             } // End IF
@@ -636,7 +636,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -661,7 +661,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -691,7 +691,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -736,7 +736,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
                         } // End IF
                     } // End FOR

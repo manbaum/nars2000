@@ -260,6 +260,8 @@ DONE:  General
 * Implement user/session options dialog
 * Optimize Boolean grade up/down
 * Rename PARSE.* to PL_PARSE.* and DFNHDR.* to FH_PARSE.*.
+* Optimize numeric strands by tokenizing them
+*
 
 
 DONE:  Session Manager

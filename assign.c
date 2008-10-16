@@ -694,7 +694,7 @@ UBOOL AssignNamedVars_EM
             tkToken.tkFlags.TknType = TKT_VARIMMED;
             tkToken.tkFlags.ImmType = IMMTYPE_BOOL;
 
-            uBitMaskVal = 0x01;
+            uBitMaskVal = BIT0;
 
             // Loop through the names/values
             for (aplName = 0; aplName < aplNELMNam; aplName++)
@@ -714,7 +714,7 @@ UBOOL AssignNamedVars_EM
                     // Check for end-of-byte
                     if (uBitMaskVal EQ END_OF_BYTE)
                     {
-                        uBitMaskVal = 0x01;         // Start over
+                        uBitMaskVal = BIT0;         // Start over
                         ((LPAPLBOOL) lpMemVal)++;   // Skip to next byte
                     } // End IF
                 } // End IF

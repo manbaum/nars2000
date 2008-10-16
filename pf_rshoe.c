@@ -965,7 +965,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             // Get the prototype
                             lpSymProto = lpSym0;
 
-                            uBitMask = 0x01;
+                            uBitMask = BIT0;
 
                             // Loop through the right arg item's elements
                             //   copying them to the result
@@ -985,7 +985,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 // Check for end-of-byte
                                 if (uBitMask EQ END_OF_BYTE)
                                 {
-                                    uBitMask = 0x01;            // Start over
+                                    uBitMask = BIT0;            // Start over
                                     ((LPAPLBOOL) lpMemSub)++;   // Skip to next byte
                                 } // End IF
                             } // End FOR/FOR

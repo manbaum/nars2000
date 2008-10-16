@@ -1474,7 +1474,7 @@ void PrimFnDydRhoLftGlbCopyDim
     switch (lpHeader->ArrType)
     {
         case ARRAY_BOOL:
-            uBitMaskLft = 0x01;
+            uBitMaskLft = BIT0;
             for (uLft = 0; uLft < aplNELMLft; uLft++)
             {
                 *lpaplDim++ = (uBitMaskLft & *(LPAPLBOOL) lpDataLft) ? TRUE : FALSE;
@@ -1485,7 +1485,7 @@ void PrimFnDydRhoLftGlbCopyDim
                 // Check for end-of-byte
                 if (uBitMaskLft EQ END_OF_BYTE)
                 {
-                    uBitMaskLft = 0x01;         // Start over
+                    uBitMaskLft = BIT0;         // Start over
                     ((LPAPLBOOL) lpDataLft)++;  // Skip to next byte
                 } // End IF
             } // End FOR
@@ -1581,7 +1581,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             //   and 32-bits at a time, maybe even the 386 instructions
             //   SHLD/SHRD.
 
-            uBitMaskRes = uBitMaskRht = 0x01;
+            uBitMaskRes = uBitMaskRht = BIT0;
 
             // Loop through the result and right arg copying the data
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
@@ -1596,13 +1596,13 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                 {
                     uRht = 0;
                     lpMemRhtNext = lpMemRhtData;
-                    uBitMaskRht = 0x01;
+                    uBitMaskRht = BIT0;
                 } else
                 // Check to see if we should start over again
                 //   the right arg's bit mask
                 if (uBitMaskRht EQ END_OF_BYTE)
                 {
-                    uBitMaskRht = 0x01;
+                    uBitMaskRht = BIT0;
                     ((LPAPLBOOL) lpMemRhtNext)++;
                 } // End IF
 
@@ -1610,7 +1610,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                 //   the result's bit mask
                 if (uBitMaskRes EQ END_OF_BYTE)
                 {
-                    uBitMaskRes = 0x01;
+                    uBitMaskRes = BIT0;
                     ((LPAPLBOOL) lpDataRes)++;
                 } // End IF
 

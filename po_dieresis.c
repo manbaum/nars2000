@@ -387,7 +387,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
         {
             case ARRAY_BOOL:
                 // Initialize the bit mask
-                uBitMask = 0x01;
+                uBitMask = BIT0;
 
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -405,7 +405,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                     // Check for end-of-byte
                     if (uBitMask EQ END_OF_BYTE)
                     {
-                        uBitMask = 0x01;            // Start over
+                        uBitMask = BIT0;            // Start over
                         ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                     } // End IF
 

@@ -35,8 +35,9 @@ typedef struct tagSF_FCNS
     void (*SF_CreationTime) (LPVOID, SYSTEMTIME *, FILETIME *); // 20:  Ptr to get function creation time
     void (*SF_LastModTime)  (LPVOID, SYSTEMTIME *, FILETIME *); // 24:  Ptr to get function last mod time
     HGLOBAL (*SF_UndoBuffer) (HWND, LPVOID);                    // 28:  Ptr to get function Undo Buffer global memory handle
-    WCHAR      wszErrMsg[256];      // 2C:  Save area for error message
-                                    //12C:  Length of struc
+    HGLOBAL    hGlbDfnHdr;          // 2C:  User-defined function/operator global memory handle
+    WCHAR      wszErrMsg[256];      // 30:  Save area for error message
+                                    //230:  Length of struc
 } SF_FCNS, *LPSF_FCNS;
 
 

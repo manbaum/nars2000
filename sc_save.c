@@ -715,7 +715,9 @@ LPAPLCHAR SavedWsFormGlbFcn
                       lpaplCharStart,       // Ptr to start of buffer
                       lpaplCharStart2,      // Ptr to start of buffer
                       lpwszSectName;        // Ptr to the section name as nnn.Name where nnn is the count
-    UINT              uLine;                // Function line loop counter
+    UINT              uLine,                // Function line loop counter
+                      uCnt,                 // Loop counter
+                      uLen;                 // Loop length
     FILETIME          ftCreation,           // Object creation time
                       ftLastMod;            // ...    last modification time
     WCHAR             wszGlbObj[16 + 1],    // Save area for formatted hGlbObj
@@ -971,17 +973,48 @@ LPAPLCHAR SavedWsFormGlbFcn
 
             if (lpMemDfnHdr->hGlbMonInfo)
             {
-                DbgBrk ();          // ***FINISHME***
+                LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
+                LPAPLCHAR    lpaplCharMon;          // Ptr to formatted monitor info
 
+                // Lock the memory to get a ptr to it
+                lpMemMonInfo = MyGlobalLock (lpMemDfnHdr->hGlbMonInfo);
 
+                // Get the loop length
+                uLen = numFcnLines + 1;
 
+                // Save the ptr
+                lpaplCharMon = lpaplChar;
 
+                // Format the monitor info as integers
+                for (uCnt = 0; uCnt < uLen; uCnt++, lpMemMonInfo++)
+                {
+                    // Format the IncSubFns value
+                    lpaplCharMon =
+                      FormatAplint (lpaplCharMon,               // Ptr to output save area
+                                    lpMemMonInfo->IncSubFns);   // The value to format
+                    // Format the ExcSubFns value
+                    lpaplCharMon =
+                      FormatAplint (lpaplCharMon,               // Ptr to output save area
+                                    lpMemMonInfo->ExcSubFns);   // The value to format
+                    // Format the Count value
+                    lpaplCharMon =
+                      FormatAplint (lpaplCharMon,               // Ptr to output save area
+                                    lpMemMonInfo->Count);       // The value to format
+                    // Append a separator
+                    lpaplCharMon[-1] = L',';
+                } // End FOR
 
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemDfnHdr->hGlbMonInfo); lpMemMonInfo = NULL;
 
+                // Ensure properly terminated and zap the trailing blank
+                lpaplCharMon[-1] = L'\0';
 
-
-
-
+                // Write out the Monitor Info
+                WritePrivateProfileStringW (lpwszSectName,          // Ptr to the section name
+                                            KEYNAME_MONINFO,        // Ptr to the key name
+                                            lpaplChar,              // Ptr to the key value
+                                            lpMemSaveWSID);         // Ptr to the file name
             } // End IF
 
             // Copy creation time

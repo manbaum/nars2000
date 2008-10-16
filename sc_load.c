@@ -188,7 +188,7 @@ UBOOL LoadWorkspace_EM
     LPWCHAR      lpwCharEnd;            // Temporary ptr
     APLLONGEST   aplLongestObj;         // Object immediate value
     LPAPLLONGEST lpaplLongestObj;       // Ptr to ...
-    LPSYMENTRY   lpSymLink = NULL;      // Anchor of SYMENTRY links for [Globals] values
+    LPSYMENTRY   lpSymLink = NULL;      // Ptr to anchor of SYMENTRY links for [Globals] values
                                         //   so we may delete them easily
 
     // Get the thread's PerTabData global memory handle
@@ -744,8 +744,8 @@ UBOOL ParseSavedWsFcn_EM
         lpSymEntry =
           SymTabLookupName (lpwSrc, &stFlags);
 
-        // If it's not found, load it from the [Globals] section
-        if (lpSymEntry EQ NULL)
+        // If it's not found or has no value, load it from the [Globals] section
+        if (lpSymEntry EQ NULL || !lpSymEntry->stFlags.Value)
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
                                       lpwDataEnd,   // Ptr to next available byte
@@ -767,7 +767,10 @@ UBOOL ParseSavedWsFcn_EM
         *lpwCharEnd = wcTmp;
 
         // Save in the result
-        lpSymObj->stData.stGlbData = CopySymGlbDir (hGlbObj);
+        lpSymObj->stData.stGlbData = hGlbObj;
+
+        // Increment the reference count
+        DbgIncrRefCntDir (hGlbObj);
     } else
     {
         // Convert the single {name} or other char to UTF16_xxx
@@ -791,10 +794,13 @@ UBOOL ParseSavedWsFcn_EM
 
         // Save in the result
         lpSymObj->stData.stChar = wcTmp;
+
+        // Ensure it has a value
+        hGlbObj = NULL;
     } // End IF
 
-    // If there's an old value, ...
-    if (hGlbOld)
+    // If there's an old value and it's different, ...
+    if (hGlbOld && hGlbOld NE hGlbObj)
     {
         // Free the old value
         FreeResultGlobalDFLV (hGlbOld); hGlbOld = NULL;
@@ -878,8 +884,8 @@ LPWCHAR ParseSavedWsVar_EM
         lpSymEntry =
           SymTabLookupName (lpwSrc, &stFlags);
 
-        // If it's not found, load it from the [Globals] section
-        if (lpSymEntry EQ NULL)
+        // If it's not found or has no value, load it from the [Globals] section
+        if (lpSymEntry EQ NULL || !lpSymEntry->stFlags.Value)
         {
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
@@ -1110,11 +1116,13 @@ HGLOBAL LoadWorkspaceGlobal_EM
                  lpwSrcStart,               // Ptr to starting point
                  lpwCharEnd;                // Temporary ptr
     UINT         uBitIndex,                 // Bit index for looping through Boolean result
-                 uLineCnt;                  // # lines in the current function
+                 uLineCnt,                  // # lines in the current function including the header
+                 uCnt,                      // Loop counter
+                 Count;                     // Temporary count for monitor info
     FILETIME     ftCreation,                // Function creation time
                  ftLastMod;                 // ...      last modification time
     SYSTEMTIME   systemTime;                // Current system (UTC) time
-    UBOOL        bUserDefined;              // TRUE iff the durrent function is User-Defined
+    UBOOL        bUserDefined = FALSE;      // TRUE iff the durrent function is User-Defined
     LPVOID       lpMemObj;                  // Ptr to object global memory
     APLINT       aplInteger;                // Temporary integer
     HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
@@ -1497,6 +1505,57 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                     goto CORRUPTWS_EXIT;
                 } // End IF/ELSE
+
+                // Read in and process the monitor info
+                GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
+                                          KEYNAME_MONINFO,    // Ptr to the key name
+                                          L"",                // Ptr to the default value
+                                (LPWCHAR) lpMemUndoTxt,       // Ptr to the output buffer
+                                          uMaxSize - (UINT) ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart), // Maximum size of lpMemUndoTxt
+                                          lpwszDPFE);         // Ptr to the file name
+                // If there's monitor info, ...
+                if (lpMemUndoTxt[0])
+                {
+                    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
+                    LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
+
+                    // Lock the memory to get a ptr to it
+                    lpMemDfnHdr = MyGlobalLock (SF_Fcns.hGlbDfnHdr);
+
+                    // Allocate space for the monitor info
+                    lpMemDfnHdr->hGlbMonInfo =
+                      MyGlobalAlloc (GHND, (lpMemDfnHdr->numFcnLines + 1) * sizeof (INTMONINFO));
+                    if (lpMemDfnHdr->hGlbMonInfo)
+                    {
+                        // Lock the memory to get a ptr to it
+                        lpMemMonInfo = MyGlobalLock (lpMemDfnHdr->hGlbMonInfo);
+
+                        // Loop through the function header & lines
+                        for (uCnt = 0; uCnt < uLineCnt; uCnt++, lpMemMonInfo++)
+                        {
+                            // Scan in the first field
+                            swscanf (lpMemUndoTxt,
+                                     L"%I64u %I64u %u",
+                                    &lpMemMonInfo->IncSubFns,
+                                    &lpMemMonInfo->ExcSubFns,
+                                    &Count);
+                            // Save the count
+                            lpMemMonInfo->Count = Count;
+
+                            // Increment past the input fields
+                            lpMemUndoTxt = SkipPastCharW (lpMemUndoTxt, L',');
+                        } // End FOR
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (lpMemDfnHdr->hGlbMonInfo); lpMemMonInfo = NULL;
+
+                        // Mark as monitor info present
+                        lpMemDfnHdr->MonOn = TRUE;
+                    } // End IF
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (SF_Fcns.hGlbDfnHdr); lpMemDfnHdr = NULL;
+                } // End IF
             } else
             // It's a function array
             {
@@ -1584,8 +1643,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
             Assert (lpSymEntry NE NULL);
 
             // Copy the HGLOBAL
-            hGlbObj = CopySymGlbDir (lpSymEntry->stData.stGlbData);
+            hGlbObj = lpSymEntry->stData.stGlbData;
 
+            // If it's not a user-defined function, ...
+            if (!bUserDefined)
+                // Increment the reference count
+                DbgIncrRefCntDir (hGlbObj);
             break;
 
         defstop
@@ -1657,8 +1720,8 @@ HGLOBAL LoadWsGlbVarConv
     lpSymEntry =
       SymTabLookupName (wszGlbCnt, &stFlags);
 
-    // If it's not found, load it from the [Globals] section
-    if (lpSymEntry EQ NULL)
+    // If it's not found or has no value, load it from the [Globals] section
+    if (lpSymEntry EQ NULL || !lpSymEntry->stFlags.Value)
         return
           LoadWorkspaceGlobal_EM (wszGlbCnt,                        // Ptr to keyname (FMTSTR_GLBCNT)
                                   lpLoadWsGlbVarParm->lpwSrc,       // Ptr to next available byte

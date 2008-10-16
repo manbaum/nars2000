@@ -372,7 +372,7 @@ typedef struct tagSTART_ADDRESSES
     "CopyArray_EM"              , (LPUCHAR) &CopyArray_EM               ,
     "CopyGlbAsType_EM"          , (LPUCHAR) &CopyGlbAsType_EM           ,
     "CheckRankLengthError_EM"   , (LPUCHAR) &CheckRankLengthError_EM    ,
-    "RoundUpBits8"              , (LPUCHAR) &RoundUpBits8               ,
+    "RoundUpBitsToBytes"        , (LPUCHAR) &RoundUpBitsToBytes         ,
     "RoundUpBitsInArray"        , (LPUCHAR) &RoundUpBitsInArray         ,
     "BytesIn"                   , (LPUCHAR) &BytesIn                    ,
     "abs64"                     , (LPUCHAR) &abs64                      ,

@@ -519,7 +519,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
     APLNELM       aplNELMRht;       // Right arg NELM
     APLRANK       aplRankRht;       // Right arg rank
     LPVOID        lpMemRht;         // Ptr to right arg global memory
-    UINT          uBitMask = 0x01;  // Bit mask for marching through Booleans
+    UINT          uBitMask = BIT0;  // Bit mask for marching through Booleans
     APLUINT       uRht;             // Right arg loop counter
     APLUINT       ByteRes;          // # bytes in the result
     APLINT        apaOffRht,        // Right arg APA offset
@@ -572,13 +572,13 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     if (*lpuBitIndex EQ 0)
                     {
                         // N.B.: Conversion from APLUINT to UINT.
-                        ByteRes = sizeof (APLBOOL) * RoundUpBits8 (aplNELMRht);
+                        ByteRes = sizeof (APLBOOL) * RoundUpBitsToBytes (aplNELMRht);
                         Assert (ByteRes EQ (UINT) ByteRes);
                         CopyMemory (*lplpMemRes, lpMemRht, (UINT) ByteRes);
 
                         // Unless the right arg is a multiple of NBIB bits,
                         //   the following += is one too large
-                        ((LPAPLBOOL) *lplpMemRes) += RoundUpBits8 (aplNELMRht);
+                        ((LPAPLBOOL) *lplpMemRes) += RoundUpBitsToBytes (aplNELMRht);
 
                         // Calculate the next bit index
                         *lpuBitIndex = (UINT) (aplNELMRht % NBIB);
@@ -610,7 +610,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                             // Check for end-of-byte
                             if (uBitMask EQ END_OF_BYTE)
                             {
-                                uBitMask = 0x01;                // Start over
+                                uBitMask = BIT0;                // Start over
                                 ((LPAPLBOOL) lpMemRht)++;       // Skip to next byte
                             } // End IF
                         } // End FOR
@@ -705,7 +705,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;                // Start over
+                            uBitMask = BIT0;                // Start over
                             ((LPAPLBOOL) lpMemRht)++;       // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -818,7 +818,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;                // Start over
+                            uBitMask = BIT0;                // Start over
                             ((LPAPLBOOL) lpMemRht)++;       // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -1027,7 +1027,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;         // Start over
+                            uBitMask = BIT0;         // Start over
                             ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -1491,10 +1491,10 @@ UBOOL PrimFnDydEpsilonBvB
     //                      all 1s              (if right arg has at least one 0 and one 1)
 
     // Calculate the # bytes in the left arg (result) data
-    BytesInLftBits = RoundUpBits8 (aplNELMLft);
+    BytesInLftBits = RoundUpBitsToBytes (aplNELMLft);
 
     // Calculate the # bytes in the right arg data
-    BytesInRhtBits = RoundUpBits8 (aplNELMRht);
+    BytesInRhtBits = RoundUpBitsToBytes (aplNELMRht);
 
     // Search the right arg for a 0
     for (Found0 = FALSE, uRht = 0; uRht < (BytesInRhtBits - 1); uRht++)
@@ -1665,7 +1665,7 @@ UBOOL PrimFnDydEpsilonCvC_EM
     UINT      uBitIndex;            // Bit index for marching through Booleans
 
     // Calculate # bytes in the TT at one bit per 16-bit index (APLCHAR)
-    ByteTT = (UINT) RoundUpBits8 (APLCHAR_SIZE);
+    ByteTT = (UINT) RoundUpBitsToBytes (APLCHAR_SIZE);
 
     // Allocate space for a ByteTT Translate Table
     // Note that this allocation is GPTR (GMEM_FIXED | GMEM_ZEROINIT)

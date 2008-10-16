@@ -761,10 +761,10 @@ UBOOL PrimFnDydIotaBvB
     //                      all 1s              (if left arg has at least one 0 and one 1)
 
     // Calculate the # bytes in the left arg (result) data
-    BytesInLftBits = RoundUpBits8 (aplNELMLft);
+    BytesInLftBits = RoundUpBitsToBytes (aplNELMLft);
 
     // Calculate the # bytes in the right arg data
-    BytesInRhtBits = RoundUpBits8 (aplNELMRht);
+    BytesInRhtBits = RoundUpBitsToBytes (aplNELMRht);
 
     // Search the left arg for a 0
     for (Found0 = FALSE, Index0 = bQuadIO, uLft = 0; uLft < (BytesInLftBits - 1); uLft++)
@@ -808,7 +808,7 @@ UBOOL PrimFnDydIotaBvB
         Index1 += uTmp;
     } // End IF
 
-    uBitMaskRht = 0x01;
+    uBitMaskRht = BIT0;
 
     // Loop throught the right arg,
     //   saving in the result Index0 for each 0 in the right arg, and
@@ -830,7 +830,7 @@ UBOOL PrimFnDydIotaBvB
         // Check for end-of-byte
         if (uBitMaskRht EQ END_OF_BYTE)
         {
-            uBitMaskRht = 0x01;     // Start over
+            uBitMaskRht = BIT0;     // Start over
             lpMemRht++;             // Skip to next byte
         } // End IF
     } // End FOR

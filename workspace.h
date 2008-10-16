@@ -36,6 +36,7 @@
 #define KEYNAME_CREATIONTIME            L"CreationTime"
 #define KEYNAME_LASTMODTIME             L"LastModTime"
 #define KEYNAME_USERDEFINED             L"UserDefined"
+#define KEYNAME_MONINFO                 L"MonInfo"
 
 // Format string for [Globals] section keyname
 #define FMTCHR_LEAD             L':'

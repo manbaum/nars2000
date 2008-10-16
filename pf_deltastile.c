@@ -561,7 +561,7 @@ UBOOL BoolVecGrade
 
     // Get Grade Data parameters
     aplNELMRht = lpGradeData->aplNELMRht;
-    aplNELMRht1 = RoundUpBits8 (aplNELMRht);
+    aplNELMRht1 = RoundUpBitsToBytes (aplNELMRht);
 
     // Copy ptr to right arg global memory
     lpMemBool = lpMemRht;
@@ -582,7 +582,7 @@ UBOOL BoolVecGrade
 
     // Initialize bit index & mask
     uBitIndex = 0;
-    uBitMask  = 0x01;
+    uBitMask  = BIT0;
 
     // If it's Grade Up, ...
     if (lpGradeData->iMul EQ 1)
@@ -629,7 +629,7 @@ UBOOL BoolVecGrade
 
             // Check for end-of-byte
             if (uBitMask EQ END_OF_BYTE)
-                uBitMask = 0x01;            // Start over
+                uBitMask = BIT0;            // Start over
 
             // Check for end-of-byte
             if (++uBitIndex EQ uNBIB)

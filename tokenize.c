@@ -1188,10 +1188,11 @@ UBOOL fnIntDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    UBOOL        bRet = TRUE;
-    TKFLAGS      tkFlags = {0};
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    UBOOL        bRet = TRUE,       // TRUE iff the result is valid
+                 bMerge;            // TRUE iff we merged with the previous token
+    TKFLAGS      tkFlags = {0};     // Temporary token flags
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnIntDone");
@@ -1208,19 +1209,28 @@ UBOOL fnIntDone
     if (lpMemPTD->bNegative)
         lpMemPTD->aplInteger = -lpMemPTD->aplInteger;
 
-    // Mark as an immediate Boolean/integer
-    tkFlags.TknType = TKT_VARIMMED;
-    if (IsBooleanValue (lpMemPTD->aplInteger))
-        tkFlags.ImmType = IMMTYPE_BOOL;
-    else
-        tkFlags.ImmType = IMMTYPE_INT;
+    // See if the current number can be merged with the previous token
+    //   to form a TKT_NUMSTRAND.
+    bMerge = MergeNumbers (lptkLocalVars, lpMemPTD, &bRet);
 
-    // Attempt to append as new token, check for TOKEN TABLE FULL,
-    //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
-                             &tkFlags,
-                             &lpMemPTD->aplInteger,
-                              -lpMemPTD->iNumLen);
+    // If the result is valid and we did not merge, ...
+    if (bRet && !bMerge)
+    {
+        // Mark as an immediate Boolean/integer
+        tkFlags.TknType = TKT_VARIMMED;
+        if (IsBooleanValue (lpMemPTD->aplInteger))
+            tkFlags.ImmType = IMMTYPE_BOOL;
+        else
+            tkFlags.ImmType = IMMTYPE_INT;
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                 &lpMemPTD->aplInteger,
+                                  -lpMemPTD->iNumLen);
+    } // End IF
+
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
@@ -1421,12 +1431,13 @@ UBOOL fnFPDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    APLFLOAT     aplFloat;
-    TKFLAGS      tkFlags = {0};
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet;          // TRUE iff result is valid
-    LPCHAR       lpszNum;       // Ptr to Num global memory
+    APLFLOAT     aplFloat;          // Temporary floating point number
+    TKFLAGS      tkFlags = {0};     // Temporary token flags
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    UBOOL        bRet,              // TRUE iff result is valid
+                 bMerge;            // TRUE iff we merged with the previous token
+    LPCHAR       lpszNum;           // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnFPDone");
@@ -1450,19 +1461,25 @@ UBOOL fnFPDone
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->hGlbNum); lpszNum = NULL;
 
-    // Mark as an immediate float or Boolean
-    tkFlags.TknType = TKT_VARIMMED;
-    if (aplFloat EQ 0)
-        tkFlags.ImmType = IMMTYPE_BOOL;
-    else
+    // See if the current number can be merged with the previous token
+    //   to form a TKT_NUMSTRAND.
+    bMerge = MergeNumbers (lptkLocalVars, lpMemPTD, &bRet);
+
+    // If the result is valid and we did not merge, ...
+    if (bRet && !bMerge)
+    {
+        // Mark as an immediate float
+        tkFlags.TknType = TKT_VARIMMED;
         tkFlags.ImmType = IMMTYPE_FLOAT;
 
-    // Attempt to append as new token, check for TOKEN TABLE FULL,
-    //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
-                             &tkFlags,
-                              (LPAPLLONGEST) &aplFloat,
-                              -lpMemPTD->iNumLen);
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                  (LPAPLLONGEST) &aplFloat,
+                                  -lpMemPTD->iNumLen);
+    } // End IF
+
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
@@ -2377,8 +2394,8 @@ UBOOL fnQuoDone
     // If this string is of length zero, then store it as an empty vector
     if (lpMemPTD->iStrLen EQ 0)
     {
-        // Mark the data as a string in a global memory handle
-        tkFlags.TknType = TKT_STRING;
+        // Mark the data as a character strand in a global memory handle
+        tkFlags.TknType = TKT_CHRSTRAND;
 
         aplInteger = 0;     // Zero high-order dword
 
@@ -2421,8 +2438,8 @@ UBOOL fnQuoDone
         //   excluding the terminating zero.
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlb = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlb = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlb)
         {
             // Save the error message
@@ -2455,8 +2472,8 @@ UBOOL fnQuoDone
                         lpMemPTD->iStrLen * sizeof (APLCHAR));
             MyGlobalUnlock (hGlb); lpwsz = NULL;
 
-            // Mark the data as a string in a global memory handle
-            tkFlags.TknType = TKT_STRING;
+            // Mark the data as a character strand in a global memory handle
+            tkFlags.TknType = TKT_CHRSTRAND;
 
             // Copy to local var so we may pass its address
             (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlb);
@@ -2632,6 +2649,246 @@ UBOOL fnBrcDone
 
     return GroupDoneCom (lptkLocalVars, TKT_RIGHTBRACE, TKT_LEFTBRACE);
 } // End fnBrcDone
+
+
+//***************************************************************************
+//  $MergeNumbers
+//
+//  See if the current number can be merged with the previous token
+//    to form a TKT_NUMSTRAND.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MergeNumbers"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL MergeNumbers
+    (LPTKLOCALVARS lptkLocalVars,   // Ptr to local vars
+     LPPERTABDATA  lpMemPTD,        // Ptr to PerTabData global memory
+     LPUBOOL       lpbRet)          // Ptr to TRUE iff the result is valid
+
+{
+    LPTOKEN    lptkPrv;             // Ptr to previous token
+    APLSTYPE   aplTypePrv,          // Previous token storage type
+               aplTypeRes;          // Result         ...
+    APLNELM    aplNELMPrv;          // Previous token NELM
+    APLRANK    aplRankPrv;          // Previous token rank
+    APLUINT    ByteRes,             // # bytes in the result
+               uPrv;                // Loop counter
+    HGLOBAL    hGlbRes,             // Result global memory handle
+               hGlbPrv;             // Previous token ...
+    LPVOID     lpMemRes,            // Ptr to result global memory
+               lpMemPrv;            // Ptr to previous token ...
+    APLLONGEST aplLongestPrv;       // Previous token immediate value
+    UINT       uBitMask;            // Bit mask for looping through Booleans
+    UBOOL      bMerge = FALSE;      // TRUE iff we merged with the previous token
+
+    // Get a ptr to the previous token (if any)
+    lptkPrv = &lptkLocalVars->lpNext[-1];
+
+    // See if we can merge this with the previous token
+    if (lptkLocalVars->t2.lpHeader->TokenCnt
+     && (lptkPrv->tkFlags.TknType EQ TKT_VARIMMED
+      || lptkPrv->tkFlags.TknType EQ TKT_NUMSTRAND))
+    {
+        // Get the previous token's attrs
+        AttrsOfToken (lptkPrv, &aplTypePrv, &aplNELMPrv, &aplRankPrv, NULL);
+
+        // If the previous token is a simple number and
+        //   it's either an immediate
+        //   or non-empty (i.e. not zilde)
+        if (IsSimpleNum (aplTypePrv)
+         && (lptkPrv->tkFlags.TknType EQ TKT_VARIMMED
+          || !IsEmpty (aplNELMPrv)))
+        {
+            // Catentate the current number with the previous token
+
+            // Lock the previous token and get a ptr to it
+            aplLongestPrv = GetGlbPtrs_LOCK (lptkPrv, &hGlbPrv, &lpMemPrv);
+
+            // Calculate the result storage type
+            aplTypeRes = aTypePromote[aplTypePrv]
+                                     [(IsBooleanValue (lpMemPTD->aplInteger)) ? ARRAY_BOOL : ARRAY_INT];
+
+            // Calculate space needed for the numeric vector
+            ByteRes = CalcArraySize (aplTypeRes, aplNELMPrv + 1, 1);
+
+            // Allocate global memory for the array
+            Assert (ByteRes EQ (APLU3264) ByteRes);
+            hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+            if (!hGlbRes)
+            {
+                // Save the error message
+                ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+                // Mark as not successful
+                lpbRet = FALSE;
+            } else
+            {
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (hGlbRes);
+
+                // Fill in the header
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = aplTypeRes;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;
+////////////////lpHeader->SysVar     = FALSE;
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = aplNELMPrv + 1;
+                lpHeader->Rank       = 1;
+#undef  lpHeader
+                // Save the dimension
+                *VarArrayBaseToDim (lpMemRes) = aplNELMPrv + 1;
+
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+                // Initialize the bit mask
+                uBitMask = BIT0;
+
+                // If the previous token is global, ...
+                if (hGlbPrv)
+                    // SKip over the header and dimension
+                    lpMemPrv = VarArrayBaseToData (lpMemPrv, aplRankPrv);
+                else
+                    lpMemPrv = &aplLongestPrv;
+
+                // Convert and copy the previous token's data to the new token
+                // Split cases based upon the result storage type
+                switch (aplTypeRes)
+                {
+                    case ARRAY_BOOL:
+                        // Same type as the result, so just copy the Booleans
+                        CopyMemory (lpMemRes, lpMemPrv, (APLU3264) RoundUpBitsToBytes (aplNELMPrv) * sizeof (APLBOOL));
+
+                        // Save the new value as a Boolean
+                        ((LPAPLBOOL) lpMemRes)[aplNELMPrv >> LOG2NBIB] |= (lpMemPTD->aplInteger << (MASKLOG2NBIB & (UINT) aplNELMPrv));
+
+                        break;
+
+                    case ARRAY_INT:
+                        // Split cases based upon the previous token's storage type
+                        switch (aplTypePrv)
+                        {
+                            case ARRAY_BOOL:
+                                // Loop through the previous token's values
+                                for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                {
+                                    if (uBitMask & *(LPAPLBOOL) lpMemPrv)
+                                        ((LPAPLINT) lpMemRes)[uPrv] = 1;
+
+                                    // Shift over the bit mask
+                                    uBitMask <<= 1;
+
+                                    // Check for end-of-byte
+                                    if (uBitMask EQ END_OF_BYTE)
+                                    {
+                                        uBitMask = BIT0;            // Start over
+                                        ((LPAPLBOOL) lpMemPrv)++;   // Skip to next byte
+                                    } // End IF
+                                } // End FOR
+
+                                break;
+
+                            case ARRAY_INT:
+                                // Same type as the result, so just copy the integers
+                                CopyMemory (lpMemRes, lpMemPrv, (APLU3264) aplNELMPrv * sizeof (APLINT));
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Save the new value as an integer
+                        ((LPAPLINT) lpMemRes)[aplNELMPrv] = lpMemPTD->aplInteger;
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                        // Split cases based upon the previous token's storage type
+                        switch (aplTypePrv)
+                        {
+                            case ARRAY_BOOL:
+                                // Loop through the previous token's values
+                                for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                {
+                                    if (uBitMask & *(LPAPLBOOL) lpMemPrv)
+                                        ((LPAPLFLOAT) lpMemRes)[uPrv] = 1;
+
+                                    // Shift over the bit mask
+                                    uBitMask <<= 1;
+
+                                    // Check for end-of-byte
+                                    if (uBitMask EQ END_OF_BYTE)
+                                    {
+                                        uBitMask = BIT0;            // Start over
+                                        ((LPAPLBOOL) lpMemPrv)++;   // Skip to next byte
+                                    } // End IF
+                                } // End FOR
+
+                                break;
+
+                            case ARRAY_INT:
+                                // Loop through the previous token's values
+                                for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                    ((LPAPLFLOAT) lpMemRes)[uPrv] = (APLFLOAT) *((LPAPLINT) lpMemPrv)++;
+                                break;
+
+                            case ARRAY_FLOAT:
+                                // Same type as the result, so just copy the floats
+                                CopyMemory (lpMemRes, lpMemPrv, (APLU3264) aplNELMPrv * sizeof (APLFLOAT));
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Save the new value as a float
+                        ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = (APLFLOAT) lpMemPTD->aplInteger;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                if (hGlbPrv)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPrv); lpMemPrv = NULL;
+
+                    // Free the previous token's storage
+                    MyGlobalFree (hGlbPrv); hGlbPrv = NULL;
+                } // End IF
+
+                // Setup the previous token
+                lptkPrv->tkFlags.TknType  = TKT_NUMSTRAND;
+                lptkPrv->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
+                lptkPrv->tkData.tkGlbData = MakePtrTypeGlb (hGlbRes);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                // Mark as succcessfully merged
+                bMerge = TRUE;
+            } // End IF/ELSE
+
+            if (hGlbPrv)
+            {
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPrv); lpMemPrv = NULL;
+            } // End IF
+        } // End IF
+    } // End IF
+
+    return bMerge;
+} // End MergeNumbers
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3208,7 +3465,8 @@ void Untokenize
                 // Don't free a name's contents
                 break;
 
-            case TKT_STRING:            // String  (data is HGLOBAL)
+            case TKT_CHRSTRAND:         // Character strand  (data is HGLOBAL)
+            case TKT_NUMSTRAND:         // Numeric   ...
             case TKT_VARARRAY:          // Array of data (data is HGLOBAL)
                 // Free the array and all elements of it
                 if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
@@ -3454,7 +3712,8 @@ UBOOL AppendNewToken_EM
     switch (lptkFlags->TknType)
     {
         case TKT_VARNAMED    :
-        case TKT_STRING      :
+        case TKT_CHRSTRAND   :
+        case TKT_NUMSTRAND   :
         case TKT_VARIMMED    :
         case TKT_COMMENT     :
         case TKT_ASSIGN      :

@@ -2,17 +2,6 @@
 //  NARS2000 -- Parser Grammar for executable lines
 //***************************************************************************
 
-/****************************************************************************
-
-Parse a line of pre-tokenized tokens.
-
-Based upon "The Syntax of APL:  An Old Approach Revisited" by
-Jean Jacques Giardot & Florence Rollin, ACM SIGAPL Quote-Quad APL 1987
-heavily modified to work as an LALR grammar with the lookahead embedded
-in the lexical analyser (pl_yylex).
-
-****************************************************************************/
-
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
     Copyright (C) 2006-2008 Sudley Place Software
@@ -30,6 +19,17 @@ in the lexical analyser (pl_yylex).
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
+
+/****************************************************************************
+
+Parse a line of pre-tokenized tokens.
+
+Based upon "The Syntax of APL:  An Old Approach Revisited" by
+Jean Jacques Giardot & Florence Rollin, ACM SIGAPL Quote-Quad APL 1987
+heavily modified to work as an LALR grammar with the lookahead embedded
+in the lexical analyser (pl_yylex).
+
+****************************************************************************/
 
 %{
 #include <windows.h>
@@ -96,7 +96,7 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 %parse-param {LPPLLOCALVARS lpplLocalVars}
 %lex-param   {LPPLLOCALVARS lpplLocalVars}
 
-%token NAMEVAR NAMEUNK CONSTANT STRING USRFN0 SYSFN0 QUAD QUOTEQUAD SYSLBL
+%token NAMEVAR NAMEUNK CONSTANT CHRSTRAND NUMSTRAND USRFN0 SYSFN0 QUAD QUOTEQUAD SYSLBL
 %token LBRACE RBRACE
 %token UNK EOL
 %token CS_ANDIF
@@ -107,7 +107,6 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 %token CS_ELSEIF
 %token CS_ENDFOR
 %token CS_ENDREPEAT
-%token CS_ENDWHILE
 %token CS_FOR
 %token CS_IF
 %token CS_IN
@@ -2239,7 +2238,7 @@ ArrExpr:
 
 // Single var (including single names)
 SingVar:
-                  NAMEUNK               {DbgMsgWP (L"%%SingVar:  NAMEUNK");
+          NAMEUNK                       {DbgMsgWP (L"%%SingVar:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
@@ -2247,7 +2246,7 @@ SingVar:
                                              YYERROR2
                                          } // End IF
                                         }
-    |             QUAD                  {DbgMsgWP (L"%%SingVar:  QUAD");
+    |     QUAD                          {DbgMsgWP (L"%%SingVar:  QUAD");
                                          if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR || lpplLocalVars->bLookAhead)
                                              YYERROR2
                                          else
@@ -2263,7 +2262,7 @@ SingVar:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |             QUOTEQUAD             {DbgMsgWP (L"%%SingVar:  QUOTEQUAD");
+    |     QUOTEQUAD                 {DbgMsgWP (L"%%SingVar:  QUOTEQUAD");
                                          if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR || lpplLocalVars->bLookAhead)
                                              YYERROR2
                                          else
@@ -2279,11 +2278,83 @@ SingVar:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |             SingTokn              {DbgMsgWP (L"%%SingVar:  SingTokn");
+    |     CONSTANT                      {DbgMsgWP (L"%%SingVar:  CONSTANT");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
-    |         ')' error   '('           {DbgMsgWP (L"%%SingVar:  error");
+    |     NAMEVAR                       {DbgMsgWP (L"%%SingVar:  NAMEVAR");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
+    |     SYSLBL                        {DbgMsgWP (L"%%SingVar:  SYSLBL");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
+    |     USRFN0                        {DbgMsgWP (L"%%SingVar:  USRFN0");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecuteFn0 (&$1);
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    |     SYSFN0                        {DbgMsgWP (L"%%SingVar:  SYSFN0");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecuteFn0 (&$1);
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    |     CHRSTRAND                     {DbgMsgWP (L"%%SingVar:  CHRSTRAND");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYStr = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYStr =
+                                                   CopyString_EM_YY (&$1);
+
+                                             if (!lpplLocalVars->lpYYStr)
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYStr;
+                                             YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+                                         } // End IF
+                                        }
+    |     NUMSTRAND                     {DbgMsgWP (L"%%SingVar:  NUMSTRAND");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYStr = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYStr =
+                                                   CopyString_EM_YY (&$1);
+
+                                             if (!lpplLocalVars->lpYYStr)
+                                                 YYERROR2
+
+                                             $$ = *lpplLocalVars->lpYYStr;
+                                             YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+                                         } // End IF
+                                        }
+    | ')' error   '('                   {DbgMsgWP (L"%%SingVar:  error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
@@ -2291,7 +2362,7 @@ SingVar:
                                          } else
                                              YYERROR2
                                         }
-    |         ')' ArrExpr '('           {DbgMsgWP (L"%%SingVar:  (ArrExpr)");
+    | ')' ArrExpr '('                   {DbgMsgWP (L"%%SingVar:  (ArrExpr)");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
                                         }
@@ -5489,70 +5560,6 @@ IndexListWE2:
                                         }
     ;
 
-// A data expression which has a single token
-SingTokn:
-      CONSTANT                          {DbgMsgWP (L"%%SingTokn:  CONSTANT");
-                                         if (!lpplLocalVars->bLookAhead)
-                                             $$ = $1;
-                                        }
-    | NAMEVAR                           {DbgMsgWP (L"%%SingTokn:  NAMEVAR");
-                                         if (!lpplLocalVars->bLookAhead)
-                                             $$ = $1;
-                                        }
-    | SYSLBL                            {DbgMsgWP (L"%%SingTokn:  SYSLBL");
-                                         if (!lpplLocalVars->bLookAhead)
-                                             $$ = $1;
-                                        }
-    | USRFN0                            {DbgMsgWP (L"%%SingTokn:  USRFN0");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                                 lpplLocalVars->lpYYRes = NULL;
-                                             else
-                                                 lpplLocalVars->lpYYRes =
-                                                   ExecuteFn0 (&$1);
-
-                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
-
-                                             $$ = *lpplLocalVars->lpYYRes;
-                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                         } // End IF
-                                        }
-    | SYSFN0                            {DbgMsgWP (L"%%SingTokn:  SYSFN0");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                                 lpplLocalVars->lpYYRes = NULL;
-                                             else
-                                                 lpplLocalVars->lpYYRes =
-                                                   ExecuteFn0 (&$1);
-
-                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
-
-                                             $$ = *lpplLocalVars->lpYYRes;
-                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                         } // End IF
-                                        }
-    | STRING                            {DbgMsgWP (L"%%SingTokn:  STRING");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                                 lpplLocalVars->lpYYStr = NULL;
-                                             else
-                                                 lpplLocalVars->lpYYStr =
-                                                   CopyString_EM_YY (&$1);
-
-                                             if (!lpplLocalVars->lpYYStr)
-                                                 YYERROR2
-
-                                             $$ = *lpplLocalVars->lpYYStr;
-                                             YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
-                                         } // End IF
-                                        }
-    ;
-
 %%
 #undef  APPEND_NAME
 
@@ -6327,7 +6334,8 @@ char LookaheadAdjacent
     // Split cases based upon the token type
     switch (plLocalVars.lptkNext->tkFlags.TknType)
     {
-        case TKT_STRING:
+        case TKT_CHRSTRAND:
+        case TKT_NUMSTRAND:
         case TKT_VARIMMED:
         case TKT_VARARRAY:
         case TKT_INPOUT:
@@ -6516,7 +6524,8 @@ BOOL LookaheadDyadicOp
     // Split cases based upon the token type
     switch (lptkNext->tkFlags.TknType)
     {
-        case TKT_STRING:
+        case TKT_CHRSTRAND:
+        case TKT_NUMSTRAND:
         case TKT_VARIMMED:
         case TKT_COMMENT:
         case TKT_LEFTPAREN:
@@ -6775,8 +6784,11 @@ PL_YYLEX_START:
         case TKT_SOS:
             goto PL_YYLEX_START;    // Ignore these tokens
 
-        case TKT_STRING:
-            return STRING;
+        case TKT_CHRSTRAND:
+            return CHRSTRAND;
+
+        case TKT_NUMSTRAND:
+            return NUMSTRAND;
 
         case TKT_OP1NAMED:
             // Check for / or /[I] or /[A]

@@ -179,7 +179,7 @@ UBOOL CmdCopy_EM
                             lpwCmd,                 // Ptr to command line
                             hWndEC,                 // Edit Ctrl for SM window handle
                            &lpwErrMsg,              // Ptr to ptr to (constant) error message text
-                            TRUE,                   // TRUE if we should process all names
+                            TRUE,                   // TRUE iff we should process all names
                            &lpSymLink,              // Ptr to ptr to SYMENTRY link
                             wszTailDPFE,            // Save area for canonical form of given ws name
                             lpwszTemp,              // Ptr to temporary storage
@@ -189,15 +189,25 @@ UBOOL CmdCopy_EM
 
             // Loop through the [Fcns.0] section copying
             //   all the names
-            if (CopyWsFcns (NULL,                   // Ptr to name in command line (may be NULL if bAllNames)
-                            hWndEC,                 // Edit Ctrl for SM window handle
-                           &lpwErrMsg,              // Ptr to ptr to (constant) error message text
-                            TRUE,                   // TRUE if we should process all names
-                           &lpSymLink,              // Ptr to ptr to SYMENTRY link
-                            wszTailDPFE,            // Save area for canonical form of given ws name
-                            lpwszTemp,              // Ptr to temporary storage
-                            uMaxSize))              // Maximum size of lpwszTemp
-                goto ERRMSG_EXIT;
+            switch (CopyWsFcns (NULL,                   // Ptr to name in command line (may be NULL if bAllNames)
+                                hWndEC,                 // Edit Ctrl for SM window handle
+                               &lpwErrMsg,              // Ptr to ptr to (constant) error message text
+                                TRUE,                   // TRUE iff we should process all names
+                               &lpSymLink,              // Ptr to ptr to SYMENTRY link
+                                wszTailDPFE,            // Save area for canonical form of given ws name
+                                lpwszTemp,              // Ptr to temporary storage
+                                uMaxSize))              // Maximum size of lpwszTemp
+            {
+                case -1:        // We encountered an error
+                case 1:         // No match???
+                    goto ERRMSG_EXIT;
+
+                case 0:         // We found a match
+                    break;
+
+                defstop
+                    goto ERRMSG_EXIT;
+            } // End SWITCH
         } else
         {
             // Loop through the names starting at <lpwCmd>
@@ -222,7 +232,7 @@ UBOOL CmdCopy_EM
                                     lpwCmd,         // Ptr to command line
                                     hWndEC,         // Edit Ctrl for SM window handle
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
-                                    FALSE,          // TRUE if we should process all names
+                                    FALSE,          // TRUE iff we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
                                     wszTailDPFE,    // Save area for canonical form of given ws name
                                     lpwszTemp,      // Ptr to temporary storage
@@ -249,25 +259,23 @@ UBOOL CmdCopy_EM
                 switch (CopyWsFcns (lpwNameInCmd,   // Ptr to name in command line (may be NULL if bAllNames)
                                     hWndEC,         // Edit Ctrl for SM window handle
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
-                                    FALSE,          // TRUE if we should process all names
+                                    FALSE,          // TRUE iff we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
                                     wszTailDPFE,    // Save area for canonical form of given ws name
                                     lpwszTemp,      // Ptr to temporary storage
                                     uMaxSize))      // Maximum size of lpwszTemp
                 {
-                    case -1:
+                    case -1:        // We encountered an error
                         goto ERRMSG_EXIT;
 
-                    case 0:
-                        // We found a match, so look for the next name
-                        continue;
+                    case 0:         // We found a match
+                        continue;   // Look for the next name
 
-                    case 1:
-                        // No match, keep processing
-                        break;
+                    case 1:         // No match
+                        break;      // Keep processing
 
                     defstop
-                        break;
+                        goto ERRMSG_EXIT;
                 } // End SWITCH
 
                 // We didn't find the name, so add it to the NOT FOUND: list
@@ -338,7 +346,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void DeleteGlobalLinks
-    (LPSYMENTRY lpSymLink)
+    (LPSYMENTRY lpSymLink)      // Ptr to anchor of SYMENTRY links for [Globals]
 
 {
     LPSYMENTRY lpSymLast;       // Temporary ptr to previous stSymLink
@@ -511,27 +519,18 @@ int CopyWsVars
             } else
             {
                 // Out with the old
-                if (!lpSymEntry->stFlags.Imm)
+                if (!lpSymEntry->stFlags.Imm && lpSymEntry->stFlags.Value)
                 {
                     FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
                 } // End IF
 
-                // In with the new
-                if (bImmed)
-                {
-                    // Set the stFlags & stData
-                    lpSymEntry->stFlags.Imm      = TRUE;
-                    lpSymEntry->stFlags.Value    = TRUE;
-                    lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
-                    lpSymEntry->stData.stLongest = aplLongestObj;
-                } else
-                {
-                    // Set the stFlags & stData
-                    lpSymEntry->stFlags.Imm      = FALSE;
-                    lpSymEntry->stFlags.Value    = TRUE;
-                    lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
-                    lpSymEntry->stData.stLongest = aplLongestObj;
-                } // End IF/ELSE
+                // Set the stFlags & stData
+                lpSymEntry->stFlags.Imm        = bImmed;
+                lpSymEntry->stFlags.ImmType    = bImmed ? TranslateArrayTypeToImmType (aplTypeObj)
+                                                        : IMMTYPE_ERROR;
+                lpSymEntry->stFlags.Value      = TRUE;
+                lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+                lpSymEntry->stData.stLongest   = aplLongestObj;
             } // End IF
 
             // If we're copying a singla name, ...
@@ -652,7 +651,7 @@ int CopyWsFcns
                                      wszTailDPFE,       // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                      lplpwErrMsg))      // Ptr to ptr to (constant) error message text
                 goto ERRMSG_EXIT;
-            // If we're copying a singla name, ...
+            // If we're copying a single name, ...
             if (!bAllNames)
                 // Mark as successful (we found a match)
                 return 0;

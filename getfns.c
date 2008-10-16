@@ -1580,6 +1580,7 @@ APLLONGEST GetGlbPtrs_LOCK
 
             return lpToken->tkData.tkLongest;
 
+        case TKT_NUMSTRAND:
         case TKT_VARARRAY:
         case TKT_AXISARRAY:
         case TKT_LSTARRAY:

@@ -761,7 +761,8 @@ UBOOL ValidateInteger_EM
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             goto SYNTAX_EXIT;
 
-        case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
+        case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lptkExpr->tkData.tkGlbData;
@@ -1095,7 +1096,8 @@ UBOOL ValidateFloat_EM
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             goto SYNTAX_EXIT;
 
-        case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
+        case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lpToken->tkData.tkGlbData;
@@ -1333,7 +1335,8 @@ UBOOL ValidateCharVector_EM
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             goto SYNTAX_EXIT;
 
-        case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
+        case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lpToken->tkData.tkGlbData;
@@ -1743,7 +1746,7 @@ UBOOL ValidateIntegerVector_EM
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:
-            uBitMask = 0x01;
+            uBitMask = BIT0;
 
             // Test all the values
             for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -1765,7 +1768,7 @@ UBOOL ValidateIntegerVector_EM
                 // Check for end-of-byte
                 if (uBitMask EQ END_OF_BYTE)
                 {
-                    uBitMask = 0x01;            // Start over
+                    uBitMask = BIT0;            // Start over
                     ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                 } // End IF
             } // End FOR
@@ -1913,7 +1916,7 @@ UBOOL ValidateIntegerVector_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                         } // End IF
 
@@ -2569,7 +2572,8 @@ UBOOL ValidSetPR_EM
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             goto SYNTAX_EXIT;
 
-        case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
+        case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
@@ -2886,7 +2890,8 @@ UBOOL ValidSetSA_EM
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             goto SYNTAX_EXIT;
 
-        case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
+        case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lptkRhtArg->tkData.tkGlbData;

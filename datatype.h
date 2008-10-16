@@ -121,8 +121,8 @@ typedef enum tagARRAY_TYPES
  ARRAY_ERROR = (APLSTYPE) -1,
 
 // Whenever changing this <enum>, be sure to make a
-//   corresponding change to <StorageType> and <TypeDemote>
-//   in <primfns.c>,  <uTypeMap> in <externs.h>,
+//   corresponding change to <StorageType> and <TypeDemote> in <primfns.c>,
+//   <aTypePromote> and <uTypeMap> in <externs.h>,
 //   <IsSimpleNH> and <IsSimpleNum> macros
 //   and BPE_VEC in <datatype.h>.
 

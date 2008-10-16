@@ -317,7 +317,7 @@ UBOOL CheckAxisGlb
     //   size is zero, and the lock ptr is zero
     //   which GlobalLock will treat as an error,
     //   returning a zero ptr, so we max aplRankCmp with 1.
-    ByteDup = RoundUpBits8 (max (aplRankCmp, 1));
+    ByteDup = RoundUpBitsToBytes (max (aplRankCmp, 1));
 
     // Allocate global memory bit vector to test for duplicates
     // N.B.  Conversion from APLUINT to UINT.
@@ -337,7 +337,7 @@ UBOOL CheckAxisGlb
     switch (aplTypeLcl)
     {
         case ARRAY_BOOL:
-            uBitMask = 0x01;
+            uBitMask = BIT0;
 
             // Loop through the elements
             for (u = 0; bRet && u < *lpaplNELM; u++)
@@ -374,7 +374,7 @@ UBOOL CheckAxisGlb
                     // Check for end-of-byte
                     if (uBitMask EQ END_OF_BYTE)
                     {
-                        uBitMask = 0x01;        // Start over
+                        uBitMask = BIT0;        // Start over
                         ((LPAPLBOOL) lpMem)++;  // Skip to next byte
                     } // End IF
                 } // End IF
@@ -534,7 +534,7 @@ UBOOL CheckAxisGlb
     // Fill in the leading axis values
     if (bRet && lphGlbAxis && !bAllowDups)
     {
-        uBitMask = 0x01;
+        uBitMask = BIT0;
 
         // Loop through the lpDup values looking for zeros
         for (u = 0; u < aplRankCmp; u++)
@@ -554,7 +554,7 @@ UBOOL CheckAxisGlb
             // Check for end-of-byte
             if (uBitMask EQ END_OF_BYTE)
             {
-                uBitMask = 0x01;        // Start over
+                uBitMask = BIT0;        // Start over
                 ((LPAPLBOOL) lpDup)++;  // Skip to next byte
             } // End IF
         } // End FOR
@@ -568,7 +568,7 @@ UBOOL CheckAxisGlb
         MyGlobalUnlock (hGlbDup); lpDup = NULL;
         lpDup = MyGlobalLock (hGlbDup);
 
-        uBitMask = 0x01;
+        uBitMask = BIT0;
 
         // Look for the first 1
         for (u = 0; u < aplRankCmp; u++)
@@ -583,7 +583,7 @@ UBOOL CheckAxisGlb
             // Check for end-of-byte
             if (uBitMask EQ END_OF_BYTE)
             {
-                uBitMask = 0x01;        // Start over
+                uBitMask = BIT0;        // Start over
                 ((LPAPLBOOL) lpDup)++;  // Skip to next byte
             } // End IF
         } // End FOR
@@ -604,7 +604,7 @@ UBOOL CheckAxisGlb
             // Check for end-of-byte
             if (uBitMask EQ END_OF_BYTE)
             {
-                uBitMask = 0x01;        // Start over
+                uBitMask = BIT0;        // Start over
                 ((LPAPLBOOL) lpDup)++;  // Skip to next byte
             } // End IF
         } // End FOR
@@ -626,7 +626,7 @@ UBOOL CheckAxisGlb
             // Check for end-of-byte
             if (uBitMask EQ END_OF_BYTE)
             {
-                uBitMask = 0x01;        // Start over
+                uBitMask = BIT0;        // Start over
                 ((LPAPLBOOL) lpDup)++;  // Skip to next byte
             } // End IF
         } // End FOR

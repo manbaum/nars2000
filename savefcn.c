@@ -1308,6 +1308,7 @@ UBOOL SaveFunctionCom
         numFcnLines = (*lpSF_Fcns->SF_NumLines) (hWndEC, lpSF_Fcns->LclParams);
 
         // Allocate global memory for the function header
+        lpSF_Fcns->hGlbDfnHdr =
         hGlbDfnHdr = DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
                                          + sizeof (LPSYMENTRY) * (numResultSTE
                                                                 + numLftArgSTE

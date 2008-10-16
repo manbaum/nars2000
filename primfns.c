@@ -89,7 +89,8 @@ char TokenTypeFV
     switch (lptk->tkFlags.TknType)
     {
         case TKT_VARNAMED:
-        case TKT_STRING:
+        case TKT_CHRSTRAND:
+        case TKT_NUMSTRAND:
         case TKT_VARIMMED:
         case TKT_VARARRAY:
         case TKT_AXISIMMED:
@@ -260,6 +261,7 @@ void AttrsOfToken
                 *lpaplCols = 1;
             return;
 
+        case TKT_NUMSTRAND:
         case TKT_VARARRAY:
         case TKT_LISTPAR:
         case TKT_LSTARRAY:
@@ -555,8 +557,8 @@ UBOOL PrimScalarFnDydAllocate_EM
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    *lphGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    *lphGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!*lphGlbRes)
         goto WSFULL_EXIT;
 
@@ -691,7 +693,7 @@ HGLOBAL MakeMonPrototype_EM
     {
         case ARRAY_BOOL:
             // Calculate # bytes of Boolean data
-            uLen = RoundUpBits8 (aplNELM);
+            uLen = RoundUpBitsToBytes (aplNELM);
 
             for (u = 0; u < uLen; u++)
                 *((LPAPLBOOL)  lpMemArr)++ = 0x00;
@@ -734,8 +736,8 @@ HGLOBAL MakeMonPrototype_EM
 
                     // Allocate space for the result.
                     // N.B. Conversion from APLUINT to UINT.
-                    Assert (ByteRes EQ (__int3264) ByteRes);
-                    hGlbTmp = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbTmp)
                         goto WSFULL_EXIT;
 
@@ -756,7 +758,7 @@ HGLOBAL MakeMonPrototype_EM
                     // Copy the dimensions to the result
                     CopyMemory (VarArrayBaseToDim (lpMemRes),
                                 VarArrayBaseToDim (lpHeader),
-                                (__int3264) aplRank * sizeof (APLDIM));
+                                (APLU3264) aplRank * sizeof (APLDIM));
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
@@ -774,8 +776,8 @@ HGLOBAL MakeMonPrototype_EM
             } // End SWITCH
 
             // Convert the chars to blanks
-            Assert (aplNELM EQ (__int3264) aplNELM);
-            FillMemoryW (lpMemArr, (__int3264) aplNELM, L' ');
+            Assert (aplNELM EQ (APLU3264) aplNELM);
+            FillMemoryW (lpMemArr, (APLU3264) aplNELM, L' ');
 
             break;
 
@@ -1097,8 +1099,8 @@ HGLOBAL MakeDydPrototype_EM
 
         // Allocate space for the result.
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -1120,11 +1122,11 @@ HGLOBAL MakeDydPrototype_EM
         if (aplRankRes EQ aplRankLft)
             CopyMemory (VarArrayBaseToDim (lpMemRes),
                         VarArrayBaseToDim (lpMemLft),
-                        (__int3264) aplNELMRes * sizeof (APLDIM));
+                        (APLU3264) aplNELMRes * sizeof (APLDIM));
         else
             CopyMemory (VarArrayBaseToDim (lpMemRes),
                         VarArrayBaseToDim (lpMemRht),
-                        (__int3264) aplNELMRes * sizeof (APLDIM));
+                        (APLU3264) aplNELMRes * sizeof (APLDIM));
         // Skip over the header and dimensions to the data
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
@@ -1233,8 +1235,8 @@ HGLOBAL MakeDydPrototype_EM
                     // N.B.  Conversion from APLUINT to UINT.
                     //***************************************************************
                     ByteRes = aplRankRes * sizeof (APLUINT);
-                    Assert (ByteRes EQ (__int3264) ByteRes);
-                    hGlbWVec = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbWVec)
                         goto WSFULL_EXIT;
 
@@ -1259,8 +1261,8 @@ HGLOBAL MakeDydPrototype_EM
                     // N.B.  Conversion from APLUINT to UINT.
                     //***************************************************************
                     ByteRes = aplRankRes * sizeof (APLUINT);
-                    Assert (ByteRes EQ (__int3264) ByteRes);
-                    hGlbOdo = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbOdo)
                         goto WSFULL_EXIT;
 
@@ -1764,8 +1766,8 @@ HGLOBAL CopyGlbAsType_EM
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -1786,7 +1788,7 @@ HGLOBAL CopyGlbAsType_EM
     // Copy the dimensions
     CopyMemory (VarArrayBaseToDim (lpMemRes),
                 VarArrayBaseToDim (lpMemArg),
-                (__int3264) aplRankArg * sizeof (APLDIM));
+                (APLU3264) aplRankArg * sizeof (APLDIM));
     // Skip over the header to the data
     lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankArg);
@@ -1801,7 +1803,7 @@ HGLOBAL CopyGlbAsType_EM
             {
                 case ARRAY_BOOL:            // Res = BOOL, Arg = BOOL
                     // Copy the arg elements to the result
-                    CopyMemory (lpMemRes, lpMemArg, (__int3264) RoundUpBits8 (aplNELMArg));
+                    CopyMemory (lpMemRes, lpMemArg, (APLU3264) RoundUpBitsToBytes (aplNELMArg));
 
                     break;
 
@@ -1830,7 +1832,7 @@ HGLOBAL CopyGlbAsType_EM
             switch (aplTypeArg)
             {
                 case ARRAY_BOOL:            // Res = INT, Arg = BOOL
-                    uBitMask = 0x01;
+                    uBitMask = BIT0;
 
                     // Loop through the arg elements
                     for (uArg = 0; uArg < aplNELMArg; uArg++)
@@ -1845,7 +1847,7 @@ HGLOBAL CopyGlbAsType_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -1854,7 +1856,7 @@ HGLOBAL CopyGlbAsType_EM
 
                 case ARRAY_INT:             // Res = INT, Arg = INT
                     // Copy the arg elements to the result
-                    CopyMemory (lpMemRes, lpMemArg, (__int3264) aplNELMArg * sizeof (APLINT));
+                    CopyMemory (lpMemRes, lpMemArg, (APLU3264) aplNELMArg * sizeof (APLINT));
 
                     break;
 
@@ -1880,7 +1882,7 @@ HGLOBAL CopyGlbAsType_EM
             switch (aplTypeArg)
             {
                 case ARRAY_BOOL:            // Res = FLOAT, Arg = BOOL
-                    uBitMask = 0x01;
+                    uBitMask = BIT0;
 
                     // Loop through the arg elements
                     for (uArg = 0; uArg < aplNELMArg; uArg++)
@@ -1895,7 +1897,7 @@ HGLOBAL CopyGlbAsType_EM
                         // Check for end-of-byte
                         if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMask = 0x01;            // Start over
+                            uBitMask = BIT0;            // Start over
                             ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -1921,7 +1923,7 @@ HGLOBAL CopyGlbAsType_EM
 
                 case ARRAY_FLOAT:           // Res = FLOAT, Arg = FLOAT
                     // Copy the arg elements to the result
-                    CopyMemory (lpMemRes, lpMemArg, (__int3264) aplNELMArg * sizeof (APLFLOAT));
+                    CopyMemory (lpMemRes, lpMemArg, (APLU3264) aplNELMArg * sizeof (APLFLOAT));
 
                     break;
 
@@ -1933,7 +1935,7 @@ HGLOBAL CopyGlbAsType_EM
 
         case ARRAY_CHAR:
             // Copy the memory to the result
-            CopyMemory (lpMemRes, lpMemArg, (__int3264) aplNELMArg * sizeof (APLCHAR));
+            CopyMemory (lpMemRes, lpMemArg, (APLU3264) aplNELMArg * sizeof (APLCHAR));
 
             break;
 
@@ -2197,17 +2199,17 @@ LENGTH_EXIT:
 
 
 //***************************************************************************
-//  $RoundUpBits8
+//  $RoundUpBitsToBytes
 //
 //  Round up bits to a byte (8 bits/byte) and convert to # bytes
 //***************************************************************************
 
-APLINT RoundUpBits8
+APLINT RoundUpBitsToBytes
     (APLNELM aplNELM)           // NELM to convert
 
 {
     return ((aplNELM + (NBIB - 1)) & ~MASKLOG2NBIB) >> LOG2NBIB;
-} // End RoundUpBits8
+} // End RoundUpBitsToBytes
 
 
 //***************************************************************************
@@ -2239,7 +2241,7 @@ APLUINT BytesIn
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:                // 1 bit per element
-            return RoundUpBits8 (aplNELMRht);
+            return RoundUpBitsToBytes (aplNELMRht);
 
         case ARRAY_INT:                 // 8 bytes per element
         case ARRAY_FLOAT:

@@ -65,7 +65,7 @@ LPPL_YYSTYPE PrimFnUpTack_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
@@ -73,7 +73,7 @@ LPPL_YYSTYPE PrimFnUpTack_EM_YY
     else
         return PrimFnDydUpTack_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     return NULL;

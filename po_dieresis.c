@@ -173,7 +173,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     //   the axis operator, so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
@@ -603,7 +603,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
     goto NORMAL_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;

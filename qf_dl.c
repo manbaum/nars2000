@@ -62,19 +62,18 @@ LPPL_YYSTYPE SysFnDL_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonDL_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydDL_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnDL_EM_YY
 #undef  APPEND_NAME
 
@@ -112,27 +111,15 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
 
     // Check for RANK ERROR
     if (IsMultiRank (aplRankRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for LENGTH ERROR
     if (!IsSingleton (aplNELMRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
     if (!IsSimpleNum (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Get the one (and only) value from the right arg
     GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
@@ -185,6 +172,21 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnMonDL_EM_YY
 #undef  APPEND_NAME
 

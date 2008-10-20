@@ -62,13 +62,8 @@ LPPL_YYSTYPE SysFnAV_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -81,6 +76,11 @@ LPPL_YYSTYPE SysFnAV_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnAV_EM_YY
 #undef  APPEND_NAME
 

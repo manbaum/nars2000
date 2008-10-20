@@ -140,7 +140,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
@@ -201,7 +201,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
 
     return lpYYRes2;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     return NULL;
@@ -283,7 +283,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -722,7 +722,7 @@ DOMAIN_EXIT:
                                lptkLftArg);
     goto ERROR_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;

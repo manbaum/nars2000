@@ -66,13 +66,8 @@ LPPL_YYSTYPE SysFnDM_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -97,6 +92,11 @@ LPPL_YYSTYPE SysFnDM_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnDM_EM_YY
 #undef  APPEND_NAME
 

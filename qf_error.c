@@ -63,19 +63,18 @@ LPPL_YYSTYPE SysFnERROR_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonERROR_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydERROR_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnERROR_EM_YY
 #undef  APPEND_NAME
 
@@ -114,21 +113,13 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
 
     // Check for RIGHT RANK ERROR
     if (IsMultiRank (aplRankRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for DOMAIN ERROR
     if (!IsSimpleNH (aplTypeRht)
      || ((!IsSimpleChar (aplTypeRht))
       && !IsEmpty (aplNELMRht)))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // If the right arg is empty, return NoValue
     if (IsEmpty (aplNELMRht))
@@ -171,7 +162,21 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
     if (hGlbRht && lpMemRht)
     {

@@ -57,7 +57,7 @@ LPPL_YYSTYPE SysFnET_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     HGLOBAL      hGlbRes = NULL;    // Result ...
     LPAPLUINT    lpMemRes = NULL;   // Ptr to result global memory
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
@@ -102,11 +102,7 @@ LPPL_YYSTYPE SysFnET_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -145,8 +141,13 @@ LPPL_YYSTYPE SysFnET_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-ERROR_EXIT:
+
     return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnET_EM_YY
 #undef  APPEND_NAME
 

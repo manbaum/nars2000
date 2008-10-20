@@ -276,9 +276,8 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
         // Scalar monadic primitive functions are not sensitive
         //   to the axis operator, so signal a syntax error if present
         //***************************************************************
-
         if (lptkAxis NE NULL)
-            goto SYNTAX_EXIT;
+            goto AXIS_SYNTAX_EXIT;
 
         //***************************************************************
         // Called monadically
@@ -338,7 +337,7 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
 
     goto NORMAL_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;
@@ -384,7 +383,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
 
     // Check for axis present
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -801,7 +800,7 @@ RESTART_EXCEPTION_VARIMMED:
 
     return NULL;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkFunc);
     return NULL;

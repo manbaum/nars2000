@@ -123,7 +123,7 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
 
     if (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR
      && lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -172,7 +172,7 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
     return PrimFnMonCommaGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbRht),   // HGLOBAL
                                     lptkAxis,                       // Ptr to axis token (may be NULL)
                                     lptkFunc);                      // Ptr to function token
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkFunc);
     return NULL;

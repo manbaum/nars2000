@@ -765,6 +765,7 @@ $(O)yyfns.DEP
 ####################### PROTOTYPE GENERATION #################
 
 PRO:                    \
+DIR                     \
 $(O)assign.PRO          \
 $(O)axisfns.PRO         \
 $(O)bjhash.PRO          \

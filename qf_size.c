@@ -62,19 +62,18 @@ LPPL_YYSTYPE SysFnSIZE_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonSIZE_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydSIZE_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnSIZE_EM_YY
 #undef  APPEND_NAME
 
@@ -128,21 +127,13 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
 
     // Check for RANK ERROR
     if (IsRank3P (aplRankRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for DOMAIN ERROR
     if (!IsSimple (aplTypeRht)
      || (!IsSimpleChar (aplTypeRht)
       && !IsEmpty (aplNELMRht)))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Get right arg's global ptrs
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -164,11 +155,7 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -295,6 +282,21 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes && lpMemRes)

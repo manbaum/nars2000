@@ -138,7 +138,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -202,7 +202,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
 
     return lpYYRes;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
 ERROR_EXIT:
@@ -376,7 +376,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Determine if two arrays are identical in
     //   rank, length, and value at all levels
@@ -494,7 +494,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
 
     goto NORMAL_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;

@@ -72,13 +72,8 @@ LPPL_YYSTYPE SysFnLC_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -102,11 +97,7 @@ LPPL_YYSTYPE SysFnLC_EM_YY
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -155,6 +146,16 @@ LPPL_YYSTYPE SysFnLC_EM_YY
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnLC_EM_YY
 #undef  APPEND_NAME
 

@@ -320,7 +320,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the current value of []IO & []RL
     bQuadIO = GetQuadIO ();
@@ -506,7 +506,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
 
     goto NORMAL_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;

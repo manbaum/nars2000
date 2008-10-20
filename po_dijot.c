@@ -96,7 +96,7 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
     //   to the axis operator, so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
@@ -114,7 +114,7 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
                                                  lpYYFcnStrOpr,     // Ptr to operator function strand
                                                  lptkRhtArg,        // Ptr to right arg token
                                                  TRUE);             // TRUE iff prototyping
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     return NULL;
@@ -219,7 +219,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
         //   to the axis operator, so signal a syntax error if present
         //***************************************************************
         if (lptkAxis NE NULL)
-            goto SYNTAX_EXIT;
+            goto AXIS_SYNTAX_EXIT;
     } // End IF
 
     // Ensure the left operand is a function
@@ -403,7 +403,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 
     goto NORMAL_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;

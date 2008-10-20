@@ -280,7 +280,7 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the left arg
     AttrsOfToken (lptkLftArg, NULL, NULL, &aplRankLft, NULL);
@@ -313,7 +313,7 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
     goto NORMAL_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;

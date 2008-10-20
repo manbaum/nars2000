@@ -33,10 +33,11 @@ TO DO:  General:  Less Important (post-alpha)
 * Convert from ARRAY_CHAR (UCS-2) to ARRAY_CHAR8  for 0x00-0x7F,
                                      ARRAY_CHAR16 for 0x0000-0xFFFF, and
                                      ARRAY_CHAR32 for the rest so as to handle Unicode.
-* Convert from ARRAY_INT to ARRAY_INT64 and also allow narrower integer types
+* Convert from ARRAY_INT to ARRAY_INT64 and also allow narrower integer types such as
   ARRAY_INT8, ARRAY_INT16, and ARRAY_INT32 to be created by []DR.  If they
   are passed to any function but []DR or the native file functions, promote
   the narrower formats to ARRAY_INT64.
+* Why is startup so slow??
 * Implement these features:
 * ...       dynamic functions
 * ...       user-defined magic functions for primitive functions

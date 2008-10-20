@@ -61,19 +61,18 @@ LPPL_YYSTYPE SysFnTYPE_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonTYPE_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydTYPE_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnTYPE_EM_YY
 #undef  APPEND_NAME
 

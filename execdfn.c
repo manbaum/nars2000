@@ -1003,15 +1003,7 @@ NEXTLINE:
             // Allocate space for the result
             hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
             if (!hGlbRes)
-            {
-                // Set the error message
-                ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-
-                // Set the error token
-                ErrorMessageSetToken (NULL);
-
-                goto ERROR_EXIT;
-            } // End IF
+                goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
             lpMemRes = MyGlobalLock (hGlbRes);
@@ -1066,6 +1058,18 @@ NEXTLINE:
             break;
         } // End default
     } // End SWITCH
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Set the error message
+    ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+    // Set the error token
+    ErrorMessageSetToken (NULL);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
 NORMAL_EXIT:
     // We no longer need these ptrs
@@ -1205,15 +1209,7 @@ UBOOL CheckDfnExitError_EM
 
                 // If it's not a variable, ...
                 if ((*lplpSymEntry)->stFlags.stNameType NE NAMETYPE_VAR)
-                {
-                    // Set the error message
-                    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
-                    // Initialize for ERROR_EXIT code
-                    numRes = 0;
-
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto SYNTAX_EXIT;
             } // End IF/ELSE
 
             break;
@@ -1234,12 +1230,8 @@ UBOOL CheckDfnExitError_EM
             {
                 // If the name has no value, ...
                 if (!lplpSymEntry[numRes]->stFlags.Value)
-                {
-                    // Set the error message
-                    ErrorMessageIndirect (ERRMSG_VALUE_ERROR APPEND_NAME);
-
-                    goto ERROR_EXIT;
-                } else
+                    goto VALUE_EXIT;
+                else
                 // If the name is not a variable, ...
                 if (lplpSymEntry[numRes]->stFlags.stNameType NE NAMETYPE_VAR)
                 {
@@ -1257,6 +1249,21 @@ UBOOL CheckDfnExitError_EM
     bRet = FALSE;
 
     goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    // Set the error message
+    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+
+    // Initialize for ERROR_EXIT code
+    numRes = 0;
+
+    goto ERROR_EXIT;
+
+VALUE_EXIT:
+    // Set the error message
+    ErrorMessageIndirect (ERRMSG_VALUE_ERROR APPEND_NAME);
+
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     // Set the error token

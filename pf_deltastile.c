@@ -90,16 +90,15 @@ LPPL_YYSTYPE PrimFnDeltaStile_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     return NULL;
@@ -138,16 +137,15 @@ LPPL_YYSTYPE PrimFnDelStile_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     return NULL;

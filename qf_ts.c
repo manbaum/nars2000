@@ -66,13 +66,8 @@ LPPL_YYSTYPE SysFnTS_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_INT, 7, 1);
@@ -80,11 +75,7 @@ LPPL_YYSTYPE SysFnTS_EM_YY
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -136,6 +127,16 @@ LPPL_YYSTYPE SysFnTS_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnTS_EM_YY
 #undef  APPEND_NAME
 

@@ -124,9 +124,8 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     //***************************************************************
     // Loop through the right arg counting all of the simple scalars
@@ -172,8 +171,7 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
         defstop
             return NULL;
     } // End SWITCH
-
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     return NULL;
@@ -1281,9 +1279,8 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -1423,7 +1420,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
 
     goto NORMAL_EXIT;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;

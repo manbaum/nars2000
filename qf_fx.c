@@ -64,16 +64,15 @@ LPPL_YYSTYPE SysFnFX_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonFX_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydFX_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     return NULL;
@@ -274,9 +273,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
             break;
 
         default:                    // Right arg rank > 2
-            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
+            goto RIGHT_RANK_EXIT;
     } // End SWITCH
 
     // Save ptr to local parameters

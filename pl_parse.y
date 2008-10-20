@@ -7263,13 +7263,13 @@ void pl_yyerror                     // Called for Bison syntax error
 #define ERR     "syntax error"
     lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
-        ErrorMessageIndirect (L"SYNTAX ERROR" APPEND_NAME);
+        ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 #undef  ERR
     else
 #define ERR     "memory exhausted"
     lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
-        ErrorMessageIndirect (L"WS FULL" APPEND_NAME);
+        ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
 #undef  ERR
 } // End pl_yyerror
 #undef  APPEND_NAME

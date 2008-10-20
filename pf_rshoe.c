@@ -1483,7 +1483,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -1527,7 +1527,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
             return NULL;
     } // End SWITCH
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkFunc);
     return NULL;

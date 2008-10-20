@@ -70,9 +70,8 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
 
     // Define maximum length of []SYSVER
 #define SYSVER  L"000.000.0000.00799  Tue Jan 16 17:43:45 2007  Win/32"
@@ -204,7 +203,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 
     return lpYYRes;
 
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
     return NULL;

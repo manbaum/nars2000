@@ -64,19 +64,18 @@ LPPL_YYSTYPE SysFnES_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonES_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydES_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnES_EM_YY
 #undef  APPEND_NAME
 
@@ -148,36 +147,20 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
 
     // Check for RIGHT RANK ERROR
     if (IsMultiRank (aplRankRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RIGHT_RANK_EXIT;
 
     // Check for LEFT RANK ERROR
     if (lptkLftArg && IsMultiRank (aplRankLft))
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
     if ((!IsSimpleNH (aplTypeRht))
      || (lptkLftArg && IsSimpleChar (aplTypeRht)))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RIGHT_DOMAIN_EXIT;
 
     // Check for LEFT DOMAIN ERROR
     if (lptkLftArg && !IsSimpleChar (aplTypeLft))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_DOMAIN_EXIT;
 
     // If the right arg is empty, return NoValue
     if (IsEmpty (aplNELMRht))
@@ -216,11 +199,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
 
             // Check for RIGHT LENGTH ERROR
             if (aplNELMRht NE 2)
-            {
-                ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto RIGHT_LENGTH_EXIT;
 
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
@@ -248,21 +227,13 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                     // Attempt to convert the float to an integer using System CT
                     aplLongestRht2 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht2, &bRet);
                 if (!bRet)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto RIGHT_DOMAIN_EXIT;
             } // End IF
 
             // Check for RIGHT DOMAIN ERROR
             if (aplLongestRht1 >= (BIT0 << 16)
              || aplLongestRht2 >= (BIT0 << 16))
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto RIGHT_DOMAIN_EXIT;
 
             // Combine the two elements into the Event Type
             EventType = MAKE_ET (aplLongestRht1, aplLongestRht2);
@@ -405,7 +376,28 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
+
+    goto NORMAL_EXIT;
+
+RIGHT_RANK_EXIT:
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+RIGHT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
     if (hGlbRht && lpMemRht)
     {

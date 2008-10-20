@@ -87,6 +87,7 @@ typedef enum tagSA_VALUES
     SAVAL_Error,            // 02:  "ERROR"
     SAVAL_Exit,             // 03:  "EXIT"
     SAVAL_Off               // 04:  "OFF"
+                            // 05-07:  Available entries (3 bits)
 } SA_VALUES;
 
 // Format Control

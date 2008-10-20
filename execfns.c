@@ -292,7 +292,7 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
 
     // If two axis tokens, that's an error
     if (lptkAxis && lptkAxis2)
-        goto SYNTAX_EXIT;
+        goto AXIS_SYNTAX_EXIT;
     else
     // If the secondary only, use it
     if (lptkAxis2)
@@ -308,7 +308,7 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
     MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
 
     return lpYYRes;
-SYNTAX_EXIT:
+AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStr->tkToken);
     return NULL;

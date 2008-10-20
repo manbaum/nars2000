@@ -151,11 +151,7 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     //   to the axis operator, so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
@@ -188,6 +184,11 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
                                   lpYYFcnStrLft,    // Ptr to left operand function strand
                                   lptkRhtArg,       // Ptr to right arg token
                                   lptkAxis);        // Ptr to axis token (may be NULL)
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);

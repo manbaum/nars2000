@@ -962,23 +962,14 @@ UBOOL CheckResizeNum_EM
 
         // If it's out of range, ...
         if (iNumLim > DEF_NUM_MAXSIZE)
-        {
-            // Save the error message
-            ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
-
-            goto ERROR_EXIT;
-        } else
+            goto LIMIT_EXIT;
+        else
         {
             // Attempt to realloc to that size
             hGlbNum =
               MyGlobalReAlloc (lpMemPTD->hGlbNum, iNumLim * sizeof (char), GMEM_MOVEABLE);
             if (!hGlbNum)
-            {
-                // Save the error message
-                ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-
-                goto ERROR_EXIT;
-            } // End IF
+                goto WSFULL_EXIT;
 
             // Save back in PTD var
             lpMemPTD->iNumLim = iNumLim;
@@ -988,7 +979,23 @@ UBOOL CheckResizeNum_EM
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+LIMIT_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
+
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     return bRet;
 } // End CheckResizeNum_EM
 #undef  APPEND_NAME
@@ -1023,23 +1030,14 @@ UBOOL CheckResizeStr_EM
 
         // If it's out of range, ...
         if (iStrLim > DEF_STR_MAXSIZE)
-        {
-            // Save the error message
-            ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
-
-            goto ERROR_EXIT;
-        } else
+            goto LIMIT_EXIT;
+        else
         {
             // Attempt to realloc to that size
             hGlbStr =
               MyGlobalReAlloc (lpMemPTD->hGlbStr, iStrLim * sizeof (APLCHAR), GMEM_MOVEABLE);
             if (!hGlbStr)
-            {
-                // Save the error message
-                ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-
-                goto ERROR_EXIT;
-            } // End IF
+                goto WSFULL_EXIT;
 
             // Save back in PTD var
             lpMemPTD->iStrLim = iStrLim;
@@ -1049,7 +1047,23 @@ UBOOL CheckResizeStr_EM
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+LIMIT_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
+
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     return bRet;
 } // End CheckResizeStr_EM
 #undef  APPEND_NAME
@@ -2950,10 +2964,9 @@ UBOOL GroupDoneCom
         // Save the error caret position
         SaveErrorPosition (lptkLocalVars->uChar);
 
-        // Save the error message
-        ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
         bRet = FALSE;
+
+        goto SYNTAX_EXIT;
     } else
     {
         LPTOKEN lpNext;
@@ -2976,6 +2989,12 @@ UBOOL GroupDoneCom
         lptkLocalVars->t2.lpHeader->PrevGroup = lptkLocalVars->lpStart[uPrevGroup].tkData.tkIndex;
     } // End IF/ELSE
 
+    goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+NORMAL_EXIT:
     return bRet;
 } // End GroupDoneCom
 #undef  APPEND_NAME
@@ -3107,10 +3126,7 @@ HGLOBAL Tokenize_EM
         // Mark as no caret
         uChar = NEG1U;
 
-        // Save the error message
-        ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-
-        goto ERROR_EXIT;
+        goto WSFULL_EXIT;
     } // End IF
 
     // Lock the memory to get a ptr to it
@@ -3242,19 +3258,13 @@ HGLOBAL Tokenize_EM
                 // Save the error caret position
                 SaveErrorPosition (tkLocalVars.uChar);
 
-                // Save the error message
-                ErrorMessageIndirect (ERRMSG_NONCE_ERROR APPEND_NAME);
-
-                goto ERROR_EXIT;
+                goto NONCE_EXIT;
 
             case FSA_SYNTERR:
                 // Save the error caret position
                 SaveErrorPosition (tkLocalVars.uChar);
 
-                // Save the error message
-                ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
-                goto ERROR_EXIT;
+                goto SYNTAX_EXIT;
 
             case FSA_EXIT:
             {
@@ -3311,6 +3321,25 @@ HGLOBAL Tokenize_EM
     //   trailing zero in the input line which should
     //   exit from one of the actions with FSA_EXIT.
     DbgStop ();
+
+WSFULL_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_NONCE_ERROR APPEND_NAME);
+
+    goto ERROR_EXIT;
+
+SYNTAX_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -3382,18 +3411,16 @@ UBOOL CheckGroupSymbols_EM
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    if (lptkLocalVars->t2.lpHeader->PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
-    {
-        // Save the error caret position
-        SaveErrorPosition (lptkLocalVars->uChar);
+    if (lptkLocalVars->t2.lpHeader->PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
+        return TRUE;
 
-        // Save the error message
-        ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+    // Save the error caret position
+    SaveErrorPosition (lptkLocalVars->uChar);
 
-        return FALSE;
-    } // End IF
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 
-    return TRUE;
+    return FALSE;
 } // End CheckGroupSymbols_EM
 #undef  APPEND_NAME
 

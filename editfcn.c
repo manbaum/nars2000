@@ -39,7 +39,7 @@
 #include "fh_parse.h"
 #include "pertab.h"
 #include "sis.h"
-
+#include "perfmon.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -353,7 +353,7 @@ LRESULT APIENTRY FEWndProc
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (__int3264) (LONG_PTR) lpLclMemVirtStr);
+            SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) lpLclMemVirtStr);
 
             // Link this struc into the chain
             LinkMVS (&lpLclMemVirtStr[0]);
@@ -364,12 +364,12 @@ LRESULT APIENTRY FEWndProc
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_INI, (__int3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_INI, (APLU3264) (LONG_PTR) lpUndoBeg);
 ////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoBeg);
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (__int3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (APLU3264) (LONG_PTR) lpUndoBeg);
 
             // Start with an initial action of nothing
             AppendUndo (hWnd,                       // FE Window handle
@@ -407,12 +407,12 @@ LRESULT APIENTRY FEWndProc
                 lpUndoNxt = (LPUNDO_BUF) ByteAddr (&lpUndoBeg[1], uUndoSize);
 
                 // Save in window extra bytes
-                SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoNxt);
-                SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (__int3264) (LONG_PTR) lpUndoNxt);
+                SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoNxt);
+                SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (APLU3264) (LONG_PTR) lpUndoNxt);
             } // End IF
 
             // Save incremented starting ptr in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (__int3264) (LONG_PTR) ++lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (APLU3264) (LONG_PTR) ++lpUndoBeg);
 
             // Create an Edit Ctrl within which we can edit
             hWndEC =
@@ -444,7 +444,7 @@ LRESULT APIENTRY FEWndProc
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_HWNDEC, (__int3264) (LONG_PTR) hWndEC);
+            SetWindowLongPtrW (hWnd, GWLSF_HWNDEC, (APLU3264) (LONG_PTR) hWndEC);
 
             // Set the paint hook
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
@@ -1159,6 +1159,8 @@ LRESULT WINAPI LclEditCtrlWndProc
             //   W doesn't think to generate another WM_CONTEXTMENU message.
             SetPropW (hWnd, L"DBLCLK.TICKCOUNT", ULongToHandle (GetTickCount ()));
 
+            PERFMON
+
             break;
 
         case WM_GETDLGCODE:
@@ -1470,6 +1472,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
                 } // End IF
             } // End IF
+
+            PERFMON
+////////////PERFMONSHOW
 
             break;
 #undef  nHeight
@@ -2014,7 +2019,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                   && lpUndoNxt->Group EQ lpUndoNxt[-1].Group);
 
             // Save the new Undo Next ptr
-            SetWindowLongPtrW (hWndParent, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoNxt);
+            SetWindowLongPtrW (hWndParent, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoNxt);
 
             // Draw the line #s
             DrawLineNumsFE (hWnd);
@@ -2912,8 +2917,8 @@ void AppendUndo
     lpUndoNxt++;
 
     // Save the incremented ptr in window extra bytes
-    SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoNxt);
-    SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (__int3264) (LONG_PTR) lpUndoNxt);
+    SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoNxt);
+    SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (APLU3264) (LONG_PTR) lpUndoNxt);
 } // End AppendUndo
 
 

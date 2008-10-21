@@ -270,7 +270,7 @@ LRESULT APIENTRY DBWndProc
                  iIndex,
                  iHeight;
     RECT         rcClient;
-    HWND         hWndLB;
+    HWND         hWndLB;            // ListBox window handle
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LRESULT      lResult = FALSE;   // Result from DefMDIChildProcW
@@ -284,7 +284,6 @@ LRESULT APIENTRY DBWndProc
     switch (message)
     {
         case WM_CREATE:
-        {
             iLineNum = 0;
             SetPropW (hWnd, PROP_LINENUM, ULongToHandle (iLineNum));
 
@@ -310,7 +309,7 @@ LRESULT APIENTRY DBWndProc
                              _hInstance,            // Instance
                              0);                    // lParam
             // Save for later use
-            SetWindowLongPtrW (hWnd, GWLDB_HWNDLB, (__int3264) (LONG_PTR) hWndLB);
+            SetWindowLongPtrW (hWnd, GWLDB_HWNDLB, (APLU3264) (LONG_PTR) hWndLB);
 
             // Show the windows
             ShowWindow (hWndLB, SW_SHOWNORMAL);
@@ -328,7 +327,7 @@ LRESULT APIENTRY DBWndProc
             (HANDLE_PTR) lpMemPTD->lpfnOldListboxWndProc =
               SetWindowLongPtrW (hWndLB,
                                  GWL_WNDPROC,
-                                 (__int3264) (LONG_PTR) (WNDPROC) &LclListboxWndProc);
+                                 (APLU3264) (LONG_PTR) (WNDPROC) &LclListboxWndProc);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -341,7 +340,6 @@ LRESULT APIENTRY DBWndProc
 
 ////////////goto NORMAL_EXIT;       // We handled the msg
             break;
-        } // End WM_CREATE
 
         case MYWM_INIT_DB:
             // Tell the Listbox Control about its font

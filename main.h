@@ -63,8 +63,8 @@ default:        \
 //*************************** Window Data ********************************
 
 // Define offsets in DBWNDCLASS window extra bytes
-#define GWLDB_HWNDLB    0                                   // Window handle of Listbox
-#define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (long)  // Total # extra bytes
+#define GWLDB_HWNDLB    0                                           // Window handle of Listbox
+#define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (long)          // Total # extra bytes
 
 // Define common offset between the Session Manager and Function Editor
 #define GWLSF_PERTAB    0                                           // HGLOBAL of corresponding PERTABDATA struc
@@ -87,6 +87,10 @@ default:        \
 
 // Define offsets in MEWNDCLASS window extra bytes
 #define GWLME_EXTRA     0                                           // Total # extra bytes
+
+// Define offsets in PMWNDCLASS window extra bytes
+#define GWLPM_HWNDLB    0                                           // Window handle of Listbox
+#define GWLPM_EXTRA     GWLPM_HWNDLB   + 1 * sizeof (long)          // Total # extra bytes
 
 // Define offsets in VEWNDCLASS window extra bytes
 #define GWLVE_EXTRA     0                                           // Total # extra bytes

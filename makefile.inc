@@ -74,6 +74,7 @@ EXE:                        \
         $(O)$(ENAME).EXE    \
         $(B)$(ENAME).EXE    \
 !if "$(DEBUG)" == "0"
+        $(R)$(ENAME).EXE    \
         $(PFNE)             \
 !endif
         $(BC)$(ENAME).HLP
@@ -168,6 +169,7 @@ $(O)immexec.DEP         \
 $(O)inifile.DEP         \
 $(O)initdata.DEP        \
 $(O)main.DEP            \
+$(O)perfmon.DEP         \
 $(O)pf_bar.DEP          \
 $(O)pf_circle.DEP       \
 $(O)pf_colonbar.DEP     \
@@ -408,6 +410,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)main.DEP)
 !       include $(O)main.DEP
+!endif
+!if exist ($(O)perfmon.DEP)
+!       include $(O)perfmon.DEP
 !endif
 !if exist ($(O)pf_bar.DEP)
 !       include $(O)pf_bar.DEP
@@ -799,6 +804,7 @@ $(O)immexec.PRO         \
 $(O)inifile.PRO         \
 $(O)initdata.PRO        \
 $(O)main.PRO            \
+$(O)perfmon.PRO         \
 $(O)pf_bar.PRO          \
 $(O)pf_circle.PRO       \
 $(O)pf_colonbar.PRO     \
@@ -998,6 +1004,7 @@ $(O)immexec.OBJ:        $(@B).C         $(IMMEXEC_DEP)
 $(O)inifile.OBJ:        $(@B).C         $(INIFILE_DEP)
 $(O)initdata.OBJ:       $(@B).C         $(INITDATA_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
+$(O)perfmon.OBJ:        $(@B).C         $(PERFMON_DEP)
 $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
 $(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
 $(O)pf_colonbar.OBJ:    $(@B).C         $(PF_COLONBAR_DEP)
@@ -1163,7 +1170,7 @@ OBJS=                       \
      $(O)inifile.OBJ        \
      $(O)initdata.OBJ       \
      $(O)main.OBJ           \
-     $(O)pl_parse.OBJ       \
+     $(O)perfmon.OBJ        \
      $(O)pf_bar.OBJ         \
      $(O)pf_circle.OBJ      \
      $(O)pf_colonbar.OBJ    \
@@ -1211,6 +1218,7 @@ OBJS=                       \
      $(O)pf_ustile.OBJ      \
      $(O)pf_utack.OBJ       \
      $(O)pf_utackjot.OBJ    \
+     $(O)pl_parse.OBJ       \
      $(O)po_cmiddot.OBJ     \
      $(O)po_dicircle.OBJ    \
      $(O)po_dieresis.OBJ    \
@@ -1304,6 +1312,9 @@ $(LIBS_WEXE) $(LIBS_EXT)
 $(B)$(ENAME).EXE:       $(O)$(ENAME).EXE
         @copy %s $@ >NUL
         @dir /ON $(B)$(ENAME).*|grep "$(ENAME)\."
+
+$(R)$(ENAME).EXE:       $(O)$(ENAME).EXE
+        @copy %s $@ >NUL
 
 $(PFNE):                $(O)$(ENAME).EXE
         @copy %s $(PFNE) >NUL

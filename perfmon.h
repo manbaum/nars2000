@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Check ESP
+//  NARS2000 -- Performance Monitoring Header
 //***************************************************************************
 
 /***************************************************************************
@@ -20,22 +20,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-//***************************************************************************
-//  _chkesp
-//
-//  This needs to be in a separate file so its prototype
-//    isn't included in any file because C doesn't like the (naked).
-//***************************************************************************
+// Toggle this between defined and not to turn performance monitoring on/off
+//#define PERFMONON
 
-void __declspec (naked) __cdecl _chkesp (void)
-{
-    _asm {  jz      exit_chkesp     };
-    _asm {  int     3           };
-exit_chkesp:
-    _asm {  ret             };
-} // End _chkesp
+#ifdef PERFMONON
+  #define PERFMONINIT PerfMonInit ();
+  #define PERFMON     PerfMonAccum (FNLN);
+  #define PERFMONSHOW PerfMonShow ();
+#else
+  #define PERFMONINIT
+  #define PERFMON
+  #define PERFMONSHOW
+#endif
 
 
 //***************************************************************************
-//  End of File: chkesp.c
+//  End of File: perfmon.h
 //***************************************************************************

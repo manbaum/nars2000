@@ -37,6 +37,7 @@
 #include "pertab.h"
 #include "fh_parse.h"
 #include "sis.h"
+#include "perfmon.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -196,6 +197,11 @@ void AppendLine
     if (bEndingCRLF)
         // Replace the selection (none) with L"\r\n"
         SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
+////#ifdef PERFMONON
+////    UpdateWindow (hWndEC);
+////#endif
+    PERFMON
+    PERFMONSHOW
 } // End AppendLine
 
 
@@ -502,6 +508,9 @@ void DisplayPrompt
 ////if (bSetFocusSM)
 ////    // Set the focus to the Session Manager so the prompt displays
 ////    PostMessageW (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
+
+    PERFMON
+////PERFMONSHOW
 } // End DisplayPrompt
 
 
@@ -561,8 +570,8 @@ void FormatQQuadInput
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -729,6 +738,8 @@ LRESULT APIENTRY SMWndProc
         case WM_NCCREATE:               // 0 = (int) wParam
                                         // lpcs = (LPCREATESTRUCTW) lParam
         {
+            PERFMON
+
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 #ifndef UNISCRIBE
@@ -762,7 +773,7 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (__int3264) (LONG_PTR) lpLclMemVirtStr);
+            SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) lpLclMemVirtStr);
 
             // Allocate virtual memory for the []ERROR/[]ES buffer
 #ifdef DEBUG
@@ -795,6 +806,8 @@ LRESULT APIENTRY SMWndProc
                             DEF_QUADERROR_INITSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
                             MEM_COMMIT,
                             PAGE_READWRITE);
+            PERFMON
+
             break;                  // Continue with next handler
 WM_NCCREATE_FAIL:
             // Send a constant message to the previous tab
@@ -811,6 +824,8 @@ WM_NCCREATE_FAIL:
             int     i;                  // Loop counter
             HGLOBAL hGlbTmp;            // Temporary hGlbNum/hGlbStr
             LRESULT lResult = -1;       // The result (assume we failed)
+
+            PERFMON
 
             // Initialize # threads
             SetPropW (hWnd, L"NTHREADS", 0);
@@ -864,9 +879,9 @@ WM_NCCREATE_FAIL:
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (__int3264) (LONG_PTR) lpUndoBeg);
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (__int3264) (LONG_PTR) lpUndoBeg);
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (__int3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (APLU3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (APLU3264) (LONG_PTR) lpUndoBeg);
 ////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
             // Start with an initial action of nothing
@@ -878,7 +893,7 @@ WM_NCCREATE_FAIL:
                         UNDO_NOGROUP,               // Group index
                         0);                         // Character
             // Save incremented starting ptr in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (__int3264) (LONG_PTR) ++lpUndoBeg);
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (APLU3264) (LONG_PTR) ++lpUndoBeg);
 
 ////////////// *************** lptkStackBase ***************************
 ////////////
@@ -1416,7 +1431,7 @@ WM_NCCREATE_FAIL:
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_HWNDEC, (__int3264) (LONG_PTR) hWndEC);
+            SetWindowLongPtrW (hWnd, GWLSF_HWNDEC, (APLU3264) (LONG_PTR) hWndEC);
 
             // Set the paint hook
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
@@ -1497,6 +1512,9 @@ LOAD_WORKSPACE_FAIL:
 NORMAL_EXIT:
             // Free the workspace global
             MyGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE);
+
+            PERFMON
+////////////PERFMONSHOW
 
             return lResult;         // Mark as failed
         } // End WM_CREATE
@@ -1594,7 +1612,7 @@ NORMAL_EXIT:
         case MYWM_INIT_EC:
             // Wait for the third receipt of this message
             //   so we are sure everything is initialized
-            switch ((__int3264) (LONG_PTR)GetPropW (hWnd, L"INIT_EC"))
+            switch ((APLU3264) (LONG_PTR)GetPropW (hWnd, L"INIT_EC"))
             {
                 case 0:
                     SetPropW (hWnd, L"INIT_EC", (HANDLE) 1);
@@ -1608,6 +1626,9 @@ NORMAL_EXIT:
 
                 case 2:
                     RemovePropW (hWnd, L"INIT_EC");
+
+                    PERFMON
+////////////////////PERFMONSHOW
 
                     break;
 

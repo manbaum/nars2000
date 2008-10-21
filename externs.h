@@ -964,6 +964,13 @@ char pszNoInsertTCTab[]
    = "Unable to create Debugger window"
   #endif
 #endif
+#ifdef PERFMONON
+  ,
+       pszNoCreatePMWnd[]
+  #ifdef DEFINE_VALUES
+   = "Unable to create Performance Monitoring window"
+  #endif
+#endif
 ,
      pszNoCreateFEWnd[]
 #ifdef DEFINE_VALUES
@@ -996,6 +1003,13 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
       wszDBTitle[]                      // Debugger ...
   #ifdef DEFINE_VALUES
    = WS_APPNAME L" Debugger Window" WS_APPEND_DEBUG
+  #endif
+#endif
+#ifdef PERFMONON
+  ,
+      wszPMTitle[]                      // Performance Monitoring ...
+  #ifdef DEFINE_VALUES
+   = WS_APPNAME L" Performance Monitoring Window" WS_APPEND_DEBUG
   #endif
 #endif
 ,

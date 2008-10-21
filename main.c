@@ -40,6 +40,7 @@
 #include "resource.h"
 #include "editctrl.h"
 #include "unitranshdr.h"
+#include "perfmon.h"
 
 #define DEFINE_VARS
 #define DEFINE_VALUES
@@ -91,6 +92,9 @@ HICON hIconMF_Large, hIconMF_Small,     // Icon handles
 #ifdef DEBUG
       hIconDB_Large, hIconDB_Small,
 #endif
+#ifdef PERFMONON
+      hIconPM_Large, hIconPM_Small,
+#endif
       hIconFE_Large, hIconFE_Small,
       hIconME_Large, hIconME_Small,
       hIconVE_Large, hIconVE_Small,
@@ -108,6 +112,9 @@ char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.
      pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS ">.",
 #ifdef DEBUG
      pszNoRegDBWndClass[]   = "Unable to register window class <" DBWNDCLASS ">.",
+#endif
+#ifdef PERFMONON
+     pszNoRegPMWndClass[]   = "Unable to register window class <" PMWNDCLASS ">.",
 #endif
      pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS ">.",
      pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
@@ -851,7 +858,7 @@ UBOOL CreateChildWindows
     (HANDLE_PTR) lpfnOldTabCtrlWndProc =
       SetWindowLongPtrW (hWndTC,
                          GWL_WNDPROC,
-                         (__int3264) (HANDLE_PTR) (WNDPROC) &LclTabCtrlWndProc);
+                         (APLU3264) (HANDLE_PTR) (WNDPROC) &LclTabCtrlWndProc);
     // Show and paint the window
     ShowWindow (hWndTC, SW_SHOWNORMAL);
     UpdateWindow (hWndTC);
@@ -1184,10 +1191,10 @@ LRESULT APIENTRY MFWndProc
 #define lpttt   (*(LPTOOLTIPTEXTW *) &lParam)
 
                     // Get a ptr to the ws name
-                    lpMemWSID = PointToWsName ((__int3264) (HANDLE_PTR) lpttt->hdr.idFrom);
+                    lpMemWSID = PointToWsName ((APLU3264) (HANDLE_PTR) lpttt->hdr.idFrom);
 
                     // Get the PerTabData global memory handle
-                    hGlbPTD = GetPerTabHandle ((__int3264) (HANDLE_PTR) lpttt->hdr.idFrom); Assert (hGlbPTD NE NULL);
+                    hGlbPTD = GetPerTabHandle ((APLU3264) (HANDLE_PTR) lpttt->hdr.idFrom); Assert (hGlbPTD NE NULL);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -2235,7 +2242,7 @@ UBOOL CALLBACK UpdatesDlgProc
 ////        (HANDLE_PTR) lpfnOldStaticWndProc =
 ////          SetWindowLongPtrW (hWndStatic,
 ////                             GWL_WNDPROC,
-////                             (__int3264) (HANDLE_PTR) (WNDPROC) &LclStaticWndProc);
+////                             (APLU3264) (HANDLE_PTR) (WNDPROC) &LclStaticWndProc);
 ////        // Set the cursor for the static control to a hand
 
 
@@ -2291,7 +2298,7 @@ UBOOL CALLBACK UpdatesDlgProc
 ////        // Restore the old WndProc
 ////        SetWindowLongPtrW (hWndStatic,
 ////                           GWL_WNDPROC,
-////                           (__int3264) (HANDLE_PTR) (WNDPROC) lpfnOldStaticWndProc);
+////                           (APLU3264) (HANDLE_PTR) (WNDPROC) lpfnOldStaticWndProc);
 ////        lpfnOldStaticWndProc = NULL;
 
             EndDialog (hDlg, TRUE); // Quit this dialog
@@ -2494,6 +2501,29 @@ UBOOL InitApplication
         return FALSE;
     } // End IF
 
+#ifdef PERFMONON
+    // Fill in Performance Monitoring window class structure
+    wcw.style           = CS_DBLCLKS;
+    wcw.lpfnWndProc     = (WNDPROC) PMWndProc;
+    wcw.cbClsExtra      = 0;
+    wcw.cbWndExtra      = GWLPM_EXTRA;
+    wcw.hInstance       = _hInstance;
+    wcw.hIcon           = hIconPM_Large;
+    wcw.hIconSm         = hIconPM_Small;
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+    wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
+////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_PMMENU);
+    wcw.lpszMenuName    = NULL;
+    wcw.lpszClassName   = LPMWNDCLASS;
+
+    // Register the Debugger window class
+    if (!RegisterClassExW (&wcw))
+    {
+        MB (pszNoRegPMWndClass);
+        return FALSE;
+    } // End IF
+#endif
+
     return TRUE;
 } // End InitApplication
 
@@ -2610,12 +2640,14 @@ UBOOL InitInstance
 
     hIconSM_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_SM_LARGE));
     hIconSM_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_SM_SMALL));
-
 #ifdef DEBUG
     hIconDB_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_DB_LARGE));
     hIconDB_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_DB_SMALL));
 #endif
-
+#ifdef PERFMONON
+    hIconPM_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_PM_LARGE));
+    hIconPM_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_PM_SMALL));
+#endif
     hIconFE_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_FE_LARGE));
     hIconFE_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_FE_SMALL));
 
@@ -2713,7 +2745,14 @@ int PASCAL WinMain
      int         nCmdShow)
 
 {
-    MSG  Msg;           // Message for GetMessageW loop
+    MSG Msg;                        // Message for GetMessageW loop
+
+#ifdef PERFMONON
+    MessageBeep (NEG1U);
+#endif
+    SetCursor (LoadCursor (NULL, MAKEINTRESOURCE (IDC_APPSTARTING)));
+
+    PERFMONINIT
 
     // This is needed by Wine's EDITCTRL.C
     user32_module = hInstance;
@@ -2721,13 +2760,19 @@ int PASCAL WinMain
     // Ensure that the common control DLL is loaded.
     InitCommonControls ();
 
+    PERFMON
+
     // Construct file name(s) based upon where the module is on disk
     GetModuleFileNames (hInstance);
+
+    PERFMON
 
     // Ensure the Application Data and workspaces
     //   directories are present
     if (!CreateAppDataDirs ())
         goto EXIT1;
+
+    PERFMON
 
     // Save initial state
     nMinState = nCmdShow;
@@ -2747,17 +2792,25 @@ int PASCAL WinMain
     //   but we need 64 bits because of 64-bit ints
     control87(PC_64, MCW_PC);
 
+    PERFMON
+
     // If there's a command line, parse it
     if (!ParseCommandLine (lpCmdLine))
         goto EXIT1;
+
+    PERFMON
 
     // Perform initializations that apply to a specific instance
     if (!InitInstance (hInstance))
         goto EXIT2;
 
+    PERFMON
+
     // Register the window class
     if (!InitApplication (hInstance))
         goto EXIT3;
+
+    PERFMON
 
     // Allocate Critical Section objects
     //   for use in dtoa.c (2),
@@ -2776,15 +2829,23 @@ int PASCAL WinMain
     // Mark as CSO defined
     bCSO = TRUE;
 
+    PERFMON
+
     // Create various permanent variables
     MakePermVars ();
+
+    PERFMON
 
     // Initialize all {symbol} names & values
     if (!InitSymbolNamesValues ())
         goto EXIT4;
 
+    PERFMON
+
     // Read in global .ini file values
     ReadIniFileGlb ();
+
+    PERFMON
 
     // Initialize ChooseFont arguments here
     //   so its settings will be present
@@ -2792,8 +2853,12 @@ int PASCAL WinMain
     //   the common dialog is called.
     InitChooseFont ();
 
+    PERFMON
+
     // Initialize tables for Primitive Fns, Operators, etc.
     InitPrimTabs ();
+
+    PERFMON
 
 #ifdef DEBUG
     InitFsaTabs ();
@@ -2801,6 +2866,8 @@ int PASCAL WinMain
 
     // Get and save the current Thread Id
     dwMainThreadId = GetCurrentThreadId ();
+
+    PERFMON
 
     // Create the Master Frame window
     hWndMF =
@@ -2825,6 +2892,10 @@ int PASCAL WinMain
 ////// Make the window visible; update its client area
 ////ShowWindow (hWndMF, nCmdShow);
 ////UpdateWindow (hWndMF);
+
+    PERFMON
+
+////PERFMONSHOW
 
     __try
     {

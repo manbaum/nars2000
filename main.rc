@@ -20,6 +20,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#include "perfmon.h"
 #include "resource.h"
 #include "Unicode.h"
 
@@ -31,8 +32,8 @@
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "windows.h"
 #include "dlgs.h"
-#include "commctrl.h"
 #include "defines.h"
+#include "commctrl.h"
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
@@ -55,6 +56,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE DISCARDABLE
 BEGIN
+    "perfmon.h\0"
     "resource.h\0"
     "Unicode.h\0"
 END
@@ -493,8 +495,10 @@ IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF.ico"
 IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF.ico"
 IDI_SM_LARGE            ICON    DISCARDABLE     "Images\\SM.ico"
 IDI_SM_SMALL            ICON    DISCARDABLE     "Images\\SM.ico"
+#ifdef DEBUG
 IDI_DB_LARGE            ICON    DISCARDABLE     "Images\\DB.ico"
 IDI_DB_SMALL            ICON    DISCARDABLE     "Images\\DB.ico"
+#endif
 IDI_FE_LARGE            ICON    DISCARDABLE     "Images\\FE.ico"
 IDI_FE_SMALL            ICON    DISCARDABLE     "Images\\FE.ico"
 IDI_ME_LARGE            ICON    DISCARDABLE     "Images\\ME.ico"
@@ -503,12 +507,18 @@ IDI_VE_LARGE            ICON    DISCARDABLE     "Images\\VE.ico"
 IDI_VE_SMALL            ICON    DISCARDABLE     "Images\\VE.ico"
 IDI_CC_LARGE            ICON    DISCARDABLE     "Images\\CC.ico"
 IDI_CC_SMALL            ICON    DISCARDABLE     "Images\\CC.ico"
+#ifdef PERFMONON
+IDI_PM_LARGE            ICON    DISCARDABLE     "Images\\PM.ico"
+IDI_PM_SMALL            ICON    DISCARDABLE     "Images\\PM.ico"
+#endif
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 IDB_LINECONT    BITMAP  DISCARDABLE "Images\\LineCont.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

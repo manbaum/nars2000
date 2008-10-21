@@ -56,6 +56,7 @@
   #include "inifile.pro"
   #include "initdata.pro"
   #include "main.pro"
+  #include "perfmon.pro"
   #include "pf_bar.pro"
   #include "pf_circle.pro"
   #include "pf_colonbar.pro"

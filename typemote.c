@@ -459,8 +459,8 @@ void TypeDemote
         ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
 
         // Allocate space for a new array
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (hGlbRes)
         {
             // Lock the memory to get a ptr to it
@@ -893,7 +893,7 @@ UBOOL TypePromoteGlb_EM
     ByteRes = CalcArraySize (aplTypeRes, aplNELMArg, aplRankArg);
 
     // Allocate space for the result
-    hGlbRes = MyGlobalAlloc (GHND, (UINT) ByteRes);
+    hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         // WS FULL, so no promotion
         goto NORMAL_EXIT;
@@ -917,7 +917,7 @@ UBOOL TypePromoteGlb_EM
     lpMemRes = VarArrayBaseToDim (lpMemRes);
 
     // Copy the arg dimensions to the result
-    CopyMemory (lpMemRes, lpMemArg, (UINT) BytesIn (ARRAY_INT, aplRankArg));
+    CopyMemory (lpMemRes, lpMemArg, (APLU3264) BytesIn (ARRAY_INT, aplRankArg));
 
     // Skip over the dimensions to the data
     lpMemArg = VarArrayDimToData (lpMemArg, aplRankArg);

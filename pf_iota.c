@@ -196,7 +196,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     ByteRes = CalcArraySize (ARRAY_APA, abs64 (aplLongestRht), 1);
 
     // Allocate space for an APA
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -310,7 +310,7 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
         ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
 
         // Allocate space for the result
-        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -415,7 +415,7 @@ static LPAPLCHAR MonBody[] =
 MAGIC_FUNCTION MF_MonIota =
 {MonHeader,
  MonBody,
- sizeof (MonBody) / sizeof (MonBody[0]),
+ itemsizeof (MonBody),
 };
 
 
@@ -522,8 +522,8 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -554,7 +554,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
         lpMemRht = VarArrayBaseToDim (lpMemRht);
 
         // Copy the left arg dimensions to the result
-        CopyMemory (lpMemRes, lpMemRht, (__int3264) aplRankRht * sizeof (APLDIM));
+        CopyMemory (lpMemRes, lpMemRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
         // Skip over the dimensions to the data
         lpMemRes = VarArrayDimToData (lpMemRes, aplRankRht);
@@ -947,7 +947,7 @@ UBOOL PrimFnDydIotaPvI_EM
     UBOOL     bRet = FALSE;             // TRUE iff the result is valid
 
     // Allocate a temporary array to hold the inverse indices
-    hGlbInv = DbgGlobalAlloc (GHND, (__int3264) (aplNELMLft * sizeof (APLUINT)));
+    hGlbInv = DbgGlobalAlloc (GHND, (APLU3264) (aplNELMLft * sizeof (APLUINT)));
     if (!hGlbInv)
         goto WSFULL_EXIT;
 
@@ -1356,7 +1356,7 @@ static LPAPLCHAR DydBody[] =
 MAGIC_FUNCTION MF_DydIota =
 {DydHeader,
  DydBody,
- sizeof (DydBody) / sizeof (DydBody[0]),
+ itemsizeof (DydBody),
 };
 
 

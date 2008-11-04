@@ -296,18 +296,18 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // Allocate space for the global value
-    Assert (aplNELMRht EQ (UINT) aplNELMRht);
+    Assert (aplNELMRht EQ (APLU3264) aplNELMRht);
     lpwszCompLine =
       MyVirtualAlloc (NULL,         // Any address (FIXED SIZE)
-                      ((UINT) aplNELMRht + 1) * sizeof (APLCHAR),   // "+ 1" for the terminating zero
+                      ((APLU3264) aplNELMRht + 1) * sizeof (APLCHAR),   // "+ 1" for the terminating zero
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
     if (!lpwszCompLine)
         goto WSFULL_EXIT;
 
     // Copy the chars into the line
-    Assert (aplNELMRht EQ (UINT) aplNELMRht);
-    CopyMemory (lpwszCompLine, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
+    Assert (aplNELMRht EQ (APLU3264) aplNELMRht);
+    CopyMemory (lpwszCompLine, lpMemRht, (APLU3264) aplNELMRht * sizeof (APLCHAR));
     lpwszCompLine[aplNELMRht] = L'\0';
 
     // We no longer need this ptr

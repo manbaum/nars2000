@@ -165,7 +165,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     LPAPLINT      lpMemRep = NULL;
     UBOOL         bRet;
     APLUINT       aplAxis,          // The (one and only) axis value
-                  ByteRes,
+                  ByteRes,          // # bytes in the result
                   uLo,
                   uDimLo,
                   uAx,
@@ -328,8 +328,8 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         // Allocate temp storage for the normalized left arg
         // N.B.: Conversion from APLUINT to UINT
         ByteRes = aplNELMLft * sizeof (APLINT);
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRep = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRep = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRep)
             goto WSFULL_EXIT;
 
@@ -449,8 +449,8 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -472,7 +472,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     if (lpMemRht)
         CopyMemory (VarArrayBaseToDim (lpMemRes),
                     VarArrayBaseToDim (lpMemRht),
-                    (UINT) aplRankRht * sizeof (APLDIM));
+                    (APLU3264) aplRankRht * sizeof (APLDIM));
 
     // Fill in the axis dimension
     (VarArrayBaseToDim (lpMemRes))[aplAxis] = uDimAxRes;

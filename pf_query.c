@@ -389,8 +389,8 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -487,7 +487,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
         // Reallocate the memory down to the value of the left arg
         hGlbRes =
           MyGlobalReAlloc (hGlbRes,
-                           MyGlobalSize (hGlbRes) - (__int3264) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
+                           MyGlobalSize (hGlbRes) - (APLU3264) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
                            GHND);
     } // End IF/ELSE
 

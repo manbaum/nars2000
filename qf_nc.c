@@ -157,8 +157,8 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -235,11 +235,11 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                     //   and the .Inuse flag
                     ZeroMemory (&stFlags, sizeof (stFlags));
                     lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                        (UINT) (&lpMemDataRht[uRht] - lpMemDataStart),
+                                                        (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart),
                                                         &stFlags);
                     // If not found, return NAMECLASS_INV or NAMECLASS_AVL
                     if (!lpSymEntry)
-                        *lpMemDataRes++ = IsValidName (lpMemDataStart, (UINT) (&lpMemDataRht[uRht] - lpMemDataStart))
+                        *lpMemDataRes++ = IsValidName (lpMemDataStart, (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart))
                                         ? NAMECLASS_AVL : NAMECLASS_INV;
                     else
                         *lpMemDataRes++ = CalcNameClass (lpSymEntry);
@@ -268,11 +268,11 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                 //   and the .Inuse flag
                 ZeroMemory (&stFlags, sizeof (stFlags));
                 lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
-                                                      (UINT) (aplNELMCol - uCol),
+                                                      (APLU3264) (aplNELMCol - uCol),
                                                      &stFlags);
                 // If not found, return NAMECLASS_INV or NAMECLASS_AVL
                 if (!lpSymEntry)
-                    *lpMemDataRes++ = IsValidName (&lpMemDataStart[uCol], (UINT) (aplNELMCol - uCol))
+                    *lpMemDataRes++ = IsValidName (&lpMemDataStart[uCol], (APLU3264) (aplNELMCol - uCol))
                                     ? NAMECLASS_AVL : NAMECLASS_INV;
                 else
                     *lpMemDataRes++ = CalcNameClass (lpSymEntry);

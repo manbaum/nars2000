@@ -195,7 +195,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         //   and the .Inuse flag
         lpSymEntry =
           SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
-                                  (__int3264) aplNELMRht,
+                                  (APLU3264) aplNELMRht,
                                  &stFlags);
     else
     {
@@ -207,7 +207,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         //   and the .Inuse flag
         lpSymEntry =
           SymTabLookupNameLength ((LPAPLCHAR) lpMemRht,
-                                  (__int3264) aplNELMRht,
+                                  (APLU3264) aplNELMRht,
                                  &stFlags);
     } // End IF/ELSE
 
@@ -264,7 +264,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     aplNELMRes = lpMemTxtLine->U;
 
                     // Copy the function line text to global memory
-                    CopyMemory (lpwszTemp, &lpMemTxtLine->C, (__int3264) aplNELMRes * sizeof (lpMemTxtLine->C));
+                    CopyMemory (lpwszTemp, &lpMemTxtLine->C, (APLU3264) aplNELMRes * sizeof (lpMemTxtLine->C));
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -338,8 +338,8 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                     // Allocate space for the result
                     // N.B.:  Conversion from APLUINT to UINT
-                    Assert (ByteRes EQ (__int3264) ByteRes);
-                    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbRes)
                         goto WSFULL_EXIT;
                     else
@@ -521,8 +521,8 @@ LPVOID SysFnCR_Copy_EM
 
         // Allocate space for the result.
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlbCpy = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbCpy = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbCpy)
         {
             // Mark as in error
@@ -623,8 +623,8 @@ HGLOBAL SysFnMonCR_ALLOC_EM
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -663,7 +663,7 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     if (lpw)
     {
         // Copy the function text to the result
-        CopyMemory (lpMemRes, lpw, (__int3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemory (lpMemRes, lpw, (APLU3264) aplNELMRes * sizeof (APLCHAR));
     } // End IF
 
     // We no longer need this ptr

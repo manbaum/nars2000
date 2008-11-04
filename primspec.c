@@ -952,8 +952,8 @@ RESTART_EXCEPTION:
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -1928,8 +1928,8 @@ UBOOL PrimFnDydSimpNest_EM
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (__int3264) ByteAlloc);
-        hGlbWVec = DbgGlobalAlloc (GHND, (__int3264) ByteAlloc);
+        Assert (ByteAlloc EQ (APLU3264) ByteAlloc);
+        hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
 
@@ -1954,8 +1954,8 @@ UBOOL PrimFnDydSimpNest_EM
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (__int3264) ByteAlloc);
-        hGlbOdo = DbgGlobalAlloc (GHND, (__int3264) ByteAlloc);
+        Assert (ByteAlloc EQ (APLU3264) ByteAlloc);
+        hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
 
@@ -2277,8 +2277,8 @@ UBOOL PrimFnDydNestSimp_EM
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (__int3264) ByteAlloc);
-        hGlbWVec = DbgGlobalAlloc (GHND, (__int3264) ByteAlloc);
+        Assert (ByteAlloc EQ (APLU3264) ByteAlloc);
+        hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
 
@@ -2303,8 +2303,8 @@ UBOOL PrimFnDydNestSimp_EM
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (__int3264) ByteAlloc);
-        hGlbOdo = DbgGlobalAlloc (GHND, (__int3264) ByteAlloc);
+        Assert (ByteAlloc EQ (APLU3264) ByteAlloc);
+        hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
 
@@ -5883,8 +5883,8 @@ RESTART_EXCEPTION_SINGLETON:
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteRes = aplRankRes * sizeof (APLUINT);
-            Assert (ByteRes EQ (__int3264) ByteRes);
-            hGlbWVec = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+            Assert (ByteRes EQ (APLU3264) ByteRes);
+            hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbWVec)
                 goto WSFULL_EXIT;
 
@@ -5909,8 +5909,8 @@ RESTART_EXCEPTION_SINGLETON:
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteRes = aplRankRes * sizeof (APLUINT);
-            Assert (ByteRes EQ (__int3264) ByteRes);
-            hGlbOdo = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+            Assert (ByteRes EQ (APLU3264) ByteRes);
+            hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbOdo)
                 goto WSFULL_EXIT;
 

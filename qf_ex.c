@@ -159,8 +159,8 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -237,7 +237,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                     //   and the .Inuse flag
                     ZeroMemory (&stFlags, sizeof (stFlags));
                     lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                        (UINT) (&lpMemDataRht[uRht] - lpMemDataStart),
+                                                        (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart),
                                                         &stFlags);
                     // If found, attempt to expunge the name
                     // If not found, return a one if it's a valid name, zero otherwise
@@ -245,7 +245,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                         *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
                     else
                         *lpMemDataRes |= (IsValidName (lpMemDataStart,
-                                                      (UINT) (&lpMemDataRht[uRht] - lpMemDataStart))) << uBitIndex;
+                                                      (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart))) << uBitIndex;
                     // Check for end-of-byte
                     if (++uBitIndex EQ NBIB)
                     {
@@ -277,7 +277,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                 //   and the .Inuse flag
                 ZeroMemory (&stFlags, sizeof (stFlags));
                 lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
-                                                      (UINT) (aplNELMCol - uCol),
+                                                      (APLU3264) (aplNELMCol - uCol),
                                                      &stFlags);
                 // If found, attempt to expunge the name
                 // If not found, return a one if it's a valid name, zero otherwise
@@ -285,7 +285,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                     *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
                 else
                     *lpMemDataRes |= (IsValidName (lpMemDataStart,
-                                                   (UINT) (aplNELMCol - uCol))) << uBitIndex;
+                                                   (APLU3264) (aplNELMCol - uCol))) << uBitIndex;
                 // Check for end-of-byte
                 if (++uBitIndex EQ NBIB)
                 {

@@ -519,7 +519,7 @@ void SF_ReadLineTF1
     // Copy the line to global memory
     CopyMemory (lpMemLine,
                 lpTF1_Params->lpMemRht + uLineNum * lpTF1_Params->aplColsRht,
-                (__int3264) lpTF1_Params->aplColsRht * sizeof (APLCHAR));
+                (APLU3264) lpTF1_Params->aplColsRht * sizeof (APLCHAR));
 } // End SF_ReadLineTF1
 
 

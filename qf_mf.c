@@ -187,7 +187,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
         aplNELMRht--;
 
     // If it's not a valid name, ...
-    if (!IsValidName (lpMemRht, (UINT) aplNELMRht))
+    if (!IsValidName (lpMemRht, (APLU3264) aplNELMRht))
         goto DOMAIN_EXIT;
 
     // Lookup the name in the symbol table
@@ -195,7 +195,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     //   and the .Inuse flag
     lpSymEntry =
       SymTabLookupNameLength (lpMemRht,
-                       (UINT) aplNELMRht,
+                   (APLU3264) aplNELMRht,
                              &stFlags);
     if (lpSymEntry)
     {
@@ -239,8 +239,8 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
     // Lock the memory to get a ptr to it
@@ -571,8 +571,8 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
     // Lock the memory to get a ptr to it
@@ -648,12 +648,12 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                     //   and the .Inuse flag
                     ZeroMemory (&stFlags, sizeof (stFlags));
                     lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                        (UINT) (&lpMemRht[uRht] - lpMemDataStart),
+                                              (APLU3264) (&lpMemRht[uRht] - lpMemDataStart),
                                                         &stFlags);
                     // If found and a valid name, ...
                     if (lpSymEntry
                      && (!IsSysName (lpMemDataStart))
-                     && IsValidName (lpMemDataStart, (UINT) (&lpMemRht[uRht] - lpMemDataStart)))
+                     && IsValidName (lpMemDataStart, (APLU3264) (&lpMemRht[uRht] - lpMemDataStart)))
                         *lpMemRes |= ToggleMonInfo (lpSymEntry, (UBOOL) aplLongestLft) << uBitIndex;
 
                     // Check for end-of-byte
@@ -687,12 +687,12 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                 //   and the .Inuse flag
                 ZeroMemory (&stFlags, sizeof (stFlags));
                 lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
-                                                      (UINT) (aplNELMCol - uCol),
+                                          (APLU3264) (aplNELMCol - uCol),
                                                      &stFlags);
                 // If found and a valid name, ...
                 if (lpSymEntry
                  && (!IsSysName (&lpMemDataStart[uCol]))
-                 && IsValidName (&lpMemDataStart[uCol], (UINT) (aplNELMCol - uCol)))
+                 && IsValidName (&lpMemDataStart[uCol], (APLU3264) (aplNELMCol - uCol)))
                     *lpMemRes |= ToggleMonInfo (lpSymEntry, (UBOOL) aplLongestLft) << uBitIndex;
 
                 // Check for end-of-byte

@@ -53,7 +53,7 @@ EXCEPT_NAMES ExceptNames[] =
  {"LIMIT ERROR"       , EXCEPTION_LIMIT_ERROR       },
 };
 
-#define EXCEPT_NAMES_LENGTH         (sizeof (ExceptNames) / sizeof (ExceptNames[0]))
+#define EXCEPT_NAMES_LENGTH         itemsizeof (ExceptNames)
 
 // Save area for exception address if EXCEPTION_BREAKPOINT
 DWORD glbExceptAddr;
@@ -542,7 +542,7 @@ long CheckException
 //  Compare starting addresses so as to sort them
 //***************************************************************************
 
-INT_PTR __cdecl CompareStartAddresses
+APLU3264 __cdecl CompareStartAddresses
     (const void *elem1,
      const void *elem2)
 
@@ -550,8 +550,8 @@ INT_PTR __cdecl CompareStartAddresses
 #define lpSALft     ((LPSTART_ADDRESSES) elem1)
 #define lpSARht     ((LPSTART_ADDRESSES) elem2)
 
-    return (INT_PTR) (lpSALft->StartAddressAddr
-                    - lpSARht->StartAddressAddr);
+    return (APLU3264) (lpSALft->StartAddressAddr
+                     - lpSARht->StartAddressAddr);
 #undef  lpSARht
 #undef  lpSALft
 } // End CompareStartAddresses

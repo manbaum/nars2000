@@ -225,12 +225,12 @@ UBOOL LoadWorkspace_EM
         MakeWorkspaceBackup (lpwszDPFE, LOADBAK_EXT);
 
 ////// Get the version #
-////GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
-////                          KEYNAME_VERSION,      // Ptr to the key name
-////                          L"",                  // Ptr to the default value
-////                          wszVersion,           // Ptr to the output buffer
-////                          sizeof (wszVersion) / sizeof (wszVersion[0]), // Byte size of the output buffer
-////                          lpwszDPFE);           // Ptr to the file name
+////GetPrivateProfileStringW (SECTNAME_GENERAL,         // Ptr to the section name
+////                          KEYNAME_VERSION,          // Ptr to the key name
+////                          L"",                      // Ptr to the default value
+////                          wszVersion,               // Ptr to the output buffer
+////                          itemsizeof (wszVersion),  // Byte size of the output buffer
+////                          lpwszDPFE);               // Ptr to the file name
     // Get the SI Level
     uSILevel =
       GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
@@ -629,7 +629,7 @@ UBOOL LoadWorkspace_EM
 
                 // Parse the line into lpSymEntry->stData
                 if (!ParseSavedWsFcn_EM (lpwSrc,        // Ptr to input buffer
-                                         uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
+                                         uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                          lpSymEntry,    // Ptr to STE for the object
                                          nameType,      // Function name type (see NAME_TYPES)
                                          hWndEC,        // Edit Ctrl window handle
@@ -749,7 +749,7 @@ UBOOL ParseSavedWsFcn_EM
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
                                       lpwDataEnd,   // Ptr to next available byte
-                                      uMaxSize - (UINT) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
+                                      uMaxSize - (APLU3264) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
                                       hWndEC,       // Edit Ctrl window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
@@ -890,7 +890,7 @@ LPWCHAR ParseSavedWsVar_EM
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
                                       lpwDataEnd,   // Ptr to next available byte
-                                      uMaxSize - (UINT) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
+                                      uMaxSize - (APLU3264) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
                                       hWndEC,       // Edit Ctrl window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
@@ -1207,8 +1207,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Now we can allocate the storage for the result
             // N.B.:  Conversion from APLUINT to UINT.
             //***************************************************************
-            Assert (ByteObj EQ (UINT) ByteObj);
-            hGlbObj = MyGlobalAlloc (GHND, (UINT) ByteObj);
+            Assert (ByteObj EQ (APLU3264) ByteObj);
+            hGlbObj = MyGlobalAlloc (GHND, (APLU3264) ByteObj);
             if (!hGlbObj)
                 goto WSFULL_EXIT;
 
@@ -1368,7 +1368,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
                         lpwSrc =
                           ParseSavedWsVar_EM (lpwSrc,       // Ptr to input buffer
-                                              uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
+                                              uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                              &lpMemObj,     // Ptr to ptr to output element
                                               NULL,         // Ptr to storage type (may be NULL)
                                               NULL,         // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
@@ -1433,7 +1433,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                       KEYNAME_CREATIONTIME, // Ptr to the key name
                                       wszTimeStamp,         // Ptr to the default value
                                       lpwSrc,               // Ptr to the output buffer
-                                      uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
+                                      uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                       lpwszDPFE);           // Ptr to the file name
             // Convert the CreationTime string to time
             swscanf (lpwSrc, SCANFSTR_TIMESTAMP, &ftCreation);
@@ -1443,7 +1443,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                       KEYNAME_LASTMODTIME,  // Ptr to the key name
                                       wszTimeStamp,         // Ptr to the default value
                                       lpwSrc,               // Ptr to the output buffer
-                                      uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
+                                      uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
                                       lpwszDPFE);           // Ptr to the file name
             // Convert the LastModTime string to time
             swscanf (lpwSrc, SCANFSTR_TIMESTAMP, &ftLastMod);
@@ -1465,7 +1465,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                             KEYNAME_UNDO,       // Ptr to the key name
                                             L"",                // Ptr to the default value
                                   (LPWCHAR) lpMemUndoTxt,       // Ptr to the output buffer
-                                            uMaxSize - (UINT) ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart), // Maximum size of lpMemUndoTxt
+                                            uMaxSize - (APLU3264) ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart), // Maximum size of lpMemUndoTxt
                                             lpwszDPFE);         // Ptr to the file name
                 // Fill in common values
                 SF_Fcns.bDisplayErr     = TRUE;             // Display Errors
@@ -1485,7 +1485,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LW_Params.lpwszDPFE    = lpwszDPFE;      // Ptr to workspace DPFE
                 LW_Params.lpwBuffer    = lpwSrc;         // Ptr to buffer
                 LW_Params.lpMemUndoTxt = lpMemUndoTxt;   // Ptr to Undo Buffer in text format
-                LW_Params.uMaxSize     = uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
+                LW_Params.uMaxSize     = uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
                 LW_Params.ftCreation   = ftCreation;     // Function Creation Time
                 LW_Params.ftLastMod    = ftLastMod;      // Function Last Modification Time
 
@@ -1511,7 +1511,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                           KEYNAME_MONINFO,    // Ptr to the key name
                                           L"",                // Ptr to the default value
                                 (LPWCHAR) lpMemUndoTxt,       // Ptr to the output buffer
-                                          uMaxSize - (UINT) ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart), // Maximum size of lpMemUndoTxt
+                                          uMaxSize - (APLU3264) ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart), // Maximum size of lpMemUndoTxt
                                           lpwszDPFE);         // Ptr to the file name
                 // If there's monitor info, ...
                 if (lpMemUndoTxt[0])
@@ -1577,7 +1577,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                           L"0",               // Ptr to the key name
                                           L"",                // Ptr to the default value
                                           lpwSrc,             // Ptr to the output buffer
-                                          uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart),// Maximum size of lpwSrc
+                                          uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart),// Maximum size of lpwSrc
                                           lpwszDPFE);         // Ptr to the file name
                 // Convert in place
                 lpwSrcStart = lpwSrc;
@@ -1587,7 +1587,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                 // Fill in the extra parms
                 LoadWsGlbVarParm.lpwSrc        = lpwSrc;
-                LoadWsGlbVarParm.uMaxSize      = uMaxSize - (UINT) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
+                LoadWsGlbVarParm.uMaxSize      = uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
                 LoadWsGlbVarParm.hWndEC        = hWndEC;
                 LoadWsGlbVarParm.lplpSymLink   = lplpSymLink;
                 LoadWsGlbVarParm.lpwszDPFE     = lpwszDPFE;

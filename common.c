@@ -291,6 +291,9 @@ void GetModuleFileNames
         // Create the .HLP file name
         _wmakepath  (wszHlpDPFE, wszDrive, wszDir, wszFname, L".HLP");
 
+        // Create the APL Font file name
+        _wmakepath  (wszFntDPFE, wszDrive, wszDir, DEF_APLFONT_EXTNAME, DEF_APLFONT_TTF);
+
         // Read in the application's File Version String
         LclFileVersionStrW (wszAppDPFE, wszFileVer);
     } // End IF
@@ -377,7 +380,7 @@ void FillBitMemory
 
 {
     // Fill the leading bytes with 0xFF
-    FillMemory (lpMemRes, (__int3264) aplNELMRes >> LOG2NBIB, 0xFF);
+    FillMemory (lpMemRes, (APLU3264) aplNELMRes >> LOG2NBIB, 0xFF);
 
     // If there are extra bits at the end, ...
     if (MASKLOG2NBIB & (UINT) aplNELMRes)

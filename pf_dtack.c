@@ -226,8 +226,8 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -257,7 +257,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     //   and then the right arg dimensions
     if (hGlbLft)
     {
-        CopyMemory (lpMemDimRes, lpMemDimLft, (UINT) aplRankLft * sizeof (APLDIM));
+        CopyMemory (lpMemDimRes, lpMemDimLft, (APLU3264) aplRankLft * sizeof (APLDIM));
 
         // Skip over the copied dimensions
         lpMemDimRes += aplRankLft;
@@ -286,7 +286,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
 
     if (hGlbRht)
     {
-        CopyMemory (lpMemDimRes, lpMemDimRht, (UINT) aplRankRht * sizeof (APLDIM));
+        CopyMemory (lpMemDimRes, lpMemDimRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
         // Skip over the copied dimensions
         lpMemDimRes += aplRankRht;

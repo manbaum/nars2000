@@ -87,7 +87,7 @@ TABCOLORS crTab[] =
  {RGB (220, 20, 60), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Crimson              17
 };
 
-#define NUM_CRTABS  (sizeof (crTab) / sizeof (crTab[0]))
+#define NUM_CRTABS  itemsizeof (crTab)
 
 
 //***************************************************************************
@@ -456,7 +456,7 @@ UBOOL WINAPI CreateNewTabInThread
     lpMemPTD->hWndActive = lpMemPTD->hWndSM;
 
     // Save the handle
-    SetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_PERTAB, (__int3264) (LONG_PTR) hGlbPTD);
+    SetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_PERTAB, (APLU3264) (LONG_PTR) hGlbPTD);
 
     // Show the child windows of the incoming tab
     ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
@@ -1044,9 +1044,9 @@ void FillTabBackground
         crBand = RGB ((int) (((float) GetRValue (rgbStart)) - fRStep * i),
                       (int) (((float) GetGValue (rgbStart)) - fGStep * i),
                       (int) (((float) GetBValue (rgbStart)) - fBStep * i));
-        hBrush = CreateSolidBrush (crBand);
+        hBrush = MyCreateSolidBrush (crBand);
         FillRect (hDC, &rcBand, hBrush);
-        DeleteObject (hBrush); hBrush = NULL;
+        MyDeleteObject (hBrush); hBrush = NULL;
     } // End FOR
 } // End FillTabBackground
 
@@ -1064,7 +1064,7 @@ int GetNextTabColorIndex
     int i, j;
 
     // Search for the next available color index
-    for (i = 0; i < sizeof (crIndices); i++)
+    for (i = 0; i < itemsizeof (crIndices); i++)
         // If not all in use
         if (crIndices[i] NE 0xFF)
             // Search for the available bit within this byte
@@ -1202,10 +1202,10 @@ void DrawTab
 
 #if 0
     // Create a compatible DC and bitmap
-    hDCMem = CreateCompatibleDC (hDC);
-    hBitmap = CreateCompatibleBitmap (hDC,
-                                      lpRect->right,
-                                      lpRect->bottom);
+    hDCMem = MyCreateCompatibleDC (hDC);
+    hBitmap = MyCreateCompatibleBitmap (hDC,
+                                        lpRect->right,
+                                        lpRect->bottom);
     hBitmapOld = SelectObject (hDCMem, hBitmap);
     SetAttrs (hDCMem, hFontTC, crfg, crbk);
 #endif
@@ -1285,7 +1285,7 @@ void DrawTab
 
     // Save the existing pen so we can set one with the proper attributes
     hPenOrig = GetCurrentObject (hDC, OBJ_PEN);
-    hPenEllipse = CreatePen (PS_INSIDEFRAME, PEN_WIDTH, COLOR_BLACK);
+    hPenEllipse = MyCreatePen (PS_INSIDEFRAME, PEN_WIDTH, COLOR_BLACK);
     SelectObject (hDC, hPenEllipse);
 
     // Draw the ellipse
@@ -1299,7 +1299,7 @@ void DrawTab
     SelectObject (hDC, hPenOrig);
 
     // Delete the resources
-    DeleteObject (hPenEllipse); hPenEllipse = NULL;
+    MyDeleteObject (hPenEllipse); hPenEllipse = NULL;
 
     // Account for the pen width when drawing the tab #
     rcTabNum.left   += PEN_WIDTH;
@@ -1386,8 +1386,8 @@ void DrawTab
     SelectObject (hDCMem, hBitmapOld);
 
     // We no longer need these resources
-    DeleteObject (hBitmap); hBitmap = NULL;
-    DeleteDC (hDCMem); hDCMem = NULL;
+    MyDeleteObject (hBitmap); hBitmap = NULL;
+    MyDeleteDC (hDCMem); hDCMem = NULL;
 #endif
 } // End DrawTab
 
@@ -1449,7 +1449,7 @@ LPAPLCHAR PointToWsName
                     q = p + 1;
 
                 // Copy to global temporary storage
-                lstrcpynW (&lpwszGlbTemp[2], q, (UINT) ((lpMemWSID + aplNELMWSID + 1) - q));
+                lstrcpynW (&lpwszGlbTemp[2], q, (APLU3264) ((lpMemWSID + aplNELMWSID + 1) - q));
 
                 // Copy the ptr
                 lpwTemp = lpwszGlbTemp;

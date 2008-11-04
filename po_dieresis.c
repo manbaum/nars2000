@@ -244,8 +244,8 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -266,7 +266,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     // Copy the dimensions from the right arg to the result
     CopyMemory (VarArrayBaseToDim (lpMemRes),
                 VarArrayBaseToDim (lpMemRht),
-                (UINT) aplRankRht * sizeof (APLDIM));
+                (APLU3264) aplRankRht * sizeof (APLDIM));
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);
@@ -999,8 +999,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (UINT) ByteAlloc);
-        hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        Assert (ByteAlloc EQ (APLU3264) ByteAlloc);
+        hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
 
@@ -1025,8 +1025,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (UINT) ByteAlloc);
-        hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        Assert (ByteAlloc EQ (APLU3264) ByteAlloc);
+        hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
 

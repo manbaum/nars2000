@@ -156,7 +156,7 @@ SYSNAME aSystemNames[] =
 };
 
 // The # rows in the above table
-#define ASYSTEMNAMES_NROWS  (sizeof (aSystemNames) / sizeof (aSystemNames[0]))
+#define ASYSTEMNAMES_NROWS  itemsizeof (aSystemNames)
 
 
 //***************************************************************************
@@ -182,7 +182,7 @@ void MakePermVars
     //***************************************************************
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbZilde = MyGlobalAlloc (GHND, (__int3264) CalcArraySize (ARRAY_BOOL, 0, 1));
+    hGlbZilde = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 1));
     if (!hGlbZilde)
     {
         DbgStop ();         // We should never get here
@@ -209,7 +209,7 @@ void MakePermVars
     //***************************************************************
     // Create initial value for []EM (3 x 0 char matrix)
     //***************************************************************
-    hGlbM3x0Char = MyGlobalAlloc (GHND, (__int3264) CalcArraySize (ARRAY_CHAR, 0, 2));
+    hGlbM3x0Char = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, 0, 2));
     if (!hGlbM3x0Char)
     {
         DbgStop ();         // We should never get here
@@ -318,7 +318,7 @@ HGLOBAL MakePermVectorCom
 
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbRes = MyGlobalAlloc (GHND, (__int3264) CalcArraySize (aplTypeCom, uLen, 1));
+    hGlbRes = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (aplTypeCom, uLen, 1));
     if (!hGlbRes)
     {
         DbgStop ();         // We should never get here
@@ -1418,7 +1418,7 @@ UBOOL ValidateCharVector_EM
         if (aplNELMRes)
         {
             // Copy the right arg to a location with a terminating zero
-            CopyMemory (lpwszTemp, lpMemRht, (__int3264) aplNELMRht * sizeof (APLCHAR));
+            CopyMemory (lpwszTemp, lpMemRht, (APLU3264) aplNELMRht * sizeof (APLCHAR));
             lpwszTemp[aplNELMRht] = L'\0';
 
             // Convert the []WSID workspace name into a canonical form
@@ -1466,7 +1466,7 @@ ALLOC_VECTOR:
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes + bWSID, 1);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (hGlbRes EQ NULL)
         goto DOMAIN_EXIT;
 
@@ -1491,7 +1491,7 @@ ALLOC_VECTOR:
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     if (bWSID)
-        CopyMemory (lpMemRes, lpwszTemp, (__int3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemory (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes * sizeof (APLCHAR));
     else
         *((LPAPLCHAR) lpMemRes) = aplChar;
 
@@ -1871,7 +1871,7 @@ UBOOL ValidateIntegerVector_EM
             ByteRes = CalcArraySize (ARRAY_INT, aplNELMRht, 1);
 
             // Allocate space for the result
-            hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+            hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (hGlbRes NE NULL)
             {
                 // Lock the memory to get a ptr to it
@@ -1960,7 +1960,7 @@ MAKE_VECTOR:
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
     // Lock the memory to get a ptr to it

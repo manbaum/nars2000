@@ -1,23 +1,23 @@
 //***************************************************************************
-//  NARS2000 -- Control Structures Processing
+//	NARS2000 -- Control Structures Processing
 //***************************************************************************
 
 /***************************************************************************
-    NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+	NARS2000 -- An Experimental APL Interpreter
+	Copyright (C) 2006-2008 Sudley Place Software
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #define STRICT
@@ -39,1488 +39,1522 @@
 
 
 //***************************************************************************
-//  $CS_ChangeTokenType
+//	$CS_ChangeTokenType
 //
-//  Change the token type of a token (cs_yyparse)
+//	Change the token type of a token (cs_yyparse)
 //***************************************************************************
 
 void CS_ChangeTokenType
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to PL local vars
-     LPTOKEN       lptkArg1,            // Ptr to 1st argument
-     TOKEN_TYPES   TknType)             // New token type
+	(LPCSLOCALVARS lpcsLocalVars,		// Ptr to PL local vars
+	 LPTOKEN	   lptkArg1,			// Ptr to 1st argument
+	 TOKEN_TYPES   TknType) 			// New token type
 
 {
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
+	LPTOKEN 	 lpMemTknLine;			// Ptr to tokenized line global memory
+	LPDFN_HEADER lpMemDfnHdr;			// Ptr to user-defined function/operator global memory
+	LPFCNLINE	 lpFcnLines;			// Ptr to array of function line structs (FCNLINE[numFcnLines])
+	HGLOBAL 	 hGlbTknLine;			// Tokenized line global memory handle
 
-    // If this is execute or immexec, ...
-    if (lpcsLocalVars->hGlbImmExec NE NULL)
-    {
-        Assert (lptkArg1->tkData.uLineNum EQ 1);
+	// If this is execute or immexec, ...
+	if (lpcsLocalVars->hGlbImmExec NE NULL)
+	{
+		Assert (lptkArg1->tkData.uLineNum EQ 1);
 
-        // Get the execute/immexec global memory handle
-        hGlbTknLine = lpcsLocalVars->hGlbImmExec;
-    } else
-    // It's a defined function/operator
-    {
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
+		// Get the execute/immexec global memory handle
+		hGlbTknLine = lpcsLocalVars->hGlbImmExec;
+	} else
+	// It's a defined function/operator
+	{
+		// Lock the memory to get a ptr to it
+		lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
 
-        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+		// Get ptr to array of function line structs (FCNLINE[numFcnLines])
+		lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lptkArg1->tkData.uLineNum > 0);
+		Assert (lptkArg1->tkData.uLineNum > 0);
 
-        // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptkArg1->tkData.uLineNum - 1].hGlbTknLine;
+		// Get the given line's tokenized global memory handle
+		hGlbTknLine = lpFcnLines[lptkArg1->tkData.uLineNum - 1].hGlbTknLine;
 
-        // We no longer need this ptr
-        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
-    } // End IF/ELSE
+		// We no longer need this ptr
+		MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+	} // End IF/ELSE
 
-    // Lock the memory to get a ptr to it
-    lpMemTknLine = MyGlobalLock (hGlbTknLine);
+	// Lock the memory to get a ptr to it
+	lpMemTknLine = MyGlobalLock (hGlbTknLine);
 
-    // Skip over the header to the data
-    lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+	// Skip over the header to the data
+	lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
-    // Change the given token number's type
-    lpMemTknLine[lptkArg1->tkData.uTknNum].tkFlags.TknType = TknType;
+	// Change the given token number's type
+	lpMemTknLine[lptkArg1->tkData.uTknNum].tkFlags.TknType = TknType;
 
-    // Change the value on the CS stack
-    lptkArg1->tkFlags.TknType = TknType;
+	// Change the value on the CS stack
+	lptkArg1->tkFlags.TknType = TknType;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
 } // End CS_ChangeTokenType
 
 
 //***************************************************************************
-//  $CS_ChainTokens
+//	$CS_ChainTokens
 //
-//  Chain together two CS tokens (cs_yyparse)
+//	Chain together two CS tokens (cs_yyparse)
 //***************************************************************************
 
 void CS_ChainTokens
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1,            // Ptr to 1st argument TOKEN_DATA
-     LPTOKEN       lptkArg2)            // Ptr to 2nd argument TOKEN
+	(LPCSLOCALVARS lpcsLocalVars,		// Ptr to PL local vars
+	 LPTOKEN_DATA  lptdArg1,			// Ptr to 1st argument TOKEN_DATA
+	 LPTOKEN	   lptkArg2)			// Ptr to 2nd argument TOKEN
 
 {
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
+	LPTOKEN 	 lpMemTknLine;			// Ptr to tokenized line global memory
+	LPDFN_HEADER lpMemDfnHdr;			// Ptr to user-defined function/operator global memory
+	LPFCNLINE	 lpFcnLines;			// Ptr to array of function line structs (FCNLINE[numFcnLines])
+	HGLOBAL 	 hGlbTknLine;			// Tokenized line global memory handle
 
-    // If this is execute or immexec, ...
-    if (lpcsLocalVars->hGlbImmExec NE NULL)
-    {
-        Assert (lptdArg1->uLineNum EQ 1
-             && lptkArg2->tkData.uLineNum EQ 1);
+	// If this is execute or immexec, ...
+	if (lpcsLocalVars->hGlbImmExec NE NULL)
+	{
+		Assert (lptdArg1->uLineNum EQ 1
+			 && lptkArg2->tkData.uLineNum EQ 1);
 
-        // Get the execute/immexec global memory handle
-        hGlbTknLine = lpcsLocalVars->hGlbImmExec;
-    } else
-    // It's a defined function/operator
-    {
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
+		// Get the execute/immexec global memory handle
+		hGlbTknLine = lpcsLocalVars->hGlbImmExec;
+	} else
+	// It's a defined function/operator
+	{
+		// Lock the memory to get a ptr to it
+		lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
 
-        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+		// Get ptr to array of function line structs (FCNLINE[numFcnLines])
+		lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lptdArg1->uLineNum > 0);
+		Assert (lptdArg1->uLineNum > 0);
 
-        // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTknLine;
+		// Get the given line's tokenized global memory handle
+		hGlbTknLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTknLine;
 
-        // We no longer need this ptr
-        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
-    } // End IF/ELSE
+		// We no longer need this ptr
+		MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+	} // End IF/ELSE
 
-    // Lock the memory to get a ptr to it
-    lpMemTknLine = MyGlobalLock (hGlbTknLine);
+	// Lock the memory to get a ptr to it
+	lpMemTknLine = MyGlobalLock (hGlbTknLine);
 
-    // Skip over the header to the data
-    lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+	// Skip over the header to the data
+	lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
 #ifdef DEBUG
-    dprintfW (L"!!Chaining %s to %s (%S#%d)",
-              GetTokenTypeName (lpMemTknLine[lptdArg1->uTknNum].tkFlags.TknType),
-              GetTokenTypeName (lptkArg2->tkFlags.TknType),
-              FNLN);
+	dprintfW (L"!!Chaining %s to %s (%S#%d)",
+			  GetTokenTypeName (lpMemTknLine[lptdArg1->uTknNum].tkFlags.TknType),
+			  GetTokenTypeName (lptkArg2->tkFlags.TknType),
+			  FNLN);
 #endif
 
-    // Point the 1st token to the 2nd token
-    lpMemTknLine[lptdArg1->uTknNum].tkData.uLineNum = lptkArg2->tkData.uLineNum;
-    lpMemTknLine[lptdArg1->uTknNum].tkData.uStmtNum = lptkArg2->tkData.uStmtNum;
-    lpMemTknLine[lptdArg1->uTknNum].tkData.uTknNum  = lptkArg2->tkData.uTknNum;
+	// Point the 1st token to the 2nd token
+	lpMemTknLine[lptdArg1->uTknNum].tkData.uLineNum = lptkArg2->tkData.uLineNum;
+	lpMemTknLine[lptdArg1->uTknNum].tkData.uStmtNum = lptkArg2->tkData.uStmtNum;
+	lpMemTknLine[lptdArg1->uTknNum].tkData.uTknNum	= lptkArg2->tkData.uTknNum;
 
-    // Change the values on the CS stack
-    lptdArg1->uLineNum = lptkArg2->tkData.uLineNum;
-    lptdArg1->uStmtNum = lptkArg2->tkData.uStmtNum;
-    lptdArg1->uTknNum  = lptkArg2->tkData.uTknNum;
+	// Change the values on the CS stack
+	lptdArg1->uLineNum = lptkArg2->tkData.uLineNum;
+	lptdArg1->uStmtNum = lptkArg2->tkData.uStmtNum;
+	lptdArg1->uTknNum  = lptkArg2->tkData.uTknNum;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
 } // End CS_ChainTokens
 
 
 //***************************************************************************
-//  $CS_LinkStmt
+//	$CS_LinkStmt
 //
-//  Link together a new CS stmt (cs_yyparse)
+//	Link together a new CS stmt (cs_yyparse)
 //***************************************************************************
 
 void CS_LinkStmt
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to local csLocalVars
-     LPCS_YYSTYPE  lpYYLval)            // Ptr to yylval
+	(LPCSLOCALVARS lpcsLocalVars,		// Ptr to local csLocalVars
+	 LPCS_YYSTYPE  lpYYLval)			// Ptr to yylval
 
 {
-    Assert (lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_IF2
-         || lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_FOR2
-         || lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_REPEAT2
-         || lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_SELECT2
-         || lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_WHILE2);
+	Assert (lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_IF2
+		 || lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_FOR2
+		 || lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_REPEAT2
+		 || lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_SELECT2
+		 || lpYYLval->lptkCur[1].tkFlags.TknType EQ TKT_CS_WHILE2);
 
-    // Save as ptr to previous last stmt
-    lpYYLval->lptkCur[1].tkData.lptkCSLink = lpcsLocalVars->lptkCSLink;
+	// Save as ptr to previous last stmt
+	lpYYLval->lptkCur[1].tkData.lptkCSLink = lpcsLocalVars->lptkCSLink;
 
-    // Save as new last stmt ptr
-    lpcsLocalVars->lptkCSLink = lpYYLval->lptkCur;
+	// Save as new last stmt ptr
+	lpcsLocalVars->lptkCSLink = lpYYLval->lptkCur;
 
-    // Set the next .uCLIndex value
-    CS_SetCLIndex (lpYYLval);
+	// Set the next .uCLIndex value
+	CS_SetCLIndex (lpYYLval);
 } // End CS_LinkStmt
 
 
 //***************************************************************************
-//  $CS_UnlinkStmt
+//	$CS_UnlinkStmt
 //
-//  Unlink an old CS stmt (cs_yyparse)
+//	Unlink an old CS stmt (cs_yyparse)
 //***************************************************************************
 
 void CS_UnlinkStmt
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to local csLocalVars
-     LPCS_YYSTYPE  lpYYLval)            // Ptr to yylval
+	(LPCSLOCALVARS lpcsLocalVars,		// Ptr to local csLocalVars
+	 LPCS_YYSTYPE  lpYYLval)			// Ptr to yylval
 
 {
-    // Unlink the stmt
-    lpcsLocalVars->lptkCSLink = lpYYLval->lptkCur[1].tkData.lptkCSLink;
-    lpYYLval->lptkCur[1].tkData.lptkCSLink = NULL;
+	// Unlink the stmt
+	lpcsLocalVars->lptkCSLink = lpYYLval->lptkCur[1].tkData.lptkCSLink;
+	lpYYLval->lptkCur[1].tkData.lptkCSLink = NULL;
 } // End CS_UnlinkStmt
 
 
 //***************************************************************************
-//  $CS_SetCLIndex
+//	$CS_SetCLIndex
 //
-//  Set the next .uCLIndex value (cs_yyparse)
+//	Set the next .uCLIndex value (cs_yyparse)
 //***************************************************************************
 
 void CS_SetCLIndex
-    (LPCS_YYSTYPE  lpYYLval)            // Ptr to yylval
+	(LPCS_YYSTYPE  lpYYLval)			// Ptr to yylval
 
 {
-    static UINT uCLIndex = 0;           // ContinueLeave index
+	static UINT uCLIndex = 0;			// ContinueLeave index
 
-    // Save the starting index common to this group
-    lpYYLval->lptkCur->tkData.uCLIndex =
-    lpYYLval->uCLIndex                 = ++uCLIndex;
+	// Save the starting index common to this group
+	lpYYLval->lptkCur->tkData.uCLIndex =
+	lpYYLval->uCLIndex				   = ++uCLIndex;
 
-    // The default value of .uCLIndex is zero, so we
-    //   need to ensure that if the ++ wraps to zero
-    //   we increment it again
-    if (lpYYLval->lptkCur->tkData.uCLIndex EQ 0)
-        lpYYLval->lptkCur->tkData.uCLIndex =
-        lpYYLval->uCLIndex                 = ++uCLIndex;
+	// The default value of .uCLIndex is zero, so we
+	//	 need to ensure that if the ++ wraps to zero
+	//	 we increment it again
+	if (lpYYLval->lptkCur->tkData.uCLIndex EQ 0)
+		lpYYLval->lptkCur->tkData.uCLIndex =
+		lpYYLval->uCLIndex				   = ++uCLIndex;
 } // End CS_SetCLIndex
 
 
 //***************************************************************************
-//  $CS_SetTokenCLIndex
+//	$CS_SetTokenCLIndex
 //
-//  Set the CLIndex of the token pointed to by
-//    a given token to a given value (cs_yyparse)
+//	Set the CLIndex of the token pointed to by
+//	  a given token to a given value (cs_yyparse)
 //***************************************************************************
 
 void CS_SetTokenCLIndex
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to local csLocalVars
-     LPTOKEN_DATA  lptdArg,             // Ptr to arg TOKEN_DATA
-     UINT          uCLIndex)            // The CLIndex to use
+	(LPCSLOCALVARS lpcsLocalVars,		// Ptr to local csLocalVars
+	 LPTOKEN_DATA  lptdArg, 			// Ptr to arg TOKEN_DATA
+	 UINT		   uCLIndex)			// The CLIndex to use
 
 {
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
+	LPDFN_HEADER lpMemDfnHdr;			// Ptr to user-defined function/operator global memory
+	LPFCNLINE	 lpFcnLines;			// Ptr to array of function line structs (FCNLINE[numFcnLines])
+	HGLOBAL 	 hGlbTknLine;			// Tokenized line global memory handle
+	LPTOKEN 	 lpMemTknLine;			// Ptr to tokenized line global memory
 
-    // If this is execute or immexec, ...
-    if (lpcsLocalVars->hGlbImmExec NE NULL)
-    {
-        Assert (lptdArg->uLineNum EQ 1);
+	// If this is execute or immexec, ...
+	if (lpcsLocalVars->hGlbImmExec NE NULL)
+	{
+		Assert (lptdArg->uLineNum EQ 1);
 
-        // Get the execute/immexec global memory handle
-        hGlbTknLine = lpcsLocalVars->hGlbImmExec;
-    } else
-    // It's a defined function/operator
-    {
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
+		// Get the execute/immexec global memory handle
+		hGlbTknLine = lpcsLocalVars->hGlbImmExec;
+	} else
+	// It's a defined function/operator
+	{
+		// Lock the memory to get a ptr to it
+		lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
 
-        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+		// Get ptr to array of function line structs (FCNLINE[numFcnLines])
+		lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lptdArg->uLineNum > 0);
+		Assert (lptdArg->uLineNum > 0);
 
-        // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg->uLineNum - 1].hGlbTknLine;
+		// Get the given line's tokenized global memory handle
+		hGlbTknLine = lpFcnLines[lptdArg->uLineNum - 1].hGlbTknLine;
 
-        // We no longer need this ptr
-        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
-    } // End IF/ELSE
+		// We no longer need this ptr
+		MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+	} // End IF/ELSE
 
-    // Lock the memory to get a ptr to it
-    lpMemTknLine = MyGlobalLock (hGlbTknLine);
+	// Lock the memory to get a ptr to it
+	lpMemTknLine = MyGlobalLock (hGlbTknLine);
 
-    // Skip over the header to the data
-    lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+	// Skip over the header to the data
+	lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
-    // Set the CLIndex
-    lpMemTknLine[lptdArg->uTknNum].tkData.uCLIndex = uCLIndex;
+	// Set the CLIndex
+	lpMemTknLine[lptdArg->uTknNum].tkData.uCLIndex = uCLIndex;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
 } // End CS_SetTokenCLIndex
 
 
 //***************************************************************************
-//  Above this point all the routines are called from cs_yyparse.
+//	Above this point all the routines are called from cs_yyparse.
 //***************************************************************************
-//  Below this point all the routines are called from pl_yyparse.
+//	Below this point all the routines are called from pl_yyparse.
 //***************************************************************************
 
 
 //***************************************************************************
-//  $CS_CASE_Stmt
+//	$CS_CASE_Stmt
 //
-//  Process CASE/CASELIST stmt (pl_yyparse)
+//	Process CASE/CASELIST stmt (pl_yyparse)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- CS_CASE_Stmt"
+#define APPEND_NAME 	L" -- CS_CASE_Stmt"
 #else
 #define APPEND_NAME
 #endif
 
 UBOOL CS_CASE_Stmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYRhtArg)			// Ptr to right arg
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+	LPPERTABDATA lpMemPTD;				// Ptr to PerTabData global memory
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+	// Lock the memory to get a ptr to it
+	lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
-    // Copy the result
-    lpMemPTD->YYResExec = *lpYYRhtArg;
+	// Copy the result
+	lpMemPTD->YYResExec = *lpYYRhtArg;
 
-    // If the result is not immediate, ...
-    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_VARIMMED)
-        lpMemPTD->YYResExec.tkToken.tkData.tkGlbData =
-          CopySymGlbDirAsGlb (lpMemPTD->YYResExec.tkToken.tkData.tkGlbData);
+	// If the result is not immediate, ...
+	if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_VARIMMED)
+		lpMemPTD->YYResExec.tkToken.tkData.tkGlbData =
+		  CopySymGlbDirAsGlb (lpMemPTD->YYResExec.tkToken.tkData.tkGlbData);
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
-    return TRUE;
+	return TRUE;
 } // End CS_CASE_Stmt
-#undef  APPEND_NAME
+#undef	APPEND_NAME
 
 
 //***************************************************************************
-//  $CS_CONTINUE_Stmt
+//	$CS_CONTINUE_Stmt
 //
-//  Process CONTINUE stmt (pl_yyparse)
+//	Process CONTINUE stmt (pl_yyparse)
 //***************************************************************************
 
 UBOOL CS_CONTINUE_Stmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYContinueArg)     // Ptr to CONTINUE arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYContinueArg) 	// Ptr to CONTINUE arg
 
 {
-    // Tell the lexical analyzer to get the next token from
-    //   the stmt at the token pointed to by the CONTINUE stmt
-    CS_SetThisStmt (lpplLocalVars, &lpYYContinueArg->tkToken.tkData);
+	// Tell the lexical analyzer to get the next token from
+	//	 the stmt at the token pointed to by the CONTINUE stmt
+	CS_SetThisStmt (lpplLocalVars, &lpYYContinueArg->tkToken.tkData);
 
-    // If the starting and ending stmts are not on the same line, ...
-    if (lpYYContinueArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
-        // Tell the parser to stop executing this line
-        lpplLocalVars->bStopExec = TRUE;
+	// If the starting and ending stmts are not on the same line, ...
+	if (lpYYContinueArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+		// Tell the parser to stop executing this line
+		lpplLocalVars->bStopExec = TRUE;
 
-    // If we're not stopping execution, ...
-    if (!lpplLocalVars->bStopExec)
-        // We're restarting
-        lpplLocalVars->bRestart = TRUE;
+	// If we're not stopping execution, ...
+	if (!lpplLocalVars->bStopExec)
+		// We're restarting
+		lpplLocalVars->bRestart = TRUE;
 
-    return TRUE;
+	return TRUE;
 } // End CS_CONTINUE_Stmt
 
 
 //***************************************************************************
-//  $CS_ELSE_Stmt
+//	$CS_ELSE_Stmt
 //
-//  Process ELSE stmt (pl_yyparse)
+//	Process ELSE stmt (pl_yyparse)
 //***************************************************************************
 
 UBOOL CS_ELSE_Stmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYElseArg)         // Ptr to ELSE arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYElseArg) 		// Ptr to ELSE arg
 
 {
 #ifdef DEBUG
-    TOKEN_TYPES TknType;
+	TOKEN_TYPES TknType;
 #endif
-    // Entry into this function means that we dropped through from above
-    //   and should branch to the matching ENDIF/ENDSELECT stmt
+	// Entry into this function means that we dropped through from above
+	//	 and should branch to the matching ENDIF/ENDSELECT stmt
 
-    // Tell the lexical analyzer to get the next token from
-    //   the stmt after the token pointed to by the ELSE stmt
-    CS_SetNextStmt (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
+	// Tell the lexical analyzer to get the next token from
+	//	 the stmt after the token pointed to by the ELSE stmt
+	CS_SetNextStmt (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
 
 #ifdef DEBUG
-    TknType = CS_GetTokenType (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
-    Assert (TknType EQ TKT_CS_ENDIF
-         || TknType EQ TKT_CS_ENDSELECT);
+	TknType = CS_GetTokenType (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
+	Assert (TknType EQ TKT_CS_ENDIF
+		 || TknType EQ TKT_CS_ENDSELECT);
 #endif
-    // If the starting and ending stmts are not on the same line, ...
-    if (lpYYElseArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
-        // Tell the parser to stop executing this line
-        lpplLocalVars->bStopExec = TRUE;
+	// If the starting and ending stmts are not on the same line, ...
+	if (lpYYElseArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+		// Tell the parser to stop executing this line
+		lpplLocalVars->bStopExec = TRUE;
 
-    return TRUE;
+	return TRUE;
 } // End CS_ELSE_Stmt
 
 
 //***************************************************************************
-//  $FindMatchingForStmt
+//	$FindMatchingForStmt
 //
-//  Find the matching FORSTMT ptr
+//	Find the matching FORSTMT/FORLCLSTMT ptr
 //***************************************************************************
 
 LPFORSTMT FindMatchingForStmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     UINT          uCLIndex)            // Matching CL index
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 UINT		   uCLIndex)			// Matching CL index
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPSIS_HEADER lpSISCur;              // Ptr to current SIS header
-    LPFORSTMT lpForStmtNext;            // Ptr to next available entry on FORSTMT stack
+	LPPERTABDATA lpMemPTD;				// Ptr to PerTabData global memory
+	LPSIS_HEADER lpSISCur;				// Ptr to current SIS header
+	LPFORSTMT lpForStmtNext;			// Ptr to next available entry on FORSTMT stack
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+	// Lock the memory to get a ptr to it
+	lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
-    // Copy ptr to current SI level
-    lpSISCur = lpMemPTD->lpSISCur;
+	// Copy ptr to current SI level
+	lpSISCur = lpMemPTD->lpSISCur;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
-    // Check for uninitialized FORSTMT stack
-    if (lpSISCur->lpForStmtBase EQ lpSISCur->lpForStmtNext)
-        return NULL;
+	// Check for uninitialized FORSTMT/FORLCLSTMT stack
+	if (lpSISCur->lpForStmtBase EQ lpSISCur->lpForStmtNext)
+		return NULL;
 
-    // Get ptr to current entry on FORSTMT stack
-    lpForStmtNext = &lpSISCur->lpForStmtNext[-1];
+	// Get ptr to current entry on FORSTMT/FORLCLSTMT stack
+	lpForStmtNext = &lpSISCur->lpForStmtNext[-1];
 
-    // Check that this level on the FORSTMT stack matches
-    //   this ENDFOR stmt
-    if (uCLIndex NE lpForStmtNext->uForStmtID)
-        return NULL;
+	// Check that this level on the FORSTMT/FORLCLSTMT stack matches
+	//	 this ENDFOR/ENDFORLCL stmt
+	if (uCLIndex NE lpForStmtNext->uForStmtID)
+		return NULL;
 
-    return lpForStmtNext;
+	return lpForStmtNext;
 } // End FindMatchingForStmt
 
 
 //***************************************************************************
-//  $CS_ENDFOR_Stmt
+//	$CS_ENDFOR_Stmt
 //
-//  Process ENDFOR stmt (pl_yyparse)
+//	Process ENDFOR/ENDFORLCL stmt (pl_yyparse)
 //***************************************************************************
 
 UBOOL CS_ENDFOR_Stmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYEndForArg)       // Ptr to ENDFOR arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYEndForArg,		// Ptr to ENDFOR arg
+	 UBOOL		   bFORLCL) 			// TRUE iff FORLCL
 
 {
-    LPFORSTMT lpForStmtNext;            // Ptr to next available entry on FORSTMT stack
+	LPFORSTMT lpForStmtNext;			// Ptr to next available entry on FORSTMT/FORLCLSTMT stack
 
-    // Find the matching FORSTMT ptr
-    lpForStmtNext =
-      FindMatchingForStmt (lpplLocalVars,
-                           lpYYEndForArg->tkToken.tkData.uCLIndex);
-    // If it's not found, it's a spurious branch to :endfor
-    if (lpForStmtNext EQ NULL)
-        goto UNINIT_EXIT;
+	// Find the matching FORSTMT/FORLCLSTMT ptr
+	lpForStmtNext =
+	  FindMatchingForStmt (lpplLocalVars,
+						   lpYYEndForArg->tkToken.tkData.uCLIndex);
+	// If it's not found, it's a spurious branch to :endfor
+	if (lpForStmtNext EQ NULL)
+		goto UNINIT_EXIT;
 
-    // Check the index against the limit
-    if (lpForStmtNext->uIndex < lpForStmtNext->uNELM)
-    {
-        // Get the next value from the IN array token into the Named Var token
-        //   and increment the index
-        GetNextValueTokenIntoNamedVarToken (&lpForStmtNext->tkForArr,
-                                             lpForStmtNext->uIndex++,
-                                            &lpForStmtNext->tkForI);
-        // Tell the lexical analyzer to get the next token from
-        //   the stmt after the token pointed to by the ENDFOR stmt
-        CS_SetNextStmt (lpplLocalVars, &lpYYEndForArg->tkToken.tkData);
+	// Check the index against the limit
+	if (lpForStmtNext->uIndex < lpForStmtNext->uNELM)
+	{
+		// Get the next value from the IN array token into the Named Var token
+		//	 and increment the index
+		GetNextValueTokenIntoNamedVarToken (&lpForStmtNext->tkForArr,
+											 lpForStmtNext->uIndex++,
+											&lpForStmtNext->tkForI);
+		// Tell the lexical analyzer to get the next token from
+		//	 the stmt after the token pointed to by the ENDFOR/ENDFORLCL stmt
+		CS_SetNextStmt (lpplLocalVars, &lpYYEndForArg->tkToken.tkData);
 
-        // If the starting and ending stmts are not on the same line, ...
-        if (lpYYEndForArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
-            // Tell the parser to stop executing this line
-            lpplLocalVars->bStopExec = TRUE;
-    } else
-        // We're done with this FOR stmt
-        CS_DoneFOR (lpplLocalVars);
+		// If the starting and ending stmts are not on the same line, ...
+		if (lpYYEndForArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+			// Tell the parser to stop executing this line
+			lpplLocalVars->bStopExec = TRUE;
+	} else
+		// We're done with this FOR/FORLCL stmt
+		CS_DoneFOR (lpplLocalVars, bFORLCL);
 
-        // By not changing the line/token #, we fall through to the next stmt
+		// By not changing the line/token #, we fall through to the next stmt
 UNINIT_EXIT:
-    return TRUE;
+	return TRUE;
 } // End CS_ENDFOR_Stmt
 
 
 //***************************************************************************
-//  $CS_DoneFOR
+//	$CS_DoneFOR
 //
-//  We're done with this FOR stmt-- free the global in the token (if any),
-//    and delete this entry
+//	We're done with this FOR/FORLCL stmt-- free the global in the token (if any),
+//	  and delete this entry
 //***************************************************************************
 
 void CS_DoneFOR
-    (LPPLLOCALVARS lpplLocalVars)       // Ptr to PL local vars
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 UBOOL		   bFORLCL) 			// TRUE iff FORLCL
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPFORSTMT    lpForStmtNext;         // Ptr to next available entry on FORSTMT stack
+	LPPERTABDATA lpMemPTD;				// Ptr to PerTabData global memory
+	LPFORSTMT	 lpForStmtNext; 		// Ptr to next available entry on FORSTMT/FORLCLSTMT stack
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+	// Lock the memory to get a ptr to it
+	lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
-    // Get ptr to current entry on FORSTMT stack
-    //   and delete this entry
-    lpForStmtNext = --lpMemPTD->lpSISCur->lpForStmtNext;
+	// Get ptr to current entry on FORSTMT/FORLCLSTMT stack
+	//	 and delete this entry
+	lpForStmtNext = --lpMemPTD->lpSISCur->lpForStmtNext;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
-    // We're done -- free the global in the token (if any)
-    if (!IsTknImmed (lpForStmtNext->tkForArr.tkFlags.TknType))
-        FreeResultGlobalVar (lpForStmtNext->tkForArr.tkData.tkGlbData);
+	// We're done -- free the global in the token (if any)
+	FreeResult (&lpForStmtNext->tkForArr);
 
-    // Zap the entry
-    ZeroMemory (lpForStmtNext, sizeof (*lpForStmtNext));
+	if (bFORLCL)
+	{
+		// Free the value of the :IN var
+		FreeResult (&lpForStmtNext->tkForI);
+
+		// Restore the original :IN var
+		*lpForStmtNext->tkForI.tkData.tkSym = lpForStmtNext->symForI;
+	} // End IF
+
+	// Zap the entry
+	ZeroMemory (lpForStmtNext, sizeof (*lpForStmtNext));
 } // End CS_DoneFOR
 
 
 //***************************************************************************
-//  $CS_ENDREPEAT_Stmt
+//	$CS_ENDREPEAT_Stmt
 //
-//  Process ENDREPEAT stmt (pl_yyparse)
+//	Process ENDREPEAT stmt (pl_yyparse)
 //***************************************************************************
 
 UBOOL CS_ENDREPEAT_Stmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYEndRepeatArg)    // Ptr to ENDREPEAT arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYEndRepeatArg)	// Ptr to ENDREPEAT arg
 
 {
-    // Tell the lexical analyzer to get the next token from
-    //   the stmt after the token pointed to by the ENDREPEAT stmt
-    CS_SetNextStmt (lpplLocalVars, &lpYYEndRepeatArg->tkToken.tkData);
+	// Tell the lexical analyzer to get the next token from
+	//	 the stmt after the token pointed to by the ENDREPEAT stmt
+	CS_SetNextStmt (lpplLocalVars, &lpYYEndRepeatArg->tkToken.tkData);
 
-    // If the starting and ending stmts are not on the same line, ...
-    if (lpYYEndRepeatArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
-        // Tell the parser to stop executing this line
-        lpplLocalVars->bStopExec = TRUE;
+	// If the starting and ending stmts are not on the same line, ...
+	if (lpYYEndRepeatArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+		// Tell the parser to stop executing this line
+		lpplLocalVars->bStopExec = TRUE;
 
-    return TRUE;
+	return TRUE;
 } // End CS_ENDREPEAT_Stmt
 
 
 //***************************************************************************
-//  $CS_FOR_Stmt_EM
+//	$CS_FOR_Stmt_EM
 //
-//  Process FOR stmt (pl_yyparse)
+//	Process FOR/FORLCL stmt (pl_yyparse)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- CS_FOR_Stmt_EM"
+#define APPEND_NAME 	L" -- CS_FOR_Stmt_EM"
 #else
 #define APPEND_NAME
 #endif
 
 UBOOL CS_FOR_Stmt_EM
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYForArg,          // Ptr to FOR arg
-     LPPL_YYSTYPE  lpYYNameArg,         // Ptr to Name arg
-     LPPL_YYSTYPE  lpYYInArg,           // Ptr to IN arg
-     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYForArg,			// Ptr to FOR arg
+	 LPPL_YYSTYPE  lpYYNameArg, 		// Ptr to Name arg
+	 LPPL_YYSTYPE  lpYYInArg,			// Ptr to IN arg
+	 LPPL_YYSTYPE  lpYYRhtArg,			// Ptr to right arg
+	 UBOOL		   bFORLCL) 			// TRUE iff FORLCL
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPFORSTMT    lpForStmtNext;         // Ptr to next available entry on FORSTMT stack
+	LPPERTABDATA lpMemPTD;				// Ptr to PerTabData global memory
+	LPFORSTMT	 lpForStmtNext; 		// Ptr to next available entry on FORSTMT/FORLCLSTMT stack
 
-    // Find the matching FORSTMT ptr
-    // If it's found, this is a branch to an active FOR stmt
-    //   and we must terminate it before activating it again
-    if (FindMatchingForStmt (lpplLocalVars,
-                             lpYYForArg->tkToken.tkData.uCLIndex))
-        // We're done with this FOR stmt
-        CS_DoneFOR (lpplLocalVars);
+	// Find the matching FORSTMT/FORLCLSTMT ptr
+	// If it's found, this is a branch to an active FOR/FORLCL stmt
+	//	 and we must terminate it before activating it again
+	if (FindMatchingForStmt (lpplLocalVars,
+							 lpYYForArg->tkToken.tkData.uCLIndex))
+		// We're done with this FOR/FORLCL stmt
+		CS_DoneFOR (lpplLocalVars, bFORLCL);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+	// Lock the memory to get a ptr to it
+	lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
-    // Save ptr to next available entry on FORSTMT stack
-    //   and skip over this to the next entry
-    lpForStmtNext = lpMemPTD->lpSISCur->lpForStmtNext++;
+	// Save ptr to next available entry on FORSTMT/FORLCLSTMT stack
+	//	 and skip over this to the next entry
+	lpForStmtNext = lpMemPTD->lpSISCur->lpForStmtNext++;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
-    // Get the attributes (Type, NELM, and Rank)
-    //   of the right arg
-    AttrsOfToken (&lpYYRhtArg->tkToken, NULL, &lpForStmtNext->uNELM, NULL, NULL);
+	// Get the attributes (Type, NELM, and Rank)
+	//	 of the right arg
+	AttrsOfToken (&lpYYRhtArg->tkToken, NULL, &lpForStmtNext->uNELM, NULL, NULL);
 
-    // Save initial values on the FORSTMT stack
-    lpForStmtNext->uIndex     = 0;
-    lpForStmtNext->tkForI     = lpYYNameArg->tkToken;
-    lpForStmtNext->tkForArr   = lpYYRhtArg->tkToken;
-    lpForStmtNext->uForStmtID = lpYYForArg->tkToken.tkData.uCLIndex;
+	// Save initial values on the FORSTMT/FORLCLSTMT stack
+	lpForStmtNext->uIndex	   = 0;
+	lpForStmtNext->tkForI	   = lpYYNameArg->tkToken;
+	lpForStmtNext->tkForArr    = lpYYRhtArg->tkToken;
+	lpForStmtNext->uForStmtID  = lpYYForArg->tkToken.tkData.uCLIndex;
 
-    // If the token is not immediate, ...
-    if (!IsTknImmed (lpForStmtNext->tkForArr.tkFlags.TknType))
-        // Increment the reference count
-        lpForStmtNext->tkForArr.tkData.tkGlbData =
-          CopySymGlbDir (lpForStmtNext->tkForArr.tkData.tkGlbData);
+	if (bFORLCL)
+	{
+		// Make a copy of the STE to restore later
+		lpForStmtNext->symForI = *lpYYNameArg->tkToken.tkData.tkSym;
 
-    // Tell the lexical analyzer to get the next token from
-    //   the stmt at the token pointed to by the FOR stmt (the ENDFOR stmt)
-    CS_SetThisStmt (lpplLocalVars, &lpYYForArg->tkToken.tkData);
+		// Set the ptr to the previous entry to the STE in its shadow chain
+		lpYYNameArg->tkToken.tkData.tkSym->stPrvEntry = &lpForStmtNext->symForI;
 
-    // If we're not stopping execution, ...
-    if (!lpplLocalVars->bStopExec)
-        // We're restarting
-        lpplLocalVars->bRestart = TRUE;
+		// Set the STE to NoValue if FORLCL; otherwise the first assignment into the :IN var removes the old value
+		lpYYNameArg->tkToken.tkFlags.TknType				  = TKT_VARNAMED;
+		ZeroMemory (&lpYYNameArg->tkToken.tkData.tkSym->stFlags, sizeof (lpYYNameArg->tkToken.tkData.tkSym->stFlags));
+		lpYYNameArg->tkToken.tkData.tkSym->stFlags.Inuse	  = TRUE;
+		lpYYNameArg->tkToken.tkData.tkSym->stFlags.ObjName	  = OBJNAME_USR;
+		lpYYNameArg->tkToken.tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
+		lpYYNameArg->tkToken.tkData.tkSym->stData.stLongest   = 0;
+	} else
+		// Mark as not valid
+		lpForStmtNext->symForI.stFlags.Inuse = FALSE;
 
-    return TRUE;
+	// If the token is not immediate, ...
+	if (!IsTknImmed (&lpForStmtNext->tkForArr))
+		// Increment the reference count
+		CopySymGlbDir (lpForStmtNext->tkForArr.tkData.tkGlbData);
+
+	// Tell the lexical analyzer to get the next token from
+	//	 the stmt at the token pointed to by the FOR/FORLCL stmt (the ENDFOR/ENDFORLCL stmt)
+	CS_SetThisStmt (lpplLocalVars, &lpYYForArg->tkToken.tkData);
+
+	// If we're not stopping execution, ...
+	if (!lpplLocalVars->bStopExec)
+		// We're restarting
+		lpplLocalVars->bRestart = TRUE;
+
+	return TRUE;
 } // End CS_FOR_Stmt_EM
-#undef  APPEND_NAME
+#undef	APPEND_NAME
 
 
 //***************************************************************************
-//  $CS_IF_Stmt_EM
+//	$CS_IF_Stmt_EM
 //
-//  Process IF/ELSEIF/ANDIF/ORIF/UNTIL/WHILE stmt (pl_yyparse)
+//	Process IF/ELSEIF/ANDIF/ORIF/UNTIL/WHILE stmt (pl_yyparse)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- CS_IF_Stmt"
+#define APPEND_NAME 	L" -- CS_IF_Stmt"
 #else
 #define APPEND_NAME
 #endif
 
 UBOOL CS_IF_Stmt_EM
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYIfArg,           // Ptr to IF/... arg
-     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYIfArg,			// Ptr to IF/... arg
+	 LPPL_YYSTYPE  lpYYRhtArg)			// Ptr to right arg
 
 {
-    APLSTYPE   aplTypeRht;              // Right arg storage type
-    APLNELM    aplNELMRht;              // Right arg NELM
-    APLRANK    aplRankRht;              // Right arg rank
-    APLLONGEST aplLongestRht;           // Right arg longest if immediate
-    UBOOL      bRet,                    // TRUE iff the result is valid
-               bWhile;                  // TRUE iff the next token is WHILE
-    TOKEN_DATA tdNxt,                   // TOKEN_DATA of the IF/... stmt
-               tdPrv;                   // ...               previous stmt
-    TOKEN      tkNxt;                   // Next token
+	APLSTYPE   aplTypeRht;				// Right arg storage type
+	APLNELM    aplNELMRht;				// Right arg NELM
+	APLRANK    aplRankRht;				// Right arg rank
+	APLLONGEST aplLongestRht;			// Right arg longest if immediate
+	UBOOL	   bRet,					// TRUE iff the result is valid
+			   bWhile;					// TRUE iff the next token is WHILE
+	TOKEN_DATA tdNxt,					// TOKEN_DATA of the IF/... stmt
+			   tdPrv;					// ...				 previous stmt
+	TOKEN	   tkNxt;					// Next token
 
-    // The arg to the IF/... stmt must be a Boolean-valued scalar or
-    //   one-element vector.
-    // If the stmt pointed to by the IF/... stmt is ORIF or ANDIF, process
-    //   that sequence depending upon the value of the arg to the IF/... stmt.
-    // Otherwise, if the value of the arg to the IF/... stmt is 1, continue
-    //   execution with the next stmt; if the value is 0, look at the
-    //   token pointed to by the IF/... stmt:
-    // If that token is an ELSEIF, start execution with that stmt.
-    // If that token is an ELSE, start execution with the stmt after that.
-    // If that token is an ENDIF, start execution with the stmt after that.
-    // If that token is an ENDWHILE, start execution with the stmt to which that points.
+	// The arg to the IF/... stmt must be a Boolean-valued scalar or
+	//	 one-element vector.
+	// If the stmt pointed to by the IF/... stmt is ORIF or ANDIF, process
+	//	 that sequence depending upon the value of the arg to the IF/... stmt.
+	// Otherwise, if the value of the arg to the IF/... stmt is 1, continue
+	//	 execution with the next stmt; if the value is 0, look at the
+	//	 token pointed to by the IF/... stmt:
+	// If that token is an ELSEIF, start execution with that stmt.
+	// If that token is an ELSE, start execution with the stmt after that.
+	// If that token is an ENDIF, start execution with the stmt after that.
+	// If that token is an ENDWHILE, start execution with the stmt to which that points.
 
-    // Get the attributes (Type, NELM, and Rank)
-    //   of the right arg
-    AttrsOfToken (&lpYYRhtArg->tkToken, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+	// Get the attributes (Type, NELM, and Rank)
+	//	 of the right arg
+	AttrsOfToken (&lpYYRhtArg->tkToken, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Check for RANK ERROR
-    if (IsMultiRank (aplRankRht))
-        goto RANK_EXIT;
+	// Check for RANK ERROR
+	if (IsMultiRank (aplRankRht))
+		goto RANK_EXIT;
 
-    // Check for LENGTH ERROR
-    if (!IsSingleton (aplNELMRht))
-        goto LENGTH_EXIT;
+	// Check for LENGTH ERROR
+	if (!IsSingleton (aplNELMRht))
+		goto LENGTH_EXIT;
 
-    // Split cases based upon the right arg storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-        case ARRAY_FLOAT:
-            GetFirstItemToken (&lpYYRhtArg->tkToken,
-                               &aplLongestRht,
-                                NULL,
-                                NULL);
-            // If the storage type is float, ...
-            if (IsSimpleFlt (aplTypeRht))
-            {
-                // Attempt to convert the float to an integer using System CT
-                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-            } // End IF
+	// Split cases based upon the right arg storage type
+	switch (aplTypeRht)
+	{
+		case ARRAY_BOOL:
+		case ARRAY_INT:
+		case ARRAY_APA:
+		case ARRAY_FLOAT:
+			GetFirstItemToken (&lpYYRhtArg->tkToken,
+							   &aplLongestRht,
+								NULL,
+								NULL);
+			// If the storage type is float, ...
+			if (IsSimpleFlt (aplTypeRht))
+			{
+				// Attempt to convert the float to an integer using System CT
+				aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+				if (!bRet)
+					goto DOMAIN_EXIT;
+			} // End IF
 
-            break;
+			break;
 
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            goto DOMAIN_EXIT;
+		case ARRAY_CHAR:
+		case ARRAY_HETERO:
+		case ARRAY_NESTED:
+			goto DOMAIN_EXIT;
 
-        defstop
-            break;
-    } // End SWITCH
+		defstop
+			break;
+	} // End SWITCH
 
-    // Check for DOMAIN ERROR
-    if (!IsBooleanValue (aplLongestRht))
-         goto DOMAIN_EXIT;
+	// Check for DOMAIN ERROR
+	if (!IsBooleanValue (aplLongestRht))
+		 goto DOMAIN_EXIT;
 
-    // Copy the token data
-    tdNxt = lpYYIfArg->tkToken.tkData;
+	// Copy the token data
+	tdNxt = lpYYIfArg->tkToken.tkData;
 
-    // Get the contents of the token pointed to by
-    //   the IF/... token
-    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+	// Get the contents of the token pointed to by
+	//	 the IF/... token
+	CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
 
-    // Set contrary value
-    bWhile = (tkNxt.tkFlags.TknType EQ TKT_CS_REPEAT
-           || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
+	// Set contrary value
+	bWhile = (tkNxt.tkFlags.TknType EQ TKT_CS_REPEAT
+		   || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
 
-    // Split cases based upon the type of the token to which the IF/... stmt points
-    switch (tkNxt.tkFlags.TknType)
-    {
-        case TKT_CS_ANDIF:
-            // If the IF/... arg is 0, ...
-            if (aplLongestRht EQ 0)
-            {
-                // Loop through the ANDIF chain stopping at the first token
-                //   in the chain which is not ANDIF
-                while (tkNxt.tkFlags.TknType EQ TKT_CS_ANDIF)
-                {
-                    // Get the TOKEN_DATA from the ANDIF token
-                    tdNxt = tkNxt.tkData;
+	// Split cases based upon the type of the token to which the IF/... stmt points
+	switch (tkNxt.tkFlags.TknType)
+	{
+		case TKT_CS_ANDIF:
+			// If the IF/... arg is 0, ...
+			if (aplLongestRht EQ 0)
+			{
+				// Loop through the ANDIF chain stopping at the first token
+				//	 in the chain which is not ANDIF
+				while (tkNxt.tkFlags.TknType EQ TKT_CS_ANDIF)
+				{
+					// Get the TOKEN_DATA from the ANDIF token
+					tdNxt = tkNxt.tkData;
 
-                    // Get the contents of the token pointed to by
-                    //   the ANDIF token
-                    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
-                } // End WHILE
+					// Get the contents of the token pointed to by
+					//	 the ANDIF token
+					CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+				} // End WHILE
 
-                Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_ENDIF
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_ENDWHILE
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_UNTIL
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
+				Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_ENDIF
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_ENDWHILE
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_UNTIL
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
 
-                // If the next token is ELSEIF, execute that stmt
-                if (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF)
-                    // Tell the lexical analyzer to get the next token from
-                    //   the stmt at the token pointed to by the ELSEIF stmt
-                    CS_SetThisStmt (lpplLocalVars, &tdNxt);
-                else
-                    // Tell the lexical analyzer to get the next token from
-                    //   the stmt after the token pointed to by the ELSE/ENDIF stmt
-                    CS_SetNextStmt (lpplLocalVars, &tdNxt);
-            } else
-                // Tell the lexical analyzer to get the next token from
-                //   the ANDIF stmt
-                CS_SetThisStmt (lpplLocalVars, &tdNxt);
+				// If the next token is ELSEIF, execute that stmt
+				if (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF)
+					// Tell the lexical analyzer to get the next token from
+					//	 the stmt at the token pointed to by the ELSEIF stmt
+					CS_SetThisStmt (lpplLocalVars, &tdNxt);
+				else
+					// Tell the lexical analyzer to get the next token from
+					//	 the stmt after the token pointed to by the ELSE/ENDIF stmt
+					CS_SetNextStmt (lpplLocalVars, &tdNxt);
+			} else
+				// Tell the lexical analyzer to get the next token from
+				//	 the ANDIF stmt
+				CS_SetThisStmt (lpplLocalVars, &tdNxt);
 
-            // If we're not stopping execution, ...
-            if (!lpplLocalVars->bStopExec)
-                // We're restarting
-                lpplLocalVars->bRestart = TRUE;
-            break;
+			// If we're not stopping execution, ...
+			if (!lpplLocalVars->bStopExec)
+				// We're restarting
+				lpplLocalVars->bRestart = TRUE;
+			break;
 
-        case TKT_CS_ORIF:
-            // If the IF/... arg is 0, ...
-            if (aplLongestRht EQ 0)
-                // Tell the lexical analyzer to get the next token from
-                //   the ORIF stmt
-                CS_SetThisStmt (lpplLocalVars, &tdNxt);
-            else
-            {
-                // Save as the previous token data
-                tdPrv = tdNxt;
+		case TKT_CS_ORIF:
+			// If the IF/... arg is 0, ...
+			if (aplLongestRht EQ 0)
+				// Tell the lexical analyzer to get the next token from
+				//	 the ORIF stmt
+				CS_SetThisStmt (lpplLocalVars, &tdNxt);
+			else
+			{
+				// Save as the previous token data
+				tdPrv = tdNxt;
 
-                // Loop through the ORIF chain stopping at the first token
-                //   in the chain which is not ORIF
-                while (tkNxt.tkFlags.TknType EQ TKT_CS_ORIF)
-                {
-                    // Get the TOKEN_DATA from the ORIF token
-                    tdNxt = tkNxt.tkData;
+				// Loop through the ORIF chain stopping at the first token
+				//	 in the chain which is not ORIF
+				while (tkNxt.tkFlags.TknType EQ TKT_CS_ORIF)
+				{
+					// Get the TOKEN_DATA from the ORIF token
+					tdNxt = tkNxt.tkData;
 
-                    // Get the contents of the token pointed to by
-                    //   the ORIF token
-                    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+					// Get the contents of the token pointed to by
+					//	 the ORIF token
+					CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
 
-                    // Save the token data if the token is ORIF
-                    if (tkNxt.tkFlags.TknType EQ TKT_CS_ORIF)
-                        tdPrv = tdNxt;
-                } // End WHILE
+					// Save the token data if the token is ORIF
+					if (tkNxt.tkFlags.TknType EQ TKT_CS_ORIF)
+						tdPrv = tdNxt;
+				} // End WHILE
 
-                Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_ENDIF
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_ENDWHILE
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_UNTIL
-                     || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
+				Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_ENDIF
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_ENDWHILE
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_UNTIL
+					 || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
 
-                // Tell the lexical analyzer to get the next token from
-                //   the stmt after the last ORIF stmt
-                CS_SetNextStmt (lpplLocalVars, &tdPrv);
-            } // End IF/ELSE
+				// Tell the lexical analyzer to get the next token from
+				//	 the stmt after the last ORIF stmt
+				CS_SetNextStmt (lpplLocalVars, &tdPrv);
+			} // End IF/ELSE
 
-            // If we're not stopping execution, ...
-            if (!lpplLocalVars->bStopExec)
-                // We're restarting
-                lpplLocalVars->bRestart = TRUE;
-            break;
+			// If we're not stopping execution, ...
+			if (!lpplLocalVars->bStopExec)
+				// We're restarting
+				lpplLocalVars->bRestart = TRUE;
+			break;
 
-        case TKT_CS_ELSEIF:
-        case TKT_CS_UNTIL:
-        case TKT_CS_WHILE:
-            // If the IF/... arg is bWhile, ...
-            if (aplLongestRht EQ bWhile)
-            {
-                // Tell the lexical analyzer to get the next token from
-                //   the stmt at the token pointed to by the ELSEIF stmt
-                CS_SetThisStmt (lpplLocalVars, &tdNxt);
+		case TKT_CS_ELSEIF:
+		case TKT_CS_UNTIL:
+		case TKT_CS_WHILE:
+			// If the IF/... arg is bWhile, ...
+			if (aplLongestRht EQ bWhile)
+			{
+				// Tell the lexical analyzer to get the next token from
+				//	 the stmt at the token pointed to by the ELSEIF stmt
+				CS_SetThisStmt (lpplLocalVars, &tdNxt);
 
-                // If we're not stopping execution, ...
-                if (!lpplLocalVars->bStopExec)
-                    // We're restarting
-                    lpplLocalVars->bRestart = TRUE;
-            } // End IF
+				// If we're not stopping execution, ...
+				if (!lpplLocalVars->bStopExec)
+					// We're restarting
+					lpplLocalVars->bRestart = TRUE;
+			} // End IF
 
-            break;
+			break;
 
-        case TKT_CS_ELSE:
-        case TKT_CS_ENDIF:
-        case TKT_CS_ENDWHILE:
-        case TKT_CS_REPEAT:
-            // If the IF/... arg is 0, ...
-            if (aplLongestRht EQ 0)
-            {
-                // Tell the lexical analyzer to get the next token from
-                //   the stmt after the token pointed to by the ELSE/ENDxxx stmt
-                CS_SetNextStmt (lpplLocalVars, &tdNxt);
+		case TKT_CS_ELSE:
+		case TKT_CS_ENDIF:
+		case TKT_CS_ENDWHILE:
+		case TKT_CS_REPEAT:
+			// If the IF/... arg is 0, ...
+			if (aplLongestRht EQ 0)
+			{
+				// Tell the lexical analyzer to get the next token from
+				//	 the stmt after the token pointed to by the ELSE/ENDxxx stmt
+				CS_SetNextStmt (lpplLocalVars, &tdNxt);
 
-                // If we're not stopping execution, ...
-                if (!lpplLocalVars->bStopExec)
-                    // We're restarting
-                    lpplLocalVars->bRestart = TRUE;
-            } // End IF
+				// If we're not stopping execution, ...
+				if (!lpplLocalVars->bStopExec)
+					// We're restarting
+					lpplLocalVars->bRestart = TRUE;
+			} // End IF
 
-            break;
+			break;
 
-        defstop
-            break;
-    } // End SWITCH
+		defstop
+			break;
+	} // End SWITCH
 
-    return TRUE;
+	return TRUE;
 
 RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                              &lpYYRhtArg->tkToken);
-    goto ERROR_EXIT;
+	ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+							  &lpYYRhtArg->tkToken);
+	goto ERROR_EXIT;
 
 LENGTH_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                              &lpYYRhtArg->tkToken);
-    goto ERROR_EXIT;
+	ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+							  &lpYYRhtArg->tkToken);
+	goto ERROR_EXIT;
 
 DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                              &lpYYRhtArg->tkToken);
-    goto ERROR_EXIT;
+	ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+							  &lpYYRhtArg->tkToken);
+	goto ERROR_EXIT;
 
 ERROR_EXIT:
-    return FALSE;
+	return FALSE;
 } // End CS_IF_Stmt_EM
-#undef  APPEND_NAME
+#undef	APPEND_NAME
 
 
 //***************************************************************************
-//  $CS_LEAVE_Stmt
+//	$CS_LEAVE_Stmt
 //
-//  Process LEAVE stmt (pl_yyparse)
+//	Process LEAVE stmt (pl_yyparse)
 //***************************************************************************
 
 UBOOL CS_LEAVE_Stmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYLeaveArg)        // Ptr to LEAVE arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYLeaveArg)		// Ptr to LEAVE arg
 
 {
-    // Tell the lexical analyzer to get the next token from
-    //   the stmt after the token pointed to by the LEAVE stmt
-    CS_SetNextStmt (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
+	 TOKEN_TYPES TknType;				// Token type
 
-    // If the starting and ending stmts are not on the same line, ...
-    if (lpYYLeaveArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
-        // Tell the parser to stop executing this line
-        lpplLocalVars->bStopExec = TRUE;
+	// Tell the lexical analyzer to get the next token from
+	//	 the stmt after the token pointed to by the LEAVE stmt
+	CS_SetNextStmt (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
 
-    // If we're not stopping execution, ...
-    if (!lpplLocalVars->bStopExec)
-        // We're restarting
-        lpplLocalVars->bRestart = TRUE;
+	// If the starting and ending stmts are not on the same line, ...
+	if (lpYYLeaveArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+		// Tell the parser to stop executing this line
+		lpplLocalVars->bStopExec = TRUE;
 
-    // If the stmt pointed to by the LEAVE stmt is ENDFOR, ...
-    if (CS_GetTokenType (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData) EQ TKT_CS_ENDFOR)
-        // We're done with this FOR stmt
-        CS_DoneFOR (lpplLocalVars);
+	// If we're not stopping execution, ...
+	if (!lpplLocalVars->bStopExec)
+		// We're restarting
+		lpplLocalVars->bRestart = TRUE;
 
-    return TRUE;
+	// If the stmt pointed to by the LEAVE stmt is ENDFOR/ENDFORLCL, ...
+	TknType = CS_GetTokenType (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
+
+	if (TknType EQ TKT_CS_ENDFOR
+	 || TknType EQ TKT_CS_ENDFORLCL)
+		// We're done with this FOR/FORLCL stmt
+		CS_DoneFOR (lpplLocalVars, TknType EQ TKT_CS_ENDFORLCL);
+
+	return TRUE;
 } // End CS_LEAVE_Stmt
 
 
 //***************************************************************************
-//  $CS_SELECT_Stmt_EM
+//	$CS_SELECT_Stmt_EM
 //
-//  Process SELECT stmt (pl_yyparse)
+//	Process SELECT stmt (pl_yyparse)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- CS_SELECT_Stmt_EM"
+#define APPEND_NAME 	L" -- CS_SELECT_Stmt_EM"
 #else
 #define APPEND_NAME
 #endif
 
 UBOOL CS_SELECT_Stmt_EM
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYSelectArg,       // Ptr to SELECT arg
-     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYSelectArg,		// Ptr to SELECT arg
+	 LPPL_YYSTYPE  lpYYRhtArg)			// Ptr to right arg
 
 {
-    APLNELM      aplNELMCL;             // CASELIST NELM
-    TOKEN_DATA   tdNxt,                 // TOKEN_DATA of the next stmt
-                 tdSOS;                 // ...               SOS  ...
-    TOKEN        tkNxt;                 // TOKEN of next stmt
-    HGLOBAL      hGlbTknLine,           // Tokenized line global memory handle
-                 hGlbTxtLine,           // Text      ...
-                 hGlbPTD;               // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYTmp;               // Ptr to right arg
-    UBOOL        bCmp;                  // TRUE iff the comparison is TRUE
+	APLNELM 	 aplNELMCL; 			// CASELIST NELM
+	TOKEN_DATA	 tdNxt, 				// TOKEN_DATA of the next stmt
+				 tdSOS; 				// ...				 SOS  ...
+	TOKEN		 tkNxt; 				// TOKEN of next stmt
+	HGLOBAL 	 hGlbTknLine,			// Tokenized line global memory handle
+				 hGlbTxtLine,			// Text 	 ...
+				 hGlbPTD;				// PerTabData global memory handle
+	LPPERTABDATA lpMemPTD;				// Ptr to PerTabData global memory
+	LPPL_YYSTYPE lpYYTmp;				// Ptr to right arg
+	UBOOL		 bCmp;					// TRUE iff the comparison is TRUE
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+	// Get the thread's PerTabData global memory handle
+	hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    // Copy the token data
-    tkNxt.tkData = lpYYSelectArg->tkToken.tkData;
+	// Copy the token data
+	tkNxt.tkData = lpYYSelectArg->tkToken.tkData;
 
-    // Run through the chain of SELECT/CASE/CASELIST stmts looking for a match
-    while (TRUE)
-    {
-        // Copy the token data
-        tdNxt = tkNxt.tkData;
+	// Run through the chain of SELECT/CASE/CASELIST stmts looking for a match
+	while (TRUE)
+	{
+		// Copy the token data
+		tdNxt = tkNxt.tkData;
 
-        // Get the contents of the token pointed to by
-        //   the SELECT/CASE/CASELIST token
-        CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, &hGlbTknLine, &hGlbTxtLine);
+		// Get the contents of the token pointed to by
+		//	 the SELECT/CASE/CASELIST token
+		CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, &hGlbTknLine, &hGlbTxtLine);
 
-        // Split cases based upon the token type
-        switch (tkNxt.tkFlags.TknType)
-        {
-            EXIT_TYPES exitType;
+		// Split cases based upon the token type
+		switch (tkNxt.tkFlags.TknType)
+		{
+			EXIT_TYPES exitType;
 
-            case TKT_CS_CASE:
-            case TKT_CS_CASELIST:
-                // Copy token data to modify
-                tdSOS = tdNxt;
+			case TKT_CS_CASE:
+			case TKT_CS_CASELIST:
+				// Copy token data to modify
+				tdSOS = tdNxt;
 
-                // Point to the SOS token
-                CS_PointToSOSToken (lpplLocalVars, &tdSOS);
+				// Point to the SOS token
+				CS_PointToSOSToken (lpplLocalVars, &tdSOS);
 
-                // Execute the stmt and compare the result with lpYYRhtArg
+				// Execute the stmt and compare the result with lpYYRhtArg
 
-                // Fill the SIS struc, execute the line via ParseLine, and cleanup
-                exitType =
-                  PrimFnMonUpTackJotPLParse (hGlbPTD,           // PerTabData global memory handle
-                                             hGlbTknLine,       // Tokenized line global memory handle
-                                             hGlbTxtLine,       // Text      ...
-                                             NULL,              // Ptr to text of line to execute
-                                             NULL,              // Ptr to Semaphore handle to signal (NULL if none)
-                                             tdSOS.uLineNum,    // Function line #
-                                             tdSOS.uTknNum,     // Starting token # in the above function line
-                                             TRUE);             // TRUE iff executing only one stmt
-                // Split cases based upon the exit type
-                switch (exitType)
-                {
-                    case EXITTYPE_NONE:
-                        // Match the SELECT arg against the CASE arg
+				// Fill the SIS struc, execute the line via ParseLine, and cleanup
+				exitType =
+				  PrimFnMonUpTackJotPLParse (hGlbPTD,			// PerTabData global memory handle
+											 hGlbTknLine,		// Tokenized line global memory handle
+											 hGlbTxtLine,		// Text 	 ...
+											 NULL,				// Ptr to text of line to execute
+											 NULL,				// Ptr to Semaphore handle to signal (NULL if none)
+											 tdSOS.uLineNum,	// Function line #
+											 tdSOS.uTknNum, 	// Starting token # in the above function line
+											 TRUE); 			// TRUE iff executing only one stmt
+				// Split cases based upon the exit type
+				switch (exitType)
+				{
+					case EXITTYPE_NONE:
+						// Match the SELECT arg against the CASE arg
 
-                        // Lock the memory to get a ptr to it
-                        lpMemPTD = MyGlobalLock (hGlbPTD);
+						// Lock the memory to get a ptr to it
+						lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                        // If it's CASE, ...
-                        if (tkNxt.tkFlags.TknType EQ TKT_CS_CASE)
-                        {
-                            // Use match to determine equality
-                            lpYYTmp =
-                              PrimFnDydEqualUnderbar_EM_YY (&lpMemPTD->YYResExec.tkToken,   // Ptr to left arg token
-                                                            &lpYYRhtArg->tkToken,           // Ptr to function token
-                                                            &lpYYRhtArg->tkToken,           // Ptr to right arg token
-                                                             NULL);                         // Ptr to axis token (may be NULL)
-                            // Save the result of the comparison
-                            bCmp = lpYYTmp->tkToken.tkData.tkBoolean;
+						// If it's CASE, ...
+						if (tkNxt.tkFlags.TknType EQ TKT_CS_CASE)
+						{
+							// Use match to determine equality
+							lpYYTmp =
+							  PrimFnDydEqualUnderbar_EM_YY (&lpMemPTD->YYResExec.tkToken,	// Ptr to left arg token
+															&lpYYRhtArg->tkToken,			// Ptr to function token
+															&lpYYRhtArg->tkToken,			// Ptr to right arg token
+															 NULL); 						// Ptr to axis token (may be NULL)
+							// Save the result of the comparison
+							bCmp = lpYYTmp->tkToken.tkData.tkBoolean;
 
-                            // Free the temporary result
-                            YYFree (lpYYTmp); lpYYTmp = NULL;
-                        } else
-                        // It's CASELIST
-                        {
-                            TOKEN tkCL = {0};       // CASELIST token for each element
-                            UINT  uCnt;             // Loop counter
+							// Free the temporary result
+							YYFree (lpYYTmp); lpYYTmp = NULL;
+						} else
+						// It's CASELIST
+						{
+							TOKEN tkCL = {0};		// CASELIST token for each element
+							UINT  uCnt; 			// Loop counter
 
-                            // Get the attributes (Type, NELM, and Rank)
-                            //   of the CASELIST arg
-                            AttrsOfToken (&lpMemPTD->YYResExec.tkToken, NULL, &aplNELMCL, NULL, NULL);
+							// Get the attributes (Type, NELM, and Rank)
+							//	 of the CASELIST arg
+							AttrsOfToken (&lpMemPTD->YYResExec.tkToken, NULL, &aplNELMCL, NULL, NULL);
 
-                            // Loop through the elements of the CASELIST arg
-                            for (uCnt = 0, bCmp = FALSE; (!bCmp) && uCnt < aplNELMCL; uCnt++)
-                            {
-                                // Get the next value from the CASELIST result token into a token
-                                GetNextValueTokenIntoToken (&lpMemPTD->YYResExec.tkToken,
-                                                             uCnt,
-                                                            &tkCL);
-                                // Use match to determine equality
-                                lpYYTmp =
-                                  PrimFnDydEqualUnderbar_EM_YY (&tkCL,                          // Ptr to left arg token
-                                                                &lpYYRhtArg->tkToken,           // Ptr to function token
-                                                                &lpYYRhtArg->tkToken,           // Ptr to right arg token
-                                                                 NULL);                         // Ptr to axis token (may be NULL)
-                                // Save the result of the comparison
-                                bCmp = lpYYTmp->tkToken.tkData.tkBoolean;
+							// Loop through the elements of the CASELIST arg
+							for (uCnt = 0, bCmp = FALSE; (!bCmp) && uCnt < aplNELMCL; uCnt++)
+							{
+								// Get the next value from the CASELIST result token into a token
+								GetNextValueTokenIntoToken (&lpMemPTD->YYResExec.tkToken,
+															 uCnt,
+															&tkCL);
+								// Use match to determine equality
+								lpYYTmp =
+								  PrimFnDydEqualUnderbar_EM_YY (&tkCL,							// Ptr to left arg token
+																&lpYYRhtArg->tkToken,			// Ptr to function token
+																&lpYYRhtArg->tkToken,			// Ptr to right arg token
+																 NULL); 						// Ptr to axis token (may be NULL)
+								// Save the result of the comparison
+								bCmp = lpYYTmp->tkToken.tkData.tkBoolean;
 
-                                // Free the temporary result
-                                YYFree (lpYYTmp); lpYYTmp = NULL;
-                            } // End FOR
-                        } // End IF/ELSE
+								// Free the temporary result
+								YYFree (lpYYTmp); lpYYTmp = NULL;
+							} // End FOR
+						} // End IF/ELSE
 
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+						// We no longer need this ptr
+						MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-                        // If the two are equal, ...
-                        if (bCmp)
-                        {
-                            // Tell the lexical analyzer to get the next token from
-                            //   the stmt after the token pointed to by the CASE stmt
-                            CS_SetNextStmt (lpplLocalVars, &tdNxt);
+						// If the two are equal, ...
+						if (bCmp)
+						{
+							// Tell the lexical analyzer to get the next token from
+							//	 the stmt after the token pointed to by the CASE stmt
+							CS_SetNextStmt (lpplLocalVars, &tdNxt);
 
-                            return TRUE;
-                        } // End IF
+							return TRUE;
+						} // End IF
 
-                        break;
+						break;
 
-                    case EXITTYPE_ERROR:
-                        return FALSE;
+					case EXITTYPE_ERROR:
+						return FALSE;
 
-                    case EXITTYPE_GOTO_ZILDE:
-                    case EXITTYPE_GOTO_LINE:
-                    case EXITTYPE_RESET_ONE:
-                    case EXITTYPE_RESET_ONE_INIT:
-                    case EXITTYPE_RESET_ALL:
-                    case EXITTYPE_QUADERROR_INIT:
-                    case EXITTYPE_QUADERROR_EXEC:
-                    case EXITTYPE_STOP:
-                    case EXITTYPE_DISPLAY:
-                    case EXITTYPE_NOVALUE:
-                    case EXITTYPE_NODISPLAY:
-                    defstop
-                        return FALSE;
-                } // End SWITCH
+					case EXITTYPE_GOTO_ZILDE:
+					case EXITTYPE_GOTO_LINE:
+					case EXITTYPE_RESET_ONE:
+					case EXITTYPE_RESET_ONE_INIT:
+					case EXITTYPE_RESET_ALL:
+					case EXITTYPE_QUADERROR_INIT:
+					case EXITTYPE_QUADERROR_EXEC:
+					case EXITTYPE_STOP:
+					case EXITTYPE_DISPLAY:
+					case EXITTYPE_NOVALUE:
+					case EXITTYPE_NODISPLAY:
+					defstop
+						return FALSE;
+				} // End SWITCH
 
-                break;
+				break;
 
-            case TKT_CS_ELSE:
-            case TKT_CS_ENDSELECT:
-                // Tell the lexical analyzer to get the next token from
-                //   the stmt after the token pointed to by the ELSE stmt
-                CS_SetNextStmt (lpplLocalVars, &tdNxt);
+			case TKT_CS_ELSE:
+			case TKT_CS_ENDSELECT:
+				// Tell the lexical analyzer to get the next token from
+				//	 the stmt after the token pointed to by the ELSE stmt
+				CS_SetNextStmt (lpplLocalVars, &tdNxt);
 
-                // If we're not stopping execution, ...
-                if (!lpplLocalVars->bStopExec)
-                    // We're restarting
-                    lpplLocalVars->bRestart = TRUE;
-                return TRUE;
+				// If we're not stopping execution, ...
+				if (!lpplLocalVars->bStopExec)
+					// We're restarting
+					lpplLocalVars->bRestart = TRUE;
+				return TRUE;
 
-            defstop
-                break;
-        } // End SWITCH
-    } // End WHILE
+			defstop
+				break;
+		} // End SWITCH
+	} // End WHILE
 
-    return FALSE;
+	return FALSE;
 } // End CS_SELECT_Stmt_EM
-#undef  APPEND_NAME
+#undef	APPEND_NAME
 
 
 //***************************************************************************
-//  $CS_SKIPCASE_Stmt
+//	$CS_SKIPCASE_Stmt
 //
-//  Process SKIPCASE stmt (pl_yyparse)
+//	Process SKIPCASE stmt (pl_yyparse)
 //***************************************************************************
 
 UBOOL CS_SKIPCASE_Stmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYSkipCaseArg)     // Ptr to SKIPCASE arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYSkipCaseArg) 	// Ptr to SKIPCASE arg
 
 {
-    TOKEN      tkNxt;                   // Next token
-    TOKEN_DATA tdNxt;                   // Next TOKEN_DATA
+	TOKEN	   tkNxt;					// Next token
+	TOKEN_DATA tdNxt;					// Next TOKEN_DATA
 
-    // Get the contents of the (CASE/CASELIST) token pointed to by
-    //   the SKIPCASE token
-    CS_GetNextToken (lpplLocalVars, &lpYYSkipCaseArg->tkToken.tkData, &tkNxt, NULL, NULL);
+	// Get the contents of the (CASE/CASELIST) token pointed to by
+	//	 the SKIPCASE token
+	CS_GetNextToken (lpplLocalVars, &lpYYSkipCaseArg->tkToken.tkData, &tkNxt, NULL, NULL);
 
-    Assert (tkNxt.tkFlags.TknType EQ TKT_CS_CASE
-         || tkNxt.tkFlags.TknType EQ TKT_CS_CASELIST);
+	Assert (tkNxt.tkFlags.TknType EQ TKT_CS_CASE
+		 || tkNxt.tkFlags.TknType EQ TKT_CS_CASELIST);
 
-    do
-    {
-        // Get the TOKEN_DATA from the previous token
-        tdNxt = tkNxt.tkData;
+	do
+	{
+		// Get the TOKEN_DATA from the previous token
+		tdNxt = tkNxt.tkData;
 
-        // Get the contents of the token pointed to by
-        //   the previous token
-        CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
-    } while (tkNxt.tkFlags.TknType EQ TKT_CS_CASE
-          || tkNxt.tkFlags.TknType EQ TKT_CS_CASELIST
-          || tkNxt.tkFlags.TknType EQ TKT_CS_ELSE);
+		// Get the contents of the token pointed to by
+		//	 the previous token
+		CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+	} while (tkNxt.tkFlags.TknType EQ TKT_CS_CASE
+		  || tkNxt.tkFlags.TknType EQ TKT_CS_CASELIST
+		  || tkNxt.tkFlags.TknType EQ TKT_CS_ELSE);
 
-    Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ENDSELECT);
+	Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ENDSELECT);
 
-    // Tell the lexical analyzer to get the next token from
-    //   the stmt after the token pointed to by the ENDSELECT stmt
-    CS_SetNextStmt (lpplLocalVars, &tdNxt);
+	// Tell the lexical analyzer to get the next token from
+	//	 the stmt after the token pointed to by the ENDSELECT stmt
+	CS_SetNextStmt (lpplLocalVars, &tdNxt);
 
-    // If the starting and ending stmts are not on the same line, ...
-    if (tkNxt.tkData.uLineNum NE lpplLocalVars->uLineNum)
-        // Tell the parser to stop executing this line
-        lpplLocalVars->bStopExec = TRUE;
+	// If the starting and ending stmts are not on the same line, ...
+	if (tkNxt.tkData.uLineNum NE lpplLocalVars->uLineNum)
+		// Tell the parser to stop executing this line
+		lpplLocalVars->bStopExec = TRUE;
 
-    return TRUE;
+	return TRUE;
 } // End CS_SKIPCASE_Stmt
 
 
 //***************************************************************************
-//  $CS_SKIPEND_Stmt
+//	$CS_SKIPEND_Stmt
 //
-//  Process SKIPEND stmt (pl_yyparse)
+//	Process SKIPEND stmt (pl_yyparse)
 //***************************************************************************
 
 UBOOL CS_SKIPEND_Stmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYSkipEndArg)      // Ptr to SKIPEND arg
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPPL_YYSTYPE  lpYYSkipEndArg)		// Ptr to SKIPEND arg
 
 {
-    TOKEN      tkNxt;                   // Next token
-    TOKEN_DATA tdNxt;                   // Next TOKEN_DATA
+	TOKEN	   tkNxt;					// Next token
+	TOKEN_DATA tdNxt;					// Next TOKEN_DATA
 
-    // Get the contents of the (ELSEIF) token pointed to by
-    //   the SKIPEND token
-    CS_GetNextToken (lpplLocalVars, &lpYYSkipEndArg->tkToken.tkData, &tkNxt, NULL, NULL);
+	// Get the contents of the (ELSEIF) token pointed to by
+	//	 the SKIPEND token
+	CS_GetNextToken (lpplLocalVars, &lpYYSkipEndArg->tkToken.tkData, &tkNxt, NULL, NULL);
 
-    Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF);
+	Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF);
 
-    do
-    {
-        // Get the TOKEN_DATA from the previous token
-        tdNxt = tkNxt.tkData;
+	do
+	{
+		// Get the TOKEN_DATA from the previous token
+		tdNxt = tkNxt.tkData;
 
-        // Get the contents of the token pointed to by
-        //   the previous token
-        CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
-    } while (tkNxt.tkFlags.TknType EQ TKT_CS_ANDIF
-          || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
-          || tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
-          || tkNxt.tkFlags.TknType EQ TKT_CS_ORIF);
+		// Get the contents of the token pointed to by
+		//	 the previous token
+		CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+	} while (tkNxt.tkFlags.TknType EQ TKT_CS_ANDIF
+		  || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
+		  || tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
+		  || tkNxt.tkFlags.TknType EQ TKT_CS_ORIF);
 
-    Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
-         || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
-         || tkNxt.tkFlags.TknType EQ TKT_CS_ENDIF);
+	Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
+		 || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
+		 || tkNxt.tkFlags.TknType EQ TKT_CS_ENDIF);
 
-    // If the next token is ELSEIF, execute that stmt
-    if (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF)
-        // Tell the lexical analyzer to get the next token from
-        //   the stmt at the token pointed to by the ELSEIF stmt
-        CS_SetThisStmt (lpplLocalVars, &tdNxt);
-    else
-        // Tell the lexical analyzer to get the next token from
-        //   the stmt after the token pointed to by the ELSE/ENDIF stmt
-        CS_SetNextStmt (lpplLocalVars, &tdNxt);
+	// If the next token is ELSEIF, execute that stmt
+	if (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF)
+		// Tell the lexical analyzer to get the next token from
+		//	 the stmt at the token pointed to by the ELSEIF stmt
+		CS_SetThisStmt (lpplLocalVars, &tdNxt);
+	else
+		// Tell the lexical analyzer to get the next token from
+		//	 the stmt after the token pointed to by the ELSE/ENDIF stmt
+		CS_SetNextStmt (lpplLocalVars, &tdNxt);
 
-    // If the starting and ending stmts are not on the same line, ...
-    if (tkNxt.tkData.uLineNum NE lpplLocalVars->uLineNum)
-        // Tell the parser to stop executing this line
-        lpplLocalVars->bStopExec = TRUE;
+	// If the starting and ending stmts are not on the same line, ...
+	if (tkNxt.tkData.uLineNum NE lpplLocalVars->uLineNum)
+		// Tell the parser to stop executing this line
+		lpplLocalVars->bStopExec = TRUE;
 
-    return TRUE;
+	return TRUE;
 } // End CS_SKIPEND_Stmt
 
 
 //***************************************************************************
-//  $CS_GetNextToken
+//	$CS_GetNextToken
 //
-//  Get the contents of the token pointed to by
-//    a given token (pl_yyparse)
+//	Get the contents of the token pointed to by
+//	  a given token (pl_yyparse)
 //***************************************************************************
 
 void CS_GetNextToken
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1,            // Ptr to arg TOKEN_DATA
-     LPTOKEN       lptkRes,             // Ptr to result token
-     HGLOBAL      *lphGlbTknLine,       // Ptr to result tokenized line global memory handle (may be NULL)
-     HGLOBAL      *lphGlbTxtLine)       // Ptr to result text      ...
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPTOKEN_DATA  lptdArg1,			// Ptr to arg TOKEN_DATA
+	 LPTOKEN	   lptkRes, 			// Ptr to result token
+	 HGLOBAL	  *lphGlbTknLine,		// Ptr to result tokenized line global memory handle (may be NULL)
+	 HGLOBAL	  *lphGlbTxtLine)		// Ptr to result text	   ...
 
 {
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine,           // Tokenized line global memory handle
-                 hGlbTxtLine,           // Text line      ...
-                 hGlbDfnHdr;            // User-defined function/operator ...
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
+	LPDFN_HEADER lpMemDfnHdr;			// Ptr to user-defined function/operator global memory
+	LPFCNLINE	 lpFcnLines;			// Ptr to array of function line structs (FCNLINE[numFcnLines])
+	HGLOBAL 	 hGlbTknLine,			// Tokenized line global memory handle
+				 hGlbTxtLine,			// Text line	  ...
+				 hGlbDfnHdr;			// User-defined function/operator ...
+	LPTOKEN 	 lpMemTknLine;			// Ptr to tokenized line global memory
 
-    // If the stmts are on the same line, ...
-    if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
-    {
-        // Get the token
-        *lptkRes = lpplLocalVars->lptkStart[lptdArg1->uTknNum];
+	// If the stmts are on the same line, ...
+	if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
+	{
+		// Get the token
+		*lptkRes = lpplLocalVars->lptkStart[lptdArg1->uTknNum];
 
-        // Copy the tokenized line's global memory handle
-        hGlbTknLine = lpplLocalVars->hGlbTknLine;
+		// Copy the tokenized line's global memory handle
+		hGlbTknLine = lpplLocalVars->hGlbTknLine;
 
-        // Copy the text line's global memory handle
-        hGlbTxtLine = lpplLocalVars->hGlbTxtLine;
-    } else
-    {
-        // Get the corresponding user-defined function/operator flobal memory handle
-        hGlbDfnHdr = GetDfnHdrHandle (lpplLocalVars);
+		// Copy the text line's global memory handle
+		hGlbTxtLine = lpplLocalVars->hGlbTxtLine;
+	} else
+	{
+		// Get the corresponding user-defined function/operator flobal memory handle
+		hGlbDfnHdr = GetDfnHdrHandle (lpplLocalVars);
 
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+		// Lock the memory to get a ptr to it
+		lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
-        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+		// Get ptr to array of function line structs (FCNLINE[numFcnLines])
+		lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lptdArg1->uLineNum > 0);
+		Assert (lptdArg1->uLineNum > 0);
 
-        // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTknLine;
+		// Get the given line's tokenized global memory handle
+		hGlbTknLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTknLine;
 
-        // Copy the text line's global memory handle
-        hGlbTxtLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTxtLine;
+		// Copy the text line's global memory handle
+		hGlbTxtLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTxtLine;
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+		// We no longer need this ptr
+		MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-        // Lock the memory to get a ptr to it
-        lpMemTknLine = MyGlobalLock (hGlbTknLine);
+		// Lock the memory to get a ptr to it
+		lpMemTknLine = MyGlobalLock (hGlbTknLine);
 
-        // Skip over the header to the data
-        lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+		// Skip over the header to the data
+		lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
-        // Get the given token
-        *lptkRes = lpMemTknLine[lptdArg1->uTknNum];
+		// Get the given token
+		*lptkRes = lpMemTknLine[lptdArg1->uTknNum];
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
-    } // End IF/ELSE
+		// We no longer need this ptr
+		MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+	} // End IF/ELSE
 
-    // If the caller wants the tokenized line's global memory handle, ...
-    if (lphGlbTknLine)
-        *lphGlbTknLine = hGlbTknLine;
+	// If the caller wants the tokenized line's global memory handle, ...
+	if (lphGlbTknLine)
+		*lphGlbTknLine = hGlbTknLine;
 
-    // If the caller wants the text line's global memory handle, ...
-    if (lphGlbTxtLine)
-        *lphGlbTxtLine = hGlbTxtLine;
+	// If the caller wants the text line's global memory handle, ...
+	if (lphGlbTxtLine)
+		*lphGlbTxtLine = hGlbTxtLine;
 } // End CS_GetNextToken
 
 
 //***************************************************************************
-//  $GetDfnHdrHandle
+//	$GetDfnHdrHandle
 //
-//  Get the corresponding user-defined function/operator global memory handle
+//	Get the corresponding user-defined function/operator global memory handle
 //***************************************************************************
 
 HGLOBAL GetDfnHdrHandle
-    (LPPLLOCALVARS lpplLocalVars)       // Ptr to PL local vars
+	(LPPLLOCALVARS lpplLocalVars)		// Ptr to PL local vars
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPSIS_HEADER lpSISCur;              // Ptr to current SIS header
+	LPPERTABDATA lpMemPTD;				// Ptr to PerTabData global memory
+	LPSIS_HEADER lpSISCur;				// Ptr to current SIS header
 
-    // If the one in lpplLocalVars is valid, use that
-    if (lpplLocalVars->hGlbDfnHdr)
-        return lpplLocalVars->hGlbDfnHdr;
+	// If the one in lpplLocalVars is valid, use that
+	if (lpplLocalVars->hGlbDfnHdr)
+		return lpplLocalVars->hGlbDfnHdr;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+	// Lock the memory to get a ptr to it
+	lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
-    // Copy ptr to current SI level
-    lpSISCur = lpMemPTD->lpSISCur;
+	// Copy ptr to current SI level
+	lpSISCur = lpMemPTD->lpSISCur;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
-    // Peel back to non-ImmExec, non-Execute, non-Quad layer
-    while (lpSISCur
-        && (lpSISCur->DfnType EQ DFNTYPE_IMM
-         || lpSISCur->DfnType EQ DFNTYPE_QUAD
-         || lpSISCur->DfnType EQ DFNTYPE_EXEC))
-        lpSISCur = lpSISCur->lpSISPrv;
+	// Peel back to non-ImmExec, non-Execute, non-Quad layer
+	while (lpSISCur
+		&& (lpSISCur->DfnType EQ DFNTYPE_IMM
+		 || lpSISCur->DfnType EQ DFNTYPE_QUAD
+		 || lpSISCur->DfnType EQ DFNTYPE_EXEC))
+		lpSISCur = lpSISCur->lpSISPrv;
 
-    return lpSISCur->hGlbDfnHdr;
+	return lpSISCur->hGlbDfnHdr;
 } // End GetDfnHdrHandle
 
 
 //***************************************************************************
-//  $CS_PointToSOSToken
+//	$CS_PointToSOSToken
 //
-//  Set the next token # of the SOS token of the stmt which contains
-//    a given token.
+//	Set the next token # of the SOS token of the stmt which contains
+//	  a given token.
 //***************************************************************************
 
 void CS_PointToSOSToken
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPTOKEN_DATA  lptdArg) 			// Ptr to arg TOKEN_DATA
 
 {
-    // The Arg1 token is at the start of the stmt, so backing up
-    //   by one points to the preceding EOS/EOL stmt which contains the
-    //   stmt length.
-    Assert (lptdArg->uTknNum > 0);
-    lptdArg->uTknNum--;
+	// The Arg1 token is at the start of the stmt, so backing up
+	//	 by one points to the preceding EOS/EOL stmt which contains the
+	//	 stmt length.
+	Assert (lptdArg->uTknNum > 0);
+	lptdArg->uTknNum--;
 
-    // Skip to the end of the Arg1 stmt less one to address the SOS token
-    lptdArg->uTknNum += CS_GetEOSTokenLen (lpplLocalVars, lptdArg) - 1;
+	// Skip to the end of the Arg1 stmt less one to address the SOS token
+	lptdArg->uTknNum += CS_GetEOSTokenLen (lpplLocalVars, lptdArg) - 1;
 } // End CS_PointToSOSToken
 
 
 //***************************************************************************
-//  $CS_SetThisStmt
+//	$CS_SetThisStmt
 //
-//  Set the next token to the beginning of the stmt
-//    at the token pointed to by the given token (pl_yyparse)
+//	Set the next token to the beginning of the stmt
+//	  at the token pointed to by the given token (pl_yyparse)
 //***************************************************************************
 
 void CS_SetThisStmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1)            // Ptr to arg TOKEN_DATA
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPTOKEN_DATA  lptdArg1)			// Ptr to arg TOKEN_DATA
 
 {
-    TOKEN_DATA tdArg;                   // Next TOKEN_DATA
+	TOKEN_DATA tdArg;					// Next TOKEN_DATA
 
-        // Copy the token contents to modify
-    tdArg = *lptdArg1;
+		// Copy the token contents to modify
+	tdArg = *lptdArg1;
 
-    // Point to the SOS token
-    CS_PointToSOSToken (lpplLocalVars, &tdArg);
+	// Point to the SOS token
+	CS_PointToSOSToken (lpplLocalVars, &tdArg);
 
-    // Tell the lexical analyzer to get the next token from
-    //   the preceding EOS token
-    CS_SetNextToken (lpplLocalVars, &tdArg);
+	// Tell the lexical analyzer to get the next token from
+	//	 the preceding EOS token
+	CS_SetNextToken (lpplLocalVars, &tdArg);
 } // End CS_SetThisStmt
 
 
 //***************************************************************************
-//  $CS_SetNextStmt
+//	$CS_SetNextStmt
 //
-//  Set the next token to the stmt after
-//    where a given token points (pl_yyparse)
+//	Set the next token to the stmt after
+//	  where a given token points (pl_yyparse)
 //***************************************************************************
 
 void CS_SetNextStmt
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPTOKEN_DATA  lptdArg) 			// Ptr to arg TOKEN_DATA
 
 {
-    TOKEN       tkNxt;                  // Next TOKEN
-    TOKEN_DATA  tdNxt;                  // Next TOKEN_DATA
+	TOKEN		tkNxt;					// Next TOKEN
+	TOKEN_DATA	tdNxt;					// Next TOKEN_DATA
 
-    // The lptdArg token is at the start of the stmt, i.e.
-    //   one token after EOS/EOL/LABELSEP.
+	// The lptdArg token is at the start of the stmt, i.e.
+	//	 one token after EOS/EOL/LABELSEP.
 
-    // Copy the target address (Line & Token #s)
-    tdNxt = *lptdArg;
+	// Copy the target address (Line & Token #s)
+	tdNxt = *lptdArg;
 
-    // Back up to the preceding EOS/EOL/LABELSEP
-    tdNxt.uTknNum--;
+	// Back up to the preceding EOS/EOL/LABELSEP
+	tdNxt.uTknNum--;
 
-    // Get the contents of the token pointed to by tdNxt
-    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+	// Get the contents of the token pointed to by tdNxt
+	CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
 
-    // Split cases based upon the pointed to token type
-    switch (tkNxt.tkFlags.TknType)
-    {
-        case TKT_EOL:
-        case TKT_EOS:
-            break;
+	// Split cases based upon the pointed to token type
+	switch (tkNxt.tkFlags.TknType)
+	{
+		case TKT_EOL:
+		case TKT_EOS:
+			break;
 
-        case TKT_LABELSEP:
-            // Back up to the preceding EOS/EOL
-            tdNxt.uTknNum -= 2;
+		case TKT_LABELSEP:
+			// Back up to the preceding EOS/EOL
+			tdNxt.uTknNum -= 2;
 
-            // Get the contents of the token pointed to by tdNxt
-            CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+			// Get the contents of the token pointed to by tdNxt
+			CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
 
-            break;
+			break;
 
-        defstop
-            break;
-    } // End SWITCH
+		defstop
+			break;
+	} // End SWITCH
 
-    // Split cases based upon the token type
-    switch (tkNxt.tkFlags.TknType)
-    {
-        case TKT_EOL:
-            // Skip to the next line #, token #0
-            tdNxt.uLineNum++;
-            tdNxt.uTknNum = 0;
+	// Split cases based upon the token type
+	switch (tkNxt.tkFlags.TknType)
+	{
+		case TKT_EOL:
+			// Skip to the next line #, token #0
+			tdNxt.uLineNum++;
+			tdNxt.uTknNum = 0;
 
-            break;
+			break;
 
-        case TKT_EOS:
-            // Skip over this stmt
-            tdNxt.uTknNum += tkNxt.tkData.tkIndex;
+		case TKT_EOS:
+			// Skip over this stmt
+			tdNxt.uTknNum += tkNxt.tkData.tkIndex;
 
-            // Get the contents of the token pointed to by tdNxt
-            CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+			// Get the contents of the token pointed to by tdNxt
+			CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
 
-            // Skip over this stmt, backing off to the SOS
-            tdNxt.uTknNum += tkNxt.tkData.tkIndex - 1;
+			// Skip over this stmt, backing off to the SOS
+			tdNxt.uTknNum += tkNxt.tkData.tkIndex - 1;
 
-            // We're restarting
-            lpplLocalVars->bRestart = TRUE;
+			// We're restarting
+			lpplLocalVars->bRestart = TRUE;
 
-            break;
+			break;
 
-        defstop
-            break;
-    } // End SWITCH
+		defstop
+			break;
+	} // End SWITCH
 
-    // Tell the lexical analyzer to get the next token from tdNxt
-    CS_SetNextToken (lpplLocalVars, &tdNxt);
+	// Tell the lexical analyzer to get the next token from tdNxt
+	CS_SetNextToken (lpplLocalVars, &tdNxt);
 } // End CS_SetNextStmt
 
 
 //***************************************************************************
-//  $CS_SetNextToken
+//	$CS_SetNextToken
 //
-//  Set the next token to where a given token points (pl_yyparse)
+//	Set the next token to where a given token points (pl_yyparse)
 //***************************************************************************
 
 void CS_SetNextToken
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1)            // Ptr to arg TOKEN_DATA
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPTOKEN_DATA  lptdArg1)			// Ptr to arg TOKEN_DATA
 
 {
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+	HGLOBAL 	 hGlbPTD;				// PerTabData global memory handle
+	LPPERTABDATA lpMemPTD;				// Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+	// Get the thread's PerTabData global memory handle
+	hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+	// Lock the memory to get a ptr to it
+	lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // If the stmts are on the same line, ...
-    if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
-        // Set the next token to parse
-        lpplLocalVars->lptkNext =
-          &lpplLocalVars->lptkStart[lptdArg1->uTknNum];
-    else
-    {
-            // Save as the next line & token #
-        lpMemPTD->lpSISCur->NxtLineNum = lptdArg1->uLineNum;
-        lpMemPTD->lpSISCur->NxtTknNum  = lptdArg1->uTknNum;
+	// If the stmts are on the same line, ...
+	if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
+		// Set the next token to parse
+		lpplLocalVars->lptkNext =
+		  &lpplLocalVars->lptkStart[lptdArg1->uTknNum];
+	else
+	{
+			// Save as the next line & token #
+		lpMemPTD->lpSISCur->NxtLineNum = lptdArg1->uLineNum;
+		lpMemPTD->lpSISCur->NxtTknNum  = lptdArg1->uTknNum;
 
-        // Tell the parser to stop executing this line
-        lpplLocalVars->bStopExec = TRUE;
-    } // End IF/ELSE
+		// Tell the parser to stop executing this line
+		lpplLocalVars->bStopExec = TRUE;
+	} // End IF/ELSE
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End CS_SetNextToken
 
 
 //***************************************************************************
-//  $CS_GetTokenType
+//	$CS_GetTokenType
 //
-//  Return the token type of a given token identified by line and token #
-//    (pl_yyparse)
+//	Return the token type of a given token identified by line and token #
+//	  (pl_yyparse)
 //***************************************************************************
 
 TOKEN_TYPES CS_GetTokenType
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPTOKEN_DATA  lptdArg) 			// Ptr to arg TOKEN_DATA
 
 {
-    TOKEN tkNxt;                        // Next token
+	TOKEN tkNxt;						// Next token
 
-    // Get the contents of the token
-    CS_GetNextToken (lpplLocalVars, lptdArg, &tkNxt, NULL, NULL);
+	// Get the contents of the token
+	CS_GetNextToken (lpplLocalVars, lptdArg, &tkNxt, NULL, NULL);
 
-    return tkNxt.tkFlags.TknType;
+	return tkNxt.tkFlags.TknType;
 } // End CS_GetTokenType
 
 
 //***************************************************************************
-//  $CS_GetEOSTokenLen
+//	$CS_GetEOSTokenLen
 //
-//  Return the length of the EOS token which precedes a given token
-//    (pl_yyparse)
+//	Return the length of the EOS token which precedes a given token
+//	  (pl_yyparse)
 //***************************************************************************
 
 UINT CS_GetEOSTokenLen
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
+	(LPPLLOCALVARS lpplLocalVars,		// Ptr to PL local vars
+	 LPTOKEN_DATA  lptdArg) 			// Ptr to arg TOKEN_DATA
 
 {
-    TOKEN tkNxt;                        // Next token
+	TOKEN tkNxt;						// Next token
 
-    // Get the contents of the token
-    CS_GetNextToken (lpplLocalVars, lptdArg, &tkNxt, NULL, NULL);
+	// Get the contents of the token
+	CS_GetNextToken (lpplLocalVars, lptdArg, &tkNxt, NULL, NULL);
 
-    Assert (tkNxt.tkFlags.TknType EQ TKT_EOS
-         || tkNxt.tkFlags.TknType EQ TKT_EOL);
+	Assert (tkNxt.tkFlags.TknType EQ TKT_EOS
+		 || tkNxt.tkFlags.TknType EQ TKT_EOL);
 
-    return tkNxt.tkData.tkIndex;
+	return tkNxt.tkData.tkIndex;
 } // End CS_GetEOSTokenLen
 
 
 //***************************************************************************
-//  End of File: cs_proc.c
+//	End of File: cs_proc.c
 //***************************************************************************

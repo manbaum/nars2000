@@ -128,7 +128,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     LPVOID       lpMemLft;      // Ptr to left arg global memory
     LPPL_YYSTYPE lpYYRes,       // Ptr to the result
                  lpYYRes2;      // Ptr to secondary result
-    UINT         ByteRes;       // # bytes in the result
+    APLUINT      ByteRes;       // # bytes in the result
     APLBOOL      bQuadIO;       // []IO
 
     // Get the current value of []IO
@@ -146,10 +146,12 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Calculate space needed for the left arg
-    ByteRes = (UINT) CalcArraySize (ARRAY_APA, aplRankRht, 1);
+    ByteRes = CalcArraySize (ARRAY_APA, aplRankRht, 1);
 
     // Allocate storage for the left argument
-    hGlbLft = DbgGlobalAlloc (GHND, ByteRes);
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbLft)
         goto WSFULL_EXIT;
 
@@ -410,8 +412,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -475,8 +477,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   doesn't handle the empty case well.
     ByteRes = max (ByteRes, 1);
 
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVec)
         goto WSFULL_EXIT;
 
@@ -507,8 +509,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   doesn't handle the empty case well.
     ByteRes = max (ByteRes, 1);
 
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdo)
         goto WSFULL_EXIT;
 

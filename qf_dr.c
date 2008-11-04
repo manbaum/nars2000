@@ -534,8 +534,8 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -574,14 +574,14 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
             // Save the result shape vector
-            CopyMemory (lpMemDimRes, &((LPAPLUINT) lpMemRht)[2], (UINT) BytesIn (ARRAY_INT, aplRankRes));
+            CopyMemory (lpMemDimRes, &((LPAPLUINT) lpMemRht)[2], (APLU3264) BytesIn (ARRAY_INT, aplRankRes));
         } else
         {
             // Copy the right arg dimensions to the result unless APA
             if (!IsSimpleAPA (aplTypeRht))
                 CopyMemory (lpMemDimRes,
                             VarArrayBaseToDim (lpMemRht),
-                            (UINT) BytesIn (ARRAY_INT, aplRankRes - 1));
+                            (APLU3264) BytesIn (ARRAY_INT, aplRankRes - 1));
             // Save the last dimension
             lpMemDimRes[aplRankRes - 1] = aplColsRes;
 
@@ -589,12 +589,12 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
             if (IsSimpleAPA (aplTypeRht))
                 CopyMemory (&((LPAPLINT) lpMemRes)[2],
                              VarArrayBaseToDim (lpMemRht),
-                             (UINT) BytesIn (ARRAY_INT, aplRankRht));
+                             (APLU3264) BytesIn (ARRAY_INT, aplRankRht));
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
             // Copy the right arg data to the result
-            CopyMemory (lpMemRes, lpMemRht, (UINT) BytesIn (aplTypeRht, aplNELMRht));
+            CopyMemory (lpMemRes, lpMemRht, (APLU3264) BytesIn (aplTypeRht, aplNELMRht));
         } // End IF/ELSE
     } else
     {
@@ -811,8 +811,8 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -837,7 +837,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the text to the result
-    CopyMemory (lpMemRes, wszTemp, (UINT) BytesIn (ARRAY_CHAR, aplNELMRes));
+    CopyMemory (lpMemRes, wszTemp, (APLU3264) BytesIn (ARRAY_CHAR, aplNELMRes));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1003,8 +1003,8 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -1229,8 +1229,8 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 

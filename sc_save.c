@@ -73,6 +73,7 @@ UBOOL CmdSave_EM
                  lpw;                   // Temporary ptr
     APLNELM      aplNELMWSID;           // []WSID NELM
     APLRANK      aplRankWSID;           // ...    rank
+    APLUINT      ByteRes;               // # bytes in the result
     UBOOL        bRet = FALSE;          // TRUE iff result is valid
     UINT         uNameLen;              // Length of the object name in WCHARs
     int          iCmp;                  // Comparison result
@@ -117,7 +118,7 @@ UBOOL CmdSave_EM
     // Because the global memory doesn't have a zero terminator,
     //   we must copy the data to a temporary location and then
     //   append a zero terminator
-    lstrcpynW (wszTempDPFE, lpMemSaveWSID, (__int3264) aplNELMWSID + 1);
+    lstrcpynW (wszTempDPFE, lpMemSaveWSID, (APLU3264) aplNELMWSID + 1);
 ////wszTempDPFE[aplNELMWSID] = L'\0';   // Already done via "+ 1" in lstrcpynW
 
     // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
@@ -161,7 +162,7 @@ UBOOL CmdSave_EM
                     lstrcpyW (lpwszTemp, ERRMSG_NOT_SAVED);
 
                     // Followed by the old []WSID
-                    lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpMemSaveWSID, (__int3264) aplNELMWSID + 1);
+                    lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpMemSaveWSID, (APLU3264) aplNELMWSID + 1);
                 } // End IF/ELSE
 
                 // Display the error message
@@ -205,8 +206,13 @@ UBOOL CmdSave_EM
     if (OptionFlags.bBackupOnSave)
         MakeWorkspaceBackup (lpMemSaveWSID, SAVEBAK_EXT);
 
+    // Calculate space needed for the two counters
+    ByteRes = 2 * sizeof (UINT) * (lpMemPTD->SILevel + 1);
+
     // Allocate space for two counters (Vars & Fcns) per SI level
-    hGlbCnt = MyGlobalAlloc (GHND, 2 * sizeof (UINT) * (lpMemPTD->SILevel + 1));
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbCnt = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbCnt)
         goto WSFULL_EXIT;
 

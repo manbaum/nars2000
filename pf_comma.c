@@ -260,8 +260,8 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -549,8 +549,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     // Now we can allocate the storage for the result.
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -650,7 +650,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         // Account for the header and dimensions
         ByteRes -= sizeof (VARARRAY_HEADER)
                  + sizeof (APLDIM) * aplRankRes;
-        CopyMemory (lpMemRes, lpMemRht, (UINT) ByteRes);
+        CopyMemory (lpMemRes, lpMemRht, (APLU3264) ByteRes);
     } else
     // Reorder the right arg into the result
     {
@@ -670,8 +670,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteRes = aplRankRht * sizeof (APLUINT);
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
 
@@ -696,8 +696,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteRes = aplRankRht * sizeof (APLUINT);
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
 
@@ -1312,8 +1312,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
 
     if (!hGlbRes)
         goto WSFULL_EXIT;

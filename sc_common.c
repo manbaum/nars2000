@@ -98,7 +98,7 @@ void DisplayWorkspaceStamp
 
     WCHAR      wszTimeStamp[16 + 1],    // Output save area for time stamp
                wszTimeStamp2[16 + 1],   // Output save area for time stamp
-               wszTemp[1 + (sizeof (TIMESTAMP_FMT) / sizeof (WCHAR))];
+               wszTemp[1 + itemsizeof (TIMESTAMP_FMT)];
     FILETIME   ftCreation,              // Function creation time in UTC
                ftLocalTime;             // ...                       localtime
     SYSTEMTIME systemTime;              // Current system (UTC) time
@@ -246,8 +246,8 @@ void MakeWorkspaceBackup
     while (feof (fStream) EQ 0
         && ferror (fBackup) EQ 0)
     {
-        uLen = (__int3264) fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR), fStream);
-                           fwrite (lpwszTemp, 1, (__int3264) uLen                      , fBackup);
+        uLen = (APLU3264) fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR), fStream);
+                           fwrite (lpwszTemp, 1, (APLU3264) uLen                      , fBackup);
     } // End WHILE
 
     // We no longer need this handle
@@ -327,8 +327,8 @@ UBOOL SaveNewWsid_EM
 
         // Allocate space for the new WSID
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteWSID EQ (__int3264) ByteWSID);
-        hGlbWSID = DbgGlobalAlloc (GHND, (__int3264) ByteWSID);
+        Assert (ByteWSID EQ (APLU3264) ByteWSID);
+        hGlbWSID = DbgGlobalAlloc (GHND, (APLU3264) ByteWSID);
         if (!hGlbWSID)
             goto WSFULL_EXIT;
 

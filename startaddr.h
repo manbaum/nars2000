@@ -318,9 +318,6 @@ typedef struct tagSTART_ADDRESSES
     // po_cmiddot.c
     "PrimOpDydCircleMiddleDotCommon_EM_YY", (LPUCHAR) &PrimOpDydCircleMiddleDotCommon_EM_YY,
 
-    // po_dicircle.c
-    "PrimOpDieresisCircle_EM_YY", (LPUCHAR) &PrimOpDieresisCircle_EM_YY ,
-
     // po_dieresis.c
     "PrimOpDieresis_EM_YY"      , (LPUCHAR) &PrimOpDieresis_EM_YY       ,
 

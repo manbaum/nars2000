@@ -99,8 +99,8 @@ LPPL_YYSTYPE SysFnET_EM_YY
     ByteRes = CalcArraySize (ARRAY_INT, 2, 1);
 
     // Allocate space for the result
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 

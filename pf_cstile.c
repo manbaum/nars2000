@@ -137,8 +137,8 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     APLINT        apaOffRht,        // Right arg APA offset
                   apaMulRht;        // Right arg APA multiplier
     LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    UINT          ByteRes,          // # bytes in the result
-                  uBitMask,         // Bit mask when looping through Booleans
+    APLUINT       ByteRes;          // # bytes in the result
+    UINT          uBitMask,         // Bit mask when looping through Booleans
                   uBitIndex;        // Bit index ...
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
@@ -212,10 +212,12 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
         aplTypeRes = aplTypeRht;
 
     // Calculate space needed for the result
-    ByteRes = (UINT) CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
 
     // Allocate storage for the result
-    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+    // N.B. Conversion from APLUINT to UINT.
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -592,8 +594,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         // Allocate temp storage for the normalized left arg
         // N.B.: Conversion from APLUINT to UINT
         ByteRes = aplNELMLft * sizeof (APLINT);
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRot = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRot = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRot)
             goto WSFULL_EXIT;
 
@@ -723,8 +725,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 

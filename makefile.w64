@@ -32,6 +32,7 @@ OLDPATH=$(PATH)                 # Save the current path
 GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
+R=Y:\                           # RAM disk for executable
 
 WIN=32
 WDEF=_WIN$(WIN)

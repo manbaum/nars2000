@@ -228,7 +228,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
 
     // Copy the data to temporary storage so we can terminate it properly
     //   as well as translate it to/from APL2 charset
-    CopyMemory (lpwszTemp, lpMemRht, (__int3264) aplNELMRht * sizeof (lpMemRht[0]));
+    CopyMemory (lpwszTemp, lpMemRht, (APLU3264) aplNELMRht * sizeof (lpMemRht[0]));
     lpwszTemp[aplNELMRht] = L'\0';
 
     if (hGlbRht && lpMemRht)
@@ -306,7 +306,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
     APLNELM           aplNELMRes;               // Result    ...
     LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
     APLUINT           uCnt;                     // Loop counter
-    APLUINT           ByteRes;                  // # bytes needed for the result
+    APLUINT           ByteRes;                  // # bytes in the result
     HGLOBAL           hGlbRes;                  // Result global memory handle
     LPVOID            lpMemRes;                 // Ptr to result global memory
     HGLOBAL           hGlbItm = NULL;           // Right arg item global memory handle
@@ -375,8 +375,8 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
 
         // Now we can allocate the storage for the result
         // N.B.:  Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -400,7 +400,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
         *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
         // Copy the name to the result
-        CopyMemory (lpMemRes, &lpwszTemp[1], (__int3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemory (lpMemRes, &lpwszTemp[1], (APLU3264) aplNELMRes * sizeof (APLCHAR));
 
         // Translate the name from NARS to APL2 charset
         if (bTranslateAPL2)
@@ -604,7 +604,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                                   *((LPAPLDIM) lpMemItm)++,     // The value to format
                                                   UTF16_OVERBAR);               // Char to use as overbar
                             // Copy the values to temp storage
-                            CopyMemory (lpwszTemp, lpMemItm, (__int3264) aplNELMItm * sizeof (APLCHAR));
+                            CopyMemory (lpwszTemp, lpMemItm, (APLU3264) aplNELMItm * sizeof (APLCHAR));
 
                             // Skip over the copied values
                             lpwszTemp += aplNELMItm;
@@ -753,8 +753,8 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
 
         // Now we can allocate the storage for the result
         // N.B.:  Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -778,7 +778,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
         *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
         // Copy the memory to the result
-        CopyMemory (lpMemRes, lpwName, (__int3264) aplNELMRes * sizeof (lpwName[0]));
+        CopyMemory (lpMemRes, lpwName, (APLU3264) aplNELMRes * sizeof (lpwName[0]));
 
         // Translate the data from NARS to APL2 charset
         if (bTranslateAPL2)
@@ -851,7 +851,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
      UBOOL   bTranslateAPL2)                    // TRUE iff input/output shoudl be translated to/from APL2
 
 {
-    APLUINT       ByteRes;                  // # bytes needed for the result
+    APLUINT       ByteRes;                  // # bytes in the result
     LPWCHAR       lpwTemp;                  // Ptr to temporary
     WCHAR         wch;                      // Temporary char
     LPPL_YYSTYPE  lpYYRes = NULL;           // Ptr to the result
@@ -1041,8 +1041,8 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
 
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -1066,7 +1066,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
     *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
     // Copy the name to the result
-    CopyMemory (lpMemRes, lpwszTemp, (__int3264) aplNELMRes * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes * sizeof (APLCHAR));
 
     // Translate the name/data from NARS to APL2 charset
     if (bTranslateAPL2)
@@ -1192,7 +1192,7 @@ UBOOL TransferInverseFcn1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, (__int3264) (lpwData - lpwName));
+        CharLowerBuffW (lpwName, (APLU3264) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;

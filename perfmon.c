@@ -82,7 +82,7 @@ void PerfMonAccum
 
 {
     // Ensure no overflow
-    if (uPerfMonData EQ (sizeof (PerfMonData) / sizeof (PerfMonData[0])))
+    if (uPerfMonData EQ itemsizeof (PerfMonData))
         DbgBrk ();
 
     // Save the performance data
@@ -325,7 +325,7 @@ LRESULT APIENTRY PMWndProc
                              _hInstance,            // Instance
                              0);                    // lParam
             // Save for later use
-            SetWindowLongPtrW (hWnd, GWLDB_HWNDLB, (__int3264) (LONG_PTR) hWndLB);
+            SetWindowLongPtrW (hWnd, GWLDB_HWNDLB, (APLU3264) (LONG_PTR) hWndLB);
 
             // Set the font
             SendMessageW (hWndLB, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (FALSE, 0));

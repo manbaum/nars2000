@@ -142,7 +142,7 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
             // Copy the error message to temporary storage
-            CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
+            CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (APLU3264) aplNELMRht * sizeof (APLCHAR));
         } else
             lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht;
 

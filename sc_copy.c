@@ -481,7 +481,7 @@ int CopyWsVars
             // Parse the value into aplLongestObj and aplTypeObj
             lpwDataInWrk =
               ParseSavedWsVar_EM (lpwDataInWrk,     // Ptr to input buffer
-                                  uMaxSize - (UINT) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
+                                  uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
                                  &lpaplLongestObj,  // Ptr to ptr to output element
                                  &aplTypeObj,       // Ptr to storage type (may be NULL)
                                  &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
@@ -643,7 +643,7 @@ int CopyWsFcns
 
             // Parse the line into lpSymEntry->stData
             if (!ParseSavedWsFcn_EM (lpwDataInWrk,      // Ptr to input buffer
-                                     uMaxSize - (UINT) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
+                                     uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
                                      lpSymEntry,        // Ptr to STE for the object
                                      nameType,          // Function name type (see NAME_TYPES)
                                      hWndEC,            // Edit Ctrl window handle

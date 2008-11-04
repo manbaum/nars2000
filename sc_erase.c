@@ -78,7 +78,7 @@ UBOOL CmdErase_EM
             //   and the .Inuse flag
             ZeroMemory (&stFlags, sizeof (stFlags));
             lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                (UINT) (&lpwszTail[uRht] - lpMemDataStart),
+                                                (APLU3264) (&lpwszTail[uRht] - lpMemDataStart),
                                                 &stFlags);
             // If found, attempt to expunge the name
             // If not found, ignore it if it's a valid name
@@ -91,7 +91,7 @@ UBOOL CmdErase_EM
             } else
             {
                 if (!IsValidName (lpMemDataStart,
-                                 (UINT) (&lpwszTail[uRht] - lpMemDataStart)))
+                                 (APLU3264) (&lpwszTail[uRht] - lpMemDataStart)))
                     ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
             } // End IF/ELSE
         } else
@@ -131,7 +131,7 @@ void ExpungeError
     {
         AppendLine (ERRMSG_NOT_ERASED, FALSE, FALSE);
         *lpbNotErasedHeader = TRUE;
-        *lpiNotErasedWidth = (sizeof (ERRMSG_NOT_ERASED) / sizeof (APLCHAR)) - 1;
+        *lpiNotErasedWidth = itemlengthof (ERRMSG_NOT_ERASED);
     } // End IF
 
     // Get the STE name global memory handle

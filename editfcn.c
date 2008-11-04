@@ -51,15 +51,16 @@
  * Syntax Coloring:
    * Global Name
    * Local Name
-   * Label
-   * Primitive Function
-   * Quad Function
-   * Quad Variable
-   * Control Structure
-   * Number
-   * Character
-   * Comment
-   * Unmatched Grouping Symbols
+   * Label (including trailing colon)
+   * Primitive Function/Operator (including quad, quote-quad, left/right arrows,
+     del, semicolon, and diamond)
+   * Quad Function (including leading quad)
+   * Quad Variable (including leading quad)
+   * Control Structure (including leading colon)
+   * Numeric constant (including leading overbar)
+   * Character constant (including single- or double-quote marks)
+   * Comment (including comment symbol)
+   * Unmatched Grouping Symbols [] () {} '' ""
  * Redo
  * Toolbar
  * Line #s optional
@@ -528,13 +529,13 @@ LRESULT APIENTRY FEWndProc
 
         case MYWM_INIT_EC:
         {
-            UINT uLineLen;          // Line length
+            APLU3264 uLineLen;      // Line length
 
             // Draw the line #s
             DrawLineNumsFE (hWndEC);
 
             // Set the caret to the end of the function header
-            uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
+            uLineLen = (APLU3264) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
             SendMessageW (hWndEC, EM_SETSEL, uLineLen, uLineLen);
 
             return FALSE;           // We handled the msg
@@ -1098,7 +1099,7 @@ LRESULT WINAPI LclEditCtrlWndProc
     LRESULT      lResult;                   // Result from calling original handler
     LPUNDO_BUF   lpUndoNxt,                 // Ptr to next available slot in the Undo Buffer
                  lpUndoBeg;                 // ...    first          ...
-    UINT         uCharPosBeg,               // Pos of the beginning char
+    APLU3264     uCharPosBeg,               // Pos of the beginning char
                  uCharPosEnd,               // ...        ending    ...
                  uCharPos,                  // ...    a character position
                  uLinePos,                  // Char position of start of line
@@ -1677,10 +1678,10 @@ LRESULT WINAPI LclEditCtrlWndProc
                     SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
                     // Get the line # of this char
-                    uLineNum = (UINT) SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
+                    uLineNum = (APLU3264) SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
 
                     // Get the char position of the start of the current line
-                    uLinePos = (UINT) SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
+                    uLinePos = (APLU3264) SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
 
                     // Get the # spaces to insert
                     uCharPos = uCharPosBeg - uLinePos;
@@ -1862,6 +1863,14 @@ LRESULT WINAPI LclEditCtrlWndProc
                 wChar[0] = aCharCodes[iChar].alt;
                 wChar[1] = L'\0';
 
+                // If this control allows numbers only, ...
+                if (ES_NUMBER & GetWindowLongW (hWnd, GWL_STYLE))
+                {
+                    if (L'0' > wChar[0]
+                     ||        wChar[0] > L'9')
+                        break;
+                } // End IF
+
                 // If it's valid, insert/replace it
                 if (wChar[0])
                 {
@@ -1926,7 +1935,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         uCharPosBeg = lpUndoNxt->CharPosBeg;
 
                         // Get the corresponding line #
-                        uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
+                        uLineNum = (APLU3264) SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
 
                         // Unset the selection to this char position
                         SendMessageW (hWnd, EM_SETSEL, uCharPosBeg, uCharPosBeg);
@@ -1948,7 +1957,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         uCharPosBeg = lpUndoNxt->CharPosBeg;
 
                         // Get the corresponding line #
-                        uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
+                        uLineNum = (APLU3264) SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
 
                         // Set the selection to this char position
                         SendMessageW (hWnd, EM_SETSEL, uCharPosBeg, uCharPosBeg + 1);
@@ -1971,7 +1980,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         uCharPosEnd = lpUndoNxt->CharPosEnd;
 
                         // Get the corresponding line #
-                        uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
+                        uLineNum = (APLU3264) SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
 
                         // Set the selection to these chars
                         SendMessageW (hWnd, EM_SETSEL, uCharPosBeg, uCharPosEnd);
@@ -1990,7 +1999,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         uCharPosEnd = lpUndoNxt->CharPosEnd;
 
                         // Get the corresponding line #
-                        uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
+                        uLineNum = (APLU3264) SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
 
                         // Set the selection to these chars
                         SendMessageW (hWnd, EM_SETSEL, uCharPosBeg, uCharPosEnd);
@@ -2747,14 +2756,14 @@ ERROR_EXIT:
             case CF_DSPMETAFILEPICT:
             case CF_ENHMETAFILE:
             case CF_METAFILEPICT:
-                DeleteMetaFile (lpMemFmts[uFmt].hGlbFmt);
+                DeleteMetaFile (lpMemFmts[uFmt].hGlbFmt); lpMemFmts[uFmt].hGlbFmt = NULL;
 
                 break;
 
             case CF_BITMAP:
             case CF_DSPBITMAP:
             case CF_PALETTE:
-                DeleteObject (lpMemFmts[uFmt].hGlbFmt);
+                MyDeleteObject (lpMemFmts[uFmt].hGlbFmt); lpMemFmts[uFmt].hGlbFmt = NULL;
 
                 break;
 
@@ -3070,7 +3079,7 @@ UBOOL IzitFE
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, (sizeof (wszClassName) / sizeof (wszClassName[0])) - 1);
+    GetClassNameW (hWnd, wszClassName, itemlengthof (wszClassName));
 
     return (lstrcmpW (wszClassName, LFEWNDCLASS) EQ 0);
 } // End IzitFE
@@ -3088,7 +3097,7 @@ UBOOL IzitSM
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, (sizeof (wszClassName) / sizeof (wszClassName[0])) - 1);
+    GetClassNameW (hWnd, wszClassName, itemlengthof (wszClassName));
 
     return (lstrcmpW (wszClassName, LSMWNDCLASS) EQ 0);
 } // End IzitSM

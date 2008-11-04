@@ -26,8 +26,8 @@
 #include <windowsx.h>
 #include <stdlib.h>
 #include <winver.h>
-#include <colors.h>
 
+#include "colors.h"
 #include "main.h"
 #include "resdebug.h"
 #include "resource.h"
@@ -111,7 +111,7 @@ FREE:
 //  Just yer standard About box.
 //***************************************************************************
 
-__int3264 CALLBACK AboutDlgProc
+APLU3264 CALLBACK AboutDlgProc
     (HWND   hDlg,
      UINT   message,
      WPARAM wParam,
@@ -143,7 +143,7 @@ __int3264 CALLBACK AboutDlgProc
             (HANDLE_PTR) lpfnOldStaticWndProc =
               SetWindowLongPtr (hWndStatic,
                                 GWL_WNDPROC,
-                                (__int3264) (LONG_PTR) (WNDPROC) &LclStaticWndProc);
+                                (APLU3264) (LONG_PTR) (WNDPROC) &LclStaticWndProc);
             // Set the cursor for the static control to a hand
 
 
@@ -159,7 +159,7 @@ __int3264 CALLBACK AboutDlgProc
             // We handle IDC_LINK static window only
             if (hWnd EQ hWndStatic)
             {
-                LOGFONT lf;
+                LOGFONTW lf;
 
                 // Set the text color
                 SetTextColor (hDC, COLOR_BLUE);
@@ -170,20 +170,20 @@ __int3264 CALLBACK AboutDlgProc
                 // Get the font handle
                 hFont = (HFONT) SendMessageW (hWnd, WM_GETFONT, 0, 0);
 
-                // Get the LOGFONT structure for the font
-                GetObject (hFont, sizeof (lf), &lf);
+                // Get the LOGFONTW structure for the font
+                GetObjectW (hFont, sizeof (lf), &lf);
 
                 // Change to an underlined font
                 lf.lfUnderline = TRUE;
 
                 // Create a new font, now underlined
-                hFont = MyCreateFontIndirect (&lf);
+                hFont = MyCreateFontIndirectW (&lf);
 
                 // Select it into the DC
                 SelectObject (hDC, hFont);
 
                 // Return handle of brush for background
-                return (__int3264) (HANDLE_PTR) CreateSolidBrush (GetSysColor (COLOR_BTNFACE));
+                return (APLU3264) (HANDLE_PTR) CreateSolidBrush (GetSysColor (COLOR_BTNFACE));
             } else
                 break;
 #undef  hWnd
@@ -199,7 +199,7 @@ __int3264 CALLBACK AboutDlgProc
             // Restore the old WndProc
             SetWindowLongPtr (hWndStatic,
                               GWL_WNDPROC,
-                              (__int3264) (LONG_PTR) (WNDPROC) lpfnOldStaticWndProc);
+                              (APLU3264) (LONG_PTR) (WNDPROC) lpfnOldStaticWndProc);
             lpfnOldStaticWndProc = NULL;
 
             EndDialog (hDlg, TRUE); // Quit this dialog

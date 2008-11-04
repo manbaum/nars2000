@@ -117,9 +117,6 @@ UINT OprTrans
         case UTF16_DIERESISJOT:             // 0x2364
             return INDEX_DIERESISJOT;       // Use special index
 
-        case UTF16_DIERESISCIRCLE:          // 0x2365
-            return INDEX_DIERESISCIRCLE;    // Use special index
-
         case UTF16_JOTDOT:                  // 0x0001
             return INDEX_JOTDOT;            // Use special index
 

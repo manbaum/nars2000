@@ -278,7 +278,7 @@ __try
     // Create <aplDimNCols> FMTCOLSTRs
     lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
     lpFmtHeader->lpFmtCol1st = lpFmtColStr;
-    ZeroMemory (lpFmtColStr, (UINT) aplDimNCols * sizeof (FMTCOLSTR));
+    ZeroMemory (lpFmtColStr, (APLU3264) aplDimNCols * sizeof (FMTCOLSTR));
 #ifdef DEBUG
     {
         APLDIM uCol;
@@ -470,8 +470,8 @@ __try
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -513,8 +513,8 @@ __try
     // lpMemRes now points to the result's data
 #ifdef PREFILL
     // Fill it with all blanks
-    Assert (aplNELMRes EQ (__int3264) aplNELMRes);
-    FillMemoryW (lpMemRes, (__int3264) aplNELMRes, L' ');
+    Assert (aplNELMRes EQ (APLU3264) aplNELMRes);
+    FillMemoryW (lpMemRes, (APLU3264) aplNELMRes, L' ');
 #endif
     // Output the result at appropriate widths
 
@@ -1670,7 +1670,7 @@ LPAPLCHAR CompileArrNestedCon
 
     // Create <aplDimNCols> FMTCOLSTRs in the output
     lpFmtHeader->lpFmtCol1st = lpFmtColStr;
-    ZeroMemory (lpFmtColStr, (__int3264) aplDimNCols * sizeof (FMTCOLSTR));
+    ZeroMemory (lpFmtColStr, (APLU3264) aplDimNCols * sizeof (FMTCOLSTR));
 #ifdef DEBUG
     {
         APLDIM uCol;
@@ -1858,7 +1858,7 @@ LPAPLCHAR CompileArrNestedGlb
     // Create <aplChrNCols> FMTCOLSTRs in the output
     lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
     lpFmtHeader->lpFmtCol1st = lpFmtColStr;
-    ZeroMemory (lpFmtColStr, (__int3264) aplChrNCols * sizeof (FMTCOLSTR));
+    ZeroMemory (lpFmtColStr, (APLU3264) aplChrNCols * sizeof (FMTCOLSTR));
 #ifdef DEBUG
     {
         APLDIM uCol;
@@ -2905,7 +2905,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                  apaMulLft,         // ...          multiplier
                  aplIntegerLft,     // Left arg temporary integer
                  iPrc;              // Precision ...
-    APLUINT      ByteRes,           // # bytes to allocate
+    APLUINT      ByteRes,           // # bytes in the result
                  uDim,              // Loop counter
                  uRht,              // Loop counter
                  uPar,              // Parity indicator
@@ -2971,8 +2971,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     // Allocate temp storage for the normalized left arg
     // N.B.: Conversion from APLUINT to UINT
     ByteRes = aplColsRht * sizeof (WIDPRC);
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbWidPrc = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbWidPrc = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWidPrc)
         goto WSFULL_EXIT;
 
@@ -3273,7 +3273,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         lpMemItmRht = VarArrayBaseToData (lpMemItmRht, aplRankItmRht);
 
                         // Copy the data to the format area
-                        CopyMemory (lpaplChar, lpMemItmRht, (__int3264) aplNELMItmRht * sizeof (APLCHAR));
+                        CopyMemory (lpaplChar, lpMemItmRht, (APLU3264) aplNELMItmRht * sizeof (APLCHAR));
 
                         // Skip over the copied data
                         lpaplChar += aplNELMItmRht;
@@ -3304,7 +3304,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                 {
                                     // Append decimal separator followed by iPrc 0s
                                     lpaplChar[-1] = aplCharDecimal;
-                                    FillMemoryW (lpaplChar, (__int3264) iPrc, L'0');
+                                    FillMemoryW (lpaplChar, (APLU3264) iPrc, L'0');
                                     lpaplChar += iPrc;
                                     *lpaplChar++ = L'\0';
                                 } // End IF
@@ -3376,7 +3376,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         if (aplCharOverflow EQ L'0')
                             goto DOMAIN_EXIT;
 
-                        FillMemoryW (lpaplCharIni, (__int3264) uWid, aplCharOverflow);
+                        FillMemoryW (lpaplCharIni, (APLU3264) uWid, aplCharOverflow);
                         lpaplChar = lpaplCharIni + uWid;
                         *lpaplChar++ = L'\0';
                     } // End IF/ELSE/...
@@ -3406,8 +3406,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, aplRankRes);
 
     // Allocate space for the result
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -3439,7 +3439,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     // Fill in the data
 
     // Fill the result with blanks
-    FillMemoryW (lpMemRes, (__int3264) aplNELMRes, L' ');
+    FillMemoryW (lpMemRes, (APLU3264) aplNELMRes, L' ');
 
     // Loop through the formatted data and copy it to the result
     for (aplDimCol = uAccWid = 0; aplDimCol < aplDimNCols; aplDimCol++, uAccWid += Auto + uWid)

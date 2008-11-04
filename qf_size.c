@@ -152,8 +152,8 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -221,7 +221,7 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
                     //   and the .Inuse flag
                     ZeroMemory (&stFlags, sizeof (stFlags));
                     lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                        (UINT) (&lpMemDataRht[uRht] - lpMemDataStart),
+                                                        (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart),
                                                         &stFlags);
                     // If not found, return 0
                     if (!lpSymEntry)
@@ -253,7 +253,7 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
                 //   and the .Inuse flag
                 ZeroMemory (&stFlags, sizeof (stFlags));
                 lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
-                                                      (UINT) (aplNELMCol - uCol),
+                                                      (APLU3264) (aplNELMCol - uCol),
                                                      &stFlags);
                 // If not found, return 0
                 if (!lpSymEntry)

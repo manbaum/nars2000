@@ -383,8 +383,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -478,8 +478,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbWVecRht = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbWVecRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRht)
         goto WSFULL_EXIT;
 
@@ -506,8 +506,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbOdoRht = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRht)
         goto WSFULL_EXIT;
 
@@ -515,7 +515,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     lpMemOdoRht = MyGlobalLock (hGlbOdoRht);
 
     // Initialize the right arg odometer array
-    CopyMemory (lpMemOdoRht, lpMemLoHiRht, (UINT) aplRankRes * sizeof (APLUINT));
+    CopyMemory (lpMemOdoRht, lpMemLoHiRht, (APLU3264) aplRankRes * sizeof (APLUINT));
 
     //***************************************************************
     // Allocate space for the result weighting vector which is
@@ -523,8 +523,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbWVecRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbWVecRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRes)
         goto WSFULL_EXIT;
 
@@ -550,8 +550,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbOdoRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbOdoRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRes)
         goto WSFULL_EXIT;
 
@@ -559,7 +559,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     lpMemOdoRes = MyGlobalLock (hGlbOdoRes);
 
     // Initialize the result odometer array
-    CopyMemory (lpMemOdoRes, lpMemLoHiRes, (UINT) aplRankRes * sizeof (APLUINT));
+    CopyMemory (lpMemOdoRes, lpMemLoHiRes, (APLU3264) aplRankRes * sizeof (APLUINT));
 
     // If the right arg is an immediate, ...
     if (lpMemRht EQ NULL)

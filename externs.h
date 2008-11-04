@@ -1,23 +1,23 @@
 //***************************************************************************
-//  NARS2000 -- Extern Variables
+//	NARS2000 -- Extern Variables
 //***************************************************************************
 
 /***************************************************************************
-    NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+	NARS2000 -- An Experimental APL Interpreter
+	Copyright (C) 2006-2008 Sudley Place Software
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #include <commctrl.h>
@@ -40,248 +40,224 @@
 #endif
 
 // Define struct for passing parameters to WM_NCCREATE/WM_CREATE
-//   for the Session Manager
+//	 for the Session Manager
 typedef struct tagSM_CREATESTRUCTW
 {
-    HGLOBAL hGlbDPFE;       // 00:  Workspace DPFE global memory handle
-    UBOOL    bExecLX;       // 04:  TRUE iff execute []LX after successful load
-                            // 08:  Length
+	HGLOBAL hGlbDPFE;		// 00:	Workspace DPFE global memory handle
+	UBOOL	 bExecLX;		// 04:	TRUE iff execute []LX after successful load
+							// 08:	Length
 } SM_CREATESTRUCTW, UNALIGNED *LPSM_CREATESTRUCTW;
 
 
 //***************************************************************************
-//  Default global values of system variables -- these values
-//    are used to set the variables in a CLEAR WS.
+//	Default global values of system variables -- these values
+//	  are used to set the variables in a CLEAR WS.
 //***************************************************************************
 
 // Indeterminate Control Values
 typedef enum tagIC_VALUES
 {
-    ICVAL_ZERO,             // 00:  Result is 0
-    ICVAL_ONE,              // 01:  ...       1
-    ICVAL_DOMAIN_ERROR,     // 02:  ...       DOMAIN ERROR
-    ICVAL_POS_INFINITY,     // 03:  ...       + infinity
-    ICVAL_NEG_INFINITY,     // 04:  ...       - infinity
-    ICVAL_LENGTH,           // 05:  Length
+	ICVAL_ZERO, 			// 00:	Result is 0
+	ICVAL_ONE,				// 01:	... 	  1
+	ICVAL_DOMAIN_ERROR, 	// 02:	... 	  DOMAIN ERROR
+	ICVAL_POS_INFINITY, 	// 03:	... 	  + infinity
+	ICVAL_NEG_INFINITY, 	// 04:	... 	  - infinity
+	ICVAL_LENGTH,			// 05:	Length
 } IC_VALUES;
 
-EXTERN
-LPWCHAR icIndexValues[ICVAL_LENGTH]
-#ifdef DEFINE_VALUES
-= {L"0",
-   L"1",
-   L"DOMAIN ERROR",
-   L"+Infinity",     // WS_UTF16_INFINITY,
-   L"-Infinity",     // WS_UTF16_OVERBAR WS_UTF16_INFINITY,
-  }
-#endif
-;
+// N.B.:  Whenever changing the above enum (IC_VALUES),
+//	 be sure to make a corresponding change to
+//	 <icIndexValues> in <customize.c>.
 
 // Define the maximum allowable value for []IC
-#define ICVAL_MAXVAL    (ICVAL_LENGTH - 1)
+#define ICVAL_MAXVAL	(ICVAL_LENGTH - 1)
 
 // Indeterminate Control Indices
 typedef enum tagIC_INDICES
 {
-    ICNDX_DIV0,             // 00:    {div} 0
-    ICNDX_LOG0,             // 01:    {log} 0
-    ICNDX_QDOTn,            // 02:      !N for integer N < 0
-    ICNDX_0MULPi,           // 03:  0 {times} _
-    ICNDX_0MULNi,           // 04:  0 {times} {neg}_
-    ICNDX_0DIV0,            // 05:  0 {div} 0
-    ICNDX_PiDIVPi,          // 06:  _ {div} _   (same sign)
-    ICNDX_NiDIVPi,          // 07:  _ {div} _   (different sign)
-    ICNDX_0EXP0,            // 08:  0   *   0
-    ICNDX_NEXPPi,           // 09:  L   *   _ for L <= -1
-    ICNDX_0LOG0,            // 0A:  0 {log} 0
-    ICNDX_0LOG1,            // 0B:  0 {log} 1
-    ICNDX_1LOG0,            // 0C:  1 {log} 0
-    ICNDX_1LOG1,            // 0D:  1 {log} 1
-    ICNDX_LENGTH,           // 0E:  Length
+	ICNDX_DIV0, 			// 00:	  {div} 0
+	ICNDX_LOG0, 			// 01:	  {log} 0
+	ICNDX_QDOTn,			// 02:		!N for integer N < 0
+	ICNDX_0MULPi,			// 03:	0 {times} _
+	ICNDX_0MULNi,			// 04:	0 {times} {neg}_
+	ICNDX_0DIV0,			// 05:	0 {div} 0
+	ICNDX_PiDIVPi,			// 06:	_ {div} _	(same sign)
+	ICNDX_NiDIVPi,			// 07:	_ {div} _	(different sign)
+	ICNDX_0EXP0,			// 08:	0	*	0
+	ICNDX_NEXPPi,			// 09:	L	*	_ for L <= -1
+	ICNDX_0LOG0,			// 0A:	0 {log} 0
+	ICNDX_0LOG1,			// 0B:	0 {log} 1
+	ICNDX_1LOG0,			// 0C:	1 {log} 0
+	ICNDX_1LOG1,			// 0D:	1 {log} 1
+	ICNDX_LENGTH,			// 0E:	Length
 } IC_INDICES;
 
-EXTERN
-LPWCHAR icIndexNames[ICNDX_LENGTH]
-#ifdef DEFINE_VALUES
-= {WS_UTF16_COLONBAR L"0",                                                              // 00:    {div} 0
-   WS_UTF16_CIRCLESTAR L"0",                                                            // 01:    {log} 0
-   L"!N for integer N < 0",                                                             // 02:      !N for integer N < 0
-   L"0" WS_UTF16_TIMES WS_UTF16_INFINITY,                                               // 03:  0 {times} _
-   L"0" WS_UTF16_TIMES WS_UTF16_OVERBAR WS_UTF16_INFINITY,                              // 04:  0 {times} {neg}_
-   L"0" WS_UTF16_COLONBAR L"0",                                                         // 05:  0 {div} 0
-   WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L"(same sign)",                // 06:  _ {div} _   (same sign)
-   WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L"(diff sign)",                // 07:  _ {div} _   (different sign)
-   L"0*0",                                                                              // 08:  0   *   0
-   L"L*" WS_UTF16_INFINITY L"for L" WS_UTF16_LEFTCARETUNDERBAR WS_UTF16_OVERBAR L"1",   // 09:  L   *   _ for L <= -1
-   L"0" WS_UTF16_CIRCLESTAR L"0",                                                       // 0A:  0 {log} 0
-   L"0" WS_UTF16_CIRCLESTAR L"1",                                                       // 0B:  0 {log} 1
-   L"1" WS_UTF16_CIRCLESTAR L"0",                                                       // 0C:  1 {log} 0
-   L"1" WS_UTF16_CIRCLESTAR L"1",                                                       // 0D:  1 {log} 1
-  }
-#endif
-;
+// N.B.:  Whenever changing the above enum (IC_INDICES),
+//	 be sure to make a corresponding change to
+//	 <icIndexNames> in <customize.c>.
 
 EXTERN
-APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
+APLINT	 aplDefaultIC[ICNDX_LENGTH] 	// []IC
 #ifdef DEFINE_VALUES
- = {ICVAL_POS_INFINITY,     // 00:    {div} 0
-    ICVAL_NEG_INFINITY,     // 01:    {log} 0
-    ICVAL_DOMAIN_ERROR,     // 02:      ! {neg}1
-    ICVAL_DOMAIN_ERROR,     // 03:  0 {times} _
-    ICVAL_DOMAIN_ERROR,     // 04:  0 {times} {neg}_
-    ICVAL_ONE,              // 05:  0 {div} 0
-    ICVAL_DOMAIN_ERROR,     // 06:  _ {div} _   (same sign)
-    ICVAL_DOMAIN_ERROR,     // 07:  _ {div} _   (different sign)
-    ICVAL_ONE,              // 08:  0   *   0
-    ICVAL_DOMAIN_ERROR,     // 09:  L   *   _ for L <= -1
-    ICVAL_DOMAIN_ERROR,     // 0A:  0 {log} 0
-    ICVAL_DOMAIN_ERROR,     // 0B:  0 {log} 1
-    ICVAL_DOMAIN_ERROR,     // 0C:  1 {log} 0
-    ICVAL_ONE,              // 0D:  1 {log} 1
+ = {ICVAL_POS_INFINITY, 	// 00:	  {div} 0
+	ICVAL_NEG_INFINITY, 	// 01:	  {log} 0
+	ICVAL_DOMAIN_ERROR, 	// 02:		! {neg}1
+	ICVAL_DOMAIN_ERROR, 	// 03:	0 {times} _
+	ICVAL_DOMAIN_ERROR, 	// 04:	0 {times} {neg}_
+	ICVAL_ONE,				// 05:	0 {div} 0
+	ICVAL_DOMAIN_ERROR, 	// 06:	_ {div} _	(same sign)
+	ICVAL_DOMAIN_ERROR, 	// 07:	_ {div} _	(different sign)
+	ICVAL_ONE,				// 08:	0	*	0
+	ICVAL_DOMAIN_ERROR, 	// 09:	L	*	_ for L <= -1
+	ICVAL_DOMAIN_ERROR, 	// 0A:	0 {log} 0
+	ICVAL_DOMAIN_ERROR, 	// 0B:	0 {log} 1
+	ICVAL_DOMAIN_ERROR, 	// 0C:	1 {log} 0
+	ICVAL_ONE,				// 0D:	1 {log} 1
    }
 #endif
 ;
 
 EXTERN
-HGLOBAL  hGlbQuadALX_CWS    ,           // []ALX    ([]dm)
-         hGlbQuadELX_CWS    ,           // []ELX    ([]dm)
-         hGlbQuadFC_SYS     ,           // []FC     (L".,*0_" WS_UTF16_OVERBAR)
-         hGlbQuadFC_CWS     ,           // []FC     hGlbQuadFC_SYS or from )LOAD
-         hGlbQuadIC_SYS     ,           // []IC     (aplDefaultIC)
-         hGlbQuadIC_CWS     ,           // []IC     hGlbQuadIC_SYS or from )LOAD
-         hGlbQuadLX_CWS     ,           // []LX     (L"")
-         hGlbQuadSA_CWS     ,           // []SA     (L"")
-         hGlbQuadWSID_CWS   ,           // []WSID   (L"\0")
-         hGlbQuadPR_CWS     ;           // []PR     (L"") (When an empty vector)
+HGLOBAL  hGlbQuadALX_CWS	,			// []ALX	([]dm)
+		 hGlbQuadELX_CWS	,			// []ELX	([]dm)
+		 hGlbQuadFC_SYS 	,			// []FC 	(L".,*0_" WS_UTF16_OVERBAR)
+		 hGlbQuadFC_CWS 	,			// []FC 	hGlbQuadFC_SYS or from )LOAD
+		 hGlbQuadIC_SYS 	,			// []IC 	(aplDefaultIC)
+		 hGlbQuadIC_CWS 	,			// []IC 	hGlbQuadIC_SYS or from )LOAD
+		 hGlbQuadLX_CWS 	,			// []LX 	(L"")
+		 hGlbQuadSA_CWS 	,			// []SA 	(L"")
+		 hGlbQuadWSID_CWS	,			// []WSID	(L"\0")
+		 hGlbQuadPR_CWS 	;			// []PR 	(L"") (When an empty vector)
 EXTERN
-APLFLOAT fQuadCT_CWS        ;           // []CT
+APLFLOAT fQuadCT_CWS		;			// []CT
 
 EXTERN
-APLBOOL  bQuadIO_CWS        ;           // []IO
+APLBOOL  bQuadIO_CWS		;			// []IO
 
 EXTERN
-APLINT   uQuadMF_CWS        ;           // []MF
+APLINT	 uQuadMF_CWS		;			// []MF
 
 EXTERN
-APLUINT  uQuadPP_CWS        ,           // []PP
-         uQuadPW_CWS        ,           // []PW
-         uQuadRL_CWS        ;           // []RL
+APLUINT  uQuadPP_CWS		,			// []PP
+		 uQuadPW_CWS		,			// []PW
+		 uQuadRL_CWS		;			// []RL
 
 EXTERN
-APLCHAR  cQuadPR_CWS        ,           // []PR     (L' ') (When a char scalar)
-         cQuadxSA_CWS       ;           // []SA     (0)    (in its index form as an integer)
+APLCHAR  cQuadPR_CWS		,			// []PR 	(L' ') (When a char scalar)
+		 cQuadxSA_CWS		;			// []SA 	(0)    (in its index form as an integer)
 
 // Struct for whether or a System var is range limited
 typedef struct tagRANGELIMIT
 {
-    UBOOL CT:1,
-          IC:1,
-          IO:1,
-          PP:1,
-          PW:1,
-          RL:1;
+	UBOOL CT:1,
+		  IC:1,
+		  IO:1,
+		  PP:1,
+		  PW:1,
+		  RL:1;
 } RANGELIMIT;
 
 EXTERN
 RANGELIMIT bRangeLimit
 #ifdef DEFINE_VALUES
-= {DEF_RANGELIMIT_CT,       // []CT
-   DEF_RANGELIMIT_IC,       // []IC
-   DEF_RANGELIMIT_IO,       // []IO
-   DEF_RANGELIMIT_PP,       // []PP
-   DEF_RANGELIMIT_PW,       // []PW
-   DEF_RANGELIMIT_RL,       // []RL
+= {DEF_RANGELIMIT_CT,		// []CT
+   DEF_RANGELIMIT_IC,		// []IC
+   DEF_RANGELIMIT_IO,		// []IO
+   DEF_RANGELIMIT_PP,		// []PP
+   DEF_RANGELIMIT_PW,		// []PW
+   DEF_RANGELIMIT_RL,		// []RL
   }
 #endif
 ;
 
 // Struct for whether or not the value given to a System Var
-//   when an empty vector is assigned to it is the system default
-//   constant such as DEF_QUADxx_CWS (TRUE) or the value saved
-//   in the .ini file (FALSE)
+//	 when an empty vector is assigned to it is the system default
+//	 constant such as DEF_QUADxx_CWS (TRUE) or the value saved
+//	 in the .ini file (FALSE)
 typedef struct tagRESET_VARS
 {
-    UBOOL CT:1,
-          FC:1,
-          IC:1,
-          IO:1,
-          PP:1,
-          PW:1,
-          RL:1;
+	UBOOL CT:1,
+		  FC:1,
+		  IC:1,
+		  IO:1,
+		  PP:1,
+		  PW:1,
+		  RL:1;
 } RESET_VARS;
 
 EXTERN
 RESET_VARS bResetVars
 #ifdef DEFINE_VALUES
-= {DEF_RESETVARS_CT,        // []CT
-   DEF_RESETVARS_FC,        // []FC
-   DEF_RESETVARS_IC,        // []IC
-   DEF_RESETVARS_IO,        // []IO
-   DEF_RESETVARS_PP,        // []PP
-   DEF_RESETVARS_PW,        // []PW
-   DEF_RESETVARS_RL,        // []RL
+= {DEF_RESETVARS_CT,		// []CT
+   DEF_RESETVARS_FC,		// []FC
+   DEF_RESETVARS_IC,		// []IC
+   DEF_RESETVARS_IO,		// []IO
+   DEF_RESETVARS_PP,		// []PP
+   DEF_RESETVARS_PW,		// []PW
+   DEF_RESETVARS_RL,		// []RL
   }
 #endif
 ;
 
 
 //***************************************************************************
-//  Application values
+//	Application values
 //***************************************************************************
 
 EXTERN
-HINSTANCE _hInstance;                   // Global instance handle
+HINSTANCE _hInstance;					// Global instance handle
 
 EXTERN
-HANDLE hAccel;                          // Keyboard accelerators
+HANDLE hAccel;							// Keyboard accelerators
 
 EXTERN
-HMENU hMenuSM,                          // Handle for Session Manager menu
-      hMenuFE,                          // ...        Function Editor ...
-      hMenuME,                          // ...        Matrix   ...
-      hMenuVE,                          // ...        Vector   ...
-      hMenuSMWindow,                    // ...        window entry in hMenuSM
-      hMenuFEWindow,                    // ...        ...             hMenuFE
-      hMenuMEWindow,                    // ...        ...             hMenuME
-      hMenuVEWindow;                    // ...        ...             hMenuVE
+HMENU hMenuSM,							// Handle for Session Manager menu
+	  hMenuFE,							// ...		  Function Editor ...
+	  hMenuME,							// ...		  Matrix   ...
+	  hMenuVE,							// ...		  Vector   ...
+	  hMenuSMWindow,					// ...		  window entry in hMenuSM
+	  hMenuFEWindow,					// ...		  ...			  hMenuFE
+	  hMenuMEWindow,					// ...		  ...			  hMenuME
+	  hMenuVEWindow;					// ...		  ...			  hMenuVE
 
 EXTERN
-WCHAR lpwszAppName[]                    // Application name for MessageBox
+WCHAR lpwszAppName[]					// Application name for MessageBox
 #ifdef DEFINE_VALUES
  = WS_APPNAME WS_APPEND_DEBUG
 #endif
 ;
 
 EXTERN
-char lpszAppName[]                      // Application name for MessageBox
+char lpszAppName[]						// Application name for MessageBox
 #ifdef DEFINE_VALUES
  = APPNAME APPEND_DEBUG
 #endif
 ;
 
 EXTERN
-WCHAR wszAppDPFE [_MAX_PATH],           // .EXE drive, path, filename.ext
-      wszHlpDPFE [_MAX_PATH],           // .HLP ...
-      wszLoadFile[_MAX_PATH],           // Save area for initial workspace to load
-      wszFileVer[64];                   // File version string
+WCHAR wszAppDPFE [_MAX_PATH],			// .EXE drive, path, filename.ext
+	  wszHlpDPFE [_MAX_PATH],			// .HLP ...
+	  wszFntDPFE [_MAX_PATH],			// APL font file ...
+	  wszLoadFile[_MAX_PATH],			// Save area for initial workspace to load
+	  wszFileVer[64];					// File version string
 
 EXTERN
-LPWCHAR lpwszIniFile,                   // Ptr to "APPNAME.ini" file
-        lpwszWorkDir;                   // Ptr to WS_WKSNAME dir
+LPWCHAR lpwszIniFile,					// Ptr to "APPNAME.ini" file
+		lpwszWorkDir;					// Ptr to WS_WKSNAME dir
 
 EXTERN
-UBOOL bCSO;                             // TRUE iff Critical Sections defined
+UBOOL bCSO; 							// TRUE iff Critical Sections defined
 
 EXTERN
-CRITICAL_SECTION CSO0,                  // Critical Section Object #0
-                 CSO1,                  // ...                     #1
+CRITICAL_SECTION CSO0,					// Critical Section Object #0
+				 CSO1,					// ...					   #1
 #ifdef DEBUG
-                 CSOFrisk,              // ...                     for HshTabFrisk
+				 CSOFrisk,				// ...					   for HshTabFrisk
 #endif
 #ifdef RESDEBUG
-                 CSORsrc,               // ...                     for _SaveObj/_DeleObj
+				 CSORsrc,				// ...					   for _SaveObj/_DeleObj
 #endif
-                 CSOPL;                 // ...                     for ParseLine
+				 CSOPL; 				// ...					   for ParseLine
 
 LRESULT WINAPI EditWndProcA (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT WINAPI EditWndProcW (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -292,27 +268,27 @@ LRESULT WINAPI EditWndProcW (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //***************************************************************************
 
 EXTERN
-DWORD dwMainThreadId;                   // Thread ID of the main application
+DWORD dwMainThreadId;					// Thread ID of the main application
 
 EXTERN
-DWORD dwTlsType,                        // Thread type (e.g.
-                                        //   'MF' for Master Frame,
-                                        //   'TC' for Tab Control,
-                                        //   'PL' for ParseLine,
-                                        //   etc.)
-      dwTlsPlLocalVars,                 // Ptr to lpplLocalVars for PL thread only
-      dwTlsFhLocalVars,                 // Ptr to lpfhLocalVars for SM and PL threads
-      dwTlsPerTabData;                  // Ptr to PerTabData    for TC, SM, and PL threads
+DWORD dwTlsType,						// Thread type (e.g.
+										//	 'MF' for Master Frame,
+										//	 'TC' for Tab Control,
+										//	 'PL' for ParseLine,
+										//	 etc.)
+	  dwTlsPlLocalVars, 				// Ptr to lpplLocalVars for PL thread only
+	  dwTlsFhLocalVars, 				// Ptr to lpfhLocalVars for SM and PL threads
+	  dwTlsPerTabData;					// Ptr to PerTabData	for TC, SM, and PL threads
 
 //***************************************************************************
 // Temporary storage
 //***************************************************************************
 
 EXTERN
-LPWCHAR lpwszGlbTemp;                   // Used for temporary WCHAR storage
+LPWCHAR lpwszGlbTemp;					// Used for temporary WCHAR storage
 
 EXTERN
-UCHAR gDbgLvl                           // Debug level 0 = none
+UCHAR gDbgLvl							// Debug level 0 = none
 #ifdef DEFINE_VALUES
  = 0
 #endif
@@ -333,94 +309,94 @@ LPWCHAR lpwObjNameStr[]
 ;
 
 //***************************************************************************
-//  Primitive function and operator tables
+//	Primitive function and operator tables
 //***************************************************************************
 
 EXTERN
-LPPRIMFNS PrimFnsTab[256];              // The jump table for all primitive functions
+LPPRIMFNS PrimFnsTab[256];				// The jump table for all primitive functions
 
 EXTERN
-LPPRIMFNS PrimProtoFnsTab[256];         // The jump table for all primitive functions/operator prototypes
+LPPRIMFNS PrimProtoFnsTab[256]; 		// The jump table for all primitive functions/operator prototypes
 
 EXTERN
-LPPRIMSPEC PrimSpecTab[256];            // The table of corresponding LPPRIMSPECs
-                                        //   for all of the primitive scalar functions
+LPPRIMSPEC PrimSpecTab[256];			// The table of corresponding LPPRIMSPECs
+										//	 for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
-    WORD Index    :4,                   // 000F:  Function index (see FBFN_INDS)
-         Available:5,                   // 01F0:  Available flag bits
-         IdentElem:1,                   // 0200:  TRUE iff this function has an identity element
-         DydScalar:1,                   // 0400:  ...                    is scalar dyadic
-         MonScalar:1,                   // 0800:  ...                       ...    monadic
-         Alter    :1,                   // 1000:  ...                       alternating
-         AssocBool:1,                   // 2000:  ...                       associative on Booleans only
-         AssocNumb:1,                   // 4000:  ...                       associative on all numbers
-         FastBool :1;                   // 8000:  Boolean function w/reduction & scan can be sped up
-                                        // 0000:  No available bits
+	WORD Index	  :4,					// 000F:  Function index (see FBFN_INDS)
+		 Available:5,					// 01F0:  Available flag bits
+		 IdentElem:1,					// 0200:  TRUE iff this function has an identity element
+		 DydScalar:1,					// 0400:  ...					 is scalar dyadic
+		 MonScalar:1,					// 0800:  ...						...    monadic
+		 Alter	  :1,					// 1000:  ...						alternating
+		 AssocBool:1,					// 2000:  ...						associative on Booleans only
+		 AssocNumb:1,					// 4000:  ...						associative on all numbers
+		 FastBool :1;					// 8000:  Boolean function w/reduction & scan can be sped up
+										// 0000:  No available bits
 } PRIMFLAGS, *LPPRIMFLAGS;
 
 EXTERN
-PRIMFLAGS PrimFlags[256];               // The flag tables for all primitive functions/operators
+PRIMFLAGS PrimFlags[256];				// The flag tables for all primitive functions/operators
 
 
 //***************************************************************************
-//  Fast Boolean Reduction and Scan tables
+//	Fast Boolean Reduction and Scan tables
 //***************************************************************************
 
-typedef enum tagFBFN_INDS               // Fast Boolean function indices
-{   PF_INDEX_UNK = 0 ,                  // 00 = No entry so we can catch this as an error
-    PF_INDEX_LESS    ,                  // 01 = Index for "less than" ...
-    PF_INDEX_OR      ,                  // 02 = ...       "or"    ...
-    PF_INDEX_NOR     ,                  // 03 = ...       "nor"   ...
-    PF_INDEX_MOREEQ  ,                  // 04 = ...       "more than or equal" ...
-    PF_INDEX_NAND    ,                  // 05 = ...       "nand"  ...
-    PF_INDEX_MORE    ,                  // 06 = ...       "more than" ...
-    PF_INDEX_LESSEQ  ,                  // 07 = ...       "less than or equal" ...
-    PF_INDEX_AND     ,                  // 08 = ...       "and"   ...
-    PF_INDEX_EQUAL   ,                  // 09 = ...       "equal" ...
-    PF_INDEX_NOTEQUAL,                  // 0A = ...       "not equal" ...
-    PF_INDEX_MAX     ,                  // 0B = ...       "max"   ...
-    PF_INDEX_MIN     ,                  // 0C = ...       "min"   ...
-    PF_INDEX_PLUS    ,                  // 0D = ...       "plus"  ...
-    PF_INDEX_MINUS   ,                  // 0E = ...       "minus" ...
-    PF_INDEX_DIVIDE  ,                  // 0F = ...       "divide" ...
-    PF_INDEX_NEXT                       // No available entries (4 bits)
-                                        // If another entry is made, be sure
-                                        //   to increase Index:4 to Index:5
-                                        //   in tagPRIMFLAGS
+typedef enum tagFBFN_INDS				// Fast Boolean function indices
+{	PF_INDEX_UNK = 0 ,					// 00 = No entry so we can catch this as an error
+	PF_INDEX_LESS	 ,					// 01 = Index for "less than" ...
+	PF_INDEX_OR 	 ,					// 02 = ... 	  "or"    ...
+	PF_INDEX_NOR	 ,					// 03 = ... 	  "nor"   ...
+	PF_INDEX_MOREEQ  ,					// 04 = ... 	  "more than or equal" ...
+	PF_INDEX_NAND	 ,					// 05 = ... 	  "nand"  ...
+	PF_INDEX_MORE	 ,					// 06 = ... 	  "more than" ...
+	PF_INDEX_LESSEQ  ,					// 07 = ... 	  "less than or equal" ...
+	PF_INDEX_AND	 ,					// 08 = ... 	  "and"   ...
+	PF_INDEX_EQUAL	 ,					// 09 = ... 	  "equal" ...
+	PF_INDEX_NOTEQUAL,					// 0A = ... 	  "not equal" ...
+	PF_INDEX_MAX	 ,					// 0B = ... 	  "max"   ...
+	PF_INDEX_MIN	 ,					// 0C = ... 	  "min"   ...
+	PF_INDEX_PLUS	 ,					// 0D = ... 	  "plus"  ...
+	PF_INDEX_MINUS	 ,					// 0E = ... 	  "minus" ...
+	PF_INDEX_DIVIDE  ,					// 0F = ... 	  "divide" ...
+	PF_INDEX_NEXT						// No available entries (4 bits)
+										// If another entry is made, be sure
+										//	 to increase Index:4 to Index:5
+										//	 in tagPRIMFLAGS
 } FBFN_INDS;
 
 EXTERN
-APLFLOAT PrimIdent[PF_INDEX_NEXT];      // Primitive scalar function identity elements
-                                        //   in the same order as FBFN_INDS
+APLFLOAT PrimIdent[PF_INDEX_NEXT];		// Primitive scalar function identity elements
+										//	 in the same order as FBFN_INDS
 
-typedef void (FASTBOOLFCN) (APLSTYPE     aplTypeRht,        // Right arg storage type
-                            APLNELM      aplNELMRht,        // Right arg NELM
-                            LPVOID       lpMemRht,          // Ptr to right arg global memory
-                            LPVOID       lpMemRes,          // Ptr to result    ...
-                            APLUINT      uDimLo,            // Product of dimensions below axis
-                            APLUINT      uDimAxRht,         // Length of right arg axis dimension
-                            FBFN_INDS    uIndex,            // FBFN_INDS value (e.g., index into FastBoolFns[])
-                            LPPL_YYSTYPE lpYYFcnStrOpr);    // Ptr to operator function strand
+typedef void (FASTBOOLFCN) (APLSTYPE	 aplTypeRht,		// Right arg storage type
+							APLNELM 	 aplNELMRht,		// Right arg NELM
+							LPVOID		 lpMemRht,			// Ptr to right arg global memory
+							LPVOID		 lpMemRes,			// Ptr to result	...
+							APLUINT 	 uDimLo,			// Product of dimensions below axis
+							APLUINT 	 uDimAxRht, 		// Length of right arg axis dimension
+							FBFN_INDS	 uIndex,			// FBFN_INDS value (e.g., index into FastBoolFns[])
+							LPPL_YYSTYPE lpYYFcnStrOpr);	// Ptr to operator function strand
 typedef FASTBOOLFCN *LPFASTBOOLFCN;
 
 typedef struct tagFASTBOOLFNS
 {
-    LPFASTBOOLFCN lpReduction;          // 00:  Ptr to Fast Boolean reduction routine
-    LPFASTBOOLFCN lpScan;               // 04:  ...                 scan      ...
-    UINT          NotMarker:1,          // 08:  00000001:  Complement of Marker
-                  IdentElem:1,          //      00000002:  Identity element (if it exists)
-                  Suffix   :1,          //      00000004:  Suffix equivalence value
-                  Avail    :29;         //      FFFFFFF8:  Available bits
-                                        // 0C:  Length
+	LPFASTBOOLFCN lpReduction;			// 00:	Ptr to Fast Boolean reduction routine
+	LPFASTBOOLFCN lpScan;				// 04:	... 				scan	  ...
+	UINT		  NotMarker:1,			// 08:	00000001:  Complement of Marker
+				  IdentElem:1,			//		00000002:  Identity element (if it exists)
+				  Suffix   :1,			//		00000004:  Suffix equivalence value
+				  Avail    :29; 		//		FFFFFFF8:  Available bits
+										// 0C:	Length
 } FASTBOOLFNS, *LPFASTBOOLFNS;
 
 // This array translates a byte index into
-//   [byte][0] = the index of the first 0 in the byte (from right to left)
-//   [byte][1] = the index of the first 1 in the byte (from right to left)
-//   [byte][2] = the sum of the bits in the byte
-//   [byte][3] = its {notequal} scan
-//   [byte][4] = its {equal} scan
+//	 [byte][0] = the index of the first 0 in the byte (from right to left)
+//	 [byte][1] = the index of the first 1 in the byte (from right to left)
+//	 [byte][2] = the sum of the bits in the byte
+//	 [byte][3] = its {notequal} scan
+//	 [byte][4] = its {equal} scan
 EXTERN
 UCHAR FastBoolTrans[256][5]
 #ifdef DEFINE_VALUES
@@ -719,7 +695,7 @@ UCHAR FastBoolTrans[256][5]
 
 
 //***************************************************************************
-//  Tab Control vars
+//	Tab Control vars
 //***************************************************************************
 
 // Default tab stops
@@ -739,70 +715,70 @@ WCHAR wszIndent[DEF_INDENT + 1]
 ;
 
 EXTERN
-int gLstTabID                           // ID of the previous (outgoing) tab (-1 = none)
+int gLstTabID							// ID of the previous (outgoing) tab (-1 = none)
 #ifdef DEFINE_VALUES
  = -1
 #endif
 ,
-    gCurTabID                           // ID of the current (incoming) tab  (-1 = none)
+	gCurTabID							// ID of the current (incoming) tab  (-1 = none)
 #ifdef DEFINE_VALUES
  = -1
 #endif
 ,
-    gOverTabIndex                       // Index of the tab the mouse is over
-                                        // As this is a transient value, we store it as
-                                        //   an index rather than an ID
+	gOverTabIndex						// Index of the tab the mouse is over
+										// As this is a transient value, we store it as
+										//	 an index rather than an ID
 #ifdef DEFINE_VALUES
  = -1
 #endif
 ;
 
 EXTERN
-HWND hWndTC,                            // Global Tab Control window handle
-     hWndMF,                            // ...    Master Frame ...
-     hWndCC,                            // ...    Crash Control ...
-     hWndCC_LB,                         // ...    Crash Control Listbox ...
-     hWndTT;                            // ...    ToolTip      ...
+HWND hWndTC,							// Global Tab Control window handle
+	 hWndMF,							// ...	  Master Frame ...
+	 hWndCC,							// ...	  Crash Control ...
+	 hWndCC_LB, 						// ...	  Crash Control Listbox ...
+	 hWndTT;							// ...	  ToolTip	   ...
 
 EXTERN
 HGLOBAL hGlbZilde,
-        hGlbQuadDM,
-        hGlbQuadFC,
-        hGlbQuadIC,
-        hGlbV0Char,
-        hGlbM3x0Char,
-        hGlbSAEmpty,
-        hGlbSAClear,
-        hGlbSAError,
-        hGlbSAExit,
-        hGlbSAOff,
-        hGlbQuadWSID_CWS,
-        hGlbAV;
+		hGlbQuadDM,
+		hGlbQuadFC,
+		hGlbQuadIC,
+		hGlbV0Char,
+		hGlbM3x0Char,
+		hGlbSAEmpty,
+		hGlbSAClear,
+		hGlbSAError,
+		hGlbSAExit,
+		hGlbSAOff,
+		hGlbQuadWSID_CWS,
+		hGlbAV;
 
 EXTERN
-APLFLOAT PosInfinity,                   // Positive infinity
-         NegInfinity,                   // Negative ...
-         Float2Pow53;                   // 2*53 in floating point
+APLFLOAT PosInfinity,					// Positive infinity
+		 NegInfinity,					// Negative ...
+		 Float2Pow53;					// 2*53 in floating point
 
 typedef enum tagSYS_VARS
 {
-    SYSVAR_UNK = 0,             // 00:  Unknown name
-    SYSVAR_ALX ,                // 01:  []ALX
-    SYSVAR_CT  ,                // 02:  []CT
-    SYSVAR_ELX ,                // 03:  []ELX
-    SYSVAR_FC  ,                // 04:  []FC
-    SYSVAR_IC  ,                // 05:  []IC
-    SYSVAR_IO  ,                // 06:  []IO
-    SYSVAR_LX  ,                // 07:  []LX
-    SYSVAR_PP  ,                // 08:  []PP
-    SYSVAR_PR  ,                // 09:  []PR
-    SYSVAR_PW  ,                // 0A:  []PW
-    SYSVAR_RL  ,                // 0B:  []RL
-    SYSVAR_SA  ,                // 0C:  []SA
-    SYSVAR_WSID,                // 0D:  []WSID
-    SYSVAR_Z   ,                // 0E:  []Z
-    SYSVAR_LENGTH               // 0F:  # entries in the enum
-                                // 10-1F:  Available entries (5 bits)
+	SYSVAR_UNK = 0, 			// 00:	Unknown name
+	SYSVAR_ALX ,				// 01:	[]ALX
+	SYSVAR_CT  ,				// 02:	[]CT
+	SYSVAR_ELX ,				// 03:	[]ELX
+	SYSVAR_FC  ,				// 04:	[]FC
+	SYSVAR_IC  ,				// 05:	[]IC
+	SYSVAR_IO  ,				// 06:	[]IO
+	SYSVAR_LX  ,				// 07:	[]LX
+	SYSVAR_PP  ,				// 08:	[]PP
+	SYSVAR_PR  ,				// 09:	[]PR
+	SYSVAR_PW  ,				// 0A:	[]PW
+	SYSVAR_RL  ,				// 0B:	[]RL
+	SYSVAR_SA  ,				// 0C:	[]SA
+	SYSVAR_WSID,				// 0D:	[]WSID
+	SYSVAR_Z   ,				// 0E:	[]Z
+	SYSVAR_LENGTH				// 0F:	# entries in the enum
+								// 10-1F:  Available entries (5 bits)
 } SYS_VARS;
 
 typedef UBOOL (*ASYSVARVALIDSET) (LPTOKEN, LPTOKEN);
@@ -818,109 +794,109 @@ EXTERN
 ASYSVARVALIDNDX aSysVarValidNdx[SYSVAR_LENGTH];
 
 EXTERN
-int MFSizeState                         // Size state for MF (SIZE_xxx)
+int MFSizeState 						// Size state for MF (SIZE_xxx)
 #ifdef DEFINE_VALUES
  = SIZE_RESTORED
 #endif
 ;
 
 EXTERN
-POINT MFPosCtr;                         // X- and Y- center of Master Frame Window position
+POINT MFPosCtr; 						// X- and Y- center of Master Frame Window position
 
 EXTERN
-SIZE  MFSize;                           // Size of Master Frame Window window rectangle
+SIZE  MFSize;							// Size of Master Frame Window window rectangle
 
 EXTERN
-HBITMAP hBitMapLineCont;                // Bitmap for the line continuation char
+HBITMAP hBitMapLineCont;				// Bitmap for the line continuation char
 
 EXTERN
-int     iLCWidth;                       // Width of the line continuation column
+int 	iLCWidth;						// Width of the line continuation column
 
 EXTERN
-BITMAP  bmLineCont;                     // Bitmap metrics for the line continuation char
+BITMAP	bmLineCont; 					// Bitmap metrics for the line continuation char
 
 EXTERN
-HCURSOR hCursorWait,                    // Hourglass cursor
-        hCursorIdle;                    // Arrow     ...
+HCURSOR hCursorWait,					// Hourglass cursor
+		hCursorIdle;					// Arrow	 ...
 
 // FONTS
 EXTERN
-LOGFONT lfSM                            // LOGFONT for the SM
+LOGFONTW lfSM							// LOGFONTW for the SM
 #ifdef DEFINE_VALUES
  = {DEF_SMLOGFONT}
 #endif
 ,
-        lfPR                            // LOGFONT for the Printer
+		 lfPR							// LOGFONTW for the Printer
 #ifdef DEFINE_VALUES
  = {DEF_PRLOGFONT}
 #endif
 ,
-        lfCC                            // LOGFONT for the CC
+		 lfCC							// LOGFONTW for the CC
 #ifdef DEFINE_VALUES
  = {DEF_CCLOGFONT}
 #endif
 ,
-        lfTC                            // LOGFONT for the TC
+		 lfTC							// LOGFONTW for the TC
 #ifdef DEFINE_VALUES
  = {DEF_TCLOGFONT}
 #endif
 ,
-        lfFE                            // LOGFONT for the FE
+		 lfFE							// LOGFONTW for the FE
 #ifdef DEFINE_VALUES
  = {DEF_FELOGFONT}
 #endif
 ,
-        lfME                            // LOGFONT for the ME
+		 lfME							// LOGFONTW for the ME
 #ifdef DEFINE_VALUES
  = {DEF_MELOGFONT}
 #endif
 ,
-        lfVE                            // LOGFONT for the VE
+		 lfVE							// LOGFONTW for the VE
 #ifdef DEFINE_VALUES
  = {DEF_VELOGFONT}
 #endif
 ;
 
 EXTERN
-HFONT hFontTC,                          // Handle to font for the TC
+HFONT hFontTC,							// Handle to font for the TC
 #ifndef UNISCRIBE
-      hFontAlt,                         // ...                    Alternate SM
+	  hFontAlt, 						// ...					  Alternate SM
 #endif
-      hFontSM,                          // ...                    SM
-      hFontPR,                          // ...                    Printer
-      hFontCC,                          // ...                    CC
-      hFontFE,                          // ...                    FE
-      hFontME,                          // ...                    ME
-      hFontVE;                          // ...                    VE
+	  hFontSM,							// ...					  SM
+	  hFontPR,							// ...					  Printer
+	  hFontCC,							// ...					  CC
+	  hFontFE,							// ...					  FE
+	  hFontME,							// ...					  ME
+	  hFontVE;							// ...					  VE
 
 EXTERN
-CHOOSEFONT cfTC,                        // Global for ChooseFont for the TC
-           cfSM,                        // ...                           SM
-           cfPR,                        // ...                           Printer
-           cfCC,                        // ...                           CC
-           cfFE,                        // ...                           FE
-           cfME,                        // ...                           ME
-           cfVE;                        // ...                           VE
+CHOOSEFONTW cfTC,						// Global for ChooseFont for the TC
+			cfSM,						// ...							 SM
+			cfPR,						// ...							 Printer
+			cfCC,						// ...							 CC
+			cfFE,						// ...							 FE
+			cfME,						// ...							 ME
+			cfVE;						// ...							 VE
 
 EXTERN
-TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
-           tmSM,                        // ...                           SM
-           tmPR,                        // ...                           Printer
-           tmCC,                        // ...                           CC
-           tmFE,                        // ...                           FE
-           tmME,                        // ...                           ME
-           tmVE;                        // ...                           VE
+TEXTMETRIC tmTC,						// Global for TEXTMETRIC for the TC
+		   tmSM,						// ...							 SM
+		   tmPR,						// ...							 Printer
+		   tmCC,						// ...							 CC
+		   tmFE,						// ...							 FE
+		   tmME,						// ...							 ME
+		   tmVE;						// ...							 VE
 
 EXTERN
-long cxAveCharTC, cyAveCharTC,          // Size of an average character in the TC font
-     cxAveCharSM, cyAveCharSM,          // ...                                 SM ...
-     cxAveCharPR, cyAveCharPR,          // ...                                 PR ...
-     cxAveCharFE, cyAveCharFE,          // ...                                 FE ...
-     cxAveCharME, cyAveCharME,          // ...                                 ME ...
-     cxAveCharVE, cyAveCharVE;          // ...                                 VE ...
+long cxAveCharTC, cyAveCharTC,			// Size of an average character in the TC font
+	 cxAveCharSM, cyAveCharSM,			// ...								   SM ...
+	 cxAveCharPR, cyAveCharPR,			// ...								   PR ...
+	 cxAveCharFE, cyAveCharFE,			// ...								   FE ...
+	 cxAveCharME, cyAveCharME,			// ...								   ME ...
+	 cxAveCharVE, cyAveCharVE;			// ...								   VE ...
 
 EXTERN
-WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure
+WNDPROC lpfnOldTabCtrlWndProc;			// Save area for old Tab Control procedure
 
 EXTERN
 char pszNoInsertTCTab[]
@@ -928,102 +904,102 @@ char pszNoInsertTCTab[]
  = "Unable to create a new Tab"
 #endif
 ,
-     pszNoEditPrimFns[]
+	 pszNoEditPrimFns[]
 #ifdef DEFINE_VALUES
  = "NONCE ERROR:  Unable to edit named primitive function/operators"
 #endif
 ,
-     pszNoEditVars[]
+	 pszNoEditVars[]
 #ifdef DEFINE_VALUES
  = "NONCE ERROR:  Unable to edit named variables"
 #endif
 ,
-     pszNoCreateFEEditCtrl[]
+	 pszNoCreateFEEditCtrl[]
 #ifdef DEFINE_VALUES
  = "Unable to create the Edit Control in the Function Editor"
 #endif
 ,
-     pszNoCreateSMEditCtrl[]
+	 pszNoCreateSMEditCtrl[]
 #ifdef DEFINE_VALUES
  = "Unable to create the Edit Control in the Session Manager"
 #endif
 ,
-     pszNoCreateMCWnd[]
+	 pszNoCreateMCWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create MDI Client window"
 #endif
 ,
-     pszNoCreateSMWnd[]
+	 pszNoCreateSMWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Session Manager window"
 #endif
 #ifdef DEBUG
   ,
-       pszNoCreateDBWnd[]
+	   pszNoCreateDBWnd[]
   #ifdef DEFINE_VALUES
    = "Unable to create Debugger window"
   #endif
 #endif
 #ifdef PERFMONON
   ,
-       pszNoCreatePMWnd[]
+	   pszNoCreatePMWnd[]
   #ifdef DEFINE_VALUES
    = "Unable to create Performance Monitoring window"
   #endif
 #endif
 ,
-     pszNoCreateFEWnd[]
+	 pszNoCreateFEWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Function Editor window"
 #endif
 ,
-     pszNoCreateMEWnd[]
+	 pszNoCreateMEWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Matrix Editor window"
 #endif
 ,
-     pszNoCreateVEWnd[]
+	 pszNoCreateVEWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Vector Editor window"
 #endif
 ;
 
 EXTERN
-WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purposes only)
+WCHAR wszMCTitle[]						// MDI Client ... (for debugging purposes only)
 #ifdef DEFINE_VALUES
  = WS_APPNAME L" MDI Client Window" WS_APPEND_DEBUG
 #endif
 ,
-      wszSMTitle[]                      // Session Manager ...
+	  wszSMTitle[]						// Session Manager ...
 #ifdef DEFINE_VALUES
  = WS_APPNAME L" Session Manager" WS_APPEND_DEBUG
 #endif
 #ifdef DEBUG
   ,
-      wszDBTitle[]                      // Debugger ...
+	  wszDBTitle[]						// Debugger ...
   #ifdef DEFINE_VALUES
    = WS_APPNAME L" Debugger Window" WS_APPEND_DEBUG
   #endif
 #endif
 #ifdef PERFMONON
   ,
-      wszPMTitle[]                      // Performance Monitoring ...
+	  wszPMTitle[]						// Performance Monitoring ...
   #ifdef DEFINE_VALUES
    = WS_APPNAME L" Performance Monitoring Window" WS_APPEND_DEBUG
   #endif
 #endif
 ,
-      wszFETitle[]                      // Function Editor ...
+	  wszFETitle[]						// Function Editor ...
 #ifdef DEFINE_VALUES
  = WS_APPNAME L" Function Editor" WS_APPEND_DEBUG
 #endif
 ,
-      wszMETitle[]                      // Matrix Editor ...
+	  wszMETitle[]						// Matrix Editor ...
 #ifdef DEFINE_VALUES
  = WS_APPNAME L" Matrix Editor" WS_APPEND_DEBUG
 #endif
 ,
-      wszVETitle[]                      // Vector Editor ...
+	  wszVETitle[]						// Vector Editor ...
 #ifdef DEFINE_VALUES
  = WS_APPNAME L" Vector Editor" WS_APPEND_DEBUG
 #endif
@@ -1031,25 +1007,25 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
 
 typedef enum tagMEMVIRTENUM
 {
-    MEMVIRT_WSZGLBTEMP = 0,             // 00:  lpwszGlbTemp
-    MEMVIRT_GLBHSHTAB,                  // 01:  Global HshTab for {symbol} names & values
-    MEMVIRT_LENGTH                      // 02:  # entries
+	MEMVIRT_WSZGLBTEMP = 0, 			// 00:	lpwszGlbTemp
+	MEMVIRT_GLBHSHTAB,					// 01:	Global HshTab for {symbol} names & values
+	MEMVIRT_LENGTH						// 02:	# entries
 } MEMVIRTENUM;
 
-#define MVS     struct tagMEMVIRTSTR
+#define MVS 	struct tagMEMVIRTSTR
 
 typedef struct tagMEMVIRTSTR
 {
-    MVS     *lpPrvMVS,                  // 00:  Ptr to previous link (NULL = none)
-            *lpNxtMVS;                  // 04:  Ptr to next     ...
-    LPUCHAR IniAddr;                    // 08:  Initial address
-    UINT    IncrSize,                   // 0C:  Incremental size in bytes
-            MaxSize;                    // 10:  Maximum     ...
+	MVS 	*lpPrvMVS,					// 00:	Ptr to previous link (NULL = none)
+			*lpNxtMVS;					// 04:	Ptr to next 	...
+	LPUCHAR IniAddr;					// 08:	Initial address
+	UINT	IncrSize,					// 0C:	Incremental size in bytes
+			MaxSize;					// 10:	Maximum 	...
 #ifdef DEBUG
-    LPCHAR  lpText;                     // 14:  Ptr to (const) description of this item
-                                        // 18:  Length
+	LPCHAR	lpText; 					// 14:	Ptr to (const) description of this item
+										// 18:	Length
 #else
-                                        // 14:  Length
+										// 14:	Length
 #endif
 } MEMVIRTSTR, *LPMEMVIRTSTR;
 
@@ -1065,94 +1041,94 @@ UINT uMemVirtCnt
 
 typedef struct tagHSHTABSTR
 {
-    LPHSHENTRY lpHshTab,                // 00:  Ptr to start of HshTab
-               lpHshTabSplitNext;       // 04:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
-    int        iHshTabBaseSize,         // 08:  Base size of hash table
-               iHshTabTotalSize,        // 0C:  # HTEs, currently, including EPBs
-               iHshTabIncr,             // 10:  Increment when looping through HshTab
-               iHshTabIncrSize,         // 14:  Incremental size
-               iHshTabEPB;              // 18:  # entries per block
-    UINT       uHashMask;               // 1C:  Mask for all HshTab lookups
-} HSHTABSTR, *LPHSHTABSTR;              // 20:  Length
+	LPHSHENTRY lpHshTab,				// 00:	Ptr to start of HshTab
+			   lpHshTabSplitNext;		// 04:	...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
+	int 	   iHshTabBaseSize, 		// 08:	Base size of hash table
+			   iHshTabTotalSize,		// 0C:	# HTEs, currently, including EPBs
+			   iHshTabIncr, 			// 10:	Increment when looping through HshTab
+			   iHshTabIncrSize, 		// 14:	Incremental size
+			   iHshTabEPB;				// 18:	# entries per block
+	UINT	   uHashMask;				// 1C:	Mask for all HshTab lookups
+} HSHTABSTR, *LPHSHTABSTR;				// 20:	Length
 
 EXTERN
-HSHTABSTR htsGLB;                       // Global HshTab struc
+HSHTABSTR htsGLB;						// Global HshTab struc
 
 EXTERN
-HIMAGELIST hImageList;                  // Handle to the common image list
+HIMAGELIST hImageList;					// Handle to the common image list
 
 // Same order as in ARRAY_TYPES
 // so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED
 EXTERN
 UINT uTypeMap[]
 #ifdef DEFINE_VALUES
-//  BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA
- = {   0,   1,     2,    4,      5,      6,    7,   3}
+//	BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA
+ = {   0,	1,	   2,	 4, 	 5, 	 6,    7,	3}
 #endif
 ;
 
 APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #ifdef DEFINE_VALUES
 =
-//      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA              INIT
-{{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_BOOL  },  // BOOL
- {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_INT   },  // INT
+//		BOOL		  INT			FLOAT		  CHAR		  HETERO		NESTED		  LIST		   APA				INIT
+{{ARRAY_BOOL  , ARRAY_INT	, ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT	, ARRAY_BOOL  },  // BOOL
+ {ARRAY_INT   , ARRAY_INT	, ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT	, ARRAY_INT   },  // INT
  {ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_FLOAT , ARRAY_FLOAT },  // FLOAT
- {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO, ARRAY_CHAR  },  // CHAR
+ {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR	, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO, ARRAY_CHAR  },  // CHAR
  {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO, ARRAY_HETERO},  // HETERO
  {ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_ERROR , ARRAY_NESTED, ARRAY_NESTED},  // NESTED
  {ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR },  // LIST
- {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_INT   },  // APA
- {ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_ERROR },  // INIT
+ {ARRAY_INT   , ARRAY_INT	, ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT	, ARRAY_INT   },  // APA
+ {ARRAY_BOOL  , ARRAY_INT	, ARRAY_FLOAT , ARRAY_CHAR	, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT	, ARRAY_ERROR },  // INIT
 }
 #endif
 ;
 
 typedef struct
 {
-    char  nrm;      // 00:  Normal           (shifted & unshifted) (unused)
-    WCHAR alt;      // 01:  Alt key pressed  (shifted & unshifted)
+	char  nrm;		// 00:	Normal			 (shifted & unshifted) (unused)
+	WCHAR alt;		// 01:	Alt key pressed  (shifted & unshifted)
 } CHARCODE;
 
 // If you are looking for places on the keyboard to put a new symbol,
-//   there are several free Alt-Shift- combinations:
-//     Alt-'A'
-//     Alt-'B'
-//     Alt-'C'
-//     Alt-'D'
-//     Alt-'F'
-//     Alt-'K'
-//     Alt-'S'
-//     Alt-'U'
-//     Alt-'Q'
-//     Alt-'R'
-//     Alt-'V'
-//     Alt-'W'
-//     Alt-'X'
-//     Alt-'Y'
-//     Alt-'Z'
-//     Alt-'<'
-//     Alt-'>'
-//     Alt-'?'
+//	 there are several free Alt-Shift- combinations:
+//	   Alt-'A'
+//	   Alt-'B'
+//	   Alt-'C'
+//	   Alt-'D'
+//	   Alt-'F'
+//	   Alt-'K'
+//	   Alt-'S'
+//	   Alt-'U'
+//	   Alt-'Q'
+//	   Alt-'R'
+//	   Alt-'V'
+//	   Alt-'W'
+//	   Alt-'X'
+//	   Alt-'Y'
+//	   Alt-'Z'
+//	   Alt-'<'
+//	   Alt-'>'
+//	   Alt-'?'
 //
-//   as well as several duplicated symbols:
+//	 as well as several duplicated symbols:
 //
-//     Symbol & Name              Keystroke
-//     --------------------------------------------------
-//     * Asterisk                 Alt-'p'
-//     = Equal                    Alt-'5'
-//     < Left Caret               Alt-'3'
-//     ? Question Mark            Alt-'q'
-//     > Right Caret              Alt-'7'
-//     ! Shreik                   Alt-'_'
-//     ' Single Quote             Alt-'k'
-//     | Stile                    Alt-'m'
-//     ~ Tilde                    Alt-'t'
-//     ^ Up Caret (Circumflex)    Alt-'0'
+//	   Symbol & Name			  Keystroke
+//	   --------------------------------------------------
+//	   * Asterisk				  Alt-'p'
+//	   = Equal					  Alt-'5'
+//	   < Left Caret 			  Alt-'3'
+//	   ? Question Mark			  Alt-'q'
+//	   > Right Caret			  Alt-'7'
+//	   ! Shreik 				  Alt-'_'
+//	   ' Single Quote             Alt-'k'
+//	   | Stile					  Alt-'m'
+//	   ~ Tilde					  Alt-'t'
+//	   ^ Up Caret (Circumflex)	  Alt-'0'
 
 EXTERN
-CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
-                                //   from 32 to 126 inclusive
+CHARCODE aCharCodes[1+126-32]	// This ordering follows the ASCII charset
+								//	 from 32 to 126 inclusive
 #ifdef DEFINE_VALUES
 =
 {
@@ -1257,7 +1233,7 @@ CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
 ;
 
 // The # rows in the above table
-#define ACHARCODES_NROWS    (sizeof (aCharCodes) / sizeof (aCharCodes[0]))
+#define ACHARCODES_NROWS	(sizeof (aCharCodes) / sizeof (aCharCodes[0]))
 
 // The # rows in the aSymbolNames table
 EXTERN
@@ -1273,48 +1249,48 @@ WCHAR APL2_ASCIItoNARS[257]
 #ifdef DEFINE_VALUES
 =
 {
-//     x0         x1         x2         x3         x4         x5         x6         x7         x8         x9         xA         xB         xC         xD         xE         xF
-    L'\x0000', L'\x0001', L'\x0002', L'\x0003', L'\x0004', L'\x0005', L'\x0006', L'\x0007', L'\x0008', L'\x0009', L'\x000A', L'\x000B', L'\x000C', L'\x000D', L'\x000E', L'\x000F', // 0x
-    L'\x0010', L'\x0011', L'\x0012', L'\x0013', L'\x0014', L'\x0015', L'\x0016', L'\x0017', L'\x0018', L'\x0019', L'\x001A', L'\x001B', L'\x001C', L'\x001D', L'\x001E', L'\x001F', // 1x
-    L' '     , L'!'     , L'"'     , L'#'     , L'$'     , L'%'     , L'&'     , L'\''    , L'('     , L')'     , L'*'     , L'+'     , L','     , L'-'     , L'.'     , L'/'     , // 2x
-    L'0'     , L'1'     , L'2'     , L'3'     , L'4'     , L'5'     , L'6'     , L'7'     , L'8'     , L'9'     , L':'     , L';'     , L'<'     , L'='     , L'>'     , L'?'     , // 3x
-    L'@'     , L'A'     , L'B'     , L'C'     , L'D'     , L'E'     , L'F'     , L'G'     , L'H'     , L'I'     , L'J'     , L'K'     , L'L'     , L'M'     , L'N'     , L'O'     , // 4x
-    L'P'     , L'Q'     , L'R'     , L'S'     , L'T'     , L'U'     , L'V'     , L'W'     , L'X'     , L'Y'     , L'Z'     , L'['     , L'\\'    , L']'     , L'^'     , L'_'     , // 5x
-    L'`'     , L'a'     , L'b'     , L'c'     , L'd'     , L'e'     , L'f'     , L'g'     , L'h'     , L'i'     , L'j'     , L'k'     , L'l'     , L'm'     , L'n'     , L'o'     , // 6x
-    L'p'     , L'q'     , L'r'     , L's'     , L't'     , L'u'     , L'v'     , L'w'     , L'x'     , L'y'     , L'z'     , L'{'     , L'|'     , L'}'     , L'~'     , L'\x007F', // 7x
-    L'\x00C7', L'\x00FC', L'\x00E9', L'\x00E2', L'\x00E4', L'\x00E0', L'\x00E5', L'\x00E7', L'\x00EA', L'\x00EB', L'\x00E8', L'\x00EF', L'\x00EE', L'\x00EC', L'\x00C4', L'\x00C5', // 8x
-    L'\x2395', L'\x235E', L'\x2339', L'\x00F4', L'\x00F6', L'\x00F2', L'\x00FB', L'\x00F9', L'\x22A4', L'\x00D6', L'\x00DC', L'\x00F8', L'\x00A3', L'\x22A5', L'\x20A7', L'\x2336', // 9x
-    L'\x00E1', L'\x00ED', L'\x00F3', L'\x00FA', L'\x00F1', L'\x00D1', L'\x00AA', L'\x00BA', L'\x00BF', L'\x2308', L'\x00AC', L'\x00BD', L'\x222A', L'\x00A1', L'\x2355', L'\x234E', // Ax
-    L'\x2591', L'\x2592', L'\x2593', L'\x2502', L'\x2524', L'\x235F', L'\x2206', L'\x2207', L'\x2192', L'\x2563', L'\x2551', L'\x2557', L'\x255D', L'\x2190', L'\x230A', L'\x2510', // Bx
-    L'\x2514', L'\x2534', L'\x252C', L'\x251C', L'\x2500', L'\x253C', L'\x2191', L'\x2193', L'\x255A', L'\x2554', L'\x2569', L'\x2566', L'\x2560', L'\x2550', L'\x256C', L'\x2261', // Cx
-    L'\x2378', L'\x2377', L'\x2235', L'\x2337', L'\x2342', L'\x233B', L'\x22A2', L'\x22A3', L'\x22C4', L'\x2518', L'\x250C', L'\x2588', L'\x2584', L'\x00A6', L'\x00CC', L'\x2580', // Dx
-    L'\x237A', L'\x2379', L'\x2282', L'\x2283', L'\x235D', L'\x2372', L'\x2374', L'\x2371', L'\x233D', L'\x2296', L'\x25CB', L'\x2228', L'\x2373', L'\x2349', L'\x220A', L'\x2229', // Ex
-    L'\x233F', L'\x2340', L'\x2265', L'\x2264', L'\x2260', L'\x00D7', L'\x00F7', L'\x2359', L'\x2218', L'\x2375', L'\x236B', L'\x234B', L'\x2352', L'\x00AF', L'\x00A8', L'\x00A0', // Fx
+//	   x0		  x1		 x2 		x3		   x4		  x5		 x6 		x7		   x8		  x9		 xA 		xB		   xC		  xD		 xE 		xF
+	L'\x0000', L'\x0001', L'\x0002', L'\x0003', L'\x0004', L'\x0005', L'\x0006', L'\x0007', L'\x0008', L'\x0009', L'\x000A', L'\x000B', L'\x000C', L'\x000D', L'\x000E', L'\x000F', // 0x
+	L'\x0010', L'\x0011', L'\x0012', L'\x0013', L'\x0014', L'\x0015', L'\x0016', L'\x0017', L'\x0018', L'\x0019', L'\x001A', L'\x001B', L'\x001C', L'\x001D', L'\x001E', L'\x001F', // 1x
+	L' '     , L'!'     , L'"'     , L'#'     , L'$'     , L'%'     , L'&'     , L'\''    , L'('     , L')'     , L'*'     , L'+'     , L','     , L'-'     , L'.'     , L'/'     , // 2x
+	L'0'     , L'1'     , L'2'     , L'3'     , L'4'     , L'5'     , L'6'     , L'7'     , L'8'     , L'9'     , L':'     , L';'     , L'<'     , L'='     , L'>'     , L'?'     , // 3x
+	L'@'     , L'A'     , L'B'     , L'C'     , L'D'     , L'E'     , L'F'     , L'G'     , L'H'     , L'I'     , L'J'     , L'K'     , L'L'     , L'M'     , L'N'     , L'O'     , // 4x
+	L'P'     , L'Q'     , L'R'     , L'S'     , L'T'     , L'U'     , L'V'     , L'W'     , L'X'     , L'Y'     , L'Z'     , L'['     , L'\\'    , L']'     , L'^'     , L'_'     , // 5x
+	L'`'     , L'a'     , L'b'     , L'c'     , L'd'     , L'e'     , L'f'     , L'g'     , L'h'     , L'i'     , L'j'     , L'k'     , L'l'     , L'm'     , L'n'     , L'o'     , // 6x
+	L'p'     , L'q'     , L'r'     , L's'     , L't'     , L'u'     , L'v'     , L'w'     , L'x'     , L'y'     , L'z'     , L'{'     , L'|'     , L'}'     , L'~'     , L'\x007F', // 7x
+	L'\x00C7', L'\x00FC', L'\x00E9', L'\x00E2', L'\x00E4', L'\x00E0', L'\x00E5', L'\x00E7', L'\x00EA', L'\x00EB', L'\x00E8', L'\x00EF', L'\x00EE', L'\x00EC', L'\x00C4', L'\x00C5', // 8x
+	L'\x2395', L'\x235E', L'\x2339', L'\x00F4', L'\x00F6', L'\x00F2', L'\x00FB', L'\x00F9', L'\x22A4', L'\x00D6', L'\x00DC', L'\x00F8', L'\x00A3', L'\x22A5', L'\x20A7', L'\x2336', // 9x
+	L'\x00E1', L'\x00ED', L'\x00F3', L'\x00FA', L'\x00F1', L'\x00D1', L'\x00AA', L'\x00BA', L'\x00BF', L'\x2308', L'\x00AC', L'\x00BD', L'\x222A', L'\x00A1', L'\x2355', L'\x234E', // Ax
+	L'\x2591', L'\x2592', L'\x2593', L'\x2502', L'\x2524', L'\x235F', L'\x2206', L'\x2207', L'\x2192', L'\x2563', L'\x2551', L'\x2557', L'\x255D', L'\x2190', L'\x230A', L'\x2510', // Bx
+	L'\x2514', L'\x2534', L'\x252C', L'\x251C', L'\x2500', L'\x253C', L'\x2191', L'\x2193', L'\x255A', L'\x2554', L'\x2569', L'\x2566', L'\x2560', L'\x2550', L'\x256C', L'\x2261', // Cx
+	L'\x2378', L'\x2377', L'\x2235', L'\x2337', L'\x2342', L'\x233B', L'\x22A2', L'\x22A3', L'\x22C4', L'\x2518', L'\x250C', L'\x2588', L'\x2584', L'\x00A6', L'\x00CC', L'\x2580', // Dx
+	L'\x237A', L'\x2379', L'\x2282', L'\x2283', L'\x235D', L'\x2372', L'\x2374', L'\x2371', L'\x233D', L'\x2296', L'\x25CB', L'\x2228', L'\x2373', L'\x2349', L'\x220A', L'\x2229', // Ex
+	L'\x233F', L'\x2340', L'\x2265', L'\x2264', L'\x2260', L'\x00D7', L'\x00F7', L'\x2359', L'\x2218', L'\x2375', L'\x236B', L'\x234B', L'\x2352', L'\x00AF', L'\x00A8', L'\x00A0', // Fx
 }
 #endif
 ,
 
-      APL2_EBCDICtoNARS[257]
+	  APL2_EBCDICtoNARS[257]
 #ifdef DEFINE_VALUES
 =
 {
-//     x0         x1         x2         x3         x4         x5         x6         x7         x8         x9         xA         xB         xC         xD         xE         xF
-    L'\x0000', L'\x0001', L'\x0002', L'\x0003', L'\x0004', L'\x0005', L'\x0006', L'\x0007', L'\x0008', L'\x0009', L'\x000A', L'\x000B', L'\x000C', L'\x000D', L'\x000E', L'\x000F', // 0x
-    L'\x0010', L'\x0011', L'\x0012', L'\x0013', L'\x0014', L'\x0015', L'\x0016', L'\x0017', L'\x0018', L'\x0019', L'\x001A', L'\x001B', L'\x001C', L'\x001D', L'\x001E', L'\x001F', // 1x
-    L' '     , L'!'     , L'"'     , L'#'     , L'$'     , L'%'     , L'&'     , L'\''    , L'('     , L')'     , L'*'     , L'+'     , L','     , L'-'     , L'.'     , L'/'     , // 2x
-    L'0'     , L'1'     , L'2'     , L'3'     , L'4'     , L'5'     , L'6'     , L'7'     , L'8'     , L'9'     , L':'     , L';'     , L'<'     , L'='     , L'>'     , L'?'     , // 3x
-    L'@'     , L'A'     , L'B'     , L'C'     , L'D'     , L'E'     , L'F'     , L'G'     , L'H'     , L'I'     , L'J'     , L'K'     , L'L'     , L'M'     , L'N'     , L'O'     , // 4x
-    L'P'     , L'Q'     , L'R'     , L'S'     , L'T'     , L'U'     , L'V'     , L'W'     , L'X'     , L'Y'     , L'Z'     , L'['     , L'\\'    , L']'     , L'^'     , L'_'     , // 5x
-    L'`'     , L'a'     , L'b'     , L'c'     , L'd'     , L'e'     , L'f'     , L'g'     , L'h'     , L'i'     , L'j'     , L'k'     , L'l'     , L'm'     , L'n'     , L'o'     , // 6x
-    L'p'     , L'q'     , L'r'     , L's'     , L't'     , L'u'     , L'v'     , L'w'     , L'x'     , L'y'     , L'z'     , L'{'     , L'|'     , L'}'     , L'~'     , L'\xE036', // 7x
-    L'\xE037', L'\xE038', L'\xE039', L'\xE03A', L'\xE03B', L'\xE03C', L'\xE03D', L'\xE03E', L'\xE03F', L'\xE040', L'\xE041', L'\xE042', L'\xE043', L'\xE044', L'\xE045', L'\xE046', // 8x
-    L'\x2395', L'\x235E', L'\x2339', L'\xE047', L'\xE048', L'\xE049', L'\xE04A', L'\xE04B', L'\x22A4', L'\xE04C', L'\xE04D', L'\x00F8', L'\xE04E', L'\x22A5', L'\xE04F', L'\x2336', // 9x
-    L'\x00E1', L'\x00ED', L'\x00F3', L'\x00FA', L'\x00F1', L'\x00D1', L'\x00AA', L'\x00BA', L'\x00BF', L'\x2308', L'\x00AC', L'\x00BD', L'\x222A', L'\x00A1', L'\x2355', L'\x234E', // Ax
-    L'\x2591', L'\x2592', L'\x2593', L'\x2502', L'\x2524', L'\x235F', L'\x2206', L'\x2207', L'\x2192', L'\x2563', L'\x2551', L'\x2557', L'\x255D', L'\x2190', L'\x230A', L'\x2510', // Bx
-    L'\x2514', L'\x2534', L'\x252C', L'\x251C', L'\x2500', L'\x253C', L'\x2191', L'\x2193', L'\x255A', L'\x2554', L'\x2569', L'\x2566', L'\x2560', L'\x2550', L'\x256C', L'\x2261', // Cx
-    L'\x2378', L'\x2377', L'\x2235', L'\x2337', L'\x2342', L'\x233B', L'\x22A2', L'\x22A3', L'\x22C4', L'\x2518', L'\x250C', L'\x2588', L'\x2584', L'\x00A6', L'\x00CC', L'\x2580', // Dx
-    L'\x237A', L'\x2379', L'\x2282', L'\x2283', L'\x235D', L'\x2372', L'\x2374', L'\x2371', L'\x233D', L'\x2296', L'\x25CB', L'\x2228', L'\x2373', L'\x2349', L'\x220A', L'\x2229', // Ex
-    L'\x233F', L'\x2340', L'\x2265', L'\x2264', L'\x2260', L'\x00D7', L'\x00F7', L'\x2359', L'\x2218', L'\x2375', L'\x236B', L'\x234B', L'\x2352', L'\x00AF', L'\x00A8', L'\x00A0', // Fx
+//	   x0		  x1		 x2 		x3		   x4		  x5		 x6 		x7		   x8		  x9		 xA 		xB		   xC		  xD		 xE 		xF
+	L'\x0000', L'\x0001', L'\x0002', L'\x0003', L'\x0004', L'\x0005', L'\x0006', L'\x0007', L'\x0008', L'\x0009', L'\x000A', L'\x000B', L'\x000C', L'\x000D', L'\x000E', L'\x000F', // 0x
+	L'\x0010', L'\x0011', L'\x0012', L'\x0013', L'\x0014', L'\x0015', L'\x0016', L'\x0017', L'\x0018', L'\x0019', L'\x001A', L'\x001B', L'\x001C', L'\x001D', L'\x001E', L'\x001F', // 1x
+	L' '     , L'!'     , L'"'     , L'#'     , L'$'     , L'%'     , L'&'     , L'\''    , L'('     , L')'     , L'*'     , L'+'     , L','     , L'-'     , L'.'     , L'/'     , // 2x
+	L'0'     , L'1'     , L'2'     , L'3'     , L'4'     , L'5'     , L'6'     , L'7'     , L'8'     , L'9'     , L':'     , L';'     , L'<'     , L'='     , L'>'     , L'?'     , // 3x
+	L'@'     , L'A'     , L'B'     , L'C'     , L'D'     , L'E'     , L'F'     , L'G'     , L'H'     , L'I'     , L'J'     , L'K'     , L'L'     , L'M'     , L'N'     , L'O'     , // 4x
+	L'P'     , L'Q'     , L'R'     , L'S'     , L'T'     , L'U'     , L'V'     , L'W'     , L'X'     , L'Y'     , L'Z'     , L'['     , L'\\'    , L']'     , L'^'     , L'_'     , // 5x
+	L'`'     , L'a'     , L'b'     , L'c'     , L'd'     , L'e'     , L'f'     , L'g'     , L'h'     , L'i'     , L'j'     , L'k'     , L'l'     , L'm'     , L'n'     , L'o'     , // 6x
+	L'p'     , L'q'     , L'r'     , L's'     , L't'     , L'u'     , L'v'     , L'w'     , L'x'     , L'y'     , L'z'     , L'{'     , L'|'     , L'}'     , L'~'     , L'\xE036', // 7x
+	L'\xE037', L'\xE038', L'\xE039', L'\xE03A', L'\xE03B', L'\xE03C', L'\xE03D', L'\xE03E', L'\xE03F', L'\xE040', L'\xE041', L'\xE042', L'\xE043', L'\xE044', L'\xE045', L'\xE046', // 8x
+	L'\x2395', L'\x235E', L'\x2339', L'\xE047', L'\xE048', L'\xE049', L'\xE04A', L'\xE04B', L'\x22A4', L'\xE04C', L'\xE04D', L'\x00F8', L'\xE04E', L'\x22A5', L'\xE04F', L'\x2336', // 9x
+	L'\x00E1', L'\x00ED', L'\x00F3', L'\x00FA', L'\x00F1', L'\x00D1', L'\x00AA', L'\x00BA', L'\x00BF', L'\x2308', L'\x00AC', L'\x00BD', L'\x222A', L'\x00A1', L'\x2355', L'\x234E', // Ax
+	L'\x2591', L'\x2592', L'\x2593', L'\x2502', L'\x2524', L'\x235F', L'\x2206', L'\x2207', L'\x2192', L'\x2563', L'\x2551', L'\x2557', L'\x255D', L'\x2190', L'\x230A', L'\x2510', // Bx
+	L'\x2514', L'\x2534', L'\x252C', L'\x251C', L'\x2500', L'\x253C', L'\x2191', L'\x2193', L'\x255A', L'\x2554', L'\x2569', L'\x2566', L'\x2560', L'\x2550', L'\x256C', L'\x2261', // Cx
+	L'\x2378', L'\x2377', L'\x2235', L'\x2337', L'\x2342', L'\x233B', L'\x22A2', L'\x22A3', L'\x22C4', L'\x2518', L'\x250C', L'\x2588', L'\x2584', L'\x00A6', L'\x00CC', L'\x2580', // Dx
+	L'\x237A', L'\x2379', L'\x2282', L'\x2283', L'\x235D', L'\x2372', L'\x2374', L'\x2371', L'\x233D', L'\x2296', L'\x25CB', L'\x2228', L'\x2373', L'\x2349', L'\x220A', L'\x2229', // Ex
+	L'\x233F', L'\x2340', L'\x2265', L'\x2264', L'\x2260', L'\x00D7', L'\x00F7', L'\x2359', L'\x2218', L'\x2375', L'\x236B', L'\x234B', L'\x2352', L'\x00AF', L'\x00A8', L'\x00A0', // Fx
 }
 #endif
 ;
@@ -1323,17 +1299,22 @@ WCHAR APL2_ASCIItoNARS[257]
 // Define global option flags
 typedef struct tagOPTIONFLAGS
 {
-    UINT bAdjustPW           :1,    // 00000001:  TRUE iff WM_SIZE changes []PW
-         bUnderbarToLowercase:1,    // 00000002:  ...      Paste of underbar letters translates to lowercase
-         bNewTabOnClear      :1,    // 00000004:  ...      )CLEAR creates a new tab
-         bNewTabOnLoad       :1,    // 00000008:  ...      )LOAD  ...
-         bUseLocalTime       :1,    // 00000010:  ...      LocalTime is used instead of SystemTime (GMT)
-         bBackupOnLoad       :1,    // 00000020:  ...      make a backup copy on all )LOADs
-         bBackupOnSave       :1,    // 00000040:  ...      make a backup copy on all )SAVEs
-         uDefaultPaste       :4,    // 00000780:  Index of default Paste translation (see UNI_TRANS)
-         uDefaultCopy        :4,    // 00007800:  Index of default Paste translation (see UNI_TRANS)
-         Avail               :18;   // FFFF8000:  Available bits
+	UINT bAdjustPW			 :1,	// 00000001:  TRUE iff WM_SIZE changes []PW
+		 bUnderbarToLowercase:1,	// 00000002:  ...	   Paste of underbar letters translates to lowercase
+		 bNewTabOnClear 	 :1,	// 00000004:  ...	   )CLEAR creates a new tab
+		 bNewTabOnLoad		 :1,	// 00000008:  ...	   )LOAD  ...
+		 bUseLocalTime		 :1,	// 00000010:  ...	   LocalTime is used instead of SystemTime (GMT)
+		 bBackupOnLoad		 :1,	// 00000020:  ...	   make a backup copy on all )LOADs
+		 bBackupOnSave		 :1,	// 00000040:  ...	   make a backup copy on all )SAVEs
+		 bNoCopyrightMsg	 :1,	// 00000080:  ...	   suppress the copright msg at startup
+		 uDefaultPaste		 :4,	// 00000F00:  Index of default Paste translation (see UNI_TRANS)
+		 uDefaultCopy		 :4,	// 0000F000:  Index of default Paste translation (see UNI_TRANS)
+		 Avail				 :16;	// FFFF0000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
+
+// N.B.:  Whenever changing the above struct (OPTIONFLAGS),
+//	 be sure to make a corresponding change to
+//	 <OptionFlags> in <externs.h>.
 
 EXTERN
 OPTIONFLAGS OptionFlags
@@ -1345,6 +1326,7 @@ OPTIONFLAGS OptionFlags
    DEF_USELOCALTIME,
    DEF_BACKUPONLOAD,
    DEF_BACKUPONSAVE,
+   DEF_NOCOPYRIGHTMSG,
    DEF_DEFAULTPASTE,
    DEF_DEFAULTCOPY}
 #endif
@@ -1353,14 +1335,14 @@ OPTIONFLAGS OptionFlags
 
 typedef enum tagFONTENUM
 {
-    FONTENUM_SM = 0,                    // 00:  Session Manager font
-    FONTENUM_FE,                        // 01:  Function Editor
-    FONTENUM_PR,                        // 02:  Printer
-    FONTENUM_CC,                        // 03:  Crash Control window
-    FONTENUM_TC,                        // 04:  Tab Control
-    FONTENUM_VE,                        // 05:  Vector Editor
-    FONTENUM_ME,                        // 06:  Matrix Editor
-    FONTENUM_LENGTH,                    // 07:  Length
+	FONTENUM_SM = 0,					// 00:	Session Manager font
+	FONTENUM_FE,						// 01:	Function Editor
+	FONTENUM_PR,						// 02:	Printer
+	FONTENUM_CC,						// 03:	Crash Control window
+	FONTENUM_TC,						// 04:	Tab Control
+	FONTENUM_VE,						// 05:	Vector Editor
+	FONTENUM_ME,						// 06:	Matrix Editor
+	FONTENUM_LENGTH,					// 07:	Length
 } FONTENUM, *LPFONTENUM;
 
 EXTERN
@@ -1376,15 +1358,15 @@ void CreateNewFontVE (void);
 
 typedef struct tagFONTSTRUC
 {
-    LPLOGFONT    lplf;                      // Ptr to LOGFONT    struct for this font
-    LPCHOOSEFONT lpcf;                      // Ptr to CHOOSEFONT ...
-    LPTEXTMETRIC lptm;                      // Ptr to TEXTMETRIC ...
-    int          iPtSize;                   // Default point size
-    UBOOL        bPrinter,                  // TRUE iff this font is for the printer
-                 bChanged;                  // TRUE iff ChooseFont changed the font (the user exited via OK)
-    void       (*lpCreateNewFont) (void);   // Ptr to CreateNewFontXX for this font
-    LPWCHAR      lpwTitle;                  // Ptr to window title
-    CHOOSEFONT   cfLcl;                     // Local CHOOSEFONT while Customize Dialog is running
+	LPLOGFONTW	  lplf; 					// Ptr to LOGFONTW	  struct for this font
+	LPCHOOSEFONTW lpcf; 					// Ptr to CHOOSEFONTW ...
+	LPTEXTMETRIC  lptm; 					// Ptr to TEXTMETRIC  ...
+	int 		  iPtSize;					// Default point size
+	UBOOL		  bPrinter, 				// TRUE iff this font is for the printer
+				  bChanged; 				// TRUE iff ChooseFont changed the font (the user exited via OK)
+	void		(*lpCreateNewFont) (void);	// Ptr to CreateNewFontXX for this font
+	LPWCHAR 	  lpwTitle; 				// Ptr to window title
+	CHOOSEFONTW   cfLcl;					// Local CHOOSEFONTW while Customize Dialog is running
 } FONTSTRUC, *LPFONTSTRUC;
 
 EXTERN
@@ -1404,23 +1386,23 @@ FONTSTRUC fontStruc[FONTENUM_LENGTH]
 
 typedef struct tagCUSTOMIZE
 {
-    LPWCHAR lpwTitle;
-    UINT    uIDD;
-    UBOOL   bInitialized;
+	LPWCHAR lpwTitle;
+	UINT	uIDD;
+	UBOOL	bInitialized;
 } CUSTOMIZE, *LPCUSTOMIZE;
 
 EXTERN
 CUSTOMIZE custStruc[]
 #ifdef DEFINE_VALUES
  =
-{   {L"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
+{	{L"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
 ////{L"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
-    {L"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
-    {L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 03
+	{L"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
+	{L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 03
 ////{L"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 04
-    {L"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 05
+	{L"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 05
 ////{L"Tab Colors"              , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 06
-    {L"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 07
+	{L"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 07
 }
 #endif
 ;
@@ -1428,11 +1410,11 @@ CUSTOMIZE custStruc[]
 EXTERN
 UINT custStrucLen
 #ifdef DEFINE_VALUES
-= (sizeof (custStruc) / sizeof (custStruc[0]))
+= itemsizeof (custStruc)
 #endif
 ;
 
-#define DEF_INIT_CATEGORY   (IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START)   // Fonts
+#define DEF_INIT_CATEGORY	(IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START)	// Fonts
 
 EXTERN
 int gInitCustomizeCategory
@@ -1443,71 +1425,71 @@ int gInitCustomizeCategory
 
 typedef enum tagUNDO_ACTS
 {
-    undoNone = 0,       // 0000:  No action
-    undoIns,            // 0001:  Insert a character
-    undoRep,            // 0002:  Replace a character
-    undoDel,            // 0003:  Delete one or more characters
-    undoSel,            // 0004:  Select one or more characters
-    undoInsToggle,      // 0005:  Toggle the insert mode
-                        // 0006-FFFF:  Available entries (16 bits)
+	undoNone = 0,		// 0000:  No action
+	undoIns,			// 0001:  Insert a character
+	undoRep,			// 0002:  Replace a character
+	undoDel,			// 0003:  Delete one or more characters
+	undoSel,			// 0004:  Select one or more characters
+	undoInsToggle,		// 0005:  Toggle the insert mode
+						// 0006-FFFF:  Available entries (16 bits)
 } UNDO_ACTS;
 
 // Define the corresponding one-letter actions
-#define UndoActToChar   L"NIRDST"
+#define UndoActToChar	L"NIRDST"
 
-#define UNDO_NOGROUP    0
+#define UNDO_NOGROUP	0
 
 typedef struct tagUNDO_BUF
 {
-    UINT  CharPosBeg,   // 00:  Beginning character position (from start of text),
-                        //      -1 = current position
-          CharPosEnd,   // 04:  Ending    ...
-          Group;        // 08:  Group index identifies actions to be performed together,
-                        //      0 = no grouping
-    short Action;       // 0C:  Action (see UNDO_ACTS)
-    WCHAR Char;         // 0E:  The character (if any),
-                        //       0 = none
-                        // 10:  Length
+	UINT  CharPosBeg,	// 00:	Beginning character position (from start of text),
+						//		-1 = current position
+		  CharPosEnd,	// 04:	Ending	  ...
+		  Group;		// 08:	Group index identifies actions to be performed together,
+						//		0 = no grouping
+	short Action;		// 0C:	Action (see UNDO_ACTS)
+	WCHAR Char; 		// 0E:	The character (if any),
+						//		 0 = none
+						// 10:	Length
 } UNDO_BUF, *LPUNDO_BUF;
 
 
 typedef union tagMEMTXT_UNION
 {
-    struct
-    {
-        UINT U;             // 00:  The line length
-        union
-        {
-            APLCHAR C;      // 04:  Followed by an APLCHAR
-            WORD    W;      // 04:  ...          a WORD
-        };
-    };
+	struct
+	{
+		UINT U; 			// 00:	The line length
+		union
+		{
+			APLCHAR C;		// 04:	Followed by an APLCHAR
+			WORD	W;		// 04:	... 		 a WORD
+		};
+	};
 } MEMTXT_UNION, *LPMEMTXT_UNION;
 
 typedef void (*LPERRHANDFN) (LPWCHAR lpwszMsg,
-                             LPWCHAR lpwszLine,
-                             UINT uCaret,
-                             HWND hWndEC);
+							 LPWCHAR lpwszLine,
+							 UINT uCaret,
+							 HWND hWndEC);
 typedef enum tagERROR_CODES
 {
-    ERRORCODE_NONE = 0,     // 00:  No error
-    ERRORCODE_ALX,          // 01:  Signal []ALX
-    ERRORCODE_ELX,          // 02:  Signal []ELX
+	ERRORCODE_NONE = 0, 	// 00:	No error
+	ERRORCODE_ALX,			// 01:	Signal []ALX
+	ERRORCODE_ELX,			// 02:	Signal []ELX
 } ERROR_CODES;
 
-typedef enum tagLINE_NUMS   // Starting line #s
+typedef enum tagLINE_NUMS	// Starting line #s
 {
-    LINENUM_ONE = 0,        // 00:  Line #1
-    LINENUM_IDENTITY,       // 01:  Line []IDENTITY
-    LINENUM_INVERSE,        // 02:  Line []INVERSE
-    LINENUM_PROTOTYPE,      // 03:  Line []PROTOTYPE
-    LINENUM_SINGLETON,      // 04:  Line []SINGLETON
+	LINENUM_ONE = 0,		// 00:	Line #1
+	LINENUM_IDENTITY,		// 01:	Line []IDENTITY
+	LINENUM_INVERSE,		// 02:	Line []INVERSE
+	LINENUM_PROTOTYPE,		// 03:	Line []PROTOTYPE
+	LINENUM_SINGLETON,		// 04:	Line []SINGLETON
 } LINE_NUMS;
 
 #define ENUMS_DEFINED
-#undef  EXTERN
+#undef	EXTERN
 
 
 //***************************************************************************
-//  End of File: externs.h
+//	End of File: externs.h
 //***************************************************************************

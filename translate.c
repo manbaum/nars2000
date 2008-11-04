@@ -568,22 +568,19 @@ APLCHAR TranslateFcnOprToChar
         case INDEX_DIERESISDOWNTACK:            // 0x0B           // ...       {dieresisdowntack}
             return UTF16_DIERESISDOWNTACK;
 
-        case INDEX_DIERESISCIRCLE:              // 0x0C           // ...       {dieresiscircle}
-            return UTF16_DIERESISCIRCLE;
-
-        case INDEX_OPSLASH:                     // 0x0D           // ...       {slash} as an operator
+        case INDEX_OPSLASH:                     // 0x0C           // ...       {slash} as an operator
             return UTF16_SLASH;
 
-        case INDEX_OPSLASHBAR:                  // 0x0E           // ...       {slashbar} ...
+        case INDEX_OPSLASHBAR:                  // 0x0D           // ...       {slashbar} ...
             return UTF16_SLASHBAR;
 
-        case INDEX_OPSLOPE:                     // 0x0F           // ...       {slope}    ...
+        case INDEX_OPSLOPE:                     // 0x0E           // ...       {slope}    ...
             return UTF16_SLOPE;
 
-        case INDEX_OPSLOPEBAR:                  // 0x10           // ...       {slopebar} ...
+        case INDEX_OPSLOPEBAR:                  // 0x0F           // ...       {slopebar} ...
             return UTF16_SLOPEBAR;
 
-////////case                                    // 0x11-0x17      // (available)
+////////case                                    // 0x10-0x17      // (available)
 ////////case                                    // 0x18           // ...       {jot}
 
         default:

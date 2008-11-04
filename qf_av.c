@@ -106,7 +106,9 @@ void MakeQuadAV
     ByteRes = CalcArraySize (ARRAY_CHAR, QUADAV_LEN, 1);
 
     // Create []AV
-    hGlbAV = MyGlobalAlloc (GHND, (UINT) ByteRes);
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbAV = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbAV)
     {
         DbgStop ();         // We should never get here

@@ -324,8 +324,8 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -420,8 +420,8 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbWVecRht = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbWVecRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRht)
         goto WSFULL_EXIT;
 
@@ -448,8 +448,8 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbOdoRht = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRht)
         goto WSFULL_EXIT;
 
@@ -457,7 +457,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     lpMemOdoRht = MyGlobalLock (hGlbOdoRht);
 
     // Initialize the odometer array
-    CopyMemory (lpMemOdoRht, lpMemLoHiRht, (UINT) aplRankRes * sizeof (APLUINT));
+    CopyMemory (lpMemOdoRht, lpMemLoHiRht, (APLU3264) aplRankRes * sizeof (APLUINT));
 
     // If the right arg is an immediate, ...
     if (lpMemRht EQ NULL)
@@ -716,7 +716,8 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     APLRANK  aplRankLft;                // Left arg rank
     UBOOL    bRet = TRUE;               // TRUE iff result is valid
     APLUINT  uDim,                      // Loop counter
-             uRes;                      // Loop counter
+             uRes,                      // Loop counter
+             ByteRes;                   // # bytes in the result
     UINT     uBitMask;                  // Bit mask for looping through Booleans
     APLINT   aplIntTmp,                 // Temporary integer
              aplIntLft;                 // Temporary left arg integer
@@ -746,10 +747,15 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         lpDataLft = &aplLongestLft;
     } // End IF/ELSE
 
+    // Calculate space for a normalized left arg
+    ByteRes = (5 - bDownArrow * 2) * aplRankRes * sizeof (APLINT);
+
     // Allocate space for a normalized left arg
     // Three copies for DownArrow (TmpLft, LoRht, HiRht),
     //   five for UpArrow (TmpLft, LoRht, HiRht, LoRes, HiRes)
-    hGlbTmpLft = DbgGlobalAlloc (GHND, (UINT) ((5 - bDownArrow * 2) * aplRankRes * sizeof (APLINT)));
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbTmpLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbTmpLft)
         return NULL;
 
@@ -773,7 +779,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         //   some of which will be overwritten by the actual left arg,
         //   the rest of which are the elided dimensions and hence
         //   are unchanged from the right arg to the result.
-        CopyMemory (lpMemTmpLft, lpMemDimRht, (UINT) aplRankRht * sizeof (APLDIM));
+        CopyMemory (lpMemTmpLft, lpMemDimRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
     // Check for LEFT DOMAIN ERROR and fill in lpMemTmpLft
     // Split cases based upon the left arg's storage type

@@ -306,8 +306,8 @@ RESTART_EXCEPTION:
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -343,7 +343,7 @@ RESTART_EXCEPTION:
         uDimCopy = max (aplRankLft, 1) - 1;
 
         // Copy the dimensions
-        CopyMemory (lpMemDimRes, lpMemDimLft, (UINT) uDimCopy * sizeof (APLDIM));
+        CopyMemory (lpMemDimRes, lpMemDimLft, (APLU3264) uDimCopy * sizeof (APLDIM));
 
         // Skip over the copied dimensions
         lpMemDimRes += uDimCopy;
@@ -356,7 +356,7 @@ RESTART_EXCEPTION:
         uDimCopy = max (aplRankRht, 1) - 1;
 
         // Copy the dimensions
-        CopyMemory (lpMemDimRes, &lpMemDimRht[1], (UINT) uDimCopy * sizeof (APLDIM));
+        CopyMemory (lpMemDimRes, &lpMemDimRht[1], (APLU3264) uDimCopy * sizeof (APLDIM));
 
         // Skip over the copied dimensions
         lpMemDimRes += uDimCopy;

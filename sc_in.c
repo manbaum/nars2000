@@ -70,7 +70,7 @@ UBOOL CmdIn_EM
                   lpwszFormat;              // Ptr to format area
     DWORD         dwAtfFileSize;            // Byte size of .atf file
     WCHAR         wszTemp[1024];            // Temporary storage for message strings
-#define wszTempLen      (sizeof (wszTemp) / sizeof (wszTemp[0]))
+#define wszTempLen      itemsizeof (wszTemp)
     UINT          uLen,                     // Length of output save area in WCHARs
                   uOldRecNo,                // Starting record # in file (for range display)
                   uRecNo = 0,               // Record # in file
@@ -375,7 +375,7 @@ UBOOL TransferInverseArr2_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, (__int3264) (lpwNameEnd - lpwName));
+        CharLowerBuffW (lpwName, (APLU3264) (lpwNameEnd - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;
@@ -614,7 +614,7 @@ UBOOL TransferInverseFcn2_EM
         if (IsSysName (lpwName))
         {
             // Convert the name to lowercase
-            CharLowerBuffW (lpwName, (__int3264) (lpwData - lpwName));
+            CharLowerBuffW (lpwName, (APLU3264) (lpwData - lpwName));
 
             // Tell 'em we're looking for system names
             stFlags.ObjName = OBJNAME_SYS;
@@ -696,7 +696,7 @@ UBOOL TransferInverseChr1_EM
                   lpwData,                  // Ptr to data ...
                   lpwTemp,                  // Ptr to temporary
                   lpwszFormat;              // Ptr to format area
-    APLUINT       ByteRes;                  // # bytes needed for the result
+    APLUINT       ByteRes;                  // # bytes in the result
     HGLOBAL       hGlbRes;                  // Result global memory handle
     LPVOID        lpMemRes;                 // Ptr to result global memory
     UBOOL         bRet = FALSE;             // TRUE iff result is valid
@@ -758,7 +758,7 @@ UBOOL TransferInverseChr1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, (__int3264) (lpwData - lpwName));
+        CharLowerBuffW (lpwName, (APLU3264) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;
@@ -826,8 +826,8 @@ UBOOL TransferInverseChr1_EM
 
         // Now we can allocate the storage for the result
         // N.B.:  Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -861,7 +861,7 @@ UBOOL TransferInverseChr1_EM
         } // End FOR
 
         // Copy the data to the result
-        CopyMemory (lpMemRes, lpwData, (__int3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemory (lpMemRes, lpwData, (APLU3264) aplNELMRes * sizeof (APLCHAR));
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1014,7 +1014,7 @@ UBOOL TransferInverseNum1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, (__int3264) (lpwData - lpwName));
+        CharLowerBuffW (lpwName, (APLU3264) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;
@@ -1056,7 +1056,7 @@ UBOOL TransferInverseNum1_EM
     lpwData = SkipPastCharW (lpwData, L' ');
 
     // Get the # WCHARs in the rank
-    uLen = (__int3264) (lpwData - lpwTemp);
+    uLen = (APLU3264) (lpwData - lpwTemp);
 
     // Fill the rank with blanks
     for (uCnt = 0; uCnt < uLen; uCnt++)

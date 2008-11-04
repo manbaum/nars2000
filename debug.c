@@ -995,11 +995,11 @@ int dprintfW
 //***************************************************************************
 
 HGLOBAL DbgGlobalAllocSub
-    (UINT    uFlags,
-     UINT    ByteRes,
-     LPWCHAR lpFmtStr,
-     LPSTR   lpFileName,
-     UINT    uLineNum)
+    (UINT     uFlags,
+     APLU3264 ByteRes,
+     LPWCHAR  lpFmtStr,
+     LPSTR    lpFileName,
+     UINT     uLineNum)
 
 {
     HGLOBAL hGlbRes;

@@ -18,6 +18,7 @@ LIBS_WEXE = GDI32.LIB           \
             OLE32.LIB           \
             UUID.LIB            \
             WINSPOOL.LIB        \
+            ADVAPI32.LIB        \
 !if "$(DEBUG)" == "1"
             QDEBUG32.LIB        \
 !endif
@@ -61,6 +62,7 @@ B=$(BIN)ND$(WP)\                # ...                         binaries
 OC=RET\COM\                     # Define output directory for common intermediate files
 
 HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
+FONT=SImPL-Medium.ttf           # Default APL TrueType font
 
 
 ALL:    DIR                 \
@@ -128,7 +130,7 @@ DIR:
         @$(CC) $(CFLAGS_WEXE) /Fo$@ %s
 
 {$(WS)}.c{$(O)}.obj:
-        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.;$(O)
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.;$(O);$(SDK)INCLUDE
         @if exist $@ del $@
         @$(CC) $(CFLAGS_WEXE) /Fo$@ /D "UNICODE" %s
 
@@ -219,7 +221,6 @@ $(O)pf_utack.DEP        \
 $(O)pf_utackjot.DEP     \
 $(O)pl_parse.DEP        \
 $(O)po_cmiddot.DEP      \
-$(O)po_dicircle.DEP     \
 $(O)po_dieresis.DEP     \
 $(O)po_dijot.DEP        \
 $(O)po_ditilde.DEP      \
@@ -561,9 +562,6 @@ $(O)yyfns.DEP
 !if exist ($(O)po_cmiddot.DEP)
 !       include $(O)po_cmiddot.DEP
 !endif
-!if exist ($(O)po_dicircle.DEP)
-!       include $(O)po_dicircle.DEP
-!endif
 !if exist ($(O)po_dieresis.DEP)
 !       include $(O)po_dieresis.DEP
 !endif
@@ -854,7 +852,6 @@ $(O)pf_utack.PRO        \
 $(O)pf_utackjot.PRO     \
 $(O)pl_parse.PRO        \
 $(O)po_cmiddot.PRO      \
-$(O)po_dicircle.PRO     \
 $(O)po_dieresis.PRO     \
 $(O)po_dijot.PRO        \
 $(O)po_ditilde.PRO      \
@@ -1053,7 +1050,6 @@ $(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
 $(O)pf_utack.OBJ:       $(@B).C         $(PF_UTACK_DEP)
 $(O)pf_utackjot.OBJ:    $(@B).C         $(PF_UTACKJOT_DEP)
 $(O)po_cmiddot.OBJ:     $(@B).C         $(PO_CMIDDOT_DEP)
-$(O)po_dicircle.OBJ:    $(@B).C         $(PO_DICIRCLE_DEP)
 $(O)po_dieresis.OBJ:    $(@B).C         $(PO_DIERESIS_DEP)
 $(O)po_dijot.OBJ:       $(@B).C         $(PO_DIJOT_DEP)
 $(O)po_ditilde.OBJ:     $(@B).C         $(PO_DITILDE_DEP)
@@ -1220,7 +1216,6 @@ OBJS=                       \
      $(O)pf_utackjot.OBJ    \
      $(O)pl_parse.OBJ       \
      $(O)po_cmiddot.OBJ     \
-     $(O)po_dicircle.OBJ    \
      $(O)po_dieresis.OBJ    \
      $(O)po_dijot.OBJ       \
      $(O)po_ditilde.OBJ     \
@@ -1292,6 +1287,7 @@ OBJS=                       \
 
 $(O)$(ENAME).EXE:       $(OBJS)         \
                         $(DEFFILE)      \
+                        makefile.inc    \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.CRF
 $(OBJS)
@@ -1306,7 +1302,9 @@ $(LIBS_WEXE) $(LIBS_EXT)
         @$(LD) $(LFLAGS_WEXE) @$(O)main.CRF
         @del $(O)$(@B).exp
         @del $(O)$(@B).lib
-        @pkzip $(B)$(ENAME) $@ LICENSE >NUL
+        @copy $@ $(ENAME).EXE
+        @7za a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE $(FONT)
+        @del $(ENAME).EXE
         @copy $(O)$(MAPFILE) $(B)$(@B).MAP >NUL
 
 $(B)$(ENAME).EXE:       $(O)$(ENAME).EXE

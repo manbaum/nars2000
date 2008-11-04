@@ -582,8 +582,7 @@ BOOL ParseHeader
     // Start off with no error
     lpfhLocalVars->tkErrorCharIndex = NEG1U;
 
-    // Use VirtualAlloc for the parser stack
-    // ***FIXME***
+    // ***FIXME*** -- Use VirtualAlloc for the parser stack
 
 
 

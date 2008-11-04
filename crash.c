@@ -113,7 +113,7 @@ LRESULT APIENTRY CCWndProc
             (HANDLE_PTR) lpfnOldCCListboxWndProc =
               SetWindowLongPtrW (hWndCC_LB,
                                  GWL_WNDPROC,
-                                 (__int3264) (LONG_PTR) (WNDPROC) &LclCCListboxWndProc);
+                                 (APLU3264) (LONG_PTR) (WNDPROC) &LclCCListboxWndProc);
             // Initialize window-specific resources
             CC_Create (hWnd);
 

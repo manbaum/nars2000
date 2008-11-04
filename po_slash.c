@@ -398,8 +398,8 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -2039,7 +2039,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
         ByteRes = CalcArraySize (aplTypeRes, 1, 1); // One-element vector
 
         // Allocate space for the result
-        hGlbTmp = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbTmp)
             goto WSFULL_EXIT;
 
@@ -2121,7 +2121,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
 
     // Resize the global memory to include a new dimension
     *lphGlbRes = MyGlobalReAlloc (hGlbTmp,
-                                  (UINT) (ByteRes + sizeof (APLDIM)),
+                                  (APLU3264) (ByteRes + sizeof (APLDIM)),
                                   GHND);
     // Check for errors
     if (*lphGlbRes EQ NULL)
@@ -2137,7 +2137,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
     // Use MoveMemory as the source and destin blocks overlap
     MoveMemory (ByteAddr (lpMemRes, sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplAxis + 1)),
                 ByteAddr (lpMemRes, sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     ),
-                (UINT) (ByteRes  - (sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     )));
+                (APLU3264) (ByteRes  - (sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     )));
     // Increase the rank by one
     ((LPVARARRAY_HEADER) lpMemRes)->Rank++;
 
@@ -2196,8 +2196,8 @@ UBOOL PrimOpDydSlashAllocate_EM
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    *lphGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    *lphGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!*lphGlbRes)
         goto WSFULL_EXIT;
 

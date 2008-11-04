@@ -103,8 +103,8 @@ UBOOL CmdWsid_EM
 
         // Allocate space for the WSID
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteWSID EQ (UINT) ByteWSID);
-        hGlbWSID = DbgGlobalAlloc (GHND, (UINT) ByteWSID);
+        Assert (ByteWSID EQ (APLU3264) ByteWSID);
+        hGlbWSID = DbgGlobalAlloc (GHND, (APLU3264) ByteWSID);
         if (!hGlbWSID)
         {
             ReplaceLastLineCRPmt (ERRMSG_WS_FULL APPEND_NAME);

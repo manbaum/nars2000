@@ -303,8 +303,8 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -735,7 +735,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Allocate an array to hold the HGLOBALs of the translate tables
-    hGlbTTHandles = DbgGlobalAlloc (GHND, (UINT) aplRankLft * sizeof (TT_HANDLES));
+    hGlbTTHandles = DbgGlobalAlloc (GHND, (APLU3264) aplRankLft * sizeof (TT_HANDLES));
     if (!hGlbTTHandles)
         goto WSFULL_EXIT;
 
@@ -824,8 +824,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 

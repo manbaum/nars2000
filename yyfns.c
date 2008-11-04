@@ -205,7 +205,7 @@ void YYFree
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    u = (UINT) (lpYYRes - lpMemPTD->lpYYRes);
+    u = (APLU3264) (lpYYRes - lpMemPTD->lpYYRes);
     Assert (u < lpMemPTD->numYYRes);
     Assert (lpYYRes->YYInuse);
 

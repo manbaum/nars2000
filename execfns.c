@@ -506,10 +506,6 @@ LPPL_YYSTYPE ExecOp1_EM_YY
             return PrimOpDieresis_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
                                          lpYYFcnStrOpr,         // Ptr to operator function strand
                                          lptkRhtArg);           // Ptr to right arg token
-        case INDEX_DIERESISCIRCLE:  // Rank (as monadic op)
-            return PrimOpDieresisCircle_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-                                               lpYYFcnStrOpr,   // Ptr to operator function strand
-                                               lptkRhtArg);     // Ptr to right arg token
         case UTF16_DIERESISTILDE:   // Commute/Duplicate
             return PrimOpDieresisTilde_EM_YY (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
                                               lpYYFcnStrOpr,    // Ptr to operator function strand

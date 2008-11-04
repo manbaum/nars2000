@@ -119,8 +119,8 @@ UBOOL CheckAxisImm
 
         // Allocate storage for the axis vector
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteAxis EQ (UINT) ByteAxis);
-        *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
+        Assert (ByteAxis EQ (APLU3264) ByteAxis);
+        *lphGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteAxis);
         if (!*lphGlbAxis)
             goto ERROR_EXIT;
 
@@ -301,8 +301,8 @@ UBOOL CheckAxisGlb
 
         // Allocate storage for the axis vector
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteAxis EQ (UINT) ByteAxis);
-        *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
+        Assert (ByteAxis EQ (APLU3264) ByteAxis);
+        *lphGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteAxis);
         if (!*lphGlbAxis)
             goto WSFULL_EXIT;
 
@@ -321,8 +321,8 @@ UBOOL CheckAxisGlb
 
     // Allocate global memory bit vector to test for duplicates
     // N.B.  Conversion from APLUINT to UINT.
-    Assert (ByteDup EQ (UINT) ByteDup);
-    hGlbDup = DbgGlobalAlloc (GHND, (UINT) ByteDup);
+    Assert (ByteDup EQ (APLU3264) ByteDup);
+    hGlbDup = DbgGlobalAlloc (GHND, (APLU3264) ByteDup);
     if (!hGlbDup)
         goto WSFULL_EXIT;
 
@@ -744,8 +744,8 @@ UBOOL CheckAxis_EM
         // Allocate storage for the axis vector
         // N.B. Conversion from APLUINT to UINT.
         //***************************************************************
-        Assert (ByteAxis EQ (UINT) ByteAxis);
-        *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
+        Assert (ByteAxis EQ (APLU3264) ByteAxis);
+        *lphGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteAxis);
         if (!*lphGlbAxis)
             goto WSFULL_EXIT;
 
@@ -895,7 +895,7 @@ UBOOL CheckAxis_EM
                 lpAxisStart[aplRankCmp + aplAxisContLo + u] = lpAxisHead[u];
 
             // Copy back to the first half
-            CopyMemory (lpAxisStart, &lpAxisStart[aplRankCmp], (UINT) (aplRankCmp * sizeof (lpAxisStart[0])));
+            CopyMemory (lpAxisStart, &lpAxisStart[aplRankCmp], (APLU3264) (aplRankCmp * sizeof (lpAxisStart[0])));
         } // End IF
 
         // Place the grade-up of lpAxisStart into &lpAxisStart[aplRankCmp]

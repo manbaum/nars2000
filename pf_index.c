@@ -249,7 +249,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             ByteRes = CalcArraySize (aplTypeRes, aplNELMSub, aplRankSub);
 
             // Allocate space for the result
-            hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+            hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;
 
@@ -272,7 +272,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             lpMemSub = VarArrayBaseToDim (lpMemSub);
 
             // Fill in the result dimensions
-            CopyMemory (lpMemRes, lpMemSub, (__int3264) aplRankSub * sizeof (APLDIM));
+            CopyMemory (lpMemRes, lpMemSub, (APLU3264) aplRankSub * sizeof (APLDIM));
 
             // Skip over the dimensions to the data
             lpMemRes = VarArrayDimToData (lpMemRes, aplRankSub);
@@ -702,7 +702,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
         ByteRes = CalcArraySize (aplTypeRes, 1, aplRankRes);
 
         // Allocate space for the result
-        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -832,7 +832,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     ByteRes = CalcArraySize (aplTypeRes, aplNELMLst, aplRankLst);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -856,7 +856,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     lpMemLst = VarArrayBaseToDim (lpMemLst);
 
     // Copy the dimensions to the result
-    CopyMemory (lpMemRes, lpMemLst, (__int3264) aplRankLst * sizeof (APLDIM));
+    CopyMemory (lpMemRes, lpMemLst, (APLU3264) aplRankLst * sizeof (APLDIM));
 
     // Skip over the dimensions to the data
     lpMemRes = VarArrayDimToData (lpMemRes, aplRankLst);
@@ -1108,7 +1108,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     ByteRes = CalcArraySize (aplTypeNam, aplNELMRes, aplRankLst);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -1130,7 +1130,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     lpMemRes = VarArrayBaseToDim (lpMemRes);
 
     // Copy the list arg dimensions to the result
-    CopyMemory (lpMemRes, lpMemDimLst, (__int3264) aplRankLst * sizeof (APLDIM));
+    CopyMemory (lpMemRes, lpMemDimLst, (APLU3264) aplRankLst * sizeof (APLDIM));
 
     // Skip over the dimensions to the data
     lpMemRes = VarArrayDimToData (lpMemRes, aplRankLst);
@@ -1372,7 +1372,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         ByteRes = CalcArraySize (ARRAY_LIST, uCount, 1);
 
         // Allocate space for the new list arg
-        hGlbLstNew = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        hGlbLstNew = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbLstNew)
             goto WSFULL_EXIT;
 
@@ -1425,7 +1425,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         ByteRes = CalcArraySize (ARRAY_INT, uCount, 1);
 
         // Allocate space for the axis operator
-        hGlbAxis = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        hGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbAxis)
             goto WSFULL_EXIT;
 
@@ -1955,7 +1955,7 @@ UBOOL ArrayIndexSetNamScalar_EM
         ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
 
         // Wrap the global in a scalar
-        hGlbRes = MyGlobalAlloc (GHND, (__int3264) ByteRes);
+        hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -3224,7 +3224,7 @@ UBOOL ArrayIndexSetRect_EM
         ByteRes = CalcArraySize (ARRAY_LIST, uCount, 1);
 
         // Allocate space for the new list arg
-        hGlbLstNew = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        hGlbLstNew = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbLstNew)
             goto WSFULL_EXIT;
 
@@ -3277,7 +3277,7 @@ UBOOL ArrayIndexSetRect_EM
         ByteRes = CalcArraySize (ARRAY_INT, uCount, 1);
 
         // Allocate space for the axis operator
-        hGlbAxis = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        hGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbAxis)
             goto WSFULL_EXIT;
 

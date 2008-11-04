@@ -56,7 +56,7 @@ LPPL_YYSTYPE SysFnLC_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    UINT         ByteRes;           // # bytes in the result
+    APLUINT      ByteRes;           // # bytes in the result
     APLNELM      aplNELMRes;        // Result NELM
     HGLOBAL      hGlbRes;           // Result global memory handle
     LPVOID       lpMemRes;          // Ptr to result global memory
@@ -92,10 +92,12 @@ LPPL_YYSTYPE SysFnLC_EM_YY
         aplNELMRes++;
 
     // Calculate space needed for the result
-    ByteRes = (UINT) CalcArraySize (ARRAY_INT, aplNELMRes, 1);
+    ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+    // N.B. Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 

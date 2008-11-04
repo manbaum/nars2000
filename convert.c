@@ -274,7 +274,7 @@ UINT ConvertWideToName
 //  Convert wide chars of a given length to ASCII or {name} or {\xXXXX}
 //***************************************************************************
 
-UINT ConvertWideToNameLength
+APLU3264 ConvertWideToNameLength
     (LPWCHAR lpwszOut,              // Ptr to output save buffer
      LPWCHAR lpwszInp,              // Ptr to incoming chars
      UINT    uLen)                  // # chars to convert
@@ -315,7 +315,7 @@ UINT ConvertWideToNameLength
     // Ensure properly terminated
     *lpwsz = L'\0';
 
-    return (UINT) (lpwsz - lpwszOut);
+    return (APLU3264) (lpwsz - lpwszOut);
 } // End ConvertWideToNameLength
 
 

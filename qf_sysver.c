@@ -75,15 +75,15 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 
     // Define maximum length of []SYSVER
 #define SYSVER  L"000.000.0000.00799  Tue Jan 16 17:43:45 2007  Win/32"
-#define SYSVER_NELM    ((sizeof (SYSVER) / sizeof (APLCHAR)) - 1)
+#define SYSVER_NELM    itemsizeof (SYSVER)
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -132,13 +132,13 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
         IMAGE_NT_HEADERS32 inth;
 
         // Set the file pointer to read the e_lfanew value
-        SetFilePointer (hFile, (__int3264) (((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh), NULL, FILE_BEGIN);
+        SetFilePointer (hFile, (APLU3264) (((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh), NULL, FILE_BEGIN);
 
         // Read in the e_lfanew value
         ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
 
         // Add in the distance to the file timestamp
-        dwTemp += (__int3264) (((LPBYTE) &inth.FileHeader.TimeDateStamp) - (LPBYTE) &inth);
+        dwTemp += (APLU3264) (((LPBYTE) &inth.FileHeader.TimeDateStamp) - (LPBYTE) &inth);
 
         // Set file pointer to the file timestamp
         SetFilePointer (hFile, dwTemp, NULL, FILE_BEGIN);
@@ -184,8 +184,8 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 
         // Re-allocate the global downwards
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlbRes = MyGlobalReAlloc (hGlbRes, (__int3264) ByteRes, GMEM_MOVEABLE);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = MyGlobalReAlloc (hGlbRes, (APLU3264) ByteRes, GMEM_MOVEABLE);
     } else
     if (aplNELMRes > SYSVER_NELM)
         // We should never get here

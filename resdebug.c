@@ -236,7 +236,8 @@ void _DeleObj
     int    *lpiCount;
     HANDLE *lpah;
 
-    EnterCriticalSection (&CSORsrc);
+    if (bCSO)
+        EnterCriticalSection (&CSORsrc);
 
     // Get a ptr to the counter
     lpiCount = lpiaCount[dwType - 1];
@@ -279,7 +280,8 @@ void _DeleObj
     } else
         DbgBrk ();
 
-    LeaveCriticalSection (&CSORsrc);
+    if (bCSO)
+        LeaveCriticalSection (&CSORsrc);
 } // _DeleObj
 
 
@@ -497,6 +499,40 @@ HFONT _MyCreateFontIndirect
 
     return hFont;
 } // _MyCreateFontIndirect
+
+
+//***************************************************************************
+//  $MyCreateFontIndirectW
+//
+//  Create a font indirectly
+//***************************************************************************
+
+HFONT _MyCreateFontIndirectW
+    (CONST LOGFONTW *lplf,      // Pointer to logical font structure
+     UINT            uLine)     // Line #
+
+{
+    HFONT hFont;
+
+    hFont = CreateFontIndirectW (lplf);
+
+    if (!hFont)
+    {
+        char szTemp[1024];
+
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
+        DbgBrk ();
+    } else
+        _SaveObj (OBJ_FONT,     hFont,   NULL,       uLine);
+
+    return hFont;
+} // _MyCreateFontIndirectW
 
 
 //***************************************************************************

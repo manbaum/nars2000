@@ -201,7 +201,9 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -222,7 +224,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     // Copy the dimensions to the result
     CopyMemory (VarArrayBaseToDim (lpMemRes),
                 VarArrayBaseToDim (lpMemRht),
-                (UINT) aplRankRht * sizeof (APLDIM));
+                (APLU3264) aplRankRht * sizeof (APLDIM));
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);

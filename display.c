@@ -345,8 +345,8 @@ UBOOL DisplayGlbArr_EM
         // Create <aplChrNCols> FMTCOLSTRs in the output
         lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
         lpFmtHeader->lpFmtCol1st = lpFmtColStr;
-        Assert (aplChrNCols EQ (__int3264) aplChrNCols);
-        ZeroMemory (lpFmtColStr, (__int3264) aplChrNCols * sizeof (FMTCOLSTR));
+        Assert (aplChrNCols EQ (APLU3264) aplChrNCols);
+        ZeroMemory (lpFmtColStr, (APLU3264) aplChrNCols * sizeof (FMTCOLSTR));
 #ifdef DEBUG
         {
             APLDIM uCol;
@@ -494,12 +494,12 @@ UBOOL DisplayGlbArr_EM
         // Fill the output area with all zeros
         // Ensure at least one value filled in case the char array is empty
         if (IsSimpleChar (aplType))
-            ZeroMemory (lpaplChar, (__int3264) max (aplNELMRes, 1) * sizeof (APLCHAR));
+            ZeroMemory (lpaplChar, (APLU3264) max (aplNELMRes, 1) * sizeof (APLCHAR));
         else
         {
             // Fill the output area with all blanks
-            Assert (aplNELMRes EQ (__int3264) aplNELMRes);
-            FillMemoryW (lpaplChar, (__int3264) aplNELMRes, L' ');
+            Assert (aplNELMRes EQ (APLU3264) aplNELMRes);
+            FillMemoryW (lpaplChar, (APLU3264) aplNELMRes, L' ');
         } // End IF/ELSE
 #endif
         // Run through the array again processing the
@@ -1209,7 +1209,7 @@ LPWCHAR DisplayTransferChr2
         *lpwszTemp++ = L'\'';
         *lpwszTemp++ = L'\'';
     } else
-        // ***FIXME*** -- Use []AF to handle chars outside APL2's charset
+        // ***FIXME*** -- Use []UCS to handle chars outside APL2's charset
         *lpwszTemp++ = *(LPAPLCHAR) lpMemArg;
 
     // End with a trailing quote
@@ -1292,8 +1292,8 @@ LPWCHAR DisplayTransferGlb2
     // If not at the top level, ...
     if (!bTopLevel)
     {
+        // ***FIXME*** -- If the char vector has a non-APL2 char, use []UCS
         // If the inner item is not a char vector,
-        // ***FIXME*** -- If the char vector has a non-APL2 char, use []AF
         //   and the outer item is not a scalar,
         //   and the outer item is not empty, we need parens
         bNeedParens = (!(IsSimpleChar (aplTypeArg) && IsVector (aplRankArg))

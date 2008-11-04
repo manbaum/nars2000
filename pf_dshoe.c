@@ -205,7 +205,7 @@ static LPAPLCHAR Body[] =
 MAGIC_FUNCTION MF_MonUpShoe =
 {Header,
  Body,
- sizeof (Body) / sizeof (Body[0]),
+ itemsizeof (Body),
 };
 
 

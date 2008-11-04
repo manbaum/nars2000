@@ -54,7 +54,7 @@ LPPL_YYSTYPE SysFnTS_EM_YY
 
 {
     SYSTEMTIME   SystemTime;        // Struct for the system time
-    UINT         ByteRes;           // # bytes in the result
+    APLUINT      ByteRes;           // # bytes in the result
     HGLOBAL      hGlbRes;           // Result global memory handle
     LPVOID       lpMemRes;          // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
@@ -70,10 +70,12 @@ LPPL_YYSTYPE SysFnTS_EM_YY
         goto AXIS_SYNTAX_EXIT;
 
     // Calculate space needed for the result
-    ByteRes = (UINT) CalcArraySize (ARRAY_INT, 7, 1);
+    ByteRes = CalcArraySize (ARRAY_INT, 7, 1);
 
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 

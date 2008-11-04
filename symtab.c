@@ -1837,7 +1837,7 @@ uint32_t hashlittleConv
     // Allocate virtual memory to hold the converted name
     lpwConv =
       MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
-                      (__int3264) length * sizeof (WCHAR),
+                      (APLU3264) length * sizeof (WCHAR),
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
     if (lpwConv EQ NULL)        // ***FIXME*** -- Better error handling needed

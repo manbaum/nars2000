@@ -241,8 +241,8 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
 
         // Allocate space for one dimension and <aplRankRht> integers
         // N.B.:  Conversion from aplRankRht to UINT
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -495,8 +495,8 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     // Now we can allocate the storage for the result.
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 

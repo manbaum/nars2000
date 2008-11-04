@@ -186,7 +186,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                 lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
                 // Copy the error message to temporary storage
-                CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
+                CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (APLU3264) aplNELMRht * sizeof (APLCHAR));
             } else
                 lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht1;
 
@@ -258,7 +258,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
                     // Copy the error message to temporary storage
-                    CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemLft, (UINT) aplNELMLft * sizeof (APLCHAR));
+                    CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemLft, (APLU3264) aplNELMLft * sizeof (APLCHAR));
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;

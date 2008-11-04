@@ -522,8 +522,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         // Now we can allocate the storage for the result
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -577,8 +577,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     // Now we can allocate the storage for the odometer & limit vectors
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdo)
         goto WSFULL_EXIT;
 
@@ -642,7 +642,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     // If we're not assigning, ...
                     if (lptkSetArg EQ NULL)
                         // Fill in the result's dimension
-                        CopyMemory (lpMemDimRes, lpMemSub, (UINT) aplRankSub * sizeof (APLDIM));
+                        CopyMemory (lpMemDimRes, lpMemSub, (APLU3264) aplRankSub * sizeof (APLDIM));
                     else
                     // We are assigning
                     // Loop through the sub-item dimensions

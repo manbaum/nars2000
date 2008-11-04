@@ -97,7 +97,8 @@ extern void USER_Unlock(void) DECLSPEC_HIDDEN;
 
 static inline HWND WIN_GetFullHandle( HWND hwnd )
 {
-    if (!HIWORD(hwnd) && hwnd) hwnd = WIN_Handle32( LOWORD(hwnd) );
+    if (!HIWORD((HANDLE_PTR) hwnd) && hwnd)
+        hwnd = WIN_Handle32( LOWORD((HANDLE_PTR) hwnd) );
     return hwnd;
 }
 

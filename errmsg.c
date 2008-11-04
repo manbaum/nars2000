@@ -87,8 +87,8 @@ void BreakMessage
 
     // Allocate space for the result
     // N.B.  Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
     {
         MessageBoxW (hWndSM,
@@ -119,7 +119,7 @@ void BreakMessage
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the function name[line #] to the result
-    CopyMemory (lpMemRes, lpMemPTD->lpwszTemp, (UINT) aplNELMRes * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, lpMemPTD->lpwszTemp, (APLU3264) aplNELMRes * sizeof (APLCHAR));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -277,8 +277,8 @@ void ErrorMessageDirect
 
     // Allocate space for the result
     // N.B.  Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
     {
         MessageBoxW (hWndSM,
@@ -371,8 +371,8 @@ void ErrorMessageDirect
         ByteRes = CalcArraySize (ARRAY_CHAR, 3 * uMaxLen, 2);
 
         // Allocate space for the result
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (hGlbRes)
         {
             // Lock the memory to get a ptr to it

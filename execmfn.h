@@ -55,7 +55,6 @@
 #define $QUAD_NC        WS_UTF16_QUAD L"NC"
 #define $QUAD_IO        WS_UTF16_QUAD L"IO"
 #define $RANK           WS_UTF16_DIERESISJOT
-#define $RANKAXIS       WS_UTF16_DIERESISCIRCLE
 #define $REVERSE        WS_UTF16_CIRCLESTILE
 #define $RHO            WS_UTF16_RHO
 #define $TAKE           WS_UTF16_UPARROW

@@ -389,8 +389,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     // Now we can allocate the storage for the result.
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -483,8 +483,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMSub, aplNELMAxis);
 
                         // N.B.:  Conversion from APLUINT to UINT.
-                        Assert (ByteRes EQ (UINT) ByteRes);
-                        hGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+                        Assert (ByteRes EQ (APLU3264) ByteRes);
+                        hGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                         if (!hGlbProto)
                             goto WSFULL_EXIT;
 
@@ -599,8 +599,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteRes = aplRankRht * sizeof (APLUINT);
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
 
@@ -625,8 +625,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteRes = aplRankRht * sizeof (APLUINT);
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
 
@@ -1161,8 +1161,8 @@ UBOOL PrimFnMonLeftShoeProto_EM
         ByteRes = CalcArraySize (aplTypeProto, aplNELMSub, aplNELMAxis);
 
         // N.B.:  Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (UINT) ByteRes);
-        *lphGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        *lphGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!*lphGlbProto)
             goto WSFULL_EXIT;
 
@@ -1187,9 +1187,10 @@ UBOOL PrimFnMonLeftShoeProto_EM
         lpMemProto = VarArrayBaseToData (lpMemProto, aplNELMAxis);
 
         // Fill in the values if character
-        Assert (aplNELMSub EQ (UINT) aplNELMSub);
+        // N.B.:  Conversion from APLUINT to UINT
+        Assert (aplNELMSub EQ (APLU3264) aplNELMSub);
         if (IsSimpleChar (aplType))
-            FillMemoryW (lpMemProto, (UINT) aplNELMSub, L' ');
+            FillMemoryW (lpMemProto, (APLU3264) aplNELMSub, L' ');
         // We no longer need this ptr
         MyGlobalUnlock (*lphGlbProto); lpMemProto = NULL;
     } // End IF/ELSE
@@ -1237,8 +1238,8 @@ UBOOL PrimFnMonLeftShoeGlbSub_EM
     // Allocate storage for this subarray.
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (UINT) ByteRes);
-    *lphGlbSub = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    *lphGlbSub = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!*lphGlbSub)
         goto WSFULL_EXIT;
 

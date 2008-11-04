@@ -258,8 +258,8 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
     // Allocate space for the result
     // N.B.: Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -296,13 +296,13 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     gsl_set_error_handler_off ();
 
     // Allocate space for the GSL matrices
-    Assert (uNumRows EQ (UINT) uNumRows);
-    Assert (uNumCols EQ (UINT) uNumCols);
+    Assert (uNumRows EQ (APLU3264) uNumRows);
+    Assert (uNumCols EQ (APLU3264) uNumCols);
 
-    lpGslMatrixU = gsl_matrix_alloc  ((UINT) uNumRows, (UINT) uNumCols);    // M x N
-    lpGslMatrixV = gsl_matrix_alloc  ((UINT) uNumCols, (UINT) uNumCols);    // N x N
-    lpGslVectorS = gsl_vector_alloc  ((UINT) uNumCols);                     // N
-    lpGslVectorW = gsl_vector_alloc  ((UINT) uNumCols);                     // N
+    lpGslMatrixU = gsl_matrix_alloc  ((APLU3264) uNumRows, (APLU3264) uNumCols);    // M x N
+    lpGslMatrixV = gsl_matrix_alloc  ((APLU3264) uNumCols, (APLU3264) uNumCols);    // N x N
+    lpGslVectorS = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
+    lpGslVectorW = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
 
     // Check the return codes for the above allocations
     if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
@@ -363,9 +363,9 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
                 case ARRAY_FLOAT:
                     ByteRes = aplNELMRes * sizeof (APLFLOAT);
-                    Assert (ByteRes EQ (UINT) ByteRes);
+                    Assert (ByteRes EQ (APLU3264) ByteRes);
                     Assert (sizeof (double) EQ sizeof (APLFLOAT));
-                    CopyMemory (lpGslMatrixU->data, lpMemRht, (UINT) ByteRes);
+                    CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
 ////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
 ////////////////////{
 ////////////////////    // Check for Ctrl-Break
@@ -419,7 +419,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     //   where x is the result, and b is the MxM identity matrix
 
     // Allocate and zero a working vector (for the identity matrix)
-    lpGslVectorI = gsl_vector_alloc  ((UINT) uNumRows); // M
+    lpGslVectorI = gsl_vector_alloc  ((APLU3264) uNumRows); // M
 
     // Check the return code for the above allocation
     if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorI)
@@ -738,8 +738,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
         // Allocate space for the result
         // N.B.: Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (UINT) ByteRes);
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -780,15 +780,15 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     gsl_set_error_handler_off ();
 
     // Allocate space for the GSL matrices
-    Assert (uNumRowsLft EQ (UINT) uNumRowsLft);
-    Assert (uNumRowsRht EQ (UINT) uNumRowsRht);
+    Assert (uNumRowsLft EQ (APLU3264) uNumRowsLft);
+    Assert (uNumRowsRht EQ (APLU3264) uNumRowsRht);
 
-    lpGslMatrixU = gsl_matrix_alloc  ((UINT) uNumRowsRht, (UINT) uNumColsRht);  // M x N
-    lpGslMatrixV = gsl_matrix_alloc  ((UINT) uNumColsRht, (UINT) uNumColsRht);  // N x N
-    lpGslVectorS = gsl_vector_alloc  ((UINT) uNumColsRht);                      // N
-    lpGslVectorW = gsl_vector_alloc  ((UINT) uNumColsRht);                      // N
-    lpGslVectorX = gsl_vector_alloc  ((UINT) uNumColsRht);                      // N
-    lpGslVectorB = gsl_vector_alloc  ((UINT) uNumRowsRht);                      // M
+    lpGslMatrixU = gsl_matrix_alloc  ((APLU3264) uNumRowsRht, (APLU3264) uNumColsRht);  // M x N
+    lpGslMatrixV = gsl_matrix_alloc  ((APLU3264) uNumColsRht, (APLU3264) uNumColsRht);  // N x N
+    lpGslVectorS = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
+    lpGslVectorW = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
+    lpGslVectorX = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
+    lpGslVectorB = gsl_vector_alloc  ((APLU3264) uNumRowsRht);                      // M
 
     // Check the return codes for the above allocations
     if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
@@ -850,9 +850,9 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                 case ARRAY_FLOAT:
                     ByteRes = aplNELMRht * sizeof (APLFLOAT);
-                    Assert (ByteRes EQ (UINT) ByteRes);
+                    Assert (ByteRes EQ (APLU3264) ByteRes);
                     Assert (sizeof (double) EQ sizeof (APLFLOAT));
-                    CopyMemory (lpGslMatrixU->data, lpMemRht, (UINT) ByteRes);
+                    CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
 ////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
 ////////////////////{
 ////////////////////    // Check for Ctrl-Break

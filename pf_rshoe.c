@@ -407,8 +407,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
     // Allocate space for the max shape of the items
     // N.B.:  Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbDimCom = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbDimCom = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbDimCom)
         goto WSFULL_EXIT;
 
@@ -491,8 +491,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (__int3264) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
 
@@ -1312,8 +1312,8 @@ NORMAL_EXIT:
 
         // Allocate space for the max shape of the items
         // N.B.:  Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (__int3264) ByteRes);
-        hGlbLft = DbgGlobalAlloc (GHND, (__int3264) ByteRes);
+        Assert (ByteRes EQ (APLU3264) ByteRes);
+        hGlbLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbLft)
             goto WSFULL_EXIT;
 
@@ -1341,7 +1341,7 @@ NORMAL_EXIT:
         lpMemAxis = MyGlobalLock (hGlbAxis);
 
         // Copy the values from lpMemAxis
-        CopyMemory (lpMemLft, lpMemAxis, (__int3264) aplRankRes * sizeof (APLUINT));
+        CopyMemory (lpMemLft, lpMemAxis, (APLU3264) aplRankRes * sizeof (APLUINT));
 
         // Get the current value of []IO
         bQuadIO = GetQuadIO ();

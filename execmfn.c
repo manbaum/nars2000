@@ -45,8 +45,6 @@ extern MAGIC_FUNCTION MF_MonUpShoe;
 extern MAGIC_FUNCTION MF_DydTilde;
 extern MAGIC_FUNCTION MF_MonRank;
 extern MAGIC_FUNCTION MF_DydRank;
-////rn MAGIC_FUNCTION MF_MonRankAxis;
-////rn MAGIC_FUNCTION MF_DydRankAxis;
 extern MAGIC_FUNCTION MF_Conform;
 
 

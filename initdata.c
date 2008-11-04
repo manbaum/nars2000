@@ -136,7 +136,6 @@ extern PRIMSPEC PrimSpecUpStile;
 
 // Primitive Operators DONE                            Monadic          Dyadic
 /////// PrimOpDieresis_EM_YY                        // Each             Each
-/////// PrimOpDieresisCircle_EM_YY                  // Rank w/Axis      Rank w/Axis
 /////// PrimOpDieresisJot_EM_YY                     // Rank             Rank
 /////// PrimOpDieresisTilde_EM_YY                   // Duplicate        Commute
 /////// PrimOpDot_EM_YY                             // Determinant (*)  Inner product
@@ -283,7 +282,7 @@ void InitPrimFns
     InitPrimFn (UTF16_SQUAD             , &PrimFnSquad_EM_YY             ); // Alt-'L' - squad
     InitPrimFn (UTF16_STILETILDE        , (LPPRIMFNS) -1                 ); // Alt-'M' - stile-tilde (partition)
     InitPrimFn (INDEX_DIERESISDOWNTACK  , (LPPRIMFNS) -1                 ); // Alt-'N' - dieresis-downtack (convolution)
-    InitPrimFn (INDEX_DIERESISCIRCLE    , (LPPRIMFNS) -1                 ); // Alt-'O' - dieresis-circle (holler)
+////                                                                     ); // Alt-'O' - (none)
     InitPrimFn (UTF16_DIERESISSTAR      , (LPPRIMFNS) -1                 ); // Alt-'P' - dieresis-star (power)
 ////                                                                        // Alt-'Q' - (none)
 ////                                                                        // Alt-'R' - (none)
@@ -437,7 +436,6 @@ LPPL_YYSTYPE PrimFn_EM
 
 // Primitive operators DONE
 /////// PrimProtoOpDieresis_EM_YY
-/////// PrimProtoOpDieresisCircle_EM_YY
 /////// PrimProtoOpDieresisJot_EM_YY
 /////// PrimProtoOpDieresisTilde_EM_YY
 /////// PrimProtoOpDot_EM_YY
@@ -551,7 +549,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_SQUAD             , &PrimProtoFnSquad_EM_YY             );   // Alt-'L' - squad
     InitPrimProtoOp (UTF16_STILETILDE        , &PrimProtoOpStileTilde_EM_YY        );   // Alt-'M' - stile-tilde (partition)
     InitPrimProtoOp (INDEX_DIERESISDOWNTACK  , &PrimProtoOpDieresisDownTack_EM_YY  );   // Alt-'N' - dieresis-downtack (convolution)
-    InitPrimProtoOp (INDEX_DIERESISCIRCLE    , &PrimProtoOpDieresisCircle_EM_YY    );   // Alt-'O' - dieresis-circle (holler)
+////                                                                                    // Alt-'O' - (none)
     InitPrimProtoOp (UTF16_DIERESISSTAR      , &PrimProtoOpDieresisStar_EM_YY      );   // Alt-'P' - dieresis-star (power)
 ////                                                                                    // Alt-'Q' - (none)
 ////                                                                                    // Alt-'R' - (none)

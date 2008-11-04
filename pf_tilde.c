@@ -350,7 +350,7 @@ static LPAPLCHAR Body[] =
 MAGIC_FUNCTION MF_DydTilde =
 {Header,
  Body,
- sizeof (Body) / sizeof (Body[0]),
+ itemsizeof (Body),
 };
 
 

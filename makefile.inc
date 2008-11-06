@@ -78,6 +78,7 @@ EXE:                        \
 !if "$(DEBUG)" == "0"
         $(R)$(ENAME).EXE    \
         $(PFNE)             \
+        $(R)$(FONT)         \
 !endif
         $(BC)$(ENAME).HLP
 
@@ -1316,6 +1317,9 @@ $(R)$(ENAME).EXE:       $(O)$(ENAME).EXE
 
 $(PFNE):                $(O)$(ENAME).EXE
         @copy %s $(PFNE) >NUL
+
+$(R)$(FONT):            $(FONT)
+        @copy %s $(R)$(FONT) >NUL
 
 
 ############################# MAKEVER EXECUTABLE #####################

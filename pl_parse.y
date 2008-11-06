@@ -2804,16 +2804,29 @@ SimpExpr:
 												 lpplLocalVars->bRet = FALSE;
 											 else
 											 // If it's Selective Specification, ...
-											 if (lpplLocalVars->bSelSpec)
+											 if (lpplLocalVars->bSelSpec && !lpplLocalVars->bIniSpec)
 											 {
 												 // Mark as no longer doing Selective Specification
 												 lpplLocalVars->bSelSpec = FALSE;
 
-												 lpplLocalVars->bRet =
-												   ArrayIndexSet_EM (&lpplLocalVars->tkSelSpec, &$4.tkToken, &$1.tkToken);
+												 // Remove Selective Specification until I figure it out
+												 #if FALSE
+													 lpplLocalVars->bRet =
+													   ArrayIndexSet_EM (&lpplLocalVars->tkSelSpec, &$4.tkToken, &$1.tkToken);
+												 #else
+													 lpplLocalVars->bRet = FALSE;
+													 ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+																			   &$3.tkToken);
+												 #endif
 											 } else
+											 {
+												 // Mark as no longer doing Selective Specification
+												 lpplLocalVars->bSelSpec =
+												 lpplLocalVars->bIniSpec = FALSE;
+
 												 lpplLocalVars->bRet =
 												   AssignNamedVars_EM (&$4.tkToken, &$1.tkToken);
+											 } // End IF/ELSE
 /////////////////////////////////////////////FreeResult (&$1.tkToken);				 // DO NOT FREE:  Passed on as result
 											 FreeResult (&$4.tkToken);
 

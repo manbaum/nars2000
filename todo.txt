@@ -13,7 +13,6 @@ TO DO:	General:  Less Important (post-alpha)
 * Test implementation limits (stack, FP, Integer, etc.)
 * Idiom recognition in the tokenizer???
 * Test ± infinity code
-* Get permission to redistribute APL385 Unicode or SimPL font
 * Reference count on symbol table entries???
 * Strings in the symbol table???
 * Implement Redo (Ctrl-Y)
@@ -104,7 +103,6 @@ TO DO:	General:  Less Important (post-alpha)
 
 TO DO:	Session Manager
 ---------------------
-* Ensure APL font is installed
 * Language bar to speed entry of APL chars
 * Support different keyboard layouts
 *
@@ -264,6 +262,7 @@ DONE:  General
 * Rename PARSE.* to PL_PARSE.* and DFNHDR.* to FH_PARSE.*.
 * Optimize numeric strands by tokenizing them
 * Implement :FORLCL stmt which localizes the varname to the FOR loop
+* Get permission to redistribute SimPL font
 *
 
 
@@ -276,6 +275,7 @@ DONE:  Session Manager
 * )SAVE as ASCII plain text file
 * Implement File | Print
 * Icons at size 48x48 are at point size 32 using typeface Saltino
+* Ensure APL font is installed
 *
 
 
@@ -339,7 +339,7 @@ ATF File Questions
 File Extensions
 ---------------
 
-All files specific to NARS will end in the extension ".nars".  There will be a
+All files specific to NARS end in the extension ".nars".  There will be a
 secondary extension to the left of the global extension such as .ws.nars for
 workspaces, (e.g. porsche.ws.nars).
 

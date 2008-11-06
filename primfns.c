@@ -1745,17 +1745,23 @@ HGLOBAL CopyGlbAsType_EM
 	 LPTOKEN  lptkFunc) 				// Ptr to function token
 
 {
-	APLSTYPE aplTypeArg;				// Arg storage type
-	APLNELM  aplNELMArg;				// Arg/result NELM
-	APLRANK  aplRankArg;				// Arg/result rank
-	APLUINT  ByteRes;					// # bytes in the result
-	HGLOBAL  hGlbRes = NULL;			// Result global memory handle
-	LPVOID	 lpMemArg = NULL,			// Ptr to arg global memory
-			 lpMemRes = NULL;			// Ptr to result ...
-	APLUINT  uArg;						// Loop counter
-	UINT	 uBitMask;					// Bit mask for looping through Booleans
-	APLINT	 apaOffArg, 				// Arg APA offset
-			 apaMulArg; 				// ...	   multiplier
+	APLSTYPE	 aplTypeArg;			// Arg storage type
+	APLNELM 	 aplNELMArg;			// Arg/result NELM
+	APLRANK 	 aplRankArg;			// Arg/result rank
+	APLUINT 	 ByteRes;				// # bytes in the result
+	HGLOBAL 	 hGlbRes = NULL;		// Result global memory handle
+	LPVOID		 lpMemArg = NULL,		// Ptr to arg global memory
+				 lpMemRes = NULL;		// Ptr to result ...
+	APLUINT 	 uArg;					// Loop counter
+	UINT		 uBitMask;				// Bit mask for looping through Booleans
+	APLINT		 apaOffArg, 			// Arg APA offset
+				 apaMulArg, 			// ...	   multiplier
+				 aplInteger;			// Temporary integer
+	HGLOBAL 	 hGlbPTD;				// PerTabData global memory handle
+	LPPERTABDATA lpMemPTD;				// Ptr to PerTabData global memory
+	LPSYMENTRY	 lpSym0,				// LPSYMENTRY for constant zero
+				 lpSym1,				// ...					   one
+				 lpSymTmp;				// Ptr to temporary LPSYMENTRY
 
 	// Get the attributes (Type, NELM, and Rank) of the arg
 	AttrsOfGlb (hGlbArg, &aplTypeArg, &aplNELMArg, &aplRankArg, NULL);
@@ -1909,7 +1915,8 @@ HGLOBAL CopyGlbAsType_EM
 				case ARRAY_INT: 			// Res = FLOAT, Arg = INT
 					// Loop through the arg elements
 					for (uArg = 0; uArg < aplNELMArg; uArg++)
-						*((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) *((LPAPLINT) lpMemArg)++;
+						*((LPAPLFLOAT) lpMemRes)++ =
+						  (APLFLOAT) *((LPAPLINT) lpMemArg)++;
 					break;
 
 				case ARRAY_APA: 			// Res = FLOAT, Arg = APA
@@ -1920,7 +1927,8 @@ HGLOBAL CopyGlbAsType_EM
 #undef	lpAPA
 					// Loop through the arg elements
 					for (uArg = 0; uArg < aplNELMArg; uArg++)
-						*((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (APLINT) (apaOffArg + apaMulArg * uArg);
+						*((LPAPLFLOAT) lpMemRes)++ =
+						  (APLFLOAT) (APLINT) (apaOffArg + apaMulArg * uArg);
 					break;
 
 				case ARRAY_FLOAT:			// Res = FLOAT, Arg = FLOAT
@@ -1938,6 +1946,135 @@ HGLOBAL CopyGlbAsType_EM
 		case ARRAY_CHAR:
 			// Copy the memory to the result
 			CopyMemory (lpMemRes, lpMemArg, (APLU3264) aplNELMArg * sizeof (APLCHAR));
+
+			break;
+
+		case ARRAY_NESTED:
+			// Copy the arg to the result
+
+			// Fill nested result with PTR_REUSED
+			//	 in case we fail part way through
+
+			// Fill in the prototype
+			*((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+			for (uArg = 1; uArg < aplNELMArg; uArg++)
+				((LPAPLNESTED) lpMemRes)[uArg] = PTR_REUSED;
+
+			// Split cases based upon the arg storage type
+			switch (aplTypeArg)
+			{
+				case ARRAY_BOOL:
+					// Get the thread's PerTabData global memory handle
+					hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+					// Lock the memory to get a ptr to it
+					lpMemPTD = MyGlobalLock (hGlbPTD);
+
+					lpSym0 = lpMemPTD->steZero;
+					lpSym1 = lpMemPTD->steOne;
+
+					// We no longer need this ptr
+					MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+					uBitMask = BIT0;
+
+					// Loop through the arg elements
+					for (uArg = 0; uArg < aplNELMArg; uArg++)
+					{
+						// Save an LPSYMENTRY in the result
+						*((LPAPLNESTED) lpMemRes)++ =
+						  (uBitMask & *(LPAPLBOOL) lpMemArg) ? lpSym1 : lpSym0;
+
+						// Shift over the bit mask
+						uBitMask <<= 1;
+
+						// Check for end-of-byte
+						if (uBitMask EQ END_OF_BYTE)
+						{
+							uBitMask = BIT0;			// Start over
+							((LPAPLBOOL) lpMemArg)++;	// Skip to next byte
+						} // End IF
+					} // End FOR
+
+					break;
+
+				case ARRAY_INT:
+					// Loop through the arg elements
+					for (uArg = 0; uArg < aplNELMArg; uArg++)
+					{
+						// Save an LPSYMENTRY in the result
+						*((LPAPLNESTED) lpMemRes)++ =
+						lpSymTmp =
+						  MakeSymEntry_EM (IMMTYPE_INT, 				// Immediate type
+										   ((LPAPLINT) lpMemArg)++, 	// Ptr to immediate value
+										   lptkFunc);					// Ptr to function token
+						if (!lpSymTmp)
+							goto ERROR_EXIT;
+					} // End IF
+
+					break;
+
+				case ARRAY_APA:
+#define lpAPA		((LPAPLAPA) lpMemArg)
+					// Get the APA parameters
+					apaOffArg = lpAPA->Off;
+					apaMulArg = lpAPA->Mul;
+#undef	lpAPA
+					// Loop through the arg elements
+					for (uArg = 0; uArg < aplNELMArg; uArg++)
+					{
+						// Calculate the value
+						aplInteger = apaOffArg + apaMulArg * uArg;
+
+						// Save an LPSYMENTRY in the result
+						*((LPAPLNESTED) lpMemRes)++ =
+						lpSymTmp =
+						  MakeSymEntry_EM (IMMTYPE_INT, 				// Immediate type
+										  &aplInteger,					// Ptr to immediate value
+										   lptkFunc);					// Ptr to function token
+						if (!lpSymTmp)
+							goto ERROR_EXIT;
+					} // End FOR
+
+					break;
+
+				case ARRAY_FLOAT:
+					// Loop through the arg elements
+					for (uArg = 0; uArg < aplNELMArg; uArg++)
+					{
+						// Save an LPSYMENTRY in the result
+						*((LPAPLNESTED) lpMemRes)++ =
+						lpSymTmp =
+						  MakeSymEntry_EM (IMMTYPE_FLOAT,				// Immediate type
+							(LPAPLLONGEST) ((LPAPLFLOAT) lpMemArg)++,	// Ptr to immediate value
+										   lptkFunc);					// Ptr to function token
+						if (!lpSymTmp)
+							goto ERROR_EXIT;
+					} // End FOR
+
+					break;
+
+				case ARRAY_CHAR:
+					// Loop through the arg elements
+					for (uArg = 0; uArg < aplNELMArg; uArg++)
+					{
+						// Save an LPSYMENTRY in the result
+						*((LPAPLNESTED) lpMemRes)++ =
+						lpSymTmp =
+						  MakeSymEntry_EM (IMMTYPE_CHAR,				// Immediate type
+							(LPAPLLONGEST) ((LPAPLCHAR) lpMemArg)++,	// Ptr to immediate value
+										   lptkFunc);					// Ptr to function token
+						if (!lpSymTmp)
+							goto ERROR_EXIT;
+					} // End FOR
+
+					break;
+
+				case ARRAY_HETERO:
+				case ARRAY_NESTED:
+				defstop
+					break;
+			} // End SWITCH
 
 			break;
 

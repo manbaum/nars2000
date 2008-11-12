@@ -32,20 +32,11 @@ OLDPATH=$(PATH)                 # Save the current path
 GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
-R=Y:\                           # RAM disk for executable
 
 WIN=32
 WDEF=_WIN$(WIN)
 WP=64                           # Target width to check against
 MFEXT=w$(WP)
-
-PFNE="C:\Program Files\NARS2000\W$(WP)\$(ENAME).EXE"  # Directory for Program Files for NARS2000
-PCRE=C:\PCRE\                   # Directory for Perl-Compatible Regular Expressions
-##SDK=K:\                       # Directory of SDK ("C:\Program Files\Microsoft Platform SDK")
-SDK=U:\                         # Directory of SDK ("C:\Program Files\Microsoft SDKs\Windows\v6.1")
-##MSVC=L:\VC98\                 # MSVC compiler ("C:\Program Files\Microsoft Visual Studio")        (Version 12.00.8168)
-##MSVC=O:\VC\                   # MSVC compiler ("C:\Program Files\Microsoft Visual Studio 8")      (Version 14.00.50727.762)
-MSVC=V:\VC\                     # MSVC compiler ("C:\Program Files\Microsoft Visual Studio 9.0")    (Version 15.00.21022.08)
 
 I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG);$(PCRE)include
 L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG);$(PCRE)lib

@@ -64,6 +64,12 @@ OC=RET\COM\                     # Define output directory for common intermediat
 HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
 FONT=SImPL-Medium.ttf           # Default APL TrueType font
 
+EXNAM=aplchars                  # Extension name
+EXAPL=Extensions\$(EXNAM)\      # Directory for aplchars extension
+CHR=$(EXAPL)chrome\content\$(EXNAM)\      # Directory for chrome files
+LCL=$(EXAPL)chrome\locale\en-US\$(EXNAM)\ # ...           locale ...
+SKN=$(EXAPL)chrome\skin\classic\$(EXNAM)\ # ...           skin   ...
+
 
 ALL:    DIR                 \
 ########PRO                 \
@@ -71,6 +77,11 @@ ALL:    DIR                 \
         EXE                 \
         MAKEVER             \
         MAKEPRO
+
+APLCHARS:                   \
+        $(EXAPL)$(EXNAM).xpi\
+        htdocs\$(EXNAM).xpi \
+        htdocs\update.rdf
 
 EXE:                        \
         $(O)$(ENAME).EXE    \
@@ -1320,6 +1331,38 @@ $(PFNE):                $(O)$(ENAME).EXE
 
 $(R)$(FONT):            $(FONT)
         @copy %s $(R)$(FONT) >NUL
+
+
+############################# APLCHARS EXTENSION #####################
+
+$(EXAPL)chrome\$(EXNAM).jar:    $(CHR)*.*       \
+                                $(LCL)*.*       \
+                                $(SKN)*.*       \
+                                $(EXAPL)upd.inp
+        @cd $(EXAPL)
+        @php ..\incver.php install.rdf ..\..\$(CHR)about.xul update.rdf
+        @cd chrome
+        @if exist $(EXNAM).jar del $(EXNAM).jar
+        @$(ZIPPRG) a -tzip -r $(EXNAM).jar *.* -x@..\upd.inp
+        @cd ..\..\..
+
+$(EXAPL)$(EXNAM).xpi:   $(EXAPL)chrome.manifest \
+                        $(EXAPL)install.rdf     \
+                        $(EXAPL)LICENSE.TXT     \
+                        $(EXAPL)update.rdf      \
+                        $(EXAPL)upd.inp         \
+                        $(EXAPL)chrome\$(EXNAM).jar
+        @cd $(EXAPL)
+        @if exist $(EXNAM).xpi del $(EXNAM).xpi
+        @$(ZIPPRG) a -tzip $(EXNAM).xpi *.* -x@upd.inp
+        @$(ZIPPRG) a -tzip $(EXNAM).xpi chrome\$(EXNAM).jar
+        @cd ..\..
+
+htdocs\$(EXNAM).xpi:    $(EXAPL)$(EXNAM).xpi
+        @copy %s $@ >NUL
+
+htdocs\update.rdf:      $(EXAPL)update.rdf
+        @copy %s $@ >NUL
 
 
 ############################# MAKEVER EXECUTABLE #####################

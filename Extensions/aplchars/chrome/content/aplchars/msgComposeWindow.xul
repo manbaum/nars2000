@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://aplchars/content/aplchars.css" type="text/css"?>
+
+<!DOCTYPE overlay [
+<!ENTITY % messengerDTD SYSTEM "chrome://messenger/locale/messenger.dtd" >
+%messengerDTD;
+<!ENTITY % contentAreaCommandsDTD SYSTEM "chrome://communicator/locale/contentAreaCommands.dtd" >
+%contentAreaCommandsDTD;
+<!ENTITY % aplcharsDTD SYSTEM "chrome://aplchars/locale/aplchars.dtd" >
+%aplcharsDTD;
+]>
+
+
+<overlay id="aplcharsOverlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script type="application/x-javascript">
+
+// Function called when the user clicks on the button
+function onClickAPL (bToggle, bFocus)
+{
+    // Get the enabled state
+var enabledstate = getEnabledStateAPL (bToggle);
+
+    // Get the button ID and element
+var aplButtonId = "APLCharsNormal";
+var aplButton = document.getElementById (aplButtonId);
+    if (aplButton == null)
+    {
+        aplButtonId = "APLCharsLarge";
+        aplButton = document.getElementById (aplButtonId);
+    } // End IF
+
+    // Get the button classname
+var aplButtonClass = aplButton.className;
+
+    // Set the button label to ON/OFF
+    aplButton.label =
+      enabledstate ? "&aplchars.labelON;"
+                   : "&aplchars.labelOFF;";
+    // Set the button tooltip to ON/OFF
+    aplButton.tooltipText =
+      enabledstate ? "&aplchars.tipON;"
+                   : "&aplchars.tipOFF;";
+    // Set the button image to ON/OFF
+    onFocusAPL (bFocus);
+} // End onClickAPL
+
+
+// Function called to retrieve the enabledstate
+function getEnabledStateAPL (bToggle)
+{
+var enabledstate;
+var prefs = Components.classes["@mozilla.org/preferences-service;1"].
+                getService (Components.interfaces.nsIPrefBranch);
+    try
+    {
+        // Get the current enabled state
+        enabledstate = prefs.getBoolPref ("extensions.aplchars.enabledstate");
+    } catch (e) {}
+
+    // If not specified, use "true"
+    if (enabledstate == null)
+        // Use the default
+        enabledstate = true;
+
+    // If we're to toggle the state, ...
+    if (bToggle)
+    {
+        // Toggle the state
+        enabledstate = !enabledstate;
+
+        // Save back as the currently selected enabled state
+        prefs.setBoolPref ("extensions.aplchars.enabledstate", enabledstate);
+    } // End IF
+
+    return enabledstate;
+} // End getEnabledStateAPL
+
+
+// Function called for onfocus (true) and onblur (false)
+function onFocusAPL (bFocus)
+{
+var iconsize;
+
+    // Get the enabled state
+var enabledstate = getEnabledStateAPL (false);
+
+    // Get the button ID and element
+var aplButtonId = "APLCharsNormal";
+var aplButton = document.getElementById (aplButtonId);
+    if (aplButton == null)
+    {
+        aplButtonId = "APLCharsLarge";
+        aplButton = document.getElementById (aplButtonId);
+    } // End IF
+
+    try
+    {
+        // Get the toolbar iconsize
+        iconsize = aplButton.parentNode.attributes["iconsize"].value;
+    } catch (e) {}
+
+    // Set the image to display depending upon the focus and enabled states,
+    //   the button ID and the iconsize
+var image = "url(chrome://aplchars/content/aplchars";
+
+    // Append the enabled state
+    image = image + (enabledstate ? "ON" : "OFF");
+
+    // Append the icon size which depends upon
+    //  * the button ID ("APLCharsNormal" or "APLCharsLarge")
+    //  * the iconsize ( or "small")
+
+    if (aplButtonId == "APLCharsNormal" &amp;&amp; iconsize == "small")
+        image = image + "16";
+    else
+    if (aplButtonId == "APLCharsNormal" &amp;&amp; iconsize != "small")
+        image = image + "24";
+    else
+    if (aplButtonId != "APLCharsNormal" &amp;&amp; iconsize == "small")
+        image = image + "24";
+    else
+    if (aplButtonId != "APLCharsNormal" &amp;&amp; iconsize != "small")
+        image = image + "30";
+
+    // Append the selected or unselected state
+    image += (bFocus ? "-sel" : "-unsel");
+
+    // Lastly, append the image tail
+    image += ".png)";
+
+    // Set the image
+    aplButton.style.listStyleImage = image;
+} // End onFocusAPL
+
+
+// Insert as a listener to be called after the window has loaded
+window.addEventListener ("load", function (event) {onClickAPL (false, false);}, false);
+
+</script>
+
+    <!-- This defines the two sizes of buttons. -->
+    <toolbarpalette id="MsgComposeToolbarPalette">
+        <toolbarbutton class="toolbarbutton-1"
+                       id="APLCharsNormal"
+                       label="&aplchars.labelON;"
+                       tooltiptext="&aplchars.tipON;"
+                       onmouseover="onFocusAPL (true);"
+                       onmouseout="onFocusAPL (false);"
+                       oncommand="onClickAPL (true, true);" />
+        <toolbarbutton class="toolbarbutton-1"
+                       id="APLCharsLarge"
+                       label="&aplchars.labelON;"
+                       tooltiptext="&aplchars.tipON;"
+                       onmouseover="onFocusAPL (true);"
+                       onmouseout="onFocusAPL (false);"
+                       oncommand="onClickAPL (true, true);" />
+    </toolbarpalette>
+</overlay>

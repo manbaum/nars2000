@@ -33,6 +33,7 @@ GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 R=Y:\                           # RAM disk for executable
+ZIPPRG="C:\Program Files\7-Zip\7za" # Path and name of zip program (7-zip)
 
 WIN=32
 WDEF=_WIN$(WIN)

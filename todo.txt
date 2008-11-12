@@ -1,9 +1,9 @@
-TO DO:	General:  Important (pre-alpha)
+TO DO:  General:  Important (pre-alpha)
 ---------------------------------------
 * Document MAKEFILE so others may build the product
 
 
-TO DO:	General:  Less Important (post-alpha)
+TO DO:  General:  Less Important (post-alpha)
 ---------------------------------------------
 * Check for stack overflow (recursion depth in parser)
 * Finish filling in <startaddr.h> or get it from the executable.
@@ -22,15 +22,15 @@ TO DO:	General:  Less Important (post-alpha)
 * Check for 64-bit compile
 * Check for updates from the web:  nars2000.org/CurrentRelease.php
 * Need an installation program which also sets up file associations for .ws.nars
-* Never fail Tokenize_EM on SYNTAX ERROR
+* Never fail Tokenize_EM on SYNTAX ERROR (use TKT_SYNTERR)
 * When editing a function, check to see if it's already open for editing
 * Write the function name in the function editor title.
 * When removing a tab, )RESET, terminate all threads, and then delete
   all globals.
 * User preference to avoid saving Undo buffer with user-defined functions/operators.
 * Convert from ARRAY_CHAR (UCS-2) to ARRAY_CHAR8  for 0x00-0x7F,
-				     ARRAY_CHAR16 for 0x0000-0xFFFF, and
-				     ARRAY_CHAR32 for the rest so as to handle Unicode.
+                                     ARRAY_CHAR16 for 0x0000-0xFFFF, and
+                                     ARRAY_CHAR32 for the rest so as to handle Unicode.
 * Convert from ARRAY_INT to ARRAY_INT64 and also allow narrower integer types such as
   ARRAY_INT8, ARRAY_INT16, and ARRAY_INT32 to be created by []DR.  If they
   are passed to any function but []DR or the native file functions, promote
@@ -38,80 +38,80 @@ TO DO:	General:  Less Important (post-alpha)
 * Port to Linux
 * Port to Mac/OS
 * Implement these features:
-* ...	    dynamic functions
-* ...	    user-defined magic functions for primitive functions
-* ...	    user-defined magic functions for primitive operators
-* ...	    user-defined magic functions for primitive datatypes
-* ...	    complex numbers
-* ...	    quaternions
-* ...	    octonions
-* ...	    rational numbers
-* ...	    extended precision
-* ...	    array predicates beyond Permutation Vectors
-* ...	    syntax coloring (for printing, too??)
-* ...	    []L and []R
-* ...	    expanded set of system functions, to wit:
-* ...	      []CALL R
-* ...	    L []CALL R
-* ...	      []CRL R
-* ...	      []CRLPC R
-* ...	      []DEF R
-* ...	      []DEFL R
-* ...	    L []EA R	(Execute Alternate) (EAS)
-* ...	      []EC R
-* ...	      []ERASE R
-* ...	      []FI R
-* ...	    L []FMT R
-* ...	      []IDLIST R
-* ...	    L []IDLIST R
-* ...	      []IDLOC R
-* ...	      []SI
-* ...	      []SINL
-* ...	    L []SS R
-* ...	      []STOP R	(Query Stop)  (EAS--Optional)
-* ...	    L []STOP R	(Set Stop)    (EAS--Optional)
-* ...	      []TRACE R (Query Trace) (EAS--Optional)
-* ...	    L []TRACE R (Set Trace)   (EAS--Optional)
-* ...	      []VI R
-* ...	      []VR R
-* ...	    extend associativity to derived functions such as {jot}{dot}+ ???
-* ...	    component file system
-* ...	    native file access
-* ...	    dyadic down tack jot	(format by example)
-* ...	    dyadic left shoe		(partitioned enclose)
-* ...	    dyadic epsilon underbar	(find)
-* ...	    dieresis-del		(dual)
-* ...	    dieresis-downtack		(convolution)
-* ...	    dieresis-star		(power)
-* ...	    stile-tilde 		(partition)
-* ...	    vector editor	(requires someone to want it badly enough to code it)
-* ...	    matrix editor	(requires someone to want it badly enough to code it)
-* ...	    []IDENTITY: 		(Identity element entry point for user-defined function/operator)
-* ...	    []INVERSE:		(requires power operator)
-* ...	    []SINGLETON:	(requires definition of singleton reduction/scan for all primitive functions)
-* ...	    bracket indexed strand assignment  (B (A[L])){is}R
-* ...	    bracket indexed modified strand assignment	(B (A[L]))Fcn{is}R
-* ...	    bracket list indexing	 A[L1;...;Ln][M]
-* ...	    bracket list indexing	 A[L1;...;Ln][M1;...;Mn]
-* ...	    finish []SA
-* ...	    )COPY :nnn [objs]	to copy objects from another tab
-* ...	    exploit parallelism
-* ...	    finish []MF
-* ...	    code folding in the Function Editor for Control Structures
+* ...       dynamic functions
+* ...       user-defined magic functions for primitive functions
+* ...       user-defined magic functions for primitive operators
+* ...       user-defined magic functions for primitive datatypes
+* ...       complex numbers
+* ...       quaternions
+* ...       octonions
+* ...       rational numbers
+* ...       extended precision
+* ...       array predicates beyond Permutation Vectors
+* ...       syntax coloring (for printing, too??)
+* ...       []L and []R
+* ...       expanded set of system functions, to wit:
+* ...         []CALL R
+* ...       L []CALL R
+* ...         []CRL R
+* ...         []CRLPC R
+* ...         []DEF R
+* ...         []DEFL R
+* ...       L []EA R    (Execute Alternate) (EAS)
+* ...         []EC R
+* ...         []ERASE R
+* ...         []FI R
+* ...       L []FMT R
+* ...         []IDLIST R
+* ...       L []IDLIST R
+* ...         []IDLOC R
+* ...         []SI
+* ...         []SINL
+* ...       L []SS R
+* ...         []STOP R  (Query Stop)  (EAS--Optional)
+* ...       L []STOP R  (Set Stop)    (EAS--Optional)
+* ...         []TRACE R (Query Trace) (EAS--Optional)
+* ...       L []TRACE R (Set Trace)   (EAS--Optional)
+* ...         []VI R
+* ...         []VR R
+* ...       extend associativity to derived functions such as {jot}{dot}+ ???
+* ...       component file system
+* ...       native file access
+* ...       dyadic down tack jot        (format by example)
+* ...       dyadic left shoe            (partitioned enclose)
+* ...       dyadic epsilon underbar     (find)
+* ...       dieresis-del                (dual)
+* ...       dieresis-downtack           (convolution)
+* ...       dieresis-star               (power)
+* ...       stile-tilde                 (partition)
+* ...       vector editor       (requires someone to want it badly enough to code it)
+* ...       matrix editor       (requires someone to want it badly enough to code it)
+* ...       []IDENTITY:                 (Identity element entry point for user-defined function/operator)
+* ...       []INVERSE:          (requires power operator)
+* ...       []SINGLETON:        (requires definition of singleton reduction/scan for all primitive functions)
+* ...       bracket indexed strand assignment  (B (A[L])){is}R
+* ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
+* ...       bracket list indexing        A[L1;...;Ln][M]
+* ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
+* ...       finish []SA
+* ...       )COPY :nnn [objs]   to copy objects from another tab
+* ...       exploit parallelism
+* ...       finish []MF
+* ...       code folding in the Function Editor for Control Structures
 * ...
 
 
-TO DO:	Session Manager
+TO DO:  Session Manager
 ---------------------
 * Language bar to speed entry of APL chars
 * Support different keyboard layouts
 *
 
 
-TO DO:	Options Menu
+TO DO:  Options Menu
 --------------------
-* Syntax Colors 	(.ini file, too)
-* Tab Colors		(.ini file, too)
+* Syntax Colors         (.ini file, too)
+* Tab Colors            (.ini file, too)
 * Directory preferences
 *
 
@@ -124,99 +124,99 @@ DONE:  General
 * Check floating point accuracy in input and output
 * Remove non-"double" code from GSL functions
 * Implement scan
-* ...	    fast Boolean reduction
-* ...	    fast Boolean scan
-* ...	    N-wise reduction
-* ...	    function editing
-* ...	    dyadic jot with variables (e.g. 3{jot}+)
-* ...	    f{is}3{jot}+
-* ...	    (+{jot}(2+3))4
-* ...	    (+{jot}(2 3))4
-* ...	    (+{jot} 2 3 )4
-* ...	    )CLEAR
-* ...	    )CLOSE
-* ...	    )COPY
-* ...	    )DROP
-* ...	    )EDIT
-* ...	    )ERASE
-* ...	    )EXIT
-* ...	    )FNS
-* ...	    )LIB
-* ...	    )LOAD
-* ...	    )NMS
-* ...	    )OPS
-* ...	    )RESET
-* ...	    )SAVE
-* ...	    )SI
-* ...	    )SIC
-* ...	    )SINL
-* ...	    )VARS
-* ...	    )WSID
-* ...	    function execution
-* ...	    goto
-* ...	    goto Line #
-* ...	    monadic up arrow
-* ...	    monadic up tack jot
-* ...	    quad input
-* ...	    quote-quad input
-* ...	    error handling ([]ELX)
-* ...	    event handling ([]ALX)
-* ...	    Ctrl-Break
-* ...	    []DR R
-* ...	    []PROTOTYPE:
-* ...	    []AV
-* ...	    []LC
-* ...	    []DL R
-* ...	    []NC R
-* ...	    []UCS R
-* ...	    []NL R
-* ...	  L []NL R
-* ...	  2 []CR R
-* ...	  1 []CR R
-* ...	  L []DR R for L=¯2 ¯1 0 1 2
-* ...	    []ERROR R
-* ...	    []EM
-* ...	    []ET
-* ...	    []ES R
-* ...	  L []ES R
-* ...	    monadic right shoe
-* ...	    dyadic down arrow
-* ...	    dyadic up arrow
-* ...	    monadic grade-up
-* ...	    monadic grade-down
-* ...	    dyadic grade-up
-* ...	    dyadic grade-down
-* ...	    dyadic right shoe
-* ...	    dyadic down tack
-* ...	    dyadic up tack
-* ...	    dyadic squad
-* ...	    bracket indexing		 A[L]
-* ...	    bracket list indexing	 A[L][M]
-* ...	    bracket list indexing	 A[L][M1;...;Mn]
-* ...	    ambiguous operators
-* ...	    dyadic epsilon
-* ...	    monadic iota extended to negative integers
-* ...	    monadic iota extended to length > 1 vectors
-* ...	    dyadic iota
-* ...	    dyadic iota extended to non-vector left args (via an internal magic function)
-* ...	    dyadic tilde (via an internal magic function)
-* ...	    monadic down shoe
-* ...	    bracket indexed assignment	 A[L]{is}R
-* ...	    bracket indexed modified assignment  A[L]Fcn{is}R
-* ...	    []FC			(Format Control)
-* ...	    []EX R
-* ...	    dyadic down tack jot	(format by specification)
-* ...	    dyadic dot			(inner product)
-* ...	    []FX R
-* ...	    []IC			(Indeterminate Control)
-* ...	    dieresis-jot		(dyadic op  -- rank) (via an internal magic function)
-* ...	    dieresis-circle		(monadic op -- rank w/Axis)
-* ...	    []Z as a system var
-* ...	    L []TF R	(Transfer Form) (EAS)
-* ...	    control structures
-* ...	    selective assignment
-* ...	      []MF R
-* ...	    L []MF R
+* ...       fast Boolean reduction
+* ...       fast Boolean scan
+* ...       N-wise reduction
+* ...       function editing
+* ...       dyadic jot with variables (e.g. 3{jot}+)
+* ...       f{is}3{jot}+
+* ...       (+{jot}(2+3))4
+* ...       (+{jot}(2 3))4
+* ...       (+{jot} 2 3 )4
+* ...       )CLEAR
+* ...       )CLOSE
+* ...       )COPY
+* ...       )DROP
+* ...       )EDIT
+* ...       )ERASE
+* ...       )EXIT
+* ...       )FNS
+* ...       )LIB
+* ...       )LOAD
+* ...       )NMS
+* ...       )OPS
+* ...       )RESET
+* ...       )SAVE
+* ...       )SI
+* ...       )SIC
+* ...       )SINL
+* ...       )VARS
+* ...       )WSID
+* ...       function execution
+* ...       goto
+* ...       goto Line #
+* ...       monadic up arrow
+* ...       monadic up tack jot
+* ...       quad input
+* ...       quote-quad input
+* ...       error handling ([]ELX)
+* ...       event handling ([]ALX)
+* ...       Ctrl-Break
+* ...       []DR R
+* ...       []PROTOTYPE:
+* ...       []AV
+* ...       []LC
+* ...       []DL R
+* ...       []NC R
+* ...       []UCS R
+* ...       []NL R
+* ...     L []NL R
+* ...     2 []CR R
+* ...     1 []CR R
+* ...     L []DR R for L=¯2 ¯1 0 1 2
+* ...       []ERROR R
+* ...       []EM
+* ...       []ET
+* ...       []ES R
+* ...     L []ES R
+* ...       monadic right shoe
+* ...       dyadic down arrow
+* ...       dyadic up arrow
+* ...       monadic grade-up
+* ...       monadic grade-down
+* ...       dyadic grade-up
+* ...       dyadic grade-down
+* ...       dyadic right shoe
+* ...       dyadic down tack
+* ...       dyadic up tack
+* ...       dyadic squad
+* ...       bracket indexing             A[L]
+* ...       bracket list indexing        A[L][M]
+* ...       bracket list indexing        A[L][M1;...;Mn]
+* ...       ambiguous operators
+* ...       dyadic epsilon
+* ...       monadic iota extended to negative integers
+* ...       monadic iota extended to length > 1 vectors
+* ...       dyadic iota
+* ...       dyadic iota extended to non-vector left args (via an internal magic function)
+* ...       dyadic tilde (via an internal magic function)
+* ...       monadic down shoe
+* ...       bracket indexed assignment   A[L]{is}R
+* ...       bracket indexed modified assignment  A[L]Fcn{is}R
+* ...       []FC                        (Format Control)
+* ...       []EX R
+* ...       dyadic down tack jot        (format by specification)
+* ...       dyadic dot                  (inner product)
+* ...       []FX R
+* ...       []IC                        (Indeterminate Control)
+* ...       dieresis-jot                (dyadic op  -- rank) (via an internal magic function)
+* ...       dieresis-circle             (monadic op -- rank w/Axis)
+* ...       []Z as a system var
+* ...       L []TF R    (Transfer Form) (EAS)
+* ...       control structures
+* ...       selective assignment
+* ...         []MF R
+* ...       L []MF R
 * []SysVar indexed assignment with range limiting validation
 * []SysVar {is} '' assigns the system default to the system var
 * When adding two empty vectors whose prototypes are
@@ -263,6 +263,8 @@ DONE:  General
 * Optimize numeric strands by tokenizing them
 * Implement :FORLCL stmt which localizes the varname to the FOR loop
 * Get permission to redistribute SimPL font
+* Define extension to Thunderbird to simplify entering APL chars
+  in an email message.
 *
 
 
@@ -282,7 +284,7 @@ DONE:  Session Manager
 QUESTIONS
 ---------
 * In assignment, can a var overwrite a fn (prim or user), and vice versa
-  or must the original object be erased first?	Are there any limitations?
+  or must the original object be erased first?  Are there any limitations?
 * In function assignment,
 
   f{is}+/
@@ -291,7 +293,7 @@ QUESTIONS
   what should <g> reference?  By value or by reference?
   what happens to <g> if we change <f>?
 * Should we allow f {is} {jot}fn or {jot}{dot} ?? (right operator)
-* Should we allow f {is} {jot}fn	       ?? (left operator)
+* Should we allow f {is} {jot}fn               ?? (left operator)
 * How should an empty vector display?
   On APL+WIN systems 3.6 + 5.x, '' displays by skipping one blank line
   but 0{rho}{enclose}'' displays without skipping a blank line.
@@ -307,7 +309,7 @@ QUESTIONS
   UTF16_CIRCUMFLEX or UTF16_UPCARET??
 * With a{is}0{rho}{enclose}0 0
   should either a[]{is}0{rho}{enclose}0 0 0
-	     or a[;]{is}0{rho}{enclose}0 0 0
+             or a[;]{is}0{rho}{enclose}0 0 0
   transfer the prototype to the named var?
 * Why limit []PP on the high side?
 * Should LEFT xxx ERROR caret point to left arg, etc.?
@@ -321,7 +323,7 @@ QUESTIONS
 * Should {leftarrow} be interpreted as a (dyadic) function as Dyalog does, e.g. there
   is an example in their manual of {quad}{jot}{leftarrow}{jot}{quad}VR{each}R ?
 * Also, what category does {quad} belong to in the above line?
-* What is the shape of {domino}scalar?	APL+WIN says ,1 and APL2 says {zilde}
+* What is the shape of {domino}scalar?  APL+WIN says ,1 and APL2 says {zilde}
   and the Extended APL Standard's Evaluation Sequence has a bug which
   causes it to signal a LENGTH ERROR.
 * What letters of Unicode should be allowed in var/fcn names?
@@ -343,10 +345,10 @@ All files specific to NARS end in the extension ".nars".  There will be a
 secondary extension to the left of the global extension such as .ws.nars for
 workspaces, (e.g. porsche.ws.nars).
 
-Workspaces		.ws.nars
-File Systems		.file.nars
-Plugins 		.plugin.nars
-Initialization File	.ini
+Workspaces              .ws.nars
+File Systems            .file.nars
+Plugins                 .plugin.nars
+Initialization File     .ini
 
 
 Edge Conditions

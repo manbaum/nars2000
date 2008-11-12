@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE overlay [
+<!ENTITY % editorOverlayDTD SYSTEM  "chrome://editor/locale/editorOverlay.dtd">
+%editorOverlayDTD;
+<!ENTITY % utilityOverlayDTD SYSTEM "chrome://communicator/locale/utilityOverlay.dtd">
+%utilityOverlayDTD;
+<!ENTITY % aplcharsDTD SYSTEM       "chrome://aplchars/locale/aplchars.dtd" >
+%aplcharsDTD;
+]>
+
+<overlay id="aplcharsOverlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <!-- This imports our javascript. -->
+    <script type="application/x-javascript"
+            src="chrome://aplchars/content/aplchars.js" />
+</overlay>

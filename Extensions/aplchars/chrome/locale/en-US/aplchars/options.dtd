@@ -1,0 +1,5 @@
+<!ENTITY prefwindow.title          "APL Chars Preferences">
+<!ENTITY prefwindow.keyboardlayout "Keyboard Layout">
+<!ENTITY prefwindow.enabledstate   "Enable APL character translation">
+<!ENTITY prefwindow.abouttitle     "About APL Chars">
+<!ENTITY prefwindow.aboutbutton    "About">

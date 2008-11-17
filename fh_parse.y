@@ -71,7 +71,7 @@
 %name-prefix="fh_yy"
 %parse-param {LPFHLOCALVARS lpfhLocalVars}
 %lex-param   {LPFHLOCALVARS lpfhLocalVars}
-%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK COMMENT SOS
+%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK SOS
 
 %start HeaderComm
 
@@ -521,11 +521,6 @@ HeaderComm:
                                  DisplayFnHdr (lpfhLocalVars);
 #endif
                                 }
-    | Header COMMENT SOS        {DbgMsgWP (L"%%HeaderComm:  Header COMMENT SOS");
-#ifdef DEBUG
-                                 DisplayFnHdr (lpfhLocalVars);
-#endif
-                                }
     ;
 
 %%
@@ -700,9 +695,6 @@ int fh_yylex
 
         case TKT_RIGHTBRACE:
             return '}';
-
-        case TKT_COMMENT:
-            return COMMENT;
 
         case TKT_SOS:
             return SOS;

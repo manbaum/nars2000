@@ -37,6 +37,7 @@ TO DO:  General:  Less Important (post-alpha)
   the narrower formats to ARRAY_INT64.
 * Port to Linux
 * Port to Mac/OS
+* Extend <aplchars> to <textarea> and in FireFox, too.
 * Implement Copy To Braces
 * Implement Paste From Braces
 * Implement status window for messages, char codes, etc.

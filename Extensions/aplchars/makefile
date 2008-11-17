@@ -24,16 +24,16 @@ chrome\$(EXNAM).jar:    $(CHR)*.*           \
         @$(ZIPPRG) a -tzip -r $(EXNAM).jar *.* -x@..\upd.inp
         @cd ..
 
-$(EXNAM).xpi:           chrome.manifest     \
-                        install.rdf         \
-                        LICENSE.TXT         \
-                        upd.inp             \
-                        defaults\*.*        \
-                        chrome\$(EXNAM).jar \
+$(EXNAM).xpi:           chrome.manifest             \
+                        install.rdf                 \
+                        LICENSE.TXT                 \
+                        upd.inp                     \
+                        defaults\preferences\*.js   \
+                        chrome\$(EXNAM).jar         \
                         makefile
         @if exist $(EXNAM).xpi del $(EXNAM).xpi
         @$(ZIPPRG) a -tzip $(EXNAM).xpi *.* -x@upd.inp
-        @$(ZIPPRG) a -tzip -r $(EXNAM).xpi defaults\*.*
+        @$(ZIPPRG) a -tzip -r $(EXNAM).xpi defaults\preferences\*.js
         @$(ZIPPRG) a -tzip $(EXNAM).xpi chrome\$(EXNAM).jar
 
 ..\..\htdocs\$(EXNAM).xpi:  $(EXNAM).xpi

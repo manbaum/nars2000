@@ -1517,6 +1517,10 @@ UBOOL SaveFunctionCom
                                hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                uLineNum + 1,        // Function line # (0 = header)
                               &ErrorHandler);       // Ptr to error handling function (may be NULL)
+            // Check the line for empty
+            lpFcnLines->bEmpty =
+              IsLineEmpty (lpFcnLines->hGlbTknLine);
+
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
@@ -1713,6 +1717,65 @@ NORMAL_EXIT:
     return lpSF_Fcns->bRet;
 } // End SaveFunctionCom
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $IsLineEmpty
+//
+//  Determine whether or not a line of tokens is empty
+//***************************************************************************
+
+UBOOL IsLineEmpty
+    (HGLOBAL hGlbTknLine)               // Token line global memory handle
+
+{
+    LPTOKEN lptkLine;                   // Ptr to line of tokens
+    UBOOL   bRet = FALSE;               // TRUE iff the line is empty
+
+    // Lock the memory to get a ptr to it
+    lptkLine = MyGlobalLock (hGlbTknLine);
+
+    // Skip over the TOKEN_HEADER
+    lptkLine = TokenBaseToStart (lptkLine);
+
+    // Handle labeled lines
+
+    // If a single stmt line is labeled, ...
+    if (lptkLine[0].tkFlags.TknType EQ TKT_EOL
+     && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED
+     && lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP
+     && lptkLine[3].tkFlags.TknType EQ TKT_SOS)
+        // Mark as an empty line
+        bRet = TRUE;
+
+    // If a multiple stmt line is labeled, ...
+    if (lptkLine[0].tkFlags.TknType EQ TKT_EOS
+     && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED
+     && lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP
+     && lptkLine[3].tkFlags.TknType EQ TKT_SOS)
+        // Skip over the labeled stmt quadruple
+        lptkLine += 4;
+
+    // Handle unlabeled lines
+
+    // Loop through the tokens looking for anything other than
+    //   Zero or more pairs of (TKT_EOS, TKT_SOS)
+    //   ending with the pair  (TKT_EOL, TKT_SOS)
+    while (lptkLine[0].tkFlags.TknType EQ TKT_EOS
+        && lptkLine[1].tkFlags.TknType EQ TKT_SOS)
+        // Skip over the pair
+        lptkLine += 2;
+
+    if (lptkLine[0].tkFlags.TknType EQ TKT_EOL
+     && lptkLine[1].tkFlags.TknType EQ TKT_SOS)
+        // Mark as an empty line
+        bRet = TRUE;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTknLine); lptkLine = NULL;
+
+    return bRet;
+} // End IsLineEmpty
 
 
 //***************************************************************************

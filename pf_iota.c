@@ -209,8 +209,8 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     lpHeader->ArrType    = ARRAY_APA;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-    lpHeader->PV0        = (bQuadIO EQ 0);
-    lpHeader->PV1        = (bQuadIO EQ 1);
+    lpHeader->PV0        = (bQuadIO EQ 0) && !SIGN_APLLONGEST(aplLongestRht);
+    lpHeader->PV1        = (bQuadIO EQ 1) && !SIGN_APLLONGEST(aplLongestRht);
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = abs64 (aplLongestRht);
     lpHeader->Rank       = 1;

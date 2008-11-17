@@ -44,7 +44,8 @@ typedef struct tagFCNLINE           // Function line structure, one per function
             hGlbTknLine;            // 04:  Tokenized line (TOKEN)     ...
     UINT    bStop:1,                // 08:  00000001:  Stop on this line
             bTrace:1,               //      00000002:  Trace this line
-            Avail:30;               //      FFFFFFFC:  Available bits
+            bEmpty:1,               //      00000004:  Empty line
+            Avail:29;               //      FFFFFFF8:  Available bits
                                     // 0C:  Length
 } FCNLINE, *LPFCNLINE;
 

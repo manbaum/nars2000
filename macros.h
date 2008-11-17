@@ -236,7 +236,7 @@
 #define IsTknParList(Tkn)               ((Tkn)->tkFlags.TknType EQ TKT_LISTPAR)
 
 // Macro to skip over the TOKEN_HEADER
-#define TokenBaseToStart(base)  (LPTOKEN) (((LPCHAR) base) + sizeof (TOKEN_HEADER))
+#define TokenBaseToStart(base)  (LPTOKEN) (ByteAddr (base, sizeof (TOKEN_HEADER)))
 
 // Macros to skip from the variable array base to either the dimensions or the data
 #define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER)                              )

@@ -1210,19 +1210,37 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                         case ARRAY_HETERO:
                         case ARRAY_NESTED:
-                            // Get the right arg item's first element global memory handle
-                            hGlbProto = ClrPtrTypeIndAsGlb ((LPAPLNESTED) lpMemSub);
+                            // Split cases based upon the ptr type bits
+                            switch (GetPtrTypeInd ((LPAPLNESTED) lpMemSub))
+                            {
+                                case PTRTYPE_STCONST:
+                                    // If the STE is numeric, use lpSym0, otherwise use lpSymB
+                                    if (IsImmChr (((LPAPLHETERO) lpMemSub)[0]->stFlags.ImmType))
+                                        hGlbProto = lpSymB;
+                                    else
+                                        hGlbProto = lpSym0;
+                                    break;
 
-                            // Calculate its prototype
-                            hGlbProto =
-                              MakeMonPrototype_EM (hGlbProto,   // Proto arg handle
-                                                   lptkFunc,    // Ptr to function token
-                                                   MP_CHARS);   // CHARs allowed
-                            if (!hGlbProto)
-                                goto WSFULL_EXIT;
+                                case PTRTYPE_HGLOBAL:
+                                    // Get the right arg item's first element global memory handle
+                                    hGlbProto = ClrPtrTypeIndAsGlb ((LPAPLNESTED) lpMemSub);
 
-                            // Set the ptr bits
-                            hGlbProto = MakePtrTypeGlb (hGlbProto);
+                                    // Calculate its prototype
+                                    hGlbProto =
+                                      MakeMonPrototype_EM (hGlbProto,   // Proto arg handle
+                                                           lptkFunc,    // Ptr to function token
+                                                           MP_CHARS);   // CHARs allowed
+                                    if (!hGlbProto)
+                                        goto WSFULL_EXIT;
+
+                                    // Set the ptr bits
+                                    hGlbProto = MakePtrTypeGlb (hGlbProto);
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
 
                             // Loop through the right arg item's elements
                             //   copying them to the result
@@ -1263,8 +1281,10 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                   CopySymGlbDir (hGlbProto);
                             } // End FOR/FOR
 
-                            // We no longer need this storage
-                            FreeResultGlobalVar (hGlbProto); hGlbProto = NULL;
+                            // If the prototype is a global memory handle, ...
+                            if (GetPtrTypeDir (hGlbProto) EQ PTRTYPE_HGLOBAL)
+                                // We no longer need this storage
+                                FreeResultGlobalVar (hGlbProto); hGlbProto = NULL;
 
                             break;
 

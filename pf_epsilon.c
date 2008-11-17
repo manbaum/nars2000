@@ -1259,6 +1259,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     HGLOBAL       hGlbLft,          // Left arg global memory handle
                   hGlbRht,          // Right ...
                   hGlbRes;          // Result   ...
+    LPVARARRAY_HEADER lpHeaderRht;  // Ptr to right arg header
     LPVOID        lpMemLft,         // Ptr to left arg global memory
                   lpMemRht;         // Ptr to right ...
     LPAPLBOOL     lpMemRes = NULL;  // Ptr to result   ...
@@ -1306,6 +1307,9 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
+
+    // Save ptr to right arg header
+    lpHeaderRht = lpMemRht;
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1362,6 +1366,19 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
                                       aplNELMRht,       // Right arg NELM
                                       lpMemRht,         // Ptr to right arg global memory data
                                       lpbCtrlBreak))    // Ptr to Ctrl-Break flag
+                goto ERROR_EXIT;
+        } else
+        if (IsPermVector (lpHeaderRht))
+        {
+            // Handle APLBOOL/APLINT/APLAPA vs. PV
+            if (!PrimFnDydEpsilonIvP_EM (lpMemRes,      // Ptr to result global memory data
+                                         aplTypeLft,    // Left arg storage type
+                                         aplNELMLft,    // Left arg NELM
+                                         lpMemLft,      // Ptr to left arg global memory data
+                                         lpHeaderRht,   // Ptr to right arg header
+                                         aplNELMRht,    // Right arg NELM
+                                         lpbCtrlBreak,  // Ptr to Ctrl-Break flag
+                                         lptkFunc))     // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
@@ -1630,6 +1647,75 @@ UBOOL PrimFnDydEpsilonIvI_EM
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydEpsilonIvI_EM
+
+
+//***************************************************************************
+//  $PrimFnDydEpsilonIvP_EM
+//
+//  Dyadic epsilon between simple ints (APLBOOL/APLINT/APLAPA) and a PV
+//***************************************************************************
+
+UBOOL PrimFnDydEpsilonIvP_EM
+    (LPAPLBOOL         lpMemRes,        // Ptr to result global memory data
+     APLSTYPE          aplTypeLft,      // Left arg storage type
+     APLNELM           aplNELMLft,      // Left arg NELM
+     LPVOID            lpMemLft,        // Ptr to left arg global memory data
+     LPVARARRAY_HEADER lpHeaderRht,     // Ptr to right arg header
+     APLNELM           aplNELMRht,      // Right arg NELM
+     LPUBOOL           lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPTOKEN           lptkFunc)        // Ptr to function token
+
+{
+    APLUINT   uLft;                     // Loop counter
+    APLINT    aplIntegerRhtMin,         // Right arg minimum value
+              aplIntegerRhtMax,         // Right arg maximum ...
+              aplIntegerLft;            // Left  ...
+    UINT      uBitMask;                 // Bit mask for looping through Booleans
+    UBOOL     bRet = FALSE;             // TRUE iff the result is valid
+
+    // Get the minimim and maximum values in the PV
+    aplIntegerRhtMin = lpHeaderRht->PV1;
+    aplIntegerRhtMax = aplNELMRht - lpHeaderRht->PV0;
+
+    // Initialize the bit mask
+    uBitMask = BIT0;
+
+    // Loop through the left arg comparing each value
+    //   against the minimum and maximum values in the PV,
+    //   saving the answer in the result
+    for (uLft = 0; uLft < aplNELMLft; uLft++)
+    {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
+        // Get the next integer
+        aplIntegerLft =
+          GetNextInteger (lpMemLft,
+                          aplTypeLft,
+                          uLft);
+        // If it's within range, ...
+        if (aplIntegerRhtMin <= aplIntegerLft
+         &&                     aplIntegerLft <= aplIntegerRhtMax)
+            // Save a one in the result
+            *lpMemRes |= uBitMask;
+
+        // Shift over the bit mask
+        uBitMask <<= 1;
+
+        // Check for end-of-byte
+        if (uBitMask EQ END_OF_BYTE)
+        {
+            uBitMask = BIT0;            // Start over
+            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+        } // End IF
+    } // End FOR
+
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    return bRet;
+} // End PrimFnDydEpsilonIvP_EM
 
 
 //***************************************************************************

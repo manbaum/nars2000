@@ -1,86 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<!DOCTYPE prefwindow SYSTEM "chrome://aplchars/locale/options.dtd">
+
+<!DOCTYPE prefwindow [
+<!ENTITY % aplOptionsDTD SYSTEM "chrome://aplchars/locale/options.dtd">
+%aplOptionsDTD;
+<!ENTITY % aplextsDTD    SYSTEM "chrome://aplchars/content/extensions.dtd" >
+%aplextsDTD;
+]>
 
 <prefwindow id="aplcharsPreferences"
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             title="&prefwindow.title;"
-            ondialogaccept="return onDialogAcceptAPL ();"
-            onload="initPrefs ();" >
+            onload="initPrefsAPL ();" >
 <script type="application/x-javascript">
 
 // Function to initialize the fields in the Preferences window
-function initPrefs ()
+function initPrefsAPL ()
 {
 var keyboardlayout;
 var enabledstate;
-var prefs = Components.classes["@mozilla.org/preferences-service;1"].
-                getService (Components.interfaces.nsIPrefBranch);
-    try
-    {
-        // Get the current keyboard layout
-        keyboardLayout = prefs.getCharPref ("extensions.aplchars.keyboardlayout");
-    } catch (e) {}
-
-    // If not specified, use "NARS2000"
-    if (keyboardlayout == null)
-    {
-        // Use the default
-        keyboardlayout = "NARS2000";
-
-        // Save back as the currently selected keyboard layout
-        prefs.setCharPref ("extensions.aplchars.keyboardlayout", keyboardlayout);
-    } // End IF
+var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+                      .getService (Components.interfaces.nsIPrefBranch);
+    // Get the current keyboard layout
+    keyboardlayout = prefs.getCharPref ("&aplchars.keyboardlayout;");
 
     // Mark as selected
     document.getElementById (keyboardlayout).checked = true;
 
-    try
-    {
-        // Get the current enabled state
-        enabledstate = prefs.getBoolPref ("extensions.aplchars.enabledstate");
-    } catch (e) {}
-
-    // If not specified, use "true"
-    if (enabledstate == null)
-    {
-        // Use the default
-        enabledstate = true;
-
-        // Save back as the currently selected enabled state
-        prefs.setBoolPref ("extensions.aplchars.enabledstate", enabledstate);
-    } // End IF
+    // Get the current enabled state
+    enabledstate = prefs.getBoolPref ("&aplchars.enabledstate;");
 
     // Mark as enabled or not
     document.getElementById ("enabledstate").checked = enabledstate;
-} // End initPrefs
+} // End initPrefsAPL
 
-function displayAbout ()
+function displayAboutAPL ()
 {
     window.open ("chrome://aplchars/content/about.xul",
                  "&prefwindow.abouttitle;", "chrome,centerscreen");
-} // End displayAbout
-
-
-function onDialogAcceptAPL ()
-{
-    // ***FIXME*** -- Need an observer on Preference changes to reflect
-    //                the change in the button
-var enabledstate = document.getElementsById ("enabledstate");
-
-    // Set the button image as per the enabled state
-////onFocusAPL (false);
-
-    return true;
-} // End onDialogAcceptAPL
+} // End displayAboutAPL
 
 
 </script>
 
   <prefpane id="pane1" label="&prefwindow.title;">
     <preferences>
-      <preference id="keyboardlayout" name="extensions.aplchars.keyboardlayout" type="string" />
-      <preference id="enabledstate"   name="extensions.aplchars.enabledstate"   type="bool"   />
+      <preference id="keyboardlayout" name="&aplchars.keyboardlayout;" type="string" />
+      <preference id="enabledstate"   name="&aplchars.enabledstate;"   type="bool"   />
     </preferences>
 
     <groupbox>
@@ -94,6 +60,6 @@ var enabledstate = document.getElementsById ("enabledstate");
               preference="enabledstate"
               label="&prefwindow.enabledstate;" />
 
-    <button label="&prefwindow.aboutbutton;" oncommand="displayAbout ();" />
+    <button label="&prefwindow.aboutbutton;" oncommand="displayAboutAPL ();" />
   </prefpane>
 </prefwindow>

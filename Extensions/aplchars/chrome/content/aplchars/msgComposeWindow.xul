@@ -3,12 +3,10 @@
 <?xml-stylesheet href="chrome://aplchars/content/aplchars.css" type="text/css"?>
 
 <!DOCTYPE overlay [
-<!ENTITY % messengerDTD SYSTEM "chrome://messenger/locale/messenger.dtd" >
-%messengerDTD;
-<!ENTITY % contentAreaCommandsDTD SYSTEM "chrome://communicator/locale/contentAreaCommands.dtd" >
-%contentAreaCommandsDTD;
 <!ENTITY % aplcharsDTD SYSTEM "chrome://aplchars/locale/aplchars.dtd" >
 %aplcharsDTD;
+<!ENTITY % aplextsDTD  SYSTEM "chrome://aplchars/content/extensions.dtd" >
+%aplextsDTD;
 ]>
 
 
@@ -32,9 +30,6 @@ var aplButton = document.getElementById (aplButtonId);
         aplButton = document.getElementById (aplButtonId);
     } // End IF
 
-    // Get the button classname
-var aplButtonClass = aplButton.className;
-
     // Set the button label to ON/OFF
     aplButton.label =
       enabledstate ? "&aplchars.labelON;"
@@ -52,18 +47,10 @@ var aplButtonClass = aplButton.className;
 function getEnabledStateAPL (bToggle)
 {
 var enabledstate;
-var prefs = Components.classes["@mozilla.org/preferences-service;1"].
-                getService (Components.interfaces.nsIPrefBranch);
-    try
-    {
-        // Get the current enabled state
-        enabledstate = prefs.getBoolPref ("extensions.aplchars.enabledstate");
-    } catch (e) {}
-
-    // If not specified, use "true"
-    if (enabledstate == null)
-        // Use the default
-        enabledstate = true;
+var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+                      .getService (Components.interfaces.nsIPrefBranch);
+    // Get the current enabled state
+    enabledstate = prefs.getBoolPref ("&aplchars.enabledstate;");
 
     // If we're to toggle the state, ...
     if (bToggle)
@@ -72,7 +59,7 @@ var prefs = Components.classes["@mozilla.org/preferences-service;1"].
         enabledstate = !enabledstate;
 
         // Save back as the currently selected enabled state
-        prefs.setBoolPref ("extensions.aplchars.enabledstate", enabledstate);
+        prefs.setBoolPref ("&aplchars.enabledstate;", enabledstate);
     } // End IF
 
     return enabledstate;
@@ -136,8 +123,45 @@ var image = "url(chrome://aplchars/content/aplchars";
 } // End onFocusAPL
 
 
-// Insert as a listener to be called after the window has loaded
-window.addEventListener ("load", function (event) {onClickAPL (false, false);}, false);
+var gAPLObserver =
+{
+    observe: function (aSubject, aTopic, aData)
+    {
+        if (aTopic == "nsPref:changed")
+        {
+            // aData is "extensions.aplchars.???"
+            if (aData == "&aplchars.enabledstate;")
+                // Set the button image to ON/OFF
+                onFocusAPL (false);
+        } // End IF
+    } // End observe
+} // End gAPLObserver
+
+
+// Function called for onload
+function onLoadAPL ()
+{
+var gPref = Components.classes["@mozilla.org/preferences-service;1"]
+                      .getService (Components.interfaces.nsIPrefBranch2);
+    gPref.addObserver ("extensions.aplchars.", gAPLObserver, false);
+
+    // Simulate a click to initialize the fields
+    onClickAPL (false, false);
+} // End onLoadAPL
+
+
+// Function called for onunload
+function onUnloadAPL ()
+{
+var gPref = Components.classes["@mozilla.org/preferences-service;1"]
+                      .getService (Components.interfaces.nsIPrefBranch2);
+    gPref.removeObserver ("extensions.aplchars.", gAPLObserver);
+} // End onUnloadAPL
+
+
+// Insert as a listener to be called after the window has loaded and unloaded
+window.addEventListener ("load"  , onLoadAPL  , false);
+window.addEventListener ("unload", onUnloadAPL, false);
 
 </script>
 

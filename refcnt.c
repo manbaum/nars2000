@@ -243,16 +243,39 @@ UINT GetRefCntGlb
     (HGLOBAL hGlbArg)           // Arg global memory handle
 
 {
-    LPVARARRAY_HEADER lpMemHdr; // Ptr to global memory header
-    UINT              uRefCnt;  // The array reference count
+    LPVOID lpMemHdr;            // Ptr to global memory header
+    UINT   uRefCnt;             // The array reference count
+
+    // Clear the ptr type bits
+    hGlbArg = ClrPtrTypeDirAsGlb (hGlbArg);
 
     // Lock the memory to get a ptr to it
     lpMemHdr = MyGlobalLock (hGlbArg);
 
-    Assert (((LPHEADER_SIGNATURE) lpMemHdr)->nature EQ VARARRAY_HEADER_SIGNATURE);
+    // Split cases based upon the signature
+    switch (((LPHEADER_SIGNATURE) lpMemHdr)->nature)
+    {
+        case DFN_HEADER_SIGNATURE:
+            // Get the reference count
+            uRefCnt = ((LPDFN_HEADER) lpMemHdr)->RefCnt;
 
-    // Get the reference count
-    uRefCnt = lpMemHdr->RefCnt;
+            break;
+
+        case FCNARRAY_HEADER_SIGNATURE:
+            // Get the reference count
+            uRefCnt = ((LPFCNARRAY_HEADER) lpMemHdr)->RefCnt;
+
+            break;
+
+        case VARARRAY_HEADER_SIGNATURE:
+            // Get the reference count
+            uRefCnt = ((LPVARARRAY_HEADER) lpMemHdr)->RefCnt;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbArg); lpMemHdr = NULL;

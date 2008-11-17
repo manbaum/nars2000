@@ -1,3 +1,5 @@
+// Javascript routines for APL Chars
+
     window.addEventListener ("load"  , doAPLOnceWindowLoaded  , false);
     window.addEventListener ("unload", doAPLOnceWindowUnloaded, false);
 
@@ -6,6 +8,7 @@ var gMsgAPLEditorCreationObserver =
 {
     observe: function (aSubject, aTopic, aData)
     {
+        myDump ('Topic = ' + aTopic + ', Data = ' + aData);
     var editor = GetCurrentEditor ();                       // nsIEditor
 
         // Split cases based upon the command
@@ -14,8 +17,26 @@ var gMsgAPLEditorCreationObserver =
             case 'obs_documentCreated':
                 if (editor && GetCurrentCommandManager () == aSubject)
                 {
-                    editor.addDocumentStateListener (gAPLSourceTextListener);
+                    // Because of conflicts with Alt-r and Alt-s keystrokes, we need to disable
+                    //   the shortcut keystrokes for F&rom and &Subject.
+                    // BTW, setting the .accessKey attribute to a different key and/or
+                    //      setting the .disabled attribute to 'true' has no effect;
+                    //      only setting the .control attribute to null seems to work.
+
+                    // The label just before the F&rom menulist
+                var el = document.getElementById ('msgIdentity').previousSibling;
+                    el.control   = null;        // Zap the action so nothing happens
+                    el.accessKey = null;        // Zap the accesskey so the UI doesn't show an underlined letter
+
+                    // The label just before the &Subject textbox
+                    el = document.getElementById ('msgSubject' ).previousSibling;
+                    el.control   = null;        // Zap the action so nothing happens
+                    el.accessKey = null;        // Zap the accesskey so the UI doesn't show an underlined letter
+
+////                editor.addDocumentStateListener (gAPLSourceTextListener);
                     GetCurrentEditorElement ().addEventListener ('keypress', onInputAPLKeyPress, false);
+////            var cmdMgr = GetCurrentCommandManager ();
+////                cmdMgr.removeCommandObserver (gMsgAPLEditorCreationObserver, 'obs_documentCreated', false);
                 } // End IF
 
                 break;
@@ -28,30 +49,48 @@ const gAPLSourceTextListener =
 {
     NotifyDocumentCreated: function NotifyDocumentCreated ()
     {
-    var editor = GetCurrentEditorElement ();                    // nsIEditor
-        editor.addEventListener    ('keypress', onInputAPLKeyPress, false);
+        myDump ('NotifyDocumentCreated');
+    var editorEl = GetCurrentEditorElement ();                  // XULElement
+        editorEl.addEventListener    ('keypress', onInputAPLKeyPress, false);
     },
     NotifyDocumentWillBeDestroyed: function NotifyDocumentWillBeDestroyed ()
     {
-    var editor = GetCurrentEditorElement ();                    // nsIEditor
-        editor.removeEventListener ('keypress', onInputAPLKeyPress, false);
+        myDump ('NotifyDocumentWillBeDestroyed');
+    var editorEl = GetCurrentEditorElement ();                  // XULElement
+        editorEl.removeEventListener ('keypress', onInputAPLKeyPress, false);
     },
-    NotifyDocumentStateChanged: function NotifyDocumentStateChanged (isChanged) {}
+    NotifyDocumentStateChanged: function NotifyDocumentStateChanged (isChanged)
+    {
+        myDump ('NotifyDocumentStateChanged ' + isChanged);
+
+        if (isChanged)
+        {
+            this.NotifyDocumentCreated ();
+        } else
+        {
+            this.NotifyDocumentWillBeDestroyed ();
+            GetCurrentEditor ().removeDocumentStateListener (gAPLSourceTextListener);
+        } // End IF
+    }
 };
 
 
 // Handler for window event listener
 function doAPLOnceWindowLoaded ()
 {
+    myDump ('doAPLOnceWindowLoaded');
 var cmdMgr = GetCurrentCommandManager ();
     cmdMgr.addCommandObserver    (gMsgAPLEditorCreationObserver, 'obs_documentCreated', false);
+    cmdMgr.addCommandObserver    (gMsgAPLEditorCreationObserver, 'obs_documentWillBeDestroyed', false);
 } // End doAPLOnceWindowLoaded
 
 
 // Handler for window event listener
 function doAPLOnceWindowUnloaded ()
 {
+    myDump ('doAPLOnceWindowUnloaded');
 var cmdMgr = GetCurrentCommandManager ();
+    cmdMgr.removeCommandObserver (gMsgAPLEditorCreationObserver, 'obs_documentWillBeDestroyed', false);
     cmdMgr.removeCommandObserver (gMsgAPLEditorCreationObserver, 'obs_documentCreated', false);
 } // End doAPLOnceWindowUnloaded
 
@@ -150,18 +189,15 @@ var KeyboardNARS2000 =
  '\u2375',              //119 = Alt-'w'
  '\u2283',              //120 = Alt-'x'
  '\u2191',              //121 = Alt-'y'
- '\u2282',              //122 = Alt-'z'
+ '\u2282'               //122 = Alt-'z'
 ];
 
 
 // The table of keyboard layouts
 var CodeToAPL =
-{NARS2000:KeyboardNARS2000,
+{NARS2000:KeyboardNARS2000
 };
 
-
-// TODO
-// * Prevent Alt-'r' and Alt-'s' from signalling F&rom and &Subject shortcuts.
 
 // Our keypress listener
 function onInputAPLKeyPress (e)
@@ -171,49 +207,23 @@ function onInputAPLKeyPress (e)
     {
     var keyboardlayout;
     var enabledstate;
-    var prefs = Components.classes["@mozilla.org/preferences-service;1"].
-                    getService (Components.interfaces.nsIPrefBranch);
-        // Get the enabled state
-        try
-        {
-            // Get the current enabled state
-            enabledstate = prefs.getBoolPref ("extensions.aplchars.enabledstate");
-        } catch (e) {}
-
-        // If not specified, use "true"
-        if (enabledstate == null)
-            // Use the default
-            enabledstate = true;
+    var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+                          .getService (Components.interfaces.nsIPrefBranch);
+        // Get the current enabled state
+        enabledstate = prefs.getBoolPref (gAplCharsEnabledState);
 
         // If we're disabled, just return
         if (!enabledstate)
             return;
-        // Get the keyboard layout
-        try
-        {
-            // Get the previously set keyboard layout
-            keyboardLayout = prefs.getCharPref ("extensions.aplchars.keyboardlayout");
-        } catch (e)
-        {
-            // Use the default
-            keyboardlayout = "NARS2000";
-        } // End TRY/CATCH
 
-        // If not specified, use "NARS2000"
-        if (keyboardlayout == null)
-        {
-            // Use the default
-            keyboardlayout = "NARS2000";
-
-            // Save back as the currently selected layout
-            prefs.setCharPref ("extensions.aplchars.keyboardlayout", keyboardlayout);
-        } // End IF
+        // Get the current keyboard layout
+        keyboardlayout = prefs.getCharPref (gAplCharsKeyboardLayout);
 
         // Get the corresponding Unicode char (or pair of Unicode chars
         //   if Unshift/Shift share the same charCode)
     var aplchar = CodeToAPL[keyboardlayout][e.charCode - 32];
 
-////    alert ('e.charCode = ' + e.charCode + ', typeof = ' + (typeof (aplchar)) + ', CodeToAPL = ' + CodeToAPL[e.charCode - 32]);
+////    myDump ('e.charCode = ' + e.charCode + ', typeof = ' + (typeof (aplchar)) + ', CodeToAPL = ' + CodeToAPL[e.charCode - 32]);
         if (typeof (aplchar) == "object")
         {
             if (e.shiftKey)
@@ -236,4 +246,12 @@ function onInputAPLKeyPress (e)
     } // End IF
 } // End onInputAPLKeyPress
 
+
+// Local dump to Error Console
+function myDump (aMessage)
+{
+  var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+                                 .getService (Components.interfaces.nsIConsoleService);
+  consoleService.logStringMessage (aMessage);
+} // End myDump
 

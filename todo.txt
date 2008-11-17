@@ -37,7 +37,11 @@ TO DO:  General:  Less Important (post-alpha)
   the narrower formats to ARRAY_INT64.
 * Port to Linux
 * Port to Mac/OS
+* Implement Copy To Braces
+* Implement Paste From Braces
 * Implement status window for messages, char codes, etc.
+* Implement New Tab On Load.
+* Implement New Tab On Clear.
 * Implement these features:
 * ...       dynamic functions
 * ...       user-defined magic functions for primitive functions

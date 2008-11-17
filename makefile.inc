@@ -77,7 +77,6 @@ B=$(BIN)ND$(WP)\                # ...                         binaries
 !endif
 OC=RET\COM\                     # Define output directory for common intermediate files
 
-HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
 FONT=SImPL-Medium.ttf           # Default APL TrueType font
 
 
@@ -90,8 +89,7 @@ ALL:    DIR                 \
 
 EXE:                        \
         $(O)$(ENAME).EXE    \
-        $(B)$(ENAME).EXE    \
-        $(BC)$(ENAME).HLP
+        $(B)$(ENAME).EXE
 
 MAKEVER:                    \
         $(OC)$(MV).exe      \

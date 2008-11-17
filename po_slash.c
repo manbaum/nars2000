@@ -36,6 +36,9 @@
 
 extern FASTBOOLFNS FastBoolFns[];   // ***FIXME*** -- move into externs.h
 
+// Define this symbol to include code for empty catenate
+///#define EMPTYCAT
+
 
 //***************************************************************************
 //  $PrimOpSlash_EM_YY
@@ -166,10 +169,14 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       hGlbRes = NULL;       // Result    ...
     LPVOID            lpMemRht = NULL,      // Ptr to right arg global memory
                       lpMemRes = NULL;      // Ptr to result    ...
-    LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
+    LPAPLDIM          lpMemDimRht,          // Ptr to right arg dimensions
+                      lpMemDimRes;          // Ptr to result    ...
     APLFLOAT          aplFloatIdent;        // Identity element
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bPrimDydScal = FALSE, // TRUE iff the left operand is a Primitive Dyadic Scalar function
+#ifdef EMPTYCAT
+                      bEmptyCat = FALSE,    // TRUE iff reducing empty array with catenate
+#endif
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
     LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
     LPPRIMFLAGS       lpPrimFlags;          // Ptr to corresponding PrimFlags entry
@@ -309,24 +316,38 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     //   element for the left operand or signal a DOMAIN ERROR
     if (IsZeroDim (uDimAxRht))
     {
-        // If it's not an immediate primitive function,
-        //   or it is, but is without an identity element,
-        //   signal a DOMAIN ERROR
-        if (!lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         || lpPrimFlags EQ NULL
-         || !lpPrimFlags->IdentElem)
-            goto DOMAIN_EXIT;
+#ifdef EMPTYCAT
+        // Split out catenate
+        if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+         && (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMA
+          || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMABAR))
+        {
+            aplTypeRes = ARRAY_NESTED;
 
-        // Get the identity element
-        aplFloatIdent = PrimIdent[lpPrimFlags->Index];
+            // Mark as reducing empty array with catenate
+            bEmptyCat = TRUE;
+        } else
+#endif
+        {
+            // If it's not an immediate primitive function,
+            //   or it is, but is without an identity element,
+            //   signal a DOMAIN ERROR
+            if (lpYYFcnStrLft->tkToken.tkFlags.TknType NE TKT_FCNIMMED
+             || lpPrimFlags EQ NULL
+             || !lpPrimFlags->IdentElem)
+                goto DOMAIN_EXIT;
 
-        // If the identity element is Boolean, the result is too
-        if (aplFloatIdent EQ 0.0
-         || aplFloatIdent EQ 1.0
-         || lpPrimProtoLft NE NULL)
-            aplTypeRes = ARRAY_BOOL;
-        else
-            aplTypeRes = ARRAY_FLOAT;
+            // Get the identity element
+            aplFloatIdent = PrimIdent[lpPrimFlags->Index];
+
+            // If the identity element is Boolean, the result is too
+            if (aplFloatIdent EQ 0.0
+             || aplFloatIdent EQ 1.0
+             || lpPrimProtoLft NE NULL)
+                aplTypeRes = ARRAY_BOOL;
+            else
+                aplTypeRes = ARRAY_FLOAT;
+        } // End IF/ELSE
     } else
     // If the product of the dimensions above
     //   the axis dimension is one, and
@@ -418,7 +439,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = VarArrayBaseToDim (lpMemRes);
+    lpMemRes = lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
     // Copy the dimensions from the right arg to the result
     //   except for the axis dimension
@@ -428,33 +449,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
     // lpMemRes now points to its data
 
-    // If the axis dimension is zero, fill with the identity element
-    if (IsZeroDim (uDimAxRht))
-    {
-        // The zero case is done (GHND)
-
-        // If we're not doing prototypes, ...
-        if (lpPrimProtoLft EQ NULL)
-        {
-            // Check for identity element 1
-            if (aplFloatIdent EQ 1.0)
-            {
-                APLNELM uNELMRes;
-
-                // Calculate the # bytes in the result, rounding up
-                uNELMRes = (aplNELMRes + (NBIB - 1)) >> LOG2NBIB;
-
-                for (uRes = 0; uRes < uNELMRes; uRes++)
-                    *((LPAPLBOOL) lpMemRes)++ = 0xFF;
-            } else
-            if (aplFloatIdent NE 0.0)
-                for (uRes = 0; uRes < aplNELMRes; uRes++)
-                    *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
-        } // End IF
-
-        goto YYALLOC_EXIT;
-    } // End IF
-
+    // If the result is nested, ...
     if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
@@ -462,6 +457,71 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
         for (uRes = 1; uRes < aplNELMRes; uRes++)
             ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    } // End IF
+
+    // If the axis dimension is zero, fill with the identity element
+    if (IsZeroDim (uDimAxRht))
+    {
+#ifdef EMPTYCAT
+        // Split out catenate
+        if (bEmptyCat)
+        {
+            HGLOBAL  hGlbItm;           // Item global memory handle
+            LPAPLDIM lpMemItm;          // Ptr to item global memory
+
+            // The item in the result is an array of the same rank as the right arg
+            //   with the same shape except for the axis coordinate which is zero
+            //   and with the same prototype
+            hGlbItm = CopyArray_EM (hGlbRht,                    // Global memory handle to copy
+                                   &lpYYFcnStrLft->tkToken);    // Ptr to left operand function strand
+            if (hGlbItm EQ NULL)
+                goto ERROR_EXIT;
+
+            // Save the item in the result
+            *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbItm);
+
+            // Lock the memory to get a ptr to it
+            lpMemItm = MyGlobalLock (hGlbItm);
+
+            // Skip over the header to the dimensions
+            lpMemItm = VarArrayBaseToDim (lpMemItm);
+
+            // ***FIXME*** -- We're using the wrong axis value
+            //                <aplAxis> is the reduce axis, whereas
+            //                we should use the axis on the catenate function
+            DbgBrk ();
+
+            // Zero the axis coordinate in the item
+            lpMemItm[aplAxis] = 0;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
+        } else
+#endif
+        {
+            // The zero case is done (GHND)
+
+            // If we're not doing prototypes, ...
+            if (lpPrimProtoLft EQ NULL)
+            {
+                // Check for identity element 1
+                if (aplFloatIdent EQ 1.0)
+                {
+                    APLNELM uNELMRes;
+
+                    // Calculate the # bytes in the result, rounding up
+                    uNELMRes = (aplNELMRes + (NBIB - 1)) >> LOG2NBIB;
+
+                    for (uRes = 0; uRes < uNELMRes; uRes++)
+                        *((LPAPLBOOL) lpMemRes)++ = 0xFF;
+                } else
+                if (aplFloatIdent NE 0.0)
+                    for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
+            } // End IF
+        } // End IF/ELSE
+
+        goto YYALLOC_EXIT;
     } // End IF
 
     // If this is a fast Boolean operation, ...

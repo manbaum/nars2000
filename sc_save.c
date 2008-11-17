@@ -1075,9 +1075,13 @@ LPAPLCHAR SavedWsFormGlbFcn
     lpaplChar = lpaplCharStart;
 
     // Link this SYMENTRY into the chain
-    lpSymLink = *lplpSymLink;
-    *lplpSymLink = lpSymEntry;
-    lpSymEntry->stSymLink = lpSymLink;
+    //   unless it's already linked
+    if (lpSymEntry->stSymLink EQ NULL)
+    {
+        lpSymLink             = *lplpSymLink;
+       *lplpSymLink           =  lpSymEntry;
+        lpSymEntry->stSymLink =  lpSymLink;
+    } // End IF
 
     // Copy the formatted GlbCnt to the start of the buffer as the result
     lstrcpyW (lpaplChar, wszGlbCnt);
@@ -1488,9 +1492,13 @@ LPAPLCHAR SavedWsFormGlbVar
     lpaplChar = lpaplCharStart;
 
     // Link this SYMENTRY into the chain
-    lpSymLink = *lplpSymLink;
-    *lplpSymLink = lpSymEntry;
-    lpSymEntry->stSymLink = lpSymLink;
+    //   unless it's already linked
+    if (lpSymEntry->stSymLink EQ NULL)
+    {
+        lpSymLink             = *lplpSymLink;
+       *lplpSymLink           =  lpSymEntry;
+        lpSymEntry->stSymLink =  lpSymLink;
+    } // End IF
 
     // Copy the formatted GlbCnt to the start of the buffer as the result
     lstrcpyW (lpaplChar, wszGlbCnt);

@@ -7,7 +7,7 @@
 
     <!-- This is for the Tools menu. -->
     <menupopup id="taskPopup">
-        <menuitem label="APL Chars Options..."
+        <menuitem label="&aplchars.label;"
                   oncommand="window.openDialog ('chrome://aplchars/content/options.xul');"
                   class="menuitem-iconic" />
     </menupopup>

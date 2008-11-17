@@ -1670,9 +1670,13 @@ HGLOBAL LoadWorkspaceGlobal_EM
     lpSymEntry->stData.stGlbData = hGlbObj;
 
     // Link this SYMENTRY into the chain
-    lpSymLink = *lplpSymLink;
-    *lplpSymLink = lpSymEntry;
-    lpSymEntry->stSymLink = lpSymLink;
+    //   unless it's already linked
+    if (lpSymEntry->stSymLink EQ NULL)
+    {
+        lpSymLink             = *lplpSymLink;
+       *lplpSymLink           =  lpSymEntry;
+        lpSymEntry->stSymLink =  lpSymLink;
+    } // End IF
 
     return hGlbObj;
 

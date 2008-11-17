@@ -2,6 +2,7 @@
 chrome\.svn
 chrome\content\.svn
 chrome\content\aplchars\.svn
+chrome\content\aplchars\tests
 chrome\locale\.svn
 chrome\locale\en-US\.svn
 chrome\locale\en-US\aplchars\.svn
@@ -10,6 +11,7 @@ chrome\skin\classic\.svn
 chrome\skin\classic\aplchars\.svn
 ftp.bat
 ftp.php
+mk.bat
 incver.php
 upd.bat
 upd.inp

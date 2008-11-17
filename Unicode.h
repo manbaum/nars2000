@@ -206,6 +206,7 @@
 #define UTF16_LEFTBRACE          0x007B         // Left brace
 #define UTF16_STILE2             0x007C         // Stile (a.k.a. 0x2223)
 #define UTF16_RIGHTBRACE         0x007D         // Right brace
+#define UTF16_COPYRIGHT          0x00A9         // Copyright
 
 #define UTF16_A_                 0xE036         // A underbar
 #define UTF16_B_                 0xE037         // B underbar
@@ -393,6 +394,7 @@
 #define WS_UTF16_LEFTBRACE          L"\x007B"   // Left brace
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. \x2223)
 #define WS_UTF16_RIGHTBRACE         L"\x007D"   // Right brace
+#define WS_UTF16_COPYRIGHT          L"\x00A9"   // Copyright
 
 #define WS_UTF16_A_                 L"\xE036"   // A underbar
 #define WS_UTF16_B_                 L"\xE037"   // B underbar

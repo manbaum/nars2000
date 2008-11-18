@@ -38,8 +38,6 @@ TO DO:  General:  Less Important (post-alpha)
 * Port to Linux
 * Port to Mac/OS
 * Extend <aplchars> to <textarea> and in FireFox, too.
-* Implement Copy To Braces
-* Implement Paste From Braces
 * Implement status window for messages, char codes, etc.
 * Implement New Tab On Load.
 * Implement New Tab On Clear.
@@ -271,6 +269,8 @@ DONE:  General
 * Get permission to redistribute SimPL font
 * Define extension to Thunderbird to simplify entering APL chars
   in an email message.
+* Implement Copy To Braces
+* Implement Paste From Braces
 *
 
 

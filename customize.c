@@ -174,6 +174,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                          {L"PC/3270",             TRUE,   TRUE , 4, 4, 4, 4},
                                          {L"Normal (Unicode)",    FALSE,  TRUE , 0, 5, 6, 5},
                                          {L"NARS (Unicode)",      TRUE,   FALSE, 5, 0, 0, 0},
+                                         {L"{braces}",            TRUE,   TRUE , 6, 6, 7, 7},
                                         };
 #define UNITRANS_STR_LENGTH      itemsizeof (unitransStr)
 

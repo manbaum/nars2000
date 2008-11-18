@@ -30,8 +30,9 @@ typedef enum tagUNI_TRANS
     UNITRANS_PC3270,        // 04:  PC3270
     UNITRANS_NORMAL,        // 05:  Normal paste translation (from Ctrl-v)
     UNITRANS_NARS,          // 06:  NARS2000
-    UNITRANS_LENGTH,        // 07:  Length of the enum *MUST* be last
-                            // 08-0F:  Available entries (4 bits)
+    UNITRANS_LENGTH,        // 07:  Length of the enum *MUST* be last active value
+    UNITRANS_BRACES,        // 08:  {braces} handled outside uniTransTab
+                            // 09-0F:  Available entries (4 bits)
 } UNI_TRANS;
 
 // N.B.:  Whenever changing the above enum (UNI_TRANS),

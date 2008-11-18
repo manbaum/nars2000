@@ -31,6 +31,7 @@
             MENUITEM "Copy APL&2",              IDM_COPY_APL2
             MENUITEM "Copy &ISO",               IDM_COPY_ISO
             MENUITEM "Copy &PC3270"             IDM_COPY_PC3270
+            MENUITEM "Copy &Braces"             IDM_COPY_BRACES
         END
         MENUITEM "&Paste\tCtrl-V",              IDM_PASTE
         POPUP "Past&e APL"
@@ -39,6 +40,7 @@
             MENUITEM "Paste APL&2",             IDM_PASTE_APL2
             MENUITEM "Paste &ISO",              IDM_PASTE_ISO
             MENUITEM "Paste &PC3270"            IDM_PASTE_PC3270
+            MENUITEM "Paste &Braces"            IDM_PASTE_BRACES
         END
         MENUITEM "&Delete",                     IDM_DELETE
         MENUITEM SEPARATOR

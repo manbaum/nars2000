@@ -706,6 +706,13 @@ void IncrFcnMem
 
                     break;
 
+                case TKT_FCNIMMED:
+                case TKT_OP1IMMED:
+                case TKT_OP2IMMED:
+                case TKT_OP3IMMED:
+                case TKT_OPJOTDOT:
+                    break;
+
                 defstop
                     break;
             } // End FOR/SWITCH

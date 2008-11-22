@@ -32,6 +32,7 @@
 #include <limits.h>
 #include <direct.h>
 #include <float.h>
+#include <math.h>
 #include <wininet.h>
 
 #include "uniscribe.h"
@@ -2724,7 +2725,7 @@ int PASCAL WinMain
      int         nCmdShow)
 
 {
-    MSG Msg;                        // Message for GetMessageW loop
+    MSG  Msg;                       // Message for GetMessageW loop
 
 #ifdef PERFMONON
     MessageBeep (NEG1U);
@@ -2770,6 +2771,16 @@ int PASCAL WinMain
     //   as per comments in top of <dtoa.c>
     //   but we need 64 bits because of 64-bit ints
     control87(PC_64, MCW_PC);
+
+    // Get the value of PI
+    _asm
+    {                           // st(0)        st(1)
+        fldpi;                  // pi
+        fstp    FloatPi;
+    }
+
+    // Get the value of e
+    FloatE = exp (1);
 
     PERFMON
 

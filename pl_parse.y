@@ -4035,7 +4035,9 @@ Drv2Func:
 
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, DIRECT);    // Right operand (Direct)
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
+                                             // If this strand is a named var, ...
+                                             if (IsTknNamed ($1.tkToken.tkFlags.TknType))
+                                                 FreeResult (&$1.tkToken);           // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
@@ -5236,7 +5238,7 @@ DydOp:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakeNameFcnOpr_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
+                                             FreeResult (&$1.tkToken);               // Decrement reccnt
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR2
@@ -5878,6 +5880,11 @@ EXIT_TYPES ParseLine
 
         goto NORMAL_EXIT;
     } // End __try/__Except
+
+#if YYDEBUG
+    // Disable debugging
+    yydebug = FALSE;
+#endif
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

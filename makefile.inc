@@ -230,6 +230,7 @@ $(O)pf_ustile.DEP       \
 $(O)pf_utack.DEP        \
 $(O)pf_utackjot.DEP     \
 $(O)pl_parse.DEP        \
+$(O)pn_parse.DEP        \
 $(O)po_cmiddot.DEP      \
 $(O)po_dieresis.DEP     \
 $(O)po_dijot.DEP        \
@@ -569,6 +570,9 @@ $(O)yyfns.DEP
 !if exist ($(O)pl_parse.DEP)
 !       include $(O)pl_parse.DEP
 !endif
+!if exist ($(O)pn_parse.DEP)
+!       include $(O)pn_parse.DEP
+!endif
 !if exist ($(O)po_cmiddot.DEP)
 !       include $(O)po_cmiddot.DEP
 !endif
@@ -861,6 +865,7 @@ $(O)pf_ustile.PRO       \
 $(O)pf_utack.PRO        \
 $(O)pf_utackjot.PRO     \
 $(O)pl_parse.PRO        \
+$(O)pn_parse.PRO        \
 $(O)po_cmiddot.PRO      \
 $(O)po_dieresis.PRO     \
 $(O)po_dijot.PRO        \
@@ -979,6 +984,8 @@ $(O)fh_parse.C:         $(@B).Y
 $(O)fh_parse.OBJ:       $(O)$(@B).C     $(FH_PARSE_DEP)
 $(O)pl_parse.C:         $(@B).Y
 $(O)pl_parse.OBJ:       $(O)$(@B).C     $(PL_PARSE_DEP)
+$(O)pn_parse.C:         $(@B).Y
+$(O)pn_parse.OBJ:       $(O)$(@B).C     $(PN_PARSE_DEP)
 
 ## WineHQ-specific files
 $(O)editctrl.OBJ:       $(WS)$(@B).C    $(EDITCTRL_DEP)
@@ -1225,6 +1232,7 @@ OBJS=                       \
      $(O)pf_utack.OBJ       \
      $(O)pf_utackjot.OBJ    \
      $(O)pl_parse.OBJ       \
+     $(O)pn_parse.OBJ       \
      $(O)po_cmiddot.OBJ     \
      $(O)po_dieresis.OBJ    \
      $(O)po_dijot.OBJ       \

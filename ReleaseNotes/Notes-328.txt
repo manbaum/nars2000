@@ -1,49 +1,34 @@
-Build #327 -- Version 0.0.0.22029
+Build #328 -- Version 0.0.0.22038
 ---------------------------------
-
-Directory trunk\Extensions\aplchars:
-
-MAKEFILE:
-  Use specific reference to file in <defaults\preferences>
-    rather than <*.*> to avoid having to exclude the <tests> dir.
-
-UPD.INP:
-  Delete leading <chrome\> as we're already in that dir.
-
 
 Directory trunk:
 
 CUSTOMIZE.C:
-  Check and grey out the New Tab On Clear/Load checkboxes
-    until I can get them to work.
+  Add new User Preference for Copy To/Paste From Braces.
 
-DISPDBG.C:
-  Delete TKT_COMMENT and renumber other tokens.
+EDIT.RCH:
+  Add new menu item for Copy To/Paste From braces.
 
-EXECDFN.C:
-  Test for and skip over empty function lines.
+EDITFCN.C:
+  Rename <CopyAPLCHars> and <PasteAPLChars> to
+    <CopyAPLChars_EM> and <PasteAPLChars_EM> to reflect the
+    fact that they may signal an error.
+  Add new WM_COMMAND message for Copy To/Paste From braces.
+  In <CopyAPLChars_EM>, handle Copy To Braces specially.
+  In <PasteAPLChars_EM>, handle Paste From Braces specially.
 
-FH_PARSE.H:
-  Define bit flags for empty function lines.
+MAIN.C:
+  Add new WM_COMMAND message for Copy To/Paste From braces.
 
-FH_PARSE.Y:
-  Delete COMMENT and TKT_COMMENT as they are no longer used.
+RESOURCE.H:
+  Define equate for COPY_BRACES/PASTE_BRACES.
 
-MACROS.H:
-  Define macro <TokenBaseToStart> in terms of macro <ByteAddr>.
+UNITRANSHDR.H:
+  Define new enum for Copy To/Paste From Braces.
 
-PF_IOTA.C:
-  Fix Bug:  Limit setting permutation vector bit for {iota}R to R > 0.
 
-PL_PARSE.Y:
-PRIMFNS.C:
-STRAND.C:
-TOKENIZE.C:
-  Delete TKT_COMMENT as it's no longer used.
+Directory trunk\WineHQ:
 
-SAVEFCN.C:
-  Check for empty line after call to <Tokenize_EM>.
-  Define new routine to check to see if a tokenized line is empty.
-
-TOKENS.H:
-  Delete TKT_COMMENT and renumber other tokens.
+EDITCTRL.C:
+  In <EDIT_WM_ContextMenu>, define menu state for
+    Copy To/Paste From Braces.

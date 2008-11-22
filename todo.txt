@@ -38,9 +38,10 @@ TO DO:  General:  Less Important (post-alpha)
 * Port to Linux
 * Port to Mac/OS
 * Extend <aplchars> to <textarea> and in FireFox, too.
+* Allow Alt-nnnn to enter an arbitrary Unicode character
 * Implement status window for messages, char codes, etc.
-* Implement New Tab On Load.
-* Implement New Tab On Clear.
+* Implement New Tab On Load off.
+* Implement New Tab On Clear off.
 * Implement these features:
 * ...       dynamic functions
 * ...       user-defined magic functions for primitive functions
@@ -61,7 +62,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...         []CRLPC R
 * ...         []DEF R
 * ...         []DEFL R
-* ...       L []EA R    (Execute Alternate) (EAS)
+* ...       L []EA R    (Execute Alternate) (EAS--required)
 * ...         []EC R
 * ...         []ERASE R
 * ...         []FI R
@@ -271,6 +272,10 @@ DONE:  General
   in an email message.
 * Implement Copy To Braces
 * Implement Paste From Braces
+* Implement Base Point Notation:  XbNNN as a way to enter base X numbers
+  for arbitrary base X and each N may range from 0-9a-z (0-35).
+* Implement Euler Point Notation:  AAxBB as a way to enter AA x (*1)*BB
+* Implement Pi Point Notation:  AApBB as a way to enter AA x (o1)*BB
 *
 
 

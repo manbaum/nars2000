@@ -426,13 +426,12 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
+    // Execute the user-defined function/operator
     lpYYRes =
       ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
     // If we incremented the RefCnt for the right operand,
@@ -1959,45 +1958,59 @@ void UninitOprSTEs
     UINT    uFcn,                   // Loop counter
             TknCount;               // Token count
 
-    if (lpYYArg->TknCount NE 1
-      || (lpYYArg->tkToken.tkFlags.TknType NE TKT_VARIMMED
-       && lpYYArg->tkToken.tkFlags.TknType NE TKT_FCNIMMED))
+    // Get the token count
+    TknCount = lpYYArg->TknCount;
+
+    // Loop through the functions/variables decrementing the RefCnt as appropriate
+    for (uFcn = 0; uFcn < TknCount; uFcn++, lpYYArg++)
     {
-        // Get the token count
-        TknCount = lpYYArg->TknCount;
-
-        // Loop through the functions/variables decrementing the RefCnt as appropriate
-        for (uFcn = 0; uFcn < TknCount; uFcn++, lpYYArg++)
+        // Split cases based upon the token type
+        switch (lpYYArg->tkToken.tkFlags.TknType)
         {
-            // Split cases based upon the token type
-            switch (lpYYArg->tkToken.tkFlags.TknType)
-            {
-                case TKT_VARNAMED:
-                case TKT_FCNNAMED:
-                    // If it's not an immediate, ...
-                    if (!lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
-                        // Decrement the RefCnt
-                        FreeResultGlobalDFLV (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
-
-                    break;
-
-                case TKT_VARARRAY:
-                case TKT_FCNARRAY:
+            case TKT_VARNAMED:
+            case TKT_FCNNAMED:
+                // If it's not an immediate, ...
+                if (!lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
                     // Decrement the RefCnt
-                    FreeResultGlobalDFLV (lpYYArg->tkToken.tkData.tkGlbData);
+                    FreeResultGlobalDFLV (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
 
-                    break;
+                break;
 
-                default:
-                    break;
-            } // End SWITCH
+            case TKT_VARARRAY:
+            case TKT_FCNARRAY:
+                // Decrement the RefCnt
+                FreeResultGlobalDFLV (lpYYArg->tkToken.tkData.tkGlbData);
 
-            // We no longer need this resource
-            DbgGlobalFree (ClrPtrTypeDirAsGlb ((*lplpSymEntry)->stData.stGlbData));
+                break;
 
+            case TKT_VARIMMED:
+            case TKT_FCNIMMED:
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End FOR
+
+    // If the STE is a global memory handle, decrement its RefCnt
+    if (!(*lplpSymEntry)->stFlags.Imm)
+    {
+        HGLOBAL hGlbData;
+        UINT    uRefCnt;
+
+        // Get the global memory handle
+        hGlbData = (*lplpSymEntry)->stData.stGlbData;
+
+        // Get the RefCnt
+        uRefCnt = GetRefCntGlb (hGlbData);
+
+        // Decrement the RefCnt
+        FreeResultGlobalDFLV (hGlbData);
+
+        // If the RefCnt was 1 (now zero), ...
+        if (uRefCnt EQ 1)
             // Mark as without a value
             (*lplpSymEntry)->stFlags.Value = FALSE;
-        } // End FOR
     } // End IF
 } // End UninitOprSTEs
 

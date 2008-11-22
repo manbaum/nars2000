@@ -2434,8 +2434,8 @@ APLINT abs64
 //***************************************************************************
 
 APLINT _iadd64
-    (APLINT aplLft,             // Left arg
-     APLINT aplRht,             // Right ...
+    (APLINT  aplLft,            // Left arg
+     APLINT  aplRht,            // Right ...
      LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
 
 {
@@ -2479,8 +2479,8 @@ APLINT _iadd64
 //***************************************************************************
 
 APLINT _isub64
-    (APLINT aplLft,             // Left arg
-     APLINT aplRht,             // Right ...
+    (APLINT  aplLft,            // Left arg
+     APLINT  aplRht,            // Right ...
      LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
 
 {
@@ -2524,8 +2524,8 @@ APLINT _isub64
 //***************************************************************************
 
 APLINT _imul64
-    (APLINT aplLft,             // Left arg
-     APLINT aplRht,             // Right ...
+    (APLINT  aplLft,            // Left arg
+     APLINT  aplRht,            // Right ...
      LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
 
 {

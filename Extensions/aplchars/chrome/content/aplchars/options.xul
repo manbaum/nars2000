@@ -11,55 +11,40 @@
 <prefwindow id="aplcharsPreferences"
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             title="&prefwindow.title;"
-            onload="initPrefsAPL ();" >
-<script type="application/x-javascript">
+            ondialogaccept="savePrefsAPL ();" >
+    <!-- This imports the debugging javascript for this module -->
+    <script type="application/x-javascript"
+            src="chrome://aplchars/content/mydump.js" />
+    <script type="application/x-javascript">
+        // Define globals with the names of extension preferences
+        //   because we can't reference the names directly within
+        //   the Javascript file (aplchars.js).
+    var gAplCharsEnabledState   = "&aplchars.enabledstate;";
+    var gAplCharsKeyboardLayout = "&aplchars.keyboardlayout;";
+    </script>
 
-// Function to initialize the fields in the Preferences window
-function initPrefsAPL ()
-{
-var keyboardlayout;
-var enabledstate;
-var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-                      .getService (Components.interfaces.nsIPrefBranch);
-    // Get the current keyboard layout
-    keyboardlayout = prefs.getCharPref ("&aplchars.keyboardlayout;");
+    <!-- This imports the corresponding javascript for this module -->
+    <script type="application/x-javascript"
+            src="chrome://aplchars/content/options.js" />
 
-    // Mark as selected
-    document.getElementById (keyboardlayout).checked = true;
+    <prefpane id="pane1" label="&prefwindow.title;">
+      <preferences>
+        <preference id="keyboardlayout" name="&aplchars.keyboardlayout;" type="string" />
+        <preference id="enabledstate"   name="&aplchars.enabledstate;"   type="bool"   />
+      </preferences>
 
-    // Get the current enabled state
-    enabledstate = prefs.getBoolPref ("&aplchars.enabledstate;");
+      <groupbox>
+        <caption label="&prefwindow.keyboardlayout;" />
+        <radiogroup preference="keyboardlayout">
+          <radio id="NARS2000" label="NARS2000 (APL+Win)" value="NARS2000" />
+          <radio id="DyalogUS" label="Dyalog (US)"        value="DyalogUS" />
+        </radiogroup>
+      </groupbox>
 
-    // Mark as enabled or not
-    document.getElementById ("enabledstate").checked = enabledstate;
-} // End initPrefsAPL
+      <checkbox id="enabledstate"
+                preference="enabledstate"
+                label="&prefwindow.enabledstate;" />
 
-function displayAboutAPL ()
-{
-    window.open ("chrome://aplchars/content/about.xul",
-                 "&prefwindow.abouttitle;", "chrome,centerscreen");
-} // End displayAboutAPL
-
-
-</script>
-
-  <prefpane id="pane1" label="&prefwindow.title;">
-    <preferences>
-      <preference id="keyboardlayout" name="&aplchars.keyboardlayout;" type="string" />
-      <preference id="enabledstate"   name="&aplchars.enabledstate;"   type="bool"   />
-    </preferences>
-
-    <groupbox>
-      <caption label="&prefwindow.keyboardlayout;" />
-      <radiogroup preference="keyboardlayout">
-        <radio id="NARS2000" label="NARS2000 (APL+Win)" value="NARS2000" />
-      </radiogroup>
-    </groupbox>
-
-    <checkbox id="enabledstate"
-              preference="enabledstate"
-              label="&prefwindow.enabledstate;" />
-
-    <button label="&prefwindow.aboutbutton;" oncommand="displayAboutAPL ();" />
+      <button label="&prefwindow.aboutbutton;" oncommand="displayAboutAPL ();" />
   </prefpane>
 </prefwindow>

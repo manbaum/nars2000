@@ -29,6 +29,7 @@
 #define $R              L"R"
 #define $RO             L"RO"
 #define $X              L"X"
+#define $Y              L"Y"
 #define $Z              L"Z"
 
 #define $DECODE         WS_UTF16_UPTACK

@@ -71,6 +71,7 @@
 %name-prefix="pn_yy"
 %parse-param {LPPNLOCALVARS lppnLocalVars}
 %lex-param   {LPPNLOCALVARS lppnLocalVars}
+%token EXT
 
 %start Number
 
@@ -203,17 +204,331 @@ DecPoint:
                                     }
     ;
 
+// Complex Point
+Hc2Point:
+      DecPoint 'i' DecPoint         {DbgMsgWP (L"%%Hc2Point:  DecPoint 'i' DecPoint");
+                                     // If the real part is integer, ...
+                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                     // If the imaginary part is integer, ...
+                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+
+                                     // Save the real & imaginary parts
+                                     $1.aplComplexReal = $1.aplFloat;
+                                     $1.aplComplexImag = $3.aplFloat;
+
+                                     // Mark the result as Complex
+                                     $1.chType = PN_NUMTYPE_HC2;
+
+                                     $$ = $1;
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    | DecPoint 'J' DecPoint         {DbgMsgWP (L"%%Hc2Point:  DecPoint 'J' DecPoint");
+                                     // If the real part is integer, ...
+                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                     // If the imaginary part is integer, ...
+                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+
+                                     // Save the real & imaginary parts
+                                     $1.aplComplexReal = $1.aplFloat;
+                                     $1.aplComplexImag = $3.aplFloat;
+
+                                     // Mark the result as Complex
+                                     $1.chType = PN_NUMTYPE_HC2;
+
+                                     $$ = $1;
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    | DecPoint 'a' 'd' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'd' DecPoint");
+                                     // If the real part is integer, ...
+                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                     // If the imaginary part is integer, ...
+                                     if ($4.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $4.aplFloat = (APLFLOAT) $4.aplInteger;
+
+                                     // Convert from degrees to radians
+                                     $4.aplFloat = FloatPi * $4.aplFloat / 180;
+
+                                     // Save the real & imaginary parts
+                                     // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
+                                     $1.aplComplexReal = $1.aplFloat * cos ($4.aplFloat);
+                                     $1.aplComplexImag = $1.aplFloat * sin ($4.aplFloat);
+
+                                     // Mark the result as Complex
+                                     $1.chType = PN_NUMTYPE_HC2;
+
+                                     $$ = $1;
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    | DecPoint 'a' 'r' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'r' DecPoint");
+                                     // If the real part is integer, ...
+                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                     // If the imaginary part is integer, ...
+                                     if ($4.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $4.aplFloat = (APLFLOAT) $4.aplInteger;
+
+                                     // Save the real & imaginary parts
+                                     // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
+                                     $1.aplComplexReal = $1.aplFloat * cos ($4.aplFloat);
+                                     $1.aplComplexImag = $1.aplFloat * sin ($4.aplFloat);
+
+                                     // Mark the result as Complex
+                                     $1.chType = PN_NUMTYPE_HC2;
+
+                                     $$ = $1;
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    ;
+
+// Quaternion Point
+Hc4Point:
+      DecPoint 'i' DecPoint 'j' DecPoint 'i' 'j' DecPoint
+                                    {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'i' 'j' DecPoint");
+                                     // If the real part is integer, ...
+                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                     // If the imaginary part #1 is integer, ...
+                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+                                     // If the imaginary part #2 is integer, ...
+                                     if ($5.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $5.aplFloat = (APLFLOAT) $5.aplInteger;
+                                     // If the imaginary part #3 is integer, ...
+                                     if ($8.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $8.aplFloat = (APLFLOAT) $8.aplInteger;
+
+                                     // Save the real & imaginary parts
+                                     $1.aplQuaternionReal  = $1.aplFloat;
+                                     $1.aplQuaternionImag1 = $3.aplFloat;
+                                     $1.aplQuaternionImag2 = $5.aplFloat;
+                                     $1.aplQuaternionImag3 = $8.aplFloat;
+
+                                     // Mark the result as Quaternion
+                                     $1.chType = PN_NUMTYPE_HC4;
+
+                                     $$ = $1;
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    | DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint
+                                    {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint");
+                                     // If the real part is integer, ...
+                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                     // If the imaginary part #1 is integer, ...
+                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+                                     // If the imaginary part #2 is integer, ...
+                                     if ($5.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $5.aplFloat = (APLFLOAT) $5.aplInteger;
+                                     // If the imaginary part #3 is integer, ...
+                                     if ($7.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $7.aplFloat = (APLFLOAT) $7.aplInteger;
+
+                                     // Save the real & imaginary parts
+                                     $1.aplQuaternionReal  = $1.aplFloat;
+                                     $1.aplQuaternionImag1 = $3.aplFloat;
+                                     $1.aplQuaternionImag2 = $5.aplFloat;
+                                     $1.aplQuaternionImag3 = $7.aplFloat;
+
+                                     // Mark the result as Quaternion
+                                     $1.chType = PN_NUMTYPE_HC4;
+
+                                     $$ = $1;
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    ;
+
+// Octonion Point
+Hc8Point:
+      DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint 'l' DecPoint 'i' 'j' DecPoint 'i' 'k' DecPoint 'i' 'l' DecPoint
+                                    {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint 'l' DecPoint 'i' 'j' DecPoint 'i' 'k' DecPoint 'i' 'l' DecPoint");
+                                     // If the real part is integer, ...
+                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                     // If the imaginary part #1 is integer, ...
+                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+                                     // If the imaginary part #2 is integer, ...
+                                     if ($5.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $5.aplFloat = (APLFLOAT) $5.aplInteger;
+                                     // If the imaginary part #3 is integer, ...
+                                     if ($7.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $7.aplFloat = (APLFLOAT) $7.aplInteger;
+                                     // If the imaginary part #4 is integer, ...
+                                     if ($9.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $9.aplFloat = (APLFLOAT) $9.aplInteger;
+                                     // If the imaginary part #5 is integer, ...
+                                     if ($12.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $12.aplFloat = (APLFLOAT) $12.aplInteger;
+                                     // If the imaginary part #6 is integer, ...
+                                     if ($15.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $15.aplFloat = (APLFLOAT) $15.aplInteger;
+                                     // If the imaginary part #7 is integer, ...
+                                     if ($18.chType EQ PN_NUMTYPE_INT)
+                                         // Convert it to float
+                                         $18.aplFloat = (APLFLOAT) $18.aplInteger;
+
+                                     // Save the real & imaginary parts
+                                     $1.aplOctonionReal  = $1 .aplFloat;
+                                     $1.aplOctonionImag1 = $3 .aplFloat;
+                                     $1.aplOctonionImag2 = $5 .aplFloat;
+                                     $1.aplOctonionImag3 = $7 .aplFloat;
+                                     $1.aplOctonionImag4 = $9 .aplFloat;
+                                     $1.aplOctonionImag5 = $12.aplFloat;
+                                     $1.aplOctonionImag6 = $15.aplFloat;
+                                     $1.aplOctonionImag7 = $18.aplFloat;
+
+                                     // Mark the result as Octonion
+                                     $1.chType = PN_NUMTYPE_HC8;
+
+                                     $$ = $1;
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    ;
+
+Rational:
+      Integer  'r'     Digit        {DbgMsgWP (L"%%Rational:  Integer 'r' Digit");
+                                     // Terminate the argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     // Mark the result as integer
+                                     $1.chType = PN_NUMTYPE_INT;
+
+                                     // Calculate the number
+                                     PN_NumCalc (lppnLocalVars, &$1);
+
+                                     // Save in the Local Vars
+                                     $1.aplRationalNum = $1.aplInteger;
+
+                                     // Mark starting offset
+                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+
+                                     // Accumulate the digit
+                                     PN_NumAcc (lppnLocalVars, $3.chCur);
+
+                                     $$ = $1;
+                                    }
+    | Integer  'r' '-' Digit        {DbgMsgWP (L"%%Rational:  Integer 'r' '-' Digit");
+                                     // Terminate the argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     // Mark the result as integer
+                                     $1.chType = PN_NUMTYPE_INT;
+
+                                     // Calculate the number
+                                     PN_NumCalc (lppnLocalVars, &$1);
+
+                                     // Save in the Local Vars
+                                     $1.aplRationalNum = $1.aplInteger;
+
+                                     // Mark starting offset
+                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+
+                                     // Accumulate the negative sign
+                                     PN_NumAcc (lppnLocalVars, '-');
+
+                                     // Accumulate the digit
+                                     PN_NumAcc (lppnLocalVars, $4.chCur);
+
+                                     $$ = $1;
+                                    }
+    | Rational         Digit        {DbgMsgWP (L"%%Rational:  Rational Digit");
+                                     // Accumulate the digit
+                                     PN_NumAcc (lppnLocalVars, $2.chCur);
+                                    }
+    ;
+
+RatPoint:
+    | Rational                      {DbgMsgWP (L"%%RatPoint:  Rational");
+                                     // Terminate the argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     // Mark the result as integer
+                                     $1.chType = PN_NUMTYPE_INT;
+
+                                     // Calculate the number
+                                     PN_NumCalc (lppnLocalVars, &$1);
+
+                                     // Save in the Local Vars
+                                     $1.aplRationalDen = $1.aplInteger;
+
+                                     // Mark the result as rational
+                                     $1.chType = PN_NUMTYPE_RAT;
+
+                                     // Calculate the number
+                                     PN_NumCalc (lppnLocalVars, &$1);
+
+                                     $$ = $1;
+                                    }
+    ;
+
+// Euler/Pi left and right arguments
+EPArgs:
+      DecPoint                      {DbgMsgWP (L"%%EPArgs:  DecPoint");
+                                    }
+    | ExpPoint                      {DbgMsgWP (L"%%EPArgs:  ExpPoint");
+                                    }
+    | RatPoint                      {DbgMsgWP (L"%%EPArgs:  RatPoint");
+                                    }
+    | Hc2Point                      {DbgMsgWP (L"%%EPArgs:  Hc2Point");
+                                    }
+    | Hc4Point                      {DbgMsgWP (L"%%EPArgs:  Hc4Point");
+                                    }
+    | Hc8Point                      {DbgMsgWP (L"%%EPArgs:  Hc8Point");
+                                    }
+    ;
+
 PiPoint:
-      DecPoint 'p' DecPoint         {DbgMsgWP (L"%%PiPoint:  DecPoint 'p' DecPoint");
-                                     $$ = *PN_MakePiPoint (lppnLocalVars, &$1, &$3);
-                                    }
-    | DecPoint 'p' ExpPoint         {DbgMsgWP (L"%%PiPoint:  DecPoint 'p' ExpPoint");
-                                     $$ = *PN_MakePiPoint (lppnLocalVars, &$1, &$3);
-                                    }
-    | ExpPoint 'p' DecPoint         {DbgMsgWP (L"%%PiPoint:  ExpPoint 'p' DecPoint");
-                                     $$ = *PN_MakePiPoint (lppnLocalVars, &$1, &$3);
-                                    }
-    | ExpPoint 'p' ExpPoint         {DbgMsgWP (L"%%PiPoint:  ExpPoint 'p' ExpPoint");
+      EPArgs    'p' EPArgs          {DbgMsgWP (L"%%PiPoint:  EPArgs 'p' EPArgs");
                                      $$ = *PN_MakePiPoint (lppnLocalVars, &$1, &$3);
                                     }
     ;
@@ -228,16 +543,7 @@ ExpPoint:
     ;
 
 EulerPoint:
-      DecPoint 'x' DecPoint         {DbgMsgWP (L"%%EulerPoint:  DecPoint 'x' DecPoint");
-                                     $$ = *PN_MakeEulerPoint (lppnLocalVars, &$1, &$3);
-                                    }
-    | DecPoint 'x' ExpPoint         {DbgMsgWP (L"%%EulerPoint:  DecPoint 'x' ExpPoint");
-                                     $$ = *PN_MakeEulerPoint (lppnLocalVars, &$1, &$3);
-                                    }
-    | ExpPoint 'x' DecPoint         {DbgMsgWP (L"%%EulerPoint:  ExpPoint 'x' DecPoint");
-                                     $$ = *PN_MakeEulerPoint (lppnLocalVars, &$1, &$3);
-                                    }
-    | ExpPoint 'x' ExpPoint         {DbgMsgWP (L"%%EulerPoint:  ExpPoint 'x' ExpPoint");
+      EPArgs   'x' EPArgs           {DbgMsgWP (L"%%EulerPoint:  EPArgs 'x' EPArgs");
                                      $$ = *PN_MakeEulerPoint (lppnLocalVars, &$1, &$3);
                                     }
     ;
@@ -255,36 +561,85 @@ BasePoint:
     | PiPoint    'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  PiPoint 'b' AlphaInt");
                                      $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
                                     }
+    | RatPoint   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  RatPoint 'b' AlphaInt");
+                                     $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
+                                    }
+    | Hc2Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc2Point 'b' AlphaInt");
+                                     $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
+                                    }
+    | Hc4Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc4Point 'b' AlphaInt");
+                                     $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
+                                    }
+    | Hc8Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc8Point 'b' AlphaInt");
+                                     $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
+                                    }
     ;
 
 Number:
       BasePoint                     {DbgMsgWP (L"%%Number:  BasePoint");
-                                     lppnLocalVars->aplInteger = $1.aplInteger;
-                                     lppnLocalVars->aplFloat   = $1.aplFloat;
-                                     lppnLocalVars->chType     = $1.chType;
+                                     lppnLocalVars->aplInteger         = $1.aplInteger;
+                                     lppnLocalVars->aplFloat           = $1.aplFloat;
+                                     lppnLocalVars->chType             = $1.chType;
                                     }
     | DecPoint                      {DbgMsgWP (L"%%Number:  DecPoint");
-                                     // Calculate the number
-                                     PN_NumCalc (lppnLocalVars, &$1);
-
-                                     lppnLocalVars->aplInteger = $1.aplInteger;
-                                     lppnLocalVars->aplFloat   = $1.aplFloat;
-                                     lppnLocalVars->chType     = $1.chType;
+                                     lppnLocalVars->aplInteger         = $1.aplInteger;
+                                     lppnLocalVars->aplFloat           = $1.aplFloat;
+                                     lppnLocalVars->chType             = $1.chType;
                                     }
     | EulerPoint                    {DbgMsgWP (L"%%Number:  EulerPoint");
-                                     lppnLocalVars->aplInteger = $1.aplInteger;
-                                     lppnLocalVars->aplFloat   = $1.aplFloat;
-                                     lppnLocalVars->chType     = $1.chType;
+                                     lppnLocalVars->aplInteger         = $1.aplInteger;
+                                     lppnLocalVars->aplFloat           = $1.aplFloat;
+                                     lppnLocalVars->chType             = $1.chType;
                                     }
     | ExpPoint                      {DbgMsgWP (L"%%Number:  ExpPoint");
-                                     lppnLocalVars->aplInteger = $1.aplInteger;
-                                     lppnLocalVars->aplFloat   = $1.aplFloat;
-                                     lppnLocalVars->chType     = $1.chType;
+                                     lppnLocalVars->aplInteger         = $1.aplInteger;
+                                     lppnLocalVars->aplFloat           = $1.aplFloat;
+                                     lppnLocalVars->chType             = $1.chType;
                                     }
     | PiPoint                       {DbgMsgWP (L"%%Number:  PiPoint");
-                                     lppnLocalVars->aplInteger = $1.aplInteger;
-                                     lppnLocalVars->aplFloat   = $1.aplFloat;
-                                     lppnLocalVars->chType     = $1.chType;
+                                     lppnLocalVars->aplInteger         = $1.aplInteger;
+                                     lppnLocalVars->aplFloat           = $1.aplFloat;
+                                     lppnLocalVars->chType             = $1.chType;
+                                    }
+    | Integer EXT                   {DbgMsgWP (L"%%Number:  Integer 'x'");      // Extended precision
+
+
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    | RatPoint                      {DbgMsgWP (L"%%Number:  RatPoint");
+                                     lppnLocalVars->aplRationalNum     = $1.aplRationalNum;
+                                     lppnLocalVars->aplRationalDen     = $1.aplRationalDen;
+                                     lppnLocalVars->chType             = $1.chType;
+
+                                     // Mark as not yet implemented
+                                     pn_yyerror (lppnLocalVars, "nonce error");
+                                     YYERROR;
+                                    }
+    | Hc2Point                      {DbgMsgWP (L"%%Number:  Hc2Point");
+                                     lppnLocalVars->aplComplexReal     = $1.aplComplexReal;
+                                     lppnLocalVars->aplComplexImag     = $1.aplComplexImag;
+                                     lppnLocalVars->chType             = $1.chType;
+                                    }
+    | Hc4Point                      {DbgMsgWP (L"%%Number:  Hc4Point");
+                                     lppnLocalVars->aplQuaternionReal  = $1.aplQuaternionReal;
+                                     lppnLocalVars->aplQuaternionImag1 = $1.aplQuaternionImag1;
+                                     lppnLocalVars->aplQuaternionImag2 = $1.aplQuaternionImag2;
+                                     lppnLocalVars->aplQuaternionImag3 = $1.aplQuaternionImag3;
+                                     lppnLocalVars->chType             = $1.chType;
+                                    }
+    | Hc8Point                      {DbgMsgWP (L"%%Number:  Hc8Point");
+                                     lppnLocalVars->aplOctonionReal    = $1.aplOctonionReal;
+                                     lppnLocalVars->aplOctonionImag1   = $1.aplOctonionImag1;
+                                     lppnLocalVars->aplOctonionImag2   = $1.aplOctonionImag2;
+                                     lppnLocalVars->aplOctonionImag3   = $1.aplOctonionImag3;
+                                     lppnLocalVars->aplOctonionImag4   = $1.aplOctonionImag4;
+                                     lppnLocalVars->aplOctonionImag5   = $1.aplOctonionImag5;
+                                     lppnLocalVars->aplOctonionImag6   = $1.aplOctonionImag6;
+                                     lppnLocalVars->aplOctonionImag7   = $1.aplOctonionImag7;
+                                     lppnLocalVars->chType             = $1.chType;
                                     }
     ;
 
@@ -298,6 +653,8 @@ Number:
 //  $ParsePointNotation
 //
 //  Parse a sequence of Point Notation characters
+//
+//  Thanks to the designers of J for these clever ideas.
 //***************************************************************************
 
 UBOOL ParsePointNotation
@@ -410,6 +767,16 @@ void PN_NumCalc
 
             break;
 
+        case PN_NUMTYPE_RAT:
+            // Just divide 'em for use in Base, Euler, and Pi Point Notation
+            lpYYArg->aplFloat = ((APLFLOAT) lpYYArg->aplRationalNum) / (APLFLOAT) lpYYArg->aplRationalDen;
+
+            break;
+
+        case PN_NUMTYPE_HC2:
+        case PN_NUMTYPE_HC4:
+        case PN_NUMTYPE_HC8:
+        case PN_NUMTYPE_EXT:
         defstop
             break;
     } // End SWITCH
@@ -513,11 +880,14 @@ LPPN_YYSTYPE PN_MakeBasePoint
                 break;
             } // End IF
 
-            // Change the type to float
-            lpYYBase->chType = PN_NUMTYPE_FLT;
-
-            // Convert the base to float
+            // Convert the base value to float
             lpYYBase->aplFloat = (APLFLOAT) lpYYBase->aplInteger;
+
+            // Fall through to the rational case
+
+        case PN_NUMTYPE_RAT:
+            // Change the base type to float
+            lpYYBase->chType = PN_NUMTYPE_FLT;
 
             // Fall through to the float case
 
@@ -578,13 +948,14 @@ LPPN_YYSTYPE PN_MakeEulerPoint
 {
     // If the multiplier is integer, ...
     if (lpYYMultiplier->chType EQ PN_NUMTYPE_INT)
-    {
         // Convert to float
         lpYYMultiplier->aplFloat = (APLFLOAT) lpYYMultiplier->aplInteger;
 
+    // If the multiplier is integer or rational, ...
+    if (lpYYMultiplier->chType EQ PN_NUMTYPE_INT
+     || lpYYMultiplier->chType EQ PN_NUMTYPE_RAT)
         // Change the type to float
         lpYYMultiplier->chType = PN_NUMTYPE_FLT;
-    } // End IF
 
     // If the exponent is integer, ...
     if (lpYYExponent->chType EQ PN_NUMTYPE_INT)
@@ -642,13 +1013,14 @@ LPPN_YYSTYPE PN_MakePiPoint
 {
     // If the multiplier is integer, ...
     if (lpYYMultiplier->chType EQ PN_NUMTYPE_INT)
-    {
         // Convert to float
         lpYYMultiplier->aplFloat = (APLFLOAT) lpYYMultiplier->aplInteger;
 
+    // If the multiplier is integer or rational, ...
+    if (lpYYMultiplier->chType EQ PN_NUMTYPE_INT
+     || lpYYMultiplier->chType EQ PN_NUMTYPE_RAT)
         // Change the type to float
         lpYYMultiplier->chType = PN_NUMTYPE_FLT;
-    } // End IF
 
     // If the exponent is integer, ...
     if (lpYYExponent->chType EQ PN_NUMTYPE_INT)
@@ -679,6 +1051,11 @@ int pn_yylex
 
     // Get the next char
     lpYYLval->chCur = lppnLocalVars->lpszStart[lppnLocalVars->uNumCur++];
+
+    // If the character is 'x' and is the last in the sequence, ...
+    if (lpYYLval->chCur EQ 'x'
+     && lppnLocalVars->uNumCur EQ lppnLocalVars->uNumLen)
+        return EXT;
 
     // Return it
     return lpYYLval->chCur;
@@ -714,13 +1091,23 @@ void pn_yyerror                     // Called for Bison syntax error
 #undef  ERR
         lpwszTemp = ERRMSG_SYNTAX_ERROR APPEND_NAME;
     else
-    {
-#define ERR     "memory exhausted"
-        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
-        if (lstrcmp (szTemp, ERR) EQ 0)
+    // Check for NONCE ERROR
+#define ERR     "nonce error"
+    if (lstrcpyn (szTemp, s, sizeof (ERR)),     // Note: Terminates the string, too
+        lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
-            lpwszTemp = ERRMSG_WS_FULL APPEND_NAME;
-    } // End IF
+    {
+        lpwszTemp = ERRMSG_NONCE_ERROR APPEND_NAME;
+
+        // Back off by one so the caret points to the symbol in error
+        lppnLocalVars->uNumCur--;
+    } else
+    // Check for WS FULL
+#define ERR     "memory exhausted"
+    if (lstrcpyn (szTemp, s, sizeof (ERR)),     // Note: Terminates the string, too
+        lstrcmp (szTemp, ERR) EQ 0)
+#undef  ERR
+        lpwszTemp = ERRMSG_WS_FULL APPEND_NAME;
 
     // Save the error message
     ErrorMessageIndirect (lpwszTemp);

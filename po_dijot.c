@@ -433,26 +433,26 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  $Z $IS L"(" $LO L" " $F L" " $X L") " $R L";" $O;
+  $Z $IS L"(" $LO L" " $F L" " $Y L") " $R L";" $O;
 
 static APLCHAR MonLine1[] =
-  $X $IS L"1" $RHO $X;
+  $Y $IS L"1" $RHO $Y;
 
 static APLCHAR MonLine2[] =
   $O $IS $RHO $RHO $R;
 
 static APLCHAR MonLine3[] =
-  $X $IS L"(-" $O L")" $MAX $O $MIN $X;
+  $Y $IS L"(-" $O L")" $MAX $O $MIN $Y;
 
 static APLCHAR MonLine4[] =
-//$Z $IS $DISCLOSE $LO $EACH $ENCLOSE L"[" $IOTA L"-" $X L"]" $R
-  $Z $IS           $LO $EACH $ENCLOSE L"[" $IOTA L"-" $X L"]" $R
+//$Z $IS $DISCLOSE $LO $EACH $ENCLOSE L"[" $IOTA L"-" $Y L"]" $R
+  $Z $IS           $LO $EACH $ENCLOSE L"[" $IOTA L"-" $Y L"]" $R
   $DIAMOND $GOTO L"0";
 
 static APLCHAR MonLine5[] =
   $QUAD_PROTOTYPE L":"
-//$Z $IS $DISCLOSE $DISCLOSE $LO $EACH $EACH $ENCLOSE L"[" $IOTA L"-" $X L"]" $EACH L"0" $RHO $ENCLOSE $R;
-  $Z $IS           $DISCLOSE $LO $EACH $EACH $ENCLOSE L"[" $IOTA L"-" $X L"]" $EACH L"0" $RHO $ENCLOSE $R;
+//$Z $IS $DISCLOSE $DISCLOSE $LO $EACH $EACH $ENCLOSE L"[" $IOTA L"-" $Y L"]" $EACH L"0" $RHO $ENCLOSE $R;
+  $Z $IS           $DISCLOSE $LO $EACH $EACH $ENCLOSE L"[" $IOTA L"-" $Y L"]" $EACH L"0" $RHO $ENCLOSE $R;
 
 static LPAPLCHAR MonBody[] =
 {MonLine1,
@@ -541,28 +541,28 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  $Z $IS $L L" (" $LO L" " $F L" " $X L") " $R L";" $O;
+  $Z $IS $L L" (" $LO L" " $F L" " $Y L") " $R L";" $O;
 
 static APLCHAR DydLine1[] =
-  $X $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE $X;
+  $Y $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE $Y;
 
 static APLCHAR DydLine2[] =
   $O $IS L"(" $RHO $RHO $L L")," $RHO $RHO $R;
 
 static APLCHAR DydLine3[] =
-  $X $IS L"(-" $O L")" $MAX $O $MIN $X;
+  $Y $IS L"(-" $O L")" $MAX $O $MIN $Y;
 
 static APLCHAR DydLine4[] =
-  $Z $IS L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $X L"]" $L L")"
+  $Z $IS L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $Y L"]" $L L")"
          $LO $EACH
-              $ENCLOSE L"[" $IOTA L"-1" $DROP $X L"]" $R
+              $ENCLOSE L"[" $IOTA L"-1" $DROP $Y L"]" $R
   $DIAMOND $GOTO L"0";
 
 static APLCHAR DydLine5[] =
   $QUAD_PROTOTYPE L":"
-  $Z $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $X L"]" $EACH L"0" $RHO $ENCLOSE $L L")"
+  $Z $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $Y L"]" $EACH L"0" $RHO $ENCLOSE $L L")"
                    $LO $EACH $EACH
-                        $ENCLOSE L"[" $IOTA L"-1" $DROP $X L"]" $EACH L"0" $RHO $ENCLOSE $R;
+                        $ENCLOSE L"[" $IOTA L"-1" $DROP $Y L"]" $EACH L"0" $RHO $ENCLOSE $R;
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,

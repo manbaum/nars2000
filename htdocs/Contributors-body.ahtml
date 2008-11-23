@@ -60,7 +60,7 @@ Contributors</h1>
       "Linear hashing: A new tool for file and table addressing"</a>, by Witold Litwin,
       Proc. 6th Conference on Very Large Databases, pp. 212-223, 1980.</li>
 
-    <li>The LALR(1) Parser is based upon <a class="linkleft"
+    <li>The LALR(n) Parser is based upon <a class="linkleft"
       href="http://portal.acm.org/citation.cfm?id=28371&amp;coll=portal&amp;dl=ACM">The Syntax of APL: An
       Old Approach Revisited"</a> by Jean Jacques Giardot &amp;
       Florence Rollin, ACM SIGAPL APL87 Conference Proceedings, pp. 441-449.</li>
@@ -88,8 +88,11 @@ Contributors</h1>
       Proceedings of The Sixth International Conference on APL,
       1974, pp. 316-323.</li>
 
-    <li>The idea for <a class="linkleft" href="http://www.snakeisland.com/predicat.pdf">Array Predicates</a>
-      was taken from Bob Bernecky's <a class="linkleft" href="http://www.snakeisland.com/apexup.htm">APEX project</a>.</li>
+    <li>The idea for <a class="linkleft" href="http://wiki.nars2000.org/index.php/Array_Predicates">Array Predicates</a>
+      was taken from Bob Bernecky's <a class="pdfLeft" href="http://www.snakeisland.com/predicat.pdf">APEX project</a>.</li>
+
+    <li>The idea for <a class="linkleft" href="http://wiki.nars2000.org/index.php/Point_Notation">Point Notation</a>
+      was taken from the designers of <a class="linkleft" href="http://www.jsoftware.com/help/dictionary/dcons.htm">J</a>.</li>
 
     <li>This project benefited greatly by discussions (across several decades) with some
       of the many great APL implementors and designers who went

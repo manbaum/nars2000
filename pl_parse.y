@@ -6545,6 +6545,7 @@ char LookaheadAdjacent
         case TKT_CS_SKIPEND:        // ...                 Special token
         case TKT_CS_NEC:            // ...                 Special token
         case TKT_CS_EOL:            // ...                 Special token
+        case TKT_SYNTERR:           // Syntax Error
             cRes = '?';             // SYNTAX ERROR
 
             goto NORMAL_EXIT;
@@ -6647,6 +6648,7 @@ BOOL LookaheadDyadicOp
         case TKT_CS_SKIPEND:        // ...                 Special token
         case TKT_CS_NEC:            // ...                 Special token
         case TKT_CS_EOL:            // ...                 Special token
+        case TKT_SYNTERR:           // Syntax Error
             bRet = FALSE;
 
             goto NORMAL_EXIT;
@@ -7197,6 +7199,9 @@ PL_YYLEX_START:
         case TKT_CS_SELECT2:        // ...                 SELECT2
         case TKT_CS_WHILE2:         // ...                 WHILE2
             goto PL_YYLEX_START;    // Ignore these tokens
+
+        case TKT_SYNTERR:           // Syntax Error
+            return UNK;
 
         case TKT_CS_END:            // Control Structure:  END
         defstop

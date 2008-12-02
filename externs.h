@@ -28,6 +28,7 @@
 #include "symtab.h"
 #include "pl_parse.h"
 #include "Unicode.h"
+#include "syntaxcolors.h"
 
 // Define variables which are also used in the per tab structure
 #include "primspec.h"
@@ -1087,6 +1088,38 @@ APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #endif
 ;
 
+// Syntax Coloring global colors
+EXTERN
+SYNTAXCOLORS gSyntaxColors[SC_LENGTH]
+#ifdef DEFINE_VALUES
+= {{DEF_SC_GLBNAME   },
+   {DEF_SC_LCLNAME   },
+   {DEF_SC_LABEL     },
+   {DEF_SC_PRIMITIVE },
+   {DEF_SC_SYSFCN    },
+   {DEF_SC_GLBSYSVAR },
+   {DEF_SC_LCLSYSVAR },
+   {DEF_SC_CTRLSTRUC },
+   {DEF_SC_NUMCONST  },
+   {DEF_SC_CHRCONST  },
+   {DEF_SC_COMMENT   },
+   {DEF_SC_MATCHGRP1 },
+   {DEF_SC_MATCHGRP2 },
+   {DEF_SC_MATCHGRP3 },
+   {DEF_SC_MATCHGRP4 },
+   {DEF_SC_UNMATCHGRP},
+   {DEF_SC_UNK       },
+  }
+#endif
+;
+
+EXTERN
+SYNTAXCOLORS gSyntaxColorWhite
+#ifdef DEFINE_VALUES
+= {DEF_SC_WHITE}
+#endif
+;
+
 typedef struct
 {
     char  nrm;      // 00:  Normal           (shifted & unshifted) (unused)
@@ -1312,7 +1345,9 @@ typedef struct tagOPTIONFLAGS
          bNoCopyrightMsg     :1,    // 00000080:  ...      suppress the copright msg at startup
          uDefaultPaste       :4,    // 00000F00:  Index of default Paste translation (see UNI_TRANS)
          uDefaultCopy        :4,    // 0000F000:  Index of default Paste translation (see UNI_TRANS)
-         Avail               :16;   // FFFF0000:  Available bits
+         bSyntClrFcns        :1,    // 00010000:  TRUE iff Syntax Coloring of functions is enabled (managed in IDD_PROPPAGE_SYNTAX_COLORING)
+         bSyntClrSess        :1,    // 00020000:  ...                         sessions  ...
+         Avail               :14;   // FFFC0000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1331,10 +1366,36 @@ OPTIONFLAGS OptionFlags
    DEF_BACKUPONSAVE,
    DEF_NOCOPYRIGHTMSG,
    DEF_DEFAULTPASTE,
-   DEF_DEFAULTCOPY}
+   DEF_DEFAULTCOPY,
+   DEF_SYNTCLRFCNS,
+   DEF_SYNTCLRSESS,
+   }
 #endif
 ;
 
+EXTERN
+UBOOL gSyntClrBGTrans[SC_LENGTH]
+#ifdef DEFINE_VALUES
+= {TRUE,                    // 00:  Global Name
+   TRUE,                    // 01:  Local Name
+   TRUE,                    // 02:  Label
+   TRUE,                    // 03:  Primitive
+   TRUE,                    // 04:  System Function
+   TRUE,                    // 05:  Global System Var
+   TRUE,                    // 06:  Local  ...
+   TRUE,                    // 07:  Control Structure
+   TRUE,                    // 08:  Numeric Constant
+   TRUE,                    // 09:  Character ...
+   TRUE,                    // 0A:  Comment
+   TRUE,                    // 0B:  Matched Grouping Symbol, Level 1
+   TRUE,                    // 0C:  ...                            2
+   TRUE,                    // 0D:  ...                            3
+   TRUE,                    // 0E:  ...                            4
+   TRUE,                    // 0F:  Unmatched Grouping Symbol
+   TRUE,                    // 10:  Unknown Symbol
+  }
+#endif
+;
 
 typedef enum tagFONTENUM
 {
@@ -1402,7 +1463,7 @@ CUSTOMIZE custStruc[]
 ////{L"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
     {L"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
     {L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 03
-////{L"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 04
+    {L"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 04
     {L"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 05
 ////{L"Tab Colors"              , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 06
     {L"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 07

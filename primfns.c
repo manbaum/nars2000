@@ -116,6 +116,9 @@ char TokenTypeFV
         case TKT_OP3NAMED:
             return '3';
 
+        case TKT_SYNTERR:
+            return '?';
+
         case TKT_ASSIGN:
         case TKT_LISTSEP:
         case TKT_LABELSEP:

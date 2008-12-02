@@ -43,6 +43,8 @@
 #define IDWC_TC_MC                                 5    // ...
 #define IDWC_CC_LB                                 6    // ...
 #define IDWC_PM_LB                                 7    // ...
+#define IDWC_WCN_BN                                8    // Used in <ccHookProc>
+#define IDWC_WCN_WN                                9    // Used in <ccHookProc>
 
 #define IDB_LINECONT                              90
 
@@ -70,26 +72,28 @@
 #define IDI_CC_SMALL                             115
 #define IDI_PM_LARGE                             116
 #define IDI_PM_SMALL                             117
-#define IDI_ABOUT                                118
-#define IDI_CLOSE                                119
+#define IDI_WC_LARGE                             118
+#define IDI_WC_SMALL                             119
+#define IDI_ABOUT                                120
+#define IDI_CLOSE                                121
 
-#define IDD_ABOUT                                120
-#define IDD_UPDATES                              121
-#define IDD_CUSTOMIZE                            122
+#define IDD_ABOUT                                130
+#define IDD_UPDATES                              131
+#define IDD_CUSTOMIZE                            132
 
 // The following define must be the first number
 //   in the IDD_xxx sequence
-#define IDD_PROPPAGE_START                       123
+#define IDD_PROPPAGE_START                       133
 
 // The following defines must be in sequence
-#define IDD_PROPPAGE_CLEARWS_VALUES              123
-#define IDD_PROPPAGE_DIRS                               128 // Not implemented as yet
-#define IDD_PROPPAGE_FONTS                       124
-#define IDD_PROPPAGE_RANGE_LIMITS                125
-#define IDD_PROPPAGE_SYNTAX_COLORING                    129 // Not implemented as yet
-#define IDD_PROPPAGE_SYSTEM_VAR_RESET            126
-#define IDD_PROPPAGE_TAB_COLORS                         130 // Not implemented as yet
-#define IDD_PROPPAGE_USER_PREFS                  127
+#define IDD_PROPPAGE_CLEARWS_VALUES              133
+#define IDD_PROPPAGE_DIRS                               139 // Not implemented as yet
+#define IDD_PROPPAGE_FONTS                       134
+#define IDD_PROPPAGE_RANGE_LIMITS                135
+#define IDD_PROPPAGE_SYNTAX_COLORING             136
+#define IDD_PROPPAGE_SYSTEM_VAR_RESET            137
+#define IDD_PROPPAGE_TAB_COLORS                         140 // Not implemented as yet
+#define IDD_PROPPAGE_USER_PREFS                  138
 
 #define IDM_EXIT                                 102
 
@@ -242,6 +246,63 @@
 #define IDC_RESET_PW_RADIO2                      912
 #define IDC_RESET_RL_RADIO1                      913
 #define IDC_RESET_RL_RADIO2                      914
+
+#define IDC_SYNTCLR_XB_TRANS1                    920
+#define IDC_SYNTCLR_XB_TRANS2                    921
+#define IDC_SYNTCLR_XB_TRANS3                    922
+#define IDC_SYNTCLR_XB_TRANS4                    923
+#define IDC_SYNTCLR_XB_TRANS5                    924
+#define IDC_SYNTCLR_XB_TRANS6                    925
+#define IDC_SYNTCLR_XB_TRANS7                    926
+#define IDC_SYNTCLR_XB_TRANS8                    927
+#define IDC_SYNTCLR_XB_TRANS9                    928
+#define IDC_SYNTCLR_XB_TRANS10                   929
+#define IDC_SYNTCLR_XB_TRANS11                   930
+#define IDC_SYNTCLR_XB_TRANS12                   931
+#define IDC_SYNTCLR_XB_TRANS13                   932
+#define IDC_SYNTCLR_XB_TRANS14                   933
+#define IDC_SYNTCLR_XB_TRANS15                   934
+#define IDC_SYNTCLR_XB_TRANS16                   935
+#define IDC_SYNTCLR_XB_TRANS17                   936
+
+#define IDC_SYNTCLR_BN_FGCLR1                    940
+#define IDC_SYNTCLR_BN_FGCLR2                    941
+#define IDC_SYNTCLR_BN_FGCLR3                    942
+#define IDC_SYNTCLR_BN_FGCLR4                    943
+#define IDC_SYNTCLR_BN_FGCLR5                    944
+#define IDC_SYNTCLR_BN_FGCLR6                    945
+#define IDC_SYNTCLR_BN_FGCLR7                    946
+#define IDC_SYNTCLR_BN_FGCLR8                    947
+#define IDC_SYNTCLR_BN_FGCLR9                    948
+#define IDC_SYNTCLR_BN_FGCLR10                   949
+#define IDC_SYNTCLR_BN_FGCLR11                   950
+#define IDC_SYNTCLR_BN_FGCLR12                   951
+#define IDC_SYNTCLR_BN_FGCLR13                   952
+#define IDC_SYNTCLR_BN_FGCLR14                   953
+#define IDC_SYNTCLR_BN_FGCLR15                   954
+#define IDC_SYNTCLR_BN_FGCLR16                   955
+#define IDC_SYNTCLR_BN_FGCLR17                   956
+
+#define IDC_SYNTCLR_BN_BGCLR1                    960
+#define IDC_SYNTCLR_BN_BGCLR2                    961
+#define IDC_SYNTCLR_BN_BGCLR3                    962
+#define IDC_SYNTCLR_BN_BGCLR4                    963
+#define IDC_SYNTCLR_BN_BGCLR5                    964
+#define IDC_SYNTCLR_BN_BGCLR6                    965
+#define IDC_SYNTCLR_BN_BGCLR7                    966
+#define IDC_SYNTCLR_BN_BGCLR8                    967
+#define IDC_SYNTCLR_BN_BGCLR9                    968
+#define IDC_SYNTCLR_BN_BGCLR10                   969
+#define IDC_SYNTCLR_BN_BGCLR11                   970
+#define IDC_SYNTCLR_BN_BGCLR12                   971
+#define IDC_SYNTCLR_BN_BGCLR13                   972
+#define IDC_SYNTCLR_BN_BGCLR14                   973
+#define IDC_SYNTCLR_BN_BGCLR15                   974
+#define IDC_SYNTCLR_BN_BGCLR16                   975
+#define IDC_SYNTCLR_BN_BGCLR17                   976
+
+#define IDC_SYNTCLR_XB_CLRFCNS                   980
+#define IDC_SYNTCLR_XB_CLRSESS                   981
 
 #define IDC_USER_PREFS_XB_ADJUSTPW              1000
 #define IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE   1001

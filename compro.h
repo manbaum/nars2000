@@ -170,6 +170,7 @@
   #include "translate.pro"
   #include "typemote.pro"
   #include "ver.pro"
+  #include "webcolors.pro"
   #include "yyfns.pro"
   #if RESDEBUG
     #include "resdebug.pro"

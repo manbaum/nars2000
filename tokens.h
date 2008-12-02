@@ -69,33 +69,33 @@ value.
 #define TKT_FIRST 1         // This way, we can catch uninitialized
                             //   token types (i.e., .TknType EQ 0)
 typedef enum tagTOKEN_TYPES
-{TKT_VARNAMED = TKT_FIRST,  // 01: Symbol table entry for a named var   (data is LPSYMENTRY)
- TKT_CHRSTRAND   ,          // 02: Character strand                     (data is HGLOBAL)
- TKT_NUMSTRAND   ,          // 03: Numeric   ...                        (data is HGLOBAL)
+{TKT_VARNAMED = TKT_FIRST,  // 01: Symbol table entry for a named var      (data is LPSYMENTRY)
+ TKT_CHRSTRAND   ,          // 02: Character strand                        (data is HGLOBAL)
+ TKT_NUMSTRAND   ,          // 03: Numeric   ...                           (data is HGLOBAL)
  TKT_VARIMMED    ,          // 04: An immediate constant (Boolean, Integer, Character, or Floating point,
                             //     distinguished by the value in tkFlags.ImmType)
- TKT_ASSIGN      ,          // 05: Assignment symbol                    (data is UTF16_LEFTARROW)
- TKT_LISTSEP     ,          // 06: List separator                       (data is ';')
- TKT_LABELSEP    ,          // 07: Label separator                      (data is ':')
- TKT_COLON       ,          // 08: Colon                                (data is ':')
- TKT_FCNIMMED    ,          // 09: An immediate primitive function      (data is UTF16_***)
+ TKT_ASSIGN      ,          // 05: Assignment symbol                       (data is UTF16_LEFTARROW)
+ TKT_LISTSEP     ,          // 06: List separator                          (data is ';')
+ TKT_LABELSEP    ,          // 07: Label separator                         (data is ':')
+ TKT_COLON       ,          // 08: Colon                                   (data is ':')
+ TKT_FCNIMMED    ,          // 09: An immediate primitive function         (data is UTF16_***)
  TKT_OP1IMMED    ,          // 0A: An immediate monadic primitive operator (data is UTF16_***)
  TKT_OP2IMMED    ,          // 0B: ...          dyadic  ...
  TKT_OP3IMMED    ,          // 0C: ...          ambiguous  ...
  TKT_OPJOTDOT    ,          // 0D: Outer product monadic operator (with right scope) (data is NULL)
- TKT_LEFTPAREN   ,          // 0E: Left paren                           (data is TKT_LEFTPAREN)
- TKT_RIGHTPAREN  ,          // 0F: Right ...                             ...         RIGHTPAREN
- TKT_LEFTBRACKET ,          // 10: Left bracket                          ...        LEFTBRACKET
- TKT_RIGHTBRACKET,          // 11: Right ...                             ...         RIGHTBRACKET
- TKT_LEFTBRACE   ,          // 12: Left brace                            ...         LEFTBRACE
- TKT_RIGHTBRACE  ,          // 13: Right ...                             ...         RIGHTBRACE
+ TKT_LEFTPAREN   ,          // 0E: Left paren                              (data is TKT_LEFTPAREN)
+ TKT_RIGHTPAREN  ,          // 0F: Right ...                                ...         RIGHTPAREN
+ TKT_LEFTBRACKET ,          // 10: Left bracket                             ...        LEFTBRACKET
+ TKT_RIGHTBRACKET,          // 11: Right ...                                ...         RIGHTBRACKET
+ TKT_LEFTBRACE   ,          // 12: Left brace                               ...         LEFTBRACE
+ TKT_RIGHTBRACE  ,          // 13: Right ...                                ...         RIGHTBRACE
  TKT_EOS         ,          // 14: End-of-Stmt (data is length of stmt including this token)
  TKT_EOL         ,          // 15: End-of-Line  ...
- TKT_SOS         ,          // 16: Start-of-Stmt                        (data is NULL)
- TKT_LINECONT    ,          // 17: Line continuation                    (data is NULL)
- TKT_INPOUT      ,          // 18: Input/Output                         (data is UTF16_QUAD or UTF16_QUOTEQUAD symbol)
- TKT_VARARRAY    ,          // 19: Array of data                        (data is HGLOBAL)
- TKT_CS_ANDIF    ,          // 1A: Control Structure:  ANDIF            (Data is Line/Stmt #)
+ TKT_SOS         ,          // 16: Start-of-Stmt                           (data is NULL)
+ TKT_LINECONT    ,          // 17: Line continuation                       (data is NULL)
+ TKT_INPOUT      ,          // 18: Input/Output                            (data is UTF16_QUAD or UTF16_QUOTEQUAD symbol)
+ TKT_VARARRAY    ,          // 19: Array of data                           (data is HGLOBAL)
+ TKT_CS_ANDIF    ,          // 1A: Control Structure:  ANDIF               (Data is Line/Stmt #)
  TKT_CS_CASE     ,          // 1B: ...                 CASE       ...
  TKT_CS_CASELIST ,          // 1C: ...                 CASELIST   ...
  TKT_CS_CONTINUE ,          // 1D: ...                 CONTINUE   ...
@@ -127,36 +127,37 @@ typedef enum tagTOKEN_TYPES
  TKT_CS_WHILE2   ,          // 37: ...                 WHILE2     ...
  TKT_CS_SKIPCASE ,          // 38: ...                 Special token
  TKT_CS_SKIPEND  ,          // 39: ...                 Special token
+ TKT_SYNTERR     ,          // 3A: Syntax Error                            (data is symbol)
 
- TKT_LENGTHp1    ,          // 3A: Last token type
+ TKT_LENGTHp1    ,          // 3B: Last token type
 
  // These token types are not generated by <Tokenize_EM>
  //   hence, they never appear in a saved token stream,
  //   only as a parse token created during <ParseLine>.
- TKT_STRAND = TKT_LENGTHp1, // 3A: Strand accumulating                     (data is LPTOKEN)
- TKT_LISTINT     ,          // 3B: List intermediate                       (data is HGLOBAL)
- TKT_LISTPAR     ,          // 3C: List in parens                          (data is HGLOBAL)
- TKT_LSTIMMED    ,          // 3D: List in brackets, single element, immed (data is immediate)
- TKT_LSTARRAY    ,          // 3E: List in brackets, single element, array (data is HGLOBAL)
- TKT_LSTMULT     ,          // 3F: List in brackets, multiple elements     (data is HGLOBAL)
- TKT_FCNARRAY    ,          // 40: Array of functions and/or operators     (data is HGLOBAL)
- TKT_FCNNAMED    ,          // 41: A named function                        (data is LPSYMENTRY)
- TKT_AXISIMMED   ,          // 42: An immediate axis specification         (data is immediate)
- TKT_AXISARRAY   ,          // 43: An array of  ...                        (data is HGLOBAL)
- TKT_OP1NAMED    ,          // 44: A named monadic primitive operator      (data is LPSYMENTRY)
- TKT_OP2NAMED    ,          // 45: ...     dyadic  ...
- TKT_OP3NAMED    ,          // 46: ...     ambiguous ...
- TKT_STRNAMED    ,          // 47: A named strand
- TKT_CS_NEC      ,          // 48: Control structure:  Special token (cs_yyparse only)
- TKT_CS_EOL      ,          // 49: Control structure:  Special token (cs_yyparse only)
-                            // 4A-7F:  Available entries (7 bits)
+ TKT_STRAND = TKT_LENGTHp1, // 3B: Strand accumulating                     (data is LPTOKEN)
+ TKT_LISTINT     ,          // 3C: List intermediate                       (data is HGLOBAL)
+ TKT_LISTPAR     ,          // 3D: List in parens                          (data is HGLOBAL)
+ TKT_LSTIMMED    ,          // 3E: List in brackets, single element, immed (data is immediate)
+ TKT_LSTARRAY    ,          // 3F: List in brackets, single element, array (data is HGLOBAL)
+ TKT_LSTMULT     ,          // 40: List in brackets, multiple elements     (data is HGLOBAL)
+ TKT_FCNARRAY    ,          // 41: Array of functions and/or operators     (data is HGLOBAL)
+ TKT_FCNNAMED    ,          // 42: A named function                        (data is LPSYMENTRY)
+ TKT_AXISIMMED   ,          // 43: An immediate axis specification         (data is immediate)
+ TKT_AXISARRAY   ,          // 44: An array of  ...                        (data is HGLOBAL)
+ TKT_OP1NAMED    ,          // 45: A named monadic primitive operator      (data is LPSYMENTRY)
+ TKT_OP2NAMED    ,          // 46: ...     dyadic  ...
+ TKT_OP3NAMED    ,          // 47: ...     ambiguous ...
+ TKT_STRNAMED    ,          // 48: A named strand
+ TKT_CS_NEC      ,          // 49: Control structure:  Special token (cs_yyparse only)
+ TKT_CS_EOL      ,          // 4A: Control structure:  Special token (cs_yyparse only)
+                            // 4B-7F:  Available entries (7 bits)
 } TOKEN_TYPES;
 
 #define TKT_LENGTH      (TKT_LENGTHp1 - 1)
 
 // N.B.:  Whenever changing the above enum (TOKEN_TYPES),
 //   be sure to make a corresponding change to
-//   <Untokenize> in <tokenize.c>,
+//   <Untokenize> and <AppendNewToken_EM> in <tokenize.c>,
 //   <LookaheadAdjacent>, <LookaheadDyadicOp>, and <pl_yylex> in <pl_parse.y>,
 //   <MakeVarStrand_EM_YY> in <strand.c>,
 //   <GetTokenTypeName> in <dispdbg.c>,
@@ -232,7 +233,6 @@ typedef union tagUNION_TOKEN
 
 #define FSA_EXIT       -1       // FSA is done
 #define FSA_NONCE      -2       // State not specified as yet
-#define FSA_SYNTERR    -3       // A SYNTAX ERROR has occurred
 
 
 //***************************************************************************

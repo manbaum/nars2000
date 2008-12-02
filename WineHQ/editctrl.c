@@ -2450,7 +2450,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
 
         (HANDLE_PTR) lpPaintHook = GetWindowLongPtrW (es->hwndSelf, GWLEC_PAINTHOOK);
         if (lpPaintHook)
-            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, es->text + li, col, count, lFlags, es->line_height, es->char_width));
+            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, es->text + li, col, count, lFlags, es->line_height, es->char_width, rev));
         else
             ret = (INT)LOWORD(TabbedTextOutW(dc, x, y, es->text + li + col, count,
                         es->tabs_count, es->tabs, es->format_rect.left - es->x_offset));
@@ -2460,7 +2460,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
 
         (HANDLE_PTR) lpPaintHook = GetWindowLongPtrW (es->hwndSelf, GWLEC_PAINTHOOK);
         if (lpPaintHook)
-            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, text + li, col, count, lFlags, es->line_height, es->char_width));
+            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, text + li, col, count, lFlags, es->line_height, es->char_width, rev));
         else
             TextOutW(dc, x, y, text + li + col, count);
         GetTextExtentPoint32W(dc, text + li + col, count, &size);

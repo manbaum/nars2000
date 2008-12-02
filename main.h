@@ -48,11 +48,19 @@ default:        \
 #define FNLN    FileNameOnly (__FILE__), __LINE__
 
 #ifdef DEBUG
+  #define LCLODS        ODS
+  #define LCLODSDD      ODSDD
+  #define LCLODSRECT    ODSRECT
+  #define LCLODSSIZE    ODSSIZE
   #define LCLODSAPI     ODSAPI
 
   #define DBGENTER      if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
   #define DBGLEAVE      if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
 #else
+  #define LCLODS
+  #define LCLODSDD
+  #define LCLODSRECT
+  #define LCLODSSIZE
   #define LCLODSAPI
 
   #define DBGENTER
@@ -97,6 +105,9 @@ default:        \
 
 // Define offsets in CCWNDCLASS window extra bytes
 #define GWLCC_EXTRA     0                                           // Total # extra bytes
+
+// Define offsets in WCWNDCLASS window extra bytes
+#define GWLWC_EXTRA     0                                           // Total # extra bytes
 
 
 // Define local window messages
@@ -241,6 +252,7 @@ typedef enum tagEXIT_TYPES
 
 // From <string.h>
 #define strchrW         wcschr
+#define strncmpW        wcsncmp
 
 // Default DTOA mode    // ***FIXME*** -- use different modes at different points
 #define DEF_DTOA_MODE   2

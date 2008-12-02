@@ -102,6 +102,7 @@ HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconME_Large, hIconME_Small,
       hIconVE_Large, hIconVE_Small,
       hIconCC_Large, hIconCC_Small,
+      hIconWC_Large, hIconWC_Small,
       hIconClose;
 
 #define  MFWNDCLASS          "MFClass"                                      // Master Frame Window class
@@ -119,6 +120,7 @@ char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.
 #ifdef PERFMONON
      pszNoRegPMWndClass[]   = "Unable to register window class <" PMWNDCLASS ">.",
 #endif
+     pszNoRegWCWndClass[]   = "Unable to register window class <" WCWNDCLASS ">.",
      pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS ">.",
      pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
      pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.",
@@ -1474,7 +1476,7 @@ LRESULT APIENTRY MFWndProc
                     // Determine whether or not the Edit Ctrl has a selection
                     hWndMC  = GetActiveMC (hWndTC);
                     hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
-       (HANDLE_PTR) hWndEC = (GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC));
+       (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC);
                     SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &dwSelBeg, (LPARAM) &dwSelEnd);
 
                     // Fill in the PRINTDLG struc
@@ -2379,13 +2381,33 @@ UBOOL InitApplication
     wcw.lpszMenuName    = NULL;
     wcw.lpszClassName   = LPMWNDCLASS;
 
-    // Register the Debugger window class
+    // Register the Performance Monitoring window class
     if (!RegisterClassExW (&wcw))
     {
         MB (pszNoRegPMWndClass);
         return FALSE;
     } // End IF
 #endif
+    // Fill in Web Color Names window class structure
+    wcw.style           = CS_DBLCLKS;
+    wcw.lpfnWndProc     = (WNDPROC) WCWndProc;
+    wcw.cbClsExtra      = 0;
+    wcw.cbWndExtra      = GWLWC_EXTRA;
+    wcw.hInstance       = _hInstance;
+    wcw.hIcon           = hIconWC_Large;
+    wcw.hIconSm         = hIconWC_Small;
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+    wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
+////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_WCMENU);
+    wcw.lpszMenuName    = NULL;
+    wcw.lpszClassName   = LWCWNDCLASS;
+
+    // Register the Web Color Names window class
+    if (!RegisterClassExW (&wcw))
+    {
+        MB (pszNoRegWCWndClass);
+        return FALSE;
+    } // End IF
 
     return TRUE;
 } // End InitApplication
@@ -2639,6 +2661,9 @@ UBOOL InitInstance
 
     hIconCC_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CC_LARGE));
     hIconCC_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CC_SMALL));
+
+    hIconWC_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_WC_LARGE));
+    hIconWC_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_WC_SMALL));
 
     hIconClose    = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CLOSE   ));
 

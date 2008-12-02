@@ -27,7 +27,7 @@
 #define GWLEC_EXTRA         GWLEC_PAINTHOOK + 1 * sizeof(HANDLE_PTR)
 
 
-typedef int PAINTHOOK (HWND, HDC, int, int, LPWSTR, int, int, long, int, int);
+typedef int PAINTHOOK (HWND, HDC, int, int, LPWSTR, int, int, long, int, int, UBOOL);
 typedef PAINTHOOK *LPPAINTHOOK;
 
 #define MYWM_INIT_EC        (WM_USER + 0)

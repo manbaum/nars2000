@@ -298,6 +298,7 @@ $(O)ver.DEP             \
 $(O)main.DEV            \
 $(O)ver.DEV             \
 $(O)version.DEV         \
+$(O)webcolors.DEP       \
 $(O)yyfns.DEP
 
 {$(O)}.C{$(O)}.DEP:
@@ -774,6 +775,9 @@ $(O)yyfns.DEP
 !if exist ($(O)version.DEV)
 !       include $(O)version.DEV
 !endif
+!if exist ($(O)webcolors.DEP)
+!       include $(O)webcolors.DEP
+!endif
 !if exist ($(O)yyfns.DEP)
 !       include $(O)yyfns.DEP
 !endif
@@ -930,6 +934,7 @@ $(O)tokenize.PRO        \
 $(O)translate.PRO       \
 $(O)typemote.PRO        \
 $(O)ver.PRO             \
+$(O)webcolors.PRO       \
 $(O)yyfns.PRO
 
 {}.C{$(O)}.PRO:
@@ -1132,6 +1137,7 @@ $(O)tokenize.OBJ:       $(@B).C         $(TOKENIZE_DEP)
 $(O)translate.OBJ:      $(@B).C         $(TRANSLATE_DEP)
 $(O)typemote.OBJ:       $(@B).C         $(TYPEMOTE_DEP)
 $(O)ver.OBJ:            $(@B).C         $(VER_DEP)
+$(O)webcolors.OBJ:      $(@B).C         $(WEBCOLORS_DEP)
 $(O)yyfns.OBJ:          $(@B).C         $(YYFNS_DEP)
 
 main.RC:                                $(MAIN_RCDEP)   $(ICONS)
@@ -1299,6 +1305,7 @@ OBJS=                       \
      $(O)translate.OBJ      \
      $(O)typemote.OBJ       \
      $(O)ver.OBJ            \
+     $(O)webcolors.OBJ      \
      $(O)yyfns.OBJ          \
      $(OC)DBGBRK.OBJ        \
      $(O)main.RES

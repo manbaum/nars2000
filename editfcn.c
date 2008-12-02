@@ -40,6 +40,7 @@
 #include "pertab.h"
 #include "sis.h"
 #include "perfmon.h"
+#include "tokenize.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -48,19 +49,6 @@
 
 // ToDo
 /*
- * Syntax Coloring:
-   * Global Name
-   * Local Name
-   * Label (including trailing colon)
-   * Primitive Function/Operator (including quad, quote-quad, left/right arrows,
-     del, semicolon, and diamond)
-   * Quad Function (including leading quad)
-   * Quad Variable (including leading quad)
-   * Control Structure (including leading colon)
-   * Numeric constant (including leading overbar)
-   * Character constant (including single- or double-quote marks)
-   * Comment (including comment symbol)
-   * Unmatched Grouping Symbols [] () {} '' ""
  * Redo
  * Toolbar
  * Line #s optional
@@ -70,6 +58,7 @@
 
  */
 
+extern FSA_ACTION fsaColTable [][COL_LENGTH];
 char szCloseMessage[] = "You have changed the body of this function;"
                         " save the changes?";
 
@@ -267,7 +256,7 @@ LRESULT APIENTRY FEWndProc
 ////LCLODSAPI ("FE: ", hWnd, message, wParam, lParam);
 
     // Get the handle to the Edit Ctrl
-    (HANDLE_PTR) hWndEC = (GetWindowLongPtrW (hWnd, GWLSF_HWNDEC));
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
 
     switch (message)
     {
@@ -769,31 +758,173 @@ LRESULT APIENTRY FEWndProc
 
 
 //***************************************************************************
+//  $SyntaxColor
+//
+//  Syntax color a line of text
+//***************************************************************************
+
+void SyntaxColor
+    (LPAPLCHAR      lpwszLine,      // Ptr to line of text
+     APLNELM        aplNELM,        // Length of text to display
+     LPCLRCOL       lpMemClr,       // Ptr to array of Syntax Colors/Column Indices
+     HWND           hWndEC)         // Window handle of Edit Ctrl (parent is SM or FE)
+
+{
+    UINT         uChar,             // Loop counter
+                 uCharIni;          // Initial counter
+    FNACTION     fnAction1_EM,      // Ptr to 1st action
+                 fnAction2_EM;      // ...    2nd ...
+    TKLOCALVARS  tkLocalVars = {0}; // Local vars
+    WCHAR        wchOrig,           // The original char
+                 wchColNum;         // The translated char for tokenization as a COL_*** value
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save local vars in struct which we pass to each FSA action routine
+    tkLocalVars.State[2]    =
+    tkLocalVars.State[1]    =
+    tkLocalVars.State[0]    = FSA_SOS;      // Initialize the FSA state
+    tkLocalVars.lpwszOrig   = lpwszLine;    // Save ptr to start of input line
+    tkLocalVars.lpMemClrIni =
+    tkLocalVars.lpMemClrNxt = lpMemClr;     // Save ptr to array of Syntax Colors
+    tkLocalVars.lpGrpSeqIni =
+    tkLocalVars.lpGrpSeqNxt = (LPSCINDICES) lpMemPTD->lpwszTemp;
+    tkLocalVars.PrevGroup   = NO_PREVIOUS_GROUPING_SYMBOL;
+    tkLocalVars.NameInit    = NO_PREVIOUS_NAME;
+    tkLocalVars.hWndEC      = hWndEC;
+
+    // Skip over the temp storage ptr
+    ((LPSCINDICES) lpMemPTD->lpwszTemp) += aplNELM;
+
+    // Initialize the accumulation variables for the next constant
+    InitAccumVars ();
+
+    // Skip over leading blanks (more to reduce clutter
+    //   in the debugging window)
+    for (uChar = 0; uChar < aplNELM; uChar++)
+    if (IsWhiteW (lpwszLine[uChar]))
+    {
+        // Save the column index
+        tkLocalVars.lpMemClrNxt->colIndex = COL_SPACE;
+
+        // Save the color
+        tkLocalVars.lpMemClrNxt++->syntClr =
+          gSyntaxColorWhite;
+    } else
+        break;
+
+    // Save initial char index to compare against
+    //   in case we get a leading colon
+    tkLocalVars.uCharStart =
+    tkLocalVars.uCharIni   = uChar;
+    uCharIni = 0;
+
+    for (     ; uChar <= aplNELM; uChar++)
+    {
+        // Use a FSA to tokenize the line
+
+        // Save current index (may be modified by an action)
+        tkLocalVars.uChar = uChar;
+
+        // Save pointer to current wch
+        tkLocalVars.lpwszCur = &lpwszLine[uChar];
+
+        // Strip out EOL check so we don't confuse a zero-value char with EOL
+        if (uChar EQ aplNELM)
+        {
+            wchOrig = L'\0';
+            wchColNum = COL_EOL;
+        } else
+        {
+            wchOrig = lpwszLine[uChar];
+            wchColNum = CharTrans (wchOrig, &tkLocalVars);
+        } // End IF/ELSE
+
+        // Save the COL_xxx value
+        tkLocalVars.colIndex = wchColNum;
+
+        // Get primary action and new state
+        fnAction1_EM = fsaColTable[tkLocalVars.State[0]][wchColNum].fnAction1;
+        fnAction2_EM = fsaColTable[tkLocalVars.State[0]][wchColNum].fnAction2;
+        SetTokenStates (&tkLocalVars, fsaColTable[tkLocalVars.State[0]][wchColNum].iNewState);
+
+        // Check for primary action
+        if (fnAction1_EM
+         && !(*fnAction1_EM) (&tkLocalVars))
+            goto ERROR_EXIT;
+
+        // Check for secondary action
+        if (fnAction2_EM
+         && !(*fnAction2_EM) (&tkLocalVars))
+            goto ERROR_EXIT;
+
+        // Split cases based upon the return code
+        switch (tkLocalVars.State[0])
+        {
+            case FSA_NONCE:
+                goto NONCE_EXIT;
+
+            case FSA_EXIT:
+                goto NORMAL_EXIT;
+        } // End SWITCH
+
+        // Get next index (may have been modified by an action)
+        uChar = tkLocalVars.uChar;
+    } // End FOR
+
+    // We should never get here as we process the
+    //   trailing zero in the input line which should
+    //   exit from one of the actions with FSA_EXIT.
+    DbgStop ();
+
+NONCE_EXIT:
+ERROR_EXIT:
+NORMAL_EXIT:
+    Assert ((uChar - uCharIni) EQ (UINT) (tkLocalVars.lpMemClrNxt - lpMemClr));
+
+    // Restore the temp storage ptr
+    ((LPSCINDICES) lpMemPTD->lpwszTemp) -= aplNELM;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End SyntaxColor
+
+
+//***************************************************************************
 //  $LclECPaintHook
 //
 //  Local Edit Ctrl paint hook
 //***************************************************************************
 
 int LclECPaintHook
-    (HWND    hWndEC,        // Window handle of Edit Ctrl
-     HDC     hDC,           // The Device Context
-     int     x,             // The x-coordinate (Client Area)
-     int     y,             // ... y- ...
-     LPWCHAR lpwsz,         // Ptr to start of line
-     UINT    uCol,          // Starting column in the line
-     UINT    uLen,          // Length of text to display
-     long    lFlags,        // PRF_ flags
-     int     line_height,   // Line height in screen coordinates
-     int     char_width)    // Average char width in screen coordinates
+    (HWND    hWndEC,                        // Window handle of Edit Ctrl
+     HDC     hDC,                           // The Device Context
+     int     x,                             // The x-coordinate (Client Area)
+     int     y,                             // ... y- ...
+     LPWCHAR lpwsz,                         // Ptr to start of line
+     UINT    uCol,                          // Starting column in the line
+     UINT    uLen,                          // Length of text to display
+     long    lFlags,                        // PRF_ flags
+     int     line_height,                   // Line height in screen coordinates
+     int     char_width,                    // Average char width in screen coordinates
+     UBOOL   rev)                           // TRUE iff we're displaying in reverse mode
 
 {
-    RECT             rcScr,             // Rect for actual width/height in screen coordinates
-                     rcAct;             // ...                             printer/screen ...
-    HFONT            hFontOld;          // Old font from the incoming screen/printer DC
+    RECT             rcScr,                 // Rect for actual width/height in screen coordinates
+                     rcAct;                 // ...                             printer/screen ...
+    HFONT            hFontOld;              // Old font from the incoming screen/printer DC
+    HGLOBAL          hGlbClr = NULL;        // Syntax Color global memory handle
+    LPCLRCOL         lpMemClrIni = NULL;    // Ptr to Syntax Colors/Column Indices global memory
+    long             cxAveChar;             // Width of average char in given screen
 #ifndef UNISCRIBE
-    HGLOBAL          hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
-    long             cxAveChar;         // Width of average char in given screen
+    HGLOBAL          hGlbPTD;               // PerTabData global memory handle
+    LPPERTABDATA     lpMemPTD;              // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -802,23 +933,35 @@ int LclECPaintHook
     lpMemPTD = MyGlobalLock (hGlbPTD);
 #endif
     // Syntax Color the line
+    if (!rev
+     && (IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
+     || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns))
+    {
+        // To do this, we use a FSA to parse the line from the start
+        //   through the last char to display
 
-    // To do this, we use a FSA to parse the line from the start
-    //   through the last char to display
-    // ***FINISHME*** -- Syntax coloring
+        // Allocate space for the colors
+        hGlbClr = DbgGlobalAlloc (GHND, (uCol + uLen) * sizeof (lpMemClrIni[0]));
+        if (hGlbClr)
+        {
+            // Lock the memory to get a ptr to it
+            lpMemClrIni = MyGlobalLock (hGlbClr);
 
+            // Syntax color the line
+            SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC);
+        } // End IF
+    } // End IF
+
+    // Set the coordinates
     rcScr.top    = y;
     rcScr.left   = x;
     rcScr.right  =
     rcScr.bottom = 0;
 
-    // Skip to the starting col
-    lpwsz += uCol;
-
     // Calculate the width & height of the line
     //   in screen coordinates
     DrawTextW (hDC,
-               lpwsz,
+              &lpwsz[uCol],
                uLen,
               &rcScr,
                0
@@ -829,6 +972,9 @@ int LclECPaintHook
     //   in case we're not printing, or
     //   if we are, to initialize the struc
     rcAct = rcScr;
+
+    // Get the actual character width (rounded up)
+    cxAveChar = ((uLen - 1) + (rcScr.right - rcScr.left)) / uLen;
 
     if (lFlags & PRF_PRINTCLIENT)
     {
@@ -845,7 +991,7 @@ int LclECPaintHook
         // Calculate the width & height of the line
         //   in printer coordinates
         DrawTextW (hDC,
-                   lpwsz,
+                  &lpwsz[uCol],
                    uLen,
                   &rcAct,
                    0
@@ -854,15 +1000,6 @@ int LclECPaintHook
                  | DT_NOCLIP);
     } // End IF
 #ifndef UNISCRIBE
-    // Get the appropriate cxAveChar
-    if (lFlags & PRF_PRINTCLIENT)
-        cxAveChar = cxAveCharPR;
-    else
-    if (IzitSM (GetParent (hWndEC)))
-        cxAveChar = cxAveCharSM;
-    else
-        cxAveChar = cxAveCharFE;
-
     // On some systems when the alternate font isn't the same
     //   width as the SM font, the width calculated by DT_CALCRECT
     //   is too small, so we recalculate it here
@@ -876,18 +1013,79 @@ int LclECPaintHook
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #else
-    // Draw the line for real
-    DrawTextW (hDC,
-               lpwsz,
-               uLen,
-              &rcAct,
-               0
-             | DT_SINGLELINE
-             | DT_NOPREFIX
-             | DT_NOCLIP);
+    // If we're syntax coloring, ...
+    if (hGlbClr)
+    {
+        UINT     uClr;                          // Loop counter
+        HDC      hDCClient;                     // Client Area DC
+        HWND     hWnd;                          // Window handle of the DC
+        COLORREF clrBackDef;                    // Default background color
+
+        // Getr the default background color for this DC
+        clrBackDef = GetBkColor (hDC);
+
+        // Get the window handle for this DC
+        hWnd = WindowFromDC (hDC);
+
+        // Get a DC of the entire client area so we
+        //   can draw outside the clipping region
+        hDCClient = GetDC (hWnd);
+
+        // Select the current font into the DC
+        SelectObject (hDCClient, GetCurrentObject (hDC, OBJ_FONT));
+
+        // Loop through the characters
+        for (uClr = 0; uClr < uLen; uClr++)
+        {
+            // Set the foreground color
+            SetTextColor (hDCClient, lpMemClrIni[uCol + uClr].syntClr.crFore);
+
+            // Set the background color
+            if (lpMemClrIni[uCol + uClr].syntClr.crBack EQ DEF_SC_TRANSPARENT)
+                SetBkColor (hDCClient, clrBackDef);
+            else
+                SetBkColor (hDCClient, lpMemClrIni[uCol + uClr].syntClr.crBack);
+
+            // Draw the line for real
+            DrawTextW (hDCClient,
+                      &lpwsz[uCol + uClr],
+                       1,
+                      &rcAct,
+                       0
+                     | DT_SINGLELINE
+                     | DT_NOPREFIX
+                     | DT_NOCLIP);
+            // Advance the left edge of the rectangle
+            rcAct.left += cxAveChar;
+        } // End FOR
+
+        // We no longer need this resource
+        ReleaseDC (hWnd, hDCClient);
+    } else
+        // Draw the line for real
+        DrawTextW (hDC,
+                  &lpwsz[uCol],
+                   uLen,
+                  &rcAct,
+                   0
+                 | DT_SINGLELINE
+                 | DT_NOPREFIX
+                 | DT_NOCLIP);
 #endif
     if (lFlags & PRF_PRINTCLIENT)
         SelectObject (hDC, hFontOld);
+
+    if (hGlbClr)
+    {
+        if (lpMemClrIni)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbClr); lpMemClrIni = NULL;
+        } // End IF
+
+        // We no longer need this resource
+        DbgGlobalFree (hGlbClr); hGlbClr = NULL;
+    } // End IF
 
     // Calculate the result
     return MAKELONG (rcScr.right - rcScr.left, rcScr.bottom - rcScr.top);

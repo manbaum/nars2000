@@ -122,7 +122,7 @@ UBOOL CALLBACK EnumCallbackShowHide
 //***************************************************************************
 
 void ShowHideChildWindows
-    (HWND hWndMC,       // Window handle to MDI Client
+    (HWND  hWndMC,      // Window handle to MDI Client
      UBOOL bShow)       // TRUE iff showing the window, FALSE if hiding it
 
 {

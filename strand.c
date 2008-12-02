@@ -496,6 +496,7 @@ static char tabConvert[][STRAND_LENGTH] =
             case TKT_LSTIMMED:
             case TKT_LSTARRAY:
             case TKT_LSTMULT:
+            case TKT_SYNTERR:           // Syntax Error
                 goto SYNTAX_EXIT;
 
             case TKT_ASSIGN:

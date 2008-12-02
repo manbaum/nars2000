@@ -23,7 +23,6 @@
 /* To Do
 
 * Finish Tab Colors
-* Finish Syntax Coloring
 * Finish Directories
 *
 
@@ -76,6 +75,11 @@ LPWCHAR icIndexValues[ICVAL_LENGTH]
    WS_UTF16_INFINITY,
    WS_UTF16_OVERBAR WS_UTF16_INFINITY,
   };
+
+// Local copy of gSyntaxColors
+SYNTAXCOLORS lclSyntaxColors[SC_LENGTH];
+
+char pszNoCreateWCWnd[]     = "Unable to create Web Color Names window";
 
 
 //***************************************************************************
@@ -154,6 +158,8 @@ APLU3264 CALLBACK CustomizeDlgProc
     static RESET_VARS lclResetVars;             // Local copy of bResetVars
            WCHAR      wszTemp[128];             // Temporary WCHAR storage
            char        szTemp[128];             // Temporary char storage
+    static COLORREF   aCustColors[16];          // Custom colors for ChooseColor
+    static CHOOSECOLOR cc = {0};                // Struct for ChooseColor
 
     typedef struct tagUNITRANS_STR
     {
@@ -194,7 +200,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 #define MYWM_INITDIALOG                 (WM_APP + 100)
 #define MYWM_ENABLECHOOSEFONT           (WM_APP + 101)
 
-////LCLODSAPI ("CD: ", hDlg, message, wParam, lParam);
+////LCLODSAPI ("CD: ", hWnd, message, wParam, lParam);
     // Split cases based upon the message #
     switch (message)
     {
@@ -258,7 +264,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 SendMessageW (hWndListBox, LB_SETCURSEL, gInitCustomizeCategory, 0);
 
                 // Tell the dialog the selection changed
-                PostMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_CUST_LB, 0, LBN_SELCHANGE));
+                PostMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_CUST_LB, NULL, LBN_SELCHANGE));
             } // End IF
 
             return TRUE;            // Use the focus in wParam
@@ -270,7 +276,7 @@ APLU3264 CALLBACK CustomizeDlgProc
             // If the struc hasn't been initialized as yet, ...
             if (!custStruc[wParam].bInitialized)
             {
-                UBOOL        bApply;                    // TRUE iff the Apply button is enabled
+                UBOOL bApply;                           // TRUE iff the Apply button is enabled
 
                 // Mark it as initialized for next time
                 custStruc[wParam].bInitialized = TRUE;
@@ -289,7 +295,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 // Split cases based upon the IDD_xxx value
                 switch (custStruc[wParam].uIDD)
                 {
-                    case IDD_PROPPAGE_CLEARWS_VALUES:
+                    case IDD_PROPPAGE_CLEARWS_VALUES:                   // MYWM_INITDIALOG
                         // Initialize the CLEAR WS values
 
                         // Set the font for each Edit Ctrl or Combobox
@@ -557,7 +563,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         break;
 
-////////////////////case IDD_PROPPAGE_DIRS:
+////////////////////case IDD_PROPPAGE_DIRS:                             // MYWM_INITDIALOG
 ////////////////////    DbgBrk ();      // ***FINISHME***
 ////////////////////
 ////////////////////
@@ -567,7 +573,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////
 ////////////////////    break;
 
-                    case IDD_PROPPAGE_FONTS:
+                    case IDD_PROPPAGE_FONTS:                            // MYWM_INITDIALOG
                         // Initialize the instructions
                         SetWindowTextW (GetDlgItem (hWndProp, IDC_FONTS_TEXT), lpwFontsText);
 
@@ -590,12 +596,12 @@ APLU3264 CALLBACK CustomizeDlgProc
                             SendMessageW (GetDlgItem (hWndProp, FontsRadioPtr[uCnt][glbSameFontAs[uCnt]]), BM_SETCHECK, TRUE, 0);
 
                             // Simulate the user clicking the radio button
-                            SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (FontsRadioPtr[uCnt][glbSameFontAs[uCnt]], NULL, 0));
+                            SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (FontsRadioPtr[uCnt][glbSameFontAs[uCnt]], NULL, BN_CLICKED));
                         } // End FOR
 
                         break;
 
-                    case IDD_PROPPAGE_RANGE_LIMITS:
+                    case IDD_PROPPAGE_RANGE_LIMITS:                     // MYWM_INITDIALOG
                         // Check the boxes of Range Limited system vars
                         CheckDlgButton (hWndProp, IDC_RANGE_XB_CT, bRangeLimit.CT);
                         CheckDlgButton (hWndProp, IDC_RANGE_XB_IC, bRangeLimit.IC);
@@ -606,17 +612,47 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         break;
 
-////////////////////case IDD_PROPPAGE_SYNTAX_COLORING:
-////////////////////    DbgBrk ();      // ***FINISHME***
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////    break;
+                    case IDD_PROPPAGE_SYNTAX_COLORING:                  // MYWM_INITDIALOG
+                        // Copy the global Foreground and Background colors to the local var
+                        for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+                            lclSyntaxColors[uCnt] = gSyntaxColors[uCnt];
 
-                    case IDD_PROPPAGE_SYSTEM_VAR_RESET:
+                        // The color buttons are initialized in WM_DRAWITEM
+
+                        // Check the "Background Transparent" boxes
+                        //   and show/hide the Background button window
+                        for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+                        {
+                            // Get the show/hide state
+                            uShow = gSyntClrBGTrans[uCnt] ? SW_HIDE : SW_SHOWNORMAL;
+
+                            // Show/hide the Background Color button
+                            ShowWindow (GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt), uShow);
+
+                            // Set the "Background Transparent" button initial states
+                            CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt, gSyntClrBGTrans[uCnt]);
+                        } // End FOR
+
+                        // Check the "Enable ... Coloring" boxes
+                        CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRFCNS, OptionFlags.bSyntClrFcns);
+                        CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRSESS, OptionFlags.bSyntClrSess);
+
+                        // Fill in the CHOOSECOLOR struc
+                        cc.lStructSize    = sizeof (cc);
+                        cc.hwndOwner      = hDlg;
+////////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
+////////////////////////cc.rgbResult      =                         // Filled in by the WM_COMMAND handler
+                        cc.lpCustColors   = aCustColors;
+////////////////////////cc.Flags          = CC_ENABLEHOOK | CC_RGBINIT; // ***FINISHME***
+                        cc.Flags          =                 CC_RGBINIT;
+////////////////////////cc.lCustData      = 0;                      // Already zero from = {0}
+////////////////////////cc.lpfnHook       = ccHookProc;             // ***FINISHME*** -- Web Color names
+////////////////////////cc.lpfnHook       = NULL;                   // Already zero from = {0}
+////////////////////////cc.lpTemplateName = NULL;                   // Already zero from = {0}
+
+                        break;
+
+                    case IDD_PROPPAGE_SYSTEM_VAR_RESET:                 // MYWM_INITDIALOG
                         // Initialize the instructions
                         SetWindowTextW (GetDlgItem (hWndProp, IDC_RESET_TEXT), lpwResetText);
 
@@ -634,7 +670,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         break;
 
-////////////////////case IDD_PROPPAGE_TAB_COLORS:
+////////////////////case IDD_PROPPAGE_TAB_COLORS:                       // MYWM_INITDIALOG
 ////////////////////    DbgBrk ();      // ***FINISHME***
 ////////////////////
 ////////////////////
@@ -644,7 +680,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////
 ////////////////////    break;
 
-                    case IDD_PROPPAGE_USER_PREFS:
+                    case IDD_PROPPAGE_USER_PREFS:                       // MYWM_INITDIALOG
                         // Check the boxes of User Preferences
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_ADJUSTPW           , OptionFlags.bAdjustPW           );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE, OptionFlags.bUnderbarToLowercase);
@@ -687,7 +723,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         break;
                 } // End SWITCH
 
-                // Restore the Apply button enabl/disable state
+                // Restore the Apply button enable/disable state
                 EnableWindow (hWndApply, bApply);
             } // End IF
 
@@ -756,7 +792,8 @@ APLU3264 CALLBACK CustomizeDlgProc
 #undef  ctrlId
 
         case WM_CLOSE:
-            SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDCANCEL, 0, 0));
+            // Simulate a click of the Cancel button
+            SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDCANCEL, NULL, BN_CLICKED));
 
             return TRUE;            // We handled the msg
 
@@ -764,7 +801,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 #define lpdis       ((LPDRAWITEMSTRUCT) lParam)
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // Control identifier
                                     // lpdis = (LPDRAWITEMSTRUCT) lParam; // Item-drawing information
-            // Ensure this is one of our Font buttons
+            // Check to see if this is one of our Font buttons
             if (IDC_FONT1 <= idCtl && idCtl <= IDC_FONT7)
             {
                 WCHAR  wszText[2];
@@ -805,8 +842,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Draw the edge as Raised
                         DrawEdge (lpdis->hDC,
                                  &lpdis->rcItem,
-                                 EDGE_RAISED,
-                                 BF_ADJUST | BF_RECT);
+                                  EDGE_RAISED,
+                                  BF_ADJUST | BF_RECT);
                         break;
 
                     case ODA_FOCUS:     // Ignore changes in focus
@@ -822,6 +859,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // We no longer need this resource
                         MyDeleteObject (hBrush); hBrush = NULL;
 
+                        // If the button is selected, offset it by one pixel
                         if (lpdis->itemState & ODS_SELECTED)
                         {
                             rcItem.left  ++;
@@ -843,7 +881,41 @@ APLU3264 CALLBACK CustomizeDlgProc
                                   BF_ADJUST | BF_RECT);
                         break;
                 } // End SWITCH
-            } // End IF
+            } else
+            // Check to see if this is one of our Syntax Color Foreground Color buttons
+            if (IDC_SYNTCLR_BN_FGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_FGCLR17)
+            {
+                // Split cases based upon the item action
+                switch (lpdis->itemAction)
+                {
+                    case ODA_DRAWENTIRE:
+                    case ODA_SELECT:
+                        // Draw the edge, fill with the color
+                        FillSyntaxColor (lpdis, lclSyntaxColors[idCtl - IDC_SYNTCLR_BN_FGCLR1].crFore);
+
+                        break;
+
+                    case ODA_FOCUS:     // Ignore changes in focus
+                        break;
+                } // End SWITCH
+            } else
+            // Check to see if this is one of our Syntax Color Background Color buttons
+            if (IDC_SYNTCLR_BN_BGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_BGCLR17)
+            {
+                // Split cases based upon the item action
+                switch (lpdis->itemAction)
+                {
+                    case ODA_DRAWENTIRE:
+                    case ODA_SELECT:
+                        // Draw the edge, fill with the color
+                        FillSyntaxColor (lpdis, lclSyntaxColors[idCtl - IDC_SYNTCLR_BN_BGCLR1].crBack);
+
+                        break;
+
+                    case ODA_FOCUS:     // Ignore changes in focus
+                        break;
+                } // End SWITCH
+            } // End IF/ELSE
 
             return TRUE;            // We handled the msg
 #undef  lpdis
@@ -856,8 +928,8 @@ APLU3264 CALLBACK CustomizeDlgProc
             switch (GET_WM_COMMAND_ID (wParam, lParam))
             {
                 case IDOK:
-                    // Apply changes
-                    SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_APPLY, 0, 0));
+                    // Apply changes by simulating a click of the Apply button
+                    SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_APPLY, NULL, BN_CLICKED));
 
                     // Close 'er up
                     EndDialog (hDlg, TRUE); // Quit this dialog
@@ -871,8 +943,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     switch (MessageBoxW (NULL, wszCancelMessage, WS_APPNAME, MB_YESNOCANCEL | MB_ICONQUESTION))
                     {
                         case IDYES:
-                            // Apply changes
-                            SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_APPLY, 0, 0));
+                            // Apply changes by simulating a click of the Apply button
+                            SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_APPLY, NULL, BN_CLICKED));
 
                             break;
 
@@ -895,7 +967,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Apply changes
 
                     //***************************************************************
-                    // CLEAR WS VALUES
+                    // CLEAR WS VALUES -- Apply
                     //***************************************************************
 
                     // Get the Property Page index
@@ -1037,7 +1109,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
 
                     //***************************************************************
-                    // DIRECTORIES
+                    // DIRECTORIES -- Apply
                     //***************************************************************
 
 ////////////////////// Get the Property Page index
@@ -1057,7 +1129,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
 
                     //***************************************************************
-                    // FONTS
+                    // FONTS -- Apply
                     //***************************************************************
 
                     // Get the Property Page index
@@ -1099,8 +1171,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                         } // End FOR
                     } // End IF
 
+
                     //***************************************************************
-                    // RANGE LIMITED VARS
+                    // RANGE LIMITED VARS -- Apply
                     //***************************************************************
 
                     // Get the Property Page index
@@ -1118,27 +1191,38 @@ APLU3264 CALLBACK CustomizeDlgProc
                         bRangeLimit.RL = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_RL);
                     } // End IF
 
-                    //***************************************************************
-                    // SYNTAX COLORING
-                    //***************************************************************
-
-////////////////////// Get the Property Page index
-////////////////////uCnt = IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START;
-////////////////////if (custStruc[uCnt].bInitialized)
-////////////////////{
-////////////////////    // Get the associated item data (window handle of the Property Page)
-////////////////////    (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
-////////////////////
-////////////////////    DbgBrk ();      // ***FINISHME***
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////} // End IF
 
                     //***************************************************************
-                    // SYSTEM VAR RESET
+                    // SYNTAX COLORING -- Apply
+                    //***************************************************************
+
+                    // Get the Property Page index
+                    uCnt = IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START;
+                    if (custStruc[uCnt].bInitialized)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+
+                        // Copy the local Foreground/Background Colors to the global var
+                        for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+                            gSyntaxColors[uCnt] = lclSyntaxColors[uCnt];
+
+                        // Copy the state of the "Background Transparent" checkboxes to the global var
+                        for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+                            gSyntClrBGTrans[uCnt] = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt);
+
+                        // Copy the state of the "Enable ... Coloring" checkboxes to the OptionFlags
+                        OptionFlags.bSyntClrFcns = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_CLRFCNS);
+                        OptionFlags.bSyntClrSess = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_CLRSESS);
+
+                        // Repaint the current Session Manager as well
+                        //   as any open Function Editor sessions
+                        EnumChildWindows (hWndMF, &EnumCallbackRepaint, 0);
+                    } // End IF
+
+
+                    //***************************************************************
+                    // SYSTEM VAR RESET -- Apply
                     //***************************************************************
 
                     // Get the Property Page index
@@ -1157,8 +1241,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                         bResetVars.RL = IsDlgButtonChecked (hWndProp, IDC_RESET_RL_RADIO2);
                     } // End IF
 
+
                     //***************************************************************
-                    // TAB COLORS
+                    // TAB COLORS -- Apply
                     //***************************************************************
 
 ////////////////////// Get the Property Page index
@@ -1176,8 +1261,9 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////
 ////////////////////} // End IF
 
+
                     //***************************************************************
-                    // USER PREFERENCES
+                    // USER PREFERENCES -- Apply
                     //***************************************************************
 
                     // Get the Property Page index
@@ -1282,229 +1368,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     return TRUE;    // We handled the msg
 
                 //***************************************************************
-                // FONTS
-                //***************************************************************
-
-                case IDC_FONTS_RADIO2A:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[1] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO2A;
-
-                    // Disable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT2, FALSE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO3A:
-                case IDC_FONTS_RADIO3B:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[2] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO3A;
-
-                    // Disable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT3, FALSE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO4A:
-                case IDC_FONTS_RADIO4B:
-                case IDC_FONTS_RADIO4C:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[3] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO4A;
-
-                    // Disable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT4, FALSE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO5A:
-                case IDC_FONTS_RADIO5B:
-                case IDC_FONTS_RADIO5C:
-                case IDC_FONTS_RADIO5D:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[4] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO5A;
-
-                    // Disable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT5, FALSE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO6A:
-                case IDC_FONTS_RADIO6B:
-                case IDC_FONTS_RADIO6C:
-                case IDC_FONTS_RADIO6D:
-                case IDC_FONTS_RADIO6E:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[5] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO6A;
-
-                    // Disable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT6, FALSE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO7A:
-                case IDC_FONTS_RADIO7B:
-                case IDC_FONTS_RADIO7C:
-                case IDC_FONTS_RADIO7D:
-                case IDC_FONTS_RADIO7E:
-                case IDC_FONTS_RADIO7F:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[6] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO7A;
-
-                    // Disable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT7, FALSE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO1A:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[0] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO1A;
-
-                    // Enable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT1, TRUE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO2B:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[1] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO2A;
-
-                    // Enable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT2, TRUE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO3C:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[2] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO3A;
-
-                    // Enable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT3, TRUE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO4D:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[3] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO4A;
-
-                    // Enable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT4, TRUE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO5E:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[4] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO5A;
-
-                    // Enable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT5, TRUE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO6F:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[5] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO6A;
-
-                    // Enable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT6, TRUE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONTS_RADIO7G:
-                    // Set the local SameFontAs value
-                    lclSameFontAs[6] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO7A;
-
-                    // Enable the corresponding ChooseFontW button
-                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT7, TRUE);
-
-                    return TRUE;    // We handled the msg
-
-                case IDC_FONT1:
-                case IDC_FONT2:
-                case IDC_FONT3:
-                case IDC_FONT4:
-                case IDC_FONT5:
-                case IDC_FONT6:
-                case IDC_FONT7:
-                    // We care about BN_CLICKED only
-                    if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
-                    {
-                        // Get the index of the font
-                        uCnt = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONT1;
-
-                        // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
-
-                        // Get the ChooseFontW button window handle
-                        hWndFont = GetDlgItem (hWndProp, IDC_FONT1 + uCnt);
-
-                        // Ask the user to choose a font, and keep track of
-                        //   whether or not a font was chosen
-                        // If the font changed, ...
-                        if (ChooseFontW (&fontStruc[uCnt].cfLcl))
-                        {
-                            // Mark as changed
-                            fontStruc[uCnt].bChanged = TRUE;
-
-                            // Set the text for the IDC_FONTx button upon set
-                            SetWindowTextW (hWndFont, SET_BUTTON_TEXT);
-
-                            // Enable the Apply button
-                            EnableWindow (hWndApply, TRUE);
-                        } // End IF
-                    } // End IF
-
-                    return TRUE;    // We handled the msg
-
-                //***************************************************************
-                // RANGE LIMITED VARS
-                //***************************************************************
-
-                case IDC_RANGE_XB_CT:
-                case IDC_RANGE_XB_IO:
-                case IDC_RANGE_XB_IC:
-                case IDC_RANGE_XB_PP:
-                case IDC_RANGE_XB_PW:
-                case IDC_RANGE_XB_RL:
-                    // We care about BN_CLICKED only
-                    if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
-                        // Enable the Apply button
-                        EnableWindow (hWndApply, TRUE);
-
-                    return TRUE;    // We handled the msg
-
-                //***************************************************************
-                // USER PREFERENCES
-                //***************************************************************
-
-                case IDC_USER_PREFS_XB_ADJUSTPW:
-                case IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE:
-                case IDC_USER_PREFS_XB_NEWTABONCLEAR:
-                case IDC_USER_PREFS_XB_NEWTABONLOAD:
-                case IDC_USER_PREFS_XB_USELOCALTIME:
-                case IDC_USER_PREFS_XB_BACKUPONLOAD:
-                case IDC_USER_PREFS_XB_BACKUPONSAVE:
-                case IDC_USER_PREFS_XB_NOCOPYRIGHTMSG:
-                    // We care about BN_CLICKED only
-                    if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
-                        // Enable the Apply button
-                        EnableWindow (hWndApply, TRUE);
-                    return TRUE;    // We handled the msg
-
-                case IDC_USER_PREFS_CB_DEFAULTPASTE:
-                    // We care about CBN_SELCHANGE only
-                    if (CBN_SELCHANGE EQ GET_WM_COMMAND_CMD (wParam, lParam))
-                        // Enable the Apply button
-                        EnableWindow (hWndApply, TRUE);
-                    return TRUE;    // We handled the msg
-
-                case IDC_USER_PREFS_CB_DEFAULTCOPY:
-                    // We care about CBN_SELCHANGE only
-                    if (CBN_SELCHANGE EQ GET_WM_COMMAND_CMD (wParam, lParam))
-                        // Enable the Apply button
-                        EnableWindow (hWndApply, TRUE);
-                    return TRUE;    // We handled the msg
-
-                //***************************************************************
-                // CLEAR WS VALUES
+                // CLEAR WS VALUES -- WM_COMMAND
                 //***************************************************************
 
                 case IDC_CLEARWS_ALX_EC:
@@ -1655,8 +1519,360 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                     return TRUE;    // We handled the msg
 
+
                 //***************************************************************
-                // SYSTEM VAR RESET
+                // DIRECTORIES -- WM_COMMAND
+                //***************************************************************
+
+
+
+
+
+
+                //***************************************************************
+                // FONTS -- WM_COMMAND
+                //***************************************************************
+
+                case IDC_FONTS_RADIO2A:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[1] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO2A;
+
+                    // Disable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT2, FALSE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO3A:
+                case IDC_FONTS_RADIO3B:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[2] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO3A;
+
+                    // Disable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT3, FALSE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO4A:
+                case IDC_FONTS_RADIO4B:
+                case IDC_FONTS_RADIO4C:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[3] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO4A;
+
+                    // Disable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT4, FALSE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO5A:
+                case IDC_FONTS_RADIO5B:
+                case IDC_FONTS_RADIO5C:
+                case IDC_FONTS_RADIO5D:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[4] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO5A;
+
+                    // Disable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT5, FALSE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO6A:
+                case IDC_FONTS_RADIO6B:
+                case IDC_FONTS_RADIO6C:
+                case IDC_FONTS_RADIO6D:
+                case IDC_FONTS_RADIO6E:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[5] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO6A;
+
+                    // Disable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT6, FALSE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO7A:
+                case IDC_FONTS_RADIO7B:
+                case IDC_FONTS_RADIO7C:
+                case IDC_FONTS_RADIO7D:
+                case IDC_FONTS_RADIO7E:
+                case IDC_FONTS_RADIO7F:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[6] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO7A;
+
+                    // Disable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT7, FALSE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO1A:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[0] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO1A;
+
+                    // Enable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT1, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO2B:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[1] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO2A;
+
+                    // Enable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT2, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO3C:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[2] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO3A;
+
+                    // Enable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT3, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO4D:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[3] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO4A;
+
+                    // Enable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT4, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO5E:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[4] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO5A;
+
+                    // Enable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT5, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO6F:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[5] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO6A;
+
+                    // Enable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT6, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONTS_RADIO7G:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[6] = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONTS_RADIO7A;
+
+                    // Enable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT7, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_FONT1:
+                case IDC_FONT2:
+                case IDC_FONT3:
+                case IDC_FONT4:
+                case IDC_FONT5:
+                case IDC_FONT6:
+                case IDC_FONT7:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
+
+                        // Get the index of the font
+                        uCnt = GET_WM_COMMAND_ID (wParam, lParam) - IDC_FONT1;
+
+                        // Get the ChooseFontW button window handle
+                        hWndFont = GetDlgItem (hWndProp, IDC_FONT1 + uCnt);
+
+                        // Ask the user to choose a font, and keep track of
+                        //   whether or not a font was chosen
+                        // If the font changed, ...
+                        if (ChooseFontW (&fontStruc[uCnt].cfLcl))
+                        {
+                            // Mark as changed
+                            fontStruc[uCnt].bChanged = TRUE;
+
+                            // Set the text for the IDC_FONTx button upon set
+                            SetWindowTextW (hWndFont, SET_BUTTON_TEXT);
+
+                            // Enable the Apply button
+                            EnableWindow (hWndApply, TRUE);
+                        } // End IF
+                    } // End IF
+
+                    return TRUE;    // We handled the msg
+
+
+                //***************************************************************
+                // RANGE LIMITED VARS -- WM_COMMAND
+                //***************************************************************
+
+                case IDC_RANGE_XB_CT:
+                case IDC_RANGE_XB_IO:
+                case IDC_RANGE_XB_IC:
+                case IDC_RANGE_XB_PP:
+                case IDC_RANGE_XB_PW:
+                case IDC_RANGE_XB_RL:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+
+                //***************************************************************
+                // SYNTAX COLORING -- WM_COMMAND
+                //***************************************************************
+
+                case IDC_SYNTCLR_XB_TRANS1:
+                case IDC_SYNTCLR_XB_TRANS2:
+                case IDC_SYNTCLR_XB_TRANS3:
+                case IDC_SYNTCLR_XB_TRANS4:
+                case IDC_SYNTCLR_XB_TRANS5:
+                case IDC_SYNTCLR_XB_TRANS6:
+                case IDC_SYNTCLR_XB_TRANS7:
+                case IDC_SYNTCLR_XB_TRANS8:
+                case IDC_SYNTCLR_XB_TRANS9:
+                case IDC_SYNTCLR_XB_TRANS10:
+                case IDC_SYNTCLR_XB_TRANS11:
+                case IDC_SYNTCLR_XB_TRANS12:
+                case IDC_SYNTCLR_XB_TRANS13:
+                case IDC_SYNTCLR_XB_TRANS14:
+                case IDC_SYNTCLR_XB_TRANS15:
+                case IDC_SYNTCLR_XB_TRANS16:
+                case IDC_SYNTCLR_XB_TRANS17:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
+
+                        // Get the index of the Background color button
+                        uCnt = GET_WM_COMMAND_ID (wParam, lParam) - IDC_SYNTCLR_XB_TRANS1;
+
+                        // Get the show/hide state
+                        uShow = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt) ? SW_HIDE : SW_SHOWNORMAL;
+
+                        // Show/hide the Background color button as appropriate
+                        ShowWindow (GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt), uShow);
+
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    } // End IF
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_SYNTCLR_XB_CLRFCNS:
+                case IDC_SYNTCLR_XB_CLRSESS:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_SYNTCLR_BN_FGCLR1:
+                case IDC_SYNTCLR_BN_FGCLR2:
+                case IDC_SYNTCLR_BN_FGCLR3:
+                case IDC_SYNTCLR_BN_FGCLR4:
+                case IDC_SYNTCLR_BN_FGCLR5:
+                case IDC_SYNTCLR_BN_FGCLR6:
+                case IDC_SYNTCLR_BN_FGCLR7:
+                case IDC_SYNTCLR_BN_FGCLR8:
+                case IDC_SYNTCLR_BN_FGCLR9:
+                case IDC_SYNTCLR_BN_FGCLR10:
+                case IDC_SYNTCLR_BN_FGCLR11:
+                case IDC_SYNTCLR_BN_FGCLR12:
+                case IDC_SYNTCLR_BN_FGCLR13:
+                case IDC_SYNTCLR_BN_FGCLR14:
+                case IDC_SYNTCLR_BN_FGCLR15:
+                case IDC_SYNTCLR_BN_FGCLR16:
+                case IDC_SYNTCLR_BN_FGCLR17:
+                    // Get the index of the Foreground color button
+                    uCnt = GET_WM_COMMAND_ID (wParam, lParam) - IDC_SYNTCLR_BN_FGCLR1;
+
+                    // Fill in the CHOOSECOLOR struc
+////////////////////cc.lStructSize    =                         // Already filled in during initialization
+////////////////////cc.hwndOwner      =                         // Already filled in during initialization
+////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
+                    cc.rgbResult      = lclSyntaxColors[uCnt].crFore;
+////////////////////cc.lpCustColors   =                         // Already filled in during initialization
+////////////////////cc.Flags          =                         // Already filled in during initialization
+////////////////////cc.lCustData      = 0;                      // Already zero from = {0}
+////////////////////cc.lpfnHook       =                         // Already filled in during initialization
+////////////////////cc.lpTemplateName = NULL;                   // Already zero from = {0}
+
+                    // If the user presses OK, ...
+                    if (ChooseColor (&cc))
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
+
+                        // Save the color in a local var
+                        lclSyntaxColors[uCnt].crFore = cc.rgbResult;
+
+                        // Repaint the button
+                        InvalidateRect (GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt), NULL, FALSE);
+
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    } // End IF
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_SYNTCLR_BN_BGCLR1:
+                case IDC_SYNTCLR_BN_BGCLR2:
+                case IDC_SYNTCLR_BN_BGCLR3:
+                case IDC_SYNTCLR_BN_BGCLR4:
+                case IDC_SYNTCLR_BN_BGCLR5:
+                case IDC_SYNTCLR_BN_BGCLR6:
+                case IDC_SYNTCLR_BN_BGCLR7:
+                case IDC_SYNTCLR_BN_BGCLR8:
+                case IDC_SYNTCLR_BN_BGCLR9:
+                case IDC_SYNTCLR_BN_BGCLR10:
+                case IDC_SYNTCLR_BN_BGCLR11:
+                case IDC_SYNTCLR_BN_BGCLR12:
+                case IDC_SYNTCLR_BN_BGCLR13:
+                case IDC_SYNTCLR_BN_BGCLR14:
+                case IDC_SYNTCLR_BN_BGCLR15:
+                case IDC_SYNTCLR_BN_BGCLR16:
+                case IDC_SYNTCLR_BN_BGCLR17:
+                    // Get the index of the Foreground color button
+                    uCnt = GET_WM_COMMAND_ID (wParam, lParam) - IDC_SYNTCLR_BN_BGCLR1;
+
+                    // Fill in the CHOOSECOLOR struc
+////////////////////cc.lStructSize    =                         // Already filled in during initialization
+////////////////////cc.hwndOwner      =                         // Already filled in during initialization
+////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
+                    cc.rgbResult      = lclSyntaxColors[uCnt].crBack;
+////////////////////cc.lpCustColors   =                         // Already filled in during initialization
+////////////////////cc.Flags          =                         // Already filled in during initialization
+////////////////////cc.lCustData      = 0;                      // Already zero from = {0}
+////////////////////cc.lpfnHook       =                         // Already filled in during initialization
+////////////////////cc.lpTemplateName = NULL;                   // Already zero from = {0}
+
+                    // If the user presses OK, ...
+                    if (ChooseColor (&cc))
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
+
+                        // Save the color in a local var
+                        lclSyntaxColors[uCnt].crBack = cc.rgbResult;
+
+                        // Repaint the button
+                        InvalidateRect (GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt), NULL, FALSE);
+
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    } // End IF
+
+                    return TRUE;    // We handled the msg
+
+
+                //***************************************************************
+                // SYSTEM VAR RESET -- WM_COMMAND
                 //***************************************************************
 
                 case IDC_RESET_CT_RADIO1:
@@ -1756,6 +1972,49 @@ APLU3264 CALLBACK CustomizeDlgProc
                     } // End IF
 
                     return TRUE;    // We handled the msg
+
+
+                //***************************************************************
+                // TAB COLORS -- WM_COMMAND
+                //***************************************************************
+
+
+
+
+
+
+
+                //***************************************************************
+                // USER PREFERENCES -- WM_COMMAND
+                //***************************************************************
+
+                case IDC_USER_PREFS_XB_ADJUSTPW:
+                case IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE:
+                case IDC_USER_PREFS_XB_NEWTABONCLEAR:
+                case IDC_USER_PREFS_XB_NEWTABONLOAD:
+                case IDC_USER_PREFS_XB_USELOCALTIME:
+                case IDC_USER_PREFS_XB_BACKUPONLOAD:
+                case IDC_USER_PREFS_XB_BACKUPONSAVE:
+                case IDC_USER_PREFS_XB_NOCOPYRIGHTMSG:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    return TRUE;    // We handled the msg
+
+                case IDC_USER_PREFS_CB_DEFAULTPASTE:
+                    // We care about CBN_SELCHANGE only
+                    if (CBN_SELCHANGE EQ GET_WM_COMMAND_CMD (wParam, lParam))
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    return TRUE;    // We handled the msg
+
+                case IDC_USER_PREFS_CB_DEFAULTCOPY:
+                    // We care about CBN_SELCHANGE only
+                    if (CBN_SELCHANGE EQ GET_WM_COMMAND_CMD (wParam, lParam))
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    return TRUE;    // We handled the msg
             } // End SWITCH
 
             break;
@@ -1772,6 +2031,229 @@ APLU3264 CALLBACK CustomizeDlgProc
 
     return FALSE;           // We didn't handle the msg
 } // End CustomizeDlgProc
+
+
+//// //***************************************************************************
+//// //  $ccHookProc
+//// //
+//// //  Hook procedure for ChooseColor
+//// //***************************************************************************
+////
+//// UINT APIENTRY ccHookProc
+////     (HWND   hDlg,       // Handle to the dialog box window
+////      UINT   message,    // Message identifier
+////      WPARAM wParam,     // Message parameter
+////      LPARAM lParam)     // Message parameter
+////
+//// {
+////     static HWND  hWndWcnBut,    // Window handle of Web Color Names button
+////                  hWndWcnWin;    // ...                              window
+////            HWND  hWndCancel;    // ...              Cancel button
+////            RECT  rcButton;      // RECT for the button
+////            POINT ptButton;      // POINT for the button
+////            HFONT hFont;         // FONT for the button
+////
+////     // Split cases based upon the message
+////     switch (message)
+////     {
+////         case WM_INITDIALOG:
+////             // Get the handle of the Cancel button window
+////             hWndCancel = GetDlgItem (hDlg, IDCANCEL);
+////
+////             // Get the size and position of the button
+////             GetWindowRect (hWndCancel, &rcButton);
+////
+////             // Convert the screen coords to client coords
+////             //   relative to the dialog
+////             ptButton.x = rcButton.left;
+////             ptButton.y = rcButton.top;
+////             ScreenToClient (hDlg, &ptButton);
+////             rcButton.left = ptButton.x;
+////             rcButton.top  = ptButton.y;
+////
+////             ptButton.x = rcButton.right;
+////             ptButton.y = rcButton.bottom;
+////             ScreenToClient (hDlg, &ptButton);
+////             rcButton.right  = ptButton.x;
+////             rcButton.bottom = ptButton.y;
+////
+////             // Extend the top up and the bottom down to accommodate the button text
+////             rcButton.top    -= 3;
+////             rcButton.bottom += 5;
+////
+////             // Define the Web Color Names button
+////             hWndWcnBut =
+////               CreateWindowW (L"BUTTON",
+////                              L"Web Color Names",
+////                              0
+////                            | WS_CHILD
+////                            | WS_TABSTOP
+////                            | BS_PUSHBUTTON
+////                            | BS_MULTILINE
+////                            | BS_VCENTER
+////                              ,                              // Styles
+////                              rcButton.right + 5,            // X-position
+////                              rcButton.top,                  // Y-...
+////                              rcButton.right - rcButton.left,// Width
+////                              rcButton.bottom - rcButton.top,// Height
+////                              hDlg,                          // Parent window
+////                              (HMENU) IDWC_WCN_BN,           // ID
+////                              _hInstance,                    // Instance
+////                              0);                            // lParam
+////             // Use the same font as the Cancel button
+////             hFont = (HFONT) SendMessageW (hWndCancel, WM_GETFONT, 0, 0);
+////             SendMessageW (hWndWcnBut, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (FALSE, 0));
+////
+////             // Show the window
+////             ShowWindow (hWndWcnBut, SW_SHOWNORMAL);
+////
+////             break;
+////
+////         case WM_COMMAND:            // wNotifyCode = HIWORD(wParam); // Notification code
+////                                     // wID = LOWORD(wParam);         // Item, control, or accelerator identifier
+////                                     // hwndCtl = (HWND) lParam;      // Handle of control
+////             // If the user pressed our button, ...
+////             switch (GET_WM_COMMAND_ID (wParam, lParam))
+////             {
+////                 case IDWC_WCN_BN:
+////                     // We care about BN_CLICKED only
+////                     if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
+////                     {
+////                         // Create a window to display the Web Color Names
+////                         hWndWcnWin =
+////                           CreateWindowW (LWCWNDCLASS,
+////                                          L"Web Color Names",
+////                                          0
+////                                        | WS_OVERLAPPEDWINDOW
+////                                          ,                              // Styles
+////                                          CW_USEDEFAULT,                 // X-position
+////                                          CW_USEDEFAULT,                 // Y-...
+////                                          CW_USEDEFAULT,                 // Width
+////                                          CW_USEDEFAULT,                 // Height
+////                                          hDlg,                          // Parent window
+////                                          NULL,                          // ID
+////                                          _hInstance,                    // Instance
+////                                          0);                            // lParam
+////                         if (hWndWcnWin EQ NULL)
+////                         {
+////                             MB (pszNoCreateWCWnd);
+////                             return FALSE;
+////                         } // End IF
+////
+////                         // Show the window
+////                         ShowWindow (hWndWcnWin, SW_SHOWNORMAL);
+////                     } // End IF
+////
+////                     return TRUE;        // Tell the dialog box to ignore this message
+////             } // End SWITCH
+////
+////             return FALSE;       // Tell the dialog box to process this message
+////
+////         default:
+////             break;
+////     } // End SWITCH
+////
+////     return FALSE;       // Tell the dialog box to process this message
+//// } // End ccHookProc
+
+
+//***************************************************************************
+//  $EnumCallbackRepaint
+//
+//  EnumChildWindows callback to repaint all SM and FE windows
+//***************************************************************************
+
+UBOOL CALLBACK EnumCallbackRepaint
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
+    // If it's a Session Manager or Function Editor window, ...
+    if (IzitSM (hWnd)
+     || IzitFE (hWnd))
+    {
+        HWND hWndEC;
+
+        // Get the handle to the Edit Ctrl
+        (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
+
+        // Invalidate the Client Area
+        InvalidateRect (hWndEC, NULL, FALSE);
+
+        // Update it
+        UpdateWindow (hWndEC);
+    } // End IF
+
+    return TRUE;        // Keep on truckin'
+} // End EnumCallbackRepaint
+
+
+//***************************************************************************
+//  $FillSyntaxColor
+//
+//  Fill in a button with a Syntax Color
+//***************************************************************************
+
+void FillSyntaxColor
+    (LPDRAWITEMSTRUCT lpdis,
+     COLORREF         clrRef)
+
+{
+    RECT   rcItem;
+    UINT   uEdge;
+    HBRUSH hBrush;
+
+    // Copy the item rectangle to fill in the Client Area
+    rcItem = lpdis->rcItem;
+
+    // Flood the Client Area with the default background
+    hBrush = MyCreateSolidBrush (GetBkColor (lpdis->hDC));
+
+    // Fill the client area
+    FillRect (lpdis->hDC, &rcItem, hBrush);
+
+    // We no longer need this resource
+    MyDeleteObject (hBrush); hBrush = NULL;
+
+    // Get the edge type
+    uEdge = (lpdis->itemState & ODS_SELECTED) ? EDGE_SUNKEN : EDGE_RAISED;
+
+    // If the button is selected, offset it by one pixel
+    if (lpdis->itemState & ODS_SELECTED)
+    {
+        rcItem.left  ++;
+        rcItem.top   ++;
+        rcItem.right ++;
+        rcItem.bottom++;
+    } // End IF
+
+    // Draw the edge as Sunken (if selected) or Raised (if normal)
+    DrawEdge (lpdis->hDC,
+             &rcItem,
+              uEdge,
+              BF_ADJUST | BF_RECT);
+    // Indent the rectangle to narrow the Client Area
+    rcItem.top    += 2;
+    rcItem.right  -= 2;
+    rcItem.bottom -= 2;
+    rcItem.left   += 2;
+
+    // Get the corresponding Foreground/Background Color
+    hBrush = MyCreateSolidBrush (clrRef);
+
+    // Color the client area
+    FillRect (lpdis->hDC, &rcItem, hBrush);
+
+    // We no longer need this resource
+    MyDeleteObject (hBrush); hBrush = NULL;
+} // End FillSyntaxColor
 
 
 //***************************************************************************

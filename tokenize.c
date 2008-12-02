@@ -33,6 +33,7 @@
 #include "pn_parse.h"
 #include "sis.h"
 #include "threads.h"
+#include "tokenize.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -66,105 +67,6 @@ ToDo
                                 //   allocated for the tokenized line
 #define DEF_TOKEN_RESIZE 512    // Default increment when GlobalRealloc'ing
 
-// The order of the values of these constants *MUST* match the
-//   column order in fsaColTable.
-#define COL_FIRST 0             // It's origin-0
-
-enum COL_INDICES
-{COL_DIGIT = COL_FIRST,     // 00:  Digit
- COL_DOT         ,          // 01:  Decimal number, inner & outer product separator
- COL_ALPHA       ,          // 02:  Alphabetic
- COL_OVERBAR     ,          // 03:  Overbar
- COL_DIRIDENT    ,          // 04:  Alpha or Omega
- COL_Q_QQ        ,          // 05:  Quad
- COL_UNDERBAR    ,          // 06:  Underbar
- COL_INFINITY    ,          // 07:  Infinity
- COL_ASSIGN      ,          // 08:  Assignment symbol
- COL_SEMICOLON   ,          // 09:  Semicolon symbol
- COL_COLON       ,          // 0A:  Colon symbol
- COL_CTRLSTRUC   ,          // 0B:  Control Structure
- COL_PRIM_FN     ,          // 0C:  Primitive monadic or dyadic function
- COL_PRIM_FN0    ,          // 0D:  ...       niladic function
- COL_PRIM_OP1    ,          // 0E:  ...       monadic/ambiguous operator
- COL_PRIM_OP2    ,          // 0F:  ...       dyadic  ...
- COL_JOT         ,          // 10:  Jot symbol
- COL_LEFTPAREN   ,          // 11:  Left paren
- COL_RIGHTPAREN  ,          // 12:  Right ...
- COL_LEFTBRACKET ,          // 13:  Left bracket
- COL_RIGHTBRACKET,          // 14:  Right ...
- COL_LEFTBRACE   ,          // 15:  Left brace
- COL_RIGHTBRACE  ,          // 16:  Right ...
- COL_SPACE       ,          // 17:  White space (' ' or '\t')
- COL_QUOTE1      ,          // 18:  Single quote symbol
- COL_QUOTE2      ,          // 19:  Double ...
- COL_DIAMOND     ,          // 1A:  Diamond symbol
- COL_LAMP        ,          // 1B:  Comment symbol
- COL_EOL         ,          // 1C:  End-Of-Line
- COL_UNK         ,          // 1D:  Unknown symbols
-
- COL_LENGTH      ,          // 1E: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
-                            // Because these enums are origin-0, this value is the # valid columns.
-};
-
-// Whenever you add a new COL_*** entry,
-//   be sure to put code into <CharTrans> in <tokenize.c>
-//   to return the newly defined value,
-//   and insert a new entry into <GetColName> in <tokenize.c>.
-
-
-// The order of the values of these constants *MUST* match the
-//   row order in fsaColTable.
-enum FSA_TOKENS
-{FSA_SOS = 0 ,  // 00:  Start of stmt
- FSA_INIT    ,  // 01:  Initial state
- FSA_POINTNOT,  // 02:  Point Notation
- FSA_ALPHA   ,  // 03:  Alphabetic char
- FSA_SYSNAME ,  // 04:  System name
- FSA_QUOTE1A ,  // 05:  Start of or within single quoted char or char vector
- FSA_QUOTE1Z ,  // 06:  End of   ...
- FSA_QUOTE2A ,  // 07:  Start of or within double quoted char or char vector
- FSA_QUOTE2Z ,  // 08:  End of   ...
- FSA_DOTAMBIG,  // 09:  Ambiguous dot:  either FSA_POINTNOT or FSA_INIT w/fnOp2Done
- FSA_JOTAMBIG,  // 0A:  Ambiguous jot:  either FSA_INIT w/fnOp2Done or FSA_OUTAMBIG
- FSA_OUTAMBIG,  // 0B:  Ambiguous outer product:  either FSA_INIT w/fnOutDone or FSA_POINTNOT w/fnOp2Done
-
- FSA_LENGTH     // 0C:  # FSA terminal states (rows in fsaColTable) ***MUST*** BE THE LAST ENTRY
-                // Because these enums are origin-0, this value is the # valid FSA states.
-};
-
-WCHAR cComplexSep = L'j';           // Complex number separator (as well as uppercase)
-                                    //   stored in var in case the user prefers 'i'
-
-// Defined constant for ...
-#define NO_PREVIOUS_GROUPING_SYMBOL     NEG1U
-
-typedef struct tagTKLOCALVARS
-{
-    HGLOBAL     hGlbToken;          // 00:  Global memory handle
-    UNION_TOKEN t2;                 // 04:  Locked base of hGlbToken
-    LPTOKEN     lpStart,            // 08:  First available entry after the header
-                lpNext,             // 0C:  Next  ...
-                lpLastEOS;          // 10:  Ptr to last EOS token
-    UINT        State[3],           // 14:  Current state (FSA_xxx) (12 bytes)
-                uChar,              // 20:  ...     index into lpwszLine
-                uCharStart,         // 24:  Initial ...                  (static)
-                uCharIni;           // 28:  ...                          (dynamic)
-    LPWCHAR     lpwszOrig,          // 2C:  Ptr to original lpwszLine
-                lpwszCur;           // 30:  ...    current WCHAR in ...
-    TOKEN_TYPES CtrlStrucTknType;   // 34:  Control Structure token type
-    UINT        CtrlStrucStrLen;    // 38:  ...               string length
-    ANON_CTRL_STRUC;                // 3C:  Ctrl Struc data (8 bytes)
-                                    // 44:  Length
-} TKLOCALVARS, *LPTKLOCALVARS;
-
-typedef UBOOL (*FNACTION) (LPTKLOCALVARS);
-
-typedef struct tagFSA_ACTION
-{
-    int      iNewState;
-    FNACTION fnAction1;
-    FNACTION fnAction2;
-} FSA_ACTION;
 
 #define fnAlpInit   fnAlpha
 #define fnAlpAccum  fnAlpha
@@ -205,13 +107,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , NULL        , fnBrkDone   },   // Right ...
   {FSA_INIT    , NULL        , fnBrcInit   },   // Left brace
   {FSA_INIT    , NULL        , fnBrcDone   },   // Right ...
-  {FSA_INIT    , NULL        , NULL        },   // White space
+  {FSA_INIT    , NULL        , fnSyntWhite },   // White space
   {FSA_QUOTE1A , NULL        , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , NULL        , fnQuo2Init  },   // Double ...
   {FSA_SOS     , NULL        , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , NULL        , fnComDone   },   // Comment symbol
   {FSA_EXIT    , NULL        , NULL        },   // EOL
-  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+  {FSA_INIT    , NULL        , fnUnkDone   },   // Unknown symbols
  },
     // FSA_INIT     Initial state ('')
  {{FSA_POINTNOT, NULL        , fnPointAcc  },   // '0123456789'
@@ -237,13 +139,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , NULL        , fnBrkDone   },   // Right ...
   {FSA_INIT    , NULL        , fnBrcInit   },   // Left brace
   {FSA_INIT    , NULL        , fnBrcDone   },   // Right ...
-  {FSA_INIT    , NULL        , NULL        },   // White space
+  {FSA_INIT    , NULL        , fnSyntWhite },   // White space
   {FSA_QUOTE1A , NULL        , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , NULL        , fnQuo2Init  },   // Double ...
   {FSA_SOS     , NULL        , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , NULL        , fnComDone   },   // Comment symbol
   {FSA_EXIT    , NULL        , NULL        },   // EOL
-  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+  {FSA_INIT    , NULL        , fnUnkDone   },   // Unknown symbols
  },
     // FSA_POINTNOT Point Notation
  {{FSA_POINTNOT, NULL        , fnPointAcc  },   // '0123456789'
@@ -269,13 +171,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnPointDone , fnBrkDone   },   // Right ...
   {FSA_INIT    , fnPointDone , fnBrcInit   },   // Left brace
   {FSA_INIT    , fnPointDone , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnPointDone , NULL        },   // White space
+  {FSA_INIT    , fnPointDone , fnSyntWhite },   // White space
   {FSA_QUOTE1A , fnPointDone , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnPointDone , fnQuo2Init  },   // Double ...
   {FSA_SOS     , fnPointDone , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnPointDone , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnPointDone , NULL        },   // EOL
-  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+  {FSA_INIT    , fnPointDone , fnUnkDone   },   // Unknown symbols
  },
     // FSA_ALPHA    Alphabetic char
  {{FSA_ALPHA   , fnAlpAccum  , NULL        },   // '0123456789'
@@ -301,13 +203,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnAlpDone   , fnBrkDone   },   // Right ...
   {FSA_INIT    , fnAlpDone   , fnBrcInit   },   // Left brace
   {FSA_INIT    , fnAlpDone   , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnAlpDone   , NULL        },   // White space
+  {FSA_INIT    , fnAlpDone   , fnSyntWhite },   // White space
   {FSA_QUOTE1A , fnAlpDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnAlpDone   , fnQuo2Init  },   // Double ...
   {FSA_SOS     , fnAlpDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnAlpDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnAlpDone   , NULL        },   // EOL
-  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+  {FSA_INIT    , fnAlpDone   , fnUnkDone   },   // Unknown symbols
  },
     // FSA_SYSNAME  System name (begins with a Quad or Quote-quad)
  {{FSA_SYSNAME , fnSysAccum  , NULL        },   // '0123456789'
@@ -333,13 +235,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnSysDone   , fnBrkDone   },   // Right ...
   {FSA_INIT    , fnSysDone   , fnBrcInit   },   // Left brace
   {FSA_INIT    , fnSysDone   , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnSysDone   , NULL        },   // White space
+  {FSA_INIT    , fnSysDone   , fnSyntWhite },   // White space
   {FSA_QUOTE1A , fnSysDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnSysDone   , fnQuo2Init  },   // Double ...
   {FSA_SOS     , fnSysDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnSysDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnSysDone   , NULL        },   // EOL
-  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+  {FSA_INIT    , fnSysDone   , fnUnkDone   },   // Unknown symbols
  },
     // FSA_QUOTE1A  Start of or within single quoted char or char vector
  {{FSA_QUOTE1A , fnQuo1Accum , NULL        },   // '0123456789'
@@ -366,11 +268,11 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Left brace
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Right ...
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // White space
-  {FSA_QUOTE1Z , NULL        , NULL        },   // Single quote
+  {FSA_QUOTE1Z , NULL        , fnSyntQuote },   // Single quote
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Double ...
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Diamond symbol
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Comment symbol
-  {FSA_SYNTERR , NULL        , NULL        },   // EOL
+  {FSA_EXIT    , fnQuo1Done  , fnUnkDone   },   // EOL
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Unknown symbols
  },
     // FSA_QUOTE1Z  End of single quoted char or char vector
@@ -397,13 +299,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnQuo1Done  , fnBrkDone   },   // Right ...
   {FSA_INIT    , fnQuo1Done  , fnBrcInit   },   // Left brace
   {FSA_INIT    , fnQuo1Done  , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnQuo1Done  , NULL        },   // White space
+  {FSA_INIT    , fnQuo1Done  , fnSyntWhite },   // White space
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Single quote
   {FSA_QUOTE2A , fnQuo1Done  , fnQuo2Init  },   // Double ...
   {FSA_SOS     , fnQuo1Done  , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnQuo1Done  , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnQuo1Done  , NULL        },   // EOL
-  {FSA_SYNTERR , fnQuo1Done  , NULL        },   // Unknown symbols
+  {FSA_INIT    , fnQuo1Done  , fnUnkDone   },   // Unknown symbols
  },
     // FSA_QUOTE2A  Start of or within double quoted char or char vector
  {{FSA_QUOTE2A , fnQuo2Accum , NULL        },   // '0123456789'
@@ -431,10 +333,10 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Right ...
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // White space
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Single quote
-  {FSA_QUOTE2Z , NULL        , NULL        },   // Double ...
+  {FSA_QUOTE2Z , NULL        , fnSyntQuote },   // Double ...
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Diamond symbol
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Comment symbol
-  {FSA_SYNTERR , NULL        , NULL        },   // EOL
+  {FSA_EXIT    , fnQuo2Done  , fnUnkDone   },   // EOL
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Unknown symbols
  },
     // FSA_QUOTE2Z  End of double quoted char or char vector
@@ -461,17 +363,17 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnQuo2Done  , fnBrkDone   },   // Right ...
   {FSA_INIT    , fnQuo2Done  , fnBrcInit   },   // Left brace
   {FSA_INIT    , fnQuo2Done  , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnQuo2Done  , NULL        },   // White space
+  {FSA_INIT    , fnQuo2Done  , fnSyntWhite },   // White space
   {FSA_QUOTE1A , fnQuo2Done  , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Double ...
   {FSA_SOS     , fnQuo2Done  , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnQuo2Done  , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnQuo2Done  , NULL        },   // EOL
-  {FSA_SYNTERR , fnQuo2Done  , NULL        },   // Unknown symbols
+  {FSA_INIT    , fnQuo2Done  , fnUnkDone   },   // Unknown symbols
  },
     // FSA_DOTAMBIG Ambiguous dot:  either FSA_POINTNOT or FSA_INIT w/fnOp2Done ('+.' or 'name.' or '[]name.')
  {{FSA_POINTNOT, NULL        , fnPointAcc  },   // '0123456789'
-  {FSA_SYNTERR , NULL        , NULL        },   // '.'
+  {FSA_DOTAMBIG, fnDotDone   , fnPointAcc  },   // '.'
   {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_POINTNOT, fnDotDone   , fnPointAcc  },   // Overbar
   {FSA_INIT    , fnDotDone   , fnDirIdent  },   // Alpha or Omega
@@ -485,7 +387,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnDotDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnDotDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnDotDone   , fnOp1Done   },   // ...       monadic operator
-  {FSA_SYNTERR , NULL        , NULL        },   // ...       dyadic  ...
+  {FSA_INIT    , fnDotDone   , fnOp2Done   },   // ...       dyadic  ...
   {FSA_JOTAMBIG, fnDotDone   , NULL        },   // Jot
   {FSA_INIT    , fnDotDone   , fnParInit   },   // Left paren
   {FSA_INIT    , fnDotDone   , fnParDone   },   // Right ...
@@ -493,13 +395,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnDotDone   , fnBrkDone   },   // Right ...
   {FSA_INIT    , fnDotDone   , fnBrcInit   },   // Left brace
   {FSA_INIT    , fnDotDone   , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnDotDone   , NULL        },   // White space
+  {FSA_INIT    , fnDotDone   , fnSyntWhite },   // White space
   {FSA_QUOTE1A , fnDotDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnDotDone   , fnQuo2Init  },   // Double ...
   {FSA_SOS     , fnDotDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnDotDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnDotDone   , NULL        },   // EOL
-  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+  {FSA_INIT    , fnDotDone   , fnUnkDone   },   // Unknown symbols
  },
     // FSA_JOTAMBIG Ambiguous jot:  either FSA_OUTAMBIG or normal w/fnJotDone ('J')
  {{FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // '0123456789'
@@ -517,7 +419,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnJotDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnJotDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnJotDone   , fnOp1Done   },   // ...       monadic operator
-  {FSA_SYNTERR , NULL        , NULL        },   // ...       dyadic  ...
+  {FSA_INIT    , fnJotDone   , fnOp2Done   },   // ...       dyadic  ...
   {FSA_JOTAMBIG, fnJotDone   , NULL        },   // Jot
   {FSA_INIT    , fnJotDone   , fnParInit   },   // Left paren
   {FSA_INIT    , fnJotDone   , fnParDone   },   // Right ...
@@ -525,17 +427,17 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnJotDone   , fnBrkDone   },   // Right ...
   {FSA_INIT    , fnJotDone   , fnBrcInit   },   // Left brace
   {FSA_INIT    , fnJotDone   , fnBrcDone   },   // Right ...
-  {FSA_JOTAMBIG, NULL        , NULL        },   // White space
+  {FSA_JOTAMBIG, NULL        , fnSyntWhite },   // White space
   {FSA_QUOTE1A , fnJotDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnJotDone   , fnQuo2Init  },   // Double ...
   {FSA_SOS     , fnJotDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnJotDone   , fnComDone   },   // Comment symbol
   {FSA_EXIT    , fnJotDone   , NULL        },   // EOL
-  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+  {FSA_INIT    , fnJotDone   , fnUnkDone   },   // Unknown symbols
  },
     // FSA_OUTAMBIG Ambiguous outer product:  either FSA_INIT w/fnOutDone or FSA_POINTNOT w/fnOutDone ('J.')
  {{FSA_POINTNOT, fnJotDone0  , fnPointAcc  },   // '0123456789'
-  {FSA_SYNTERR , NULL        , NULL        },   // '.'
+  {FSA_JOTAMBIG, fnOutDone   , fnPointAcc  },   // '.'
   {FSA_ALPHA   , fnOutDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_POINTNOT, fnOutDone   , fnPointAcc  },   // Overbar
   {FSA_INIT    , fnOutDone   , fnDirIdent  },   // Alpha or Omega
@@ -548,8 +450,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnOutDone   , fnCtrlDone  },   // Control Structure
   {FSA_INIT    , fnOutDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnOutDone   , fnPrmDone   },   // ...       niladic           ...
-  {FSA_SYNTERR , NULL        , NULL        },   // ...       monadic operator
-  {FSA_SYNTERR , NULL        , NULL        },   // ...       dyadic  ...
+  {FSA_INIT    , fnOutDone   , fnOp1Done   },   // ...       monadic operator
+  {FSA_INIT    , fnOutDone   , fnOp2Done   },   // ...       dyadic  ...
   {FSA_JOTAMBIG, fnOutDone   , NULL        },   // Jot
   {FSA_INIT    , fnOutDone   , fnParInit   },   // Left paren
   {FSA_INIT    , fnOutDone   , fnParDone   },   // Right ...
@@ -557,13 +459,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnOutDone   , fnBrkDone   },   // Right ...
   {FSA_INIT    , fnOutDone   , fnBrcInit   },   // Left brace
   {FSA_INIT    , fnOutDone   , fnBrcDone   },   // Right ...
-  {FSA_OUTAMBIG, NULL        , NULL        },   // White space
+  {FSA_OUTAMBIG, NULL        , fnSyntWhite },   // White space
   {FSA_QUOTE1A , fnOutDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnOutDone   , fnQuo2Init  },   // Double ...
-  {FSA_SYNTERR , NULL        , NULL        },   // Diamond symbol
-  {FSA_SYNTERR , NULL        , NULL        },   // Comment symbol
-  {FSA_SYNTERR , NULL        , NULL        },   // EOL
-  {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
+  {FSA_SOS     , fnOutDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_INIT    , fnOutDone   , fnComDone   },   // Comment symbol
+  {FSA_EXIT    , fnOutDone   , NULL        },   // EOL
+  {FSA_INIT    , fnOutDone   , fnUnkDone   },   // Unknown symbols
  },
 }
 #endif
@@ -772,6 +674,78 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $IsLocalName
+//
+//  Determine whether or not a give name is local to a function header
+//***************************************************************************
+
+UBOOL IsLocalName
+    (LPWCHAR lpwszStr,                  // Ptr to the name
+     UINT    iStrLen,                   // Length of the name
+     HWND    hWndEC,                    // Handle to Edit Ctrl window
+     LPWCHAR lpwszTemp)                 // Ptr to temp storage
+
+{
+    LPWCHAR lpwszName,                  // Ptr to name
+            wp;                         // Ptr to temp char
+    WCHAR   sysName[32];                // Temp storage for sysnames in lowercase
+
+    // If this is a sysname, ...
+    if (IsSysName (lpwszStr))
+    {
+        // Copy the sysname to local storage
+        CopyMemory (sysName, lpwszStr, iStrLen * sizeof (lpwszStr[0]));
+
+        // Convert it to lowercase
+        CharLowerBuffW (sysName, iStrLen);
+
+        lpwszName = sysName;
+    } else
+        lpwszName = lpwszStr;
+
+    // Tell EM_GETLINE maximum # chars in the buffer
+    lpwszTemp[0] = (WORD) -1;
+
+    // Get the function header line
+    SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
+
+    // Check for comment
+    wp = strchrW (lpwszTemp, UTF16_LAMP);
+    if (wp)
+        *wp = L'\0';
+
+    wp = lpwszTemp;
+
+    // Check the name in lpwszStr for global vs. local
+    while (wp = strchrW (wp, L';'))
+    {
+        // Skip over the semicolon
+        wp++;
+
+        // Skip over leading white space
+        if (IsWhiteW (*wp))
+            wp++;
+
+        // Compare the incoming name with the header text
+        if (strncmpW (lpwszName, wp, iStrLen) EQ 0
+         && (wp[iStrLen] EQ L' '
+          || wp[iStrLen] EQ L';'
+          || wp[iStrLen] EQ L'\0'))
+            return TRUE;
+
+        // Skip over the name
+        wp += iStrLen;
+
+        // Skip over trailing white space
+        if (IsWhiteW (*wp))
+            wp++;
+    } // End WHILE
+
+    return FALSE;
+} // End IsLocalName
+
+
+//***************************************************************************
 //  $fnAlpha
 //
 //  Start of or next char in name
@@ -819,6 +793,173 @@ UBOOL fnAlpha
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        STFLAGS    stFlags = {0};           // STE flags
+        UINT       uVar,                    // Loop counter
+                   uLen,                    // Loop length
+                   uClr;                    // Color index
+        LPSYMENTRY lpSymEntry;              // Ptr to this name's SYMENTRY
+
+        // Get the number of chars
+        uLen = lpMemPTD->iStrLen;
+
+        // Save the column index
+        lptkLocalVars->lpMemClrNxt->colIndex = COL_ALPHA;
+
+        // If it's the first character, ...
+        if (uLen EQ 1)
+        {
+            // Save index in lpMemClrIni of the name start
+            lptkLocalVars->NameInit = (UINT) (lptkLocalVars->lpMemClrNxt - lptkLocalVars->lpMemClrIni);
+
+            // If this is a SysName, ...
+            if (IsSysName (lptkLocalVars->lpwszCur))
+            {
+                // Save the color
+                lptkLocalVars->lpMemClrNxt++->syntClr =
+                  gSyntaxColors[SC_PRIMITIVE];
+
+                // Save the name type
+                lptkLocalVars->scNameType = SC_NAMETYPE_PRIMITIVE;
+
+                goto NORMAL_EXIT;
+            } else
+                // Save the name type
+                lptkLocalVars->scNameType = SC_NAMETYPE_GLBNAME;
+        } // End IF
+
+        // Split cases based upon the name type
+        switch (lptkLocalVars->scNameType)
+        {
+            case SC_NAMETYPE_GLBNAME:
+            case SC_NAMETYPE_LCLNAME:
+                // If we're called from FE, look in the function header
+                if (IzitFE (GetParent (lptkLocalVars->hWndEC)))
+                {
+                    // Check for global vs. local
+                    if (IsLocalName (lpwszStr, lpMemPTD->iStrLen, lptkLocalVars->hWndEC, lpMemPTD->lpwszTemp))
+                    {
+                        uClr = SC_LCLNAME;
+
+                        // Save the name type
+                        lptkLocalVars->scNameType = SC_NAMETYPE_LCLNAME;
+                    } else
+                    {
+                        uClr = SC_GLBNAME;
+
+                        // Save the name type
+                        lptkLocalVars->scNameType = SC_NAMETYPE_GLBNAME;
+                    } // End IF/ELSE
+                } else
+                // If not, check the STE
+                {
+                    // Check the name in lpwszStr for global vs. local
+                    lpSymEntry =
+                      SymTabLookupNameLength (lpwszStr,
+                                              lpMemPTD->iStrLen,
+                                             &stFlags);
+                    // If there's a shadow entry, ...
+                    if (lpSymEntry && lpSymEntry->stPrvEntry)
+                    {
+                        // Save the color index
+                        uClr = SC_LCLNAME;
+
+                        // Save the name type
+                        lptkLocalVars->scNameType = SC_NAMETYPE_LCLNAME;
+                    } else
+                    {
+                        // Save the color index
+                        uClr = SC_GLBNAME;
+
+                        // Save the name type
+                        lptkLocalVars->scNameType = SC_NAMETYPE_GLBNAME;
+                    } // End IF/ELSE
+                } // End IF/ELSE
+
+                // Skip over the current color
+                *lptkLocalVars->lpMemClrNxt++;
+
+                // Loop through the previous and current chars
+                for (uVar = 0; uVar < uLen; uVar++)
+                    // Resave the color
+                    lptkLocalVars->lpMemClrIni[lptkLocalVars->NameInit + uVar].syntClr =
+                      gSyntaxColors[uClr];
+                break;
+
+            case SC_NAMETYPE_SYSFCN:
+            case SC_NAMETYPE_GLBSYSVAR:
+            case SC_NAMETYPE_LCLSYSVAR:
+            case SC_NAMETYPE_SYSUNK:
+            case SC_NAMETYPE_PRIMITIVE:
+                // Check the name in lpwszStr for sysfcn vs. sysvar
+                lpSymEntry =
+                  SymTabLookupNameLength (lpwszStr,
+                                          lpMemPTD->iStrLen,
+                                         &stFlags);
+                // Skip over the current color
+                *lptkLocalVars->lpMemClrNxt++;
+
+                // If the STE is available, ...
+                if (lpSymEntry)
+                    stFlags = lpSymEntry->stFlags;
+
+                // Split cases based upon the nametype
+                switch (stFlags.stNameType)
+                {
+                    case NAMETYPE_VAR:
+                        // Check for global vs. local
+                        if (IsLocalName (lpwszStr, lpMemPTD->iStrLen, lptkLocalVars->hWndEC, lpMemPTD->lpwszTemp))
+                        {
+                            // Save the color index
+                            uClr = SC_LCLSYSVAR;
+
+                            // Save the name type
+                            lptkLocalVars->scNameType = SC_NAMETYPE_LCLSYSVAR;
+                        } else
+                        {
+                            // Save the color index
+                            uClr = SC_GLBSYSVAR;
+
+                            // Save the name type
+                            lptkLocalVars->scNameType = SC_NAMETYPE_GLBSYSVAR;
+                        } // End IF/ELSE
+
+                        break;
+
+                    case NAMETYPE_FN0:
+                    case NAMETYPE_FN12:
+                        // Save the color index
+                        uClr = SC_SYSFCN;
+
+                        // Save the name type
+                        lptkLocalVars->scNameType = SC_NAMETYPE_SYSFCN;
+
+                        break;
+
+                    default:
+                        // Save the color index
+                        uClr = SC_UNK;
+
+                        // Save the name type
+                        lptkLocalVars->scNameType = SC_NAMETYPE_SYSUNK;
+
+                        break;
+                } // End SWITCH
+
+                // Loop through the previous and current chars
+                for (uVar = 0; uVar < uLen; uVar++)
+                    // Resave the color
+                    lptkLocalVars->lpMemClrIni[lptkLocalVars->NameInit + uVar].syntClr =
+                      gSyntaxColors[uClr];
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End IF
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->hGlbStr); lpwszStr = NULL;
 ERROR_EXIT:
@@ -860,6 +1001,10 @@ UBOOL fnAlpDone
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLock (lpMemPTD->hGlbStr);
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+        goto NORMAL_EXIT;
 
     // Ensure properly terminated
     lpwszStr[lpMemPTD->iStrLen] = L'\0';
@@ -943,6 +1088,22 @@ UBOOL fnDirIdent
     DbgMsgW (L"fnDirIdent");
 #endif
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the column index
+        lptkLocalVars->lpMemClrNxt->colIndex = COL_PRIM_FN;
+
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_GLBNAME];
+
+        // Mark as successful
+        bRet = TRUE;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -979,14 +1140,14 @@ UBOOL fnDirIdent
                              &tkFlags,
                              &aplInteger,
                               -lpMemPTD->iStrLen);
-    //  Initialize the accumulation variables for the next constant
-    InitAccumVars ();
-
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->hGlbStr); lpwszStr = NULL;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+NORMAL_EXIT:
+    //  Initialize the accumulation variables for the next constant
+    InitAccumVars ();
 
     return bRet;
 } // End fnDirIdent
@@ -1008,6 +1169,19 @@ UBOOL fnAsnDone
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnAsnDone");
 #endif
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the column index
+        lptkLocalVars->lpMemClrNxt->colIndex = COL_PRIM_FN;
+
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        return TRUE;
+    } // End IF
 
     // Copy current WCHAR
     aplLongest = *lptkLocalVars->lpwszCur;
@@ -1041,6 +1215,16 @@ UBOOL fnLstDone
     DbgMsgW (l"fnLstDone");
 #endif
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        return TRUE;
+    } // End IF
+
     // Copy current WCHAR
     aplLongest = *lptkLocalVars->lpwszCur;
 
@@ -1073,6 +1257,56 @@ UBOOL fnClnDone
     DbgMsgW (L"fnClnDone");
 #endif
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        UINT uVar,              // Loop counter
+             uLblIni,           // Start of label (if any)
+             uLen;              // Loop length
+
+        // Get the # chars so far (excluding the colon)
+        uLen = (UINT) (lptkLocalVars->lpMemClrNxt - lptkLocalVars->lpMemClrIni);
+
+        // Skip over leading white space
+        for (uVar = 0; uVar < uLen; uVar++)
+        if (lptkLocalVars->lpMemClrIni[uVar].colIndex NE COL_SPACE)
+            break;
+
+        // Putative start of label
+        uLblIni = uVar;
+
+        // If the tokens up to this point have all been alpha, ...
+        for (        ; uVar < uLen; uVar++)
+        if (lptkLocalVars->lpMemClrIni[uVar].colIndex NE COL_ALPHA)
+            break;
+
+        // Save the column index
+        lptkLocalVars->lpMemClrNxt->colIndex = COL_COLON;
+
+        // If we're up to the current char, ...
+        if (uVar EQ uLen && uLblIni NE uVar)
+        {
+            // Skip over the colon color
+            lptkLocalVars->lpMemClrNxt++;;
+
+            // Get the # chars so far (including the colon)
+            uLen = (UINT) (lptkLocalVars->lpMemClrNxt - lptkLocalVars->lpMemClrIni);
+
+            for (uVar = uLblIni; uVar < uLen; uVar++)
+                // Save the color (label separator)
+                lptkLocalVars->lpMemClrIni[uVar].syntClr =
+                  gSyntaxColors[SC_LABEL];
+            // Set the new state to FSA_SOS so we can accept Control Strucures
+            SetTokenStates (lptkLocalVars, FSA_SOS);
+        } else
+            // Save the color (plain old colon)
+            lptkLocalVars->lpMemClrNxt++->syntClr =
+              gSyntaxColors[SC_PRIMITIVE];
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+
     // Copy current WCHAR
     aplLongest = *lptkLocalVars->lpwszCur;
 
@@ -1094,6 +1328,25 @@ UBOOL fnClnDone
         // Skip over leading blanks
         while (IsWhiteW (lptkLocalVars->lpwszOrig[lptkLocalVars->uCharIni]))
             lptkLocalVars->uCharIni++;
+
+        // Check for Syntax Coloring
+        if (lptkLocalVars->lpMemClrNxt)
+        {
+            UINT uVar,              // Loop counter
+                 uLen;              // Loop length
+
+            // Get the # chars
+            uLen = (UINT) (lptkLocalVars->lpNext - lptkLocalVars->lpStart);
+
+            // Loop through the chars
+            for (uVar = 0; uVar < uLen; uVar++)
+                // Save the color
+                lptkLocalVars->lpMemClrNxt++->syntClr =
+                  gSyntaxColors[SC_LABEL];
+
+            // Mark as successful
+            return TRUE;
+        } // End IF
     } else
         // Mark the data as a colon
         tkFlags.TknType = TKT_COLON;
@@ -1123,6 +1376,10 @@ UBOOL fnCtrlDone
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnCtrlDone");
 #endif
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+        goto NORMAL_EXIT;
 
     // For selected CS tokens, prepend an additional special token
     if (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_ELSEIF
@@ -1235,7 +1492,7 @@ UBOOL fnCtrlDone
                                 0))
             return FALSE;
     } // End IF
-
+NORMAL_EXIT:
     // Skip over the name
     // (" - 1" to account for the ++ at the end of the FOR stmt)
     lptkLocalVars->uChar += lptkLocalVars->CtrlStrucStrLen - 1;
@@ -1260,6 +1517,16 @@ UBOOL fnPrmDone
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnPrmDone");
 #endif
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        return TRUE;
+    } // End IF
 
     // Copy current WCHAR
     aplInteger = *lptkLocalVars->lpwszCur;
@@ -1417,6 +1684,28 @@ UBOOL fnPointDone
     // Lock the memory to get a ptr to it
     lpszNum = MyGlobalLock (lpMemPTD->hGlbNum);
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        UINT uVar,              // Loop counter
+             uLen;              // Loop length
+
+        // Get the number of chars
+        uLen = lpMemPTD->iNumLen;
+
+        // Loop through the chars
+        for (uVar = 0; uVar < uLen; uVar++)
+            // ***FIXME*** -- Tell the difference between GLOBALNAME and LOCALNAME
+            // Save the color
+            lptkLocalVars->lpMemClrNxt++->syntClr =
+              gSyntaxColors[SC_NUMCONST];
+
+        // Mark as successful
+        bRet = TRUE;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
     // Save the starting point of the character stream
     pnLocalVars.lpszStart    = lpszNum;
     pnLocalVars.uNumLen      = lpMemPTD->iNumLen;
@@ -1451,6 +1740,13 @@ UBOOL fnPointDone
 
                 break;
 
+            case PN_NUMTYPE_HC2:
+            case PN_NUMTYPE_HC4:
+            case PN_NUMTYPE_HC8:
+            case PN_NUMTYPE_RAT:
+            case PN_NUMTYPE_EXT:
+                goto NONCE_EXIT;
+
             defstop
                 break;
         } // End SWITCH
@@ -1461,14 +1757,21 @@ UBOOL fnPointDone
                                  &tkFlags,
                                  &aplLongest,
                                   0);
-        //  Initialize the accumulation variables for the next constant
-        InitAccumVars ();
     } else
         // Save the error character index
         lptkLocalVars->uChar = pnLocalVars.uCharIndex;
 
+    goto NORMAL_EXIT;
+
+NONCE_EXIT:
+    // Set new state
+    lptkLocalVars->State[0] = FSA_NONCE;
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->hGlbNum); lpszNum = NULL;
+
+    //  Initialize the accumulation variables for the next constant
+    InitAccumVars ();
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1497,6 +1800,19 @@ UBOOL fnInfinity
     DbgMsgW (L"fnInfinity");
 #endif
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_NUMCONST];
+
+        // Mark as successful
+        bRet = TRUE;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -1517,11 +1833,11 @@ UBOOL fnInfinity
                              &tkFlags,
                               (LPAPLLONGEST) &aplFloat,
                               0);
-    //  Initialize the accumulation variables for the next constant
-    InitAccumVars ();
-
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+NORMAL_EXIT:
+    //  Initialize the accumulation variables for the next constant
+    InitAccumVars ();
 
     return bRet;
 } // End fnInfinity
@@ -1544,6 +1860,17 @@ UBOOL fnOp1Done
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnOp1Done");
 #endif
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
 
     // Copy current WCHAR
     wch = *lptkLocalVars->lpwszCur;
@@ -1590,6 +1917,17 @@ UBOOL fnOp2Done
     DbgMsgW (L"fnOp2Done");
 #endif
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+
     // Mark the data as a dyadic primitive operator
     tkFlags.TknType = TKT_OP2IMMED;
     tkFlags.ImmType = IMMTYPE_PRIMOP2;
@@ -1623,6 +1961,17 @@ UBOOL fnDotDone
 
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
 
     // Mark the data as a dyadic primitive operator
     tkFlags.TknType = TKT_OP2IMMED;
@@ -1689,6 +2038,17 @@ UBOOL fnJotDoneSub
         //  Initialize the accumulation variables for the next constant
         InitAccumVars ();
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+
     // Mark the data as a dyadic primitive operator
     tkFlags.TknType = TKT_OP2IMMED;
     tkFlags.ImmType = IMMTYPE_PRIMOP2;
@@ -1724,6 +2084,17 @@ UBOOL fnOutDone
 
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
 
     // Mark the data as an outer product monadic primitive operator (with right scope)
     tkFlags.TknType = TKT_OPJOTDOT;
@@ -1766,13 +2137,31 @@ UBOOL fnComDone
 
     // Get the length of the comment (up to but not including any '\n')
     iLen  = lstrlenW (lptkLocalVars->lpwszCur); // Including the leading comment symbol
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        UINT uVar,              // Loop counter
+             uLen;              // Loop length
+
+        // Get the number of chars
+        uLen = iLen;
+
+        // Loop through the chars
+        for (uVar = 0; uVar < uLen; uVar++)
+            // Save the color
+            lptkLocalVars->lpMemClrNxt++->syntClr =
+              gSyntaxColors[SC_COMMENT];
+        goto NORMAL_EXIT;
+    } // End IF
+
     lpwch = wcspbrk (&lptkLocalVars->lpwszCur[1], L"\n");
     if (lpwch)
     {
         iLen2 = (UINT) (&lpwch[*lpwch EQ UTF16_LAMP] - lptkLocalVars->lpwszCur);
         iLen  = min (iLen2, iLen);
     } // End IF
-
+NORMAL_EXIT:
     // Skip over the comment in the input stream
     // "-1" because the FOR loop in Tokenize_EM will
     //   increment it, too
@@ -1813,6 +2202,12 @@ UBOOL fnQuoAccum
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_UNMATCHGRP];
 
     // Check for need to resize hGlbStr
     bRet = CheckResizeStr_EM (lpMemPTD);
@@ -1877,6 +2272,10 @@ UBOOL fnQuoDone
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLock (lpMemPTD->hGlbStr);
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+        goto NORMAL_EXIT;
 
     // Ensure properly terminated
     lpwszStr[lpMemPTD->iStrLen] = L'\0';
@@ -1987,7 +2386,7 @@ UBOOL fnQuoDone
                                       -lpMemPTD->iStrLen);
         } // End IF/ELSE
     } // End IF
-
+NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
@@ -2078,6 +2477,29 @@ UBOOL GroupInitCom
     LPTOKEN     lpNext;
     APLLONGEST  aplLongest;
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt->syntClr =
+          gSyntaxColors[SC_UNMATCHGRP];
+
+        // Save the index of the previous grouping symbol
+        lptkLocalVars->lpGrpSeqNxt->PrevGroup = lptkLocalVars->PrevGroup;
+
+        // Save the index of this color entry and skip over it
+        lptkLocalVars->lpGrpSeqNxt->clrIndex  = (UINT) (lptkLocalVars->lpMemClrNxt++ - lptkLocalVars->lpMemClrIni);
+
+        // Save the the token type of this (left) grouping symbol
+        lptkLocalVars->lpGrpSeqNxt->TknType   = uType;
+
+        // Save the index of this GrpSeq entry and skip over it
+        lptkLocalVars->PrevGroup              = (UINT) (lptkLocalVars->lpGrpSeqNxt++ - lptkLocalVars->lpGrpSeqIni);
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+
     // Mark the data as a left grouping symbol
     tkFlags.TknType = uType;
 
@@ -2150,6 +2572,116 @@ UBOOL fnBrcDone
 
     return GroupDoneCom (lptkLocalVars, TKT_RIGHTBRACE, TKT_LEFTBRACE);
 } // End fnBrcDone
+
+
+//***************************************************************************
+//  $GroupDoneCom
+//
+//  Group (Right paren/bracket) common ending
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- GroupDoneCom"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL GroupDoneCom
+    (LPTKLOCALVARS lptkLocalVars,
+     TOKEN_TYPES   uTypeCurr,
+     TOKEN_TYPES   uTypePrev)
+
+{
+    UINT        uPrevGroup;
+    UBOOL       bRet = TRUE;
+    APLLONGEST  aplLongest;
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        UINT PrevGroup,
+             uCount = 0,
+             uMatchGrp;
+        static UINT aMatchGrp[] = {SC_MATCHGRP1,
+                                   SC_MATCHGRP2,
+                                   SC_MATCHGRP3,
+                                   SC_MATCHGRP4};
+
+        // Get the index in lpGrpSeqIni of the previous grouping symbol
+        PrevGroup = lptkLocalVars->PrevGroup;
+
+        // Count the nesting level of grouping symbol
+        while (lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
+        {
+            if (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType EQ uTypePrev)
+                uCount++;
+            PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+        } // End WHILE
+
+        uMatchGrp = aMatchGrp[uCount % NUM_MATCHGRPS];
+
+        // Save the color and skip over it
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[uMatchGrp];
+
+        // Get the index in lpGrpSeqIni of the previous grouping symbol
+        PrevGroup = lptkLocalVars->PrevGroup;
+
+        // Reset the preceding matching symbol's color
+        lptkLocalVars->lpMemClrIni[lptkLocalVars->lpGrpSeqIni[PrevGroup].clrIndex].syntClr =
+          gSyntaxColors[uMatchGrp];
+
+        // Save the index of the previous previous grouping symbol
+        lptkLocalVars->PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+
+    // Get the index of the previous grouping symbol
+    uPrevGroup = lptkLocalVars->t2.lpHeader->PrevGroup;
+
+    // Ensure proper nesting
+    if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL
+     || lptkLocalVars->lpStart[uPrevGroup].tkFlags.TknType NE (UINT) uTypePrev)
+    {
+        // Save the error caret position
+        SaveErrorPosition (lptkLocalVars->uChar);
+
+        bRet = FALSE;
+
+        goto SYNTAX_EXIT;
+    } else
+    {
+        LPTOKEN lpNext;
+        TKFLAGS tkFlags = {0};
+
+        // Mark the data as a right grouping symbol
+        tkFlags.TknType = uTypeCurr;
+
+        // Copy the address of the token we're about to create
+        lpNext = lptkLocalVars->lpNext;
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        aplLongest = uPrevGroup;
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                 &aplLongest,
+                                  0);
+        // Save index of previous grouping symbol
+        lptkLocalVars->t2.lpHeader->PrevGroup = lptkLocalVars->lpStart[uPrevGroup].tkData.tkIndex;
+    } // End IF/ELSE
+
+    goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+NORMAL_EXIT:
+    return bRet;
+} // End GroupDoneCom
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2252,7 +2784,7 @@ UBOOL MergeNumbers
 
                 // If the previous token is global, ...
                 if (hGlbPrv)
-                    // SKip over the header and dimension
+                    // Skip over the header and dimension
                     lpMemPrv = VarArrayBaseToData (lpMemPrv, aplRankPrv);
                 else
                     lpMemPrv = &aplLongestPrv;
@@ -2420,74 +2952,6 @@ void SaveErrorPosition
 
 
 //***************************************************************************
-//  $GroupDoneCom
-//
-//  Group (Right paren/bracket) common ending
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- GroupDoneCom"
-#else
-#define APPEND_NAME
-#endif
-
-UBOOL GroupDoneCom
-    (LPTKLOCALVARS lptkLocalVars,
-     TOKEN_TYPES   uTypeCurr,
-     TOKEN_TYPES   uTypePrev)
-
-{
-    UINT        uPrevGroup;
-    UBOOL       bRet = TRUE;
-    APLLONGEST  aplLongest;
-
-    // Get the index of the previous grouping symbol
-    uPrevGroup = lptkLocalVars->t2.lpHeader->PrevGroup;
-
-    // Ensure proper nesting
-    if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL
-     || lptkLocalVars->lpStart[uPrevGroup].tkFlags.TknType NE (UINT) uTypePrev)
-    {
-        // Save the error caret position
-        SaveErrorPosition (lptkLocalVars->uChar);
-
-        bRet = FALSE;
-
-        goto SYNTAX_EXIT;
-    } else
-    {
-        LPTOKEN lpNext;
-        TKFLAGS tkFlags = {0};
-
-        // Mark the data as a right grouping symbol
-        tkFlags.TknType = uTypeCurr;
-
-        // Copy the address of the token we're about to create
-        lpNext = lptkLocalVars->lpNext;
-
-        // Attempt to append as new token, check for TOKEN TABLE FULL,
-        //   and resize as necessary.
-        aplLongest = uPrevGroup;
-        bRet = AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &aplLongest,
-                                  0);
-        // Save index of previous grouping symbol
-        lptkLocalVars->t2.lpHeader->PrevGroup = lptkLocalVars->lpStart[uPrevGroup].tkData.tkIndex;
-    } // End IF/ELSE
-
-    goto NORMAL_EXIT;
-
-SYNTAX_EXIT:
-    // Save the error message
-    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-NORMAL_EXIT:
-    return bRet;
-} // End GroupDoneCom
-#undef  APPEND_NAME
-
-
-//***************************************************************************
 //  $fnDiaDone
 //
 //  Done with this stmt
@@ -2503,6 +2967,16 @@ UBOOL fnDiaDone
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnDiaDone");
 #endif
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+        goto NORMAL_EXIT;
+    } // End IF
 
     // Test for mismatched or improperly nested grouping symbols
     if (!CheckGroupSymbols_EM (lptkLocalVars))
@@ -2521,7 +2995,7 @@ UBOOL fnDiaDone
                            &aplInteger,
                             0))
         return FALSE;
-
+NORMAL_EXIT:
     // Count in another stmt
     lptkLocalVars->uStmtNum++;
 
@@ -2531,9 +3005,101 @@ UBOOL fnDiaDone
     // Skip over leading blanks
     while (IsWhiteW (lptkLocalVars->lpwszOrig[lptkLocalVars->uCharIni]))
         lptkLocalVars->uCharIni++;
-    // Append the EOS token
-    return AppendEOSToken (lptkLocalVars, TRUE);
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+        return TRUE;
+    else
+        // Append the EOS token
+        return AppendEOSToken (lptkLocalVars, TRUE);
 } // End fnDiaDone
+
+
+//***************************************************************************
+//  $fnSyntQuote
+//
+//  Accumulate a CHRCONST color if Syntax Coloring is active.
+//  Used to handle embedded double quotes.
+//***************************************************************************
+
+UBOOL fnSyntQuote
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_CHRCONST];
+
+    // Mark as successful
+    return TRUE;
+} // End fnSyntQuote
+
+
+//***************************************************************************
+//  $fnSyntWhite
+//
+//  Accumulate a white space color if Syntax Coloring is active.
+//***************************************************************************
+
+UBOOL fnSyntWhite
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColorWhite;
+
+    // Mark as successful
+    return TRUE;
+} // End fnSyntWhite
+
+
+//***************************************************************************
+//  $fnUnkDone
+//
+//  Accumulate an unknown color
+//***************************************************************************
+
+UBOOL fnUnkDone
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    TKFLAGS    tkFlags = {0};
+    APLLONGEST aplLongest;
+
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"fnUnkDone");
+#endif
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // If the col is not EOL, ...
+        if (lptkLocalVars->colIndex NE COL_EOL)
+            // Save the color
+            lptkLocalVars->lpMemClrNxt++->syntClr =
+              gSyntaxColors[SC_UNK];
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+
+    // Mark the data as a dyadic primitive operator
+    tkFlags.TknType = TKT_SYNTERR;
+    tkFlags.ImmType = IMMTYPE_ERROR;
+
+    // Attempt to append as new token, check for TOKEN TABLE FULL,
+    //   and resize as necessary.
+    aplLongest = *lptkLocalVars->lpwszCur;
+    return AppendNewToken_EM (lptkLocalVars,
+                             &tkFlags,
+                             &aplLongest,
+                              0);
+} // End fnUnkDone
 
 
 //***************************************************************************
@@ -2560,22 +3126,22 @@ The format of a token is defined in tokens.h
 #endif
 
 HGLOBAL Tokenize_EM
-    (LPAPLCHAR   lpwszLine,     // The line to tokenize (not necessarily zero-terminated)
-     APLNELM     aplNELM,       // NELM of lpwszLine
-     HWND        hWndEC,        // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-     UINT        uLineNum,      // Function line # (0 = header)
-     LPERRHANDFN lpErrHandFn)   // Ptr to error handling function (may be NULL)
+    (LPAPLCHAR   lpwszLine,         // The line to tokenize (not necessarily zero-terminated)
+     APLNELM     aplNELM,           // NELM of lpwszLine
+     HWND        hWndEC,            // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+     UINT        uLineNum,          // Function line # (0 = header)
+     LPERRHANDFN lpErrHandFn)       // Ptr to error handling function (may be NULL)
 
 {
-    UINT         uChar;         // Loop counter
-    WCHAR        wchOrig,       // The original char
-                 wchColNum;     // The translated char for tokenization as a COL_*** value
-    FNACTION     fnAction1_EM,  // Ptr to 1st action
-                 fnAction2_EM;  // ...    2nd ...
-    TKLOCALVARS  tkLocalVars;   // Local vars
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPTOKEN      lptkCSNxt;     // Ptr to next token on the CS stack
+    UINT         uChar;             // Loop counter
+    WCHAR        wchOrig,           // The original char
+                 wchColNum;         // The translated char for tokenization as a COL_*** value
+    FNACTION     fnAction1_EM,      // Ptr to 1st action
+                 fnAction2_EM;      // ...    2nd ...
+    TKLOCALVARS  tkLocalVars = {0}; // Local vars
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPTOKEN      lptkCSNxt;         // Ptr to next token on the CS stack
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -2712,6 +3278,9 @@ HGLOBAL Tokenize_EM
         else
             wchColNum = CharTrans (wchOrig, &tkLocalVars);
 
+        // Save the COL_xxx value
+        tkLocalVars.colIndex = wchColNum;
+
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         wsprintfW (wszTemp,
                    L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
@@ -2749,12 +3318,6 @@ HGLOBAL Tokenize_EM
                 SaveErrorPosition (tkLocalVars.uChar);
 
                 goto NONCE_EXIT;
-
-            case FSA_SYNTERR:
-                // Save the error caret position
-                SaveErrorPosition (tkLocalVars.uChar);
-
-                goto SYNTAX_EXIT;
 
             case FSA_EXIT:
             {
@@ -2821,12 +3384,6 @@ WSFULL_EXIT:
 NONCE_EXIT:
     // Save the error message
     ErrorMessageIndirect (ERRMSG_NONCE_ERROR APPEND_NAME);
-
-    goto ERROR_EXIT;
-
-SYNTAX_EXIT:
-    // Save the error message
-    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 
     goto ERROR_EXIT;
 
@@ -3051,6 +3608,7 @@ void Untokenize
             case TKT_CS_WHILE2:         // ...                 WHILE2
             case TKT_CS_SKIPCASE:       // ...                 Special token
             case TKT_CS_SKIPEND:        // ...                 Special token
+            case TKT_SYNTERR:           // Syntax Error
                 break;                  // Nothing to do
 
             case TKT_CS_NEC:            // ...                 Special token
@@ -3258,6 +3816,9 @@ UBOOL AppendNewToken_EM
                        (USHORT) (lptkLocalVars->lpNext - lptkLocalVars->lpStart),
                                  FALSE,
                                  lptkLocalVars->uChar);
+            break;
+
+        case TKT_SYNTERR     :
             break;
 
         case TKT_LABELSEP    :
@@ -3808,6 +4369,18 @@ UBOOL CtrlStrucCmpi
     lptkLocalVars->CtrlStrucStrLen  = uCSLen;
     lptkLocalVars->bSOS             = (lptkLocalVars->uChar EQ lptkLocalVars->uCharIni);
 
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        UINT uVar;              // Loop counter
+
+        // Loop through the chars
+        for (uVar = 0; uVar < uCSLen; uVar++)
+            // Save the color
+            lptkLocalVars->lpMemClrNxt++->syntClr =
+              gSyntaxColors[SC_CTRLSTRUC];
+    } // End IF
+
     return TRUE;
 } // End CtrlStrucCmpi
 
@@ -3901,7 +4474,7 @@ void InitFsaTabs
 
 void SetTokenStates
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to local vars
-     UINT          curState)            // Incoming state
+     FSATOKENS     curState)            // Incoming state
 
 {
     // If the previous and current states differ, ...

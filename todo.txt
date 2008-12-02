@@ -37,11 +37,12 @@ TO DO:  General:  Less Important (post-alpha)
   the narrower formats to ARRAY_INT64.
 * Port to Linux
 * Port to Mac/OS
-* Extend <aplchars> to <textarea> and in FireFox, too.
+* Extend <aplchars> to <textarea> in FireFox, too.
 * Allow Alt-nnnn to enter an arbitrary Unicode character
 * Implement status window for messages, char codes, etc.
-* Implement New Tab On Load off.
-* Implement New Tab On Clear off.
+* Implement New Tab On Load off
+* Implement New Tab On Clear off
+* Implement fast 1st coord array catenation via GlobalRealloc if RefCnt = 1
 * Implement these features:
 * ...       dynamic functions
 * ...       user-defined magic functions for primitive functions
@@ -53,7 +54,6 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       rational numbers
 * ...       extended precision
 * ...       array predicates beyond Permutation Vectors
-* ...       syntax coloring (for printing, too??)
 * ...       []L and []R
 * ...       expanded set of system functions, to wit:
 * ...         []CALL R
@@ -222,6 +222,7 @@ DONE:  General
 * ...       selective assignment
 * ...         []MF R
 * ...       L []MF R
+* ...       syntax coloring
 * []SysVar indexed assignment with range limiting validation
 * []SysVar {is} '' assigns the system default to the system var
 * When adding two empty vectors whose prototypes are

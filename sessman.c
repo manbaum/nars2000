@@ -26,7 +26,6 @@
 #include <windowsx.h>
 
 #include "uniscribe.h"
-#include "colors.h"
 #include "main.h"
 #include "aplerrors.h"
 #include "resdebug.h"

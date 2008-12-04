@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <winver.h>
 
-#include "colors.h"
 #include "main.h"
 #include "resdebug.h"
 #include "resource.h"
@@ -162,7 +161,7 @@ APLU3264 CALLBACK AboutDlgProc
                 LOGFONTW lf;
 
                 // Set the text color
-                SetTextColor (hDC, COLOR_BLUE);
+                SetTextColor (hDC, DEF_SCN_BLUE);
 
                 // Set the background text color
                 SetBkColor (hDC, GetSysColor (COLOR_BTNFACE));

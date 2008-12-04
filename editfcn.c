@@ -26,7 +26,6 @@
 
 #include "uniscribe.h"
 #include "aplerrors.h"
-#include "colors.h"
 #include "main.h"
 #include "resource.h"
 #include "resdebug.h"
@@ -62,8 +61,8 @@ extern FSA_ACTION fsaColTable [][COL_LENGTH];
 char szCloseMessage[] = "You have changed the body of this function;"
                         " save the changes?";
 
-COLORREF crLineNum = RGB (143,188,143),   // Darkseagreen
-         crLineTxt = RGB ( 65,105,225);   // Royalblue
+COLORREF crLineNum = DEF_SCN_DARKSEAGREEN,
+         crLineTxt = DEF_SCN_ROYALBLUE;
 
 // Define struct for passing parameters to WM_NCCREATE/WM_CREATE
 //   for the Function Edit window
@@ -763,13 +762,14 @@ LRESULT APIENTRY FEWndProc
 //  Syntax color a line of text
 //***************************************************************************
 
-void SyntaxColor
+UBOOL SyntaxColor
     (LPAPLCHAR      lpwszLine,      // Ptr to line of text
      APLNELM        aplNELM,        // Length of text to display
      LPCLRCOL       lpMemClr,       // Ptr to array of Syntax Colors/Column Indices
      HWND           hWndEC)         // Window handle of Edit Ctrl (parent is SM or FE)
 
 {
+    UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     UINT         uChar,             // Loop counter
                  uCharIni;          // Initial counter
     FNACTION     fnAction1_EM,      // Ptr to 1st action
@@ -824,6 +824,13 @@ void SyntaxColor
     tkLocalVars.uCharStart =
     tkLocalVars.uCharIni   = uChar;
     uCharIni = 0;
+
+    // Handle leading right parens as system commands
+    //   and leading del as function editor
+    //   and as such are not to be colored
+    if (lpwszLine[uChar] EQ UTF16_RIGHTPAREN
+     || lpwszLine[uChar] EQ UTF16_DEL)
+        goto FREEGLB_EXIT;
 
     for (     ; uChar <= aplNELM; uChar++)
     {
@@ -883,6 +890,9 @@ void SyntaxColor
     //   exit from one of the actions with FSA_EXIT.
     DbgStop ();
 
+FREEGLB_EXIT:
+    // Tell the caller to free the global
+    bRet = FALSE;
 NONCE_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
@@ -893,6 +903,8 @@ NORMAL_EXIT:
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End SyntaxColor
 
 
@@ -948,7 +960,14 @@ int LclECPaintHook
             lpMemClrIni = MyGlobalLock (hGlbClr);
 
             // Syntax color the line
-            SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC);
+            if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
+            {
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbClr); lpMemClrIni = NULL;
+
+                // It's a system command, so we don't color that line
+                DbgGlobalFree (hGlbClr); hGlbClr = NULL;
+            } // End IF
         } // End IF
     } // End IF
 
@@ -1041,7 +1060,7 @@ int LclECPaintHook
             SetTextColor (hDCClient, lpMemClrIni[uCol + uClr].syntClr.crFore);
 
             // Set the background color
-            if (lpMemClrIni[uCol + uClr].syntClr.crBack EQ DEF_SC_TRANSPARENT)
+            if (lpMemClrIni[uCol + uClr].syntClr.crBack EQ DEF_SCN_TRANSPARENT)
                 SetBkColor (hDCClient, clrBackDef);
             else
                 SetBkColor (hDCClient, lpMemClrIni[uCol + uClr].syntClr.crBack);
@@ -3398,7 +3417,7 @@ UBOOL IzitFE
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, itemlengthof (wszClassName));
+    GetClassNameW (hWnd, wszClassName, strlengthof (wszClassName));
 
     return (lstrcmpW (wszClassName, LFEWNDCLASS) EQ 0);
 } // End IzitFE
@@ -3416,7 +3435,7 @@ UBOOL IzitSM
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, itemlengthof (wszClassName));
+    GetClassNameW (hWnd, wszClassName, strlengthof (wszClassName));
 
     return (lstrcmpW (wszClassName, LSMWNDCLASS) EQ 0);
 } // End IzitSM
@@ -3453,7 +3472,7 @@ void DrawLineNumsFE
     hDC = MyGetDC (hWndEC);
 
     // Set our DC attributes
-    SetAttrs (hDC, hFontFE, crLineNum, COLOR_WHITE);
+    SetAttrs (hDC, hFontFE, crLineNum, DEF_SCN_WHITE);
 
     // Get the # lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);

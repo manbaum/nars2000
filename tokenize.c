@@ -73,12 +73,14 @@ ToDo
 #define fnSysInit   fnAlpha
 #define fnSysAccum  fnAlpha
 #define fnSysDone   fnAlpDone
-#define fnQuo1Init  fnQuoAccum
-#define fnQuo2Init  fnQuoAccum
+#define fnQuo1Init  fnQuoInit
+#define fnQuo2Init  fnQuoInit
 #define fnQuo1Accum fnQuoAccum
 #define fnQuo2Accum fnQuoAccum
 #define fnQuo1Done  fnQuoDone
 #define fnQuo2Done  fnQuoDone
+#define fnQuo1Exit  fnQuoExit
+#define fnQuo2Exit  fnQuoExit
 
 FSA_ACTION fsaColTable [][COL_LENGTH]
 #ifndef PROTO
@@ -272,7 +274,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Double ...
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Diamond symbol
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Comment symbol
-  {FSA_EXIT    , fnQuo1Done  , fnUnkDone   },   // EOL
+  {FSA_EXIT    , fnQuo1Exit  , fnUnkDone   },   // EOL
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Unknown symbols
  },
     // FSA_QUOTE1Z  End of single quoted char or char vector
@@ -336,7 +338,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE2Z , NULL        , fnSyntQuote },   // Double ...
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Diamond symbol
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Comment symbol
-  {FSA_EXIT    , fnQuo2Done  , fnUnkDone   },   // EOL
+  {FSA_EXIT    , fnQuo2Exit  , fnUnkDone   },   // EOL
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Unknown symbols
  },
     // FSA_QUOTE2Z  End of double quoted char or char vector
@@ -2173,19 +2175,48 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $fnQuoInit
+//
+//  Start of a string
+//***************************************************************************
+
+UBOOL fnQuoInit
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    return fnQuoAccumSub (lptkLocalVars, SC_UNMATCHGRP);
+} // End fnQuoInit
+
+
+//***************************************************************************
 //  $fnQuoAccum
+//
+//  Next char in a string
+//***************************************************************************
+
+UBOOL fnQuoAccum
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    return fnQuoAccumSub (lptkLocalVars, SC_CHRCONST);
+} // End fnQuoAccum
+
+
+//***************************************************************************
+//  $fnQuoAccumSub
 //
 //  Start of or next char in a string
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- fnQuoAccum"
+#define APPEND_NAME     L" -- fnQuoAccumSub"
 #else
 #define APPEND_NAME
 #endif
 
-UBOOL fnQuoAccum
-    (LPTKLOCALVARS lptkLocalVars)
+UBOOL fnQuoAccumSub
+    (LPTKLOCALVARS lptkLocalVars,
+     SCTYPE        scType)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -2194,7 +2225,7 @@ UBOOL fnQuoAccum
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuoAccum");
+    DbgMsgW (L"fnQuoAccumSub");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -2205,9 +2236,16 @@ UBOOL fnQuoAccum
 
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the column index (COL_QUOTE1 marks the start,
+        //   COL_QUOTE2 is a subsequent char)
+        lptkLocalVars->lpMemClrNxt->colIndex =
+          (scType EQ SC_UNMATCHGRP) ? COL_QUOTE1 : COL_QUOTE2;
+
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_UNMATCHGRP];
+          gSyntaxColors[scType];
+    } // End IF
 
     // Check for need to resize hGlbStr
     bRet = CheckResizeStr_EM (lpMemPTD);
@@ -2232,7 +2270,7 @@ ERROR_EXIT:
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
-} // End fnQuoAccum
+} // End fnQuoAccumSub
 #undef  APPEND_NAME
 
 
@@ -2242,14 +2280,43 @@ ERROR_EXIT:
 //  End of a char or char vector
 //***************************************************************************
 
+UBOOL fnQuoDone
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    return fnQuoDoneSub (lptkLocalVars, TRUE);
+} // End fnQuoDone
+
+
+//***************************************************************************
+//  $fnQuoExit
+//
+//  Exit of a char or char vector
+//***************************************************************************
+
+UBOOL fnQuoExit
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    return fnQuoDoneSub (lptkLocalVars, FALSE);
+} // End fnQuoExit
+
+
+//***************************************************************************
+//  $fnQuoDoneSub
+//
+//  End or exit of a char or char vector
+//***************************************************************************
+
 #ifdef DEBUG
-#define APPEND_NAME     L" -- fnQuoDone"
+#define APPEND_NAME     L" -- fnQuoDoneSub"
 #else
 #define APPEND_NAME
 #endif
 
-UBOOL fnQuoDone
-    (LPTKLOCALVARS lptkLocalVars)
+UBOOL fnQuoDoneSub
+    (LPTKLOCALVARS lptkLocalVars,
+     UBOOL         bNormal)
 
 {
     HGLOBAL      hGlb;
@@ -2261,7 +2328,7 @@ UBOOL fnQuoDone
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuoDone");
+    DbgMsgW (L"fnQuoDoneSub");
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -2275,7 +2342,31 @@ UBOOL fnQuoDone
 
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
+    {
+        LPCLRCOL lpMemClrCol;
+
+        // If this is a normal completion, ...
+        if (bNormal)
+        {
+            // Copy current ptr into lpMemClrIni
+            lpMemClrCol = &lptkLocalVars->lpMemClrNxt[-1];
+
+            // Search backwards to find the matching quote mark
+            //  (it's COL_QUOTE1)
+            while (lpMemClrCol->colIndex EQ COL_QUOTE2)
+                lpMemClrCol--;
+
+            // If we found it, ...
+            if (lpMemClrCol->colIndex EQ COL_QUOTE1)
+            {
+                // Mark as matched
+                lpMemClrCol->colIndex = COL_QUOTE2;
+                lpMemClrCol->syntClr  = gSyntaxColors[SC_CHRCONST];
+            } // End IF
+        } // End IF
+
         goto NORMAL_EXIT;
+    } // End IF
 
     // Ensure properly terminated
     lpwszStr[lpMemPTD->iStrLen] = L'\0';
@@ -2397,7 +2488,7 @@ NORMAL_EXIT:
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
-} // End fnQuoDone
+} // End fnQuoDoneSub
 #undef  APPEND_NAME
 
 
@@ -2600,39 +2691,64 @@ UBOOL GroupDoneCom
     if (lptkLocalVars->lpMemClrNxt)
     {
         UINT PrevGroup,
-             uCount = 0,
+             uCount,
              uMatchGrp;
         static UINT aMatchGrp[] = {SC_MATCHGRP1,
                                    SC_MATCHGRP2,
                                    SC_MATCHGRP3,
                                    SC_MATCHGRP4};
+        Assert (NUM_MATCHGRPS EQ countof (aMatchGrp));
 
         // Get the index in lpGrpSeqIni of the previous grouping symbol
         PrevGroup = lptkLocalVars->PrevGroup;
 
-        // Count the nesting level of grouping symbol
-        while (lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
+        // If there's no previous grouping symbol, ...
+        if (PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
+            // Save the color and skip over it
+            lptkLocalVars->lpMemClrNxt++->syntClr =
+              gSyntaxColors[SC_UNMATCHGRP];
+        else
         {
-            if (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType EQ uTypePrev)
-                uCount++;
-            PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
-        } // End WHILE
+            // Check for improper nesting
+            if (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType NE uTypePrev)
+                // Save the color and skip over it
+                lptkLocalVars->lpMemClrNxt++->syntClr =
+                  gSyntaxColors[SC_UNNESTED];
+            else
+            {
+                // Initialize the count
+                uCount = 0;
 
-        uMatchGrp = aMatchGrp[uCount % NUM_MATCHGRPS];
+                // Count the nesting level of grouping symbol
+                while (lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
+                {
+                    if (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType EQ uTypePrev)
+                        uCount++;
+                    PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+                } // End WHILE
 
-        // Save the color and skip over it
-        lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[uMatchGrp];
+                // Get the matching level color index
+                uMatchGrp = aMatchGrp[uCount % NUM_MATCHGRPS];
 
-        // Get the index in lpGrpSeqIni of the previous grouping symbol
-        PrevGroup = lptkLocalVars->PrevGroup;
+                // Save the color and skip over it
+                lptkLocalVars->lpMemClrNxt++->syntClr =
+                  gSyntaxColors[uMatchGrp];
 
-        // Reset the preceding matching symbol's color
-        lptkLocalVars->lpMemClrIni[lptkLocalVars->lpGrpSeqIni[PrevGroup].clrIndex].syntClr =
-          gSyntaxColors[uMatchGrp];
+                // Get the index in lpGrpSeqIni of the previous grouping symbol
+                PrevGroup = lptkLocalVars->PrevGroup;
 
-        // Save the index of the previous previous grouping symbol
-        lptkLocalVars->PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+                // Loop through the previous grouping symbols until we find one of our kind
+                while (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType NE uTypePrev)
+                    PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+
+                // Reset the preceding matching symbol's color
+                lptkLocalVars->lpMemClrIni[lptkLocalVars->lpGrpSeqIni[PrevGroup].clrIndex].syntClr =
+                  gSyntaxColors[uMatchGrp];
+
+                // Save the index of the previous previous grouping symbol
+                lptkLocalVars->PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+            } // End IF/ELSE
+        } // End IF/ELSE
 
         // Mark as successful
         return TRUE;
@@ -3028,9 +3144,14 @@ UBOOL fnSyntQuote
 {
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the column index
+        lptkLocalVars->lpMemClrNxt->colIndex = COL_QUOTE2;
+
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
           gSyntaxColors[SC_CHRCONST];
+    } // End IF
 
     // Mark as successful
     return TRUE;

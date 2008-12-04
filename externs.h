@@ -28,6 +28,7 @@
 #include "symtab.h"
 #include "pl_parse.h"
 #include "Unicode.h"
+#include "colornames.h"
 #include "syntaxcolors.h"
 
 // Define variables which are also used in the per tab structure
@@ -811,13 +812,15 @@ EXTERN
 SIZE  MFSize;                           // Size of Master Frame Window window rectangle
 
 EXTERN
-HBITMAP hBitMapLineCont;                // Bitmap for the line continuation char
+HBITMAP hBitMapLineCont,                // Bitmap for the line continuation char
+        hBitMapCheck;                   // Bitmap for the marker used in Customize
 
 EXTERN
 int     iLCWidth;                       // Width of the line continuation column
 
 EXTERN
-BITMAP  bmLineCont;                     // Bitmap metrics for the line continuation char
+BITMAP  bmLineCont,                     // Bitmap metrics for the line continuation char
+        bmCheck;                        // Bitmap metrics for the marker
 
 EXTERN
 HCURSOR hCursorWait,                    // Hourglass cursor
@@ -1088,6 +1091,10 @@ APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #endif
 ;
 
+// Syntax Coloring default colors
+EXTERN
+SYNTAXCOLORS defSyntaxColors[SC_LENGTH];
+
 // Syntax Coloring global colors
 EXTERN
 SYNTAXCOLORS gSyntaxColors[SC_LENGTH]
@@ -1108,6 +1115,7 @@ SYNTAXCOLORS gSyntaxColors[SC_LENGTH]
    {DEF_SC_MATCHGRP3 },
    {DEF_SC_MATCHGRP4 },
    {DEF_SC_UNMATCHGRP},
+   {DEF_SC_UNNESTED  },
    {DEF_SC_UNK       },
   }
 #endif
@@ -1117,6 +1125,219 @@ EXTERN
 SYNTAXCOLORS gSyntaxColorWhite
 #ifdef DEFINE_VALUES
 = {DEF_SC_WHITE}
+#endif
+;
+
+// Syntax Coloring Background Transparent default settings
+EXTERN
+UBOOL defSyntClrBGTrans[SC_LENGTH];
+
+// Syntax Coloring Background Transparent global settings
+EXTERN
+UBOOL gSyntClrBGTrans[SC_LENGTH]
+#ifdef DEFINE_VALUES
+= {TRUE,                    // 00:  Global Name
+   TRUE,                    // 01:  Local Name
+   TRUE,                    // 02:  Label
+   TRUE,                    // 03:  Primitive
+   TRUE,                    // 04:  System Function
+   TRUE,                    // 05:  Global System Var
+   TRUE,                    // 06:  Local  ...
+   TRUE,                    // 07:  Control Structure
+   TRUE,                    // 08:  Numeric Constant
+   TRUE,                    // 09:  Character ...
+   TRUE,                    // 0A:  Comment
+   TRUE,                    // 0B:  Matched Grouping Symbol, Level 1
+   TRUE,                    // 0C:  ...                            2
+   TRUE,                    // 0D:  ...                            3
+   TRUE,                    // 0E:  ...                            4
+   FALSE,                   // 0F:  Unmatched Grouping Symbol
+   FALSE,                   // 10:  Improperly Nested Grouping Symbol
+   FALSE,                   // 12:  Unknown Symbol
+  }
+#endif
+;
+
+EXTERN
+COLORREF   aCustomColors[16]        // Custom colors for ChooseColor
+#ifdef DEFINE_VALUES
+= {CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID,
+   CLR_INVALID}
+#endif
+;
+
+typedef struct tagCOLORNAMES
+{
+    COLORREF clrRef;
+    LPWCHAR  lpwName;
+} COLORNAMES, *LPCOLORNAMES;
+
+EXTERN
+COLORNAMES aColorNames[]
+#ifdef DEFINE_VALUES
+= {
+   {DEF_SCN_BLACK               , L"Black"               },
+   {DEF_SCN_DIMGRAY             , L"Dimgray"             },
+   {DEF_SCN_GRAY                , L"Gray"                },
+   {DEF_SCN_DARKGRAY            , L"Darkgray"            },
+   {DEF_SCN_SILVER              , L"Silver"              },
+   {DEF_SCN_LIGHTGRAY           , L"Lightgray"           },
+   {DEF_SCN_GAINSBORO           , L"Gainsboro"           },
+   {DEF_SCN_WHITESMOKE          , L"Whitesmoke"          },
+   {DEF_SCN_WHITE               , L"White"               },
+   {DEF_SCN_SNOW                , L"Snow"                },
+   {DEF_SCN_ROSYBROWN           , L"Rosybrown"           },
+   {DEF_SCN_LIGHTCORAL          , L"Lightcoral"          },
+   {DEF_SCN_INDIANRED           , L"Indianred"           },
+   {DEF_SCN_BROWN               , L"Brown"               },
+   {DEF_SCN_FIREBRICK           , L"Firebrick"           },
+   {DEF_SCN_MAROON              , L"Maroon"              },
+   {DEF_SCN_DARKRED             , L"Darkred"             },
+   {DEF_SCN_RED                 , L"Red"                 },
+   {DEF_SCN_MISTYROSE           , L"Mistyrose"           },
+   {DEF_SCN_SALMON              , L"Salmon"              },
+   {DEF_SCN_TOMATO              , L"Tomato"              },
+   {DEF_SCN_DARKSALMON          , L"Darksalmon"          },
+   {DEF_SCN_CORAL               , L"Coral"               },
+   {DEF_SCN_LIGHTSALMON         , L"Lightsalmon"         },
+   {DEF_SCN_ORANGERED           , L"Orangered"           },
+   {DEF_SCN_SIENNA              , L"Sienna"              },
+   {DEF_SCN_SEASHELL            , L"Seashell"            },
+   {DEF_SCN_CHOCOLATE           , L"Chocolate"           },
+   {DEF_SCN_SADDLEBROWN         , L"Saddlebrown"         },
+   {DEF_SCN_PEACHPUFF           , L"Peachpuff"           },
+   {DEF_SCN_SANDYBROWN          , L"Sandybrown"          },
+   {DEF_SCN_LINEN               , L"Linen"               },
+   {DEF_SCN_PERU                , L"Peru"                },
+   {DEF_SCN_BISQUE              , L"Bisque"              },
+   {DEF_SCN_DARKORANGE          , L"Darkorange"          },
+   {DEF_SCN_ANTIQUEWHITE        , L"Antiquewhite"        },
+   {DEF_SCN_TAN                 , L"Tan"                 },
+   {DEF_SCN_BURLYWOOD           , L"Burlywood"           },
+   {DEF_SCN_NAVAJOWHITE         , L"Navajowhite"         },
+   {DEF_SCN_PAPAYAWHIP          , L"Papayawhip"          },
+   {DEF_SCN_BLANCHEDALMOND      , L"Blanchedalmond"      },
+   {DEF_SCN_MOCCASIN            , L"Moccasin"            },
+   {DEF_SCN_FLORALWHITE         , L"Floralwhite"         },
+   {DEF_SCN_OLDLACE             , L"Oldlace"             },
+   {DEF_SCN_WHEAT               , L"Wheat"               },
+   {DEF_SCN_ORANGE              , L"Orange"              },
+   {DEF_SCN_GOLDENROD           , L"Goldenrod"           },
+   {DEF_SCN_DARKGOLDENROD       , L"Darkgoldenrod"       },
+   {DEF_SCN_CORNSILK            , L"Cornsilk"            },
+   {DEF_SCN_GOLD                , L"Gold"                },
+   {DEF_SCN_LEMONCHIFFON        , L"Lemonchiffon"        },
+   {DEF_SCN_KHAKI               , L"Khaki"               },
+   {DEF_SCN_PALEGOLDENROD       , L"Palegoldenrod"       },
+   {DEF_SCN_DARKKHAKI           , L"Darkkhaki"           },
+   {DEF_SCN_IVORY               , L"Ivory"               },
+   {DEF_SCN_BEIGE               , L"Beige"               },
+   {DEF_SCN_LIGHTYELLOW         , L"Lightyellow"         },
+   {DEF_SCN_LIGHTGOLDENRODYELLOW, L"Lightgoldenrodyellow"},
+   {DEF_SCN_OLIVE               , L"Olive"               },
+   {DEF_SCN_YELLOW              , L"Yellow"              },
+   {DEF_SCN_OLIVEDRAB           , L"Olivedrab"           },
+   {DEF_SCN_YELLOWGREEN         , L"Yellowgreen"         },
+   {DEF_SCN_DARKOLIVEGREEN      , L"Darkolivegreen"      },
+   {DEF_SCN_GREENYELLOW         , L"Greenyellow"         },
+   {DEF_SCN_LAWNGREEN           , L"Lawngreen"           },
+   {DEF_SCN_CHARTREUSE          , L"Chartreuse"          },
+   {DEF_SCN_HONEYDEW            , L"Honeydew"            },
+   {DEF_SCN_DARKSEAGREEN        , L"Darkseagreen"        },
+   {DEF_SCN_LIGHTGREEN          , L"Lightgreen"          },
+   {DEF_SCN_PALEGREEN           , L"Palegreen"           },
+   {DEF_SCN_FORESTGREEN         , L"Forestgreen"         },
+   {DEF_SCN_LIMEGREEN           , L"Limegreen"           },
+   {DEF_SCN_DARKGREEN           , L"Darkgreen"           },
+   {DEF_SCN_GREEN               , L"Green"               },
+   {DEF_SCN_LIME                , L"Lime"                },
+   {DEF_SCN_MEDIUMSEAGREEN      , L"Mediumseagreen"      },
+   {DEF_SCN_SEAGREEN            , L"Seagreen"            },
+   {DEF_SCN_MINTCREAM           , L"Mintcream"           },
+   {DEF_SCN_SPRINGGREEN         , L"Springgreen"         },
+   {DEF_SCN_MEDIUMSPRINGGREEN   , L"Mediumspringgreen"   },
+   {DEF_SCN_MEDIUMAQUAMARINE    , L"Mediumaquamarine"    },
+   {DEF_SCN_AQUAMARINE          , L"Aquamarine"          },
+   {DEF_SCN_TURQUOISE           , L"Turquoise"           },
+   {DEF_SCN_LIGHTSEAGREEN       , L"Lightseagreen"       },
+   {DEF_SCN_MEDIUMTURQUOISE     , L"Mediumturquoise"     },
+   {DEF_SCN_AZURE               , L"Azure"               },
+   {DEF_SCN_LIGHTCYAN           , L"Lightcyan"           },
+   {DEF_SCN_PALETURQUOISE       , L"Paleturquoise"       },
+   {DEF_SCN_DARKSLATEGRAY       , L"Darkslategray"       },
+   {DEF_SCN_TEAL                , L"Teal"                },
+   {DEF_SCN_DARKCYAN            , L"Darkcyan"            },
+   {DEF_SCN_DARKTURQUOISE       , L"Darkturquoise"       },
+   {DEF_SCN_CYAN                , L"Cyan"                },
+   {DEF_SCN_AQUA                , L"Aqua"                },
+   {DEF_SCN_CADETBLUE           , L"Cadetblue"           },
+   {DEF_SCN_POWDERBLUE          , L"Powderblue"          },
+   {DEF_SCN_LIGHTBLUE           , L"Lightblue"           },
+   {DEF_SCN_DEEPSKYBLUE         , L"Deepskyblue"         },
+   {DEF_SCN_SKYBLUE             , L"Skyblue"             },
+   {DEF_SCN_LIGHTSKYBLUE        , L"Lightskyblue"        },
+   {DEF_SCN_ALICEBLUE           , L"Aliceblue"           },
+   {DEF_SCN_STEELBLUE           , L"Steelblue"           },
+   {DEF_SCN_DODGERBLUE          , L"Dodgerblue"          },
+   {DEF_SCN_SLATEGRAY           , L"Slategray"           },
+   {DEF_SCN_LIGHTSLATEGRAY      , L"Lightslategray"      },
+   {DEF_SCN_LIGHTSTEELBLUE      , L"Lightsteelblue"      },
+   {DEF_SCN_CORNFLOWERBLUE      , L"Cornflowerblue"      },
+   {DEF_SCN_ROYALBLUE           , L"Royalblue"           },
+   {DEF_SCN_GHOSTWHITE          , L"Ghostwhite"          },
+   {DEF_SCN_LAVENDER            , L"Lavender"            },
+   {DEF_SCN_MIDNIGHTBLUE        , L"Midnightblue"        },
+   {DEF_SCN_NAVY                , L"Navy"                },
+   {DEF_SCN_DARKBLUE            , L"Darkblue"            },
+   {DEF_SCN_MEDIUMBLUE          , L"Mediumblue"          },
+   {DEF_SCN_BLUE                , L"Blue"                },
+   {DEF_SCN_DARKSLATEBLUE       , L"Darkslateblue"       },
+   {DEF_SCN_SLATEBLUE           , L"Slateblue"           },
+   {DEF_SCN_MEDIUMSLATEBLUE     , L"Mediumslateblue"     },
+   {DEF_SCN_MEDIUMPURPLE        , L"Mediumpurple"        },
+   {DEF_SCN_BLUEVIOLET          , L"Blueviolet"          },
+   {DEF_SCN_INDIGO              , L"Indigo"              },
+   {DEF_SCN_DARKORCHID          , L"Darkorchid"          },
+   {DEF_SCN_DARKVIOLET          , L"Darkviolet"          },
+   {DEF_SCN_MEDIUMORCHID        , L"Mediumorchid"        },
+   {DEF_SCN_THISTLE             , L"Thistle"             },
+   {DEF_SCN_PLUM                , L"Plum"                },
+   {DEF_SCN_VIOLET              , L"Violet"              },
+   {DEF_SCN_PURPLE              , L"Purple"              },
+   {DEF_SCN_DARKMAGENTA         , L"Darkmagenta"         },
+   {DEF_SCN_FUCHSIA             , L"Fuchsia"             },
+   {DEF_SCN_MAGENTA             , L"Magenta"             },
+   {DEF_SCN_ORCHID              , L"Orchid"              },
+   {DEF_SCN_MEDIUMVIOLETRED     , L"Mediumvioletred"     },
+   {DEF_SCN_DEEPPINK            , L"Deeppink"            },
+   {DEF_SCN_HOTPINK             , L"Hotpink"             },
+   {DEF_SCN_LAVENDERBLUSH       , L"Lavenderblush"       },
+   {DEF_SCN_PALEVIOLETRED       , L"Palevioletred"       },
+   {DEF_SCN_CRIMSON             , L"Crimson"             },
+   {DEF_SCN_PINK                , L"Pink"                },
+   {DEF_SCN_LIGHTPINK           , L"Lightpink"           },
+}
+#endif
+;
+
+EXTERN
+UINT uColorNames
+#ifdef DEFINE_VALUES
+= countof (aColorNames)
 #endif
 ;
 
@@ -1373,30 +1594,6 @@ OPTIONFLAGS OptionFlags
 #endif
 ;
 
-EXTERN
-UBOOL gSyntClrBGTrans[SC_LENGTH]
-#ifdef DEFINE_VALUES
-= {TRUE,                    // 00:  Global Name
-   TRUE,                    // 01:  Local Name
-   TRUE,                    // 02:  Label
-   TRUE,                    // 03:  Primitive
-   TRUE,                    // 04:  System Function
-   TRUE,                    // 05:  Global System Var
-   TRUE,                    // 06:  Local  ...
-   TRUE,                    // 07:  Control Structure
-   TRUE,                    // 08:  Numeric Constant
-   TRUE,                    // 09:  Character ...
-   TRUE,                    // 0A:  Comment
-   TRUE,                    // 0B:  Matched Grouping Symbol, Level 1
-   TRUE,                    // 0C:  ...                            2
-   TRUE,                    // 0D:  ...                            3
-   TRUE,                    // 0E:  ...                            4
-   TRUE,                    // 0F:  Unmatched Grouping Symbol
-   TRUE,                    // 10:  Unknown Symbol
-  }
-#endif
-;
-
 typedef enum tagFONTENUM
 {
     FONTENUM_SM = 0,                    // 00:  Session Manager font
@@ -1474,7 +1671,7 @@ CUSTOMIZE custStruc[]
 EXTERN
 UINT custStrucLen
 #ifdef DEFINE_VALUES
-= itemsizeof (custStruc)
+= countof (custStruc)
 #endif
 ;
 

@@ -1032,22 +1032,23 @@ HGLOBAL SF_UndoBufferLW
 #endif
 
 UBOOL SaveFunctionCom
-    (HWND      hWndFE,                  // Function Editor window handle (FE only, NULL otherwise)
-     LPSF_FCNS lpSF_Fcns)               // Ptr to common struc
+    (HWND      hWndFE,                      // Function Editor window handle (FE only, NULL otherwise)
+     LPSF_FCNS lpSF_Fcns)                   // Ptr to common struc
 
 {
-    HWND           hWndEC = NULL;       // Window handle to Edit Ctrl
-    UINT           uLineLen;            // Line length
-    HGLOBAL        hGlbTxtHdr = NULL,   // Header text global memory handle
-                   hGlbTknHdr = NULL,   // Tokenized header text ...
-                   hGlbDfnHdr = NULL;   // User-defined function/operator header ...
-    LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
-    FHLOCALVARS    fhLocalVars = {0};   // Re-entrant vars
-    HGLOBAL        hGlbPTD;             // PerTabData global memory handle
-    LPPERTABDATA   lpMemPTD;            // Ptr to PerTabData global memory
-    WCHAR          wszTemp[1024];       // Save area for error message text
-    MEMVIRTSTR     lclMemVirtStr[1] = {0};// Room for one GuardAlloc
-    LPTOKEN        lptkCSBeg;           // Ptr to next token on the CS stack
+    HWND           hWndEC = NULL;           // Window handle to Edit Ctrl
+    UINT           uLineLen;                // Line length
+    HGLOBAL        hGlbTxtHdr = NULL,       // Header text global memory handle
+                   hGlbTknHdr = NULL,       // Tokenized header text ...
+                   hGlbDfnHdr = NULL;       // User-defined function/operator header ...
+    LPDFN_HEADER   lpMemDfnHdr = NULL;      // Ptr to user-defined function/operator header ...
+    LPMEMTXT_UNION lpMemTxtLine;            // Ptr to header/line text global memory
+    FHLOCALVARS    fhLocalVars = {0};       // Re-entrant vars
+    HGLOBAL        hGlbPTD;                 // PerTabData global memory handle
+    LPPERTABDATA   lpMemPTD;                // Ptr to PerTabData global memory
+    WCHAR          wszTemp[1024];           // Save area for error message text
+    MEMVIRTSTR     lclMemVirtStr[1] = {0};  // Room for one GuardAlloc
+    LPTOKEN        lptkCSBeg;               // Ptr to next token on the CS stack
 
     // Fill in common values
     lpSF_Fcns->bRet = FALSE;
@@ -1201,7 +1202,6 @@ UBOOL SaveFunctionCom
                      numLocalsSTE,      // # locals ...
                      numFcnLines,       // # lines in the function
                      numSTE;            // Loop counter
-        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
         LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
         LPSYMENTRY   lpSymName = NULL,  // Ptr to SYMENTRY for the function name
                     *lplpSymDfnHdr;     // Ptr to LPSYMENTRYs at end of user-defined function/operator header
@@ -1675,6 +1675,13 @@ ERROR_EXIT:
 
     if (hGlbDfnHdr)
     {
+        if (lpMemDfnHdr)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+        } // End IF
+
+        // We no longer need this storage
         FreeResultGlobalDfn (hGlbDfnHdr); hGlbDfnHdr = NULL;
         hGlbTknHdr = hGlbTxtHdr = NULL;
     } // End IF
@@ -1731,6 +1738,10 @@ UBOOL IsLineEmpty
 {
     LPTOKEN lptkLine;                   // Ptr to line of tokens
     UBOOL   bRet = FALSE;               // TRUE iff the line is empty
+
+    // Handle tokenize error
+    if (hGlbTknLine EQ NULL)
+        return TRUE;
 
     // Lock the memory to get a ptr to it
     lptkLine = MyGlobalLock (hGlbTknLine);

@@ -106,11 +106,43 @@
 #define KEYNAME_SC_MATCHGRP3            L"MatchGrp3"
 #define KEYNAME_SC_MATCHGRP4            L"MatchGrp4"
 #define KEYNAME_SC_UNMATCHGRP           L"UnmatchGrp"
+#define KEYNAME_SC_UNNESTED             L"UnnestedGrp"
 #define KEYNAME_SC_UNK                  L"Unk"
+
+#define KEYNAME_CUSTOMCOLORS            L"CustomColors"
 
 // Format string for [Fonts] section LOGFONTW
 #define FMTSTR_LOGFONT_INP      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
 #define FMTSTR_LOGFONT_OUT      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
+
+// Format string for [Colors] section
+#define FMTSTR_SYNTAXCOLOR      L"%u, %u, %u"
+#define FMTSTR_CUSTOMCOLORS     L"%u, %u, %u, %u, " \
+                                L"%u, %u, %u, %u, " \
+                                L"%u, %u, %u, %u, " \
+                                L"%u, %u, %u, %u"
+
+// Array of keynames for use in [Colors] section
+LPWCHAR aColorKeyNames[] =
+{KEYNAME_SC_GLBNAME   ,
+ KEYNAME_SC_LCLNAME   ,
+ KEYNAME_SC_LABEL     ,
+ KEYNAME_SC_PRIM      ,
+ KEYNAME_SC_SYSFCN    ,
+ KEYNAME_SC_GLBSYSVAR ,
+ KEYNAME_SC_LCLSYSVAR ,
+ KEYNAME_SC_CTRLSTRUC ,
+ KEYNAME_SC_NUMCONST  ,
+ KEYNAME_SC_CHRCONST  ,
+ KEYNAME_SC_COMMENT   ,
+ KEYNAME_SC_MATCHGRP1 ,
+ KEYNAME_SC_MATCHGRP2 ,
+ KEYNAME_SC_MATCHGRP3 ,
+ KEYNAME_SC_MATCHGRP4 ,
+ KEYNAME_SC_UNMATCHGRP,
+ KEYNAME_SC_UNNESTED  ,
+ KEYNAME_SC_UNK       ,
+};
 
 
 //***************************************************************************
@@ -129,7 +161,7 @@ UBOOL CreateAppDataDirs
     WCHAR        wszTemp[1024];
     UINT         uNxt;
 
-#define TEMPBUFLEN      itemsizeof (wszTemp)
+#define TEMPBUFLEN      countof (wszTemp)
 #define WS_APPDATA          L"APPDATA"
 
     // If we didn't find it, ...
@@ -233,7 +265,7 @@ void ReadIniFileGlb
          *lpwszTemp;                // Temporary ptr into wszTemp
     UINT  uCnt;                     // Loop counter
 
-#define TEMPBUFLEN      itemsizeof (wszTemp)
+#define TEMPBUFLEN      countof (wszTemp)
 
     //***************************************************************
     // Read in the [Fonts] section
@@ -565,9 +597,31 @@ void ReadIniFileGlb
     // Read in the [Colors] section
     //***************************************************************
 
-    // Read in GlbName
+    Assert (SC_LENGTH EQ countof (aColorKeyNames));
+
+    // Loop through the color names
+    for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+    {
+        // Read in the string
+        GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
+                                  aColorKeyNames[uCnt], // Ptr to the key name
+                                  L"",                  // Ptr to the default value
+                                  wszTemp,              // Ptr to the output buffer
+                                  TEMPBUFLEN,           // Byte size of the output buffer
+                                  lpwszIniFile);        // Ptr to the file name
+        // Check for value
+        if (wszTemp[0] NE L'\0')
+            // Convert the numbers
+            swscanf (wszTemp,
+                     FMTSTR_SYNTAXCOLOR,
+                    &gSyntaxColors  [uCnt].crFore,
+                    &gSyntaxColors  [uCnt].crBack,
+                    &gSyntClrBGTrans[uCnt]);
+    } // End FOR
+
+    // Read in the CustomColors
     GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_GLBNAME,   // Ptr to the key name
+                              KEYNAME_CUSTOMCOLORS, // Ptr to the key name
                               L"",                  // Ptr to the default value
                               wszTemp,              // Ptr to the output buffer
                               TEMPBUFLEN,           // Byte size of the output buffer
@@ -576,250 +630,11 @@ void ReadIniFileGlb
     if (wszTemp[0] NE L'\0')
         // Convert the numbers
         swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_GLBNAME].crFore,
-                &gSyntaxColors  [SC_GLBNAME].crBack,
-                &gSyntClrBGTrans[SC_GLBNAME]);
-    // Read in LclName
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_LCLNAME,   // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_LCLNAME].crFore,
-                &gSyntaxColors  [SC_LCLNAME].crBack,
-                &gSyntClrBGTrans[SC_LCLNAME]);
-    // Read in Label
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_LABEL,     // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_LABEL].crFore,
-                &gSyntaxColors  [SC_LABEL].crBack,
-                &gSyntClrBGTrans[SC_LABEL]);
-    // Read in Prim
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_PRIM,      // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_PRIMITIVE].crFore,
-                &gSyntaxColors  [SC_PRIMITIVE].crBack,
-                &gSyntClrBGTrans[SC_PRIMITIVE]);
-    // Read in SysFcn
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_SYSFCN,    // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_SYSFCN].crFore,
-                &gSyntaxColors  [SC_SYSFCN].crBack,
-                &gSyntClrBGTrans[SC_SYSFCN]);
-    // Read in GlbSysVar
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_GLBSYSVAR, // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_GLBSYSVAR].crFore,
-                &gSyntaxColors  [SC_GLBSYSVAR].crBack,
-                &gSyntClrBGTrans[SC_GLBSYSVAR]);
-    // Read in LclSysVar
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_LCLSYSVAR, // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_LCLSYSVAR].crFore,
-                &gSyntaxColors  [SC_LCLSYSVAR].crBack,
-                &gSyntClrBGTrans[SC_LCLSYSVAR]);
-    // Read in CtrlStruc
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_CTRLSTRUC, // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_CTRLSTRUC].crFore,
-                &gSyntaxColors  [SC_CTRLSTRUC].crBack,
-                &gSyntClrBGTrans[SC_CTRLSTRUC]);
-    // Read in NumConst
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_NUMCONST,  // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_NUMCONST].crFore,
-                &gSyntaxColors  [SC_NUMCONST].crBack,
-                &gSyntClrBGTrans[SC_NUMCONST]);
-    // Read in ChrConst
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_CHRCONST,  // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_CHRCONST].crFore,
-                &gSyntaxColors  [SC_CHRCONST].crBack,
-                &gSyntClrBGTrans[SC_CHRCONST]);
-    // Read in Comment
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_COMMENT,   // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_COMMENT].crFore,
-                &gSyntaxColors  [SC_COMMENT].crBack,
-                &gSyntClrBGTrans[SC_COMMENT]);
-    // Read in MatchGrp1
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_MATCHGRP1, // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_MATCHGRP1].crFore,
-                &gSyntaxColors  [SC_MATCHGRP1].crBack,
-                &gSyntClrBGTrans[SC_MATCHGRP1]);
-    // Read in MatchGrp2
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_MATCHGRP2, // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_MATCHGRP2].crFore,
-                &gSyntaxColors  [SC_MATCHGRP2].crBack,
-                &gSyntClrBGTrans[SC_MATCHGRP2]);
-    // Read in MatchGrp3
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_MATCHGRP3, // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_MATCHGRP3].crFore,
-                &gSyntaxColors  [SC_MATCHGRP3].crBack,
-                &gSyntClrBGTrans[SC_MATCHGRP3]);
-    // Read in MatchGrp4
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_MATCHGRP4, // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_MATCHGRP4].crFore,
-                &gSyntaxColors  [SC_MATCHGRP4].crBack,
-                &gSyntClrBGTrans[SC_MATCHGRP4]);
-    // Read in UnmatchGrp
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_UNMATCHGRP,// Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_UNMATCHGRP].crFore,
-                &gSyntaxColors  [SC_UNMATCHGRP].crBack,
-                &gSyntClrBGTrans[SC_UNMATCHGRP]);
-    // Read in Unk
-    GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
-                              KEYNAME_SC_UNK,       // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
-                              lpwszIniFile);        // Ptr to the file name
-    // Check for value
-    if (wszTemp[0] NE L'\0')
-        // Convert the numbers
-        swscanf (wszTemp,
-                 L"%u, %u, %u",
-                &gSyntaxColors  [SC_UNK].crFore,
-                &gSyntaxColors  [SC_UNK].crBack,
-                &gSyntClrBGTrans[SC_UNK]);
+                 FMTSTR_CUSTOMCOLORS,
+                &aCustomColors[ 0], &aCustomColors[ 1], &aCustomColors[ 2], &aCustomColors[ 3],
+                &aCustomColors[ 4], &aCustomColors[ 5], &aCustomColors[ 6], &aCustomColors[ 7],
+                &aCustomColors[ 8], &aCustomColors[ 9], &aCustomColors[10], &aCustomColors[11],
+                &aCustomColors[12], &aCustomColors[13], &aCustomColors[14], &aCustomColors[15]);
 #undef  TEMPBUFLEN
 } // End ReadIniFileGlb
 
@@ -1800,191 +1615,31 @@ void SaveIniFile
     // Write out [Colors] section entries
     //*********************************************************
 
-    //****************** GlbName ******************************
+    // Loop through the color names
+    for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+    {
+         wsprintfW (wszTemp,
+                    FMTSTR_SYNTAXCOLOR,
+                    gSyntaxColors  [uCnt].crFore,
+                    gSyntaxColors  [uCnt].crBack,
+                    gSyntClrBGTrans[uCnt]);
+        // Write out the entry
+        WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
+                                    aColorKeyNames[uCnt],       // Ptr to the key name
+                                    wszTemp,                    // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+    } // End FOR
+
+    // Write out the CustomColors
      wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_GLBNAME].crFore,
-                gSyntaxColors  [SC_GLBNAME].crBack,
-                gSyntClrBGTrans[SC_GLBNAME]);
-    // Write out GlbName
+                FMTSTR_CUSTOMCOLORS,
+                aCustomColors[ 0], aCustomColors[ 1], aCustomColors[ 2], aCustomColors[ 3],
+                aCustomColors[ 4], aCustomColors[ 5], aCustomColors[ 6], aCustomColors[ 7],
+                aCustomColors[ 8], aCustomColors[ 9], aCustomColors[10], aCustomColors[11],
+                aCustomColors[12], aCustomColors[13], aCustomColors[14], aCustomColors[15]);
+    // Write out the entry
     WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_GLBNAME,         // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** LclName ******************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_LCLNAME].crFore,
-                gSyntaxColors  [SC_LCLNAME].crBack,
-                gSyntClrBGTrans[SC_LCLNAME]);
-    // Write out LclName
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_LCLNAME,         // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** Label ********************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_LABEL].crFore,
-                gSyntaxColors  [SC_LABEL].crBack,
-                gSyntClrBGTrans[SC_LABEL]);
-    // Write out Label
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_LABEL,           // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** Prim *********************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_PRIMITIVE].crFore,
-                gSyntaxColors  [SC_PRIMITIVE].crBack,
-                gSyntClrBGTrans[SC_PRIMITIVE]);
-    // Write out Prim
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_PRIM,            // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** SysFcn *******************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_SYSFCN].crFore,
-                gSyntaxColors  [SC_SYSFCN].crBack,
-                gSyntClrBGTrans[SC_SYSFCN]);
-    // Write out SysFcn
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_SYSFCN,          // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** GlbSysVar ****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_GLBSYSVAR].crFore,
-                gSyntaxColors  [SC_GLBSYSVAR].crBack,
-                gSyntClrBGTrans[SC_GLBSYSVAR]);
-    // Write out GlbSysVar
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_GLBSYSVAR,       // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** LclSysVar ****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_LCLSYSVAR].crFore,
-                gSyntaxColors  [SC_LCLSYSVAR].crBack,
-                gSyntClrBGTrans[SC_LCLSYSVAR]);
-    // Write out LclSysVar
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_LCLSYSVAR,       // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** CtrlStruc ****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_CTRLSTRUC].crFore,
-                gSyntaxColors  [SC_CTRLSTRUC].crBack,
-                gSyntClrBGTrans[SC_CTRLSTRUC]);
-    // Write out CtrlStruc
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_CTRLSTRUC,       // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** NumConst *****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_NUMCONST].crFore,
-                gSyntaxColors  [SC_NUMCONST].crBack,
-                gSyntClrBGTrans[SC_NUMCONST]);
-    // Write out NumConst
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_NUMCONST,        // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** ChrConst *****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_CHRCONST].crFore,
-                gSyntaxColors  [SC_CHRCONST].crBack,
-                gSyntClrBGTrans[SC_CHRCONST]);
-    // Write out ChrConst
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_CHRCONST,        // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** Comment ******************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_COMMENT].crFore,
-                gSyntaxColors  [SC_COMMENT].crBack,
-                gSyntClrBGTrans[SC_COMMENT]);
-    // Write out Comment
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_COMMENT,         // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** MatchGrp1 ****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_MATCHGRP1].crFore,
-                gSyntaxColors  [SC_MATCHGRP1].crBack,
-                gSyntClrBGTrans[SC_MATCHGRP1]);
-    // Write out MatchGrp1
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_MATCHGRP1,       // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** MatchGrp2 ****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_MATCHGRP2].crFore,
-                gSyntaxColors  [SC_MATCHGRP2].crBack,
-                gSyntClrBGTrans[SC_MATCHGRP2]);
-    // Write out MatchGrp2
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_MATCHGRP2,       // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** MatchGrp3 ****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_MATCHGRP3].crFore,
-                gSyntaxColors  [SC_MATCHGRP3].crBack,
-                gSyntClrBGTrans[SC_MATCHGRP3]);
-    // Write out MatchGrp3
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_MATCHGRP3,       // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** MatchGrp4 ****************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_MATCHGRP4].crFore,
-                gSyntaxColors  [SC_MATCHGRP4].crBack,
-                gSyntClrBGTrans[SC_MATCHGRP4]);
-    // Write out MatchGrp4
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_MATCHGRP4,       // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** UnmatchGrp ***************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_UNMATCHGRP].crFore,
-                gSyntaxColors  [SC_UNMATCHGRP].crBack,
-                gSyntClrBGTrans[SC_UNMATCHGRP]);
-    // Write out UnmatchGrp
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_UNMATCHGRP,      // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //****************** Unk **********************************
-     wsprintfW (wszTemp,
-                L"%u, %u, %u",
-                gSyntaxColors  [SC_UNK].crFore,
-                gSyntaxColors  [SC_UNK].crBack,
-                gSyntClrBGTrans[SC_UNK]);
-    // Write out Unk
-    WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
-                                KEYNAME_SC_UNK,             // Ptr to the key name
+                                KEYNAME_CUSTOMCOLORS,       // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
 } // End SaveIniFile

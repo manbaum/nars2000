@@ -59,8 +59,8 @@
 #define DEF_CURWID_INS      5           // Cursor width for insert mode
 #define DEF_CURWID_REP      2           // ...              replace ...
 #define DEF_HISTLINES    3000           // # lines in history buffer
-#define DEF_TEXT_FG_COLOR   COLOR_RED
-#define DEF_TEXT_BG_COLOR   COLOR_WHITE
+#define DEF_TEXT_FG_COLOR   DEF_SCN_RED
+#define DEF_TEXT_BG_COLOR   DEF_SCN_WHITE
 
 // Size of storage areas
 #define DEF_NUM_INITSIZE        (     1024)                 // Initial size for lpszNum

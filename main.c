@@ -25,6 +25,7 @@
 #define _WIN32_WINNT 0x0500 // ...
 
 #define STRICT
+#define OEMRESOURCE         // To get OBM_CHECK define
 #include <windows.h>
 #include <windowsx.h>
 #include <windowsx.h16>
@@ -36,7 +37,6 @@
 #include <wininet.h>
 
 #include "uniscribe.h"
-#include "colors.h"
 #include "main.h"
 #include "resdebug.h"
 #include "resource.h"
@@ -189,7 +189,7 @@ UBOOL CALLBACK EnumCallbackSetFontW
         return TRUE;                    // skip it, and continue enumerating
 
     // Get the window's class name
-    GetClassNameW (hWnd, wszTemp, itemsizeof (wszTemp));
+    GetClassNameW (hWnd, wszTemp, countof (wszTemp));
 
 #define lpEnumSetFontW  ((LPENUMSETFONTW) lParam)
 
@@ -885,10 +885,14 @@ LRESULT APIENTRY MFWndProc
             hBitMapLineCont = MyLoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
             if (hBitMapLineCont)
             {
-                GetObject (hBitMapLineCont, sizeof (BITMAP), (LPSTR) &bmLineCont);
+                GetObject (hBitMapLineCont, sizeof (BITMAP), (LPVOID) &bmLineCont);
 
                 iLCWidth = 2 + bmLineCont.bmWidth + 2;  // Width of line continuation column
             } // End IF
+
+            hBitMapCheck  = MyLoadBitmap (NULL, MAKEINTRESOURCE (OBM_CHECK));
+            if (hBitMapCheck)
+                GetObject (hBitMapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
 
             // *************** Image Lists *****************************
             hImageList =
@@ -1725,6 +1729,11 @@ LRESULT APIENTRY MFWndProc
                 MyDeleteObject (hBitMapLineCont); hBitMapLineCont = NULL;
             } // End IF
 
+            if (hBitMapCheck)
+            {
+                MyDeleteObject (hBitMapCheck); hBitMapCheck = NULL;
+            } // End IF
+
             // Say goodbye
             PostQuitMessage (0);
 
@@ -1875,7 +1884,7 @@ UBOOL IzitDB
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, itemlengthof (wszClassName));
+    GetClassNameW (hWnd, wszClassName, strlengthof (wszClassName));
 
     return (lstrcmpW (wszClassName, LDBWNDCLASS) EQ 0);
 } // End IzitDB
@@ -2126,7 +2135,7 @@ UBOOL CALLBACK UpdatesDlgProc
 ////            LOGFONTW lf;
 ////
 ////            // Set the text color
-////            SetTextColor (hDC, COLOR_BLUE);
+////            SetTextColor (hDC, DEF_SCN_BLUE);
 ////
 ////            // Set the background text color
 ////            SetBkColor (hDC, GetSysColor (COLOR_BTNFACE));
@@ -2445,7 +2454,7 @@ UBOOL InitInstance
     // *************** Fonts ***********************************
     // Enumerate fonts to ensure our default font is installed
     hDC = MyGetDC (HWND_DESKTOP);
-    SetAttrs (hDC, NULL, COLOR_BLACK, COLOR_WHITE);
+    SetAttrs (hDC, NULL, DEF_SCN_BLACK, DEF_SCN_WHITE);
     EnumFontsW (hDC,
                 DEF_APLFONT_INTNAME,
                 (FONTENUMPROCW) EnumCallbackFindAplFont,
@@ -2467,7 +2476,7 @@ UBOOL InitInstance
             WCHAR wszTemp[_MAX_PATH];
 
             // Get the Windows directory (parent of the Fonts folder)
-            GetWindowsDirectoryW (wszTemp, itemsizeof (wszTemp));
+            GetWindowsDirectoryW (wszTemp, countof (wszTemp));
             lstrcatW (wszTemp, L"\\Fonts\\" DEF_APLFONT_FILE);
 
             // Copy the file to the Fonts folder without Overwrite
@@ -2486,7 +2495,7 @@ UBOOL InitInstance
                                     dwError,                    // Requested message identifier
                                     0,                          // Language identifier for requested message
                                     wszError,                   // Pointer to message buffer
-                                    itemsizeof (wszError),      // Maximum size of message buffer
+                                    countof (wszError),         // Maximum size of message buffer
                                     NULL);                      // Address of array of message inserts
                     MessageBoxW (NULL,
                                  wszError,
@@ -2751,6 +2760,7 @@ int PASCAL WinMain
 
 {
     MSG  Msg;                       // Message for GetMessageW loop
+    UINT uCnt;                      // Loop counter
 
 #ifdef PERFMONON
     MessageBeep (NEG1U);
@@ -2758,6 +2768,13 @@ int PASCAL WinMain
     SetCursor (LoadCursor (NULL, MAKEINTRESOURCE (IDC_APPSTARTING)));
 
     PERFMONINIT
+
+    // Copy initial Syntax Colors as default
+    for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+    {
+        defSyntaxColors  [uCnt] = gSyntaxColors  [uCnt];
+        defSyntClrBGTrans[uCnt] = gSyntClrBGTrans[uCnt];
+    } // End IF
 
     // This is needed by Wine's EDITCTRL.C
     user32_module = hInstance;

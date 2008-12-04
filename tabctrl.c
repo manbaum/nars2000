@@ -32,7 +32,6 @@
 #include "externs.h"
 #include "pertab.h"
 #include "threads.h"
-#include "colors.h"
 #include "editctrl.h"
 
 // Include prototypes unless prototyping
@@ -65,26 +64,26 @@ typedef struct tagTABCOLORS
 } TABCOLORS;
 
 TABCOLORS crTab[] =
-//                           Text              Text
-//     Background         Foreground         Highlight
+//                                Text          Text
+//     Background              Foreground     Highlight
 {
- {RGB (255,228,181), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Moccasin              1
- {RGB (255,  0,255), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Fuchsia               2
- {RGB (123,104,238), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Medium slate blue     3
- {RGB ( 30,144,255), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dodger blue           4
- {RGB ( 50,205, 50), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Line green            5
- {RGB (255,215,  0), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Gold                  6
- {RGB (189,183,107), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark khaki            7
- {RGB (222,184,135), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Burly wood            8
- {RGB (193,208,165), RGB (  0,  0,  0), RGB (255,  0,  0)}, //                       9
- {RGB (244,164, 96), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Sandy brown          10
- {RGB (184,134, 11), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark goldenrod       11
- {RGB (  0,250,154), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Medium spring green  12
- {RGB (173,255, 47), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Green yellow         13
- {RGB (148,  0,211), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Dark violet          14
- {RGB (230,230,250), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Lavender             15
- {RGB (255,105,180), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Hot pink             16
- {RGB (220, 20, 60), RGB (  0,  0,  0), RGB (255,  0,  0)}, // Crimson              17
+ {DEF_SCN_MOCCASIN          , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_FUCHSIA           , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_MEDIUMSLATEBLUE   , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_DODGERBLUE        , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_LIMEGREEN         , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_GOLD              , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_DARKKHAKI         , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_BURLYWOOD         , DEF_SCN_BLACK, DEF_SCN_RED},
+ {RGB (193,208,165)         , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_SANDYBROWN        , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_DARKGOLDENROD     , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_MEDIUMSPRINGGREEN , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_GREENYELLOW       , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_DARKVIOLET        , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_LAVENDER          , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_HOTPINK           , DEF_SCN_BLACK, DEF_SCN_RED},
+ {DEF_SCN_CRIMSON           , DEF_SCN_BLACK, DEF_SCN_RED},
 };
 
 #define NUM_CRTABS  itemsizeof (crTab)
@@ -1022,7 +1021,7 @@ void FillTabBackground
     int      i, nBands;
     RECT     rcBand;
     COLORREF crBand;
-    COLORREF rgbStart = RGB (255, 255, 255);    // White at the Bottom
+    COLORREF rgbStart = DEF_SCN_WHITE;          // White at the Bottom
     float    fRStep, fGStep, fBStep;
 
     // Calculate the # bands
@@ -1285,7 +1284,7 @@ void DrawTab
 
     // Save the existing pen so we can set one with the proper attributes
     hPenOrig = GetCurrentObject (hDC, OBJ_PEN);
-    hPenEllipse = MyCreatePen (PS_INSIDEFRAME, PEN_WIDTH, COLOR_BLACK);
+    hPenEllipse = MyCreatePen (PS_INSIDEFRAME, PEN_WIDTH, DEF_SCN_BLACK);
     SelectObject (hDC, hPenEllipse);
 
     // Draw the ellipse

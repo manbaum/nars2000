@@ -326,6 +326,7 @@ Welcome to NARS2000</h1>
       that system variable may assume</li>
     <li>Control structures on one line or split across multiple lines
       (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).</li>
+    <li>Syntax coloring of lines of APL in Function Editor and Session Manager windows</li>
   </ul>
 
   <h3>Wish List of Miscellaneous Features</h3>
@@ -333,7 +334,6 @@ Welcome to NARS2000</h1>
     <li>Line continuation marker for easier display of long lines &mdash;
       this also allows comments within a line</li>
     <li>Idiom recognition at tokenization time</li>
-    <li>Syntax coloring</li>
     <li>Language bar</li>
   </ul>
 </div>

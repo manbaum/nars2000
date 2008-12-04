@@ -305,9 +305,10 @@
 #define GetSignatureMem(a)  (((LPHEADER_SIGNATURE) (a))->nature)
 
 
-// Macros to get sizeof and lengthof for items
+// Macros to get countof for arrays and strlengthof for constant strings
 #define itemsizeof(a)       (sizeof (a) / sizeof ((a)[0]))
-#define itemlengthof(a)     (itemsizeof (a) - 1)
+#define countof(a)          (sizeof (a) / sizeof ((a)[0]))
+#define strlengthof(a)      (countof (a) - 1)
 
 
 //***************************************************************************

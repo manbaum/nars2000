@@ -264,6 +264,8 @@
 #define IDC_SYNTCLR_XB_TRANS15                   934
 #define IDC_SYNTCLR_XB_TRANS16                   935
 #define IDC_SYNTCLR_XB_TRANS17                   936
+#define IDC_SYNTCLR_XB_TRANS18                   937
+#define IDC_SYNTCLR_XB_TRANS_LAST               IDC_SYNTCLR_XB_TRANS18
 
 #define IDC_SYNTCLR_BN_FGCLR1                    940
 #define IDC_SYNTCLR_BN_FGCLR2                    941
@@ -282,6 +284,8 @@
 #define IDC_SYNTCLR_BN_FGCLR15                   954
 #define IDC_SYNTCLR_BN_FGCLR16                   955
 #define IDC_SYNTCLR_BN_FGCLR17                   956
+#define IDC_SYNTCLR_BN_FGCLR18                   957
+#define IDC_SYNTCLR_BN_FGCLR_LAST               IDC_SYNTCLR_BN_FGCLR18
 
 #define IDC_SYNTCLR_BN_BGCLR1                    960
 #define IDC_SYNTCLR_BN_BGCLR2                    961
@@ -300,20 +304,83 @@
 #define IDC_SYNTCLR_BN_BGCLR15                   974
 #define IDC_SYNTCLR_BN_BGCLR16                   975
 #define IDC_SYNTCLR_BN_BGCLR17                   976
+#define IDC_SYNTCLR_BN_BGCLR18                   977
+#define IDC_SYNTCLR_BN_BGCLR_LAST               IDC_SYNTCLR_BN_BGCLR18
 
-#define IDC_SYNTCLR_XB_CLRFCNS                   980
-#define IDC_SYNTCLR_XB_CLRSESS                   981
+#define IDC_SYNTCLR_LT_FGMRK1                    980
+#define IDC_SYNTCLR_LT_FGMRK2                    981
+#define IDC_SYNTCLR_LT_FGMRK3                    982
+#define IDC_SYNTCLR_LT_FGMRK4                    983
+#define IDC_SYNTCLR_LT_FGMRK5                    984
+#define IDC_SYNTCLR_LT_FGMRK6                    985
+#define IDC_SYNTCLR_LT_FGMRK7                    986
+#define IDC_SYNTCLR_LT_FGMRK8                    987
+#define IDC_SYNTCLR_LT_FGMRK9                    988
+#define IDC_SYNTCLR_LT_FGMRK10                   989
+#define IDC_SYNTCLR_LT_FGMRK11                   990
+#define IDC_SYNTCLR_LT_FGMRK12                   991
+#define IDC_SYNTCLR_LT_FGMRK13                   992
+#define IDC_SYNTCLR_LT_FGMRK14                   993
+#define IDC_SYNTCLR_LT_FGMRK15                   994
+#define IDC_SYNTCLR_LT_FGMRK16                   995
+#define IDC_SYNTCLR_LT_FGMRK17                   996
+#define IDC_SYNTCLR_LT_FGMRK18                   997
+#define IDC_SYNTCLR_LT_FGMRK_LAST               IDC_SYNTCLR_LT_FGMRK18
 
-#define IDC_USER_PREFS_XB_ADJUSTPW              1000
-#define IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE   1001
-#define IDC_USER_PREFS_XB_NEWTABONCLEAR         1002
-#define IDC_USER_PREFS_XB_NEWTABONLOAD          1003
-#define IDC_USER_PREFS_XB_USELOCALTIME          1004
-#define IDC_USER_PREFS_XB_BACKUPONLOAD          1005
-#define IDC_USER_PREFS_XB_BACKUPONSAVE          1006
-#define IDC_USER_PREFS_XB_NOCOPYRIGHTMSG        1007
-#define IDC_USER_PREFS_CB_DEFAULTPASTE          1008
-#define IDC_USER_PREFS_CB_DEFAULTCOPY           1009
+#define IDC_SYNTCLR_LT_BGMRK1                   1000
+#define IDC_SYNTCLR_LT_BGMRK2                   1001
+#define IDC_SYNTCLR_LT_BGMRK3                   1002
+#define IDC_SYNTCLR_LT_BGMRK4                   1003
+#define IDC_SYNTCLR_LT_BGMRK5                   1004
+#define IDC_SYNTCLR_LT_BGMRK6                   1005
+#define IDC_SYNTCLR_LT_BGMRK7                   1006
+#define IDC_SYNTCLR_LT_BGMRK8                   1007
+#define IDC_SYNTCLR_LT_BGMRK9                   1008
+#define IDC_SYNTCLR_LT_BGMRK10                  1009
+#define IDC_SYNTCLR_LT_BGMRK11                  1010
+#define IDC_SYNTCLR_LT_BGMRK12                  1011
+#define IDC_SYNTCLR_LT_BGMRK13                  1012
+#define IDC_SYNTCLR_LT_BGMRK14                  1013
+#define IDC_SYNTCLR_LT_BGMRK15                  1014
+#define IDC_SYNTCLR_LT_BGMRK16                  1015
+#define IDC_SYNTCLR_LT_BGMRK17                  1016
+#define IDC_SYNTCLR_LT_BGMRK18                  1017
+#define IDC_SYNTCLR_LT_BGMRK_LAST               IDC_SYNTCLR_LT_BGMRK18
+
+#define IDC_SYNTCLR_MI1                         1020
+#define IDC_SYNTCLR_MI2                         1021
+#define IDC_SYNTCLR_MI3                         1022
+#define IDC_SYNTCLR_MI4                         1023
+#define IDC_SYNTCLR_MI5                         1024
+#define IDC_SYNTCLR_MI6                         1025
+#define IDC_SYNTCLR_MI7                         1026
+#define IDC_SYNTCLR_MI8                         1027
+#define IDC_SYNTCLR_MI9                         1028
+#define IDC_SYNTCLR_MI10                        1029
+#define IDC_SYNTCLR_MI11                        1030
+#define IDC_SYNTCLR_MI12                        1031
+#define IDC_SYNTCLR_MI13                        1032
+#define IDC_SYNTCLR_MI14                        1033
+#define IDC_SYNTCLR_MI15                        1034
+#define IDC_SYNTCLR_MI16                        1035
+#define IDC_SYNTCLR_MI17                        1036
+#define IDC_SYNTCLR_MI_LAST                     IDC_SYNTCLR_MI17
+#define IDC_SYNTCLR_MI_CUSTOM                   IDC_SYNTCLR_MI_LAST // ID of the Custom Colors entry
+
+#define IDC_SYNTCLR_XB_CLRFCNS                  1040
+#define IDC_SYNTCLR_XB_CLRSESS                  1041
+#define IDC_SYNTCLR_BN_RESTORE                  1042
+
+#define IDC_USER_PREFS_XB_ADJUSTPW              1100
+#define IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE   1101
+#define IDC_USER_PREFS_XB_NEWTABONCLEAR         1102
+#define IDC_USER_PREFS_XB_NEWTABONLOAD          1103
+#define IDC_USER_PREFS_XB_USELOCALTIME          1104
+#define IDC_USER_PREFS_XB_BACKUPONLOAD          1105
+#define IDC_USER_PREFS_XB_BACKUPONSAVE          1106
+#define IDC_USER_PREFS_XB_NOCOPYRIGHTMSG        1107
+#define IDC_USER_PREFS_CB_DEFAULTPASTE          1108
+#define IDC_USER_PREFS_CB_DEFAULTCOPY           1109
 
 #define IDC_STATIC                       -1
 

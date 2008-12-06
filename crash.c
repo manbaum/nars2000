@@ -291,8 +291,8 @@ LRESULT WINAPI LclCCListboxWndProc
 
             break;
 
-        case WM_CONTEXTMENU:                // xPos = LOWORD(lParam);  // horizontal position of cursor
-                                            // yPos = HIWORD(lParam);  // vertical position of cursor
+        case WM_CONTEXTMENU:                // xPos = LOSHORT (lParam); // Horizontal position of cursor
+                                            // yPos = HISHORT (lParam); // Vertical position of cursor
             // Ensure there are items selected
             iSelCnt = (UINT) SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
 

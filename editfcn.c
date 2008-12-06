@@ -1338,7 +1338,7 @@ LRESULT WINAPI LclEditCtrlWndProc
     LPWCHAR      lpwszFormat;               // Ptr to formatting save area
     WNDPROC      lpfnOldEditCtrlWndProc =   // Ptr to preceding Edit Ctrl window procedure
                 &EditWndProcW;
-    LPWCHAR      lpwszTemp;                 // Ptr to temporary storage
+    LPWCHAR      lpwszTemp = NULL;          // Ptr to temporary storage
 
     // If the thread is MF, ...
     if (TLSTYPE_MF EQ TlsGetValue (dwTlsType))
@@ -1445,8 +1445,8 @@ LRESULT WINAPI LclEditCtrlWndProc
 
 #define ID_TIMER        1729
         case WM_CONTEXTMENU:                // hwnd = (HWND) wParam;
-                                            // xPos = LOWORD(lParam);
-                                            // yPos = HIWORD(lParam);
+                                            // xPos = LOSHORT (lParam);
+                                            // yPos = HISHORT (lParam);
             // Set a timer waiting for WM_RBUTTONDBLCLK or expiration
             SetTimer (hWnd, ID_TIMER, GetDoubleClickTime () / 2, NULL);
 
@@ -2457,6 +2457,88 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             return FALSE;           // We handled the msg
 
+        case MYWM_LOCALIZE:
+        case MYWM_UNLOCALIZE:
+        {
+            LPSYMENTRY lpSymEntry;      // Ptr to the SYMENTRY under the name
+            LPWCHAR    lpwGlbName;      // Ptr to SymEntry's name's global memory
+            UINT       xPos,            // Horizontal position of cursor in screen coords
+                       yPos,            // Vertical   ...
+                       uPos,            // Position of name in header or position of 1st semicolon
+                       uLen;            // Length of the name to localize/unlocalize
+
+            // Get the cursor position when right clicked
+            xPos = LOSHORT (GetPropW (hWnd, L"TIMER.LPARAM"));
+            yPos = HISHORT (GetPropW (hWnd, L"TIMER.LPARAM"));
+
+            // Get the corresponding STE
+            lpSymEntry = (LPSYMENTRY) SendMessageW (hWnd, MYWM_IZITNAME, xPos, yPos);
+            if (lpSymEntry && lpwszTemp)
+            {
+                // Lock the memory to get a ptr to it
+                lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+                // Get the name length
+                uLen = lstrlenW (lpwGlbName);
+
+                // If the name is already local, ...
+                if (IsLocalName (lpwGlbName, uLen, hWnd, lpwszTemp, &uPos))
+                {
+                    // If we're unlocalizing, ...
+                    if (message EQ MYWM_UNLOCALIZE)
+                    {
+                        // Move to the left over leading white space
+                        while (IsWhiteW (lpwszTemp[uPos - 1]))
+                        {
+                            uPos--;
+                            uLen++;
+                        } // End WHILE
+
+                        Assert (lpwszTemp[uPos - 1] EQ L';');
+
+                        // Move to the left to the leading semicolon
+                        uPos--;
+                        uLen++;
+
+                        // Select the name
+                        SendMessageW (hWnd, EM_SETSEL, uPos, uPos + uLen);
+
+                        // Delete it
+                        SendMessageW (hWnd, EM_REPLACESEL, FALSE, (LPARAM) L"");
+
+                        // Repaint the Edit Ctrl window so the name changes color
+                        InvalidateRect (hWnd, NULL, FALSE);
+                    } // End IF
+                } else
+                {
+                    // If we're localizing, ...
+                    if (message EQ MYWM_LOCALIZE)
+                    {
+                        // Select the insertion point
+                        SendMessageW (hWnd, EM_SETSEL, uPos, uPos);
+
+                        // Insert the leading semicolon
+                        SendMessageW (hWnd, EM_REPLACESEL, FALSE, (LPARAM) L";");
+
+                        // Select the insertion point
+                        SendMessageW (hWnd, EM_SETSEL, uPos + 1, uPos + 1);
+
+                        // Insert the name
+                        SendMessageW (hWnd, EM_REPLACESEL, FALSE, (LPARAM) lpwGlbName);
+
+                        // Repaint the Edit Ctrl window so the name changes color
+                        InvalidateRect (hWnd, NULL, FALSE);
+                    } // End IF
+                } // End IF/ELSE
+
+                // We no longer need this resource
+                MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;
+            } // End IF
+
+            return FALSE;           // We handled the msg
+        } // End MYWM_(UN)LOCALIZE
+
+
 #define wNotifyCode     (HIWORD (wParam))
 #define wID             (LOWORD (wParam))
 #define hWndCtrl        ((HWND) lParam)
@@ -2548,6 +2630,18 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 case IDM_SELECTALL:
                     SendMessageW (hWnd, MYWM_SELECTALL, 0, (LPARAM) -1);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_LOCALIZE:
+                    // Pass on the message
+                    SendMessageW (hWnd, MYWM_LOCALIZE, 0, 0);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_UNLOCALIZE:
+                    // Pass on the message
+                    SendMessageW (hWnd, MYWM_UNLOCALIZE, 0, 0);
 
                     return FALSE;   // We handled the msg
             } // End SWITCH

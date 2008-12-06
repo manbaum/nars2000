@@ -216,7 +216,7 @@ APLINT PrimFnMonQuoteDotIisI
     } // End IF
 
     // Check for results too large to express as integers
-    if (aplIntegerRht >= itemsizeof (factorial))
+    if (aplIntegerRht >= countof (factorial))
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     // Lookup the result

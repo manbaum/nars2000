@@ -648,10 +648,9 @@ LRESULT WINAPI LclListboxWndProc
 
             break;
 
-        case WM_RBUTTONDOWN:                // fwKeys = wParam;        // key flags
-                                            // xPos = LOWORD(lParam);  // horizontal position of cursor
-                                            // yPos = HIWORD(lParam);  // vertical position of cursor
-
+        case WM_RBUTTONDOWN:                // fwKeys = wParam;         // key flags
+                                            // xPos = LOSHORT (lParam); // horizontal position of cursor
+                                            // yPos = HISHORT (lParam); // vertical position of cursor
             // Ensure there are items selected
             iSelCnt = (UINT) SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
 

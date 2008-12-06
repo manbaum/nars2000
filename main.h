@@ -125,12 +125,12 @@ default:        \
 #define MYWM_DISPMB         (WM_APP +11)    // CC (Display MessageBox)
 
 // Define Debug window messages
-#define MYWM_INIT_DB        (WM_APP + 0)    // DB
-#define MYWM_DBGMSGA        (WM_APP + 1)    // DB
-#define MYWM_DBGMSGW        (WM_APP + 2)    // DB
-#define MYWM_DBGMSG_CLR     (WM_APP + 3)    // DB
-#define MYWM_DBGMSG_SCROLL  (WM_APP + 4)    // DB
-#define MYWM_UNHOOK         (WM_APP + 5)    // DB
+#define MYWM_INIT_DB        (WM_APP +12)    // DB
+#define MYWM_DBGMSGA        (WM_APP +13)    // DB
+#define MYWM_DBGMSGW        (WM_APP +14)    // DB
+#define MYWM_DBGMSG_CLR     (WM_APP +15)    // DB
+#define MYWM_DBGMSG_SCROLL  (WM_APP +16)    // DB
+#define MYWM_UNHOOK         (WM_APP +17)    // DB
 
 
 typedef enum tagEXCEPTION_CODES // Exception Codes

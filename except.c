@@ -53,7 +53,7 @@ EXCEPT_NAMES ExceptNames[] =
  {"LIMIT ERROR"       , EXCEPTION_LIMIT_ERROR       },
 };
 
-#define EXCEPT_NAMES_LENGTH         itemsizeof (ExceptNames)
+#define EXCEPT_NAMES_LENGTH         countof (ExceptNames)
 
 // Save area for exception address if EXCEPTION_BREAKPOINT
 DWORD glbExceptAddr;

@@ -685,7 +685,10 @@ UBOOL IsLocalName
     (LPWCHAR lpwszStr,                  // Ptr to the name
      UINT    iStrLen,                   // Length of the name
      HWND    hWndEC,                    // Handle to Edit Ctrl window
-     LPWCHAR lpwszTemp)                 // Ptr to temp storage
+     LPWCHAR lpwszTemp,                 // Ptr to temp storage
+     LPUINT  lpPosition)                // Ptr to save area for position in line
+                                        // (if not found, position of 1st semicolon or EOL)
+                                        // (may be NULL if position not desired)
 
 {
     LPWCHAR lpwszName,                  // Ptr to name
@@ -733,7 +736,13 @@ UBOOL IsLocalName
          && (wp[iStrLen] EQ L' '
           || wp[iStrLen] EQ L';'
           || wp[iStrLen] EQ L'\0'))
+        {
+            // Mark as FOUND
+            if (lpPosition)
+               *lpPosition = (UINT) (wp - lpwszTemp);
+
             return TRUE;
+        } // End IF
 
         // Skip over the name
         wp += iStrLen;
@@ -742,6 +751,17 @@ UBOOL IsLocalName
         if (IsWhiteW (*wp))
             wp++;
     } // End WHILE
+
+    // Mark as NOT FOUND
+    if (lpPosition)
+    {
+        // Find first semicolon
+        wp = strchrW (lpwszTemp, L';');
+        if (wp)
+            *lpPosition = (UINT) (wp - lpwszTemp);
+        else
+            *lpPosition = lstrlenW (lpwszTemp);
+      } // End IF
 
     return FALSE;
 } // End IsLocalName
@@ -841,7 +861,7 @@ UBOOL fnAlpha
                 if (IzitFE (GetParent (lptkLocalVars->hWndEC)))
                 {
                     // Check for global vs. local
-                    if (IsLocalName (lpwszStr, lpMemPTD->iStrLen, lptkLocalVars->hWndEC, lpMemPTD->lpwszTemp))
+                    if (IsLocalName (lpwszStr, lpMemPTD->iStrLen, lptkLocalVars->hWndEC, lpMemPTD->lpwszTemp, NULL))
                     {
                         uClr = SC_LCLNAME;
 
@@ -912,7 +932,7 @@ UBOOL fnAlpha
                 {
                     case NAMETYPE_VAR:
                         // Check for global vs. local
-                        if (IsLocalName (lpwszStr, lpMemPTD->iStrLen, lptkLocalVars->hWndEC, lpMemPTD->lpwszTemp))
+                        if (IsLocalName (lpwszStr, lpMemPTD->iStrLen, lptkLocalVars->hWndEC, lpMemPTD->lpwszTemp, NULL))
                         {
                             // Save the color index
                             uClr = SC_LCLSYSVAR;
@@ -1421,7 +1441,7 @@ UBOOL fnCtrlDone
             return FALSE;
 
         // Attempt to append an EOS token
-        if (!AppendEOSToken (lptkLocalVars, TRUE))
+        if (!AppendEOSToken_EM (lptkLocalVars, TRUE))
             return FALSE;
     } // End IF
 
@@ -3127,7 +3147,7 @@ NORMAL_EXIT:
         return TRUE;
     else
         // Append the EOS token
-        return AppendEOSToken (lptkLocalVars, TRUE);
+        return AppendEOSToken_EM (lptkLocalVars, TRUE);
 } // End fnDiaDone
 
 
@@ -3322,8 +3342,8 @@ HGLOBAL Tokenize_EM
     tkLocalVars.lpwszCur                = &lpwszLine[0];// Just so it has a known value
 
     // Attempt to append an EOS token
-    if (!AppendEOSToken (&tkLocalVars, TRUE))
-        return NULL;
+    if (!AppendEOSToken_EM (&tkLocalVars, TRUE))
+        goto ERROR_EXIT;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     // Display the tokens so far
@@ -3405,7 +3425,7 @@ HGLOBAL Tokenize_EM
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         wsprintfW (wszTemp,
                    L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
-                   wchOrig ? wchOrig : 8230,
+                   wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
                    wchOrig,
                    GetColName (wchColNum),
                    wchColNum,
@@ -3465,7 +3485,7 @@ HGLOBAL Tokenize_EM
                     goto ERROR_EXIT;
 
                 // Calculate the # tokens in this last stmt
-                AppendEOSToken (&tkLocalVars, FALSE);
+                AppendEOSToken_EM (&tkLocalVars, FALSE);
 
                 uNext = (UINT) (tkLocalVars.lpNext - tkLocalVars.lpStart);
 
@@ -3579,7 +3599,8 @@ UBOOL CheckGroupSymbols_EM
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    if (lptkLocalVars->t2.lpHeader->PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
+    if ((!OptionFlags.bCheckGroup)
+     || lptkLocalVars->t2.lpHeader->PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
         return TRUE;
 
     // Save the error caret position
@@ -3783,12 +3804,12 @@ void Untokenize
 
 
 //***************************************************************************
-//  $AppendEOSToken
+//  $AppendEOSToken_EM
 //
 //  Append an EOS Token
 //***************************************************************************
 
-UBOOL AppendEOSToken
+UBOOL AppendEOSToken_EM
     (LPTKLOCALVARS lptkLocalVars,
      UBOOL         bAppend)
 
@@ -3830,7 +3851,7 @@ UBOOL AppendEOSToken
                                   0);
     } else
         return TRUE;
-} // End AppendEOSToken
+} // End AppendEOSToken_EM
 
 
 //***************************************************************************

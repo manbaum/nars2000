@@ -465,7 +465,7 @@ static LPAPLCHAR MonBody[] =
 MAGIC_FUNCTION MF_MonRank =
 {MonHeader,
  MonBody,
- itemsizeof (MonBody),
+ countof (MonBody),
 };
 
 
@@ -482,7 +482,7 @@ static LPAPLCHAR ConBody[] =
 MAGIC_FUNCTION MF_Conform =
 {ConHeader,
  ConBody,
- itemsizeof (ConBody),
+ countof (ConBody),
 };
 
 
@@ -575,7 +575,7 @@ static LPAPLCHAR DydBody[] =
 MAGIC_FUNCTION MF_DydRank =
 {DydHeader,
  DydBody,
- itemsizeof (DydBody),
+ countof (DydBody),
 };
 
 

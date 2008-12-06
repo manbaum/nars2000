@@ -562,18 +562,20 @@ BEGIN
                     IDC_USER_PREFS_XB_NEWTABONLOAD       , 10, 65,160, 10
     AUTOCHECKBOX    "Use local time (instead of GMT)",
                     IDC_USER_PREFS_XB_USELOCALTIME       , 10, 78,160, 10
-    AUTOCHECKBOX    "Make backup of ws on )LOAD",
+    AUTOCHECKBOX    "Make backup of workspace on )LOAD",
                     IDC_USER_PREFS_XB_BACKUPONLOAD       , 10, 91,160, 10
-    AUTOCHECKBOX    "Make backup of ws on )SAVE",
+    AUTOCHECKBOX    "Make backup of workspace on )SAVE",
                     IDC_USER_PREFS_XB_BACKUPONSAVE       , 10,104,160, 10
     AUTOCHECKBOX    "Suppress copyright message at startup",
                     IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , 10,117,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,130, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+    AUTOCHECKBOX    "Check for unmatched or improperly nested grouping symbols",
+                    IDC_USER_PREFS_XB_CHECKGROUP         , 10,130,200, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,143, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC                           ,100,130,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,146, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,143,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,159, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
-                    IDC_STATIC                           ,100,146,160, 10
+                    IDC_STATIC                           ,100,159,160, 10
 END
 
 

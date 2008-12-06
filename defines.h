@@ -130,6 +130,7 @@
 #define DEF_DEFAULTCOPY             UNITRANS_NARS
 #define DEF_SYNTCLRFCNS             TRUE
 #define DEF_SYNTCLRSESS             TRUE
+#define DEF_CHECKGROUP              TRUE
 
 
 // Range limits for []vars

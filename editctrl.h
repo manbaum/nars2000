@@ -30,12 +30,14 @@
 typedef int PAINTHOOK (HWND, HDC, int, int, LPWSTR, int, int, long, int, int, UBOOL);
 typedef PAINTHOOK *LPPAINTHOOK;
 
-#define MYWM_INIT_EC        (WM_USER + 0)
-#define MYWM_REDO           (WM_USER + 1)
-#define MYWM_SELECTALL      (WM_USER + 2)
-#define MYWM_KEYDOWN        (WM_USER + 3)
-#define MYWM_PASTE_APL      (WM_USER + 4)
-#define MYWM_COPY_APL       (WM_USER + 5)
+#define MYWM_INIT_EC        (WM_APP + 100)
+#define MYWM_REDO           (WM_APP + 101)
+#define MYWM_SELECTALL      (WM_APP + 102)
+#define MYWM_KEYDOWN        (WM_APP + 103)
+#define MYWM_PASTE_APL      (WM_APP + 104)
+#define MYWM_COPY_APL       (WM_APP + 105)
+#define MYWM_LOCALIZE       (WM_APP + 106)
+#define MYWM_UNLOCALIZE     (WM_APP + 107)
 
 #define FCN_INDENT  6
 

@@ -86,7 +86,7 @@ TABCOLORS crTab[] =
  {DEF_SCN_CRIMSON           , DEF_SCN_BLACK, DEF_SCN_RED},
 };
 
-#define NUM_CRTABS  itemsizeof (crTab)
+#define NUM_CRTABS  countof (crTab)
 
 
 //***************************************************************************
@@ -626,9 +626,9 @@ LRESULT WINAPI LclTabCtrlWndProc
 ////        // in the WM_PAINT message for the individual tabs
 ////        return TRUE;            // We erased the background
 #if 0
-        case WM_MOUSEMOVE:          // fwKeys = wParam;        // Key flags
-                                    // xPos = LOWORD(lParam);  // Horizontal position of cursor in CA
-                                    // yPos = HIWORD(lParam);  // Vertical position of cursor  in CA
+        case WM_MOUSEMOVE:          // fwKeys = wParam;         // Key flags
+                                    // xPos = LOSHORT (lParam); // Horizontal position of cursor in CA
+                                    // yPos = HISHORT (lParam); // Vertical position of cursor  in CA
             if (!bCaptured)
             {
                 SetCapture (hWnd);
@@ -636,8 +636,8 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
             // Save the client coordinates
-            tcHit.pt.x = LOWORD (lParam);
-            tcHit.pt.y = HIWORD (lParam);
+            tcHit.pt.x = LOSHORT (lParam);
+            tcHit.pt.y = HISHORT (lParam);
 
             // Ask the Tab Control if we're over a tab
             iTmpTabIndex = TabCtrl_HitTest (hWnd, &tcHit);
@@ -675,9 +675,9 @@ LRESULT WINAPI LclTabCtrlWndProc
 
             break;
 #endif
-        case WM_RBUTTONDOWN:                // fwKeys = wParam;        // Key flags
-                                            // xPos = LOWORD(lParam);  // Horizontal position of cursor
-                                            // yPos = HIWORD(lParam);  // Vertical position of cursor
+        case WM_RBUTTONDOWN:                // fwKeys = wParam;         // Key flags
+                                            // xPos = LOSHORT (lParam); // Horizontal position of cursor
+                                            // yPos = HISHORT (lParam); // Vertical position of cursor
         {
             UBOOL bExecuting;               // TRUE iff we're waiting for an execution to complete
 
@@ -689,8 +689,8 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
             // Save the client coordinates
-            tcHit.pt.x = LOWORD (lParam);
-            tcHit.pt.y = HIWORD (lParam);
+            tcHit.pt.x = LOSHORT (lParam);
+            tcHit.pt.y = HISHORT (lParam);
 
             // Ask the Tab Control if we're over a tab
             gOverTabIndex = TabCtrl_HitTest (hWnd, &tcHit);
@@ -769,9 +769,9 @@ LRESULT WINAPI LclTabCtrlWndProc
             break;
         } // End WM_RBUTTONDOWN
 
-        case WM_LBUTTONUP:                  // fwKeys = wParam;        // Key flags
-                                            // xPos = LOWORD(lParam);  // Horizontal position of cursor
-                                            // yPos = HIWORD(lParam);  // vertical position of cursor
+        case WM_LBUTTONUP:                  // fwKeys = wParam;         // Key flags
+                                            // xPos = LOSHORT (lParam); // Horizontal position of cursor
+                                            // yPos = HISHORT (lParam); // vertical position of cursor
             // If the user clicked on the icon, close the tab
             if (ClickOnClose ())
                 CloseTab (gOverTabIndex);
@@ -1063,7 +1063,7 @@ int GetNextTabColorIndex
     int i, j;
 
     // Search for the next available color index
-    for (i = 0; i < itemsizeof (crIndices); i++)
+    for (i = 0; i < countof (crIndices); i++)
         // If not all in use
         if (crIndices[i] NE 0xFF)
             // Search for the available bit within this byte

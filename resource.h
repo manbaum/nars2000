@@ -381,6 +381,7 @@
 #define IDC_USER_PREFS_XB_NOCOPYRIGHTMSG        1107
 #define IDC_USER_PREFS_CB_DEFAULTPASTE          1108
 #define IDC_USER_PREFS_CB_DEFAULTCOPY           1109
+#define IDC_USER_PREFS_XB_CHECKGROUP            1110
 
 #define IDC_STATIC                       -1
 

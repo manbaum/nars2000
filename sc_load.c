@@ -229,7 +229,7 @@ UBOOL LoadWorkspace_EM
 ////                          KEYNAME_VERSION,          // Ptr to the key name
 ////                          L"",                      // Ptr to the default value
 ////                          wszVersion,               // Ptr to the output buffer
-////                          itemsizeof (wszVersion),  // Byte size of the output buffer
+////                          countof (wszVersion),     // Byte size of the output buffer
 ////                          lpwszDPFE);               // Ptr to the file name
     // Get the SI Level
     uSILevel =

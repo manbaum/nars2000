@@ -748,6 +748,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_BACKUPONLOAD       , OptionFlags.bBackupOnLoad       );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_BACKUPONSAVE       , OptionFlags.bBackupOnSave       );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , OptionFlags.bNoCopyrightMsg     );
+                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_CHECKGROUP         , OptionFlags.bCheckGroup         );
 
                         // ***FIXME*** -- Make these work so we don't have to gray out the choices
                         {
@@ -1602,6 +1603,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         OptionFlags.bBackupOnLoad        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_BACKUPONLOAD       );
                         OptionFlags.bBackupOnSave        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_BACKUPONSAVE       );
                         OptionFlags.bNoCopyrightMsg      = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     );
+                        OptionFlags.bCheckGroup          = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_CHECKGROUP         );
 
                         // Get the window handle for the Paste & Copy combo boxes
                         hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);

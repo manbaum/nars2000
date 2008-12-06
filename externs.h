@@ -1568,7 +1568,8 @@ typedef struct tagOPTIONFLAGS
          uDefaultCopy        :4,    // 0000F000:  Index of default Paste translation (see UNI_TRANS)
          bSyntClrFcns        :1,    // 00010000:  TRUE iff Syntax Coloring of functions is enabled (managed in IDD_PROPPAGE_SYNTAX_COLORING)
          bSyntClrSess        :1,    // 00020000:  ...                         sessions  ...
-         Avail               :14;   // FFFC0000:  Available bits
+         bCheckGroup         :1,    // 00040000:  ...      Check for improperly matched or nested grouping symbols
+         Avail               :13;   // FFF80000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1590,6 +1591,7 @@ OPTIONFLAGS OptionFlags
    DEF_DEFAULTCOPY,
    DEF_SYNTCLRFCNS,
    DEF_SYNTCLRSESS,
+   DEF_CHECKGROUP,
    }
 #endif
 ;

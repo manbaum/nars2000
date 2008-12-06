@@ -415,7 +415,7 @@ static LPAPLCHAR MonBody[] =
 MAGIC_FUNCTION MF_MonIota =
 {MonHeader,
  MonBody,
- itemsizeof (MonBody),
+ countof (MonBody),
 };
 
 
@@ -1356,7 +1356,7 @@ static LPAPLCHAR DydBody[] =
 MAGIC_FUNCTION MF_DydIota =
 {DydHeader,
  DydBody,
- itemsizeof (DydBody),
+ countof (DydBody),
 };
 
 

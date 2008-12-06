@@ -98,7 +98,7 @@ void DisplayWorkspaceStamp
 
     WCHAR      wszTimeStamp[16 + 1],    // Output save area for time stamp
                wszTimeStamp2[16 + 1],   // Output save area for time stamp
-               wszTemp[1 + itemsizeof (TIMESTAMP_FMT)];
+               wszTemp[1 + countof (TIMESTAMP_FMT)];
     FILETIME   ftCreation,              // Function creation time in UTC
                ftLocalTime;             // ...                       localtime
     SYSTEMTIME systemTime;              // Current system (UTC) time
@@ -137,13 +137,14 @@ void DisplayWorkspaceStamp
 
     // Format it
     wsprintfW (wszTemp + lstrlenW (wszTemp),
-               DATETIME_FMT,
+               DATETIME_FMT L"%s",
                systemTime.wMonth,
                systemTime.wDay,
                systemTime.wYear,
                systemTime.wHour,
                systemTime.wMinute,
-               systemTime.wSecond);
+               systemTime.wSecond,
+               OptionFlags.bUseLocalTime ? L"" : L" (GMT)");
     // Display it
     AppendLine (wszTemp, FALSE, TRUE);
 } // End DisplayWorkspaceStamp

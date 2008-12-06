@@ -78,7 +78,7 @@ SYSCMDSTAB SysCmdsTab[]
 ;
 
 // The # rows in the above table
-#define SYSCMDSTAB_NROWS    itemsizeof (SysCmdsTab)
+#define SYSCMDSTAB_NROWS    countof (SysCmdsTab)
 
 
 //***************************************************************************

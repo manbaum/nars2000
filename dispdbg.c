@@ -143,7 +143,7 @@ void FormatHTE
     };
 
 // The # rows in the above table
-#define HT_FLAGNAMES_NROWS  itemsizeof (ahtFlagNames)
+#define HT_FLAGNAMES_NROWS  countof (ahtFlagNames)
 
     // Check for invalid HshEntry
     if (lpHshEntry EQ NULL)
@@ -321,7 +321,7 @@ void FormatSTE
     };
 
 // The # rows in the above table
-#define ST_FLAGNAMES_NROWS  itemsizeof (astFlagNames)
+#define ST_FLAGNAMES_NROWS  countof (astFlagNames)
 
     // Format the flags
     stFlags = lpSymEntry->stFlags;
@@ -838,7 +838,7 @@ static TOKENNAMES tokenNames[] =
 };
 
 // The # rows in the above table
-#define TOKENNAMES_NROWS    itemsizeof (tokenNames)
+#define TOKENNAMES_NROWS    countof (tokenNames)
 
     if (TOKENNAMES_NROWS > (uType - TKT_FIRST))
         return tokenNames[uType - TKT_FIRST].lpsz;

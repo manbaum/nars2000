@@ -156,7 +156,7 @@ SYSNAME aSystemNames[] =
 };
 
 // The # rows in the above table
-#define ASYSTEMNAMES_NROWS  itemsizeof (aSystemNames)
+#define ASYSTEMNAMES_NROWS  countof (aSystemNames)
 
 
 //***************************************************************************

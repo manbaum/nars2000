@@ -69,7 +69,7 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
         goto AXIS_SYNTAX_EXIT;
 
 #define SYSID           WS_APPNAME
-#define SYSID_NELM      itemsizeof (SYSID)
+#define SYSID_NELM      countof (SYSID)
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, SYSID_NELM, 1);

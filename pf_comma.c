@@ -975,23 +975,23 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
 {
     APLUINT       aplAxis,          // The (one and only) axis value
-                  uLft,
-                  uRht,
-                  uBeg,
-                  uEnd,
-                  uEndLft,
-                  uEndRht,
-                  ByteRes;
+                  uLft,             // Loop counter
+                  uRht,             // ...
+                  uBeg,             // ...
+                  uEnd,             // ...
+                  uEndLft,          // ...
+                  uEndRht,          // ...
+                  ByteRes;          // # bytes in the result
     APLRANK       aplRankLft,       // The rank of the left arg
                   aplRankRht,       // ...             right ...
                   aplRankRes,       // ...             result
-                  aplRankTmp;
-    APLSTYPE      aplTypeLft,
-                  aplTypeRht,
-                  aplTypeRes;
-    APLNELM       aplNELMLft,
-                  aplNELMRht,
-                  aplNELMRes;
+                  aplRankTmp;       // Temporary rank
+    APLSTYPE      aplTypeLft,       // Left arg storage type
+                  aplTypeRht,       // Right ...
+                  aplTypeRes;       // Result   ...
+    APLNELM       aplNELMLft,       // Left arg NELM
+                  aplNELMRht,       // Right ...
+                  aplNELMRes;       // Result   ...
     HGLOBAL       hGlbLft = NULL,
                   hGlbRht = NULL,
                   hGlbRes = NULL,
@@ -1046,6 +1046,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     Assert (aplTypeRht < ARRAY_LENGTH);
 
     // Get the respective first values
+    // Left arg
     if (IsScalar (aplRankLft)                   // Scalar
      && !IsEmpty (aplNELMLft)                   // and non-empty
      && !IsNested (aplTypeLft))                 // and non-nested
@@ -1069,6 +1070,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                            &lpSymGlbLft,        // Ptr to lpSym/Glb ...
                             NULL,               // Ptr to ...immediate type ...
                             NULL);              // Ptr to array type ...
+    // Right arg
     if (IsScalar (aplRankRht)                   // Scalar
      && !IsEmpty (aplNELMRht)                   // and non-empty
      && !IsNested (aplTypeRht))                 // and non-nested

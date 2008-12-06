@@ -75,7 +75,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 
     // Define maximum length of []SYSVER
 #define SYSVER  L"000.000.0000.00799  Tue Jan 16 17:43:45 2007  Win/32"
-#define SYSVER_NELM    itemsizeof (SYSVER)
+#define SYSVER_NELM    countof (SYSVER)
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);

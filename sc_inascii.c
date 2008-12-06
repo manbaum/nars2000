@@ -158,7 +158,7 @@ UBOOL InAsciiFile_EM
     UINT                uLen;                       // Length of output save area in WCHARs
     WCHAR               wszDPFE[1024],              // Temporary storage for DPFE
                         wszTemp[1024];              // Temporary storage for message strings
-#define wszTempLen      itemsizeof (wszTemp)
+#define wszTempLen      countof (wszTemp)
     SF_FCNS             SF_Fcns = {0};              // Common struc for SaveFunctionCom
     AA_PARAMS           AA_Params = {0};            // Local struc for  ...
 

@@ -82,7 +82,7 @@ void PerfMonAccum
 
 {
     // Ensure no overflow
-    if (uPerfMonData EQ itemsizeof (PerfMonData))
+    if (uPerfMonData EQ countof (PerfMonData))
         DbgBrk ();
 
     // Save the performance data

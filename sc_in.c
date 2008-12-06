@@ -70,7 +70,7 @@ UBOOL CmdIn_EM
                   lpwszFormat;              // Ptr to format area
     DWORD         dwAtfFileSize;            // Byte size of .atf file
     WCHAR         wszTemp[1024];            // Temporary storage for message strings
-#define wszTempLen      itemsizeof (wszTemp)
+#define wszTempLen      countof (wszTemp)
     UINT          uLen,                     // Length of output save area in WCHARs
                   uOldRecNo,                // Starting record # in file (for range display)
                   uRecNo = 0,               // Record # in file

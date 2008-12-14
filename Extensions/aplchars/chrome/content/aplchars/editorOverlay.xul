@@ -16,8 +16,9 @@
     <script type="application/x-javascript">
         // Define globals with the names of extension preferences
         //   because we can't reference the names directly within
-        //   the Javascript file (aplchars.js).
-    var gAplCharsEnabledState   = "&aplchars.enabledstate;";
+        //   the Javascript file (editorOverlay.js).
+    var gAplCharsRoot           = "&aplchars.root;";
+    var gAplCharsCharsEnabled   = "&aplchars.charsenabled;";
     var gAplCharsKeyboardLayout = "&aplchars.keyboardlayout;";
     </script>
 

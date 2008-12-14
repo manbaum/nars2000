@@ -225,19 +225,19 @@ function onInputAPLKeyPress (e)
     // If this is an alt key, ...
     if (e.altKey)
     {
-    var keyboardlayout;
-    var enabledstate;
-    var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-                          .getService (Components.interfaces.nsIPrefBranch);
+        // Get a ptr to our local preference branch
+    var lclPrefs = Components.classes["@mozilla.org/preferences-service;1"]
+                             .getService (Components.interfaces.nsIPrefService)
+                             .getBranch (gAplCharsRoot);
         // Get the current enabled state
-        enabledstate = prefs.getBoolPref (gAplCharsEnabledState);
+    var charsEnabled = lclPrefs.getBoolPref (gAplCharsCharsEnabled);
 
         // If we're disabled, just return
-        if (!enabledstate)
+        if (!charsEnabled)
             return;
 
         // Get the current keyboard layout
-        keyboardlayout = prefs.getCharPref (gAplCharsKeyboardLayout);
+    var keyboardlayout = lclPrefs.getCharPref (gAplCharsKeyboardLayout);
 
         // Get the corresponding Unicode char (or pair of Unicode chars
         //   if Unshift/Shift share the same charCode)

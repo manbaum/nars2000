@@ -1,40 +1,47 @@
 
 window.addEventListener ("load", initPrefsAPL, false);
 
+
 // Function to initialize the fields in the Preferences window
 function initPrefsAPL ()
 {
-var keyboardlayout;
-var enabledstate;
-var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-                      .getService (Components.interfaces.nsIPrefBranch);
-    // Get the current keyboard layout
-    keyboardlayout = prefs.getCharPref (gAplCharsKeyboardLayout);
+    // Get a ptr to our local preference branch
+var lclPrefs = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService (Components.interfaces.nsIPrefService)
+                         .getBranch (gAplCharsRoot);
+    // Get and select the current settings
+var charsEnabled = lclPrefs.getBoolPref (gAplCharsCharsEnabled);
+    document.getElementById ("charsenabled").checked = charsEnabled;
 
-    // Mark as selected
-    document.getElementById (keyboardlayout).checked = true;
+var keyboardlayout = lclPrefs.getCharPref (gAplCharsKeyboardLayout);
+var selRB = document.getElementById (keyboardlayout);
+    document.getElementById ('keyboardlayout').selectedItem = selRB;
 
-    // Get the current enabled state
-    enabledstate = prefs.getBoolPref (gAplCharsEnabledState);
-
-    // Mark as enabled or not
-    document.getElementById ("enabledstate").checked = enabledstate;
+var aplfontfamily = lclPrefs.getCharPref (gAplCharsAplFontFamilyId);
+    selRB = document.getElementById (aplfontfamily);
+    document.getElementById ('aplfontfamily').selectedItem = selRB;
 } // End initPrefsAPL
+
 
 // Function to save the fields in the Preferences window
 function savePrefsAPL ()
 {
-var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-                      .getService (Components.interfaces.nsIPrefBranch);
+    // Get a ptr to our local preference branch
+var lclPrefs = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService (Components.interfaces.nsIPrefService)
+                         .getBranch (gAplCharsRoot);
+    // Get and save the current settings
+var charsEnabled = document.getElementById ('charsenabled').checked;
+    lclPrefs.setBoolPref (gAplCharsCharsEnabled, charsEnabled);
 
-    // Get the current setting
-var enabledstate   = document.getElementById ('enabledstate')  .value;
-var keyboardlayout = document.getElementById ('keyboardlayout').value;
+var selRB        = document.getElementById ('keyboardlayout').selectedItem;
+    lclPrefs.setCharPref (gAplCharsKeyboardLayout, selRB.id);
 
-    // Save the current settings
-    prefs.setBoolPref (gAplCharsEnabledState  , enabledstate  );
-    prefs.setCharPref (gAplCharsKeyboardLayout, keyboardlayout);
+    selRB        = document.getElementById ('aplfontfamily').selectedItem;
+    lclPrefs.setCharPref (gAplCharsAplFontFamilyName, selRB.value);
+    lclPrefs.setCharPref (gAplCharsAplFontFamilyId  , selRB.id);
 } // End savePrefsAPL
+
 
 // Display the About Box
 function displayAboutAPL ()

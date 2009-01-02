@@ -27,18 +27,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <stdio.h>
-
-#include "main.h"
-#include "resource.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "pertab.h"
-#include "threads.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 CDB_THREAD cdbThread;           // Temporary global
@@ -474,7 +463,7 @@ LRESULT APIENTRY DBWndProc
 ////        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 ////
 ////        // In case hGlbPTD has already been freed, ...
-////        if (IsGlbPtr (hGlbPTD))
+////        if (IsValidHandle (hGlbPTD))
 ////        {
 ////            // Lock the memory to get a ptr to it
 ////            lpMemPTD = MyGlobalLock (hGlbPTD);

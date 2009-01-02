@@ -1,4 +1,5 @@
 pref ("extensions.aplchars.charsenabled"        , true);
+pref ("extensions.aplchars.customize"           , false);
 pref ("extensions.aplchars.keyboardlayout"      , "NARS2000");
 pref ("extensions.aplchars.fontsenabled"        , false);
 pref ("extensions.aplchars.fontnameroot"        , "font.name.monospace.");

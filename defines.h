@@ -27,16 +27,18 @@
 // Default definitions
 #define DEF_APLFONT_INTNAME L"SImPL Medium"     // The default font internal name for NARS2000
 #define DEF_APLFONT_EXTNAME L"SImPL-Medium"     // ...              external ...
-#define DEF_APLFONT_TTF     L".ttf"             // ...                       extension
-#define DEF_APLFONT_FILE    DEF_APLFONT_EXTNAME DEF_APLFONT_TTF // ... name w/ext
-#define DEF_TCFONTNAME      L"Tahoma"           // Default TabCtrl font
-#define DEF_ASFONTNAME      L"Arial Unicode MS" // Default Alternate SM font
-#define DEF_SMFONTNAME      DEF_APLFONT_INTNAME // Or L"APL385 Unicode"
-#define DEF_PRFONTNAME      DEF_APLFONT_INTNAME // Or L"APL385 Unicode"
-#define DEF_CCFONTNAME      DEF_APLFONT_INTNAME // Or L"APL385 Unicode"
-#define DEF_FEFONTNAME      DEF_APLFONT_INTNAME // Or L"APL385 Unicode"
-#define DEF_MEFONTNAME      DEF_APLFONT_INTNAME // Or L"APL385 Unicode"
-#define DEF_VEFONTNAME      DEF_APLFONT_INTNAME // Or L"APL385 Unicode"
+#define DEF_APLFONT_EXT     L".ttf"             // ...                       extension
+#define DEF_APLFONT_FILE    DEF_APLFONT_EXTNAME DEF_APLFONT_EXT // ... name w/ext
+#define DEF_TCFONTNAME      L"Code2000"         // Default TabCtrl font
+#ifndef UNISCRIBE
+  #define DEF_ASFONTNAME    L"Code2000"         // Default Alternate SM font
+#endif
+#define DEF_SMFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_PRFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_CCFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_FEFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_MEFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_VEFONTNAME      DEF_APLFONT_INTNAME
 
 #define DEF_TCLOGFONT       0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,DEF_TCFONTNAME
 #define DEF_SMLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_SMFONTNAME
@@ -46,7 +48,7 @@
 #define DEF_MELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_MEFONTNAME
 #define DEF_VELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_VEFONTNAME
 
-#define DEF_TCPTSIZE       10           // Point size for TC font
+#define DEF_TCPTSIZE        9           // Point size for TC font
 #define DEF_SMPTSIZE       13           // ...            SM ...
 #define DEF_PRPTSIZE       13           // ...            PR ...
 #define DEF_CCPTSIZE       13           // ...            CC ...
@@ -131,6 +133,8 @@
 #define DEF_SYNTCLRFCNS             TRUE
 #define DEF_SYNTCLRSESS             TRUE
 #define DEF_CHECKGROUP              TRUE
+#define DEF_INSSTATE                TRUE
+#define DEF_VIEWSTATUSBAR           TRUE
 
 
 // Range limits for []vars

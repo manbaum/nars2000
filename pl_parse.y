@@ -32,23 +32,12 @@ in the lexical analyser (pl_yylex).
 ****************************************************************************/
 
 %{
+#define STRICT
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include "headers.h"
 
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "fh_parse.h"
-#include "pertab.h"
-#include "sis.h"
-#include "threads.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 #define   DIRECT    FALSE           // Flags for PushFcnStrand
 #define INDIRECT    TRUE            // ...
@@ -57,13 +46,20 @@ in the lexical analyser (pl_yylex).
 ////#define YYFPRINTF_DEBUG
 
 #ifdef DEBUG
-////#define YYERROR_VERBOSE
+#define YYERROR_VERBOSE
 #define YYDEBUG 1
 #define YYFPRINTF               pl_yyfprintf
 #define fprintf                 pl_yyfprintf
 ////#define YYPRINT                 pl_yyprint
-void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const yyvaluep);
+void pl_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const yyvaluep);
 #endif
+
+#define YYMALLOC    malloc
+#define YYFREE      free
+
+int  pl_yylex       (LPPL_YYSTYPE lpYYLval, LPPLLOCALVARS lpplLocalVars);
+void pl_yyerror     (LPPLLOCALVARS lpplLocalVars, LPCHAR s);
+void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 
 #define    YYSTYPE     PL_YYSTYPE
 #define  LPYYSTYPE   LPPL_YYSTYPE
@@ -4587,6 +4583,36 @@ LeftOper:
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
+                                        }
+    | '%' Train '('                     {DbgMsgWP (L"%%LeftOper:  (Train)");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // ***FINISHME***
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR2
+                                         } else
+                                             YYERROR2
+                                        }
+    ;
+
+Train:
+      LeftOper LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper LeftOper");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // ***FINISHME***
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR2
+                                         } else
+                                             YYERROR2
+                                        }
+    | Train    LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper Train");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // ***FINISHME***
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR2
+                                         } else
+                                             YYERROR2
                                         }
     ;
 

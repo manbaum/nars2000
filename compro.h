@@ -117,6 +117,7 @@
   #include "po_slope.pro"
   #include "primfns.pro"
   #include "primspec.pro"
+  #include "qdebug\qdebug.pro"
   #include "qf_av.pro"
   #include "qf_cr.pro"
   #include "qf_dl.pro"
@@ -175,7 +176,6 @@
   #if RESDEBUG
     #include "resdebug.pro"
   #endif
-  #include <QDebug.pro>
 #endif
 
 //***************************************************************************

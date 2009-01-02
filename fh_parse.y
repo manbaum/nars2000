@@ -25,20 +25,12 @@
 ***************************************************************************/
 
 %{
+#define STRICT
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include "headers.h"
 
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "fh_parse.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 ////#define YYLEX_DEBUG
 ////#define YYFPRINTF_DEBUG
@@ -47,7 +39,17 @@
 #define YYERROR_VERBOSE
 #define YYDEBUG 1
 #define YYFPRINTF               fh_yyfprintf
+#define fprintf                 fh_yyfprintf
+////#define YYPRINT                 fh_yyprint
+void fh_yyprint     (FILE *yyoutput, unsigned short int yytoknum, FH_YYSTYPE const yyvaluep);
 #endif
+
+#define YYMALLOC    malloc
+#define YYFREE      free
+
+int  fh_yylex       (LPFH_YYSTYPE lpYYLval, LPFHLOCALVARS lpfhLocalVars);
+void fh_yyerror     (LPFHLOCALVARS lpfhLocalVars, LPCHAR s);
+void fh_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 
 #define    YYSTYPE     FH_YYSTYPE
 #define  LPYYSTYPE   LPFH_YYSTYPE

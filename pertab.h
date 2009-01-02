@@ -43,8 +43,6 @@
     //   value from GHND, so they do not need to be set explicitly.
 ////lpMemPTD->numYYRes           = 0;
 ////lpMemPTD->bTabTextState      = FALSE;
-////lpMemPTD->bNegative          = FALSE;
-////lpMemPTD->bNegExp            = FALSE;
 ////lpMemPTD->iNumLim            = 0;
 ////lpMemPTD->iStrLim            = 0;
 ////lpMemPTD->lpSISCur           = NULL;
@@ -82,11 +80,9 @@ typedef struct tagPERTABDATA
                  hWndActive;        // 5C:  Active MDI window when last switched out
 
     UINT         bTabTextState:1,   // 60:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
-                 bNegative:1,       //      00000002:  Sign bit for integer part
-                 bNegExp:1,         //      00000004:  ...          exponent ...
-                 bExecLX:1,         //      00000008:  TRUE iff execute []LX after successful load
-                 bExecuting:1,      //      00000010:  TRUE iff we're waiting for an execution to complete
-                 Avail:27;          //      FFFFFFE0:  Available bits
+                 bExecLX:1,         //      00000002:  TRUE iff execute []LX after successful load
+                 bExecuting:1,      //      00000004:  TRUE iff we're waiting for an execution to complete
+                 Avail:29;          //      FFFFFFF8:  Available bits
     HGLOBAL      hGlbCurLine,       // 64:  Current line global memory handle
                  hGlbNum,           // 68:  NumAlp global memory handle
                  hGlbStr;           // 6C:  NumAlp global memory handle
@@ -169,7 +165,8 @@ typedef struct tagPERTABDATA
 #endif
     APLCHAR      cQuadPR,           //198:  []PR     (' ') (When a char scalar)
                  cQuadxSA;          //19A:  []SA     (0)   (in its index form as an integer)
-                                    //19C:  Length
+    DWORD        dwThreadId;        //19C:  Corresponding thread ID
+                                    //1A0:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

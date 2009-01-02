@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+    Name="Bison File"
+    Version="8.00"
+    >
+    <Rules>
+        <CustomBuildRule
+            Name="Bison Rule"
+            DisplayName="Bison Rule"
+            CommandLine="C:\Cygwin\bin\bison -o$(OutDir)\$(InputName).c -v -r all -l $(InputPath)"
+            Outputs="$(OutDir)\$(InputName).c"
+            FileExtensions="*.y"
+            ExecutionDescription="Generate Parser for $(InputName)"
+            >
+            <Properties>
+            </Properties>
+        </CustomBuildRule>
+    </Rules>
+</VisualStudioToolFile>

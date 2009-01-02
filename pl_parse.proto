@@ -1,0 +1,14 @@
+int pl_yyparse (LPPLLOCALVARS lpplLocalVars);
+EXIT_TYPES ParseLine (HWND hWndSM, HGLOBAL hGlbTknLine, HGLOBAL hGlbTxtLine, LPWCHAR lpwszLine, HGLOBAL hGlbPTD, UINT uLineNum, UINT uTknNum, HGLOBAL hGlbDfnHdr, UBOOL bActOnErrors, UBOOL bExec1Stmt);
+char SymbTypeVFO (LPTOKEN lptkNext);
+char LookaheadSurround (LPPLLOCALVARS lpplLocalVars);
+char LookaheadAdjacent (LPPLLOCALVARS lpplLocalVars, UBOOL bSkipBrackets);
+BOOL LookaheadDyadicOp (LPPLLOCALVARS lpplLocalVars, LPTOKEN lptkNext);
+BOOL CheckNullOp3 (LPPLLOCALVARS lpplLocalVars);
+LPPL_YYSTYPE WaitForInput (HWND hWndSM, UBOOL bQuoteQuad, LPTOKEN lptkFunc);
+BOOL AmbOpSwap_EM (LPPL_YYSTYPE lpYYFcn);
+void AmbOpToFcn (LPPL_YYSTYPE lpYYFcn);
+void AmbOpToOp1 (LPPL_YYSTYPE lpYYFcn);
+void ArrExprCheckCaller (LPPLLOCALVARS lpplLocalVars, LPSIS_HEADER lpSISCur, LPPL_YYSTYPE lpYYArg);
+UBOOL CheckSelSpec_EM (LPPLLOCALVARS lpplLocalVars, LPTOKEN lptkNameVars);
+PL_YYSTYPE MakeTempCopy (LPPL_YYSTYPE lpYYTmp);

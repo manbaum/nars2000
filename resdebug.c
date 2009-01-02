@@ -26,15 +26,8 @@
 
 #define STRICT
 #include <windows.h>
+#include "headers.h"
 
-#include "main.h"
-#include "resdebug.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 #define OBJ_GLBLOCK     15
 #define OBJ_GLBALLOC    16

@@ -22,10 +22,9 @@
 
 NAME=NARS2000                   # Directory name
 ENAME=NARS2000                  # Executable name
-PROJPATH=.\                     # Project path
-BIN=$(PROJPATH)binaries\        # Binaries directory
+BIN=binaries\                   # Binaries directory
 DEBUG=0
-A=$(PROJPATH)Images\            # Images & artwork
+A=Images\                       # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
 OLDPATH=$(PATH)                 # Save the current path
@@ -38,8 +37,8 @@ WDEF=_WIN$(WIN)
 WP=64                           # Target width to check against
 MFEXT=w$(WP)
 
-I98=$(PROJPATH);$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG);$(PCRE)include
-L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG);$(PCRE)lib
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
+L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG)
 
 LD=$(MSVC)BIN\link.exe
 CC=$(MSVC)BIN\cl.exe

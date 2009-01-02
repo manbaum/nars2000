@@ -24,16 +24,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <math.h>
-
-#include "main.h"
-#include "resdebug.h"
-#include "sysvars.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //***************************************************************************
@@ -277,7 +268,7 @@ UINT ConvertWideToName
 APLU3264 ConvertWideToNameLength
     (LPWCHAR lpwszOut,              // Ptr to output save buffer
      LPWCHAR lpwszInp,              // Ptr to incoming chars
-     UINT    uLen)                  // # chars to convert
+     DWORD   uLen)                  // # chars to convert
 
 {
     WCHAR   wc;                     // A wide char

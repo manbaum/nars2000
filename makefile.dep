@@ -1,0 +1,31 @@
+# This makefile generates the file <dep.txt>
+#   for inclusion in <makefile.inc>.
+
+
+!include makefile.src
+
+WS=WineHQ^\
+
+!ifndef O
+!    error makefile.dep:  Macro O is not defined.
+!endif
+
+
+ALL:    INITIAL         \
+        DEP             \
+        ENDING
+
+DEP:    $(SRC:???=dep)  \
+        $(O)main.dev    \
+        $(O)ver.dev     \
+        $(O)version.dev
+    !@deptxt.bat $(**F) $(O)dep.txt
+
+INITIAL:
+    if exist $(O)dep.txt del $(O)dep.txt
+
+$(SRC:???=dep) $(O)main.dev $(O)ver.dev $(O)version.dev:    makefile.dep
+    @depinit.bat $@
+
+ENDING:
+        @echo .

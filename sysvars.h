@@ -103,6 +103,16 @@ typedef enum tagFC_INDICES
 } FC_INDICES;
 
 
+typedef struct tagSYSNAME
+{
+    LPWCHAR     lpwszName;      // The name
+    UINT        uValence;       // For system functions, Niladic(0), All others (1)
+    UBOOL       bSysVar;        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
+    LPPRIMFNS   lpNameFcn;      // Ptr to execution routine
+    SYS_VARS    sysVarIndex;    // Value of each System Var (0 = Unknown)
+} SYSNAME, *LPSYSNAME;
+
+
 //***************************************************************************
 //  End of File: sysvars.h
 //***************************************************************************

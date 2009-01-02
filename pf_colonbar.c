@@ -23,16 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <float.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 #ifndef PROTO

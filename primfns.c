@@ -24,20 +24,7 @@
 #include <windows.h>
 #include <float.h>
 #include <math.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "sysvars.h"
-#include "externs.h"
-#include "pertab.h"
-#include "fh_parse.h"
-#include "sis.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //***************************************************************************
@@ -2157,8 +2144,8 @@ UBOOL IsGlobalTypeArray
     // Clear the ptr type bits
     hGlb = ClrPtrTypeDirAsGlb (hGlb);
 
-    // It's a valid ptr
-    bRet = bRet && IsGlbPtr (hGlb);
+    // It's a valid handle
+    bRet = bRet && IsValidHandle (hGlb);
 
     if (bRet)
     {

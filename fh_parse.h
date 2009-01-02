@@ -49,7 +49,7 @@ typedef struct tagFCNLINE           // Function line structure, one per function
                                     // 0C:  Length
 } FCNLINE, *LPFCNLINE;
 
-typedef enum tagDFN_TYPES            // User-Defined Function/Operator Types
+typedef enum tagDFN_TYPES           // User-Defined Function/Operator Types
 {
     DFNTYPE_UNK = 0,                // 00:  Unknown
     DFNTYPE_OP1,                    // 01:  Monadic operator
@@ -89,8 +89,9 @@ typedef struct tagDFN_HEADER        // Function header structure
                      ListRes:1,     //      00000400:  TRUE iff the result is a list (unused so far)
                      ListLft:1,     //      00000800:  TRUE iff the left arg is a list
                      ListRht:1,     //      00001000:  TRUE iff the right arg is a list
-                     MonOn:1,       //      00002000:  Function line monitoring on
-                     Avail:18;      //      FFFFC000:  Available bits
+                     MonOn:1,       //      00002000:  TRUE iff function line monitoring is on for this function
+                     SaveSTEFlags:1,//      00004000:  TRUE iff on free were to save the function name STE flags
+                     Avail:17;      //      FFFF8000:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nInverseLine,  // 10:  Line # of the []IDENTITY label (0 if not present)
                      nIdentityLine, // 14:  Line # of the []INVERSE label (0 if not present)

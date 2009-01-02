@@ -22,18 +22,10 @@
 
 #define STRICT
 #include <windows.h>
+#include "headers.h"
 
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "sysvars.h"
-#include "externs.h"
-#include "pertab.h"
 
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#else
+#ifdef PROTO
 #define SysFnAV_EM_YY       NULL
 #define SysFnCR_EM_YY       NULL
 #define SysFnDL_EM_YY       NULL
@@ -67,15 +59,6 @@
 #define SysFnTYPE_EM_YY     NULL
 #define SysFnUCS_EM_YY      NULL
 #endif
-
-typedef struct tagSYSNAME
-{
-    LPWCHAR     lpwszName;      // The name
-    UINT        uValence;       // For system functions, Niladic(0), All others (1)
-    UBOOL       bSysVar;        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
-    LPPRIMFNS   lpNameFcn;      // Ptr to execution routine
-    SYS_VARS    sysVarIndex;    // Value of each System Var (0 = Unknown)
-} SYSNAME, *LPSYSNAME;
 
 #define SYSLBL      8
 #define SYSVAR      9

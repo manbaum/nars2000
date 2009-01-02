@@ -25,17 +25,7 @@
 #define STRICT
 #include <windows.h>
 #include <windowsx.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "resource.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 // Save area for old CC ListBox window procedure address

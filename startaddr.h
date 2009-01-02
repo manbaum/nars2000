@@ -243,9 +243,6 @@ typedef struct tagSTART_ADDRESSES
     "LookaheadSurround"         , (LPUCHAR) &LookaheadSurround          ,
     "LookaheadAdjacent"         , (LPUCHAR) &LookaheadAdjacent          ,
     "LookaheadDyadicOp"         , (LPUCHAR) &LookaheadDyadicOp          ,
-    "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
-    "pl_yyerror"                , (LPUCHAR) &pl_yyerror                 ,
-    "pl_yyfprintf"              , (LPUCHAR) &pl_yyfprintf               ,
     "WaitForInput"              , (LPUCHAR) &WaitForInput               ,
     "AmbOpSwap_EM"              , (LPUCHAR) &AmbOpSwap_EM               ,
     "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                 ,
@@ -409,6 +406,9 @@ typedef struct tagSTART_ADDRESSES
 
     // savefcn.c
     "SaveFunction"              , (LPUCHAR) &SaveFunction               ,
+    "SaveFunctionCom"           , (LPUCHAR) &SaveFunctionCom            ,
+    "IsLineEmpty"               , (LPUCHAR) &IsLineEmpty                ,
+    "GetSpecialLabelNums"       , (LPUCHAR) &GetSpecialLabelNums        ,
 
     // sc_copy.c
     "CmdCopy_EM"                , (LPUCHAR) &CmdCopy_EM                 ,
@@ -534,10 +534,6 @@ typedef struct tagSTART_ADDRESSES
   #ifdef DEBUG
     "YYCheckInuse"              , (LPUCHAR) YYCheckInuse                ,
   #endif
-
-    // DBGBRK.ASM
-    "DbgBrk"                    , (LPUCHAR) &DbgBrk                     ,
-    "DbgStop"                   , (LPUCHAR) &DbgStop                    ,
 
     // C API routines
     "memset"                    , (LPUCHAR) &memset                     ,

@@ -20,17 +20,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#define STRICT
 #include <windows.h>
+#include "headers.h"
 
-#include "main.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "fh_parse.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 #ifdef DEBUG
 extern HGLOBAL hGlbRC1,             // ***DEBUG***

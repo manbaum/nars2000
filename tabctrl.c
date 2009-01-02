@@ -25,19 +25,7 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "resdebug.h"
-#include "resource.h"
-#include "externs.h"
-#include "pertab.h"
-#include "threads.h"
-#include "editctrl.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 // The width & height of an image as drawn on the tab
@@ -192,7 +180,6 @@ UBOOL CreateNewTab
      UBOOL   bExecLX)           // TRUE iff execute []LX after successful load
 
 {
-    DWORD   dwThreadId;         // Thread ID
     HANDLE  hThread;            // Handle to the thread
     HGLOBAL hGlbDPFE = NULL;    // Workspace DPFE global memory handle
     LPWCHAR lpwszDPFE;          // Ptr to workspace DPFE global memory
@@ -234,7 +221,7 @@ UBOOL CreateNewTab
                            &CreateNewTabInThread,   // Starting routine
                            &cntThread,              // Param to thread func
                             CREATE_SUSPENDED,       // Creation flag
-                           &dwThreadId);            // Returns thread id
+                           &cntThread.dwThreadId);  // Returns thread id
     // Save the thread handle
     cntThread.hThread = hThread;
 
@@ -337,6 +324,9 @@ UBOOL WINAPI CreateNewTabInThread
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save the thread ID for when we close
+    lpMemPTD->dwThreadId = lpcntThread->dwThreadId;
 
     // Save the next available color index and Tab ID
     lpMemPTD->CurTabID =
@@ -501,7 +491,6 @@ UBOOL WINAPI CreateNewTabInThread
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-NORMAL_EXIT:
     if (hGlbPTD && lpMemPTD)
     {
         // We no longer need this ptr
@@ -511,7 +500,7 @@ NORMAL_EXIT:
     // If there's a current tab index, delete it
     if (iCurTabIndex NE -1)
         TabCtrl_DeleteItem (hWndTC, iCurTabIndex);
-
+NORMAL_EXIT:
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -782,8 +771,9 @@ LRESULT WINAPI LclTabCtrlWndProc
         {
             int     iNewTabIndex,               // Index of new tab (after deleting this one)
                     iDelTabIndex;               // Index of tab to delete
-            LRESULT lResult;                    // Result from CallWindowProc
+            LRESULT lResult;                    // Result from CallWindowProcW
             UBOOL   bExecuting;                 // TRUE iff we're waiting for an execution to complete
+            DWORD   dwThreadId;                 // Outgoing thread ID
 
             // Save the tab index to delete
             iDelTabIndex = (int) wParam;
@@ -844,6 +834,9 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Free global storage if the SymTab is valid
             if (lpMemPTD->lpSymTab)
             {
+                // ***FINISHME*** -- Free all global vars in the workspace
+
+
                 FreeResultGlobalVar (lpMemPTD->lpSymQuadALX ->stData.stGlbData); lpMemPTD->lpSymQuadALX ->stData.stGlbData = NULL;
                 FreeResultGlobalVar (lpMemPTD->lpSymQuadELX ->stData.stGlbData); lpMemPTD->lpSymQuadELX ->stData.stGlbData = NULL;
                 FreeResultGlobalVar (lpMemPTD->lpSymQuadFC  ->stData.stGlbData); lpMemPTD->lpSymQuadFC  ->stData.stGlbData = NULL;
@@ -857,10 +850,13 @@ LRESULT WINAPI LclTabCtrlWndProc
 
 #undef  APPEND_NAME
 
+            // Save the outgoing MDI Child window handle
+            dwThreadId = lpMemPTD->dwThreadId;
+
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            // The storage for hGlbPTD is freed in CreateTabInThread
+            // The storage for hGlbPTD is freed in CreateNewTabInThread
 
             // Call the original window proc so it can delete
             //   the tab and we can get the new current selection
@@ -905,6 +901,9 @@ LRESULT WINAPI LclTabCtrlWndProc
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             } // End IF
+
+            // Tell the thread to quit
+            PostThreadMessage (dwThreadId, WM_QUIT, 0, 0);
 
             return lResult;
         } // End TCM_DELETEITEM
@@ -1404,14 +1403,16 @@ LPAPLCHAR PointToWsName
     HGLOBAL      hGlbPTD,       // PerTabData global memory handle
                  hGlbWSID;      // []WSID global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPAPLCHAR    lpMemWSID,     // Ptr to []WSID global memory
-                 lpwTemp;       // Temporary ptr
+    LPAPLCHAR    lpMemWSID;     // Ptr to []WSID global memory
 
     // Get the PerTabData global memory handle
     hGlbPTD = GetPerTabHandle (iTabIndex); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Initialzie with default value
+    lstrcpyW (lpwszGlbTemp, L"  CLEAR WS");
 
     // If the []WSID STE has been setup, ...
     if (lpMemPTD->lpSymQuadWSID)
@@ -1450,23 +1451,13 @@ LPAPLCHAR PointToWsName
                 // Copy to global temporary storage
                 lstrcpynW (&lpwszGlbTemp[2], q, (APLU3264) ((lpMemWSID + aplNELMWSID + 1) - q));
 
-                // Copy the ptr
-                lpwTemp = lpwszGlbTemp;
-                lpwTemp[1] = L' ';
-            } else
-                // Point to the ws name
-                lpwTemp = L"  CLEAR WS";
-        } else
-            // Point to the ws name
-            lpwTemp = L"  CLEAR WS";
+                // Include the separator
+                lpwszGlbTemp[1] = L' ';
+            } // End IF
+        } // End IF
     } else
-    {
         // Mark as invalid
         hGlbWSID = NULL;
-
-        // Point to the ws name
-        lpwTemp = L"  CLEAR WS";
-    } // End IF/ELSE
 
     if (hGlbWSID)
     {
@@ -1478,9 +1469,9 @@ LPAPLCHAR PointToWsName
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Prepend the tab index
-    lpwTemp[0] = TABNUMBER_START + GetTabColorIndex (iTabIndex);
+    lpwszGlbTemp[0] = TABNUMBER_START + GetTabColorIndex (iTabIndex);
 
-    return lpwTemp;
+    return lpwszGlbTemp;
 } // End PointToWsName
 
 

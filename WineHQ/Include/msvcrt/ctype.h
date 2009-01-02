@@ -62,8 +62,10 @@ int ispunct(int);
 int isspace(int);
 int isupper(int);
 int isxdigit(int);
+#if 0
 int tolower(int);
 int toupper(int);
+#endif
 
 #ifndef _WCTYPE_DEFINED
 #define _WCTYPE_DEFINED

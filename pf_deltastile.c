@@ -22,41 +22,10 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 #define GRADE_ROUTINE       HeapSort
-
-typedef struct tagTT_HANDLES        // Translate Table handles & ptrs
-{
-    HGLOBAL   hGlbTT;               // TT global memory handle
-    LPAPLCHAR lpMemTT;              // Ptr to TT global memory
-} TT_HANDLES, *LPTT_HANDLES;
-
-typedef struct tagGRADE_DATA
-{
-    APLSTYPE     aplTypeRht;        // Right arg storage type
-    APLUINT      aplNELMRest,       // Product of right arg dims after the first
-                 aplNELMRht;        // Right arg NELM
-    APLINT       apaOffRht,         // Right arg APA offset
-                 apaMulRht;         // Right arg APA multiplier
-    int          iMul;              // Multiplier for GradeUp vs. GradeDown
-                                    //   1 for GradeUp, -1 for GradeDown
-    APLRANK      aplRankLft;        // Left arg rank
-    LPTT_HANDLES lpMemTTHandles;    // Ptr to TT Handles global memory
-    UBOOL        PV0:1,             // Right arg is a Perumtation Vector, origin-0
-                 PV1:1;             // ...                                       1
-    LPUBOOL      lpbCtrlBreak;      // Ptr to Ctrl-Break flag
-} GRADE_DATA, *LPGRADE_DATA;
 
 
 //***************************************************************************

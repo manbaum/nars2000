@@ -147,7 +147,8 @@ typedef struct tagTKLOCALVARS
     SCNAMETYPE  scNameType;         // 5C:  Type of name starting at NameInit
     HWND        hWndEC;             // 60:  Window handle of Edit Ctrl (parent is SM or FE)
     COLINDICES  colIndex;           // 64:  Current COL_xxx value
-                                    // 68:  Length
+    UINT        uSyntClrLen;        // 68:  # Syntax Color entries
+                                    // 6C:  Length
 } TKLOCALVARS, *LPTKLOCALVARS;
 
 typedef UBOOL (*FNACTION) (LPTKLOCALVARS);

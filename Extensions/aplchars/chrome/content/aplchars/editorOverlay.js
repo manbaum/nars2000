@@ -8,7 +8,7 @@ var gMsgAPLEditorCreationObserver =
 {
     observe: function (aSubject, aTopic, aData)
     {
-        myDump ('Topic = ' + aTopic + ', Data = ' + aData);
+////    myDump ('Topic = ' + aTopic + ', Data = ' + aData);
     var editor = GetCurrentEditor ();                       // nsIEditor
 
         // Split cases based upon the command
@@ -49,19 +49,19 @@ const gAPLSourceTextListener =
 {
     NotifyDocumentCreated: function NotifyDocumentCreated ()
     {
-        myDump ('NotifyDocumentCreated');
+////    myDump ('NotifyDocumentCreated');
     var editorEl = GetCurrentEditorElement ();                  // XULElement
         editorEl.addEventListener    ('keypress', onInputAPLKeyPress, false);
     },
     NotifyDocumentWillBeDestroyed: function NotifyDocumentWillBeDestroyed ()
     {
-        myDump ('NotifyDocumentWillBeDestroyed');
+////    myDump ('NotifyDocumentWillBeDestroyed');
     var editorEl = GetCurrentEditorElement ();                  // XULElement
         editorEl.removeEventListener ('keypress', onInputAPLKeyPress, false);
     },
     NotifyDocumentStateChanged: function NotifyDocumentStateChanged (isChanged)
     {
-        myDump ('NotifyDocumentStateChanged ' + isChanged);
+////    myDump ('NotifyDocumentStateChanged ' + isChanged);
 
         if (isChanged)
         {
@@ -78,7 +78,7 @@ const gAPLSourceTextListener =
 // Handler for window event listener
 function doAPLOnceWindowLoaded ()
 {
-    myDump ('doAPLOnceWindowLoaded');
+////myDump ('doAPLOnceWindowLoaded');
 var cmdMgr = GetCurrentCommandManager ();
     cmdMgr.addCommandObserver    (gMsgAPLEditorCreationObserver, 'obs_documentCreated', false);
     cmdMgr.addCommandObserver    (gMsgAPLEditorCreationObserver, 'obs_documentWillBeDestroyed', false);
@@ -88,7 +88,7 @@ var cmdMgr = GetCurrentCommandManager ();
 // Handler for window event listener
 function doAPLOnceWindowUnloaded ()
 {
-    myDump ('doAPLOnceWindowUnloaded');
+////myDump ('doAPLOnceWindowUnloaded');
 var cmdMgr = GetCurrentCommandManager ();
     cmdMgr.removeCommandObserver (gMsgAPLEditorCreationObserver, 'obs_documentWillBeDestroyed', false);
     cmdMgr.removeCommandObserver (gMsgAPLEditorCreationObserver, 'obs_documentCreated', false);
@@ -220,10 +220,10 @@ CodeToAPL["DyalogUS"] = KeyboardDyalogUS;
 
 
 // Our keypress listener
-function onInputAPLKeyPress (e)
+function onInputAPLKeyPress (aEvent)
 {
     // If this is an alt key, ...
-    if (e.altKey)
+    if (aEvent.altKey)
     {
         // Get a ptr to our local preference branch
     var lclPrefs = Components.classes["@mozilla.org/preferences-service;1"]
@@ -241,12 +241,12 @@ function onInputAPLKeyPress (e)
 
         // Get the corresponding Unicode char (or pair of Unicode chars
         //   if Unshift/Shift share the same charCode)
-    var aplchar = CodeToAPL[keyboardlayout][e.charCode - 32];
+    var aplchar = CodeToAPL[keyboardlayout][aEvent.charCode - 32];
 
-////    myDump ('e.charCode = ' + e.charCode + ', typeof = ' + (typeof (aplchar)) + ', CodeToAPL = ' + CodeToAPL[e.charCode - 32]);
+////    myDump ('aEvent.charCode = ' + aEvent.charCode + ', typeof = ' + (typeof (aplchar)) + ', CodeToAPL = ' + CodeToAPL[aEvent.charCode - 32]);
         if (typeof (aplchar) == "object")
         {
-            if (e.shiftKey)
+            if (aEvent.shiftKey)
                 aplchar = aplchar[1];
             else
                 aplchar = aplchar[0];
@@ -258,10 +258,10 @@ function onInputAPLKeyPress (e)
             editor.insertText (aplchar);
 
             // Tell the DOM not to take any default action
-            e.preventDefault ();
+            aEvent.preventDefault ();
 
             // Tell the DOM not to propagate this event farther along
-            e.stopPropagation ();
+            aEvent.stopPropagation ();
         } // End IF
     } // End IF
 } // End onInputAPLKeyPress

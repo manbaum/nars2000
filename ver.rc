@@ -25,7 +25,9 @@
 // Version
 //
 
-#include "VERSION.RC"
+#include <winver.h>
+#include "version.rc"
+#include "defines.h"
 
 #define VER_MAJOR                   0   // 0.x.x.x
 #define VER_MAJOR_STR               "0"

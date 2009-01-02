@@ -23,28 +23,9 @@
 #define STRICT
 #include <windows.h>
 #include <windowsx.h>
-
-#include "uniscribe.h"
-#include "aplerrors.h"
-#include "main.h"
-#include "resource.h"
-#include "resdebug.h"
-#include "sysvars.h"
-#include "termcode.h"
-#include "externs.h"
-#include "editctrl.h"
-#include "unitranshdr.h"
+#include "headers.h"
 #include "unitranstab.h"
-#include "fh_parse.h"
-#include "pertab.h"
-#include "sis.h"
-#include "perfmon.h"
-#include "tokenize.h"
 
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 // ToDo
 /*
@@ -78,6 +59,18 @@ typedef struct tagCLIPFMTS
     UINT    uFmtNum;                // Format #
     HGLOBAL hGlbFmt;                // Handle for this format #
 } CLIPFMTS, *LPCLIPFMTS;
+
+
+typedef struct tagKEYDATA
+{
+    UINT repeatCount:16,            // Repeat count
+         scanCode:8,                // Scan code
+         extendedKey:1,             // TRUE iff extended key (right-Alt, Right-Ctl)
+         reserved:4,                // Reserved
+         contextCode:1,             // TRUE iff Alt key is down while key is pressed
+         previousState:1,           // TRUE iff key is down before msg sent
+         transitionState:1;         // TRUE iff key is being released
+} KEYDATA, *LPKEYDATA;
 
 
 //***************************************************************************
@@ -633,7 +626,7 @@ LRESULT APIENTRY FEWndProc
         case WM_MDIACTIVATE:        // Activate/de-activate a child window
             // If we're being activated, ...
             if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
-                ActivateMDIMenu (hMenuFE, hMenuFEWindow);
+                ActivateMDIMenu (hMenuFE, hMenuFEWindow, IDMPOS_FE_VIEW);
             break;                  // Continue with DefMDIChildProcW
 
         case WM_UNDO:
@@ -681,6 +674,14 @@ LRESULT APIENTRY FEWndProc
                     // set the changed flag
                     SetWindowLongW (hWnd, GWLSF_CHANGED, TRUE);
 
+                    // If the cursor is on line #0 (the function header),
+                    //   and Syntax Coloring is in effect, the user might
+                    //   have changed trhe localization status of a var,
+                    //   so we need to repaint the whole window to reflect
+                    //   the possible change in syntax colors.
+                    if (0 EQ SendMessageW (hWndEC, EM_LINEINDEX, -1, 0)
+                     && OptionFlags.bSyntClrFcns)
+                        InvalidateRect (hWndEC, NULL, FALSE);
                     break;
 
                 case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of Edit Ctrl
@@ -763,10 +764,10 @@ LRESULT APIENTRY FEWndProc
 //***************************************************************************
 
 UBOOL SyntaxColor
-    (LPAPLCHAR      lpwszLine,      // Ptr to line of text
-     APLNELM        aplNELM,        // Length of text to display
-     LPCLRCOL       lpMemClr,       // Ptr to array of Syntax Colors/Column Indices
-     HWND           hWndEC)         // Window handle of Edit Ctrl (parent is SM or FE)
+    (LPAPLCHAR lpwszLine,           // Ptr to line of text
+     UINT      uLen,                // Length of text to display
+     LPCLRCOL  lpMemClr,            // Ptr to array of Syntax Colors/Column Indices
+     HWND      hWndEC)              // Window handle of Edit Ctrl (parent is SM or FE)
 
 {
     UBOOL        bRet = TRUE;       // TRUE iff the result is valid
@@ -775,10 +776,15 @@ UBOOL SyntaxColor
     FNACTION     fnAction1_EM,      // Ptr to 1st action
                  fnAction2_EM;      // ...    2nd ...
     TKLOCALVARS  tkLocalVars = {0}; // Local vars
-    WCHAR        wchOrig,           // The original char
-                 wchColNum;         // The translated char for tokenization as a COL_*** value
+    WCHAR        wchOrig;           // The original char
+    COLINDICES   chColNum;          // The COL_* of the translated char
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Avoid re-entrant code
+    EnterCriticalSection (&CSOTokenize);
+
+////LCLODS ("Entering <SyntaxColor>\r\n");
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -787,27 +793,30 @@ UBOOL SyntaxColor
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Save local vars in struct which we pass to each FSA action routine
-    tkLocalVars.State[2]    =
-    tkLocalVars.State[1]    =
-    tkLocalVars.State[0]    = FSA_SOS;      // Initialize the FSA state
-    tkLocalVars.lpwszOrig   = lpwszLine;    // Save ptr to start of input line
-    tkLocalVars.lpMemClrIni =
-    tkLocalVars.lpMemClrNxt = lpMemClr;     // Save ptr to array of Syntax Colors
-    tkLocalVars.lpGrpSeqIni =
-    tkLocalVars.lpGrpSeqNxt = (LPSCINDICES) lpMemPTD->lpwszTemp;
-    tkLocalVars.PrevGroup   = NO_PREVIOUS_GROUPING_SYMBOL;
-    tkLocalVars.NameInit    = NO_PREVIOUS_NAME;
-    tkLocalVars.hWndEC      = hWndEC;
+    tkLocalVars.State[2]         =
+    tkLocalVars.State[1]         =
+    tkLocalVars.State[0]         = FSA_SOS;         // Initialize the FSA state
+    tkLocalVars.lpwszOrig        = lpwszLine;       // Save ptr to start of input line
+    tkLocalVars.CtrlStrucTknType = 0;               // No initial token type
+    tkLocalVars.CtrlStrucStrLen  = 0;               // ...
+    tkLocalVars.lpMemClrIni      =
+    tkLocalVars.lpMemClrNxt      = lpMemClr;        // Save ptr to array of Syntax Colors
+    tkLocalVars.lpGrpSeqIni      =
+    tkLocalVars.lpGrpSeqNxt      = (LPSCINDICES) lpMemPTD->lpwszTemp;
+    tkLocalVars.PrevGroup        = NO_PREVIOUS_GROUPING_SYMBOL;
+    tkLocalVars.NameInit         = NO_PREVIOUS_NAME;
+    tkLocalVars.hWndEC           = hWndEC;
+    tkLocalVars.uSyntClrLen      = uLen;            // # Syntax Color entries
 
     // Skip over the temp storage ptr
-    ((LPSCINDICES) lpMemPTD->lpwszTemp) += aplNELM;
+    ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
 
     // Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
     // Skip over leading blanks (more to reduce clutter
     //   in the debugging window)
-    for (uChar = 0; uChar < aplNELM; uChar++)
+    for (uChar = 0; uChar < uLen; uChar++)
     if (IsWhiteW (lpwszLine[uChar]))
     {
         // Save the column index
@@ -832,7 +841,7 @@ UBOOL SyntaxColor
      || lpwszLine[uChar] EQ UTF16_DEL)
         goto FREEGLB_EXIT;
 
-    for (     ; uChar <= aplNELM; uChar++)
+    for (     ; uChar <= uLen; uChar++)
     {
         // Use a FSA to tokenize the line
 
@@ -843,23 +852,23 @@ UBOOL SyntaxColor
         tkLocalVars.lpwszCur = &lpwszLine[uChar];
 
         // Strip out EOL check so we don't confuse a zero-value char with EOL
-        if (uChar EQ aplNELM)
+        if (uChar EQ uLen)
         {
             wchOrig = L'\0';
-            wchColNum = COL_EOL;
+            chColNum = COL_EOL;
         } else
         {
             wchOrig = lpwszLine[uChar];
-            wchColNum = CharTrans (wchOrig, &tkLocalVars);
+            chColNum = CharTrans (wchOrig, &tkLocalVars);
         } // End IF/ELSE
 
         // Save the COL_xxx value
-        tkLocalVars.colIndex = wchColNum;
+        tkLocalVars.colIndex = chColNum;
 
         // Get primary action and new state
-        fnAction1_EM = fsaColTable[tkLocalVars.State[0]][wchColNum].fnAction1;
-        fnAction2_EM = fsaColTable[tkLocalVars.State[0]][wchColNum].fnAction2;
-        SetTokenStates (&tkLocalVars, fsaColTable[tkLocalVars.State[0]][wchColNum].iNewState);
+        fnAction1_EM = fsaColTable[tkLocalVars.State[0]][chColNum].fnAction1;
+        fnAction2_EM = fsaColTable[tkLocalVars.State[0]][chColNum].fnAction2;
+        SetTokenStates (&tkLocalVars, fsaColTable[tkLocalVars.State[0]][chColNum].iNewState);
 
         // Check for primary action
         if (fnAction1_EM
@@ -896,13 +905,20 @@ FREEGLB_EXIT:
 NONCE_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
+    // Ensure numeric length has been reset
+    Assert (lpMemPTD->iNumLen EQ 0);
     Assert ((uChar - uCharIni) EQ (UINT) (tkLocalVars.lpMemClrNxt - lpMemClr));
 
     // Restore the temp storage ptr
-    ((LPSCINDICES) lpMemPTD->lpwszTemp) -= aplNELM;
+    ((LPSCINDICES) lpMemPTD->lpwszTemp) -= uLen;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+////LCLODS ("Exiting  <SyntaxColor>\r\n");
+
+    // Release the Critical Section
+    LeaveCriticalSection (&CSOTokenize);
 
     return bRet;
 } // End SyntaxColor
@@ -946,8 +962,8 @@ int LclECPaintHook
 #endif
     // Syntax Color the line
     if (!rev
-     && (IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
-     || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns))
+     && ((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
+      || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns)))
     {
         // To do this, we use a FSA to parse the line from the start
         //   through the last char to display
@@ -1037,18 +1053,14 @@ int LclECPaintHook
     {
         UINT     uClr;                          // Loop counter
         HDC      hDCClient;                     // Client Area DC
-        HWND     hWnd;                          // Window handle of the DC
         COLORREF clrBackDef;                    // Default background color
 
         // Getr the default background color for this DC
         clrBackDef = GetBkColor (hDC);
 
-        // Get the window handle for this DC
-        hWnd = WindowFromDC (hDC);
-
         // Get a DC of the entire client area so we
         //   can draw outside the clipping region
-        hDCClient = GetDC (hWnd);
+        hDCClient = MyGetDC (hWndEC);
 
         // Select the current font into the DC
         SelectObject (hDCClient, GetCurrentObject (hDC, OBJ_FONT));
@@ -1079,7 +1091,7 @@ int LclECPaintHook
         } // End FOR
 
         // We no longer need this resource
-        ReleaseDC (hWnd, hDCClient);
+        MyReleaseDC (hWndEC, hDCClient);
     } else
         // Draw the line for real
         DrawTextW (hDC,
@@ -1331,14 +1343,16 @@ LRESULT WINAPI LclEditCtrlWndProc
                                             //   line #s after calling the original handler
     HANDLE       hGlbClip;                  // Handle to the clipboard
     LPWCHAR      lpMemClip;                 // Memory ptr
-    UINT         ksShft,                    // TRUE iff VK_CONTROL is pressed
-                 ksCtrl;                    // ...      VK_SHIFT   ...
+    UINT         ksShft,                    // TRUE iff VK_CONTROL is pressed (either Ctrl- key)
+                 ksCtrl,                    // ...      VK_SHIFT   ...                Shift-...
+                 ksMenu;                    // ...      VK_MENU    ...                Alt-  ...
     HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;               // Ptr to formatting save area
-    WNDPROC      lpfnOldEditCtrlWndProc =   // Ptr to preceding Edit Ctrl window procedure
+    static WNDPROC lpfnOldEditCtrlWndProc = // Ptr to preceding Edit Ctrl window procedure
                 &EditWndProcW;
     LPWCHAR      lpwszTemp = NULL;          // Ptr to temporary storage
+    static UINT  uAltNum = 0;               // Accumulator for Alt-nnn (NumPad only)
 
     // If the thread is MF, ...
     if (TLSTYPE_MF EQ TlsGetValue (dwTlsType))
@@ -1389,7 +1403,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                        wParam,
                                        lParam);     // Pass on down the line
             // Include the keys we need to process APL symbols
-            return lResult | DLGC_WANTALLKEYS;
+            return lResult | DLGC_WANTALLKEYS | DLGC_WANTMESSAGE;
 
         case WM_SETCURSOR:          // hwnd = (HWND) wParam;       // handle of window with cursor
                                     // nHittest = LOWORD(lParam);  // hit-test code
@@ -1476,7 +1490,9 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
 
-        case WM_RBUTTONDBLCLK:
+        case WM_RBUTTONDBLCLK:      // fwKeys = wParam;         // key flags
+                                    // xPos = LOSHORT(lParam);  // horizontal position of cursor
+                                    // yPos = HISHORT(lParam);  // vertical position of cursor
         {
             UINT       xPos, yPos;      // x- and y-screen coordinates
             LPSYMENTRY lpSymEntry;      // Ptr to the SYMENTRY under the name
@@ -1560,7 +1576,9 @@ LRESULT WINAPI LclEditCtrlWndProc
         } // End WM_RBUTTONDBLCLK
 #undef  ID_TIMER
 
-        case WM_RBUTTONUP:
+        case WM_RBUTTONUP:          // fwKeys = wParam;         // key flags
+                                    // xPos = LOSHORT(lParam);  // horizontal position of cursor
+                                    // yPos = HISHORT(lParam);  // vertical position of cursor
             // If from MF, pass on this message
             if (hGlbPTD EQ NULL)
                 break;
@@ -1699,11 +1717,16 @@ LRESULT WINAPI LclEditCtrlWndProc
 #undef  nWidth
 #undef  fwSizeType
 
-#define nVirtKey ((int) wParam)
+#define nVirtKey    ((int) wParam)
+#define keyData     (*(LPKEYDATA) &lParam)
         case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // Virtual-key code
                                     // lKeyData = lParam;           // Key data
-            // Skip this is the Menu key is pressed
-            if (GetKeyState (VK_MENU) & 0x8000)
+            ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
+            ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
+            ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
+
+            // Skip this if the Menu key is pressed
+            if (ksMenu)
                 break;
 
             // Get the handle of the parent window
@@ -1717,9 +1740,6 @@ LRESULT WINAPI LclEditCtrlWndProc
             // This message handles special keys that don't
             //   produce a WM_CHAR, i.e. non-printable keys,
             //   Backspace, and Delete.
-
-            ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
-            ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
 
             // Process the virtual key
             switch (nVirtKey)
@@ -1776,7 +1796,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // If our parent is not MF, ...
                     if (hGlbPTD)
                         PostMessageW (hWndParent, MYWM_KEYDOWN, VK_CANCEL, 0);
-
                     break;
 
                 case VK_INSERT:         // Insert
@@ -1808,6 +1827,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                     vkState = *(LPVKSTATE) &lvkState;
 
                     vkState.Ins = !vkState.Ins;
+
+                    // Tell the Status Window about it
+                    SetStatusIns (vkState.Ins);
 
                     // Save in window extra bytes
                     SetWindowLongW (hWndParent, GWLSF_VKSTATE, *(long *) &vkState);
@@ -1918,10 +1940,149 @@ LRESULT WINAPI LclEditCtrlWndProc
             // We need to pass this message on to the next handler
             //   so WM_CHAR & WM_SYSCHAR can process it.
             break;
+#undef  keyData
 #undef  nVirtKey
 
-#define chCharCode ((char) wParam)
-        case WM_CHAR:               // chCharCode = (TCHAR) wParam; // character code
+#define nVirtKey    ((int) wParam)
+#define keyData     (*(LPKEYDATA) &lParam)
+        case WM_KEYUP:              // nVirtKey = (int) wParam;     // Virtual-key code
+                                    // lKeyData = lParam;           // Key data
+            // Process the virtual key
+            switch (nVirtKey)
+            {
+                case VK_MENU:
+                    if (uAltNum)
+                    {
+                        // Insert/replace the corresponding Unicode char
+                        InsRepCharStr (hWnd, GWLSF_VKSTATE, (LPWCHAR) &uAltNum, hGlbPTD EQ NULL);
+
+                        // Clear the number
+                        uAltNum = 0;
+
+                        return FALSE;           // We handled the msg
+                    } // End IF
+
+                    break;
+
+                case VK_CAPITAL:
+                    // Tell the Status Window about it
+                    SetStatusCaps (GetKeyState (VK_CAPITAL) & BIT0);
+
+                    break;
+
+                case VK_NUMLOCK:
+                    // Tell the Status Window about it
+                    SetStatusNum (GetKeyState (VK_NUMLOCK) & BIT0);
+
+                    break;
+
+                case VK_UP:
+                case VK_DOWN:
+                case VK_LEFT:
+                case VK_RIGHT:
+                case VK_PRIOR:
+                case VK_NEXT:
+                case VK_HOME:
+                case VK_END:
+                case VK_BACK:
+                case VK_TAB:
+                case VK_RETURN:
+                    // Tell the Status Window about the new positions
+                    SetStatusPos (hWnd);
+
+                    break;
+            } // End SWITCH
+
+            break;
+#undef  nVirtKey
+
+#define nVirtKey ((int) wParam)
+        case WM_SYSKEYDOWN:         // nVirtKey = (int) wParam;     // Virtual-key code
+                                    // lKeyData = lParam;           // Key data
+            // Process the virtual key
+            switch (nVirtKey)
+            {
+                static UINT AltTrans[] =
+                {
+                    5,  // VK_CLEAR       0x0C
+                   -1,  // VK_RETURN      0x0D
+                   -1,  //                0x0E
+                   -1,  //                0x0F
+                   -1,  // VK_SHIFT       0x10
+                   -1,  // VK_CONTROL     0x11
+                   -1,  // VK_MENU        0x12
+                   -1,  // VK_PAUSE       0x13
+                   -1,  // VK_CAPITAL     0x14
+                   -1,  // VK_KANA        0x15
+                   -1,  //                0x16
+                   -1,  // VK_JUNJA       0x17
+                   -1,  // VK_FINAL       0x18
+                   -1,  // VK_KANJI       0x19
+                   -1,  //                0x1A
+                   -1,  // VK_ESCAPE      0x1B
+                   -1,  // VK_CONVERT     0x1C
+                   -1,  // VK_NONCONVERT  0x1D
+                   -1,  // VK_ACCEPT      0x1E
+                   -1,  // VK_MODECHANGE  0x1F
+                   -1,  // VK_SPACE       0x20
+                    9,  // VK_PRIOR       0x21
+                    3,  // VK_NEXT        0x22
+                    1,  // VK_END         0x23
+                    7,  // VK_HOME        0x24
+                    4,  // VK_LEFT        0x25
+                    8,  // VK_UP          0x26
+                    6,  // VK_RIGHT       0x27
+                    2,  // VK_DOWN        0x28
+                   -1,  // VK_SELECT      0x29
+                   -1,  // VK_PRINT       0x2A
+                   -1,  // VK_EXECUTE     0x2B
+                   -1,  // VK_SNAPSHOT    0x2C
+                    0,  // VK_INSERT      0x2D
+                };
+
+#define AltAccum(a)     uAltNum *= 10; uAltNum += (a)   // Accumulate the digit
+
+                case VK_NUMPAD0:    // 0
+                case VK_NUMPAD1:    // 1
+                case VK_NUMPAD2:    // 2
+                case VK_NUMPAD3:    // 3
+                case VK_NUMPAD4:    // 4
+                case VK_NUMPAD5:    // 5
+                case VK_NUMPAD6:    // 6
+                case VK_NUMPAD7:    // 7
+                case VK_NUMPAD8:    // 8
+                case VK_NUMPAD9:    // 9
+                    // Accumulate the digit
+                    AltAccum (nVirtKey - VK_NUMPAD0);
+
+                    return FALSE;           // We handled the msg
+
+                case VK_INSERT:     // 0
+                case VK_END:        // 1
+                case VK_DOWN:       // 2
+                case VK_NEXT:       // 3
+                case VK_LEFT:       // 4
+                case VK_CLEAR:      // 5
+                case VK_RIGHT:      // 6
+                case VK_HOME:       // 7
+                case VK_UP:         // 8
+                case VK_PRIOR:      // 9
+                    // Accumulate the digit
+                    AltAccum (AltTrans[nVirtKey - VK_CLEAR]);
+
+                    return FALSE;           // We handled the msg
+#undef  AltAccum
+                default:
+                    break;
+            } // End SWITCH
+
+            break;
+#undef  keyData
+#undef  nVirtKey
+
+#define wchCharCode ((WCHAR) wParam)
+#define keyData     (*(LPKEYDATA) &lParam)
+        case WM_CHAR:               // wchCharCode = (TCHAR) wParam; // character code
                                     // lKeyData = lParam;           // Key data
         {
             int iChar;
@@ -1929,8 +2090,14 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Handle Shifted & unshifted chars
             //  e.g., 'a' = 97, 'z' = 122
 
+            // If the transition state is set, then this char
+            //   seems to come from the secondary char generated
+            //   by Alt-nnnn
+            if (keyData.transitionState)
+                return FALSE;
+
             // Check for Tab
-            if (chCharCode EQ L'\t')
+            if (wchCharCode EQ L'\t')
             {
                 // If it's from MF, ...
                 if (hGlbPTD EQ NULL)
@@ -1944,13 +2111,13 @@ LRESULT WINAPI LclEditCtrlWndProc
             // If this control allows numbers only, ...
             if (ES_NUMBER & GetWindowLongW (hWnd, GWL_STYLE))
             {
-                if (L'0' > chCharCode
-                 ||        chCharCode > L'9')
+                if (L'0' > wchCharCode
+                 ||        wchCharCode > L'9')
                     break;
             } // End IF
 
             // Check for Return
-            if (chCharCode EQ L'\r'         // It's CR
+            if (wchCharCode EQ L'\r'        // It's CR
              && IzitSM (GetParent (hWnd)))  // Parent is SM
             {
                 // If it's on the last line, move the caret to the EOL (EOB)
@@ -1962,7 +2129,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
             // Check for Ctrl-Y (Redo)
-            if (chCharCode EQ 25)
+            if (wchCharCode EQ 25)
             {
                 // Post to ourselves a request to Redo
                 PostMessageW (hWnd, WM_REDO, 0, 0);
@@ -1971,7 +2138,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
             // Check for Ctrl-S (Save)
-            if (chCharCode EQ 19
+            if (wchCharCode EQ 19
              && IzitFE (GetParent (hWnd)))  // Parent is FE
             {
                 // Post a request to ourselves to save the function
@@ -1981,7 +2148,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
             // Check for Ctrl-E (Save and End)
-            if (chCharCode EQ 5
+            if (wchCharCode EQ 5
              && IzitFE (GetParent (hWnd)))  // Parent is FE
             {
                 // Post a request to ourselves to save & close the function
@@ -1991,7 +2158,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
             // Check for Ctrl-Q (Close)
-            if (chCharCode EQ 17
+            if (wchCharCode EQ 17
              && IzitFE (GetParent (hWnd)))  // Parent is FE
             {
                 // Post a request to ourselves to close the function
@@ -2001,7 +2168,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
 ////////////// Check for Ctrl-A (SaveAs)        // ***FIXME*** -- Make this work??
-////////////if (chCharCode EQ 1
+////////////if (wchCharCode EQ 1
 //////////// && IzitFE (GetParent (hWnd)))  // Parent is FE
 ////////////{
 ////////////    // Post a request to ourselves to save the function under a different name
@@ -2010,7 +2177,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 ////////////    return FALSE;       // We handled the msg
 ////////////} // End IF
 
-            iChar = chCharCode - ' ';
+            iChar = wchCharCode - L' ';
             if (0 <= iChar
              &&      iChar < ACHARCODES_NROWS)
             {
@@ -2032,9 +2199,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                     WCHAR wszTemp[1024];    // Ptr to temporary output area
 
                     wsprintfW (wszTemp,
-                               L"CHAR:  chCharCode = %d, %c",
-                               chCharCode,
-                               chCharCode);
+                               L"CHAR:  wchCharCode = %d, %c",
+                               wchCharCode,
+                               wchCharCode);
                     DbgMsgW (wszTemp);
 #endif
                 } // End IF/ELSE
@@ -2042,10 +2209,12 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
         } // End WM_CHAR
-#undef  chCharCode
+#undef  keyData
+#undef  wchCharCode
 
-#define chCharCode ((char) wParam)
-        case WM_SYSCHAR:            // chCharCode = (TCHAR) wParam; // character code
+#define wchCharCode ((WCHAR) wParam)
+#define keyData     (*(LPKEYDATA) &lParam)
+        case WM_SYSCHAR:            // wchCharCode = (TCHAR) wParam; // character code
                                     // lKeyData = lParam;           // Key data
         {
             int   iChar;
@@ -2053,7 +2222,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Handle Shifted & unshifted Alt chars
             //  e.g., 'a' = 97, 'z' = 122
 
-            iChar = chCharCode - ' ';
+            iChar = wchCharCode - L' ';
             if (0 <= iChar
              &&      iChar < ACHARCODES_NROWS)
             {
@@ -2067,13 +2236,13 @@ LRESULT WINAPI LclEditCtrlWndProc
                 //   toggles the upper/lowercase state
                 if (GetKeyState (VK_CAPITAL) & BIT0)
                 {
-                    if ('a' <= chCharCode && chCharCode <= 'z')
-                        chCharCode = (char) CharUpper ((LPCHAR) chCharCode);
+                    if (L'a' <= wchCharCode && wchCharCode <= L'z')
+                        wchCharCode = (WCHAR) CharUpperW ((LPWCHAR) wchCharCode);
                     else
-                    if ('A' <= chCharCode && chCharCode <= 'Z')
-                        chCharCode = (char) CharLower ((LPCHAR) chCharCode);
+                    if (L'A' <= wchCharCode && wchCharCode <= L'Z')
+                        wchCharCode = (WCHAR) CharLowerW ((LPWCHAR) wchCharCode);
 
-                    iChar = chCharCode - ' ';
+                    iChar = wchCharCode - L' ';
                 } // End IF
 
                 // Get the Alt- char code
@@ -2102,9 +2271,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                     WCHAR wszTemp[1024];    // Ptr to temporary output area
 
                     wsprintfW (wszTemp,
-                               L"SYSCHAR:  chCharCode = %d, %c",
-                               chCharCode,
-                               chCharCode);
+                               L"SYSCHAR:  wchCharCode = %d, %c",
+                               wchCharCode,
+                               wchCharCode);
                     DbgMsgW (wszTemp);
 #endif
                 } // End IF/ELSE
@@ -2114,16 +2283,17 @@ LRESULT WINAPI LclEditCtrlWndProc
                 WCHAR wszTemp[1024];    // Ptr to temporary output area
 
                 wsprintfW (wszTemp,
-                           L"SYSCHAR:  chCharCode = %d, %c",
-                           chCharCode,
-                           chCharCode);
+                           L"SYSCHAR:  wchCharCode = %d, %c",
+                           wchCharCode,
+                           wchCharCode);
                 DbgMsgW (wszTemp);
 #endif
             } // End IF/ELSE
 
             break;
         } // End WM_SYSCHAR
-#undef  chCharCode
+#undef  keyData
+#undef  wchCharCode
 
         case WM_UNDO:               // 0 = wParam
                                     // 0 = lParam
@@ -2440,6 +2610,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             return lResult;         // We handled the msg
 
         case MYWM_COPY_APL:
+            // Let the Edit Ctrl do its thing
             lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
                                        hWnd,
                                        WM_COPY,
@@ -2468,8 +2639,8 @@ LRESULT WINAPI LclEditCtrlWndProc
                        uLen;            // Length of the name to localize/unlocalize
 
             // Get the cursor position when right clicked
-            xPos = LOSHORT (GetPropW (hWnd, L"TIMER.LPARAM"));
-            yPos = HISHORT (GetPropW (hWnd, L"TIMER.LPARAM"));
+            xPos = LOSHORT ((HANDLE_PTR) GetPropW (hWnd, L"TIMER.LPARAM"));
+            yPos = HISHORT ((HANDLE_PTR) GetPropW (hWnd, L"TIMER.LPARAM"));
 
             // Get the corresponding STE
             lpSymEntry = (LPSYMENTRY) SendMessageW (hWnd, MYWM_IZITNAME, xPos, yPos);
@@ -2674,6 +2845,24 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
 
+        case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
+        case WM_LBUTTONDOWN:        // fwKeys = wParam;         // key flags
+                                    // xPos = LOSHORT(lParam);  // horizontal position of cursor
+                                    // yPos = HISHORT(lParam);  // vertical position of cursor
+            // Let the Edit Ctrl move the caret
+            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
+                                       hWnd,
+                                       message,
+                                       wParam,
+                                       lParam);     // Pass on down the line
+            // Repaint the status window
+            InvalidateRect (hWndStatus, NULL, FALSE);
+
+            // Tell the Status Window about the new positions
+            SetStatusPos (hWnd);
+
+            return FALSE;           // We handled the msg
+
         case WM_DESTROY:
             // Remove all saved window properties
             EnumProps (hWnd, EnumCallbackRemoveProp);
@@ -2710,7 +2899,7 @@ HGLOBAL CopyGlbMemory
             lpMemDst;       // Ptr to result ...
 
     // Check for bad handle
-    if (!IsGlbPtr (hGlbSrc))
+    if (!IsValidHandle (hGlbSrc))
         return NULL;
 
     // Get the size of the global memory object
@@ -2753,7 +2942,7 @@ void CopyAPLChars_EM
      UNI_TRANS uIndex)              // UNI_TRANS index
 
 {
-    SIZE_T       dwChars;           // # chars on the clipboard
+    APLU3264     dwChars;           // # chars on the clipboard
     HGLOBAL      hGlbClip = NULL,   // Clipboard global memory handle
                  hGlbText = NULL;   // Clipboard UNICODETEXT global memory handle
     LPVOID       lpMemClip = NULL;  // Ptr to clipboard global memory
@@ -2798,14 +2987,14 @@ void CopyAPLChars_EM
             goto NORMAL_EXIT;
 
         // Get the # chars
-        dwChars = GlobalSize (hGlbClip);
+        dwChars = (APLU3264) MyGlobalSize (hGlbClip);
 
         // Mark as not Unicode chars
         bUnicode = FALSE;
     } else
     {
         // Get the # chars
-        dwChars = GlobalSize (hGlbClip) / sizeof (WCHAR);
+        dwChars = (APLU3264) MyGlobalSize (hGlbClip) / sizeof (WCHAR);
 
         // Mark as Unicode chars
         bUnicode = TRUE;
@@ -3034,7 +3223,7 @@ void PasteAPLChars_EM
     if (hGlbClip)
     {
         // Get the clipboard memory size
-        dwSize = GlobalSize (hGlbClip);
+        dwSize = MyGlobalSize (hGlbClip);
 
         // Split off braces case
         if (uIndex EQ UNITRANS_BRACES)
@@ -3496,6 +3685,9 @@ void InsRepCharStr
 
     // Insert/replace the char string into the text
     SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) lpwch);
+
+    // Tell the Status Window about the new positions
+    SetStatusPos (hWnd);
 } // End InsRepCharStr
 
 
@@ -3851,11 +4043,13 @@ UBOOL CloseFunction
 
 void ActivateMDIMenu
     (HMENU hMenuFrame,
-     HMENU hMenuWindow)
+     HMENU hMenuWindow,
+     UINT  uViewPos)
 
 {
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    HMENU        hMenuView;         // View menu handle
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -3867,6 +4061,10 @@ void ActivateMDIMenu
                   WM_MDISETMENU,
                   GET_WM_MDISETMENU_MPS (hMenuFrame, hMenuWindow));
     DrawMenuBar (hWndMF);
+
+    // Check/uncheck the View | Status Bar menu item as appropriate
+    hMenuView = GetSubMenu (hMenuFrame, IDMPOS_SM_VIEW);
+    CheckMenuItem (hMenuView, IDM_STATUSBAR, MF_BYCOMMAND | (OptionFlags.bViewStatusBar ? MF_CHECKED : MF_UNCHECKED));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

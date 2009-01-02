@@ -1,6 +1,7 @@
 
-    // Insert as a listener to be called after the window has loaded
+    // Insert a listener to be called after the window has loaded
     window.addEventListener ("load"  , onLoadAPL  , false);
+
 
 // Function called when the user clicks on the button
 function onClickAPL (bToggle, bFocus)
@@ -17,16 +18,20 @@ var aplButton = document.getElementById (aplButtonId);
         aplButton = document.getElementById (aplButtonId);
     } // End IF
 
-    // Set the button label to ON/OFF
-    aplButton.label =
-      fontsEnabled ? gAplFontsLabelON
-                   : gAplFontsLabelOFF;
-    // Set the button tooltip to ON/OFF
-    aplButton.tooltipText =
-      fontsEnabled ? gAplFontsTipON
-                   : gAplFontsTipOFF;
-    // Set the button image to ON/OFF
-    onFocusAPL (bFocus);
+    // If the button is on the toolbar, ...
+    if (aplButton)
+    {
+        // Set the button label to ON/OFF
+        aplButton.label =
+          fontsEnabled ? gAplFontsLabelON
+                       : gAplFontsLabelOFF;
+        // Set the button tooltip to ON/OFF
+        aplButton.tooltipText =
+          fontsEnabled ? gAplFontsTipON
+                       : gAplFontsTipOFF;
+        // Set the button image to ON/OFF
+        onFocusAPL (bFocus);
+    } // End IF
 
     // If we're changing fonts, ...
     if (bToggle)
@@ -112,7 +117,11 @@ var aplButton = document.getElementById (aplButtonId);
     try
     {
         // Get the toolbar iconsize
-        iconsize = aplButton.parentNode.attributes["iconsize"].value;
+    var attr = aplButton.parentNode.attributes["iconsize"];
+        if (attr)
+            iconsize = attr.value;
+        else
+            iconsize = "large";
     } catch (e) {}
 
     // Set the image to display depending upon the focus and enabled states,
@@ -149,13 +158,17 @@ var image = "url(chrome://aplchars/content/aplfonts";
 } // End onFocusAPL
 
 
-var gAPLObserver =
+var gPrefObserverAPL =
 {
     observe: function (aSubject, aTopic, aData)
     {
         if (aTopic == "nsPref:changed")
         {
             // aData is "extensions.aplchars.???"
+            if (aData == (gAplCharsRoot + gAplCharsCustomize))
+                // Simulate a click to initialize the fields
+                onClickAPL (false, false);
+            else
             if (aData == (gAplCharsRoot + gAplCharsAplFontFamilyId))
             {
                 // If fonts are now enabled, ...
@@ -182,44 +195,58 @@ var gAPLObserver =
                     // Re-display the message
                     ReloadMessage ();
                 } // End IF
-            } else
-            {
-                // Get a ptr to our local preference branch
-            var lclPrefs = Components.classes["@mozilla.org/preferences-service;1"]
-                                     .getService (Components.interfaces.nsIPrefService)
-                                     .getBranch (gAplCharsRoot);
-                // Get our font name and type preferences
-            var fontNameRoot  = lclPrefs.getCharPref (gAplCharsFontNameRoot);
-            var fontNameType  = lclPrefs.getCharPref (gAplCharsFontNameType);
-
-                if (aData == (fontNameRoot + fontNameType))
-                {
-
-
-
-
-
-
-
-
-
-
-
-
-
-                } // End IF
+////        } else
+////        {
+////            // Get a ptr to our local preference branch
+////        var lclPrefs = Components.classes["@mozilla.org/preferences-service;1"]
+////                                 .getService (Components.interfaces.nsIPrefService)
+////                                 .getBranch (gAplCharsRoot);
+////            // Get our font name and type preferences
+////        var fontNameRoot  = lclPrefs.getCharPref (gAplCharsFontNameRoot);
+////        var fontNameType  = lclPrefs.getCharPref (gAplCharsFontNameType);
+////
+////            if (aData == (fontNameRoot + fontNameType))
+////            {
+////                myDump ("aData = " + aData);
+////
+////                // Get a ptr to the font name preference branch
+////            var glbPrefs = Components.classes["@mozilla.org/preferences-service;1"]
+////                                     .getService (Components.interfaces.nsIPrefService)
+////                                     .getBranch (fontNameRoot);
+////                // If the APL font is in effect, ...
+////                if (getFontsEnabledAPL (false))
+////                {
+////                    // Save the font family name back into the local preferences
+////                    lclPrefs.setCharPref (fontNameType, glbPrefs.getCharPref (fontNameType));
+////                } else
+////                {
+////
+////
+////
+////                } // End IF/ELSE
+////            } // End IF
             } // End IF/ELSE
         } // End IF
     } // End observe
-} // End gAPLObserver
+} // End gPrefObserverAPL
 
 
 // Function called for onload
 function onLoadAPL ()
 {
+    // Install an observer to handle changes to our preferences
 var gPref = Components.classes["@mozilla.org/preferences-service;1"]
                       .getService (Components.interfaces.nsIPrefBranch2);
-    gPref.addObserver (gAplCharsRoot, gAPLObserver, false);
+    gPref.addObserver (gAplCharsRoot, gPrefObserverAPL, false);
+
+////     // Get a ptr to our local preference branch
+//// var lclPrefs = Components.classes["@mozilla.org/preferences-service;1"]
+////                          .getService (Components.interfaces.nsIPrefService)
+////                          .getBranch (gAplCharsRoot);
+////     // Get our font name and type preferences
+//// var fontNameRoot  = lclPrefs.getCharPref (gAplCharsFontNameRoot);
+//// var fontNameType  = lclPrefs.getCharPref (gAplCharsFontNameType);
+////     gPref.addObserver (fontNameRoot + fontNameType, gPrefObserverAPL, false);
 
     // Simulate a click to initialize the fields
     onClickAPL (false, false);

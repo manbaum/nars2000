@@ -26,16 +26,8 @@
 #include <windowsx.h>
 #include <stdlib.h>
 #include <winver.h>
+#include "headers.h"
 
-#include "main.h"
-#include "resdebug.h"
-#include "resource.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 WCHAR wszVarFileInfo[] = L"\\VarFileInfo\\Translation",
       lpwszVersion[]   = WS_APPNAME L"\nVersion %s";
@@ -117,7 +109,9 @@ APLU3264 CALLBACK AboutDlgProc
      LPARAM lParam)
 
 {
-    static HFONT hFont = NULL;
+    static HFONT    hFont = NULL;
+    static TOOLINFO ti = {0};
+    static char     szAppDPFE[_MAX_PATH];
 
     // Split cases
     switch (message)
@@ -140,13 +134,35 @@ APLU3264 CALLBACK AboutDlgProc
             // Subclass the IDC_LINK control
             //   so we can handle WM_LBUTTONDOWN
             (HANDLE_PTR) lpfnOldStaticWndProc =
-              SetWindowLongPtr (hWndStatic,
-                                GWL_WNDPROC,
-                                (APLU3264) (LONG_PTR) (WNDPROC) &LclStaticWndProc);
-            // Set the cursor for the static control to a hand
+              SetWindowLongPtrW (hWndStatic,
+                                 GWL_WNDPROC,
+                                 (APLU3264) (LONG_PTR) (WNDPROC) &LclStaticWndProc);
+            // If we haven't done this before, ...
+            if (szAppDPFE[0] EQ '\0')
+            {
+#define TT_PREFIX   "Loaded from:  "
+                // Copy the prefix to the text
+                lstrcpy (szAppDPFE, TT_PREFIX);
 
+                // Convert the wide char to single byte
+                W2A (&szAppDPFE[strlengthof (TT_PREFIX)], wszAppDPFE, sizeof (szAppDPFE) - 1 - strlengthof (TT_PREFIX));
+#undef  TT_PREFIX
+            } // End IF
 
+            // Fill in TOOLINFO fields
+            ti.cbSize   = sizeof (ti);
+            ti.uFlags   = TTF_IDISHWND | TTF_SUBCLASS;
+            ti.hwnd     = hDlg;
+            ti.uId      = (APLU3264) (HANDLE_PTR) GetDlgItem (hDlg, IDC_LOADEDFROM);
+////////////ti.rect     =                       // Not used with TTF_IDISHWND
+////////////ti.hinst    =                       // Not used except with string resources
+            ti.lpszText = szAppDPFE;
 
+            // Register a tooltip for the Icon
+            SendMessageW (hWndTT,
+                          TTM_ADDTOOL,
+                          0,
+                          (LPARAM) (LPTOOLINFOW) &ti);
             return TRUE;            // Use the focus in wParam
         } // End WM_INITDIALOG
 
@@ -196,11 +212,16 @@ APLU3264 CALLBACK AboutDlgProc
             } // End IF
 
             // Restore the old WndProc
-            SetWindowLongPtr (hWndStatic,
-                              GWL_WNDPROC,
-                              (APLU3264) (LONG_PTR) (WNDPROC) lpfnOldStaticWndProc);
+            SetWindowLongPtrW (hWndStatic,
+                               GWL_WNDPROC,
+                               (APLU3264) (LONG_PTR) (WNDPROC) lpfnOldStaticWndProc);
             lpfnOldStaticWndProc = NULL;
 
+            // Unregister the tooltip for the Icon
+            SendMessageW (hWndTT,
+                          TTM_DELTOOL,
+                          0,
+                          (LPARAM) (LPTOOLINFOW) &ti);
             EndDialog (hDlg, TRUE); // Quit this dialog
 
             return TRUE;            // We handled the msg
@@ -239,43 +260,55 @@ LRESULT WINAPI LclStaticWndProc
     // Split cases
     switch (message)
     {
-        case WM_LBUTTONDOWN:
-        {
-            char szStaticText[128];             // Text of static control
+        case WM_LBUTTONDOWN:        // fwKeys = wParam;         // key flags
+                                    // xPos = LOSHORT(lParam);  // horizontal position of cursor
+                                    // yPos = HISHORT(lParam);  // vertical position of cursor
+            // Check for the IDC_LINK static window
+            if (hWnd EQ hWndStatic)
+            {
+                char szStaticText[128];             // Text of static control
 
-            // The user clicked on our static text --
-            //   make it behave like a hyperlink
+                // The user clicked on our static text --
+                //   make it behave like a hyperlink
 
-            // Get the static text so we can pass it to ShellExecute
-            GetWindowText (hWndStatic,
-                           szStaticText,
-                           sizeof (szStaticText) - 1);
-            // Call the shell to invoke the browser
-            ShellExecute (hWnd,             // Handle to parent window
-                          "open",           // Operation to perform
-                          szStaticText,     // Object on which to perform operation
-                          NULL,             // Executable file parameters
-                          NULL,             // Default directory
-                          SW_SHOWNORMAL     // How window is to shown when opened
-                         );
-            return FALSE;           // We handled the msg
-        } // End WM_LBUTTONDOWN
+                // Get the static text so we can pass it to ShellExecute
+                GetWindowText (hWndStatic,
+                               szStaticText,
+                               sizeof (szStaticText) - 1);
+                // Call the shell to invoke the browser
+                ShellExecute (hWnd,             // Handle to parent window
+                              "open",           // Operation to perform
+                              szStaticText,     // Object on which to perform operation
+                              NULL,             // Executable file parameters
+                              NULL,             // Default directory
+                              SW_SHOWNORMAL     // How window is to shown when opened
+                             );
+                return FALSE;           // We handled the msg
+            } // End IF
+
+            break;
 
         case WM_SETCURSOR:          // hwnd = (HWND) wParam;       // handle of window with cursor
                                     // nHittest = LOWORD(lParam);  // hit-test code
                                     // wMouseMsg = HIWORD(lParam); // mouse-message identifier
-            // Set a new cursor to indicate that
-            //   this is a hyperlink.
-            SetCursor (LoadCursor (NULL, IDC_HAND));
+            // Check for the IDC_LINK static window
+            if (hWnd EQ hWndStatic)
+            {
+                // Set a new cursor to indicate that
+                //   this is a hyperlink.
+                SetCursor (LoadCursor (NULL, IDC_HAND));
 
-            return FALSE;           // We handled the msg
+                return FALSE;           // We handled the msg
+            } // End IF
+
+            break;
     } // End SWITCH
 
-    return CallWindowProc (lpfnOldStaticWndProc,
-                           hWnd,
-                           message,
-                           wParam,
-                           lParam); // Pass on down the line
+    return CallWindowProcW (lpfnOldStaticWndProc,
+                            hWnd,
+                            message,
+                            wParam,
+                            lParam);    // Pass on down the line
 } // End LclStaticWndProc
 
 

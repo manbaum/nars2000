@@ -27,7 +27,8 @@ typedef struct tagCNT_THREAD    // Thread struct for CreateNewTabInThread
     int     iTabIndex;          // 08:  Insert the new tab to the left of this one
     UBOOL   bExecLX;            // 0C:  TRUE iff execute []LX after successful load
     HANDLE  hThread;            // 10:  Handle to the current thread
-                                // 14:  Length
+    DWORD   dwThreadId;         // 14:  Thread Id
+                                // 18:  Length
 } CNT_THREAD, *LPCNT_THREAD;
 
 

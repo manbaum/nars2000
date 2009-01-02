@@ -24,20 +24,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>
-
-#include "main.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "aplerrors.h"
-#include "pertab.h"
-#include "savefcn.h"
-#include "fh_parse.h"
-#include "sis.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //***************************************************************************
@@ -1127,7 +1114,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
     APLINT       aplInteger;                // Temporary integer
     HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
-    LPWCHAR      lpwszFormat;               // Ptr to formatting save area
+    LPWCHAR      lpwszFormat,               // Ptr to formatting save area
+                 lpwszOldTemp;              // Ptr to temporary save area
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1603,6 +1591,10 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 lpMemPTD->lpLoadWsGlbVarParm = &LoadWsGlbVarParm;
                 lpMemPTD->lpLoadWsGlbVarConv = &LoadWsGlbVarConv;
 
+                // Protect lpMemPTD->lpwszTemp
+                lpwszOldTemp = lpMemPTD->lpwszTemp;
+                lpMemPTD->lpwszTemp = &lpwSrc[lstrlenW (lpwSrc)];
+
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1620,6 +1612,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                 // Lock the memory to get a ptr to it
                 lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Restore lpMemPTD->lpwszTemp
+                lpMemPTD->lpwszTemp = lpwszOldTemp;
 
                 // Save in PerTabData struc
                 lpMemPTD->lpLoadWsGlbVarParm = NULL;

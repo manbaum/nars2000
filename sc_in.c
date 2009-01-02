@@ -24,19 +24,8 @@
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>
-
-#include "main.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "aplerrors.h"
-#include "pertab.h"
-#include "fh_parse.h"
+#include "headers.h"
 #include "transfer.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 
 //***************************************************************************

@@ -1,0 +1,2 @@
+int cs_yyparse (LPCSLOCALVARS lpcsLocalVars);
+UBOOL ParseCtrlStruc_EM (LPCSLOCALVARS lpcsLocalVars);

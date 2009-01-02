@@ -21,24 +21,11 @@
 ***************************************************************************/
 
 #define STRICT
+#define _WIN32_WINNT    0x0400          // Needed for TryEnterCriticalSection
 #include <windows.h>
 #include <math.h>
+#include "headers.h"
 
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "pertab.h"
-#include "fh_parse.h"
-#include "pn_parse.h"
-#include "sis.h"
-#include "threads.h"
-#include "tokenize.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 ////#define EXEC_TRACE
 
@@ -62,6 +49,8 @@ ToDo
 *
 
  */
+
+UBOOL bInUse = FALSE;
 
 #define DEF_TOKEN_SIZE  1024    // Default initial amount of memory
                                 //   allocated for the tokenized line
@@ -92,8 +81,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_POINTNOT, NULL        , fnPointAcc  },   // Overbar
   {FSA_INIT    , NULL        , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , NULL        , fnSysInit   },   // Quad
-  {FSA_INIT    , NULL        , fnInfinity  },   // Underbar
-  {FSA_INIT    , NULL        , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Underbar
+  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Infinity
   {FSA_INIT    , NULL        , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , NULL        , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , NULL        , fnClnDone   },   // Colon  ...
@@ -124,8 +113,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_POINTNOT, NULL        , fnPointAcc  },   // Overbar
   {FSA_INIT    , NULL        , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , NULL        , fnSysInit   },   // Quad
-  {FSA_INIT    , NULL        , fnInfinity  },   // Underbar
-  {FSA_INIT    , NULL        , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Underbar
+  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Infinity
   {FSA_INIT    , NULL        , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , NULL        , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , NULL        , fnClnDone   },   // Colon  ...
@@ -156,8 +145,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_POINTNOT, NULL        , fnPointAcc  },   // Overbar
   {FSA_INIT    , fnPointDone , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnPointDone , fnSysInit   },   // Quad
-  {FSA_INIT    , fnPointDone , fnInfinity  },   // Underbar
-  {FSA_INIT    , fnPointDone , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Underbar
+  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Infinity
   {FSA_INIT    , fnPointDone , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnPointDone , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnPointDone , fnClnDone   },   // Colon  ...
@@ -189,7 +178,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnAlpDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnAlpDone   , fnSysInit   },   // Quad
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Underbar
-  {FSA_INIT    , fnAlpDone   , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, fnAlpDone   , fnPointAcc  },   // Infinity
   {FSA_INIT    , fnAlpDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnAlpDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnAlpDone   , fnClnDone   },   // Colon  ...
@@ -221,7 +210,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnSysDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnSysDone   , fnSysInit   },   // Quad
   {FSA_SYSNAME , fnSysAccum  , NULL        },   // Underbar
-  {FSA_INIT    , fnSysDone   , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, fnSysDone   , fnPointAcc  },   // Infinity
   {FSA_INIT    , fnSysDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnSysDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnSysDone   , fnClnDone   },   // Colon  ...
@@ -284,8 +273,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_POINTNOT, fnQuo1Done  , fnPointAcc  },   // Overbar
   {FSA_INIT    , fnQuo1Done  , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnQuo1Done  , fnSysInit   },   // Quad
-  {FSA_INIT    , fnQuo1Done  , fnInfinity  },   // Underbar
-  {FSA_INIT    , fnQuo1Done  , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, fnQuo1Done  , fnPointAcc  },   // Underbar
+  {FSA_POINTNOT, fnQuo1Done  , fnPointAcc  },   // Infinity
   {FSA_INIT    , fnQuo1Done  , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnQuo1Done  , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnQuo1Done  , fnClnDone   },   // Colon  ...
@@ -348,8 +337,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_POINTNOT, fnQuo2Done  , fnPointAcc  },   // Overbar
   {FSA_INIT    , fnQuo2Done  , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnQuo2Done  , fnSysInit   },   // Quad
-  {FSA_INIT    , fnQuo2Done  , fnInfinity  },   // Underbar
-  {FSA_INIT    , fnQuo2Done  , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, fnQuo2Done  , fnPointAcc  },   // Underbar
+  {FSA_POINTNOT, fnQuo2Done  , fnPointAcc  },   // Infinity
   {FSA_INIT    , fnQuo2Done  , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnQuo2Done  , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnQuo2Done  , fnClnDone   },   // Colon  ...
@@ -380,8 +369,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_POINTNOT, fnDotDone   , fnPointAcc  },   // Overbar
   {FSA_INIT    , fnDotDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnDotDone   , fnSysInit   },   // Quad
-  {FSA_INIT    , fnDotDone   , fnInfinity  },   // Underbar
-  {FSA_INIT    , fnDotDone   , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, fnDotDone   , fnPointAcc  },   // Underbar
+  {FSA_POINTNOT, fnDotDone   , fnPointAcc  },   // Infinity
   {FSA_INIT    , fnDotDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnDotDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnDotDone   , fnClnDone   },   // Colon  ...
@@ -407,13 +396,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
  },
     // FSA_JOTAMBIG Ambiguous jot:  either FSA_OUTAMBIG or normal w/fnJotDone ('J')
  {{FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // '0123456789'
-  {FSA_OUTAMBIG, NULL        , fnPointAcc  },   // '.'
+  {FSA_OUTAMBIG, fnSyntPrm   , fnPointAcc  },   // '.'
   {FSA_ALPHA   , fnJotDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // Overbar
   {FSA_INIT    , fnJotDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnJotDone   , fnSysInit   },   // Quad
-  {FSA_INIT    , fnJotDone   , fnInfinity  },   // Underbar
-  {FSA_INIT    , fnJotDone   , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // Underbar
+  {FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // Infinity
   {FSA_INIT    , fnJotDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnJotDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnJotDone   , fnClnDone   },   // Colon  ...
@@ -444,8 +433,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_POINTNOT, fnOutDone   , fnPointAcc  },   // Overbar
   {FSA_INIT    , fnOutDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnOutDone   , fnSysInit   },   // Quad
-  {FSA_INIT    , fnOutDone   , fnInfinity  },   // Underbar
-  {FSA_INIT    , fnOutDone   , fnInfinity  },   // Infinity
+  {FSA_POINTNOT, fnOutDone   , fnPointAcc  },   // Underbar
+  {FSA_POINTNOT, fnOutDone   , fnPointAcc  },   // Infinity
   {FSA_INIT    , fnOutDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnOutDone   , fnLstDone   },   // Semicolon  ...
   {FSA_INIT    , fnOutDone   , fnClnDone   },   // Colon  ...
@@ -531,8 +520,7 @@ void InitAccumVars
     lpMemPTD->iNumLen    = 0;
     lpMemPTD->iStrLen    = 0;
     lpMemPTD->aplInteger = 0;
-    lpMemPTD->bNegative  =
-    lpMemPTD->bNegExp    = FALSE;
+////LCLODS ("lpMemPTD->iNumLen = 0\r\n");
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -692,12 +680,16 @@ UBOOL IsLocalName
 
 {
     LPWCHAR lpwszName,                  // Ptr to name
-            wp;                         // Ptr to temp char
+            wp,                         // Ptr to temp char
+            lpwBrkLead = L"( );" WS_UTF16_LEFTARROW,
+            lpwBrkTerm = L"( );" WS_UTF16_LEFTARROW WS_UTF16_LAMP;
     WCHAR   sysName[32];                // Temp storage for sysnames in lowercase
 
     // If this is a sysname, ...
     if (IsSysName (lpwszStr))
     {
+        Assert (iStrLen <= strlengthof (sysName));      // ***FIXME*** -- may overflow
+
         // Copy the sysname to local storage
         CopyMemory (sysName, lpwszStr, iStrLen * sizeof (lpwszStr[0]));
 
@@ -714,28 +706,26 @@ UBOOL IsLocalName
     // Get the function header line
     SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
 
-    // Check for comment
-    wp = strchrW (lpwszTemp, UTF16_LAMP);
-    if (wp)
-        *wp = L'\0';
+    // Append a trailing marker
+    lstrcatW (lpwszTemp, WS_UTF16_LAMP);
 
+    // Copy the base of the line
     wp = lpwszTemp;
 
-    // Check the name in lpwszStr for global vs. local
-    while (wp = strchrW (wp, L';'))
+    while (TRUE)
     {
-        // Skip over the semicolon
-        wp++;
-
-        // Skip over leading white space
-        if (IsWhiteW (*wp))
+        // Skip over leading ignorable chars
+        while (strchrW (lpwBrkLead, *wp))
             wp++;
+
+        // Check for ending char
+        if (*wp EQ UTF16_LAMP)
+            break;
 
         // Compare the incoming name with the header text
         if (strncmpW (lpwszName, wp, iStrLen) EQ 0
-         && (wp[iStrLen] EQ L' '
-          || wp[iStrLen] EQ L';'
-          || wp[iStrLen] EQ L'\0'))
+         && (wp[iStrLen] EQ L'\0'
+          || strchrW (lpwBrkTerm, wp[iStrLen]) NE NULL))
         {
             // Mark as FOUND
             if (lpPosition)
@@ -744,24 +734,17 @@ UBOOL IsLocalName
             return TRUE;
         } // End IF
 
-        // Skip over the name
-        wp += iStrLen;
-
-        // Skip over trailing white space
-        if (IsWhiteW (*wp))
-            wp++;
+        // Find next terminating char
+        wp = strpbrkW (wp, lpwBrkTerm);
     } // End WHILE
 
     // Mark as NOT FOUND
     if (lpPosition)
     {
         // Find first semicolon
-        wp = strchrW (lpwszTemp, L';');
-        if (wp)
-            *lpPosition = (UINT) (wp - lpwszTemp);
-        else
-            *lpPosition = lstrlenW (lpwszTemp);
-      } // End IF
+        wp = SkipToCharW (lpwszTemp, L';');
+        *lpPosition = (UINT) (wp - lpwszTemp);
+     } // End IF
 
     return FALSE;
 } // End IsLocalName
@@ -1003,10 +986,10 @@ UBOOL fnAlpDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    LPSYMENTRY   lpSymEntry;
-    UBOOL        bRet;
-    APLINT       aplInteger;
-    TKFLAGS      tkFlags = {0};
+    LPSYMENTRY   lpSymEntry;    // Ptr to the name's STE
+    UBOOL        bRet = TRUE;   // TRUE iff the result is valid
+    APLINT       aplInteger;    // A temporary integer
+    TKFLAGS      tkFlags = {0}; // Token flags
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPWCHAR      lpwszStr;      // Ptr to Str global memory
@@ -1597,6 +1580,8 @@ UBOOL fnPointAcc
     DbgMsgW (L"fnPointAcc");
 #endif
 
+////LCLODS ("fnPointAcc\r\n");
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -1614,9 +1599,13 @@ UBOOL fnPointAcc
     // Check for Overbar
     if (wchCur EQ UTF16_OVERBAR)
         wchCur = L'-';
+    else
+    // Check for Infinity
+    if (wchCur EQ UTF16_INFINITY)
+        wchCur = L'~';
 
     // Use subroutine
-    bRet = fnPointSub (lptkLocalVars, lpMemPTD, (char) wchCur);
+    bRet = fnPointSub (lptkLocalVars, lpMemPTD, wchCur);
 ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1640,11 +1629,11 @@ ERROR_EXIT:
 UBOOL fnPointSub
     (LPTKLOCALVARS lptkLocalVars,   // Ptr to TK Local Vars
      LPPERTABDATA  lpMemPTD,        // Ptr to PerTabData global memory
-     char          chCur)           // The char to accumulate
+     WCHAR         wchCur)          // The char to accumulate
 
 {
-    LPCHAR       lpszNum;       // Ptr to Num global memory
-    UBOOL        bRet;          // TRUE iff result is valid
+    LPCHAR       lpszNum;           // Ptr to Num global memory
+    UBOOL        bRet;              // TRUE iff result is valid
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnPointSub");
@@ -1662,7 +1651,7 @@ UBOOL fnPointSub
     bRet = (lpMemPTD->iNumLen < DEF_NUM_MAXSIZE);
     if (bRet)
         // Save the current char
-        lpszNum[lpMemPTD->iNumLen++] = chCur;
+        lpszNum[lpMemPTD->iNumLen++] = (char) wchCur;
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
@@ -1697,6 +1686,8 @@ UBOOL fnPointDone
     DbgMsgW (L"fnPointDone");
 #endif
 
+////LCLODS ("fnPointDone\r\n");
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -1717,11 +1708,9 @@ UBOOL fnPointDone
 
         // Loop through the chars
         for (uVar = 0; uVar < uLen; uVar++)
-            // ***FIXME*** -- Tell the difference between GLOBALNAME and LOCALNAME
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
               gSyntaxColors[SC_NUMCONST];
-
         // Mark as successful
         bRet = TRUE;
 
@@ -1800,69 +1789,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End fnPointDone
-
-
-//***************************************************************************
-//  $fnInfinity
-//
-//  Infinity symbol (_ or 0x221E)
-//***************************************************************************
-
-UBOOL fnInfinity
-    (LPTKLOCALVARS lptkLocalVars)
-
-{
-    TKFLAGS      tkFlags = {0};
-    UBOOL        bRet;          // TRUE iff result is valid
-    APLFLOAT     aplFloat;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnInfinity");
-#endif
-
-    // Check for Syntax Coloring
-    if (lptkLocalVars->lpMemClrNxt)
-    {
-        // Save the color
-        lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_NUMCONST];
-
-        // Mark as successful
-        bRet = TRUE;
-
-        goto NORMAL_EXIT;
-    } // End IF
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Mark the data as an immediate floating point variable
-    tkFlags.TknType = TKT_VARIMMED;
-    tkFlags.ImmType = IMMTYPE_FLOAT;
-    if (lpMemPTD->bNegative)
-        aplFloat = NegInfinity;
-    else
-        aplFloat = PosInfinity;
-
-    // Attempt to append as new token, check for TOKEN TABLE FULL,
-    //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
-                             &tkFlags,
-                              (LPAPLLONGEST) &aplFloat,
-                              0);
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-NORMAL_EXIT:
-    //  Initialize the accumulation variables for the next constant
-    InitAccumVars ();
-
-    return bRet;
-} // End fnInfinity
 
 
 //***************************************************************************
@@ -2151,14 +2077,21 @@ UBOOL fnComDone
 {
     int     iLen, iLen2;
     TKFLAGS tkFlags = {0};
-    LPWCHAR lpwch;
+    LPWCHAR lpwch, wp;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnComDone");
 #endif
 
-    // Get the length of the comment (up to but not including any '\n')
+    // Get the length of the comment (up to but not including any '\r\n')
     iLen  = lstrlenW (lptkLocalVars->lpwszCur); // Including the leading comment symbol
+
+    // Because the incoming string might be in the middle of the Edit Ctrl buffer
+    //   and thus have embedded \r\n in it, we need to use the smaller of the
+    //   lstrlenW length and the first occurrence of \r or \n.
+    wp = strpbrkW (lptkLocalVars->lpwszCur, L"\r\n");
+    if (wp)
+        iLen = min (iLen, (APLI3264) (wp - lptkLocalVars->lpwszCur));
 
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
@@ -3200,6 +3133,27 @@ UBOOL fnSyntWhite
 
 
 //***************************************************************************
+//  $fnSyntPrm
+//
+//  Accumulate a primitive symbol color if Syntax Coloring is active.
+//***************************************************************************
+
+UBOOL fnSyntPrm
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColors[SC_PRIMITIVE];
+
+    // Mark as successful
+    return TRUE;
+} // End fnSyntPrm
+
+
+//***************************************************************************
 //  $fnUnkDone
 //
 //  Accumulate an unknown color
@@ -3283,6 +3237,17 @@ HGLOBAL Tokenize_EM
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPTOKEN      lptkCSNxt;         // Ptr to next token on the CS stack
+
+    // Avoid re-entrant code
+    EnterCriticalSection (&CSOTokenize);
+
+////LCLODS ("Entering <Tokenize_EM>\r\n");
+
+    // Check for re-entrant
+    if (bInUse)
+        DbgBrk ();
+    else
+        bInUse = TRUE;
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -3577,6 +3542,24 @@ FREED_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
+
+#ifdef DEBUG
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Ensure numeric length has been reset
+    if (lpMemPTD->iNumLen NE 0)
+        DbgBrk ();
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+#endif
+    // Mark as no longer in use
+    bInUse = FALSE;
+////LCLODS ("Exiting  <Tokenize_EM>\r\n");
+
+    // Release the Critical Section
+    LeaveCriticalSection (&CSOTokenize);
 
     return tkLocalVars.hGlbToken;
 } // End Tokenize_EM
@@ -4515,6 +4498,12 @@ UBOOL CtrlStrucCmpi
     if (lptkLocalVars->lpMemClrNxt)
     {
         UINT uVar;              // Loop counter
+
+        // Use the smaller of the name length and the # entries
+        //   as we might be selecting a subset of the line
+        lptkLocalVars->CtrlStrucStrLen =
+        uCSLen                         =
+          min (uCSLen, lptkLocalVars->uSyntClrLen);
 
         // Loop through the chars
         for (uVar = 0; uVar < uCSLen; uVar++)

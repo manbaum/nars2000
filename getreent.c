@@ -9,10 +9,8 @@
 ////  return _impure_ptr;
 ////}
 
-extern void DbgBrk(void);
-
 void *__getreent (void)
 {
-    DbgBrk ();
+    _asm int 1;
     return (void *)0;
 }

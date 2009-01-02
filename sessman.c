@@ -24,24 +24,8 @@
 #define _WIN32_WINNT  0x0500
 #include <windows.h>
 #include <windowsx.h>
+#include "headers.h"
 
-#include "uniscribe.h"
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "resource.h"
-#include "externs.h"
-#include "editctrl.h"
-#include "cs_parse.h"
-#include "pertab.h"
-#include "fh_parse.h"
-#include "sis.h"
-#include "perfmon.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 /*
 
@@ -832,7 +816,10 @@ WM_NCCREATE_FAIL:
             // Initialize variables
             cfSM.hwndOwner = hWnd;
             ZeroMemory (&vkState, sizeof (vkState));
-            vkState.Ins = TRUE;     // Initially inserting ***FIXME*** Make it an option
+            vkState.Ins = OptionFlags.bInsState;
+
+            // Tell the Status Window about this
+            SetStatusIns (vkState.Ins);
 
             // Save in window extra bytes
             SetWindowLongW (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
@@ -1568,7 +1555,9 @@ NORMAL_EXIT:
 
                     break;
 
-                case WM_LBUTTONDOWN:
+                case WM_LBUTTONDOWN:        // fwKeys = wParam;         // key flags
+                                            // xPos = LOSHORT(lParam);  // horizontal position of cursor
+                                            // yPos = HISHORT(lParam);  // vertical position of cursor
                 {
                     UINT uCharPos;              // Character position
 
@@ -1638,6 +1627,9 @@ NORMAL_EXIT:
             // Make sure we can communicate between windows
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
+            // Resize the Master Frame so as to show/hide the Status Window
+            PostMessageW (hWndMF, MYWM_RESIZE, 0, 0);
+
             // Tell the Edit Ctrl about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
 #ifdef DEBUG
@@ -1672,6 +1664,12 @@ NORMAL_EXIT:
 
             // Ensure the SM has the focus
             SetFocus (hWnd);
+
+            // Repaint the status window
+            InvalidateRect (hWndStatus, NULL, FALSE);
+
+            // Tell the Status Window about the new positions
+            SetStatusPos (hWndEC);
 
             return FALSE;           // We handled the msg
 
@@ -1740,7 +1738,7 @@ NORMAL_EXIT:
             // If we're being activated, ...
             if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
             {
-                ActivateMDIMenu (hMenuSM, hMenuSMWindow);
+                ActivateMDIMenu (hMenuSM, hMenuSMWindow, IDMPOS_SM_VIEW);
                 SetFocus (hWnd);
             } // End IF
 
@@ -1963,10 +1961,10 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F9:             // Resize Debugger and Session Manager windows
                 {
-                    RECT         rc;
-                    int          nWidthMC,  nHeightMC,
-                                 nHeightDB, nHeightSM;
-                    HWND         hWndMC;
+                    RECT rc;
+                    int  nWidthMC,  nHeightMC,
+                         nHeightDB, nHeightSM;
+                    HWND hWndMC;
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1980,6 +1978,18 @@ NORMAL_EXIT:
                     // Calculate its width & height
                     nWidthMC  = rc.right  - rc.left;
                     nHeightMC = rc.bottom - rc.top;
+
+                    // If the Status Bar window is visible, ...
+                    if (OptionFlags.bViewStatusBar)
+                    {
+                        RECT rcStatus;
+
+                        // Get the window rectangle of the Status Bar window
+                        GetWindowRect (hWndStatus, &rcStatus);
+
+                        // Reduce the MC height by the Status Bar window height
+                        nHeightMC -= (rcStatus.bottom - rcStatus.top);
+                    } // End IF
 
                     // Calculate the height of the DB & SM windows
                     nHeightSM = 350;

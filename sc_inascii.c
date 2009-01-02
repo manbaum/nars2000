@@ -24,18 +24,8 @@
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>
+#include "headers.h"
 
-#include "main.h"
-#include "resdebug.h"
-#include "aplerrors.h"
-#include "externs.h"
-#include "pertab.h"
-#include "savefcn.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 #define LEADING_TEXT        L"FUNCTIONS COPIED:"
 

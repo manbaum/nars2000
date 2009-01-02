@@ -22,19 +22,8 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "pertab.h"
-#include "sis.h"
+#include "headers.h"
 #include "eventtypes.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 
 //***************************************************************************

@@ -22,17 +22,7 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "pertab.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 extern FASTBOOLFNS FastBoolFns[];   // ***FIXME*** -- move into externs.h
 
@@ -1714,6 +1704,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 ////////tkLftArg.tkData.tkGlbData  =            // To be filled in below
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 RESTART_EXCEPTION:
+        // Initialize index into the result
+        uRes = 0;
+
         // Loop through the right arg calling the
         //   function strand between data, storing in the
         //   result.
@@ -1873,9 +1866,6 @@ RESTART_EXCEPTION:
                     } // End FOR
                 } // End IF/ELSE
 
-                // Calculate the index into the result
-                uRht = uDimRht + uAx * uDimHi;
-
                 // Split cases based upon the token type of the right arg (result)
                 switch (tkRhtArg.tkFlags.TknType)
                 {
@@ -1887,8 +1877,8 @@ RESTART_EXCEPTION:
                                 // Check for blow up (to INT or FLOAT -- can this ever happen??)
                                 if (IsImmBool (tkRhtArg.tkFlags.ImmType))
                                     // Save in the result as a BOOL
-                                    ((LPAPLBOOL) lpMemRes)[uRht >> LOG2NBIB] |=
-                                      (BIT0 & tkRhtArg.tkData.tkBoolean) << (MASKLOG2NBIB & (UINT) uRht);
+                                    ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
+                                      (BIT0 & tkRhtArg.tkData.tkBoolean) << (MASKLOG2NBIB & (UINT) uRes);
                                 else
                                 {
                                     DbgBrk ();      // ***TESTME*** -- Can this ever happen??
@@ -1905,7 +1895,7 @@ RESTART_EXCEPTION:
                                 // Check for blow up (to FLOAT)
                                 if (IsImmInt (tkRhtArg.tkFlags.ImmType))
                                     // Save in the result as an INT
-                                    ((LPAPLINT) lpMemRes)[uRht] = tkRhtArg.tkData.tkInteger;
+                                    ((LPAPLINT) lpMemRes)[uRes] = tkRhtArg.tkData.tkInteger;
                                 else
                                 {
                                     // It's now a FLOAT result
@@ -1924,13 +1914,13 @@ RESTART_EXCEPTION:
 
                             case ARRAY_FLOAT:
                                 // Save in the result as a FLOAT
-                                ((LPAPLFLOAT) lpMemRes)[uRht] = tkRhtArg.tkData.tkFloat;
+                                ((LPAPLFLOAT) lpMemRes)[uRes] = tkRhtArg.tkData.tkFloat;
 
                                 break;
 
                             case ARRAY_NESTED:
                                 // Save in the result as an LPSYMENTRY
-                                ((LPAPLNESTED) lpMemRes)[uRht] =
+                                ((LPAPLNESTED) lpMemRes)[uRes] =
                                 lpSymTmp =
                                   MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,    // Immediate type
                                                   &tkRhtArg.tkData.tkLongest,   // Ptr to immediate value
@@ -1947,13 +1937,16 @@ RESTART_EXCEPTION:
 
                     case TKT_VARARRAY:
                         // Save in the result as an HGLOBAL
-                        ((LPAPLNESTED) lpMemRes)[uRht] = tkRhtArg.tkData.tkGlbData;
+                        ((LPAPLNESTED) lpMemRes)[uRes] = tkRhtArg.tkData.tkGlbData;
 
                         break;
 
                     defstop
                         break;
                 } // End SWITCH
+
+                // Skip to the next element in the result
+                uRes++;
             } // End FOR
         } // End FOR/FOR
     } // End IF/ELSE/.../FOR/FOR

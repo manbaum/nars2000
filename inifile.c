@@ -23,18 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <stdio.h>
-
-#include "main.h"
-#include "resdebug.h"
-#include "resource.h"
-#include "sysvars.h"
-#include "externs.h"
-#include "unitranshdr.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 // Section names
@@ -90,6 +79,8 @@
 #define KEYNAME_SYNTCLRFCNS             L"SyntClrFcns"
 #define KEYNAME_SYNTCLRSESS             L"SyntClrSess"
 #define KEYNAME_CHECKGROUP              L"CheckGroup"
+#define KEYNAME_INSSTATE                L"InsState"
+#define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
 
 #define KEYNAME_SC_GLBNAME              L"GlbName"
 #define KEYNAME_SC_LCLNAME              L"LclName"
@@ -377,6 +368,18 @@ void ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_CHECKGROUP,    // Ptr to the key name
                              DEF_CHECKGROUP,        // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bInsState
+    OptionFlags.bInsState =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_INSSTATE,      // Ptr to the key name
+                             DEF_INSSTATE,          // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bViewStatusBar
+    OptionFlags.bViewStatusBar =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_VIEWSTATUSBAR, // Ptr to the key name
+                             DEF_VIEWSTATUSBAR,     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     //***************************************************************
     // Read in the [SysVars] section -- default values for system
@@ -1325,6 +1328,25 @@ void SaveIniFile
     // Write out bCheckGroup
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_CHECKGROUP,         // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //******************* bInsState ***************************
+    wszTemp[0] = L'0' + OptionFlags.bInsState;
+    wszTemp[1] = L'\0';
+
+    // Write out bInsState
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_INSSTATE,           // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+
+    //******************* bViewStatusBar **********************
+    wszTemp[0] = L'0' + OptionFlags.bViewStatusBar;
+    wszTemp[1] = L'\0';
+
+    // Write out bViewStatusBar
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_VIEWSTATUSBAR,      // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
 

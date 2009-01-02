@@ -39,21 +39,4 @@ DB_STR  ends
 
 DbgBrk  endp                    ; End DbgBrk procedure
 
-        public  DbgStop
-DbgStop proc    near            ; Start DbgStop procedure
-
-COMMENT |
-
-Signal a debug stoppoint
-
-|
-
-        int     03h             ; Stop here
-
-        ret                     ; Return to caller
-
-        assume  ds:nothing,es:nothing,fs:nothing,gs:nothing,ss:nothing
-
-DbgStop endp                    ; End DbgStop procedure
-
-        END
+        end

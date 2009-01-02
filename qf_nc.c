@@ -22,17 +22,8 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
+#include "headers.h"
 #include "nameclass.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 
 //***************************************************************************

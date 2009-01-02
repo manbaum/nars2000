@@ -24,16 +24,8 @@
 
 #define STRICT
 #include <windows.h>
+#include "headers.h"
 
-#include "perfmon.h"
-#include "main.h"
-#include "resource.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 #ifdef PERFMONON
 

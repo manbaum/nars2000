@@ -36,29 +36,14 @@
 #include <math.h>
 #include <wininet.h>
 
-#include "uniscribe.h"
-#include "main.h"
-#include "resdebug.h"
-#include "resource.h"
-#include "editctrl.h"
-#include "unitranshdr.h"
-#include "perfmon.h"
-
 #define DEFINE_VARS
 #define DEFINE_VALUES
 #define DEFINE_ENUMS
 #include "symbolnames.h"
-#include "externs.h"
+#include "headers.h"
 #undef  DEFINE_ENUMS
 #undef  DEFINE_VALUES
 #undef  DEFINE_VARS
-
-#include "pertab.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 
 //************************** Data Area **************************************
@@ -92,18 +77,18 @@ HMODULE user32_module;                  // Needed by WineHQ\EDITCTRL.C
 
 HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconSM_Large, hIconSM_Small,
-#ifdef DEBUG
-      hIconDB_Large, hIconDB_Small,
-#endif
-#ifdef PERFMONON
-      hIconPM_Large, hIconPM_Small,
-#endif
       hIconFE_Large, hIconFE_Small,
       hIconME_Large, hIconME_Small,
       hIconVE_Large, hIconVE_Small,
       hIconCC_Large, hIconCC_Small,
       hIconWC_Large, hIconWC_Small,
       hIconClose;
+#ifdef DEBUG
+HICON hIconDB_Large, hIconDB_Small;
+#endif
+#ifdef PERFMONON
+HICON hIconPM_Large, hIconPM_Small;
+#endif
 
 #define  MFWNDCLASS          "MFClass"                                      // Master Frame Window class
 #define LMFWNDCLASS         L"MFClass"                                      // Master Frame Window class
@@ -114,23 +99,244 @@ WCHAR wszMFTitle[]          = WS_APPNAME WS_APPEND_DEBUG,                   // M
 
 char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.",
      pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS ">.",
-#ifdef DEBUG
-     pszNoRegDBWndClass[]   = "Unable to register window class <" DBWNDCLASS ">.",
-#endif
-#ifdef PERFMONON
-     pszNoRegPMWndClass[]   = "Unable to register window class <" PMWNDCLASS ">.",
-#endif
      pszNoRegWCWndClass[]   = "Unable to register window class <" WCWNDCLASS ">.",
      pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS ">.",
      pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
      pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.",
      pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS ">.",
      pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS ">.";
+#ifdef DEBUG
+char pszNoRegDBWndClass[]   = "Unable to register window class <" DBWNDCLASS ">.";
+#endif
+#ifdef PERFMONON
+char pszNoRegPMWndClass[]   = "Unable to register window class <" PMWNDCLASS ">.";
+#endif
 
 char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateTCWnd[]     = "Unable to create Tab Control window",
      pszNoCreateTTWnd[]     = "Unable to create ToolTip window",
      pszNoCreateCCWnd[]     = "Unable to create Crash Control window";
+
+int glbStatusPartsWidth[SP_LENGTH] = {0};
+int glbStatusBorders[3];
+WNDPROC lpfnOldStatusWndProc;           // Save area for old Status Window procedure
+
+
+//***************************************************************************
+//  $SetStatusParts
+//
+//  Set the Status Parts and right edges
+//***************************************************************************
+
+void SetStatusParts
+    (UINT uWidth)               // Width of the Client Area
+
+{
+    HDC  hDC;
+    int  lclStatusPartsRight[SP_LENGTH];
+    int  iCnt;
+    SIZE sText;
+    HWND hWndMC,                // Active hWndMC
+         hWndAct,               // Active window handle
+         hWndEC;                // Edit Ctrl window handle
+
+    // Get a Client Area DC for the Status Window
+    hDC = MyGetDC (hWndStatus);
+
+    // Copy the Status Window font
+    SelectObject (hDC, (HFONT) SendMessageW (hWndStatus, WM_GETFONT, 0, 0));
+
+#define GRIPPER_WIDTH       20
+#define SP_BORDER_EXTRA      5
+
+    // Back off by size of Gripper
+    uWidth -= GRIPPER_WIDTH;
+
+    // Loop backwards through the SetParts enum
+    for (iCnt = SP_LENGTH - 1; iCnt >= 0; iCnt--)
+    // Split cases based upon the enum value
+    switch (iCnt)
+    {
+        case SP_CAPS:
+#define TEXT_CAPS           L"CAPS"
+            // Get the width of the text
+            GetTextExtentPoint32W (hDC,
+                                   TEXT_CAPS,
+                                   strlengthof (TEXT_CAPS),
+                                  &sText);
+            // Set the parts width
+            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
+#undef  TEXT_CAPS
+            break;
+
+        case SP_NUM:
+#define TEXT_CAPS           L"NUM"
+            // Get the width of the text
+            GetTextExtentPoint32W (hDC,
+                                   TEXT_CAPS,
+                                   strlengthof (TEXT_CAPS),
+                                  &sText);
+            // Set the parts width
+            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
+#undef  TEXT_CAPS
+            break;
+
+        case SP_INS:
+#define TEXT_CAPS           L"OVR"
+            // Get the width of the text
+            GetTextExtentPoint32W (hDC,
+                                   TEXT_CAPS,
+                                   strlengthof (TEXT_CAPS),
+                                  &sText);
+            // Set the parts width
+            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
+#undef  TEXT_CAPS
+            break;
+
+        case SP_CHARPOS:
+#define TEXT_CAPS           L"999999"
+            // Get the width of the text
+            GetTextExtentPoint32W (hDC,
+                                   TEXT_CAPS,
+                                   strlengthof (TEXT_CAPS),
+                                  &sText);
+            // Set the parts width
+            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
+#undef  TEXT_CAPS
+            break;
+
+        case SP_LINEPOS:
+#define TEXT_CAPS           L"999999"
+            // Get the width of the text
+            GetTextExtentPoint32W (hDC,
+                                   TEXT_CAPS,
+                                   strlengthof (TEXT_CAPS),
+                                  &sText);
+            // Set the parts width
+            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
+#undef  TEXT_CAPS
+            break;
+
+        case SP_TEXTMSG:
+            glbStatusPartsWidth[iCnt] = 0;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Adjust the Status Parts right edges
+    for (iCnt = SP_LENGTH - 1; iCnt >= 0; iCnt--)
+    if (glbStatusPartsWidth[iCnt] EQ 0)
+        lclStatusPartsRight[iCnt] = uWidth;
+    else
+    {
+        lclStatusPartsRight[iCnt] = uWidth;
+        uWidth -= (glbStatusBorders[2] + abs (glbStatusPartsWidth[iCnt]));
+    } // End FOR/IF/ELSE/...
+
+    // Tell the status window about the new Status Parts right edge
+    SendMessageW (hWndStatus, SB_SETPARTS, SP_LENGTH, (LPARAM) lclStatusPartsRight);
+
+    // We no longer need this resource
+    MyReleaseDC (hWndStatus, hDC);
+
+    // Get the active MDI Child window handle (if any)
+    hWndMC  = GetActiveMC (hWndTC);
+    if (hWndMC)
+    {
+        hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
+        (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC);
+
+        // Tell the Status Window about the new positions
+        SetStatusPos (hWndEC);
+    } // End IF
+} // End SetStatusParts
+
+
+//***************************************************************************
+//  $SetStatusIns
+//
+//  Set the state of the Ins key in the Status Window
+//***************************************************************************
+
+void SetStatusIns
+    (UBOOL bInsKey)             // TRUE iff the Ins key is ON
+
+{
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_INS, (LPARAM) (bInsKey ? L"\tINS" : L"\tOVR"));
+} // End SetStatusIns
+
+
+//***************************************************************************
+//  $SetStatusCaps
+//
+//  Set the state of the CapsLock key in the Status Window
+//***************************************************************************
+
+void SetStatusCaps
+    (UBOOL bCapsKey)            // TRUE iff the CapsLock key is ON
+
+{
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_CAPS, (LPARAM) (bCapsKey ? L"\tCAPS" : L""));
+} // End SetStatusCaps
+
+
+//***************************************************************************
+//  $SetStatusNum
+//
+//  Set the state of the NumLock key in the Status Window
+//***************************************************************************
+
+void SetStatusNum
+    (UBOOL bNumKey)             // TRUE iff the NumLock key is ON
+
+{
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_NUM, (LPARAM) (bNumKey ? L"\tNUM" : L""));
+} // End SetStatusNum
+
+
+//***************************************************************************
+//  $SetStatusPos
+//
+//  Set the state of the Line and char positions in the Status Window
+//***************************************************************************
+
+void SetStatusPos
+    (HWND hWndEC)               // Edit Ctrl window handle
+
+{
+    UINT  uCharPos,             // Character position (origin-0), initially from start
+                                //   of buffer then eventually from the start of the line
+          uLineNum,             // Line # (origin-0)
+          uLinePos;             // Line position from start of buffer
+    WCHAR szTemp[32];           // Temp format save area
+
+    // Get the indices of the selected text (if any)
+    SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
+
+    // Get the line # of this char
+    uLineNum = (APLU3264) SendMessageW (hWndEC, EM_LINEFROMCHAR, uCharPos, 0);
+
+    // Get the char position of the start of the current line
+    uLinePos = (APLU3264) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+
+    // Get the character position from the start of the line
+    uCharPos -= uLinePos;
+
+    // Format the line #
+    wsprintfW (szTemp,
+               L"%u",
+               uLineNum);
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_LINEPOS, (LPARAM) szTemp);
+
+    // Format the char #
+    wsprintfW (szTemp,
+               L"%u",
+               uCharPos);
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_CHARPOS, (LPARAM) szTemp);
+} // End SetStatusPos
 
 
 //***************************************************************************
@@ -240,6 +446,7 @@ void InitChooseFont
 {
     HDC hDC;                    // The Device Context handle
     int iLogPixelsY,            // # vertical pixels per inch in the DC
+        iOldMode,               // Previous mapping mode
         fontEnum;               // Loop counter
 
     // Loop through the fonts
@@ -255,8 +462,17 @@ void InitChooseFont
             // Create a screen device context
             hDC = MyGetDC (HWND_DESKTOP);
 
+        // Set the mapping mode
+        iOldMode = SetMapMode (hDC, MM_TEXT);
+
+        // Get # vertical pixels per inch
         iLogPixelsY = GetDeviceCaps (hDC, LOGPIXELSY);
-        fontStruc[fontEnum].lplf->lfHeight = -MulDiv (fontStruc[fontEnum].iPtSize, iLogPixelsY, 72);
+
+        // Convert from point size to pixels
+        fontStruc[fontEnum].lplf->lfHeight = -MulDiv (fontStruc[fontEnum].iDefPtSize, iLogPixelsY, 72);
+
+        // Restore the mapping mode
+        SetMapMode (hDC, iOldMode);
 
         if (fontStruc[fontEnum].bPrinter)
             DeleteDC (hDC);
@@ -267,7 +483,7 @@ void InitChooseFont
 ////////fontStruc[fontEnum].lpcf->hwndOwner  =
 ////////fontStruc[fontEnum].lpcf->hDC =                     // Only w/CF_PRINTERFONTS
         fontStruc[fontEnum].lpcf->lpLogFont  = fontStruc[fontEnum].lplf;
-        fontStruc[fontEnum].lpcf->iPointSize = fontStruc[fontEnum].iPtSize * 10;// Font point size in 1/10ths
+        fontStruc[fontEnum].lpcf->iPointSize = fontStruc[fontEnum].iDefPtSize * 10; // Font point size in 1/10ths
         fontStruc[fontEnum].lpcf->Flags      = 0
                                              | CF_INITTOLOGFONTSTRUCT
                                              | CF_FORCEFONTEXIST
@@ -319,7 +535,7 @@ UINT_PTR APIENTRY MyChooseFontHook
 //***************************************************************************
 //  $CreateNewFontCom
 //
-//  Subroutine to CreateNewFontxx to set various variables
+//  Subroutine to CreateNewFontXX to set various variables
 //***************************************************************************
 
 void CreateNewFontCom
@@ -332,10 +548,11 @@ void CreateNewFontCom
      HDC           hDC)                 // Handle to device context if not default (may be NULL)
 
 {
-    HDC   hDCTmp;
-    HFONT hFontOld;
-    long  cyAveChar;
-    int   iLogPixelsY;
+    HDC   hDCTmp;                       // Temporary DC
+    HFONT hFontOld;                     // Previous font handle
+    long  cyAveChar;                    // Average char height
+    int   iLogPixelsY,                  // # vertical pixels per inch in the DC
+          iOldMode;                     // Previous mapping mode
 
     // Delete the previous handle (if any)
     if (*lphFont)
@@ -350,10 +567,13 @@ void CreateNewFontCom
     // Get a new device context or use the give one
     hDCTmp = hDC ? hDC : MyGetDC (HWND_DESKTOP);
 
+    // Set the mapping mode
+    iOldMode = SetMapMode (hDCTmp, MM_TEXT);
+
     // Get the # pixels per vertical inch
     iLogPixelsY = GetDeviceCaps (hDCTmp, LOGPIXELSY);
 
-    // Select the enwly created font
+    // Select the newly created font
     hFontOld = SelectObject (hDCTmp, *lphFont);
 
     // Get the text metrics for this font
@@ -362,6 +582,9 @@ void CreateNewFontCom
     // Restore the old font
     SelectObject (hDCTmp, hFontOld);
 
+    // Restore the mapping mode
+    SetMapMode (hDCTmp, iOldMode);
+
     // If no given device context, ...
     if (hDC EQ NULL)
     {
@@ -369,15 +592,12 @@ void CreateNewFontCom
         MyReleaseDC (HWND_DESKTOP, hDCTmp); hDCTmp = NULL;
     } // End IF
 
-    // New height
+    // New height in pixels
     cyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
-
-    // New width from TextMetrics
-    lplf->lfWidth = lptm->tmAveCharWidth;
 
     // New width (same aspect ratio as old)
     if (lpcxAveChar)
-        *lpcxAveChar = MulDiv (lplf->lfWidth, cyAveChar, -lplf->lfHeight);
+        *lpcxAveChar = MulDiv (lptm->tmAveCharWidth, cyAveChar, -lplf->lfHeight);
 
     // New height
     lplf->lfHeight = -cyAveChar;
@@ -691,7 +911,7 @@ HWND CreateToolTip
 //***************************************************************************
 
 UBOOL CreateChildWindows
-    (HWND hWnd)
+    (HWND hWnd)             // Master Frame window handle
 
 {
     RECT rc;                // Rectangle for setting size of window
@@ -764,6 +984,19 @@ UBOOL CreateChildWindows
 
     // Tell it about our tooltip control
     TabCtrl_SetToolTips (hWndTC, hWndTT);
+
+    // Create the Status Window
+    hWndStatus =
+      CreateStatusWindowW (0
+                         | WS_CHILD
+                         | WS_VISIBLE
+                         | SBARS_SIZEGRIP
+                           ,                // Styles
+                           L"Ready...",     // Initial text
+                           hWnd,            // Parent window
+                           IDWC_MF_ST);     // Window ID
+    // Get the width of the borders of the Status Window
+    SendMessageW (hWndStatus, SB_GETBORDERS, 0, (LPARAM) glbStatusBorders);
 
     return TRUE;            // Tell 'em it worked
 } // End CreateChildWindows
@@ -983,6 +1216,19 @@ LRESULT APIENTRY MFWndProc
             break;                  // Continue with next handler
         } // End WM_SYSCOLORCHANGE/WM_SETTINGCHANGE
 
+        case MYWM_RESIZE:
+        {
+            RECT rc;
+
+            // Get the size of the MF Client Area
+            GetClientRect (hWndMF, &rc);
+
+            // Resize the Master Frame so as to show the Status Window
+            PostMessageW (hWndMF, WM_SIZE, SIZE_RESTORED, MAKELPARAM (rc.right - rc.left, rc.bottom - rc.top));
+
+            return FALSE;           // We handled the msg
+        } // End MYWM_RESIZE
+
         case WM_SIZE:                       // uFlags = (UINT) wParam
                                             // cx = LOWORD (lParam)
                                             // cy = HIWORD (lParam)
@@ -1025,19 +1271,40 @@ LRESULT APIENTRY MFWndProc
                 rc.right  = rcRight;
                 rc.bottom = rcBottom;
 
+                // If the Status Bar is visible, ...
+                if (OptionFlags.bViewStatusBar)
+                {
+                    RECT rcStatus;
+
+                    // Get the window size of the Status Window
+                    GetWindowRect (hWndStatus, &rcStatus);
+
+                    // Reduce the bottom of the MDI Child window
+                    //   by the height of the Status Window
+                    rc.bottom -= (rcStatus.bottom - rcStatus.top);
+                } // End IF
+
                 // Get the window handle of the currently active MDI Client
                 hWndMC = GetActiveMC (hWndTC);
 
-                // Position and size the MDI Child window to fit the
-                // tab control's display area
-                DeferWindowPos (hdwp,           // Handle to internal structure
-                                hWndMC,         // Handle of window to position
-                                NULL,           // Placement-order handle
-                                rc.left,        // X-position
-                                rc.top,         // Y-position
-                                rc.right - rc.left, // X-size
-                                rc.bottom - rc.top, // Y-size
-                                0);             // Window-positioning flags
+                // If it's valid, ...
+                if (hWndMC)
+                    // Position and size the MDI Child window to fit the
+                    // tab control's display area
+                    DeferWindowPos (hdwp,               // Handle to internal structure
+                                    hWndMC,             // Handle of window to position
+                                    NULL,               // Placement-order handle
+                                    rc.left,            // X-position
+                                    rc.top,             // Y-position
+                                    rc.right - rc.left, // X-size
+                                    rc.bottom - rc.top, // Y-size
+                                    0);                 // Window-positioning flags
+                // Tell the status window about the new Status Parts right edge
+                SetStatusParts (rc.right - rc.left);
+
+                // Position and size the Status Window
+                SendMessageW (hWndStatus, WM_SIZE, wParam, lParam);
+
                 EndDeferWindowPos (hdwp);
 
                 // Save the current Maximized or Normal state
@@ -1184,7 +1451,7 @@ LRESULT APIENTRY MFWndProc
                     DrawTab (lpdis->hDC,
                              lpdis->itemID,
                             &lpdis->rcItem);
-                    break;
+                    return TRUE;    // We processed this msg
 
 ////////////////case ODA_FOCUS:     // These actions don't appear to occur with
 ////////////////                    //   an owner-drawn tab ctrl
@@ -1241,6 +1508,26 @@ LRESULT APIENTRY MFWndProc
                     PostMessageW (hWnd, WM_CLOSE, 0, 0);
 
                     return FALSE;       // We handled the msg
+
+                case IDM_STATUSBAR:
+                {
+                    HMENU hMenu;
+
+                    // Toggle the state
+                    OptionFlags.bViewStatusBar = !OptionFlags.bViewStatusBar;
+
+                    // Check/uncheck the View | Status Bar menu item as appropriate
+                    hMenu = GetMenu (hWnd);
+                    hMenu = GetSubMenu (hMenu, IDMPOS_SM_VIEW);
+                    CheckMenuItem (hMenu, IDM_STATUSBAR, MF_BYCOMMAND | (OptionFlags.bViewStatusBar ? MF_CHECKED : MF_UNCHECKED));
+                    ShowWindow (hWndStatus, OptionFlags.bViewStatusBar ? SW_SHOWNORMAL : SW_HIDE);
+                    InvalidateRect (hWnd, NULL, FALSE);
+
+                    // Resize the Master Frame so as to show/hide the Status Window
+                    PostMessageW (hWnd, MYWM_RESIZE, 0, 0);
+
+                    return FALSE;       // We handled the msg
+                } // End IDM_STATUSBAR
 
                 case IDM_UNDO:
                     SendMessageW (hWndActive, WM_UNDO, 0, 0);
@@ -1366,10 +1653,10 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;       // We handled the msg
 
                 case IDM_ABOUT:
-                    DialogBox (_hInstance,
-                               MAKEINTRESOURCE (IDD_ABOUT),
-                               hWnd,
-                               (DLGPROC) &AboutDlgProc);
+                    DialogBoxW (_hInstance,
+                                MAKEINTRESOURCEW (IDD_ABOUT),
+                                hWnd,
+                     (DLGPROC) &AboutDlgProc);
                     return FALSE;       // We handled the msg
 
                 case IDM_UPDATES:
@@ -1804,7 +2091,7 @@ HWND GetWndMC
     hGlbPTD = GetPerTabHandle (iCurTab);
 
     // Ensure it's a valid ptr
-    if (!IsGlbPtr (hGlbPTD))
+    if (!IsValidHandle (hGlbPTD))
         return NULL;
 
     // Lock the memory to get a ptr to it
@@ -2238,8 +2525,7 @@ UBOOL InitApplication
     wcw.hIconSm         = hIconSM_Small;
     wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_SMMENU);
-    wcw.lpszMenuName    = NULL;
+    wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_SMMENU);
     wcw.lpszClassName   = LSMWNDCLASS;
 
     // Register the Session Manager window class
@@ -2259,8 +2545,7 @@ UBOOL InitApplication
     wcw.hIconSm         = hIconFE_Small;
     wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_FEMENU);
-    wcw.lpszMenuName    = NULL;
+    wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_FEMENU);
     wcw.lpszClassName   = LFEWNDCLASS;
 
     // Register the Function Editor window class
@@ -2280,7 +2565,7 @@ UBOOL InitApplication
     wcw.hIconSm         = hIconME_Small;
     wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_MEMENU);
+////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_MEMENU);
     wcw.lpszMenuName    = NULL;
     wcw.lpszClassName   = LMEWNDCLASS;
 
@@ -2301,7 +2586,7 @@ UBOOL InitApplication
     wcw.hIconSm         = hIconVE_Small;
     wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_VEMENU);
+////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_VEMENU);
     wcw.lpszMenuName    = NULL;
     wcw.lpszClassName   = LVEWNDCLASS;
 
@@ -2322,8 +2607,7 @@ UBOOL InitApplication
     wcw.hIconSm         = hIconDB_Small;
     wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_SMMENU);
-    wcw.lpszMenuName    = NULL;
+    wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_SMMENU);
     wcw.lpszClassName   = LDBWNDCLASS;
 
     // Register the Debugger window class
@@ -2344,7 +2628,7 @@ UBOOL InitApplication
     wcw.hIconSm         = hIconCC_Small;
     wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_CCMENU);
+////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_CCMENU);
     wcw.lpszMenuName    = NULL;
     wcw.lpszClassName   = LCCWNDCLASS;
 
@@ -2857,6 +3141,7 @@ int PASCAL WinMain
     InitializeCriticalSection (&CSORsrc);
 #endif
     InitializeCriticalSection (&CSOPL);
+    InitializeCriticalSection (&CSOTokenize);
 
     // Mark as CSO defined
     bCSO = TRUE;
@@ -2958,6 +3243,7 @@ EXIT4:
     // Mark as all CSO deleted
     bCSO = FALSE;
 
+    DeleteCriticalSection (&CSOTokenize);
     DeleteCriticalSection (&CSOPL);
 #ifdef RESDEBUG
     DeleteCriticalSection (&CSORsrc);

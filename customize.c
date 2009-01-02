@@ -32,19 +32,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <stdio.h>
-
-#include "main.h"
-#include "editctrl.h"
-#include "resdebug.h"
-#include "resource.h"
-#include "externs.h"
-#include "sysvars.h"
-#include "unitranshdr.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 WCHAR wszCancelMessage[] = L"You have made changes to the Customize settings.  Save the changes?";
@@ -657,7 +645,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
                         {
                             // Fill in the dynamic field
-                            ti.uId = (APLU3264) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
+                            ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
 
                             // Register a tooltip for the Syntax Color Foreground button
                             SendMessageW (hWndTT,
@@ -665,7 +653,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                           0,
                                           (LPARAM) (LPTOOLINFO) &ti);
                             // Fill in the dynamic field
-                            ti.uId = (APLU3264) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt);
+                            ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt);
 
                             // Register a tooltip for the Syntax Color Background button
                             SendMessageW (hWndTT,
@@ -749,6 +737,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_BACKUPONSAVE       , OptionFlags.bBackupOnSave       );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , OptionFlags.bNoCopyrightMsg     );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_CHECKGROUP         , OptionFlags.bCheckGroup         );
+                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_INSSTATE           , OptionFlags.bInsState           );
 
                         // ***FIXME*** -- Make these work so we don't have to gray out the choices
                         {
@@ -885,7 +874,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 #define SYNTCLR_MENU_SWATCH_SEP      5          // Distance in pixels on either side of the swatch
 
                 // Get a DC for the Client Area
-                hDCClient = GetDC (hDlg);
+                hDCClient = MyGetDC (hDlg);
 
                 // Tell the DC to use this font
                 SelectObject (hDCClient, GetStockObject (DEFAULT_GUI_FONT));
@@ -896,7 +885,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                        lstrlenW (scMenuItems[itemIndex].lpwName),
                                       &sMenuItem);
                 // We no longer need this resource
-                ReleaseDC (hDlg, hDCClient);
+                MyReleaseDC (hDlg, hDCClient);
 
                 // Set the item width
                 lpmis->itemWidth  = SYNTCLR_MENU_MARGIN_LEFT
@@ -1604,6 +1593,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         OptionFlags.bBackupOnSave        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_BACKUPONSAVE       );
                         OptionFlags.bNoCopyrightMsg      = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     );
                         OptionFlags.bCheckGroup          = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_CHECKGROUP         );
+                        OptionFlags.bInsState            = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_INSSTATE           );
 
                         // Get the window handle for the Paste & Copy combo boxes
                         hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);

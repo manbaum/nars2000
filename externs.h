@@ -21,18 +21,6 @@
 ***************************************************************************/
 
 #include <commctrl.h>
-#include "defines.h"
-#include "datatype.h"
-#include "tokens.h"
-#include "primfns.h"
-#include "symtab.h"
-#include "pl_parse.h"
-#include "Unicode.h"
-#include "colornames.h"
-#include "syntaxcolors.h"
-
-// Define variables which are also used in the per tab structure
-#include "primspec.h"
 
 
 #ifdef DEFINE_VARS
@@ -259,7 +247,8 @@ CRITICAL_SECTION CSO0,                  // Critical Section Object #0
 #ifdef RESDEBUG
                  CSORsrc,               // ...                     for _SaveObj/_DeleObj
 #endif
-                 CSOPL;                 // ...                     for ParseLine
+                 CSOPL,                 // ...                     for ParseLine
+                 CSOTokenize;           // ...                     for tokenization
 
 LRESULT WINAPI EditWndProcA (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT WINAPI EditWndProcW (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -697,6 +686,22 @@ UCHAR FastBoolTrans[256][5]
 
 
 //***************************************************************************
+//  Status Window
+//***************************************************************************
+
+typedef enum tagSTATUSPARTS
+{
+    SP_TEXTMSG = 0,         // 00:  Text message
+    SP_LINEPOS,             // 01:  Line # (origin-0)
+    SP_CHARPOS,             // 02:  Char # (origin-0
+    SP_INS,                 // 03:  Ins/Ovr state
+    SP_NUM,                 // 04:  NumLock state
+    SP_CAPS,                // 05:  CapsLock state
+    SP_LENGTH               // 06:  Length
+} STATUSPARTS, *LPSTATUSPARTS;
+
+
+//***************************************************************************
 //  Tab Control vars
 //***************************************************************************
 
@@ -740,6 +745,7 @@ HWND hWndTC,                            // Global Tab Control window handle
      hWndMF,                            // ...    Master Frame ...
      hWndCC,                            // ...    Crash Control ...
      hWndCC_LB,                         // ...    Crash Control Listbox ...
+     hWndStatus,                        // ...    Status       ...
      hWndTT;                            // ...    ToolTip      ...
 
 EXTERN
@@ -1569,7 +1575,9 @@ typedef struct tagOPTIONFLAGS
          bSyntClrFcns        :1,    // 00010000:  TRUE iff Syntax Coloring of functions is enabled (managed in IDD_PROPPAGE_SYNTAX_COLORING)
          bSyntClrSess        :1,    // 00020000:  ...                         sessions  ...
          bCheckGroup         :1,    // 00040000:  ...      Check for improperly matched or nested grouping symbols
-         Avail               :13;   // FFF80000:  Available bits
+         bInsState           :1,    // 00080000:  ...      Initial state of Ins key in each WS is ON
+         bViewStatusBar      :1,    // 00100000:  ...      Status Bar is displayed
+         Avail               :11;   // FFE00000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1592,6 +1600,8 @@ OPTIONFLAGS OptionFlags
    DEF_SYNTCLRFCNS,
    DEF_SYNTCLRSESS,
    DEF_CHECKGROUP,
+   DEF_INSSTATE,
+   DEF_VIEWSTATUSBAR,
    }
 #endif
 ;
@@ -1624,7 +1634,7 @@ typedef struct tagFONTSTRUC
     LPLOGFONTW    lplf;                     // Ptr to LOGFONTW    struct for this font
     LPCHOOSEFONTW lpcf;                     // Ptr to CHOOSEFONTW ...
     LPTEXTMETRIC  lptm;                     // Ptr to TEXTMETRIC  ...
-    int           iPtSize;                  // Default point size
+    int           iDefPtSize;               // Default point size
     UBOOL         bPrinter,                 // TRUE iff this font is for the printer
                   bChanged;                 // TRUE iff ChooseFont changed the font (the user exited via OK)
     void        (*lpCreateNewFont) (void);  // Ptr to CreateNewFontXX for this font
@@ -1685,6 +1695,10 @@ int gInitCustomizeCategory
 = DEF_INIT_CATEGORY
 #endif
 ;
+
+typedef unsigned int   uint32_t;
+typedef unsigned short uint16_t;
+typedef unsigned char  uint8_t;
 
 typedef enum tagUNDO_ACTS
 {

@@ -22,22 +22,8 @@
 
 #define STRICT
 #include <windows.h>
+#include "headers.h"
 
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "sysvars.h"
-#include "externs.h"
-#include "pertab.h"
-#include "fh_parse.h"
-#include "sis.h"
-#include "execmfn.h"
-#include "cs_parse.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 extern MAGIC_FUNCTION MF_MonIota;
 extern MAGIC_FUNCTION MF_DydIota;

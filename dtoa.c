@@ -17,6 +17,8 @@
  *
  ***************************************************************/
 
+#define LCL_STRTOD
+
 /* Please send bug reports to David M. Gay (dmg at acm dot org,
  * with " at " changed at "@" and " dot " changed to ".").      */
 
@@ -169,9 +171,7 @@
  */
 
 #include <windows.h>
-
-#include "main.h"
-#include "externs.h"
+#include "headers.h"
 
 #ifndef Long
 #define Long long
@@ -181,15 +181,15 @@ typedef unsigned Long ULong;
 #endif
 
 #ifdef DEBUG
-#include "stdio.h"
+#include <stdio.h>
 #define Bug(x) {fprintf(stderr, "%s\n", x); exit(1);}
 #endif
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef USE_LOCALE
-#include "locale.h"
+#include <locale.h>
 #endif
 
 #ifdef MALLOC
@@ -220,7 +220,7 @@ static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 #define IEEE_Arith
 #endif
 
-#include "errno.h"
+#include <errno.h>
 
 #ifdef Bad_float_h
 
@@ -252,11 +252,11 @@ static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 #endif
 
 #else /* ifndef Bad_float_h */
-#include "float.h"
+#include <float.h>
 #endif /* Bad_float_h */
 
 #ifndef __MATH_H__
-#include "math.h"
+#include <math.h>
 #endif
 
 #ifdef __cplusplus
@@ -1538,6 +1538,8 @@ hexnan
 #endif /*No_Hex_NaN*/
 #endif /* INFNAN_CHECK */
 
+
+#ifdef LCL_STRTOD
  double
 strtod
 #ifdef KR_headers
@@ -2430,6 +2432,7 @@ strtod
                 *se = (char *)s;
         return sign ? -dval(rv) : dval(rv);
         }
+#endif
 
  static int
 quorem

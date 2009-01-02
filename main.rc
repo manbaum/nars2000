@@ -125,6 +125,10 @@ BEGIN
     BEGIN
 #include "edit.rch"
     END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Status Bar",                  IDM_STATUSBAR
+    END
     POPUP "&Window"
     BEGIN
         MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
@@ -152,6 +156,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Localize",                   IDM_LOCALIZE
         MENUITEM "Unl&ocalize",                 IDM_UNLOCALIZE
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Status Bar",                  IDM_STATUSBAR
     END
     POPUP "&Window"
     BEGIN
@@ -186,11 +194,11 @@ CAPTION "About NARS2000"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,130,5,50,14
-    ICON            IDI_ABOUT,IDC_STATIC,160,30,18,20
     LTEXT           "NARS2000\nVersion %u.%u%u",IDC_VERSION,10,
                     5,115,18,NOT WS_GROUP
     LTEXT           "Copyright © 2006-8 Sudley Place Software\nAll rights reserved.",
                     IDC_STATIC,10,30,150,18,NOT WS_GROUP
+    ICON            IDI_ABOUT,IDC_LOADEDFROM,145,25, 0, 0,SS_NOTIFY | SS_REALSIZEIMAGE
     LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see",
                     IDC_STATIC,10,55,170,20
     LTEXT           "http://www.nars2000.org/License.html",
@@ -570,12 +578,14 @@ BEGIN
                     IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , 10,117,160, 10
     AUTOCHECKBOX    "Check for unmatched or improperly nested grouping symbols",
                     IDC_USER_PREFS_XB_CHECKGROUP         , 10,130,200, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,143, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+    AUTOCHECKBOX    "Insert key ON at startup",
+                    IDC_USER_PREFS_XB_INSSTATE           , 10,143,200, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,156, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC                           ,100,143,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,159, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,156,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,172, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
-                    IDC_STATIC                           ,100,159,160, 10
+                    IDC_STATIC                           ,100,172,160, 10
 END
 
 

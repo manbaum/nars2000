@@ -23,15 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <direct.h>
-
-#include "main.h"
-#include "resdebug.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //************************************************************************
@@ -292,7 +284,7 @@ void GetModuleFileNames
         _wmakepath  (wszHlpDPFE, wszDrive, wszDir, wszFname, L".HLP");
 
         // Create the APL Font file name
-        _wmakepath  (wszFntDPFE, wszDrive, wszDir, DEF_APLFONT_EXTNAME, DEF_APLFONT_TTF);
+        _wmakepath  (wszFntDPFE, wszDrive, wszDir, DEF_APLFONT_EXTNAME, DEF_APLFONT_EXT);
 
         // Read in the application's File Version String
         LclFileVersionStrW (wszAppDPFE, wszFileVer);
@@ -420,12 +412,12 @@ UBOOL CALLBACK EnumCallbackRemoveProp
 
 
 //***************************************************************************
-//  $IsGlbPtr
+//  $IsValidHandle
 //
-//  Return TRUE iff the given handle/ptr is valid
+//  Return TRUE iff the given handle is valid
 //***************************************************************************
 
-UBOOL IsGlbPtr
+UBOOL IsValidHandle
     (HGLOBAL hGlbSrc)
 
 {
@@ -436,7 +428,28 @@ UBOOL IsGlbPtr
     {
         return FALSE;
     } // End __try/__except
-} // End IsGlbPtr
+} // End IsValidHandle
+
+
+//***************************************************************************
+//  $IsValidPtr
+//
+//  Return TRUE iff the given ptr is valid
+//***************************************************************************
+
+UBOOL IsValidPtr
+    (LPVOID lpMemSrc,
+     UINT   uLen)
+
+{
+    __try
+    {
+        return !IsBadReadPtr (lpMemSrc, uLen);
+    } __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+        return FALSE;
+    } // End __try/__except
+} // End IsValidPtr
 
 
 //***************************************************************************

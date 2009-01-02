@@ -23,8 +23,6 @@
 // Disable stack checking
 #pragma check_stack(off)
 
-#include "macros.h"
-
 #define EQ ==
 #define NE !=
 
@@ -40,10 +38,11 @@
 
 #define PAGESIZE        (4 * 1024)
 
+#define DbgStop()       _asm int 3 _asm nop
+
 #define defstop \
 default:        \
-    DbgStop();  \
-    nop ();
+    DbgStop();
 
 #define FNLN    FileNameOnly (__FILE__), __LINE__
 
@@ -123,14 +122,15 @@ default:        \
 #define MYWM_ERRMSG         (WM_APP + 9)    // SM (Display error message)
 #define MYWM_SAVE_WS        (WM_APP +10)    // SM (Save workspace)
 #define MYWM_DISPMB         (WM_APP +11)    // CC (Display MessageBox)
+#define MYWM_RESIZE         (WM_APP +12)    // MF (Resize to display Status Bar)
 
 // Define Debug window messages
-#define MYWM_INIT_DB        (WM_APP +12)    // DB
-#define MYWM_DBGMSGA        (WM_APP +13)    // DB
-#define MYWM_DBGMSGW        (WM_APP +14)    // DB
-#define MYWM_DBGMSG_CLR     (WM_APP +15)    // DB
-#define MYWM_DBGMSG_SCROLL  (WM_APP +16)    // DB
-#define MYWM_UNHOOK         (WM_APP +17)    // DB
+#define MYWM_INIT_DB        (WM_APP +50)    // DB
+#define MYWM_DBGMSGA        (WM_APP +51)    // DB
+#define MYWM_DBGMSGW        (WM_APP +52)    // DB
+#define MYWM_DBGMSG_CLR     (WM_APP +53)    // DB
+#define MYWM_DBGMSG_SCROLL  (WM_APP +54)    // DB
+#define MYWM_UNHOOK         (WM_APP +55)    // DB
 
 
 typedef enum tagEXCEPTION_CODES // Exception Codes
@@ -253,6 +253,7 @@ typedef enum tagEXIT_TYPES
 // From <string.h>
 #define strchrW         wcschr
 #define strncmpW        wcsncmp
+#define strpbrkW        wcspbrk
 
 // Default DTOA mode    // ***FIXME*** -- use different modes at different points
 #define DEF_DTOA_MODE   2

@@ -22,16 +22,7 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //***************************************************************************
@@ -1282,7 +1273,8 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                     aplIntTmp = ((LPAPLINT) lpDataLft)[u];
 
                     // Ensure the value fits into a dimension
-                    if (aplIntTmp > MAX_APLDIM)
+                    if (0 > aplIntTmp
+                     ||     aplIntTmp > MAX_APLDIM)
                         goto DOMAIN_EXIT;
 
                     // Multiply the two numbers as APLINTs so we can check for overflow
@@ -1323,7 +1315,8 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         goto DOMAIN_EXIT;
 
                     // Ensure the value fits into a dimension
-                    if (aplIntTmp > MAX_APLDIM)
+                    if (0 > aplIntTmp
+                     ||     aplIntTmp > MAX_APLDIM)
                         goto DOMAIN_EXIT;
 
                     // Multiply the two numbers as APLINTs so we can check for overflow
@@ -1380,8 +1373,10 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                 // Loop through the dimensions
                 for (apaLen = 0; bRet && apaLen < aplNELMLft; apaLen++)
                 {
+                    // Check for out-of-bounds
                     apaVal = apaOff + apaMul * apaLen;
-                    if (apaVal > MAX_APLNELM)
+                    if (0 > apaVal
+                     ||     apaVal > MAX_APLDIM)
                         bRet = FALSE;
                     else
                     {
@@ -1389,7 +1384,9 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         aplIntTmp = ((APLINT) *lpaplNELMRes) * apaVal;
 
                         // Check for overflow
-                        bRet = bRet && (aplIntTmp <= MAX_APLNELM);
+                        if (0 > aplIntTmp
+                         ||     aplIntTmp > MAX_APLDIM)
+                            bRet = FALSE;
 
                         // Save back
                         *lpaplNELMRes = (APLNELM) aplIntTmp;
@@ -1432,6 +1429,8 @@ DOMAIN_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    // Mark as unsuccessful
+    bRet = FALSE;
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;

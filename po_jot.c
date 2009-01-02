@@ -22,16 +22,7 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //***************************************************************************
@@ -105,8 +96,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
                  lpYYFcnStrRht,         // Ptr to right ...
                  lpYYRes,               // Ptr to the result
-                 lpYYRes2,              // Ptr to secondary result
-                 lpYYRes3;              // Ptr to tertiary result
+                 lpYYRes2;              // Ptr to secondary result
     UBOOL        bLftArg,               // TRUE iff left arg is a function/operator
                  bRhtArg;               //          right ...
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
@@ -182,7 +172,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     //   the left and right operands
     switch (bLftArg * 2 + bRhtArg * 1)
     {
-        case 1 * 2 + 1 * 1:     // F1 Jot F2 -> F1 F2 R or (F2 L) F1 F2 R
+        case 1 * 2 + 1 * 1:     // F1 Jot F2 -> F1 F2 R or L F1 F2 R
             // Execute the right operand monadically
             //   on the right arg
             if (bPrototyping)
@@ -201,74 +191,30 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                                               lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
             if (lpYYRes2)
             {
-                // If there's a left arg,
-                //   execute the right operand monadically
-                //   on the left arg
-                if (lptkLftArg)
-                {
-                    if (bPrototyping)
-                        // Note that we cast the function strand to LPTOKEN
-                        //   to bridge the two types of calls -- one to a primitive
-                        //   function which takes a function token, and one to a
-                        //   primitive operator which takes a function strand
-                        lpYYRes3 = (*lpPrimProtoRht) (NULL,                     // Ptr to left arg token
-                                            (LPTOKEN) lpYYFcnStrRht,            // Ptr to right operand function strand
-                                                      lptkLftArg,               // Ptr to right arg token
-                                                      lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
-                    else
-                        lpYYRes3 = ExecFuncStr_EM_YY (NULL,                     // Ptr to left arg token
-                                                      lpYYFcnStrRht,            // Ptr to right operand function strand
-                                                      lptkLftArg,               // Ptr to right arg token
-                                                      lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
-                    if (lpYYRes3)
-                    {
-                        // Execute the left operand dyadically
-                        //   between lpYYRes3 and lpYYRes2.
-                        if (bPrototyping)
-                            // Note that we cast the function strand to LPTOKEN
-                            //   to bridge the two types of calls -- one to a primitive
-                            //   function which takes a function token, and one to a
-                            //   primitive operator which takes a function strand
-                            lpYYRes = (*lpPrimProtoLft) (&lpYYRes3->tkToken,    // Ptr to left arg token
-                                                (LPTOKEN) lpYYFcnStrLft,        // Ptr to left operand function strand
-                                                         &lpYYRes2->tkToken,    // Ptr to right arg token
-                                                          lptkAxisLft);         // Ptr to left operand axis token (may be NULL)
-                        else
-                            lpYYRes = ExecFuncStr_EM_YY (&lpYYRes3->tkToken,    // Ptr to left arg token
-                                                          lpYYFcnStrLft,        // Ptr to left operand function strand
-                                                         &lpYYRes2->tkToken,    // Ptr to right arg token
-                                                          lptkAxisLft);         // Ptr to left operand axis token (may be NULL)
-
-                        FreeResult (&lpYYRes3->tkToken); YYFree (lpYYRes3); lpYYRes3 = NULL;
-                    } // End IF
-                } else
-                {
-                    // Execute the left operand dyadically
-                    //   between the (optional) left arg and the
-                    //   above result from the right operand.
-                    if (bPrototyping)
-                        // Note that we cast the function strand to LPTOKEN
-                        //   to bridge the two types of calls -- one to a primitive
-                        //   function which takes a function token, and one to a
-                        //   primitive operator which takes a function strand
-                        lpYYRes = (*lpPrimProtoLft) (lptkLftArg,            // Ptr to left arg token
-                                           (LPTOKEN) lpYYFcnStrLft,         // Ptr to left operand function strand
-                                                    &lpYYRes2->tkToken,     // Ptr to right arg token
-                                                     lptkAxisLft);          // Ptr to left operand axis token (may be NULL)
-                    else
-                        lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,            // Ptr to left arg token
-                                                     lpYYFcnStrLft,         // Ptr to left operand function strand
-                                                    &lpYYRes2->tkToken,     // Ptr to right arg token
-                                                     lptkAxisLft);          // Ptr to left operand axis token (may be NULL)
-                } // End IF/ELSE
-
+                // Execute the left operand dyadically
+                //   between the (optional) left arg and the
+                //   above result from the right operand.
+                if (bPrototyping)
+                    // Note that we cast the function strand to LPTOKEN
+                    //   to bridge the two types of calls -- one to a primitive
+                    //   function which takes a function token, and one to a
+                    //   primitive operator which takes a function strand
+                    lpYYRes = (*lpPrimProtoLft) (lptkLftArg,            // Ptr to left arg token
+                                       (LPTOKEN) lpYYFcnStrLft,         // Ptr to left operand function strand
+                                                &lpYYRes2->tkToken,     // Ptr to right arg token
+                                                 lptkAxisLft);          // Ptr to left operand axis token (may be NULL)
+                else
+                    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,            // Ptr to left arg token
+                                                 lpYYFcnStrLft,         // Ptr to left operand function strand
+                                                &lpYYRes2->tkToken,     // Ptr to right arg token
+                                                 lptkAxisLft);          // Ptr to left operand axis token (may be NULL)
                 FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
             } else
                 lpYYRes = NULL;
 
             break;
 
-        case 0 * 2 + 1 * 1:     // V Jot F -> V F R
+        case 0 * 2 + 1 * 1:     // V Jot F -> V F R or SYNTAX ERROR
             // If there's a left arg, signal a SYNTAX ERROR
             if (lptkLftArg)
                 goto LEFT_SYNTAX_EXIT;
@@ -314,7 +260,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                                              lptkAxisLft);              // Ptr to left operand axis token (may be NULL)
             break;
 
-        case 0 * 2 + 0 * 1:     // V op2 V
+        case 0 * 2 + 0 * 1:     // V op2 V -> SYNTAX ERROR
             goto LEFT_SYNTAX_EXIT;
 
         defstop

@@ -23,21 +23,7 @@
 #define STRICT
 #define _WIN32_WINNT   0x0500   // Needed for RegisterWaitForSingleObject
 #include <windows.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "pertab.h"
-#include "fh_parse.h"
-#include "sis.h"
-#include "threads.h"
-#include "cs_parse.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 typedef struct tagWFSO          // Struct for WaitForSingleObject

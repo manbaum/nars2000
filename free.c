@@ -22,16 +22,7 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "fh_parse.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //***************************************************************************
@@ -378,7 +369,7 @@ UBOOL FreeResultGlobalLst
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMemLst = NULL;
 
-    // Free the list
+    // We no longer need this storage
     DbgGlobalFree (hGlbData); hGlbData = NULL;
 
     DBGLEAVE;
@@ -507,6 +498,7 @@ UBOOL FreeResultGlobalVar
 
     if (bRet)
     {
+        // We no longer need this storage
         DbgGlobalFree (hGlbData); hGlbData = NULL;
     } // End IF
 
@@ -699,6 +691,7 @@ UBOOL FreeResultGlobalFcn
 
     if (bRet)
     {
+        // We no longer need this storage
         DbgGlobalFree (hGlbData); hGlbData = NULL;
     } // End IF
 
@@ -757,16 +750,23 @@ UBOOL FreeResultGlobalDfn
         // If the RefCnt is zero, free the globals
         if (RefCnt EQ 0)
         {
-            STFLAGS stFlags = {0};
+            // Should we clear the STE flags?
+            if (!lpMemDfnHdr->SaveSTEFlags)
+            {
+                STFLAGS stFlags = {0};
 
-            // Set the flags we'll leave alone
-            stFlags.Perm        =
-            stFlags.Inuse       = TRUE;
-            stFlags.ObjName     =
-            stFlags.SysVarValid = NEG1U;
+                // Set the flags we'll leave alone
+                stFlags.Perm        =
+                stFlags.Inuse       = TRUE;
+                stFlags.ObjName     =
+                stFlags.SysVarValid = NEG1U;
 
-            // Clear the symbol table flags for the function name
-            *(UINT *) &lpMemDfnHdr->steFcnName->stFlags &= *(UINT *) &stFlags;
+                // Clear the symbol table flags for the function name
+                *(UINT *) &lpMemDfnHdr->steFcnName->stFlags &= *(UINT *) &stFlags;
+
+                // Clear the flag for next time
+                lpMemDfnHdr->SaveSTEFlags = FALSE;
+            } // End IF
 
             // Check the static HGLOBALs
             if (lpMemDfnHdr->hGlbTxtHdr)
@@ -835,6 +835,7 @@ UBOOL FreeResultGlobalDfn
 
     if (bRet)
     {
+        // We no longer need this storage
         DbgGlobalFree (hGlbData); hGlbData = NULL;
     } // End IF
 

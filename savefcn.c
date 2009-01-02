@@ -23,21 +23,8 @@
 #define STRICT
 #include <windows.h>
 #include <stdio.h>
+#include "headers.h"
 
-#include "aplerrors.h"
-#include "main.h"
-#include "resdebug.h"
-#include "externs.h"
-#include "fh_parse.h"
-#include "pertab.h"
-#include "sis.h"
-#include "savefcn.h"
-#include "cs_parse.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 #ifdef DEBUG
 HGLOBAL hGlbRC1,                // ***DEBUG***
@@ -1044,7 +1031,8 @@ UBOOL SaveFunctionCom
     LPDFN_HEADER   lpMemDfnHdr = NULL;      // Ptr to user-defined function/operator header ...
     LPMEMTXT_UNION lpMemTxtLine;            // Ptr to header/line text global memory
     FHLOCALVARS    fhLocalVars = {0};       // Re-entrant vars
-    HGLOBAL        hGlbPTD;                 // PerTabData global memory handle
+    HGLOBAL        hGlbPTD,                 // PerTabData global memory handle
+                   hGlbOldDfn = NULL;       // Old Dfn global memory handle
     LPPERTABDATA   lpMemPTD;                // Ptr to PerTabData global memory
     WCHAR          wszTemp[1024];           // Save area for error message text
     MEMVIRTSTR     lclMemVirtStr[1] = {0};  // Room for one GuardAlloc
@@ -1207,7 +1195,6 @@ UBOOL SaveFunctionCom
                     *lplpSymDfnHdr;     // Ptr to LPSYMENTRYs at end of user-defined function/operator header
         SYSTEMTIME   systemTime;        // Current system (UTC) time
         FILETIME     ftCreation;        // Creation time
-        HGLOBAL      hGlbOldDfn;        // Old Dfn global memory handle
         CSLOCALVARS  csLocalVars = {0}; // CS local vars
 
         // Check on invalid function name (e.g. empty function header/body)
@@ -1260,7 +1247,7 @@ UBOOL SaveFunctionCom
                 SetFocus (GetParent (hWndEC));
 
                 goto ERROR_EXIT;
-            } // End FOR
+            } // End FOR/IF
 
             // Lock the memory to get a ptr to it
             lpMemDfnHdr = MyGlobalLock (hGlbOldDfn);
@@ -1270,9 +1257,6 @@ UBOOL SaveFunctionCom
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbOldDfn); lpMemDfnHdr = NULL;
-
-            // Free it
-            FreeResultGlobalDfn (hGlbOldDfn); hGlbOldDfn = NULL;
         } else
             (*lpSF_Fcns->SF_CreationTime) (lpSF_Fcns->LclParams, &systemTime, &ftCreation);
 
@@ -1582,13 +1566,14 @@ UBOOL SaveFunctionCom
                            csLocalVars.tkCSErr.tkData.uLineNum,
                            csLocalVars.tkCSErr.tkData.uStmtNum + 1,
                            lpMemPTD->uCaret);
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
                 // Display the error message
                 MessageBoxW (hWndEC,
                             wszTemp,
                             lpwszAppName,
                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             } else
                 // Save the line # in error (origin-0)
                 lpSF_Fcns->uErrLine = uLineNum + 1;
@@ -1598,6 +1583,13 @@ UBOOL SaveFunctionCom
 
         // Check for special labels ([]IDENTITY, []INVERSE, []PROTOTYPE, and []SINGLETON)
         GetSpecialLabelNums (lpMemDfnHdr);
+
+        // If there was a previous function, ...
+        if (hGlbOldDfn)
+        {
+            // Free it
+            FreeResultGlobalDfn (hGlbOldDfn); hGlbOldDfn = NULL;
+        } // End IF
 
         // Save the global memory handle in the STE
         lpSymName->stData.stGlbData = MakePtrTypeGlb (hGlbDfnHdr);
@@ -1677,6 +1669,9 @@ ERROR_EXIT:
     {
         if (lpMemDfnHdr)
         {
+            // Mark whether or not to save the function name STE flags
+            lpMemDfnHdr->SaveSTEFlags = (hGlbOldDfn NE NULL);
+
             // We no longer need this ptr
             MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
         } // End IF

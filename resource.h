@@ -26,15 +26,17 @@
 
 #define IDMPOS_SM_FILE                             0
 #define IDMPOS_SM_EDIT                             1
-#define IDMPOS_SM_WINDOW                           2
-#define IDMPOS_SM_OPTIONS                          3
-#define IDMPOS_SM_HELP                             4
+#define IDMPOS_SM_VIEW                             2
+#define IDMPOS_SM_WINDOW                           3
+#define IDMPOS_SM_OPTIONS                          4
+#define IDMPOS_SM_HELP                             5
 
 #define IDMPOS_FE_FILE                             0
 #define IDMPOS_FE_EDIT                             1
-#define IDMPOS_FE_WINDOW                           2
-#define IDMPOS_FE_OPTIONS                          3
-#define IDMPOS_FE_HELP                             4
+#define IDMPOS_FE_VIEW                             2
+#define IDMPOS_FE_WINDOW                           3
+#define IDMPOS_FE_OPTIONS                          4
+#define IDMPOS_FE_HELP                             5
 
 #define IDWC_DB_LB                                 1    // IDs to identify window controls
 #define IDWC_FE_EC                                 2    // ...
@@ -43,16 +45,19 @@
 #define IDWC_TC_MC                                 5    // ...
 #define IDWC_CC_LB                                 6    // ...
 #define IDWC_PM_LB                                 7    // ...
-#define IDWC_WCN_BN                                8    // Used in <ccHookProc>
-#define IDWC_WCN_WN                                9    // Used in <ccHookProc>
+#define IDWC_MF_ST                                 8    // ...
+#define IDWC_WCN_BN                                9    // Used in <ccHookProc>
+#define IDWC_WCN_WN                               10    // Used in <ccHookProc>
+
+#define IDR_MFMENU                                20
+#define IDR_SMMENU                                21
+#define IDR_FEMENU                                22
+#define IDR_VEMENU                                23
+#define IDR_MEMENU                                24
+
+#define IDR_ACCEL                                 30
 
 #define IDB_LINECONT                              90
-
-#define IDR_SMMENU                               100
-#define IDR_FEMENU                               101
-#define IDR_VEMENU                               102
-#define IDR_MEMENU                               103
-#define IDR_ACCEL                                110
 
 #define IDI_OF_LARGE                             100
 #define IDI_OF_SMALL                             101
@@ -96,6 +101,7 @@
 #define IDD_PROPPAGE_USER_PREFS                  138
 
 #define IDM_EXIT                                 102
+#define IDM_STATUSBAR                            103
 
 #define IDM_CASCADE                              300
 #define IDM_TILE_HORZ                            301
@@ -155,6 +161,7 @@
 #define IDC_WEBVER                               802
 #define IDC_VERACTION                            803
 #define IDC_FILEVER                              804
+#define IDC_LOADEDFROM                           805
 
 #define IDC_APPLY                                810
 #define IDC_CUST_LB                              811
@@ -382,6 +389,7 @@
 #define IDC_USER_PREFS_CB_DEFAULTPASTE          1108
 #define IDC_USER_PREFS_CB_DEFAULTCOPY           1109
 #define IDC_USER_PREFS_XB_CHECKGROUP            1110
+#define IDC_USER_PREFS_XB_INSSTATE              1111
 
 #define IDC_STATIC                       -1
 

@@ -23,16 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <stdio.h>
-
-#include "main.h"
-#include "externs.h"
-#include "aplerrors.h"
-#include "workspace.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //***************************************************************************

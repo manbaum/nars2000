@@ -25,19 +25,11 @@
 
 #define __GSL_MATRIX_COMPLEX_LONG_DOUBLE_H__
 
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
+#include "headers.h"
 #include "gsl/gsl_vector_double.h"
 #include "gsl/gsl_matrix_double.h"
 #include "gsl/gsl_permutation.h"
 #include "gsl/gsl_linalg.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 
 //***************************************************************************

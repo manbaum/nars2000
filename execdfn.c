@@ -22,21 +22,7 @@
 
 #define STRICT
 #include <windows.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "sysvars.h"
-#include "externs.h"
-#include "cs_parse.h"
-#include "pertab.h"
-#include "fh_parse.h"
-#include "sis.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
+#include "headers.h"
 
 
 //***************************************************************************

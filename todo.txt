@@ -22,7 +22,6 @@ TO DO:  General:  Less Important (post-alpha)
 * Check for 64-bit compile
 * Check for updates from the web:  nars2000.org/CurrentRelease.php
 * Need an installation program which also sets up file associations for .ws.nars
-* Never fail Tokenize_EM on SYNTAX ERROR (use TKT_SYNTERR)
 * When editing a function, check to see if it's already open for editing
 * Write the function name in the function editor title.
 * When removing a tab, )RESET, terminate all threads, and then delete
@@ -38,11 +37,10 @@ TO DO:  General:  Less Important (post-alpha)
 * Port to Linux
 * Port to Mac/OS
 * Extend <aplchars> to <textarea> in FireFox, too.
-* Allow Alt-nnnn to enter an arbitrary Unicode character
-* Implement status window for messages, char codes, etc.
 * Implement New Tab On Load off
 * Implement New Tab On Clear off
 * Implement fast 1st coord array catenation via GlobalRealloc if RefCnt = 1
+* Implement fast non-last coord Boolean functions
 * Implement these features:
 * ...       dynamic functions
 * ...       user-defined magic functions for primitive functions
@@ -85,10 +83,10 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       dyadic down tack jot        (format by example)
 * ...       dyadic left shoe            (partitioned enclose)
 * ...       dyadic epsilon underbar     (find)
-* ...       dieresis-del                (dual)
-* ...       dieresis-downtack           (convolution)
-* ...       dieresis-star               (power)
-* ...       stile-tilde                 (partition)
+* ...       dieresis-del                (dual operator)
+* ...       dieresis-downtack           (convolution operator)
+* ...       dieresis-star               (power operator)
+* ...       stile-tilde                 (partition operator)
 * ...       vector editor       (requires someone to want it badly enough to code it)
 * ...       matrix editor       (requires someone to want it badly enough to code it)
 * ...       []IDENTITY:                 (Identity element entry point for user-defined function/operator)
@@ -100,7 +98,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
 * ...       finish []SA
 * ...       )COPY :nnn [objs]   to copy objects from another tab
-* ...       exploit parallelism
+* ...       exploit parallelism (OpenMP)
 * ...       finish []MF
 * ...       code folding in the Function Editor for Control Structures
 * ...
@@ -276,6 +274,9 @@ DONE:  General
   for arbitrary base X and each N may range from 0-9a-z (0-35).
 * Implement Euler Point Notation:  AAxBB as a way to enter AA x (*1)*BB
 * Implement Pi Point Notation:  AApBB as a way to enter AA x (o1)*BB
+* In FE, implement Localize/Unlocalize name in Context Menu.
+* Implement status window for messages, char codes, etc.
+* Allow Alt-nnnn to enter an arbitrary Unicode characters
 *
 
 

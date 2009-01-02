@@ -26,6 +26,7 @@
     var gAplFontsTipOFF            = "&aplfonts.tipOFF;";
 
     var gAplCharsRoot              = "&aplchars.root;";
+    var gAplCharsCustomize         = "&aplchars.customize;";
     var gAplCharsFontsEnabled      = "&aplchars.fontsenabled;";
     var gAplCharsFontNameRoot      = "&aplchars.fontnameroot;";
     var gAplCharsFontNameType      = "&aplchars.fontnametype;";

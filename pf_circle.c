@@ -24,17 +24,8 @@
 #include <windows.h>
 #include <math.h>
 #include <float.h>
-
-#include "main.h"
-#include "aplerrors.h"
-#include "resdebug.h"
-#include "externs.h"
+#include "headers.h"
 #include "gsl\gsl_sys.h"
-
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
 
 
 #ifndef PROTO

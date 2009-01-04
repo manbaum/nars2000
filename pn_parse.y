@@ -879,6 +879,9 @@ LPPN_YYSTYPE PN_MakeBasePoint
             // Convert the base value to float
             lpYYBase->aplFloat = (APLFLOAT) lpYYBase->aplInteger;
 
+            // Get the ptr to the end of the AlphaInt string
+            lpszAlphaInt = &lppnLocalVars->lpszAlphaInt[uLen - 1];
+
             // Fall through to the rational case
 
         case PN_NUMTYPE_RAT:

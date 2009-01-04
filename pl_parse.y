@@ -5714,6 +5714,7 @@ EXIT_TYPES ParseLine
     // Set the cursor to an hourglass and indicate that we're executing
     hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
+    SetStatusMsg (wszStatusRunning);
 
     EnterCriticalSection (&CSOPL);
 
@@ -6233,6 +6234,7 @@ NORMAL_EXIT:
 
     // Restore the previous cursor and its state
     SetCursor (hCursorOld); ShowCursor (FALSE); lpMemPTD->bExecuting = bOldExecuting;
+    SetStatusMsg (bOldExecuting ? wszStatusRunning : wszStatusIdle);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

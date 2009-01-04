@@ -368,6 +368,7 @@ APLBOOL ExpungeName
         FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData);
 
     // Erase the Symbol Table Entry
+    //   unless it's a []var
     EraseSTE (lpSymEntry);
 
     return 1;

@@ -1429,6 +1429,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 {
                     // Set a new cursor to indicate that we're waiting
                     SetCursor (hCursorWait);
+                    SetStatusMsg (wszStatusRunning);
 
                     return FALSE;           // We handled the msg
                 } // End IF

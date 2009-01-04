@@ -700,6 +700,17 @@ typedef enum tagSTATUSPARTS
     SP_LENGTH               // 06:  Length
 } STATUSPARTS, *LPSTATUSPARTS;
 
+EXTERN
+WCHAR wszStatusIdle[]
+#ifdef DEFINE_VALUES
+ = L"Idle..."
+#endif
+,     wszStatusRunning[]
+#ifdef DEFINE_VALUES
+ = L"Running..."
+#endif
+;
+
 
 //***************************************************************************
 //  Tab Control vars

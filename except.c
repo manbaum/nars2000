@@ -681,8 +681,11 @@ void DisplayException
 
     // Display the version # of the executable
     wsprintfW (wszTemp,
-               WS_APPNAME L" -- Version %s",
-               wszFileVer);
+               WS_APPNAME L" -- Version %s"
+#ifdef DEBUG
+               L" (DEBUG)"
+#endif
+               , wszFileVer);
     NewMsg (wszTemp);
 
     // Display the exception code

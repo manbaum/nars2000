@@ -4,6 +4,10 @@
 !error Environment variable ZIPPRG= not defined.
 !endif
 
+!ifndef PARGEN
+!error Environment variable PARGEN= not defined.
+!endif
+
 !ifndef MSVC
 !error Environment variable MSVC= not defined.
 !endif
@@ -101,10 +105,14 @@ DEL:
 DELPRO:
         @del /Q $(O)*.pro
 
+DELDEP:
+        @del /Q $(O)*.dep
+
 DIR:
-        @Set PATH=$(BC)
-        @vdir -q -c $(O) $(OC) $(B) $(BC) >NUL
-        @Set PATH=$(OLDPATH)
+        @if not exist $(O)  mkdir $(O)
+        @if not exist $(OC) mkdir $(OC)
+        @if not exist $(B)  mkdir $(B)
+        @if not exist $(BC) mkdir $(BC)
 
 INITIAL_DEP:
         @echo ---.dep Files---
@@ -122,8 +130,7 @@ INITIAL_C:
 
 {}.y{$(O)}.c:
         @Set INCLUDE=$(I98);$(O)
-        bison -o$(O)$(@B).c -v -r all -l %s
-########bison -o$(O)$(@B).c           -l %s
+        $(PARGEN) -o$(O)$(@B).c -v -r all -l %s
 
 {}.c{$(O)}.obj:
         @Set INCLUDE=$(I98);$(O)

@@ -172,6 +172,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     // Set the cursor to an hourglass and indicate that we're executing
     hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
+    SetStatusMsg (wszStatusRunning);
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -488,6 +489,7 @@ ERROR_EXIT:
 NORMAL_EXIT:
     // Restore the previous cursor and its state
     SetCursor (hCursorOld); ShowCursor (FALSE); lpMemPTD->bExecuting = bOldExecuting;
+    SetStatusMsg (bOldExecuting ? wszStatusRunning : wszStatusIdle);
 
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
@@ -2023,6 +2025,7 @@ LPSYMENTRY LocalizeSymEntries
         *lpSymEntryNxt = **lplpSymEntrySrc;
 
         // Erase the Symbol Table Entry
+        //   unless it's a []var
         EraseSTE (*lplpSymEntrySrc);
 
         // Set the ptr to the previous entry to the STE in the shadow chain

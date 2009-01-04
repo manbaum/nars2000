@@ -327,6 +327,12 @@ Welcome to NARS2000</h1>
     <li>Control structures on one line or split across multiple lines
       (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).</li>
     <li>Syntax coloring of lines of APL in Function Editor and Session Manager windows</li>
+    <li>Base, Euler, and Pi Point Notation as extensions to Decimal Point and Exponential Point Notations
+      for entering certain numeric constants</li>
+    <li> A <b>Status Window</b> at the bottom of the screen displays various pieces of information about
+      the cursor position and key states.</li>
+    <li><b>Alt-<i>nnnn</i></b> may be used to enter arbitrary Unicode characters in decimal.  For example,
+      <b>Alt-9735</b> is a lightning bolt (<span class="APL">&#9735;</span>).</li>
   </ul>
 
   <h3>Wish List of Miscellaneous Features</h3>

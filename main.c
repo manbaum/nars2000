@@ -340,6 +340,20 @@ void SetStatusPos
 
 
 //***************************************************************************
+//  $SetStatusMsg
+//
+//  Set the Status Window message
+//***************************************************************************
+
+void SetStatusMsg
+    (LPWCHAR lpwszMsg)          // Ptr to Status Window msg
+
+{
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_TEXTMSG, (LPARAM) lpwszMsg);
+} // End SetStatusMsg
+
+
+//***************************************************************************
 //  $EnumCallbackPassMsg
 //
 //  EnumChildWindows callback to pass a message to all child
@@ -992,7 +1006,7 @@ UBOOL CreateChildWindows
                          | WS_VISIBLE
                          | SBARS_SIZEGRIP
                            ,                // Styles
-                           L"Ready...",     // Initial text
+                           wszStatusIdle,   // Initial text
                            hWnd,            // Parent window
                            IDWC_MF_ST);     // Window ID
     // Get the width of the borders of the Status Window

@@ -350,7 +350,8 @@ void DeleteGlobalLinks
         lpSymLast = lpSymLink->stSymLink;
         lpSymLink->stSymLink = NULL;
 
-        // Erase the entry
+        // Erase the Symbol Table Entry
+        //   unless it's a []var
         EraseSTE (lpSymLink);
 
         // ***FIXME*** -- What's involved in deleting the STE??

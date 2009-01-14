@@ -119,7 +119,7 @@ void ExpungeError
     {
         AppendLine (ERRMSG_NOT_ERASED, FALSE, FALSE);
         *lpbNotErasedHeader = TRUE;
-        *lpiNotErasedWidth = strlengthof (ERRMSG_NOT_ERASED);
+        *lpiNotErasedWidth = strcountof (ERRMSG_NOT_ERASED);
     } // End IF
 
     // Get the STE name global memory handle

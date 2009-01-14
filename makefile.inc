@@ -120,9 +120,6 @@ INITIAL_DEP:
 INITIAL_PRO:
         @echo ---.pro Files---
 
-INITIAL_C:
-        @echo ---.c Files-----
-
 {}.rc{$(O)}.res:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
@@ -179,6 +176,8 @@ DEP:    DIR             \
 
 !if !exist ($(O)dep.txt)
 !    message ***File $(O)dep.txt is missing:  Creating it...
+!    if [if not exist $(O)  mkdir $(O)]
+!    endif
 !    if [$(NMAKE) /nologo /f makefile.dep O=$(O)]
 !    endif
 !endif
@@ -393,7 +392,6 @@ $(O)webcolors.obj:      $(@B).c         $(WEBCOLORS_DEP)
 $(O)yyfns.obj:          $(@B).c         $(YYFNS_DEP)
 
 main.rc:                                $(MAIN_RCDEP)   $(ICONS)
-
 ver.rc:                                 $(VER_RCDEP)
 
 $(O)main.res:           $(@B).rc        $(MAIN_RCDEP)
@@ -411,8 +409,7 @@ OBJS=   $(SRC:???=obj)          \
         $(OC)dbgbrk.obj         \
         $(O)main.res
 
-$(O)$(ENAME).exe:       INITIAL_C       \
-                        $(OBJS)         \
+$(O)$(ENAME).exe:       $(OBJS)         \
                         $(DEFFILE)      \
                         makefile.inc    \
                         makefile.$(MFEXT)

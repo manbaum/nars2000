@@ -145,7 +145,7 @@ APLU3264 CALLBACK AboutDlgProc
                 lstrcpy (szAppDPFE, TT_PREFIX);
 
                 // Convert the wide char to single byte
-                W2A (&szAppDPFE[strlengthof (TT_PREFIX)], wszAppDPFE, sizeof (szAppDPFE) - 1 - strlengthof (TT_PREFIX));
+                W2A (&szAppDPFE[strcountof (TT_PREFIX)], wszAppDPFE, sizeof (szAppDPFE) - 1 - strcountof (TT_PREFIX));
 #undef  TT_PREFIX
             } // End IF
 

@@ -162,7 +162,7 @@ void SetStatusParts
             // Get the width of the text
             GetTextExtentPoint32W (hDC,
                                    TEXT_CAPS,
-                                   strlengthof (TEXT_CAPS),
+                                   strcountof (TEXT_CAPS),
                                   &sText);
             // Set the parts width
             glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
@@ -174,7 +174,7 @@ void SetStatusParts
             // Get the width of the text
             GetTextExtentPoint32W (hDC,
                                    TEXT_CAPS,
-                                   strlengthof (TEXT_CAPS),
+                                   strcountof (TEXT_CAPS),
                                   &sText);
             // Set the parts width
             glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
@@ -186,7 +186,7 @@ void SetStatusParts
             // Get the width of the text
             GetTextExtentPoint32W (hDC,
                                    TEXT_CAPS,
-                                   strlengthof (TEXT_CAPS),
+                                   strcountof (TEXT_CAPS),
                                   &sText);
             // Set the parts width
             glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
@@ -198,7 +198,7 @@ void SetStatusParts
             // Get the width of the text
             GetTextExtentPoint32W (hDC,
                                    TEXT_CAPS,
-                                   strlengthof (TEXT_CAPS),
+                                   strcountof (TEXT_CAPS),
                                   &sText);
             // Set the parts width
             glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
@@ -210,7 +210,7 @@ void SetStatusParts
             // Get the width of the text
             GetTextExtentPoint32W (hDC,
                                    TEXT_CAPS,
-                                   strlengthof (TEXT_CAPS),
+                                   strcountof (TEXT_CAPS),
                                   &sText);
             // Set the parts width
             glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
@@ -2185,7 +2185,7 @@ UBOOL IzitDB
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, strlengthof (wszClassName));
+    GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
 
     return (lstrcmpW (wszClassName, LDBWNDCLASS) EQ 0);
 } // End IzitDB
@@ -2765,7 +2765,7 @@ UBOOL InitInstance
     {
         HKEY hKeyFont;
 
-        // Ask the user if s/he wats to copy it to Fonts folder
+        // Ask the user if s/he wants to copy it to the Fonts folder
         if (MessageBoxW (NULL,
                          L"The default APL font <" DEF_APLFONT_FILE L"> is not installed and will be installed now.  Copy it to the Fonts folder, too?",
                          lpwszAppName,
@@ -2782,6 +2782,15 @@ UBOOL InitInstance
             {
                 DWORD dwError = GetLastError ();
 
+                // See if the file is not present in the executable's directory
+                if (dwError EQ ERROR_FILE_NOT_FOUND)
+                {
+                    MessageBoxW (NULL,
+                                 L"The default APL font <" DEF_APLFONT_FILE L"> is not in the same directory as the program.  Please copy it there and retry.",
+                                 lpwszAppName,
+                                 MB_OK | MB_ICONERROR);
+                    return FALSE;
+                } else
                 // If the file is not already present in the target dir, ...
                 if (dwError NE ERROR_FILE_EXISTS)
                 {

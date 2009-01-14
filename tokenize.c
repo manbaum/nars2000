@@ -688,7 +688,7 @@ UBOOL IsLocalName
     // If this is a sysname, ...
     if (IsSysName (lpwszStr))
     {
-        Assert (iStrLen <= strlengthof (sysName));      // ***FIXME*** -- may overflow
+        Assert (iStrLen < countof (sysName));       // ***FIXME*** -- may overflow
 
         // Copy the sysname to local storage
         CopyMemory (sysName, lpwszStr, iStrLen * sizeof (lpwszStr[0]));

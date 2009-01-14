@@ -665,15 +665,16 @@ void DisplayException
 
 #define NewMsg(a)   SendMessageW (hWndCC, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC)
 
-    NewMsg (L"COPY THIS TEXT TO AN EMAIL MESSAGE");
+    NewMsg (L"COPY THIS TEXT TO AN EMAIL MESSAGE"                    );
     NewMsg (L"----------------------------------------------------"  );
     NewMsg (L"Use Right-click:  Select All, and"                     );
     NewMsg (L"    Right-click:  Copy"                                );
     NewMsg (L"   to copy the entire text to the clipboard."          );
     NewMsg (L"----------------------------------------------------"  );
-    NewMsg (L"Send the text to <nars2000-discuss@googlegroups.com>"  );
-    NewMsg (L"   along with a detailed statement of what you were"   );
-    NewMsg (L"   doing just prior to the crash."                     );
+    NewMsg (L"Post the text on the Forum <http://forum.nars2000.org>");
+    NewMsg (L"   in the Bug Reports section along with a detailed"   );
+    NewMsg (L"   statement of what you were doing just prior to the" );
+    NewMsg (L"   crash."                                             );
     NewMsg (L"Also, if at all possible, it would be great if you"    );
     NewMsg (L"   could send along a copy of the last saved workspace");
     NewMsg (L"   (the one with an extension of .save.bak.ws.nars)."  );
@@ -681,11 +682,7 @@ void DisplayException
 
     // Display the version # of the executable
     wsprintfW (wszTemp,
-               WS_APPNAME L" -- Version %s"
-#ifdef DEBUG
-               L" (DEBUG)"
-#endif
-               , wszFileVer);
+               WS_APPNAME L" -- Version %s" WS_APPEND_DEBUG, wszFileVer);
     NewMsg (wszTemp);
 
     // Display the exception code

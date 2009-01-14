@@ -28,4 +28,4 @@ $(SRC:???=dep) $(O)main.dev $(O)ver.dev $(O)version.dev:    makefile.dep
     @depinit.bat $@
 
 ENDING:
-        @echo .
+    @echo .

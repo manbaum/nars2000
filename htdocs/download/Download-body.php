@@ -71,7 +71,7 @@ Downloads</h1>
         <tr>
           <th>File Name</th>
           <th>Version</th>
-          <th>Date (GMT)</th>
+          <th>Date/Time (GMT)</th>
           <th>Size</th>
           <th>Type</th>
           <th class="notes">Notes</th>
@@ -99,7 +99,7 @@ Downloads</h1>
         } // End WHILE
 
         // Sort files descendingly by version #
-        //   (which also sorts "gsldir.zip" & "qdebug.zip" to the front)
+        //   (which also sorts "gsldir.zip" & "qdebug.zip" & "misc.zip" to the front)
         natsort ($Files);
         $Files = array_reverse ($Files);
 
@@ -109,6 +109,7 @@ Downloads</h1>
             if (strcmp ($File, "robots.txt") != 0)
             {
                 if (strcmp ($File, "gsldir.zip") == 0
+                 || strcmp ($File, "misc.zip"  ) == 0
                  || strcmp ($File, "qdebug.zip") == 0)
                 {
                     $Name   = substr ($File, 0, strpos ($File, '.'));

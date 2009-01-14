@@ -159,7 +159,7 @@
 // Date/time formats
 #define DATETIME_OUT        L"dd/mm/yyyy hh:mm:ss"
 #define DATETIME_FMT        L"%02d/%02d/%04d %2d:%02d:%02d"
-#define DATETIME_LEN        (sizeof (DATETIME_OUT) / sizeof (WCHAR))
+#define DATETIME_LEN        strcountof (DATETIME_OUT)
 
 
 #ifdef DEBUG
@@ -175,6 +175,17 @@
 
 #define WS_WKSNAME  L"workspaces"       // Name of Workspaces subdirectory under main dir
 
+#define LVER_LEGALCOPYRIGHT_YEARS  L"2006-9"
+#define LVER_COMPANYNAME_STR       L"Sudley Place Software"
+#define LVER_COPYRIGHT1_STR        L"Copyright " WS_UTF16_COPYRIGHT L" " LVER_LEGALCOPYRIGHT_YEARS L" " LVER_COMPANYNAME_STR
+
+#define VER_LEGALCOPYRIGHT_YEARS    "2006-9"
+#define VER_COMPANYNAME_STR         "Sudley Place Software"
+#define VER_COPYRIGHT1_STR          "Copyright © " VER_LEGALCOPYRIGHT_YEARS " " VER_COMPANYNAME_STR
+
+//***************************************************************************
+//  Window Classes
+//***************************************************************************
 
 #define  MCWNDCLASS     "MDIClient"     // MDI Client window class
 #define LMCWNDCLASS    L"MDIClient"     // MDI Client ...

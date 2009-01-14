@@ -61,6 +61,7 @@
 #include "user_private.h"
 #include "wine/debug.h"
 
+#undef  WM_CTLCOLOR
 #include <windowsx.h>
 #include "local.h"
 

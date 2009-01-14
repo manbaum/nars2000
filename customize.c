@@ -927,7 +927,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 hWndFont = GetDlgItem (hWndProp, idCtl);
 
                 // Get the window text
-                GetWindowTextW (hWndFont, wszText, countof (wszText));
+                GetWindowTextW (hWndFont, wszText, 1);
 
                 // Copy the item rectangle
                 rcItem = lpdis->rcItem;
@@ -948,7 +948,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Draw the text (one char)
                         DrawTextW (lpdis->hDC,
                                    wszText,
-                                   strlengthof (wszText),
+                                   1,
                                   &rcItem,
                                    DT_CENTER | DT_VCENTER | DT_SINGLELINE);
                         // Draw the edge as Raised
@@ -983,7 +983,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Draw the text (one char)
                         DrawTextW (lpdis->hDC,
                                    wszText,
-                                   strlengthof (wszText),
+                                   1,
                                   &rcItem,
                                    DT_CENTER | DT_VCENTER | DT_SINGLELINE);
                         // Draw the edge as Sunken (if selected) or Raised (if normal)

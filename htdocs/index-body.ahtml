@@ -477,15 +477,14 @@ Welcome to NARS2000</h1>
 </div>
 
 <div class="section">
-  <h2 id="Discussion_Group">Discussion Group</h2>
+  <h2 id="Discussion_Forum">Discussion Forum</h2>
 
   <p>To facilitate discussion about this project, there is a
-    <a class="linkleft"
-    href="http://groups.google.com/group/nars2000-discuss">mailing
-    list</a> available for your use.  This list is for discussion
-    relative to this project, and is not meant to supplant other
-    forums such as the <a class="linkleft"
-    href="news:comp.lang.apl">comp.lang.apl</a> newsgroup.</p>
+    <a class="linkleft" href="http://forum.nars2000.org/">forum</a>
+    available for your use.  This forum is for discussion relative to this
+    project, and is not meant to supplant other forums such as the
+    <a class="linkleft" href="news:comp.lang.apl">comp.lang.apl</a>
+    newsgroup.</p>
 </div>
 
 <div class="section">
@@ -493,15 +492,15 @@ Welcome to NARS2000</h1>
 
   <p>The pages on this site were designed to be displayed with an
     attractive APL font such as <a class="ttfLeft"
-   title="If the APL characters on this page don't display correctly, ..."
-   href="http://www.vector.org.uk/resource/simpl02.zip">SImPL (Unicode)</a>,
-   or <a class="ttfLeft"
-         title="If the APL characters on this page don't display correctly, ..."
-         href="http://www.vector.org.uk/resource/apl385.zip">APL385 Unicode</a>.
-   Moreover, your choice of browser can materially affect how the APL
-   characters appear.  Either <a class="linkleft"
-   href="http://www.getfirefox.com">Firefox</a> or Internet Explorer
-   (Version 7 or later, only) are good choices.</p>
+    title="If the APL characters on this page don't display correctly, ..."
+    href="http://www.vector.org.uk/resource/simpl02.zip">SImPL (Unicode)</a>,
+    or <a class="ttfLeft"
+          title="If the APL characters on this page don't display correctly, ..."
+          href="http://www.vector.org.uk/resource/apl385.zip">APL385 Unicode</a>.
+    Moreover, your choice of browser can materially affect how the APL
+    characters appear.  Either <a class="linkleft"
+    href="http://www.getfirefox.com">Firefox</a> or Internet Explorer
+    (Version 7 or later, only) are good choices.</p>
 </div>
 
 <div class="section">

@@ -3704,7 +3704,7 @@ UBOOL IzitFE
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, strlengthof (wszClassName));
+    GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
 
     return (lstrcmpW (wszClassName, LFEWNDCLASS) EQ 0);
 } // End IzitFE
@@ -3722,7 +3722,7 @@ UBOOL IzitSM
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, strlengthof (wszClassName));
+    GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
 
     return (lstrcmpW (wszClassName, LSMWNDCLASS) EQ 0);
 } // End IzitSM

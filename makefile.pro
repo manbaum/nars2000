@@ -1,6 +1,7 @@
 # This makefile generates the .pro files and is
 #   called from VC Express as a pre-build event.
 
+.SUFFIXES: .y
 
 WS=WineHQ\                      # Wine source
 
@@ -11,7 +12,7 @@ WS=WineHQ\                      # Wine source
 !include makefile.src
 
 {}.y{$(O)}.c:
-        bison -o$(O)$(@B).c -v -r all -l %s
+        @$(PARGEN) -o$(O)$(@B).c -v -r all -l %s
 
 {}.c{$(O)}.pro:
         @echo $(@F)

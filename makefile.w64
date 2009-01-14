@@ -32,7 +32,7 @@ GSLINC=gsl\include\             # Directory of GSL includes
 GSLLIB=gsl\                     # Directory of GSL libs
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 
-WIN=32
+WIN=64
 WDEF=_WIN$(WIN)
 WP=64                           # Target width to check against
 MFEXT=w$(WP)
@@ -42,7 +42,7 @@ L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG)
 
 LD=$(MSVC)BIN\link.exe
 CC=$(MSVC)BIN\cl.exe
-RC=$(MSVC)BIN\rc.exe
+RC=$(SDK)BIN\rc.exe
 
 MV=makever
 MP=makepro

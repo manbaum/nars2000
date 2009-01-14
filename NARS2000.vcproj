@@ -22,9 +22,6 @@
 		<DefaultToolFile
 			FileName="masm.rules"
 		/>
-		<ToolFile
-			RelativePath=".\WineHQ.rules"
-		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -41,19 +38,16 @@
 				CommandLine="nmake /f makefile.pro O=$(OutDir)\"
 			/>
 			<Tool
-				Name="Prototype Rule"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
 				Name="Bison Rule"
 			/>
 			<Tool
 				Name="MASM"
 			/>
 			<Tool
-				Name="WineHQ Rule"
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="Prototype Rule"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -67,8 +61,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="DEBUG;RESDEBUG=1;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories=".\;.\Debug;.\qdebug"
+				PreprocessorDefinitions="DEBUG;RESDEBUG=1;_CRT_SECURE_NO_WARNINGS;_X86_"
 				StringPooling="true"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -128,6 +122,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy default APL font"
+				CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL"
 			/>
 		</Configuration>
 		<Configuration
@@ -142,19 +138,16 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-				Name="Prototype Rule"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
 				Name="Bison Rule"
 			/>
 			<Tool
 				Name="MASM"
 			/>
 			<Tool
-				Name="WineHQ Rule"
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="Prototype Rule"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -292,6 +285,15 @@
 			<File
 				RelativePath=".\WineHQ\editctrl.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt;.\gsl\include\w32api"
+						IgnoreStandardIncludePath="true"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\editfcn.c"

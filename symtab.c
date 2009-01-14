@@ -1253,9 +1253,10 @@ LPHSHENTRY HshTabLookupCharHash
 //***************************************************************************
 
 LPHSHENTRY HshTabLookupNameHash
-    (LPWCHAR lpwCharName,               // Ptr to the name to lookup
-     UINT    uHash,                     // The hash of the char
-     UBOOL   bUseGlbHsh)                // TRUE iff use GlbHsh values instead of PerTabData values
+    (LPWCHAR  lpwCharName,              // Ptr to the name to lookup
+     UINT     uLen,                     // Length of lpwCharName
+     UINT     uHash,                    // The hash of the char
+     UBOOL    bUseGlbHsh)               // TRUE iff use GlbHsh values instead of PerTabData values
 
 {
     LPHSHENTRY   lpHshEntry;            // Ptr to the result
@@ -1298,7 +1299,7 @@ LPHSHENTRY HshTabLookupNameHash
         // Check the flags
         if (((*(UINT *) &lpHshEntry->htFlags) & *(UINT *) &htMaskFlags)
              EQ *(UINT *) &htMaskFlags
-         && lstrcmpW (lpHshEntry->lpwCharName, lpwCharName) EQ 0)
+         && strncmpW (lpHshEntry->lpwCharName, lpwCharName, uLen) EQ 0)
             break;
     } // End FOR/IF/ELSE
 
@@ -1402,7 +1403,7 @@ UBOOL AppendSymbolName
              lstrlenW (lpwCharName) * sizeof (lpwCharName[0]), // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Look up the name
-    lpHshEntryDest = HshTabLookupNameHash (lpwCharName, uHash, TRUE);
+    lpHshEntryDest = HshTabLookupNameHash (lpwCharName, lstrlenW (lpwCharName), uHash, TRUE);
     if (lpHshEntryDest EQ LPHSHENTRY_NONE)
     {
         // This name isn't in the HT -- find the next free entry
@@ -1518,8 +1519,7 @@ WCHAR SymbolNameToChar
 {
     UINT       uHash;               // The hash of the char
     LPHSHENTRY lpHshEntryDest;      // Ptr to the matching hash table entry
-    WCHAR      wcRes,               // Char result
-               wcTmp;               // Temporary char
+    WCHAR      wcRes;               // Char result
     LPWCHAR    lpwCharEnd;          // Temporary ptr
     UINT       uChr;                // Loop counter
     // Powers of 16 for converting {\xXXX} to a number
@@ -1561,24 +1561,17 @@ WCHAR SymbolNameToChar
 
         Assert (lpwCharEnd NE NULL);
 
-        // Save old next char, zap to form zero-terminated name
-        wcTmp = *lpwCharEnd;
-        *lpwCharEnd = L'\0';
-
         // Hash the name
         uHash = hashlittle
                ((const uint32_t *) lpwCharName, // A ptr to the name to hash
-                 lstrlenW (lpwCharName) * sizeof (lpwCharName[0]),// The # bytes pointed to
+                 (lpwCharEnd - lpwCharName) * sizeof (lpwCharName[0]),  // The # bytes pointed to
                  0);                            // Initial value or previous hash
         // Look up the char
-        lpHshEntryDest = HshTabLookupNameHash (lpwCharName, uHash, TRUE);
+        lpHshEntryDest = HshTabLookupNameHash (lpwCharName, (UINT) (lpwCharEnd - lpwCharName), uHash, TRUE);
         if (lpHshEntryDest NE LPHSHENTRY_NONE)
             wcRes =lpHshEntryDest->htFlags.htChar;
         else
             wcRes =L'\0';
-
-        // Restore the original value
-        *lpwCharEnd = wcTmp;
     } // End IF/ELSE
 
     return wcRes;

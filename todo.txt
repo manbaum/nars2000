@@ -1,6 +1,5 @@
 TO DO:  General:  Important (pre-release)
 ---------------------------------------
-* Document MAKEFILE so others may build the product
 
 
 TO DO:  General:  Less Important (post-alpha)
@@ -19,12 +18,12 @@ TO DO:  General:  Less Important (post-alpha)
 * Allow SI Damage to be more forgiving
 * Allow [first][-][last] as arg to )LIB/VARS/FNS/OPS/NMS
 * Check for overflow on integer addition/multiplication
-* Check for 64-bit compile
 * Check for updates from the web:  nars2000.org/CurrentRelease.php
 * Need an installation program which also sets up file associations for .ws.nars
+* Implement a toolbar with buttons for common actions.
 * When editing a function, check to see if it's already open for editing
 * Write the function name in the function editor title.
-* When removing a tab, )RESET, terminate all threads, and then delete
+* When removing a workspace tab, )RESET, terminate all threads, and then delete
   all globals.
 * User preference to avoid saving Undo buffer with user-defined functions/operators.
 * Convert from ARRAY_CHAR (UCS-2) to ARRAY_CHAR8  for 0x00-0x7F,
@@ -37,12 +36,14 @@ TO DO:  General:  Less Important (post-alpha)
 * Port to Linux
 * Port to Mac/OS
 * Extend <aplchars> to <textarea> in FireFox, too.
+* Use gcov to eliminate unused routines.
 * Implement New Tab On Load off
 * Implement New Tab On Clear off
 * Implement fast 1st coord array catenation via GlobalRealloc if RefCnt = 1
 * Implement fast non-last coord Boolean functions
 * Implement these features:
 * ...       dynamic functions
+* ...       selective assignment
 * ...       user-defined magic functions for primitive functions
 * ...       user-defined magic functions for primitive operators
 * ...       user-defined magic functions for primitive datatypes
@@ -216,7 +217,6 @@ DONE:  General
 * ...       []Z as a system var
 * ...       L []TF R    (Transfer Form) (EAS)
 * ...       control structures
-* ...       selective assignment
 * ...         []MF R
 * ...       L []MF R
 * ...       syntax coloring
@@ -277,6 +277,8 @@ DONE:  General
 * In FE, implement Localize/Unlocalize name in Context Menu.
 * Implement status window for messages, char codes, etc.
 * Allow Alt-nnnn to enter an arbitrary Unicode characters
+* Document MAKEFILE so others may build the product
+* Check for 64-bit compile
 *
 
 

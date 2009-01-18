@@ -879,7 +879,7 @@ UBOOL HshTabSplitNextEntry_EM
     } // End IF
 
 #ifdef DEBUG
-////{ // ***DEBUG***
+////{
 ////    WCHAR wszTemp[1024];    // Ptr to temporary output area
 ////
 ////    wsprintfW (wszTemp,
@@ -887,7 +887,7 @@ UBOOL HshTabSplitNextEntry_EM
 ////               iCntMoved,
 ////               (iCntMoved EQ 1) ? L"y" : L"ies");
 ////    DbgMsgW (wszTemp);
-////} // ***DEBUG*** END
+////}
 #endif
 
     Assert (HshTabFrisk (bUseGlbHsh));

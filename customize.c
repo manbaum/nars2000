@@ -853,7 +853,9 @@ APLU3264 CALLBACK CustomizeDlgProc
             // Check to see if this is one of our menu items
             if (IDC_SYNTCLR_MI1 <= lpmis->itemID && lpmis->itemID <= IDC_SYNTCLR_MI_LAST)
             {
-                LPMEASUREITEMSTRUCT lpmis2 = lpmis;     // ***DEBUG***
+#ifdef DEBUG
+                LPMEASUREITEMSTRUCT lpmis2 = lpmis;
+#endif
                 HDC  hDCClient;                         // Client Area DC
                 SIZE sMenuItem;                         // Size of menu text
                 UINT itemIndex;                         // Menu item index

@@ -178,7 +178,7 @@ DEP:    DIR             \
 !    message ***File $(O)dep.txt is missing:  Creating it...
 !    if [if not exist $(O)  mkdir $(O)]
 !    endif
-!    if [$(NMAKE) /nologo /f makefile.dep O=$(O)]
+!    if [nmake /f makefile.dep O=$(O)]
 !    endif
 !endif
 

@@ -26,8 +26,8 @@
 
 
 #ifdef DEBUG
-extern HGLOBAL hGlbRC1,             // ***DEBUG***
-               hGlbRC2;             // ***DEBUG***
+extern HGLOBAL hGlbRC1,
+               hGlbRC2;
 #endif
 
 
@@ -62,10 +62,10 @@ int ChangeRefCntDir
             // Clear the ptr type bits
             hGlb = ClrPtrTypeDirAsGlb (hGlb);
 #ifdef DEBUG
-            if (hGlb EQ hGlbRC1)            // ***DEBUG***
+            if (hGlb EQ hGlbRC1)
                 DbgBrk ();
 
-            if (hGlb EQ hGlbRC2)            // ***DEBUG***
+            if (hGlb EQ hGlbRC2)
                 DbgBrk ();
 #endif
             // Lock the memory to get a ptr to it

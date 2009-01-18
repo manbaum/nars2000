@@ -27,8 +27,8 @@
 
 
 #ifdef DEBUG
-HGLOBAL hGlbRC1,                // ***DEBUG***
-        hGlbRC2;                // ***DEBUG***
+HGLOBAL hGlbRC1,
+        hGlbRC2;
 #endif
 
 

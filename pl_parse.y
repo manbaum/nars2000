@@ -1101,6 +1101,14 @@ StmtSing:
                                          } else
                                              YYERROR2
                                         }
+    |     Train EOL                     {DbgMsgWP (L"%%StmtSing:  EOL Train");
+                                         if (lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->plNameType = NAMETYPE_TRAIN;
+                                             YYACCEPT;              // Stop executing this line
+                                         } else
+                                             YYERROR2
+                                        }
     ;
 
 NameAnyVar:
@@ -4588,7 +4596,18 @@ LeftOper:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // ***FINISHME***
+
+
+
+
+
+
+
+
+
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                                                       &$2.tkToken);
                                              YYERROR2
                                          } else
                                              YYERROR2
@@ -4596,10 +4615,33 @@ LeftOper:
     ;
 
 Train:
-      LeftOper LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper LeftOper");
+      LeftOper error                    {DbgMsgWP (L"%%Train:  error LeftOper");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR2
+                                         } else
+                                             YYERROR2
+                                        }
+    | LeftOper LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper LeftOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // ***FINISHME***
+
+
+
+
+
+
+
+
+                                         } // End IF
+                                        }
+    | Train    error                    {DbgMsgWP (L"%%Train:  error Train");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
                                              YYERROR2
                                          } else
@@ -4609,10 +4651,15 @@ Train:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // ***FINISHME***
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
-                                             YYERROR2
+
+
+
+
+
+
+
+
+                                         } // End IF
                                         }
     ;
 
@@ -5744,10 +5791,8 @@ EXIT_TYPES ParseLine
         goto NORMAL_EXIT;
     } // End IF
 #ifdef DEBUG
-    { // ***DEBUG***
-        // Display the tokens so far
-        DisplayTokens (hGlbTknLine);
-    } // ***DEBUG*** END
+    // Display the tokens so far
+    DisplayTokens (hGlbTknLine);
 #endif
 
     // Save values in the LocalVars
@@ -6950,6 +6995,7 @@ PL_YYLEX_START:
             {
                 case '1':               // If the next token is a monadic operator, or
                 case 'F':               // If the next token is a function,
+                case 'T':               // If the next token is a train,
                                         //   then this token is a monadic operator
                     // Replace the function symbol with the
                     //   corresponding monadic operator symbol/index
@@ -7039,6 +7085,7 @@ PL_YYLEX_START:
             // Lookahead to see if this right grouping symbol surrounds
             //   a dyadic operator              (return '#'), or
             //   a function or monadic operator (return '>'), or
+            //   a train                        (return '%'), or
             //   a variable or niladic function (return ')')
 
             // Split cases based upon the lookahead result
@@ -7056,6 +7103,9 @@ PL_YYLEX_START:
                 case '0':               // Niladic function
                 case 'L':               // List
                     return ')';
+
+                case 'T':               // Train
+                    return '%';
 
                 case '?':               // SYNTAX ERROR
                     return UNK;
@@ -7083,6 +7133,7 @@ PL_YYLEX_START:
                 case '3':               //   an ambiguous operator, or
                 case 'A':               //   an assignment arrow, or
                 case 'F':               //   a function,
+                case 'T':               //   a train,
                     return '}';         //   then this token is an axis operator
 
                 case 'E':               // If the next token is EOL/EOS, or

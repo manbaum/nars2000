@@ -57,8 +57,8 @@ Downloads</h1>
     users.  The <b>map</b> files contain debugging information and are used
     by developers.  The <b>Release Notes</b> contain information about the
     corresponding release and are, generally, of most use to developers.  The
-    <b>Special Files</b> such as <b>qdebug.zip</b> and <b>gsldir.zip</b>
-    contain support files needed by developers.</p>
+    <b>Special Files</b> such as <b>qdebug.zip</b>, <b>misc.zip</b>, and
+    <b>gsldir.zip</b> contain support files needed by developers.</p>
 
   <form id="DisplayForm" action="">&nbsp;
     <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="DisplayTab ();" />

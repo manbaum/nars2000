@@ -864,6 +864,10 @@ LPPN_YYSTYPE PN_MakeBasePoint
 
                 // Shift over the power base
                 aplIntPowBase = _imul64 (aplIntPowBase, aplIntBase, &bRet);
+
+                // Ignore spurious overflow on last digit
+                bRet |= (uAcc EQ (uLen - 1));
+
 ////////////////if (!bRet)          // Not needed as we're at the end of the FOR loop
 ////////////////    break;
             } // End FOR

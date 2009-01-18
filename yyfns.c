@@ -184,7 +184,7 @@ void YYFree
     (LPPL_YYSTYPE lpYYRes)      // Ptr to the YYRes entry
 
 {
-#ifdef DEBUG                    // ***DEBUG***
+#ifdef DEBUG
     UINT         u;             // Index into lpMemPTD->YYRes
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -459,7 +459,7 @@ LPPL_YYSTYPE YYCopyFcn
 
         lpYYArgI = &lpYYArg[i];
 #endif
-        Assert (YYCheckInuse (&lpYYArg[i]));        // ***DEBUG***
+        Assert (YYCheckInuse (&lpYYArg[i]));
 
         // Calculate the earlier function base
         *lpYYBase = min (*lpYYBase, lpYYArg[i].lpYYFcnBase);
@@ -478,7 +478,7 @@ LPPL_YYSTYPE YYCopyFcn
             // Set the proper token count
             lpYYMem1->TknCount = TknCount;
 
-            Assert (YYCheckInuse (&lpYYArg[i]));    // ***DEBUG***
+            Assert (YYCheckInuse (&lpYYArg[i]));
         } else
         {
             // Get the function arg token
@@ -611,7 +611,7 @@ LPPL_YYSTYPE YYCopyFcn
 
                     // Copy to the destination
                     *lpYYMem++ = YYFcn;
-                    Assert (YYCheckInuse (&lpYYMem[-1]));   // ***DEBUG***
+                    Assert (YYCheckInuse (&lpYYMem[-1]));
                 } // End IF
             } else
             {
@@ -620,7 +620,7 @@ LPPL_YYSTYPE YYCopyFcn
                     YYCopy (lpYYMem++, lpYYCopy);
                 else
                     YYCopyFreeDst (lpYYMem++, lpYYCopy);
-                Assert (YYCheckInuse (&lpYYMem[-1]));   // ***DEBUG***
+                Assert (YYCheckInuse (&lpYYMem[-1]));
                 YYFree (lpYYCopy); lpYYCopy = NULL;
             } // End IF/ELSE
         } // End IF/ELSE
@@ -637,7 +637,7 @@ LPPL_YYSTYPE YYCopyFcn
 
 #ifdef DEBUG
     if (bResUsed)
-        Assert (YYCheckInuse (lpYYMem));            // ***DEBUG***
+        Assert (YYCheckInuse (lpYYMem));
 #endif
     return lpYYMem;
 } // End YYCopyFcn

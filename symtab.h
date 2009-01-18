@@ -183,15 +183,17 @@ typedef enum tagIMM_TYPES
 // Name types
 typedef enum tagNAME_TYPES
 {
-    NAMETYPE_UNK = 0,       // 00:  Name is unknown
-    NAMETYPE_VAR,           // 01:  ...     a variable
-    NAMETYPE_FN0,           // 02:  ...       niladic function
-    NAMETYPE_FN12,          // 03:  ...       monadic/dyadic/ambivalent function
-    NAMETYPE_OP1,           // 04:  ...       monadic operator
-    NAMETYPE_OP2,           // 05:  ...       dyadic operator
-    NAMETYPE_OP3,           // 06:  ...       ambiguous function/operator
-    NAMETYPE_FILL1,         // 07:  ...       filler
-    NAMETYPE_LST,           // 08:  ...       list
+    NAMETYPE_UNK = 0,       // 00 (0000):  Name is unknown
+    NAMETYPE_VAR,           // 01 (0001):  ...     V variable
+    NAMETYPE_FN0,           // 02 (0010):  ...     F niladic function
+    NAMETYPE_FN12,          // 03 (0011):  ...     F monadic/dyadic/ambivalent function
+    NAMETYPE_OP1,           // 04 (0100):  ...     O monadic operator
+    NAMETYPE_OP2,           // 05 (0101):  ...     O dyadic operator
+    NAMETYPE_OP3,           // 06 (0110):  ...     F ambiguous function/operator
+    NAMETYPE_FILL1,         // 07 (0111):  ...       filler
+    NAMETYPE_LST,           // 08 (1000):  ...       list
+    NAMETYPE_FILL2,         // 09 (1001):  ...       filler
+    NAMETYPE_TRAIN,         // 0A (1010):  ...     F train
                             // 09-0F:  Available entries (4 bits)
 } NAME_TYPES;
 
@@ -200,10 +202,10 @@ typedef enum tagNAME_TYPES
 //   NAMETYPEMASK_FN and NAMETYPEMASK_OP, and
 //   the macros <IsNameTypeXXX> in <macros.h>.
 
-#define NAMETYPE_STRING     "?VNF123?L"
-//                              0       1       2       3       4       5       6       7       8
-#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2",  "Op3",  "???",  "Lst"}
-#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2", L"Op3", L"???", L"Lst"}
+#define NAMETYPE_STRING     "?VNF123?L?T"
+//                              0       1       2       3       4       5       6       7       8       9       A
+#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2",  "Op3",  "???",  "Lst",  "???",  "Trn"}
+#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2", L"Op3", L"???", L"Lst", L"???", L"Trn"}
 
 // The above enum is constructed so as to allow the following masks to be used:
 #define NAMETYPEMASK_FN     0x02    // Name is a function

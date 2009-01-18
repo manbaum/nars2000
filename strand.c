@@ -1284,7 +1284,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+    Assert (YYCheckInuse (lpYYRes));
 
     // Save the base of this strand
     lpYYStrand              =
@@ -1311,7 +1311,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         lpYYBase = lpYYArg->lpYYFcnBase;
         lpYYRes->lpYYFcnBase = NULL;            // No longer valid
 
-        Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+        Assert (YYCheckInuse (lpYYRes));
 
         goto NORMAL_EXIT;
     } // End IF
@@ -1342,7 +1342,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
-    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+    Assert (YYCheckInuse (lpYYRes));
 
     // Lock the memory to get a ptr to it
     lpMemStr = MyGlobalLock (hGlbStr);
@@ -1363,7 +1363,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // Use the same time as the last modification time
     lpHeader->ftLastMod = lpHeader->ftCreation;
 
-    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+    Assert (YYCheckInuse (lpYYRes));
 
     // Skip over the header to the data (PL_YYSTYPEs)
     lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
@@ -1437,7 +1437,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     MyGlobalUnlock (hGlbStr); lpMemStr = lpYYMemData = lpYYMemStart = NULL;
 #undef  lpHeader
 
-    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+    Assert (YYCheckInuse (lpYYRes));
 
     Assert (TknCount EQ uActLen);
 
@@ -1451,7 +1451,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 NORMAL_EXIT:
     lpYYRes->lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_FCN] = lpYYBase;
 
-    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+    Assert (YYCheckInuse (lpYYRes));
 
 #ifdef DEBUG
     // Display the strand stack

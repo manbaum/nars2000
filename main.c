@@ -2781,48 +2781,51 @@ UBOOL InitInstance
             if (!CopyFileW (wszFntDPFE, wszTemp, TRUE))
             {
                 DWORD dwError = GetLastError ();
+                WCHAR wszError[1024];
 
-                // See if the file is not present in the executable's directory
-                if (dwError EQ ERROR_FILE_NOT_FOUND)
+                // Split cases based upon the error code
+                switch (dwError)
                 {
-                    MessageBoxW (NULL,
-                                 L"The default APL font <" DEF_APLFONT_FILE L"> is not in the same directory as the program.  Please copy it there and retry.",
-                                 lpwszAppName,
-                                 MB_OK | MB_ICONERROR);
-                    return FALSE;
-                } else
-                // If the file is not already present in the target dir, ...
-                if (dwError NE ERROR_FILE_EXISTS)
-                {
-                    WCHAR wszError[1024];
+                    case ERROR_FILE_EXISTS:
+                        // Ask if we should overwrite it
+                        if (MessageBoxW (NULL,
+                                         L"The default APL font <" DEF_APLFONT_FILE L"> is already in the Fonts folder:  Overwrite it?",
+                                         lpwszAppName,
+                                         MB_YESNO | MB_ICONQUESTION) EQ IDYES)
+                        {
+                            // Copy the file to the Fonts folder with Overwrite
+                            CopyFileW (wszFntDPFE, wszTemp, FALSE);
 
-                    // Find out why it failed
-                    FormatMessageW (FORMAT_MESSAGE_FROM_SYSTEM, // Source and processing options
-                                    NULL,                       // Pointer to  message source
-                                    dwError,                    // Requested message identifier
-                                    0,                          // Language identifier for requested message
-                                    wszError,                   // Pointer to message buffer
-                                    countof (wszError),         // Maximum size of message buffer
-                                    NULL);                      // Address of array of message inserts
-                    MessageBoxW (NULL,
-                                 wszError,
-                                 lpwszAppName,
-                                 MB_OK | MB_ICONERROR);
-                    return FALSE;
-                } // End IF
+                            // Respecify the DPFE of the file to install
+                            lstrcpyW  (wszFntDPFE, wszTemp);
+                        } // End IF
 
-                // Ask it we should overwrite it
-                if (MessageBoxW (NULL,
-                                 L"The default APL font <" DEF_APLFONT_FILE L"> is already in the Fonts folder:  Overwrite it?",
-                                 lpwszAppName,
-                                 MB_YESNO | MB_ICONQUESTION) EQ IDYES)
-                {
-                    // Copy the file to the Fonts folder with Overwrite
-                    CopyFileW (wszFntDPFE, wszTemp, FALSE);
+                        break;
 
-                    // Respecify the DPFE of the file to install
-                    lstrcpyW  (wszFntDPFE, wszTemp);
-                } // End IF
+                    case ERROR_FILE_NOT_FOUND:
+                        // Tell 'em to copy the font to the program folder
+                        MessageBoxW (NULL,
+                                     L"The default APL font <" DEF_APLFONT_FILE L"> is not in the same folder as " WS_APPNAME  L".exe:  Please copy it there and retry.",
+                                     lpwszAppName,
+                                     MB_OK | MB_ICONERROR);
+                        return FALSE;
+
+                    default:
+                        // Find out why it failed
+                        FormatMessageW (FORMAT_MESSAGE_FROM_SYSTEM, // Source and processing options
+                                        NULL,                       // Pointer to  message source
+                                        dwError,                    // Requested message identifier
+                                        0,                          // Language identifier for requested message
+                                        wszError,                   // Pointer to message buffer
+                                        countof (wszError),         // Maximum size of message buffer
+                                        NULL);                      // Address of array of message inserts
+                        // Tell 'em why it failed
+                        MessageBoxW (NULL,
+                                     wszError,
+                                     lpwszAppName,
+                                     MB_OK | MB_ICONERROR);
+                        return FALSE;
+                } // End SWITCH
             } else
                 // Respecify the DPFE of the file to install
                 lstrcpyW  (wszFntDPFE, wszTemp);
@@ -2832,7 +2835,7 @@ UBOOL InitInstance
         if (AddFontResourceW (wszFntDPFE) EQ 0)
         {
             MessageBoxW (NULL,
-                         L"Unable to add the default APL font resource <" DEF_APLFONT_FILE L">.  Copy it to the same directory as " WS_APPNAME L".exe and retry.",
+                         L"Unable to add the default APL font resource <" DEF_APLFONT_FILE L">.  Please copy it to the same folder as " WS_APPNAME L".exe and retry.",
                          lpwszAppName,
                          MB_OK | MB_ICONERROR);
             return FALSE;

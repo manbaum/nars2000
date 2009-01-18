@@ -4442,7 +4442,7 @@ WCHAR CharTrans
 
         default:
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-        { // ***DEBUG***
+        {
             WCHAR wszTemp[64];
 
             wsprintfW (wszTemp,
@@ -4450,7 +4450,7 @@ WCHAR CharTrans
                        wchOrig,
                        wchOrig);
             DbgMsgW (wszTemp);
-        } // ***DEBUG*** END
+        }
 #endif
             return COL_UNK;
     } // End SWITCH

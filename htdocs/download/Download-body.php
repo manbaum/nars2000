@@ -127,6 +127,7 @@ Downloads</h1>
                     $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
                     $Class  = $Ext;
                     $Notes  = "Notes-$Rel.txt";
+                    $Load   = "loadfile.php?File=binaries/$File";
 
                     // Get the corresponding release
                     $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
@@ -144,7 +145,7 @@ Downloads</h1>
                    . (($Class == 'zip')
                    ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
                    :   "        <td class=\"notes\"></td>\n")
-                   .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
+                   .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"$Load\">Download</a></td>\n"
                    .   "      </tr>\n";
             } // End IF
         } // End FOREACH

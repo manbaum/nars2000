@@ -95,11 +95,11 @@
                 IgnoreEmbeddedIDL="true"
                 GenerateDebugInformation="true"
                 GenerateMapFile="true"
+                SubSystem="2"
                 LargeAddressAware="0"
                 RandomizedBaseAddress="1"
-                DataExecutionPrevention="0"
+                DataExecutionPrevention="2"
                 TargetMachine="1"
-                AllowIsolation="false"
             />
             <Tool
                 Name="VCALinkTool"
@@ -132,7 +132,6 @@
             ConfigurationType="1"
             CharacterSet="2"
             DeleteExtensionsOnClean="*.output;*.pro;*.obj;*.ilk;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.pgc;*.pgd;*.meta;$(TargetPath)"
-            WholeProgramOptimization="1"
             >
             <Tool
                 Name="VCPreBuildEventTool"
@@ -162,12 +161,14 @@
             />
             <Tool
                 Name="VCCLCompilerTool"
+                Optimization="1"
+                FavorSizeOrSpeed="2"
                 AdditionalIncludeDirectories=".\;.\Release;.\qdebug"
                 PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;_X86_"
                 StringPooling="true"
                 MinimalRebuild="false"
                 BasicRuntimeChecks="0"
-                RuntimeLibrary="2"
+                RuntimeLibrary="0"
                 BufferSecurityCheck="false"
                 RuntimeTypeInfo="false"
                 BrowseInformation="0"
@@ -196,12 +197,10 @@
                 IgnoreEmbeddedIDL="true"
                 GenerateDebugInformation="true"
                 GenerateMapFile="true"
+                SubSystem="2"
                 LargeAddressAware="0"
-                GenerateDebugInformation="true"
-                OptimizeReferences="2"
-                EnableCOMDATFolding="2"
                 RandomizedBaseAddress="1"
-                DataExecutionPrevention="1"
+                DataExecutionPrevention="2"
                 TargetMachine="1"
             />
             <Tool
@@ -321,7 +320,7 @@
                     >
                     <Tool
                         Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt"
+                        AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt;U:\include"
                         IgnoreStandardIncludePath="true"
                     />
                 </FileConfiguration>
@@ -330,7 +329,7 @@
                     >
                     <Tool
                         Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt"
+                        AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt;U:\include"
                         IgnoreStandardIncludePath="true"
                     />
                 </FileConfiguration>

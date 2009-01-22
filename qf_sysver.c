@@ -22,8 +22,10 @@
 
 #define STRICT
 #include <windows.h>
-#include <time.h>
 #include "headers.h"
+
+LPWCHAR aDaysOfWeek[] = {L"Sun", L"Mon", L"Tue", L"Wed", L"Thu", L"Fri", L"Sat"};
+LPWCHAR aMonths    [] = {L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun", L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"};
 
 
 //***************************************************************************
@@ -66,7 +68,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 
     // Define maximum length of []SYSVER
 #define SYSVER  L"000.000.0000.00799  Tue Jan 16 17:43:45 2007  Win/32"
-#define SYSVER_NELM    countof (SYSVER)
+#define SYSVER_NELM    strcountof (SYSVER)
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
@@ -106,7 +108,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     *lpw++ = L' ';      // Blank separators
     *lpw++ = L' ';
 
-    // Open the executable file so we can read its internal timestamp
+    // Open the executable file so we get its last write time
     hFile =
       CreateFileW (wszAppDPFE,              // lpwFileName
                    GENERIC_READ,            // dwDesiredAccess
@@ -117,37 +119,45 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
                    NULL);                   // hTemplateFile
     if (hFile NE INVALID_HANDLE_VALUE)
     {
-        DWORD              dwTemp,
-                           dwCount;
-        IMAGE_DOS_HEADER   idh;
-        IMAGE_NT_HEADERS32 inth;
+        FILETIME   ftLastWrite;
+        SYSTEMTIME systemTime;
 
-        // Set the file pointer to read the e_lfanew value
-        SetFilePointer (hFile, (APLU3264) (((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh), NULL, FILE_BEGIN);
+        // Get the file's last write time
+        // Note that the file's creation time need not be the
+        //   same as the file's last write time.  I think the
+        //   linker might sometimes rewrite the .exe file
+        //   instead of recreating it.
+        GetFileTime (hFile, NULL, NULL, &ftLastWrite);
 
-        // Read in the e_lfanew value
-        ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
+        // Convert the file's last write time to system time
+        FileTimeToSystemTime (&ftLastWrite, &systemTime);
 
-        // Add in the distance to the file timestamp
-        dwTemp += (APLU3264) (((LPBYTE) &inth.FileHeader.TimeDateStamp) - (LPBYTE) &inth);
-
-        // Set file pointer to the file timestamp
-        SetFilePointer (hFile, dwTemp, NULL, FILE_BEGIN);
-
-        // Read in the file timestamp
-        ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
-
-        // Get the time in ASCII
-        lstrcpyW (lpw, ConvTimeW (dwTemp));
-
+        // Format the system time as
+        //    "Wed Jan 02 02:03:55 1980"
+        wsprintfW (lpw,
+                   L"%s %s %02u %02u:%02u:%02u %u",
+                   aDaysOfWeek[systemTime.wDayOfWeek],
+                   aMonths[systemTime.wMonth - 1],
+                   systemTime.wDay,
+                   systemTime.wHour,
+                   systemTime.wMinute,
+                   systemTime.wSecond,
+                   systemTime.wYear);
         // Skip to the trailing zero
         lpw += lstrlenW (lpw);
         *lpw++ = L' ';    // Blank separators
         *lpw++ = L' ';
 
+#ifdef _WIN32
 #define SYSTYPE     L"Win/32"
+#elif defined (_WIN64)
+#define SYSTYPE     L"Win/64"
+#else
+#error Need code for this architecture.
+#endif
 
-        CopyMemory (lpw, SYSTYPE, sizeof (SYSTYPE) - 1 * sizeof (APLCHAR));
+        // Copy to the result
+        CopyMemory (lpw, SYSTYPE, strcountof (SYSTYPE) * sizeof (APLCHAR));
 
         // We no longer need this handle
         CloseHandle (hFile); hFile = NULL;
@@ -205,27 +215,6 @@ WSFULL_EXIT:
     return NULL;
 } // End SysFnSYSVER_EM_YY
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $ConvTimeW
-//
-//  Convert to ASCII string in the form of
-//    Wed Jan 02 02:03:55 1980
-//***************************************************************************
-
-LPWSTR ConvTimeW
-    (DWORD time)
-{
-    LPWSTR lpw;
-
-    lpw = _wasctime (gmtime ((const time_t *) &time));
-
-    // Zap the "\n" so it prints on one line
-    lpw[lstrlenW (lpw) - 1] = L'\0';
-
-    return lpw;
-} // End ConvTimeW
 
 
 //***************************************************************************

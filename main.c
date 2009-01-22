@@ -2661,7 +2661,7 @@ UBOOL InitApplication
     wcw.hInstance       = hInstance;
     wcw.hIcon           = NULL;
     wcw.hIconSm         = NULL;
-    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_IBEAM));
     wcw.hbrBackground   = (HBRUSH) (COLOR_WINDOW + 1);
     wcw.lpszMenuName    = NULL;
     wcw.lpszClassName   = LECWNDCLASS;

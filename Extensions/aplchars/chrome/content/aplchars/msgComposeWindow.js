@@ -71,11 +71,9 @@ var aplButton = document.getElementById (aplButtonId);
         aplButton = document.getElementById (aplButtonId);
     } // End IF
 
-    try
-    {
-        // Get the toolbar iconsize
+    // Get the toolbar iconsize
+    if (aplButton.parentNode.attributes["iconsize"])
         iconsize = aplButton.parentNode.attributes["iconsize"].value;
-    } catch (e) {}
 
     // Set the image to display depending upon the focus and enabled states,
     //   the button ID and the iconsize

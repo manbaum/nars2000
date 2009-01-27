@@ -144,7 +144,7 @@ AlphaInt:
 Decimal:
               '.' Digit             {DbgMsgWP (L"%%Decimal:  '.' Digit");
                                      // Mark starting offset
-                                     $2.uNumOff = lppnLocalVars->uNumAcc;
+                                     $1.uNumOff = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the decimal point
                                      PN_NumAcc (lppnLocalVars, '.');
@@ -152,7 +152,22 @@ Decimal:
                                      // Accumulate the digit
                                      PN_NumAcc (lppnLocalVars, $2.chCur);
 
-                                     $$ = $2;
+                                     $$ = $1;
+                                    }
+    | '-'     '.' Digit             {DbgMsgWP (L"%%Decimal:  '-' '.' Digit");
+                                     // Mark starting offset
+                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+
+                                     // Accumulate the negative sign
+                                     PN_NumAcc (lppnLocalVars, '-');
+
+                                     // Accumulate the decimal point
+                                     PN_NumAcc (lppnLocalVars, '.');
+
+                                     // Accumulate the digit
+                                     PN_NumAcc (lppnLocalVars, $3.chCur);
+
+                                     $$ = $1;
                                     }
     | Integer '.' Digit             {DbgMsgWP (L"%%Decimal:  Integer '.' Digit");
                                      // Accumulate the decimal point
@@ -528,10 +543,10 @@ PiPoint:
     ;
 
 ExpPoint:
-      DecPoint 'e' DecPoint         {DbgMsgWP (L"%%ExpPoint:  DecPoint 'e' DecPoint");
+      DecPoint 'e' Integer          {DbgMsgWP (L"%%ExpPoint:  DecPoint 'e' Integer");
                                      $$ = *PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
                                     }
-    | DecPoint 'E' DecPoint         {DbgMsgWP (L"%%ExpPoint:  DecPoint 'E' DecPoint");
+    | DecPoint 'E' Integer          {DbgMsgWP (L"%%ExpPoint:  DecPoint 'E' Integer");
                                      $$ = *PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
                                     }
     ;

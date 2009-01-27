@@ -10,7 +10,7 @@
        border="0"
        title="Get NARS!"
        alt="GetNARS!" /></a><br />
-      <font size="-2">&copy; NARS2000 2006-8</font>
+      <font size="-2">&copy; NARS2000 2006-9</font>
     </td>
     <td>
       <a href="http://www.spreadfirefox.com/?q=affiliates&amp;id=43096&amp;t=64"
@@ -55,7 +55,22 @@ var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "htt
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 </script>
 <script type="text/javascript">
-try {
+<!--
+function PageTrack (File)
+{
+    try
+    {
+        pageTracker._trackPageview (File);
+    } catch (err) {}
+
+    return true;
+} // End PageTrack
+
+try
+{
 var pageTracker = _gat._getTracker("UA-7084131-1");
-pageTracker._trackPageview();
-} catch(err) {}</script>
+} catch(err) {}
+
+PageTrack ();
+-->
+</script>

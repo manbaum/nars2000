@@ -2362,28 +2362,27 @@ UBOOL CALLBACK UpdatesDlgProc
             WCHAR wszTemp[512];
 
 #define lpUpdatesDlgStr     ((LPUPDATESDLGSTR) lParam)
-
             // Compare the two strings
             switch (lstrcmpW (lpUpdatesDlgStr->lpWebVer, lpUpdatesDlgStr->lpFileVer))
             {
                 case -1:            // Actual version is later (must be running an unreleased version)
                     // Format the text
                     wsprintfW (wszTemp,
-                               L"The version you are running is newer than the most current version on the website and there is no need to update your version.",
+                               L"The version you are running (%s) is newer than the most current version (%s) on the website and there is no need to update your version.",
                                lpUpdatesDlgStr->lpFileVer,
                                lpUpdatesDlgStr->lpWebVer);
                     break;
 
                 case 0:             // Same version (nothing to do)
                     wsprintfW (wszTemp,
-                               L"The version you are running is the same as the most current version on the website and there is no need to update your version.",
+                               L"The version you are running (%s) is the same as the most current version (%s) on the website and there is no need to update your version.",
                                lpUpdatesDlgStr->lpFileVer,
                                lpUpdatesDlgStr->lpWebVer);
                     break;
 
                 case 1:             // New version is available for download
                     wsprintfW (wszTemp,
-                               L"The version you are running is the older than the most current version on the website -- please download the latest version from ...",
+                               L"The version you are running (%s) is the older than the most current version (%s) on the website -- please download the latest version from ...",
                                lpUpdatesDlgStr->lpFileVer,
                                lpUpdatesDlgStr->lpWebVer);
                     break;
@@ -2391,77 +2390,15 @@ UBOOL CALLBACK UpdatesDlgProc
                 defstop
                     break;
             } // End SWITCH
+#undef  lpUpdatesDlgStr
 
             // Write out the file & web version strings
             SetDlgItemTextW (hDlg, IDC_VERACTION, wszTemp);
 
-            wsprintfW (wszTemp,
-                       L"The version you are running is %s.",
-                       lpUpdatesDlgStr->lpFileVer);
-            SetDlgItemTextW (hDlg, IDC_FILEVER  , wszTemp);
-
-            wsprintfW (wszTemp,
-                       L"The latest released version is %s.",
-                       lpUpdatesDlgStr->lpWebVer);
-            SetDlgItemTextW (hDlg, IDC_WEBVER   , wszTemp);
-
-#undef  lpUpdatesDlgStr
-
             CenterWindow (hDlg);    // Reposition the window to the center of the screen
-
-////        // Get the IDC_LINK window handle
-////        hWndStatic = GetDlgItem (hDlg, IDC_LINK);
-////
-////        // Subclass the IDC_LINK control
-////        //   so we can handle WM_LBUTTONDOWN
-////        (HANDLE_PTR) lpfnOldStaticWndProc =
-////          SetWindowLongPtrW (hWndStatic,
-////                             GWL_WNDPROC,
-////                             (APLU3264) (HANDLE_PTR) (WNDPROC) &LclStaticWndProc);
-////        // Set the cursor for the static control to a hand
-
-
 
             return TRUE;            // Use the focus in wParam
         } // End WM_INITDIALOG
-
-        case WM_CTLCOLORSTATIC:     // hdc = (HDC) wParam;   // Handle of display context
-                                    // hwnd = (HWND) lParam; // Handle of static control
-#define hDC     ((HDC)  wParam)
-#define hWnd    ((HWND) lParam)
-
-////        // We handle IDC_LINK static window only
-////        if (hWnd EQ hWndStatic)
-////        {
-////            LOGFONTW lf;
-////
-////            // Set the text color
-////            SetTextColor (hDC, DEF_SCN_BLUE);
-////
-////            // Set the background text color
-////            SetBkColor (hDC, GetSysColor (COLOR_BTNFACE));
-////
-////            // Get the font handle
-////            hFont = (HFONT) SendMessageW (hWnd, WM_GETFONT, 0, 0);
-////
-////            // Get the LOGFONTW structure for the font
-////            GetObjectW (hFont, sizeof (lf), &lf);
-////
-////            // Change to an underlined font
-////            lf.lfUnderline = TRUE;
-////
-////            // Create a new font, now underlined
-////            hFont = MyCreateFontIndirectW (&lf);
-////
-////            // Select it into the DC
-////            SelectObject (hDC, hFont);
-////
-////            // Return handle of brush for background
-////            return (int) CreateSolidBrush (GetSysColor (COLOR_BTNFACE));
-////        } else
-                break;
-#undef  hWnd
-#undef  hDC
 
         case WM_CLOSE:
             // If it's still around, delete the font we created
@@ -2469,12 +2406,6 @@ UBOOL CALLBACK UpdatesDlgProc
             {
                 MyDeleteObject (hFont); hFont = NULL;
             } // End IF
-
-////        // Restore the old WndProc
-////        SetWindowLongPtrW (hWndStatic,
-////                           GWL_WNDPROC,
-////                           (APLU3264) (HANDLE_PTR) (WNDPROC) lpfnOldStaticWndProc);
-////        lpfnOldStaticWndProc = NULL;
 
             EndDialog (hDlg, TRUE); // Quit this dialog
 

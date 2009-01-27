@@ -1,4 +1,4 @@
-<!ENTITY aplchars.labelON  "APL Chars ON">
-<!ENTITY aplchars.labelOFF "APL Chars OFF">
+<!ENTITY aplchars.labelON  "APL Translate ON">
+<!ENTITY aplchars.labelOFF "APL Translate OFF">
 <!ENTITY aplchars.tipON    "Click to disable translation">
 <!ENTITY aplchars.tipOFF   "Click to enable translation">

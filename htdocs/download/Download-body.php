@@ -61,7 +61,7 @@ Downloads</h1>
     <b>gsldir.zip</b> contain support files needed by developers.</p>
 
   <form id="DisplayForm" action="">&nbsp;
-    <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="DisplayTab ();" />
+    <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="return DisplayTab ();" />
   </form>
 
   <table border="0" cellspacing="0" summary="">
@@ -127,7 +127,6 @@ Downloads</h1>
                     $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
                     $Class  = $Ext;
                     $Notes  = "Notes-$Rel.txt";
-                    $Load   = "loadfile.php?File=binaries/$File";
 
                     // Get the corresponding release
                     $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
@@ -143,9 +142,9 @@ Downloads</h1>
                    .   "        <td align=\"right\">$Size</td>\n"
                    .   "        <td>$Ext</td>\n"
                    . (($Class == 'zip')
-                   ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\">$CurRel</a></td>\n"
+                   ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$CurRel</a></td>\n"
                    :   "        <td class=\"notes\"></td>\n")
-                   .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"$Load\">Download</a></td>\n"
+                   .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\" onclick=\"return PageTrack ('binaries/$File');\">Download</a></td>\n"
                    .   "      </tr>\n";
             } // End IF
         } // End FOREACH
@@ -154,7 +153,7 @@ Downloads</h1>
         ?>
         </table>
       </td>
-      <td class="recommended" valign="top"><br /><b>&nbsp;&larr;&nbsp;Recommended</b></td>
+      <td class="recommended" valign="top"><br /><b>&nbsp;&lArr;&nbsp;Recommended</b></td>
     </tr>
   </table>
 
@@ -184,6 +183,8 @@ Downloads</h1>
 
         // Toggle the state
         gAllFiles = !gAllFiles;
+
+        return false;
     } // End DisplayTab
 
     function ToggleClassNotes (rows)

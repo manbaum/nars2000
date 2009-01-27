@@ -287,6 +287,7 @@ Welcome to NARS2000</h1>
     <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
     <li>Extended precision numbers (e.g., <span class="APL">12345x</span>)</li>
     <li>Datatypes user extensible via user-defined APL functions</li>
+    <li>Array predicates (a la Bernecky) for other special arrays</li>
   </ul>
 </div>
 
@@ -295,7 +296,8 @@ Welcome to NARS2000</h1>
 
   <h3>Current Miscellaneous Features</h3>
   <ul>
-    <li>Workspace size limited only by the available virtual memory (disk space)</li>
+    <li>Workspace size limited only by the available virtual memory
+      (disk space) and address space</li>
     <li>Multiple workspaces may be open at the same time
       and switched between via Tabs</li>
     <li>Workspaces saved as plain text ASCII files</li>
@@ -341,6 +343,7 @@ Welcome to NARS2000</h1>
       this also allows comments within a line</li>
     <li>Idiom recognition at tokenization time</li>
     <li>Language bar</li>
+    <li>64-bit executable</li>
   </ul>
 </div>
 
@@ -432,7 +435,7 @@ Welcome to NARS2000</h1>
             This is one means by which developers may checkout and commit changes to
             the code.
             Using a version control program, the source code may be viewed using
-            the URL <a class="linkleft" href="svn://svn.nars2000.org/nars2000">svn://svn.nars2000.org/nars2000</a>
+            the URL <a class="linkleft" href="svn://svn.nars2000.org/nars2000/trunk">svn://svn.nars2000.org/nars2000/trunk</a>
             (valid only if you have a version control program on your system).
           </li>
 
@@ -494,9 +497,12 @@ Welcome to NARS2000</h1>
     attractive APL font such as <a class="ttfLeft"
     title="If the APL characters on this page don't display correctly, ..."
     href="http://www.vector.org.uk/resource/simpl02.zip">SImPL (Unicode)</a>,
-    or <a class="ttfLeft"
-          title="If the APL characters on this page don't display correctly, ..."
-          href="http://www.vector.org.uk/resource/apl385.zip">APL385 Unicode</a>.
+    <a class="ttfLeft"
+       title="If the APL characters on this page don't display correctly, ..."
+       href="http://www.vector.org.uk/resource/apl385.zip">APL385 Unicode</a>,
+    or any of the other Unicode APL fonts (assuming they have all of the
+    <a class="linkleft" href="http://wiki.nars2000.org/index.php/APL_Font">extra
+    APL glyphs</a> used on this site).
     Moreover, your choice of browser can materially affect how the APL
     characters appear.  Either <a class="linkleft"
     href="http://www.getfirefox.com">Firefox</a> or Internet Explorer
@@ -509,7 +515,7 @@ Welcome to NARS2000</h1>
   <p>This project was started by
   <script type="text/javascript"
           src="/email.cgi?n=bsmith&amp;d=sudleyplace.com&amp;t=Bob%20Smith&amp;class=mailright"></script>
-  and is &copy; 2006-2008, Sudley Place Software.  Here's a link to some of my other
+  and is &copy; 2006-2009, Sudley Place Software.  Here's a link to some of my other
   <a class="linkleft" href="http://www.sudleyplace.com/APL/projects.html">APL-related pages</a>.</p>
 </div>
 

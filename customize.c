@@ -538,7 +538,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // []PP
                         //***************************************************************
 
-                        // Get the []IO UpDown Control window handle
+                        // Get the []PP UpDown Control window handle
                         hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_PP_UD);
 
                         // Set the range
@@ -551,7 +551,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // []PW
                         //***************************************************************
 
-                        // Get the []IO UpDown Control window handle
+                        // Get the []PW UpDown Control window handle
                         hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_PW_UD);
 
                         // Set the range

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -235,29 +235,34 @@ UBOOL InAsciiFile_EM
     // Copy data from char to WCHAR
     //   converting WIF-specific chars as we go
     for (uLen = 0; uLen < dwA2AFileSize; uLen++)
-#define lpwView     ((LPUCHAR) hA2AView)
-    switch (lpwView[uLen])
+#define lpView      ((LPUCHAR) hA2AView)
+    switch (lpView[uLen])
     {
         case '#':
-            if (uLen && lpwView[uLen - 1] NE L'{')
+            if (uLen && lpView[uLen - 1] NE L'{')
                 lpwA2AView[uLen] = UTF16_QUAD;
             else
-                lpwA2AView[uLen] = lpwView[uLen];
+                lpwA2AView[uLen] = lpView[uLen];
             break;
 
         case '@':
-            if (uLen && lpwView[uLen - 1] NE L'{')
+            if (uLen && lpView[uLen - 1] NE L'{')
                 lpwA2AView[uLen] = UTF16_LAMP;
             else
-                lpwA2AView[uLen] = lpwView[uLen];
+                lpwA2AView[uLen] = lpView[uLen];
+            break;
+
+        case 0x1A:
+            lpwA2AView[uLen] = L'\r';
+
             break;
 
         default:
-            lpwA2AView[uLen] = lpwView[uLen];
+            lpwA2AView[uLen] = lpView[uLen];
 
             break;
     } // End FOR/SWITCH
-#undef  lpwView
+#undef  lpView
 
     // Count the # lines (including the header),
     //   replace the CR,LF sequence with a zero, and

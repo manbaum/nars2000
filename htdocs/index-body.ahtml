@@ -278,7 +278,7 @@ Welcome to NARS2000</h1>
   <h3>Wish List of Datatypes</h3>
   <ul>
     <li>Unicode support via multiple character widths
-      (8-, 16-, and 32-bits) instead of the current 16-bits</li>
+      (8-, 16-, and 32-bits) instead of the current 16-bit fixed width</li>
     <li>Complex numbers (e.g., <span class="APL">2i3.4</span>
       or <span class="APL">2J3.4</span>)</li>
     <li>Quaternions (e.g., <span class="APL">2i3j4ij5</span>
@@ -368,7 +368,8 @@ Welcome to NARS2000</h1>
 
     <p>At the moment, NARS2000 is designed to run on Windows only,
       versions 2000, XP, and Vista.  However, it is free software,
-      so you are invited to help extend its reach.
+      so you are invited to help extend its reach.  In particular,
+      I'd like to make it work on *nix and Mac OS systems.
     </p>
 </div>
 

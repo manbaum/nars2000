@@ -693,7 +693,7 @@ UBOOL ParsePointNotation
 //***************************************************************************
 //  $PN_NumAcc
 //
-//  Assumulate another digit into the number
+//  Accumulate another digit into the number
 //***************************************************************************
 
 void PN_NumAcc
@@ -701,7 +701,11 @@ void PN_NumAcc
      char          chCur)               // The next digit
 
 {
+    // Save the digit
     lppnLocalVars->lpszNumAccum[lppnLocalVars->uNumAcc++] = chCur;
+
+    // Ensure properly terminated
+    lppnLocalVars->lpszNumAccum[lppnLocalVars->uNumAcc  ] = '\0';
 } // End PN_NumAcc
 
 

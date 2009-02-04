@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -188,7 +188,7 @@
 #define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
 
 // Define macro for detecting permuation vectors
-#define IsPermVector(lpHeader)          (lpHeader->PV0 || lpHeader->PV1)
+#define IsPermVector(lpHeader)          ((lpHeader NE NULL) && (lpHeader->PV0 || lpHeader->PV1))
 
 // Define macro for detecting scalars
 #define IsScalar(ArrRank)               ((ArrRank) EQ 0)
@@ -255,13 +255,13 @@
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)                       ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeDirAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeDirAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeDirAsFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeInd(lpMem)                       ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
-#define ClrPtrTypeIndAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
-#define ClrPtrTypeIndAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
+#define ClrPtrTypeDir(lpMem)                     ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeDirAsSym(lpMem)   (LPSYMENTRY) ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeDirAsGlb(lpMem)   (HGLOBAL)    ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeDirAsFcn(lpMem)   (LPPRIMFNS)  ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeInd(lpMem)                     ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
+#define ClrPtrTypeIndAsSym(lpMem)   (LPSYMENTRY) ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
+#define ClrPtrTypeIndAsGlb(lpMem)   (HGLOBAL)    ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.
@@ -269,45 +269,45 @@
 //        IN THE DEBUG VERSION FROM THE NON-DEBUG VERSION IF THE ARGUMENT HAS
 //        ANY SIDE EFFECTS SUCH AS PRE- OR POST-INCREMENT/DECREMENT, OR THE LIKE.
 #ifdef DEBUG
-  #define GetPtrTypeDir(lpMem)        (BYTE) ((lpMem EQ NULL) ? PTRTYPE_AVAIL : (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem)))
-  #define GetPtrTypeInd(lpMem)        (BYTE) ((lpMem EQ NULL) ? PTRTYPE_AVAIL : (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem)))
+  #define GetPtrTypeDir(lpMem)      (BYTE) ((lpMem EQ NULL) ? PTRTYPE_LENGTH : (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem)))
+  #define GetPtrTypeInd(lpMem)      (BYTE) ((lpMem EQ NULL) ? PTRTYPE_LENGTH : (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem)))
 #else
-  #define GetPtrTypeDir(lpMem)        (BYTE)       (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem))
-  #define GetPtrTypeInd(lpMem)        (BYTE)       (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem))
+  #define GetPtrTypeDir(lpMem)      (BYTE)       (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem))
+  #define GetPtrTypeInd(lpMem)      (BYTE)       (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem))
 #endif
 // Macro to create a masked LPSYMENTRY
-#define MakePtrTypeSym(lpMem)         (LPSYMENTRY) (PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
+#define MakePtrTypeSym(lpMem)       (LPSYMENTRY) (PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to create a masked HGLOBAL
-#define MakePtrTypeGlb(lpMem)         (HGLOBAL)    (PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
+#define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
 
 // Macros to check on PTR_REUSED
-#define PtrReusedDir(lpMem)                  ((lpMem) EQ PTR_REUSED)
-#define PtrReusedInd(lpMem)     ((*(LPVOID *) lpMem)  EQ PTR_REUSED)
+#define PtrReusedDir(lpMem)                     ((lpMem) EQ PTR_REUSED)
+#define PtrReusedInd(lpMem)         ((*(LPVOID *) lpMem) EQ PTR_REUSED)
 
 // Note that the following macros depend upon
 //   the ordering of the enum IMM_TYPES in <symtab.h>
-#define IsImmBool(a)    ((a) EQ IMMTYPE_BOOL)
-#define IsImmInt(a)     (IMMTYPE_ERROR < (a) && (a) < IMMTYPE_FLOAT)
-#define IsImmNum(a)     (IMMTYPE_ERROR < (a) && (a) < IMMTYPE_CHAR)
-#define IsImmFlt(a)     ((a) EQ IMMTYPE_FLOAT)
-#define IsImmChr(a)     ((a) EQ IMMTYPE_CHAR)
+#define IsImmBool(a)                ((a) EQ IMMTYPE_BOOL)
+#define IsImmInt(a)                 (IMMTYPE_ERROR < (a) && (a) < IMMTYPE_FLOAT)
+#define IsImmNum(a)                 (IMMTYPE_ERROR < (a) && (a) < IMMTYPE_CHAR)
+#define IsImmFlt(a)                 ((a) EQ IMMTYPE_FLOAT)
+#define IsImmChr(a)                 ((a) EQ IMMTYPE_CHAR)
 
 // The enum NAME_TYPES in <symtab.h> is constructed to allow
 //  the following macros to be used.
-#define IsNameTypeFn(a)     ((a) &  NAMETYPEMASK_FN                   )
-#define IsNameTypeOp(a)     ((a) &                    NAMETYPEMASK_OP )
-#define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
-#define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
-#define IsNameTypeName(a)   (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_OP3)
+#define IsNameTypeFn(a)             ((a) &  NAMETYPEMASK_FN                   )
+#define IsNameTypeOp(a)             ((a) &                    NAMETYPEMASK_OP )
+#define IsNameTypeFnOp(a)           ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
+#define IsNameTypeVar(a)            ((a) EQ NAMETYPE_VAR)
+#define IsNameTypeName(a)           (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_OP3)
 
 
-#define GetSignatureMem(a)  (((LPHEADER_SIGNATURE) (a))->nature)
+#define GetSignatureMem(a)          (((LPHEADER_SIGNATURE) (a))->nature)
 
 
 // Macros to get countof for arrays and constant strings
-#define countof(a)          (sizeof (a) / sizeof ((a)[0]))
-#define strcountof(a)       (countof (a) - 1)
+#define countof(a)                  (sizeof (a) / sizeof ((a)[0]))
+#define strcountof(a)               (countof (a) - 1)
 
 
 //***************************************************************************

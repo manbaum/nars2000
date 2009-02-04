@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2789,13 +2789,14 @@ UBOOL ArrayIndexSetSingLst_EM
                 LPPL_YYSTYPE lpYYItm;
                 HGLOBAL      hGlbSubLst2;
                 APLSTYPE     aplTypeSubLst2;
+                APLNELM      aplNELMSubLst2;
 
                 case PTRTYPE_STCONST:
                     // Check for RANK ERROR
                     if (!IsVector (aplRankNam))
                         goto RANK_EXIT;
 
-                    // Index assignment into a the top level of a vector
+                    // Index assignment into the top level of a vector
                     bRet = ArrayIndexSetVector_EM (aplNELMNam,      // Name arg NELM
                                                    lpMemSubLst,     // Ptr to list arg subitem
                                                    aplTypeSubLst,   // List arg subitem storage type
@@ -2818,11 +2819,13 @@ UBOOL ArrayIndexSetSingLst_EM
                     hGlbSubLst2 = ((LPAPLHETERO) lpMemSubLst)[uRes];
                     hGlbSubLst2 = ClrPtrTypeDirAsGlb (hGlbSubLst2);
 
-                    AttrsOfGlb (hGlbSubLst2, &aplTypeSubLst2, NULL, NULL, NULL);
+                    AttrsOfGlb (hGlbSubLst2, &aplTypeSubLst2, &aplNELMSubLst2, NULL, NULL);
 
-                    // Because of the way RightShoe works, if this global is simple,
+                    // Because of the way RightShoe works, if this global is simple
+                    //   and its NELM matches the rank of the name arg,
                     //   we need to enclose it first
-                    if (IsSimple (aplTypeSubLst2))
+                    if (IsSimple (aplTypeSubLst2)
+                     && aplNELMSubLst2 EQ aplRankNam)
                     {
                         lpYYItm =
                           PrimFnMonLeftShoeGlb_EM_YY (hGlbSubLst2,          // Right arg global memory handle
@@ -2846,7 +2849,8 @@ UBOOL ArrayIndexSetSingLst_EM
                                                       hGlbSubRht,       // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
                                                       aplLongestRht);   // Set arg immediate value
                     // If we allocated it above, free it now
-                    if (IsSimple (aplTypeSubLst2))
+                    if (IsSimple (aplTypeSubLst2)
+                     && aplNELMSubLst2 EQ aplRankNam)
                     {
                         // We no longer need this storage
                         FreeResultGlobalVar (hGlbSubLst2); hGlbSubLst2 = NULL;
@@ -2964,7 +2968,7 @@ UBOOL ArrayIndexSetVector_EM
 {
     UBOOL      bRet = TRUE;             // TRUE iff the result is valid
     APLLONGEST aplLongestSubLst;        // List arg subitem immediate value
-    HGLOBAL    hGlbSubLst;              // Ptr to list arg subitem global memory handle
+    HGLOBAL    hGlbSubLst;              // Ptr to list arg subitem global memory handle/LPSYMENTRY
     IMM_TYPES  immTypeRht;              // Right arg item immediate type
     LPSYMENTRY lpSymTmp;                // Ptr to temporary LPSYMENTRY
 
@@ -2997,6 +3001,107 @@ UBOOL ArrayIndexSetVector_EM
 
         case ARRAY_CHAR:
             goto DOMAIN_EXIT;
+
+        case ARRAY_NESTED:
+        {
+            APLSTYPE     aplTypeSubLst2;
+            APLNELM      aplNELMSubLst2;
+            APLRANK      aplRankSubLst2;
+            LPAPLLONGEST lpMemSubLst2;      // Ptr to data
+
+            // Test for a simple scalar
+
+            // Split cases based upon the ptr type
+            switch (GetPtrTypeDir (hGlbSubLst))
+            {
+                case PTRTYPE_STCONST:
+                    aplTypeSubLst2 = TranslateImmTypeToArrayType (((LPSYMENTRY) hGlbSubLst)->stFlags.ImmType);
+                    aplNELMSubLst2 = 1;
+                    aplRankSubLst2 = 0;
+
+                    // Point to the data
+                    lpMemSubLst2 = &((LPSYMENTRY) hGlbSubLst)->stData.stLongest;
+
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    // Lock the memory to get a ptr to it
+                    lpMemSubLst2 = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbSubLst));
+
+                    // Get the type and rank
+                    aplTypeSubLst2 = ((LPVARARRAY_HEADER) lpMemSubLst2)->ArrType;
+                    aplNELMSubLst2 = ((LPVARARRAY_HEADER) lpMemSubLst2)->NELM;
+                    aplRankSubLst2 = ((LPVARARRAY_HEADER) lpMemSubLst2)->Rank;
+
+                    // Skip over the header and dimensions
+                    lpMemSubLst2 = VarArrayBaseToData (lpMemSubLst2, aplRankSubLst2);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // If the array is a simple scalar, ...
+            if (IsSimpleNH (aplTypeSubLst2)
+             && IsScalar   (aplRankSubLst2))
+            {
+                // Get the value
+                // Split cases based upon the storage type
+                switch (aplTypeSubLst2)
+                {
+                    case ARRAY_BOOL:
+                        // Get the value
+                        aplLongestSubLst = BIT0 & *(LPAPLBOOL) lpMemSubLst2;
+
+                        break;
+
+                    case ARRAY_INT:
+                        // Get the value
+                        aplLongestSubLst = *(LPAPLINT) lpMemSubLst2;
+
+                        break;
+
+                    case ARRAY_APA:
+                        // Get the value
+                        // In case the APA has a zero multiplier, we can't necessarily trust the
+                        //   offset to be zero, too.
+                        aplLongestSubLst = ((LPAPLAPA) lpMemSubLst2)->Off * ((LPAPLAPA) lpMemSubLst2)->Mul;
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                        // Get the value
+                        aplLongestSubLst = *(LPAPLLONGEST) (LPAPLFLOAT) lpMemSubLst2;
+
+                        // Attempt to convert the float to an integer using System CT
+                        aplLongestSubLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLst, &bRet);
+                        if (bRet)
+                            break;
+
+                        // Fall through to common DOMAIN ERROR code
+
+                    case ARRAY_CHAR:
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } else
+                bRet = FALSE;
+
+            if (GetPtrTypeDir (hGlbSubLst) EQ PTRTYPE_HGLOBAL)
+            {
+                // We no longer need this ptr
+                MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbSubLst)); lpMemSubLst2 = NULL;
+            } // End IF
+
+            if (!bRet)
+                goto DOMAIN_EXIT;
+
+            break;
+        } // End ARRAY_NESTED
 
         defstop
             break;

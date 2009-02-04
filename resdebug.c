@@ -368,13 +368,12 @@ HBITMAP _MyCreateCompatibleBitmap
 
 {
     HBITMAP hBitmap;
+    char    szTemp[1024];
 
     hBitmap = CreateCompatibleBitmap (hDC, nWidth, nHeight);
 
     if (!hBitmap)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -401,14 +400,13 @@ HDC _MyCreateCompatibleDC
      UINT uLine)                // Line #
 
 {
-    HDC hMEMDC;
+    HDC  hMEMDC;
+    char szTemp[1024];
 
     hMEMDC = CreateCompatibleDC (hDC);
 
     if (hMEMDC EQ NULL)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -438,13 +436,12 @@ HPEN _MyCreatePen
 
 {
     HPEN hPen;
+    char szTemp[1024];
 
     hPen = CreatePen (fnPenStyle, nWidth, crColor);
 
     if (!hPen)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -472,13 +469,12 @@ HFONT _MyCreateFontIndirect
 
 {
     HFONT hFont;
+    char  szTemp[1024];
 
     hFont = CreateFontIndirect (lplf);
 
     if (!hFont)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -506,13 +502,12 @@ HFONT _MyCreateFontIndirectW
 
 {
     HFONT hFont;
+    char  szTemp[1024];
 
     hFont = CreateFontIndirectW (lplf);
 
     if (!hFont)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -542,13 +537,12 @@ HRGN _MyCreatePolygonRgn
 
 {
     HRGN hRgn;
+    char szTemp[1024];
 
     hRgn = CreatePolygonRgn (lppt, cPoints, fnPolyFillMode);
 
     if (!hRgn)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -576,13 +570,12 @@ HRGN _MyCreateRectRgnIndirect
 
 {
     HRGN hRgn;
+    char szTemp[1024];
 
     hRgn = CreateRectRgnIndirect (lprc);
 
     if (!hRgn)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -610,13 +603,12 @@ HBRUSH _MyCreateSolidBrush
 
 {
     HBRUSH hBrush;
+    char   szTemp[1024];
 
     hBrush = CreateSolidBrush (crColor);
 
     if (!hBrush)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -644,13 +636,12 @@ UBOOL _MyDeleteDC
 
 {
     UBOOL bRet;
+    char  szTemp[1024];
 
     bRet = DeleteDC (hMEMDC);
 
     if (!bRet)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -679,6 +670,7 @@ UBOOL _MyDeleteObject
 {
     UBOOL bRet;
     DWORD dwType;
+    char  szTemp[1024];
 
     // See what kind of object we're deleting
     dwType = GetObjectType (hObject);
@@ -693,8 +685,6 @@ UBOOL _MyDeleteObject
     // If it failed, ...
     if (!bRet)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -721,14 +711,13 @@ HDC _MyGetDC
      UINT uLine)        // Line #
 
 {
-    HDC hDC;
+    HDC  hDC;
+    char szTemp[1024];
 
     hDC = GetDC (hWnd);
 
     if (!hDC)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -755,14 +744,13 @@ HDC _MyGetWindowDC
      UINT uLine)            // Line #
 
 {
-    HDC hDC;
+    HDC  hDC;
+    char szTemp[1024];
 
     hDC = GetWindowDC (hWnd);
 
     if (!hDC)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -791,13 +779,12 @@ HBITMAP _MyLoadBitmap
 
 {
     HBITMAP hBitmap;
+    char    szTemp[1024];
 
     hBitmap = LoadBitmap (hInstance, lpBitmapName);
 
     if (!hBitmap)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -830,13 +817,12 @@ HANDLE _MyLoadImage
 
 {
     HBITMAP hBitmap;
+    char    szTemp[1024];
 
     hBitmap = LoadImage (hinst, lpszName, uType, cxDesired, cyDesired, fuLoad);
 
     if (!hBitmap)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -865,13 +851,12 @@ UBOOL _MyReleaseDC
 
 {
     UBOOL bRet;
+    char  szTemp[1024];
 
     bRet = ReleaseDC (hWnd, hDC);
 
     if (!bRet)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -901,6 +886,7 @@ LPVOID _MyGlobalAlloc
 
 {
     LPVOID lpMem;
+    char   szTemp[1024];
 
     CheckMemStat ();
 
@@ -908,7 +894,6 @@ LPVOID _MyGlobalAlloc
 
     if (!lpMem)
     {
-        char szTemp[1024];
         UINT uLastError;
 
         // Get the last error
@@ -978,6 +963,7 @@ LPVOID _MyGlobalLockSub
 
 {
     LPVOID lpVoid;
+    char   szTemp[1024];
 
     Assert (bSaveFileName);     // Unused as yet
 
@@ -987,8 +973,6 @@ LPVOID _MyGlobalLockSub
 
     if (!lpVoid)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1016,14 +1000,13 @@ UBOOL _MyGlobalUnlock
 
 {
     UBOOL bRet;
+    char  szTemp[1024];
 
     CheckMemStat ();
 
     // Ensure the lock count is non-zero
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) EQ 0)
     {
-        char szTemp[1024];
-
         // Format a message about the last lock & alloc
         _LastTouch (szTemp, hMem, FALSE);
         DbgBrk ();
@@ -1048,14 +1031,13 @@ SIZE_T _MyGlobalSize
 
 {
     SIZE_T dwRet;
+    char   szTemp[1024];
 
     CheckMemStat ();
 
     dwRet = GlobalSize (hMem);
     if (dwRet EQ 0)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1082,14 +1064,13 @@ DWORD _MyGlobalFlags
 
 {
     DWORD dwRet;
+    char  szTemp[1024];
 
     CheckMemStat ();
 
     dwRet = GlobalFlags (hMem);
     if (dwRet EQ GMEM_INVALID_HANDLE)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1119,14 +1100,13 @@ HGLOBAL _MyGlobalReAlloc
 {
     SIZE_T  dwRet;
     HGLOBAL hGlb;
+    char    szTemp[1024];
 
     CheckMemStat ();
 
     dwRet = GlobalSize (hMem);
     if (dwRet EQ 0)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1139,8 +1119,6 @@ HGLOBAL _MyGlobalReAlloc
 
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
-        char szTemp[1024];
-
         // Format a message about the last lock & alloc
         _LastTouch (szTemp, hMem, TRUE);
         DbgBrk ();
@@ -1149,8 +1127,6 @@ HGLOBAL _MyGlobalReAlloc
     hGlb = GlobalReAlloc (hMem, dwBytes, uFlags);
     if (!hGlb)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1176,13 +1152,13 @@ HGLOBAL _MyGlobalFree
      UINT    uLine)             // Line #
 
 {
+    char szTemp[1024];
+
     CheckMemStat ();
 
     // GlobalFlags returns the lock count in the low-order byte
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
-        char szTemp[1024];
-
         // Format a message about the last lock & alloc
         _LastTouch (szTemp, hMem, TRUE);
         DbgBrk ();
@@ -1210,6 +1186,7 @@ LPVOID _MyVirtualAlloc
 
 {
     LPVOID lpRet;               // Ptr to result
+    char   szTemp[1024];
 
     // Call the original function
     lpRet =
@@ -1219,8 +1196,6 @@ LPVOID _MyVirtualAlloc
                     flProtect);         // Type of access protection
     if (lpRet EQ NULL)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -1249,6 +1224,7 @@ UBOOL _MyVirtualFree
 
 {
     UBOOL bRet;                 // TRUE iff the result is valid
+    char  szTemp[1024];
 
     // Call the original function
     bRet =
@@ -1257,8 +1233,6 @@ UBOOL _MyVirtualFree
                    dwFreeType); // Type of free operation
     if (!bRet)
     {
-        char szTemp[1024];
-
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier

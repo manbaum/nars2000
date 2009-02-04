@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -519,7 +519,6 @@ void InitAccumVars
     // Integers & floating points
     lpMemPTD->iNumLen    = 0;
     lpMemPTD->iStrLen    = 0;
-    lpMemPTD->aplInteger = 0;
 ////LCLODS ("lpMemPTD->iNumLen = 0\r\n");
 
     // We no longer need this ptr
@@ -1676,7 +1675,8 @@ UBOOL fnPointDone
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet;          // TRUE iff result is valid
+    UBOOL        bRet,          // TRUE iff result is valid
+                 bMerge;        // TRUE iff we merged with the previous token
     LPCHAR       lpszNum;       // Ptr to Num global memory
     PNLOCALVARS  pnLocalVars;   // PN Local vars
     TKFLAGS      tkFlags = {0}; // Token flags for AppendNewToken_EM
@@ -1728,46 +1728,64 @@ UBOOL fnPointDone
     bRet = ParsePointNotation (&pnLocalVars);
     if (bRet)
     {
-        // Split cases based upon the result type
-        switch (pnLocalVars.chType)
+        // See if the current number can be merged with the previous token
+        //   to form a TKT_NUMSTRAND.
+        bMerge = MergeNumbers (lptkLocalVars, &pnLocalVars, &bRet);
+
+        // If the result is valid and we did not merge, ...
+        if (bRet && !bMerge)
         {
-            case PN_NUMTYPE_INT:
-                // Mark the data as an immediate integer variable
-                tkFlags.TknType = TKT_VARIMMED;
-                tkFlags.ImmType = IMMTYPE_INT;
+            // Split cases based upon the result type
+            switch (pnLocalVars.chType)
+            {
+                case PN_NUMTYPE_BOOL:
+                    // Mark the data as an immediate Boolean variable
+                    tkFlags.TknType = TKT_VARIMMED;
+                    tkFlags.ImmType = IMMTYPE_BOOL;
 
-                // Get the value
-                aplLongest = pnLocalVars.aplInteger;
+                    // Get the value
+                    aplLongest = pnLocalVars.aplInteger;
 
-                break;
+                    break;
 
-            case PN_NUMTYPE_FLT:
-                // Mark the data as an immediate float variable
-                tkFlags.TknType = TKT_VARIMMED;
-                tkFlags.ImmType = IMMTYPE_FLOAT;
+                case PN_NUMTYPE_INT:
+                    // Mark the data as an immediate integer variable
+                    tkFlags.TknType = TKT_VARIMMED;
+                    tkFlags.ImmType = IMMTYPE_INT;
 
-                // Get the value
-                aplLongest = *(LPAPLLONGEST) &pnLocalVars.aplFloat;
+                    // Get the value
+                    aplLongest = pnLocalVars.aplInteger;
 
-                break;
+                    break;
 
-            case PN_NUMTYPE_HC2:
-            case PN_NUMTYPE_HC4:
-            case PN_NUMTYPE_HC8:
-            case PN_NUMTYPE_RAT:
-            case PN_NUMTYPE_EXT:
-                goto NONCE_EXIT;
+                case PN_NUMTYPE_FLT:
+                    // Mark the data as an immediate float variable
+                    tkFlags.TknType = TKT_VARIMMED;
+                    tkFlags.ImmType = IMMTYPE_FLOAT;
 
-            defstop
-                break;
-        } // End SWITCH
+                    // Get the value
+                    aplLongest = *(LPAPLLONGEST) &pnLocalVars.aplFloat;
 
-        // Attempt to append as new token, check for TOKEN TABLE FULL,
-        //   and resize as necessary.
-        bRet = AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &aplLongest,
-                                  0);
+                    break;
+
+                case PN_NUMTYPE_HC2:
+                case PN_NUMTYPE_HC4:
+                case PN_NUMTYPE_HC8:
+                case PN_NUMTYPE_RAT:
+                case PN_NUMTYPE_EXT:
+                    goto NONCE_EXIT;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Attempt to append as new token, check for TOKEN TABLE FULL,
+            //   and resize as necessary.
+            bRet = AppendNewToken_EM (lptkLocalVars,
+                                     &tkFlags,
+                                     &aplLongest,
+                                      0);
+        } // End IF
     } else
         // Save the error character index
         lptkLocalVars->uChar = pnLocalVars.uCharIndex;
@@ -2768,12 +2786,13 @@ NORMAL_EXIT:
 
 UBOOL MergeNumbers
     (LPTKLOCALVARS lptkLocalVars,   // Ptr to local vars
-     LPPERTABDATA  lpMemPTD,        // Ptr to PerTabData global memory
+     LPPNLOCALVARS lppnLocalVars,   // Ptr to PNLOCALVARS global memory
      LPUBOOL       lpbRet)          // Ptr to TRUE iff the result is valid
 
 {
     LPTOKEN    lptkPrv;             // Ptr to previous token
     APLSTYPE   aplTypePrv,          // Previous token storage type
+               aplTypeNew,          // New            ...
                aplTypeRes;          // Result         ...
     APLNELM    aplNELMPrv;          // Previous token NELM
     APLRANK    aplRankPrv;          // Previous token rank
@@ -2798,7 +2817,7 @@ UBOOL MergeNumbers
         // Get the previous token's attrs
         AttrsOfToken (lptkPrv, &aplTypePrv, &aplNELMPrv, &aplRankPrv, NULL);
 
-        // If the previous token is a simple number and
+        // If the previous token is a simple numeric and
         //   it's either an immediate
         //   or non-empty (i.e. not zilde)
         if (IsSimpleNum (aplTypePrv)
@@ -2810,9 +2829,36 @@ UBOOL MergeNumbers
             // Lock the previous token and get a ptr to it
             aplLongestPrv = GetGlbPtrs_LOCK (lptkPrv, &hGlbPrv, &lpMemPrv);
 
+            // Get the new storage type
+            // Split cases based upon the storage type
+            switch (lppnLocalVars->chType)
+            {
+                case PN_NUMTYPE_BOOL:
+                    aplTypeNew = ARRAY_BOOL;
+
+                    break;
+
+                case PN_NUMTYPE_INT:
+                    aplTypeNew = ARRAY_INT;
+
+                    break;
+
+                case PN_NUMTYPE_FLT:
+                    aplTypeNew = ARRAY_FLOAT;
+
+                    break;
+
+                case PN_NUMTYPE_HC2:
+                case PN_NUMTYPE_HC4:
+                case PN_NUMTYPE_HC8:
+                case PN_NUMTYPE_RAT:
+                case PN_NUMTYPE_EXT:
+                defstop
+                    break;
+            } // End SWITCH
+
             // Calculate the result storage type
-            aplTypeRes = aTypePromote[aplTypePrv]
-                                     [(IsBooleanValue (lpMemPTD->aplInteger)) ? ARRAY_BOOL : ARRAY_INT];
+            aplTypeRes = aTypePromote[aplTypePrv][aplTypeNew];
 
             // Calculate space needed for the numeric vector
             ByteRes = CalcArraySize (aplTypeRes, aplNELMPrv + 1, 1);
@@ -2867,7 +2913,7 @@ UBOOL MergeNumbers
                         CopyMemory (lpMemRes, lpMemPrv, (APLU3264) RoundUpBitsToBytes (aplNELMPrv) * sizeof (APLBOOL));
 
                         // Save the new value as a Boolean
-                        ((LPAPLBOOL) lpMemRes)[aplNELMPrv >> LOG2NBIB] |= (lpMemPTD->aplInteger << (MASKLOG2NBIB & (UINT) aplNELMPrv));
+                        ((LPAPLBOOL) lpMemRes)[aplNELMPrv >> LOG2NBIB] |= (lppnLocalVars->aplInteger << (MASKLOG2NBIB & (UINT) aplNELMPrv));
 
                         break;
 
@@ -2906,7 +2952,7 @@ UBOOL MergeNumbers
                         } // End SWITCH
 
                         // Save the new value as an integer
-                        ((LPAPLINT) lpMemRes)[aplNELMPrv] = lpMemPTD->aplInteger;
+                        ((LPAPLINT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplInteger;
 
                         break;
 
@@ -2951,7 +2997,7 @@ UBOOL MergeNumbers
                         } // End SWITCH
 
                         // Save the new value as a float
-                        ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = (APLFLOAT) lpMemPTD->aplInteger;
+                        ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplFloat;
 
                         break;
 

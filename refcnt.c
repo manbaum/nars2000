@@ -62,10 +62,10 @@ int ChangeRefCntDir
             // Clear the ptr type bits
             hGlb = ClrPtrTypeDirAsGlb (hGlb);
 #ifdef DEBUG
-            if (hGlb EQ hGlbRC1)
+            if (hGlb EQ ClrPtrTypeDirAsGlb (hGlbRC1))
                 DbgBrk ();
 
-            if (hGlb EQ hGlbRC2)
+            if (hGlb EQ ClrPtrTypeDirAsGlb (hGlbRC2))
                 DbgBrk ();
 #endif
             // Lock the memory to get a ptr to it

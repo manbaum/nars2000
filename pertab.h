@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,77 +96,76 @@ typedef struct tagPERTABDATA
                  crIndex;           // 8C:  Tab's color index
 
     // Accumulation vars for constant integer, floating point, and string
-    APLINT       aplInteger,        // 90:  Temporary Integer (8 bytes)
-                 uQuadMF;           // 98:  []MF timer value (8 bytes)
+    APLINT       uQuadMF;           // 90:  []MF timer value (8 bytes)
 
-    LPSYMENTRY   steZero,           // A0:  Ptr to STE for constant zero
-                 steOne,            // A4:  ...                     one
-                 steBlank,          // A8:  ...                     blank
-                 steNoValue,        // AC:  ...            no-value result
-                 lpSymQuadALX ,     // B0:  ...            []ALX
-                 lpSymQuadCT  ,     // B4:  ...            []CT
-                 lpSymQuadELX ,     // B8:  ...            []ELX
-                 lpSymQuadFC  ,     // BC:  ...            []FC
-                 lpSymQuadIC  ,     // C0:  ...            []IC
-                 lpSymQuadIO  ,     // C4:  ...            []IO
-                 lpSymQuadLX  ,     // C8:  ...            []LX
-                 lpSymQuadPP  ,     // CC:  ...            []PP
-                 lpSymQuadPR  ,     // D0:  ...            []PR
-                 lpSymQuadPW  ,     // D4:  ...            []PW
-                 lpSymQuadRL  ,     // D8:  ...            []RL
-                 lpSymQuadSA  ,     // DC:  ...            []SA
-                 lpSymQuadWSID,     // E0:  ...            []WSID
-                 lpSymQuadZ   ;     // E4:  ...            []Z
+    LPSYMENTRY   steZero,           // 98:  Ptr to STE for constant zero
+                 steOne,            // 9C:  ...                     one
+                 steBlank,          // A0:  ...                     blank
+                 steNoValue,        // A4:  ...            no-value result
+                 lpSymQuadALX ,     // A8:  ...            []ALX
+                 lpSymQuadCT  ,     // AC:  ...            []CT
+                 lpSymQuadELX ,     // B0:  ...            []ELX
+                 lpSymQuadFC  ,     // B4:  ...            []FC
+                 lpSymQuadIC  ,     // B8:  ...            []IC
+                 lpSymQuadIO  ,     // BC:  ...            []IO
+                 lpSymQuadLX  ,     // C0:  ...            []LX
+                 lpSymQuadPP  ,     // C4:  ...            []PP
+                 lpSymQuadPR  ,     // C8:  ...            []PR
+                 lpSymQuadPW  ,     // CC:  ...            []PW
+                 lpSymQuadRL  ,     // D0:  ...            []RL
+                 lpSymQuadSA  ,     // D4:  ...            []SA
+                 lpSymQuadWSID,     // D8:  ...            []WSID
+                 lpSymQuadZ   ;     // DC:  ...            []Z
     struct tagSIS_HEADER
-                *lpSISBeg,          // E8:  Ptr to State Indicator Stack beginning
-                *lpSISCur,          // EC:  ...                          current (may be NULL if SI is empty)
-                *lpSISNxt;          // F0:  ...                          next
+                *lpSISBeg,          // E0:  Ptr to State Indicator Stack beginning
+                *lpSISCur,          // E4:  ...                          current (may be NULL if SI is empty)
+                *lpSISNxt;          // E8:  ...                          next
     struct tagPLLOCALVARS
-                *lpPLCur;           // F4:  Ptr to current plLocalVars struct
+                *lpPLCur;           // EC:  Ptr to current plLocalVars struct
                                     //      in thread creation order (NULL = none)
-    WNDPROC lpfnOldListboxWndProc,  // F8:  Save area for old Listbox procedure
-            lpfnOldEditCtrlWndProc; // FC:  Save area for old Edit Ctrl procedure
+    WNDPROC lpfnOldListboxWndProc,  // F0:  Save area for old Listbox procedure
+            lpfnOldEditCtrlWndProc; // F4:  Save area for old Edit Ctrl procedure
 
     // Magic function global memory handles
-    HGLOBAL      hGlbMF_MonIota,    //100:  Extended Monadic Iota
-                 hGlbMF_DydIota,    //104:  Extended Dyadic Iota
-                 hGlbMF_MonUpShoe,  //108:  Monadic UpShoe
-                 hGlbMF_DydTilde,   //10C:  Dyadic Tilde
-                 hGlbMF_MonRank,    //110:  Monadic Rank
-                 hGlbMF_DydRank,    //114:  Dyadic Rank
-                 hGlbMF_Conform;    //118:  Conform for Rank operator
+    HGLOBAL      hGlbMF_MonIota,    // F8:  Extended Monadic Iota
+                 hGlbMF_DydIota,    // FC:  Extended Dyadic Iota
+                 hGlbMF_MonUpShoe,  //100:  Monadic UpShoe
+                 hGlbMF_DydTilde,   //104:  Dyadic Tilde
+                 hGlbMF_MonRank,    //108:  Monadic Rank
+                 hGlbMF_DydRank,    //10C:  Dyadic Rank
+                 hGlbMF_Conform;    //110:  Conform for Rank operator
 
-    UINT         SILevel,           //11C:  Current State Indicator level
-                 CurTabID,          //120:  ID of the corresponding tab
-                 PrvTabID;          //124:  ID of the preceding tab (from which we were loaded)
-    HANDLE       hSemaDelay;        //128:  Delay semaphore (NULL if no delay active)
-    EXIT_TYPES   ImmExecExitType;   //12C:  ImmExec exit type (see EXIT_TYPES)
-    PL_YYSTYPE   YYResExec;         //130:  Result from execute primitive
+    UINT         SILevel,           //114:  Current State Indicator level
+                 CurTabID,          //118:  ID of the corresponding tab
+                 PrvTabID;          //11C:  ID of the preceding tab (from which we were loaded)
+    HANDLE       hSemaDelay;        //120:  Delay semaphore (NULL if no delay active)
+    EXIT_TYPES   ImmExecExitType;   //124:  ImmExec exit type (see EXIT_TYPES)
+    PL_YYSTYPE   YYResExec;         //128:  Result from execute primitive
                                     //      Size = 2Ch for DEBUG, 20h otherwise
-    LPPL_YYSTYPE lpStrand[STRAND_LEN];//15C:  Ptrs to strand accumulators in parser (4 bytes each)
+    LPPL_YYSTYPE lpStrand[STRAND_LEN];//154:  Ptrs to strand accumulators in parser (4 bytes each)
     LPLOADWSGLBVARCONV
-                 lpLoadWsGlbVarConv;//164:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
+                 lpLoadWsGlbVarConv;//15C:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
     LPLOADWSGLBVARPARM
-                 lpLoadWsGlbVarParm;//168:  Ptr to extra parms for LoadWsGlbVarConv
-    LPMEMVIRTSTR lpLstMVS;          //16C:  Ptr to last MEMVIRTSTR (NULL = none)
-    LPWCHAR      lpwszFormat,       //170:  Ptr to formatting save area
-                 lpwszBaseTemp,     //174:  Ptr to base of lpwszTemp
-                 lpwszTemp;         //178:  Ptr to temporary  ...
-    UINT         uTempMaxSize,      //17C:  Maximum size of lpwszTemp
-                 RegisterEBP,       //180:  Register EBP from an exception
-                 uErrLine;          //184:  Error line # from []FX for )IN
-    LPTOKEN      lptkCSIni,         //188:  Ptr to start of CtrlStruc token stack (static)
-                 lptkCSNxt;         //18C:  Ptr to next available slot in CS ...  (dynamic)
+                 lpLoadWsGlbVarParm;//160:  Ptr to extra parms for LoadWsGlbVarConv
+    LPMEMVIRTSTR lpLstMVS;          //164:  Ptr to last MEMVIRTSTR (NULL = none)
+    LPWCHAR      lpwszFormat,       //168:  Ptr to formatting save area
+                 lpwszBaseTemp,     //16C:  Ptr to base of lpwszTemp
+                 lpwszTemp;         //170:  Ptr to temporary  ...
+    UINT         uTempMaxSize,      //174:  Maximum size of lpwszTemp
+                 RegisterEBP,       //178:  Register EBP from an exception
+                 uErrLine;          //17C:  Error line # from []FX for )IN
+    LPTOKEN      lptkCSIni,         //180:  Ptr to start of CtrlStruc token stack (static)
+                 lptkCSNxt;         //184:  Ptr to next available slot in CS ...  (dynamic)
     struct tagFORSTMT *
-                 lpForStmtBase;     //190:  Ptr to base of FORSTMT stack
+                 lpForStmtBase;     //188:  Ptr to base of FORSTMT stack
 #ifndef UNISCRIBE
     IMLangFontLink
-                *lpFontLink;        //194:  Ptr to FontLink struc
+                *lpFontLink;        //18C:  Ptr to FontLink struc
 #endif
-    APLCHAR      cQuadPR,           //198:  []PR     (' ') (When a char scalar)
-                 cQuadxSA;          //19A:  []SA     (0)   (in its index form as an integer)
-    DWORD        dwThreadId;        //19C:  Corresponding thread ID
-                                    //1A0:  Length
+    APLCHAR      cQuadPR,           //190:  []PR     (' ') (When a char scalar)
+                 cQuadxSA;          //192:  []SA     (0)   (in its index form as an integer)
+    DWORD        dwThreadId;        //194:  Corresponding thread ID
+                                    //198:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

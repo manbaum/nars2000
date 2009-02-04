@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -287,17 +287,16 @@ typedef enum tagPTR_TYPES
 {
  PTRTYPE_STCONST = 0,   // 00:  *MUST* be first (and thus zero) as we can't afford to clear all the time
  PTRTYPE_HGLOBAL,       // 01:  This ptr is an HGLOBAL
- PTRTYPE_AVAIL,         // 02:  Available entries (2 bits)
- PTRTYPE_REUSED,        // 03:  Used by PTR_REUSED
-} PTR_TYPES;            // No available entries (2 bits)
+ PTRTYPE_LENGTH         // 02:  # entries in this enum (1 bit)
+} PTR_TYPES;            // No available entries (1 bit)
 
-#define PTRTYPE_MASK     3      // This masks the two low-order bits
+#define PTRTYPE_MASK    1       // This masks the one low-order bit
 
 // For LPSYMENTRY and HGLOBAL values in a temporary array, sometimes
 //   those values can be re-used in another array without having
 //   to make a copy.  In that case, the original value is replaced
 //   by this which is checked for before trying to free it.
-#define PTR_REUSED  ((LPVOID) (HANDLE_PTR) (0xFFFFFFF0 + PTRTYPE_REUSED))
+#define PTR_REUSED  ((LPVOID) (HANDLE_PTR) 0xFFFFFFFF)
 
 
 //***************************************************************************

@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,6 +66,9 @@ void pn_yyfprintf   (FILE *hfile, LPCHAR lpszFmt, ...);
 ////#define DbgMsgWP(a)         DbgMsgW(a); DbgBrk ()
 ////#define DbgMsgWP(a)         DbgMsgW(a)
     #define DbgMsgWP(a)
+
+// Define macro for Boolean or Integer type
+#define IsIntegerType(a)        ((a) EQ PN_NUMTYPE_BOOL || (a) EQ PN_NUMTYPE_INT)
 
 %}
 
@@ -245,11 +248,11 @@ DecPoint:
 Hc2Point:
       DecPoint 'i' DecPoint         {DbgMsgWP (L"%%Hc2Point:  DecPoint 'i' DecPoint");
                                      // If the real part is integer, ...
-                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($1.chType))
                                          // Convert it to float
                                          $1.aplFloat = (APLFLOAT) $1.aplInteger;
                                      // If the imaginary part is integer, ...
-                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($3.chType))
                                          // Convert it to float
                                          $3.aplFloat = (APLFLOAT) $3.aplInteger;
 
@@ -264,11 +267,11 @@ Hc2Point:
                                     }
     | DecPoint 'J' DecPoint         {DbgMsgWP (L"%%Hc2Point:  DecPoint 'J' DecPoint");
                                      // If the real part is integer, ...
-                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($1.chType))
                                          // Convert it to float
                                          $1.aplFloat = (APLFLOAT) $1.aplInteger;
                                      // If the imaginary part is integer, ...
-                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($3.chType))
                                          // Convert it to float
                                          $3.aplFloat = (APLFLOAT) $3.aplInteger;
 
@@ -283,11 +286,11 @@ Hc2Point:
                                     }
     | DecPoint 'a' 'd' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'd' DecPoint");
                                      // If the real part is integer, ...
-                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($1.chType))
                                          // Convert it to float
                                          $1.aplFloat = (APLFLOAT) $1.aplInteger;
                                      // If the imaginary part is integer, ...
-                                     if ($4.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($4.chType))
                                          // Convert it to float
                                          $4.aplFloat = (APLFLOAT) $4.aplInteger;
 
@@ -306,11 +309,11 @@ Hc2Point:
                                     }
     | DecPoint 'a' 'r' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'r' DecPoint");
                                      // If the real part is integer, ...
-                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($1.chType))
                                          // Convert it to float
                                          $1.aplFloat = (APLFLOAT) $1.aplInteger;
                                      // If the imaginary part is integer, ...
-                                     if ($4.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($4.chType))
                                          // Convert it to float
                                          $4.aplFloat = (APLFLOAT) $4.aplInteger;
 
@@ -331,19 +334,19 @@ Hc4Point:
       DecPoint 'i' DecPoint 'j' DecPoint 'i' 'j' DecPoint
                                     {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'i' 'j' DecPoint");
                                      // If the real part is integer, ...
-                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($1.chType))
                                          // Convert it to float
                                          $1.aplFloat = (APLFLOAT) $1.aplInteger;
                                      // If the imaginary part #1 is integer, ...
-                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($3.chType))
                                          // Convert it to float
                                          $3.aplFloat = (APLFLOAT) $3.aplInteger;
                                      // If the imaginary part #2 is integer, ...
-                                     if ($5.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($5.chType))
                                          // Convert it to float
                                          $5.aplFloat = (APLFLOAT) $5.aplInteger;
                                      // If the imaginary part #3 is integer, ...
-                                     if ($8.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($8.chType))
                                          // Convert it to float
                                          $8.aplFloat = (APLFLOAT) $8.aplInteger;
 
@@ -361,19 +364,19 @@ Hc4Point:
     | DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint
                                     {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint");
                                      // If the real part is integer, ...
-                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($1.chType))
                                          // Convert it to float
                                          $1.aplFloat = (APLFLOAT) $1.aplInteger;
                                      // If the imaginary part #1 is integer, ...
-                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($3.chType))
                                          // Convert it to float
                                          $3.aplFloat = (APLFLOAT) $3.aplInteger;
                                      // If the imaginary part #2 is integer, ...
-                                     if ($5.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($5.chType))
                                          // Convert it to float
                                          $5.aplFloat = (APLFLOAT) $5.aplInteger;
                                      // If the imaginary part #3 is integer, ...
-                                     if ($7.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($7.chType))
                                          // Convert it to float
                                          $7.aplFloat = (APLFLOAT) $7.aplInteger;
 
@@ -395,35 +398,35 @@ Hc8Point:
       DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint 'l' DecPoint 'i' 'j' DecPoint 'i' 'k' DecPoint 'i' 'l' DecPoint
                                     {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint 'l' DecPoint 'i' 'j' DecPoint 'i' 'k' DecPoint 'i' 'l' DecPoint");
                                      // If the real part is integer, ...
-                                     if ($1.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($1.chType))
                                          // Convert it to float
                                          $1.aplFloat = (APLFLOAT) $1.aplInteger;
                                      // If the imaginary part #1 is integer, ...
-                                     if ($3.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($3.chType))
                                          // Convert it to float
                                          $3.aplFloat = (APLFLOAT) $3.aplInteger;
                                      // If the imaginary part #2 is integer, ...
-                                     if ($5.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($5.chType))
                                          // Convert it to float
                                          $5.aplFloat = (APLFLOAT) $5.aplInteger;
                                      // If the imaginary part #3 is integer, ...
-                                     if ($7.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($7.chType))
                                          // Convert it to float
                                          $7.aplFloat = (APLFLOAT) $7.aplInteger;
                                      // If the imaginary part #4 is integer, ...
-                                     if ($9.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($9.chType))
                                          // Convert it to float
                                          $9.aplFloat = (APLFLOAT) $9.aplInteger;
                                      // If the imaginary part #5 is integer, ...
-                                     if ($12.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($12.chType))
                                          // Convert it to float
                                          $12.aplFloat = (APLFLOAT) $12.aplInteger;
                                      // If the imaginary part #6 is integer, ...
-                                     if ($15.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($15.chType))
                                          // Convert it to float
                                          $15.aplFloat = (APLFLOAT) $15.aplInteger;
                                      // If the imaginary part #7 is integer, ...
-                                     if ($18.chType EQ PN_NUMTYPE_INT)
+                                     if (IsIntegerType ($18.chType))
                                          // Convert it to float
                                          $18.aplFloat = (APLFLOAT) $18.aplInteger;
 
@@ -760,6 +763,12 @@ void PN_NumCalc
                 // Save in the result
                 lpYYArg->aplInteger = aplInteger;
 
+                if (IsBooleanValue (aplInteger))
+                    lpYYArg->chType = PN_NUMTYPE_BOOL;
+
+                // In case we need this number as a float later, ...
+                lpYYArg->aplFloat = (APLFLOAT) aplInteger;
+
                 break;
             } // End IF
 
@@ -848,6 +857,7 @@ LPPN_YYSTYPE PN_MakeBasePoint
     // Split cases based upon the numeric type of the base
     switch (lpYYBase->chType)
     {
+        case PN_NUMTYPE_BOOL:
         case PN_NUMTYPE_INT:
             // Get the base value
             aplIntBase = lpYYBase->aplInteger;
@@ -1017,18 +1027,18 @@ LPPN_YYSTYPE PN_MakeEulerPoint
 
 {
     // If the multiplier is integer, ...
-    if (lpYYMultiplier->chType EQ PN_NUMTYPE_INT)
+    if (IsIntegerType (lpYYMultiplier->chType))
         // Convert to float
         lpYYMultiplier->aplFloat = (APLFLOAT) lpYYMultiplier->aplInteger;
 
     // If the multiplier is integer or rational, ...
-    if (lpYYMultiplier->chType EQ PN_NUMTYPE_INT
+    if (IsIntegerType (lpYYMultiplier->chType)
      || lpYYMultiplier->chType EQ PN_NUMTYPE_RAT)
         // Change the type to float
         lpYYMultiplier->chType = PN_NUMTYPE_FLT;
 
     // If the exponent is integer, ...
-    if (lpYYExponent->chType EQ PN_NUMTYPE_INT)
+    if (IsIntegerType (lpYYExponent->chType))
         // Convert to float
         lpYYExponent->aplFloat = (APLFLOAT) lpYYExponent->aplInteger;
 
@@ -1100,18 +1110,18 @@ LPPN_YYSTYPE PN_MakePiPoint
 
 {
     // If the multiplier is integer, ...
-    if (lpYYMultiplier->chType EQ PN_NUMTYPE_INT)
+    if (IsIntegerType (lpYYMultiplier->chType))
         // Convert to float
         lpYYMultiplier->aplFloat = (APLFLOAT) lpYYMultiplier->aplInteger;
 
     // If the multiplier is integer or rational, ...
-    if (lpYYMultiplier->chType EQ PN_NUMTYPE_INT
+    if (IsIntegerType (lpYYMultiplier->chType)
      || lpYYMultiplier->chType EQ PN_NUMTYPE_RAT)
         // Change the type to float
         lpYYMultiplier->chType = PN_NUMTYPE_FLT;
 
     // If the exponent is integer, ...
-    if (lpYYExponent->chType EQ PN_NUMTYPE_INT)
+    if (IsIntegerType (lpYYExponent->chType))
         // Convert to float
         lpYYExponent->aplFloat = (APLFLOAT) lpYYExponent->aplInteger;
 

@@ -1,4 +1,10 @@
 code
 {
-  font-family:  SImPL;
+  font-family:  "SImPL", "SImPL medium", "APL385 Unicode", monospace;
+}
+
+.ttfRight
+{
+  padding-right: 12px;
+  background: url(/art/ttf.gif) center right no-repeat;
 }

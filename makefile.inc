@@ -87,7 +87,7 @@ ALL:    DIR                 \
         EXE                 \
         MAKEVER
 
-EXE:                        \
+EXE:    INITIAL_EXE         \
         $(O)$(ENAME).exe    \
         $(B)$(ENAME).exe
 
@@ -119,6 +119,9 @@ INITIAL_DEP:
 
 INITIAL_PRO:
         @echo ---.pro Files---
+
+INITIAL_EXE:
+        @echo ---.c   Files---
 
 {}.rc{$(O)}.res:
         @Set INCLUDE=$(I98);$(O)

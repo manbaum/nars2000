@@ -371,7 +371,7 @@ Welcome to NARS2000</h1>
 	  NARS2000 can run on any operating system that can run Wine.  Note that
 	  Wine is not an emulator, but a layer between the Windows executable
 	  and the non-Windows operating system.  In fact, the name <b>Wine</b>
-	  is a recursive acronym which stands for <b>Wine Is Not an Emulator</b>.</p>
+	  is a recursive acronym for <b>Wine Is Not an Emulator</b>.</p>
 
 	<p>For more details on running NARS2000 on your operating system, see
 	  <a class="linkleft" href="http://wiki.nars2000.org/index.php/Platforms">Platforms</a>

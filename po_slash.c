@@ -369,11 +369,13 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 			aplTypeRes = ARRAY_BOOL;
 	} else
 	// If the operand is a primitive scalar dyadic function,
+	//	 and the right arg is simple NH,
 	//	 calculate the storage type of the result,
 	//	 otherwise, assume it's ARRAY_NESTED
 	if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
 	 && lpPrimFlags
-	 && lpPrimFlags->DydScalar)
+	 && lpPrimFlags->DydScalar
+	 && IsSimpleNH (aplTypeRht))
 	{
 		// If the function is equal or not-equal, and the right
 		//	 arg is not Boolean, make the result storage type
@@ -705,10 +707,8 @@ RESTART_EXCEPTION:
 			//	 it in case we blow up
 			aplTypeTmp = aplTypeRht;
 
-			// If the left operand is a Primitive Dyadic Scalar function,
-			//	 and the right arg is simple NH, ...
-			if (bPrimDydScal
-			 && IsSimpleNH (aplTypeRht))
+			// If the left operand is a Primitive Dyadic Scalar function, ...
+			if (bPrimDydScal)
 			{
 				APLINT	 aplIntegerLft, 			// Left arg as integer
 						 aplIntegerRht; 			// Right ...

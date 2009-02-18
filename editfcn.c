@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -142,6 +142,7 @@ UBOOL CreateFcnWindow
             case NAMETYPE_OP1:
             case NAMETYPE_OP2:
             case NAMETYPE_OP3:
+            case NAMETYPE_TRN:
                 MB (pszNoEditPrimFns);
 
                 break;
@@ -832,6 +833,7 @@ UBOOL SyntaxColor
     //   in case we get a leading colon
     tkLocalVars.uCharStart =
     tkLocalVars.uCharIni   = uChar;
+    tkLocalVars.uActLen    = uLen;
     uCharIni = 0;
 
     // Handle leading right parens as system commands
@@ -1518,9 +1520,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             lpSymEntry = (LPSYMENTRY) SendMessageW (hWnd, MYWM_IZITNAME, xPos, yPos);
             if (lpSymEntry
              && (lpSymEntry->stFlags.ObjName EQ OBJNAME_NONE
-              || lpSymEntry->stFlags.ObjName EQ OBJNAME_USR)
-             && (lpSymEntry->stFlags.UsrDfn
-              || !lpSymEntry->stFlags.Value))
+              || lpSymEntry->stFlags.ObjName EQ OBJNAME_USR))
             {
                 LPAPLCHAR lpMemName;
 
@@ -1534,6 +1534,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     case NAMETYPE_OP1:
                     case NAMETYPE_OP2:
                     case NAMETYPE_OP3:
+                    case NAMETYPE_TRN:
                         // Lock the memory to get a ptr to it
                         lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 

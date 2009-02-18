@@ -299,7 +299,7 @@
 #define IsNameTypeOp(a)             ((a) &                    NAMETYPEMASK_OP )
 #define IsNameTypeFnOp(a)           ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
 #define IsNameTypeVar(a)            ((a) EQ NAMETYPE_VAR)
-#define IsNameTypeName(a)           (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_OP3)
+#define IsNameTypeName(a)           (IsNameTypeVar (a) || IsNameTypeFnOp (a))
 
 
 #define GetSignatureMem(a)          (((LPHEADER_SIGNATURE) (a))->nature)

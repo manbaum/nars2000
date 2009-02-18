@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -267,15 +267,22 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    LPPL_YYSTYPE lpYYFcnStr,        // Ptr to function strand
-                 lpYYRes;           // Ptr to the result
-    LPTOKEN      lptkAxis2;         // Ptr to secondary axis token (may be NULL)
+    LPFCNARRAY_HEADER lpHeader;     // Ptr to function array header
+    NAME_TYPES        fnNameType;   // Function array NAMETYPE
+    UINT              tknNELM;      // # tokens in the function array
+    LPPL_YYSTYPE      lpYYFcnStr,   // Ptr to function strand
+                      lpYYRes;      // Ptr to the result
+    LPTOKEN           lptkAxis2;    // Ptr to secondary axis token (may be NULL)
 
     // Lock the memory to get a ptr to it
-    lpYYFcnStr = MyGlobalLock (hGlbFcn);
+    lpHeader = MyGlobalLock (hGlbFcn);
+
+    // Save the NAMETYPE_xxx and # tokens
+    fnNameType = lpHeader->fnNameType;
+    tknNELM    = lpHeader->tknNELM;
 
     // Skip over the header to the data (PL_YYSTYPEs)
-    lpYYFcnStr = FcnArrayBaseToData (lpYYFcnStr);
+    lpYYFcnStr = FcnArrayBaseToData (lpHeader);
 
     // Check for axis operator
     lptkAxis2 = CheckAxisOper (lpYYFcnStr);
@@ -288,12 +295,23 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
     if (lptkAxis2)
         lptkAxis = lptkAxis2;
 
-    // The contents of the global memory object consist of
-    //   a series of PL_YYSTYPEs in RPN order.
-    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
-                                 lpYYFcnStr,    // Ptr to function strand
-                                 lptkRhtArg,    // Ptr to right arg token
-                                 lptkAxis);     // Ptr to axis token
+    // If it's a Train, ...
+    if (fnNameType EQ NAMETYPE_TRN)
+    {
+        if (lptkAxis NE NULL)
+            lpYYRes = PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
+        else
+            lpYYRes = ExecTrain_EM_YY   (lptkLftArg,    // Ptr to left arg token
+                                         lpYYFcnStr,    // Ptr to function strand
+                                         lptkRhtArg,    // Ptr to right arg token
+                                         tknNELM);      // # elements in the train
+    } else
+        // The contents of the global memory object consist of
+        //   a series of PL_YYSTYPEs in RPN order.
+        lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                     lpYYFcnStr,    // Ptr to function strand
+                                     lptkRhtArg,    // Ptr to right arg token
+                                     lptkAxis);     // Ptr to axis token
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
 
@@ -303,6 +321,157 @@ AXIS_SYNTAX_EXIT:
                               &lpYYFcnStr->tkToken);
     return NULL;
 } // End ExecFcnGlb_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ExecTrain_EM_YY
+//
+//  Execute a Train
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecTrain_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE ExecTrain_EM_YY
+    (LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     UINT         tknNELM)          // # elements in the Train
+
+{
+    LPPL_YYSTYPE lpYYRes  = NULL,   // Ptr to the result
+                 lpYYRes1 = NULL,   // Ptr to temporary result #1
+                 lpYYRes2 = NULL;   // ...                      2
+
+    // Note that the rightmost function is at the start of Train (lpYYFcnStr[0])
+    //   and the leftmost function is at the end of the Train (lpYYFcnStr[tknNELM - 1]).
+
+    Assert (tknNELM > 1);
+
+    // Split cases based upon the # elements in the Train
+    switch (tknNELM)
+    {               //  Monadic             Dyadic
+                    //  ---------------------------
+        case 2:     //  R g h R             L g h R
+            // Execute the righthand function
+            //   on the right arg
+            lpYYRes1 = ExecFuncStr_EM_YY (NULL,             // Ptr to left arg token
+                                         &lpYYFcnStr[0],    // Ptr to function strand
+                                          lptkRhtArg,       // Ptr to right arg token
+                                          NULL);            // Ptr to axis token
+            if (lpYYRes1)
+            {
+                // If this derived function is monadic, ...
+                if (lptkLftArg EQ NULL)
+                    lptkLftArg = lptkRhtArg;
+
+                // Execute the lefthand function between
+                //   the left arg and the previous result
+                lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,        // Ptr to left arg token
+                                            &lpYYFcnStr[1],     // Ptr to function strand
+                                            &lpYYRes1->tkToken, // Ptr to right arg token
+                                             NULL);             // Ptr to axis token
+            } // End IF
+
+            break;
+
+        case 3:     //  (f R) g (h R)       (L f R) g (L h R)
+            // Execute the righthand function between
+            //   the left and right args
+            lpYYRes1 = ExecFuncStr_EM_YY (lptkLftArg,       // Ptr to left arg token
+                                         &lpYYFcnStr[0],    // Ptr to function strand
+                                          lptkRhtArg,       // Ptr to right arg token
+                                          NULL);            // Ptr to axis token
+            if (lpYYRes1)
+            {
+                // Execute the lefthand function between
+                //   the left and right args
+                lpYYRes2 = ExecFuncStr_EM_YY (lptkLftArg,       // Ptr to left arg token
+                                             &lpYYFcnStr[2],    // Ptr to function strand
+                                              lptkRhtArg,       // Ptr to right arg token
+                                              NULL);            // Ptr to axis token
+                if (lpYYRes2)
+                    // Execute the middle function between
+                    //   the two previous results
+                    lpYYRes = ExecFuncStr_EM_YY (&lpYYRes2->tkToken,    // Ptr to left arg token
+                                                 &lpYYFcnStr[1],        // Ptr to function strand
+                                                 &lpYYRes1->tkToken,    // Ptr to right arg token
+                                                  NULL);                // Ptr to axis token
+            } // End IF
+
+            break;
+
+        default:
+            // If the # elements in the Train is Odd, ...
+            if (BIT0 & tknNELM)
+            {
+                // Execute all but the two leftmost functions as a Train
+                //   between the left and right args
+                lpYYRes1 = ExecTrain_EM_YY (lptkLftArg,     // Ptr to left arg token
+                                           &lpYYFcnStr[0],  // Ptr to function strand
+                                            lptkRhtArg,     // Ptr to right arg token
+                                            tknNELM - 2);   // # elements in the Train
+
+                if (lpYYRes1)
+                {
+                    // Execute the leftmost function
+                    //   between the left and right args
+                    lpYYRes2 = ExecFuncStr_EM_YY (lptkLftArg,               // Ptr to left arg token
+                                                 &lpYYFcnStr[tknNELM - 1],  // Ptr to function strand
+                                                  lptkRhtArg,               // Ptr to right arg token
+                                                  NULL);                    // Ptr to axis token
+                    if (lpYYRes2)
+                        // Execute the next to the leftmost function
+                        //   between the two previous results
+                        lpYYRes = ExecFuncStr_EM_YY (&lpYYRes2->tkToken,        // Ptr to left arg token
+                                                     &lpYYFcnStr[tknNELM - 2],  // Ptr to function strand
+                                                     &lpYYRes1->tkToken,        // Ptr to right argtoken
+                                                      NULL);                    // Ptr to axis token
+                } // End IF
+            } else
+            // If the # elements in the Train is Even, ...
+            {
+                // If this derived function is monadic, ...
+                if (lptkLftArg EQ NULL)
+                    lptkLftArg = lptkRhtArg;
+
+                // Execute all but the leftmost function as a Train
+                //   on the right arg
+                lpYYRes1 = ExecTrain_EM_YY (NULL,           // Ptr to left arg token
+                                           &lpYYFcnStr[0],  // Ptr to function strand
+                                            lptkRhtArg,     // Ptr to right arg token
+                                            tknNELM - 1);   // # elements in the Train
+                if (lpYYRes1)
+                    // Execute the leftmost function between
+                    //   the left arg and the previous result
+                    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,                // Ptr to left arg token
+                                                &lpYYFcnStr[tknNELM - 1],   // Ptr to function strand
+                                                &lpYYRes1->tkToken,         // Ptr to right arg token
+                                                 NULL);                     // Ptr to axis token
+            } // End IF/ELSE
+
+            break;
+    } // End SWITCH
+
+    // If a previous result is active, ...
+    if (lpYYRes1)
+    {
+        // Free the previous result
+        FreeResult (&lpYYRes1->tkToken); YYFree (lpYYRes1); lpYYRes1 = NULL;
+    } // End IF
+
+    if (lpYYRes2)
+    {
+        // Free the previous result
+        FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End ExecTrain_EM_YY
 #undef  APPEND_NAME
 
 

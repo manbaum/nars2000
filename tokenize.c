@@ -2093,16 +2093,16 @@ UBOOL fnComDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    int     iLen, iLen2;
+    int     iLen;
     TKFLAGS tkFlags = {0};
-    LPWCHAR lpwch, wp;
+    LPWCHAR wp;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnComDone");
 #endif
 
     // Get the length of the comment (up to but not including any '\r\n')
-    iLen  = lstrlenW (lptkLocalVars->lpwszCur); // Including the leading comment symbol
+    iLen = lptkLocalVars->uActLen - lptkLocalVars->uChar;   // Including the leading comment symbol
 
     // Because the incoming string might be in the middle of the Edit Ctrl buffer
     //   and thus have embedded \r\n in it, we need to use the smaller of the
@@ -2114,24 +2114,25 @@ UBOOL fnComDone
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
-        UINT uVar,              // Loop counter
-             uLen;              // Loop length
+        int iVar;               // Loop counter
 
-        // Get the number of chars
-        uLen = iLen;
+        // Copy the length
+        iVar = iLen;
 
         // Loop through the chars
-        for (uVar = 0; uVar < uLen; uVar++)
+        while (iVar--)
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
               gSyntaxColors[SC_COMMENT];
         goto NORMAL_EXIT;
     } // End IF
 
-    lpwch = wcspbrk (&lptkLocalVars->lpwszCur[1], L"\n");
-    if (lpwch)
+    wp = wcspbrk (&lptkLocalVars->lpwszCur[1], L"\n");
+    if (wp)
     {
-        iLen2 = (UINT) (&lpwch[*lpwch EQ UTF16_LAMP] - lptkLocalVars->lpwszCur);
+        int iLen2;
+
+        iLen2 = (UINT) (&wp[*wp EQ UTF16_LAMP] - lptkLocalVars->lpwszCur);
         iLen  = min (iLen2, iLen);
     } // End IF
 NORMAL_EXIT:
@@ -3375,6 +3376,7 @@ HGLOBAL Tokenize_EM
     //   in case we get a leading colon
     tkLocalVars.uCharStart =
     tkLocalVars.uCharIni   = uChar;
+    tkLocalVars.uActLen    = (UINT) aplNELM;
 
     for (     ; uChar <= aplNELM; uChar++)
     {

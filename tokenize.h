@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,25 +130,26 @@ typedef struct tagTKLOCALVARS
     FSATOKENS   State[3];           // 14:  Current state (FSA_xxx) (12 bytes)
     UINT        uChar,              // 20:  ...     index into lpwszLine
                 uCharStart,         // 24:  Initial ...                  (static)
-                uCharIni;           // 28:  ...                          (dynamic)
-    LPWCHAR     lpwszOrig,          // 2C:  Ptr to original lpwszLine
-                lpwszCur;           // 30:  ...    current WCHAR in ...
-    TOKEN_TYPES CtrlStrucTknType;   // 34:  Control Structure token type
-    UINT        CtrlStrucStrLen;    // 38:  ...               string length
-    ANON_CTRL_STRUC;                // 3C:  Ctrl Struc data (8 bytes)
-    LPCLRCOL    lpMemClrIni,        // 44:  Ptr to initial array of Syntax Colors (NULL = not coloring) (static)
-                lpMemClrNxt;        // 48:  Ptr to next    ...                                          (dynamic)
-    LPSCINDICES lpGrpSeqIni,        // 4C:  Ptr to initial syntax coloring grouping sequence (static)
-                lpGrpSeqNxt;        // 50:  Ptr to next    ...                               (dynamic)
-    UINT        PrevGroup,          // 54:  Current index in lpGrpSeq of the previous grouping symbol
+                uCharIni,           // 28:  ...                          (dynamic)
+                uActLen;            // 2C:  Actual length of lpwszLine (may be shorter than lstrlenW)
+    LPWCHAR     lpwszOrig,          // 30:  Ptr to original lpwszLine
+                lpwszCur;           // 34:  ...    current WCHAR in ...
+    TOKEN_TYPES CtrlStrucTknType;   // 38:  Control Structure token type
+    UINT        CtrlStrucStrLen;    // 3C:  ...               string length
+    ANON_CTRL_STRUC;                // 40:  Ctrl Struc data (8 bytes)
+    LPCLRCOL    lpMemClrIni,        // 48:  Ptr to initial array of Syntax Colors (NULL = not coloring) (static)
+                lpMemClrNxt;        // 4C:  Ptr to next    ...                                          (dynamic)
+    LPSCINDICES lpGrpSeqIni,        // 50:  Ptr to initial syntax coloring grouping sequence (static)
+                lpGrpSeqNxt;        // 54:  Ptr to next    ...                               (dynamic)
+    UINT        PrevGroup,          // 58:  Current index in lpGrpSeq of the previous grouping symbol
                                     //      (NO_PREVIOUS_GROUPING_SYMBOL = none)
-                NameInit;           // 58:  Index in lpMemClrIni of Start of name (including sysnames)
+                NameInit;           // 5C:  Index in lpMemClrIni of Start of name (including sysnames)
                                     //      (NO_PREVIOUS_NAME = none)
-    SCNAMETYPE  scNameType;         // 5C:  Type of name starting at NameInit
-    HWND        hWndEC;             // 60:  Window handle of Edit Ctrl (parent is SM or FE)
-    COLINDICES  colIndex;           // 64:  Current COL_xxx value
-    UINT        uSyntClrLen;        // 68:  # Syntax Color entries
-                                    // 6C:  Length
+    SCNAMETYPE  scNameType;         // 60:  Type of name starting at NameInit
+    HWND        hWndEC;             // 64:  Window handle of Edit Ctrl (parent is SM or FE)
+    COLINDICES  colIndex;           // 68:  Current COL_xxx value
+    UINT        uSyntClrLen;        // 6C:  # Syntax Color entries
+                                    // 70:  Length
 } TKLOCALVARS, *LPTKLOCALVARS;
 
 typedef UBOOL (*FNACTION) (LPTKLOCALVARS);

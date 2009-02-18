@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,13 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
     UINT    TknCount;               // 10:  Token count
     UINT    YYInuse:1,              // 14:  00000001:  This entry is in use
             YYIndirect:1,           //      00000002:  Arg is indirect
+            bTrain:1,               //      00000004:  Arg is a Train
 #ifdef DEBUG
-            Avail:6,                //      000000FC:  Available bits
+            Avail:5,                //      000000F8:  Available bits
             YYIndex:23,             //      7FFFFF00:  Index #
             YYFlag:1;               //      80000000:  Flag to distinguish YYAlloc from yylex
 #else
-            Avail:30;               //      FFFFFFFC:  Available bits
+            Avail:29;               //      FFFFFFF8:  Available bits
 #endif
     struct tagPL_YYSTYPE
            *lpYYFcnBase,            // 18:  Ptr to base function/operator

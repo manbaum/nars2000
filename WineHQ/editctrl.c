@@ -5169,14 +5169,21 @@ static LRESULT EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode)
  *  WM_PAINT
  *
  */
+
+// Define the following name to use a memory DC for drawing operations
+//   so as to reduce screen flicker.
+//#define   USEMEMDC
+
 static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
 {
-    HDC         hDCInc;
-    HDC         hDCMem;
     RECT        rcClient;
     HBRUSH      hBrush;
+    HDC         hDCInc;
+#ifdef USEMEMDC
+    HDC         hDCMem;
     HBITMAP     hBitmap,
                 hBitmapOld;
+#endif
     PAINTSTRUCT ps;
 
     // Get the incoming DC
@@ -5188,6 +5195,7 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
     // Get the background brush
     hBrush = (HBRUSH) (HANDLE_PTR) GetClassLongPtrW (es->hwndSelf, GCL_HBRBACKGROUND);
 
+#ifdef USEMEMDC
     // Create a compatible DC and bitmap
     hDCMem = CreateCompatibleDC (hDCInc);
     hBitmap = CreateCompatibleBitmap (hDCInc,
@@ -5195,39 +5203,49 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
                                       rcClient.bottom);
     hBitmapOld = SelectObject (hDCMem, hBitmap);
 
-#define hDCSub  hDCInc      // or hDCMem
+#define hDCSub  hDCMem
+
+#else
+
+#define hDCSub  hDCInc
+
+#endif
+
 
     // Handle WM_ERASEBKGND here by filling in the client area
     //   with the class background brush
     FillRect (hDCSub, &rcClient, hBrush);
 
+#ifdef USEMEMDC
     // Copy various attributes from the screen DC to the memory DC
     SetBkMode    (hDCMem, GetBkMode    (hDCInc));
     SetBkColor   (hDCMem, GetBkColor   (hDCInc));
     SetTextColor (hDCMem, GetTextColor (hDCInc));
+#endif
 
     // Call the original handler
     EDIT_WM_Paint2 (es, hDCSub, hDCInc, lFlags);
 
 #undef  hDCSub
 
+#ifdef USEMEMDC
     // Copy the memory DC to the screen DC
-////BitBlt (hDCInc,
-////        0,
-////        0,
-////        rcClient.right,
-////        rcClient.bottom,
-////        hDCMem,
-////        0,
-////        0,
-////        SRCCOPY);
+    BitBlt (hDCInc,
+            0,
+            0,
+            rcClient.right,
+            rcClient.bottom,
+            hDCMem,
+            0,
+            0,
+            SRCCOPY);
     // Restore the old resources
     SelectObject (hDCMem, hBitmapOld);
 
     // We no longer need these resources
     DeleteObject (hBitmap); hBitmap = NULL;
     DeleteDC (hDCMem); hDCMem = NULL;
-
+#endif
     // If we called BeginPaint at the start, ...
     if (!hdc)
         EndPaint(es->hwndSelf, &ps);

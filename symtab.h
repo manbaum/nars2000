@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -193,7 +193,7 @@ typedef enum tagNAME_TYPES
     NAMETYPE_FILL1,         // 07 (0111):  ...       filler
     NAMETYPE_LST,           // 08 (1000):  ...       list
     NAMETYPE_FILL2,         // 09 (1001):  ...       filler
-    NAMETYPE_TRAIN,         // 0A (1010):  ...     F train
+    NAMETYPE_TRN,           // 0A (1010):  ...     F train
                             // 09-0F:  Available entries (4 bits)
 } NAME_TYPES;
 

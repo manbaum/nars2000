@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ LPPL_YYSTYPE PrimProtoFnLeftTack_EM_YY
 //***************************************************************************
 //  $PrimFnMonLeftTack_EM_YY
 //
-//  Primitive function for monadic LeftTack (ERROR)
+//  Primitive function for monadic LeftTack ("right")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -122,7 +122,7 @@ LPPL_YYSTYPE PrimFnMonLeftTack_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc);
+    return PrimFnDydTackCommon_YY (lptkRhtArg, lptkFunc);
 } // End PrimFnMonLeftTack_EM_YY
 #undef  APPEND_NAME
 

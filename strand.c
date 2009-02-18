@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -115,7 +115,7 @@ LPPL_YYSTYPE PushVarStrand_YY
 //  $PushFcnStrand_YY
 //
 //  Push a function token onto the strand stack.
-//  No RefCnt copies aer made by this routine, so don't free
+//  No RefCnt copies are made by this routine, so don't free
 //    the argument.
 //***************************************************************************
 
@@ -696,6 +696,7 @@ static char tabConvert[][STRAND_LENGTH] =
     ByteRes = CalcArraySize (aplTypeRes, iLen, 1);
 
     // Allocate global memory for a length <iLen> vector of type <aplTypeRes>.
+    // N.B.: Conversion from APLUINT to UINT.
     Assert (ByteRes EQ (APLU3264) ByteRes);
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
@@ -1262,6 +1263,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 {
     UINT          uIniLen,          // Initial strand length
                   uActLen,          // Actual  ...
+                  uNELM,            // # elements in the strand
                   uCnt,             // Loop counter
                   TknCount;         // Token count
     APLUINT       ByteRes;          // # bytes in the result
@@ -1292,6 +1294,19 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     // Count the # tokens in the strand
     uIniLen = YYCountFcnStr (lpYYArg->lpYYFcnBase);
+
+    // Get the # elements in the strand
+    uNELM = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand);
+
+    // If the arg is a Train, ...
+    if (lpYYArg->bTrain)
+    {
+        // Save as the actual length (we've already done MakeFcnStrand on each function)
+        uIniLen = uNELM;
+
+        // Mark as a Train
+        fnNameType = NAMETYPE_TRN;
+    } // End IF
 
     //***********************************************************************
     //********** Single Element Case ****************************************
@@ -1368,11 +1383,37 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // Skip over the header to the data (PL_YYSTYPEs)
     lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
 
-    // Initialize token count
-    TknCount = 0;
+    // If it's a Train, ...
+    if (lpYYArg->bTrain)
+    {
+        // Copy the individual function strands to the result
+        for (uCnt = 0; uCnt < uIniLen; uCnt++)
+        {
+            LPPL_YYSTYPE lpYYTmp;
 
-    // Copy the PL_YYSTYPEs to the global memory object
-    lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, TRUE);
+            // Copy the function array
+            lpYYTmp = CopyPL_YYSTYPE_EM_YY (&lpYYStrand[uCnt], FALSE);
+
+            // Save the result is memory
+            lpYYMemData[uCnt] = *lpYYTmp;
+
+            // Free the result as CopyPL_YYSTYPE_EM_YY
+            //   will allocate a result
+            YYFree (lpYYTmp); lpYYTmp = NULL;
+        } // End FOR
+
+        // Find the earliest function base,
+        //   incrementing TknCount and lpYYMemData
+        for (TknCount = 0; TknCount < uIniLen; TknCount++, lpYYMemData++)
+            lpYYBase = min (lpYYBase, lpYYMemData->lpYYFcnBase);
+    } else
+    {
+        // Initialize token count
+        TknCount = 0;
+
+        // Copy the PL_YYSTYPEs to the global memory object
+        lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, TRUE);
+    } // End IF/ELSE
 
     // Calculate the actual length
     lpHeader->tknNELM = uActLen = (UINT) (lpYYMemData - lpYYMemStart);
@@ -1875,6 +1916,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
             + sizeof (lpYYStrand[0]) * iLen;    // For the data
 
     // Allocate global memory for a length <iLen> vector of type <cState>
+    // N.B.: Conversion from APLUINT to UINT.
     Assert (ByteRes EQ (APLU3264) ByteRes);
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
@@ -2147,6 +2189,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     ByteRes = CalcArraySize (ARRAY_LIST, iLen, 1);
 
     // Allocate global memory for a length <iLen> vector
+    // N.B.: Conversion from APLUINT to UINT.
     Assert (ByteRes EQ (APLU3264) ByteRes);
     hGlbLst = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbLst)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -424,6 +424,7 @@ APLBOOL EraseableName
         case NAMETYPE_FN12:
         case NAMETYPE_OP1:
         case NAMETYPE_OP2:
+        case NAMETYPE_TRN:
             // If the name is suspended or pendent, it's not eraseable
             if (IzitSusPendent (lpSymEntry))
                 return 0;

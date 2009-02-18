@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -426,7 +426,7 @@ UBOOL YYIsFcnStrAxis
 LPPL_YYSTYPE YYCopyFcn
     (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
      LPPL_YYSTYPE  lpYYArg,             // Ptr to function arg
-     LPPL_YYSTYPE *lpYYBase,            // Ptr to ptr to YY base address
+     LPPL_YYSTYPE *lplpYYBase,          // Ptr to ptr to YY base address
      LPINT         lpTknCount,          // Ptr to resulting token count
      UBOOL         bResUsed)            // TRUE iff the result is used
 
@@ -462,7 +462,7 @@ LPPL_YYSTYPE YYCopyFcn
         Assert (YYCheckInuse (&lpYYArg[i]));
 
         // Calculate the earlier function base
-        *lpYYBase = min (*lpYYBase, lpYYArg[i].lpYYFcnBase);
+        *lplpYYBase = min (*lplpYYBase, lpYYArg[i].lpYYFcnBase);
 
         // If the function is indirect, recurse
         if (lpYYArg[i].YYIndirect)
@@ -471,7 +471,7 @@ LPPL_YYSTYPE YYCopyFcn
             lpYYMem1 = lpYYMem;
 
             TknCount = 0;   // Initialize as it is incremented in YYCopyFcn
-            lpYYMem = YYCopyFcn (lpYYMem, lpYYArg[i].lpYYFcnBase, lpYYBase, &TknCount, TRUE);
+            lpYYMem = YYCopyFcn (lpYYMem, lpYYArg[i].lpYYFcnBase, lplpYYBase, &TknCount, TRUE);
 
             Assert (TknCount EQ (lpYYMem - lpYYMem1));
 
@@ -696,6 +696,7 @@ void IncrFcnMem
 
                     break;
 
+                case TKT_VARIMMED:
                 case TKT_FCNIMMED:
                 case TKT_OP1IMMED:
                 case TKT_OP2IMMED:

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -588,7 +588,7 @@ void DisplayGlobals
             Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlb)));
 
             wsprintfW (wszTemp,
-                       L"hGlb=%p NType=%s NELM=%3d RC=%1d%c                 Lck=%d (%S#%4d)",
+                       L"hGlb=%p NType=%sNELM=%3d RC=%1d%c                Lck=%d (%S#%4d)",
                        hGlb,
                        lpwNameTypeStr[lpHeader->fnNameType],
                        lpHeader->tknNELM,
@@ -997,17 +997,19 @@ LPWCHAR DisplayFcnGlb
      LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
 
 {
-    LPVOID  lpMemFcnArr;    // Ptr to function array global memory
-    UINT    tknNELM;        // # tokens in the function array
+    LPFCNARRAY_HEADER lpHeader;                 // Ptr to function array header
+    LPPL_YYSTYPE      lpMemFcnArr;              // ...                   global memory
+    UINT              tknNELM;                  // # tokens in the function array
+    NAME_TYPES        fnNameType;               // Function array name type
 
     // Clear the ptr type bits
     hGlbFcnArr = ClrPtrTypeDirAsGlb (hGlbFcnArr);
 
     // Lock the memory to get a ptr to it
-    lpMemFcnArr = MyGlobalLock (hGlbFcnArr);
+    lpHeader = MyGlobalLock (hGlbFcnArr);
 
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMemFcnArr)
-    tknNELM = lpHeader->tknNELM;
+    tknNELM    = lpHeader->tknNELM;
+    fnNameType = lpHeader->fnNameType;
 
     if (bDispHeader)
         lpaplChar += wsprintfW (lpaplChar,
@@ -1016,14 +1018,43 @@ LPWCHAR DisplayFcnGlb
                                 tknNELM,
                                 lpHeader->RefCnt,
                                 L" *"[lpHeader->RefCnt > 1]);
-#undef  lpHeader
+    // Skip over the function array header
+    lpMemFcnArr = FcnArrayBaseToData (lpHeader);
 
-    lpaplChar =
-      DisplayFcnSub (lpaplChar,                         // Ptr to output save area
-                     FcnArrayBaseToData (lpMemFcnArr),  // Ptr to function array data
-                     tknNELM,                           // Token NELM
-                     lpSavedWsGlbVarConv,               // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
-                     lpSavedWsGlbVarParm);              // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+    // Check for Trains
+    if (fnNameType EQ NAMETYPE_TRN)
+    {
+        // Skip to the next entry
+        lpMemFcnArr = &lpMemFcnArr[tknNELM];
+
+        // Start with surrounding parens
+        *lpaplChar++ = L'(';
+
+        // Loop through the function array entries
+        while (tknNELM--)
+        {
+            lpaplChar =
+              DisplayFcnSub (lpaplChar,             // Ptr to output save area
+                           --lpMemFcnArr,           // Ptr to function array data
+                             1,                     // Token NELM
+                             lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                             lpSavedWsGlbVarParm);  // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+            // Append visual separator
+            *lpaplChar++ = L' ';
+        } // End WHILE
+
+        // Ending paren
+        lpaplChar[-1] = L')';
+
+        // Ensure properly terminated
+        *lpaplChar = L'\0';
+    } else
+        lpaplChar =
+          DisplayFcnSub (lpaplChar,             // Ptr to output save area
+                         lpMemFcnArr,           // Ptr to function array data
+                         tknNELM,               // Token NELM
+                         lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                         lpSavedWsGlbVarParm);  // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcnArr); lpMemFcnArr = NULL;
 
@@ -1127,36 +1158,6 @@ LPWCHAR DisplayFcnSub
                                  1,
                                  lpSavedWsGlbVarConv,
                                  lpSavedWsGlbVarParm);
-            break;
-
-        case TKT_OP1NAMED:
-            DbgBrk ();          // ***FINISHME*** -- TKT_OP1NAMED in DisplayFcnSub
-
-
-
-
-
-
-            break;
-
-        case TKT_OP2NAMED:
-            DbgBrk ();          // ***FINISHME*** -- TKT_OP2NAMED in DisplayFcnSub
-
-
-
-
-
-
-            break;
-
-        case TKT_OP3NAMED:
-            DbgBrk ();          // ***FINISHME*** -- TKT_OP3NAMED in DisplayFcnSub
-
-
-
-
-
-
             break;
 
         case TKT_FCNNAMED:
@@ -1314,15 +1315,12 @@ LPWCHAR DisplayFcnSub
             switch (((LPHEADER_SIGNATURE) lpMemData)->nature)
             {
                 case FCNARRAY_HEADER_SIGNATURE:
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMemData)
-                    tknNELM = lpHeader->tknNELM;
-#undef  lpHeader
                     lpaplChar =
-                      DisplayFcnSub (lpaplChar,                         // Ptr to output save area
-                                     FcnArrayBaseToData (lpMemData),    // Ptr to function array data
-                                     tknNELM,                           // Token NELM
-                                     lpSavedWsGlbVarConv,               // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
-                                     lpSavedWsGlbVarParm);              // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                      DisplayFcnGlb (lpaplChar,             // Ptr to output save area
+                                     hGlbData,              // Function array global memory handle
+                                     FALSE,                 // TRUE iff we're to display the header
+                                     lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                                     lpSavedWsGlbVarParm);  // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                     break;
 
                 case DFN_HEADER_SIGNATURE:
@@ -1381,6 +1379,9 @@ LPWCHAR DisplayFcnSub
                 *--lpaplChar = L'\0';   // Overwrite the trailing blank
             break;
 
+        case TKT_OP1NAMED:          // At the moment, named operators are all one char
+        case TKT_OP2NAMED:          //   symbols (no assignment of {jot}{dot}), so they
+        case TKT_OP3NAMED:          //   are all immediates and are handled as such above.
         defstop
             break;
     } // End SWITCH

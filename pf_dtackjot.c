@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3230,12 +3230,12 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
                     // Get the next value from the right arg
                     if (lpMemRht)
-                        GetNextValueMem (lpMemRht,
-                                         aplTypeRht,
-                                         aplDimCol + aplDimRow * aplDimNCols,
-                                        &hGlbItmRht,
-                                        &aplLongestRht,
-                                        &immTypeRht);
+                        GetNextValueMem (lpMemRht,                              // Ptr to right arg global memory data
+                                         aplTypeRht,                            // Right arg  storage type
+                                         aplDimCol + aplDimRow * aplDimNCols,   // Index into right arg
+                                        &hGlbItmRht,                            // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                        &aplLongestRht,                         // Ptr to result immediate value (may be NULL)
+                                        &immTypeRht);                           // Ptr to result immediate type (may be NULL)
                     else
                         immTypeRht = TranslateArrayTypeToImmType (aplTypeRht);
 
@@ -3249,9 +3249,9 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         // The item must be a char vector
 
                         // Lock the memory to get a ptr to it
-                        lpMemItmRht = MyGlobalLock (hGlbItmRht);
+                        lpMemItmRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbItmRht));
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemItmRht)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemItmRht)
                         // Get the array parameters
                         aplNELMItmRht = lpHeader->NELM;
                         aplRankItmRht = lpHeader->Rank;
@@ -3269,7 +3269,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         *lpaplChar++ = L'\0';
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
+                        MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbItmRht)); lpMemItmRht = NULL;
                     } else
                     // Split cases based upon the immediate type
                     switch (immTypeRht)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -153,7 +153,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                     GetNextValueMem (lpMemRht,              // Ptr to right arg global memory
                                      aplTypeRht,            // Right arg storage type
                                      uRht,                  // Right arg index
-                                    &hGlbItmRht,            // Right arg item global memory handle
+                                    &hGlbItmRht,            // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                                     &aplLongestItmRht,      // Ptr to right arg immediate value
                                     &immTypeItmRht);        // Ptr to right arg immediate type
                     // If the right arg item is an array, ...
@@ -173,7 +173,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             APLNELM   aplNELMItmRht;        // Right arg item NELM
 
                             // Lock the memory to get a ptr to it
-                            lpMemItmRht = MyGlobalLock (hGlbItmRht);
+                            lpMemItmRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbItmRht));
 
                             // Get the array NELM
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemItmRht)
@@ -188,7 +188,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                                 break;
 
                             // We no longer need this ptr
-                            MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
+                            MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbItmRht)); lpMemItmRht = NULL;
 
                             if (IsEmpty (aplNELMItmRht))
                                 goto RIGHT_DOMAIN_EXIT;

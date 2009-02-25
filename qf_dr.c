@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1045,7 +1045,7 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
             GetNextValueMem (lpMemRht,      // Ptr to item global memory data
                              aplTypeRht,    // Item storage type
                              uRes,          // Index into item
-                             NULL,          // Ptr to result global memory handle (may be NULL)
+                             NULL,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestRht, // Ptr to result immediate value (may be NULL)
                              NULL);         // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
             // Convert to APLCHARs

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -236,17 +236,6 @@ typedef struct tagSTART_ADDRESSES
     "EnumCallbackPassMsg"       , (LPUCHAR) &EnumCallbackPassMsg        ,
     "MFWndProc"                 , (LPUCHAR) &MFWndProc                  ,
 
-    // pl_parse.c/y
-    "pl_yyparse"                , (LPUCHAR) &pl_yyparse                 ,
-    "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
-    "SymbTypeVFO"               , (LPUCHAR) &SymbTypeVFO                ,
-    "LookaheadSurround"         , (LPUCHAR) &LookaheadSurround          ,
-    "LookaheadAdjacent"         , (LPUCHAR) &LookaheadAdjacent          ,
-    "LookaheadDyadicOp"         , (LPUCHAR) &LookaheadDyadicOp          ,
-    "WaitForInput"              , (LPUCHAR) &WaitForInput               ,
-    "AmbOpSwap_EM"              , (LPUCHAR) &AmbOpSwap_EM               ,
-    "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                 ,
-
     // pf_*.c
 
     // pf_deltastile.c
@@ -296,6 +285,9 @@ typedef struct tagSTART_ADDRESSES
     "PrimFnQuery_EM_YY"         , (LPUCHAR) &PrimFnQuery_EM_YY          ,
     "PrimFnDydQuery_EM_YY"      , (LPUCHAR) &PrimFnDydQuery_EM_YY       ,
 
+    // pf_slash.c
+    "PrimFnDydSlash_EM_YY"      , (LPUCHAR) &PrimFnDydSlash_EM_YY       ,
+
     // pf_squad.c
     "PrimFnSquad_EM_YY"         , (LPUCHAR) &PrimFnSquad_EM_YY          ,
     "PrimProtoFnSquad_EM_YY"    , (LPUCHAR) &PrimProtoFnSquad_EM_YY     ,
@@ -311,6 +303,17 @@ typedef struct tagSTART_ADDRESSES
     // pf_utackjot.c
     "PrimFnMonUptackJotCSPLParse",(LPUCHAR) &PrimFnMonUpTackJotCSPLParse,
     "PrimFnMonUptackJotPLParse" , (LPUCHAR) &PrimFnMonUpTackJotPLParse  ,
+
+    // pl_parse.c/y
+    "pl_yyparse"                , (LPUCHAR) &pl_yyparse                 ,
+    "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
+    "SymbTypeVFO"               , (LPUCHAR) &SymbTypeVFO                ,
+    "LookaheadSurround"         , (LPUCHAR) &LookaheadSurround          ,
+    "LookaheadAdjacent"         , (LPUCHAR) &LookaheadAdjacent          ,
+    "LookaheadDyadicOp"         , (LPUCHAR) &LookaheadDyadicOp          ,
+    "WaitForInput"              , (LPUCHAR) &WaitForInput               ,
+    "AmbOpSwap_EM"              , (LPUCHAR) &AmbOpSwap_EM               ,
+    "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                 ,
 
     // po_cmiddot.c
     "PrimOpDydCircleMiddleDotCommon_EM_YY", (LPUCHAR) &PrimOpDydCircleMiddleDotCommon_EM_YY,

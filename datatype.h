@@ -56,6 +56,7 @@ typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMT
 #define MAX_APLDIM      MAX_APLINT                              // ...      APLDIM
 #define MIN_APLINT      0x8000000000000000                      // Smallest APLINT
 #define MIN_APLINT_STR  WS_UTF16_OVERBAR L"9223372036854775808" // ...      ...    as a string
+#define MAX_UNICODE     0x1FFFFF                                // Largest allowable Unicode code point
 
 // # bits in an APLxxx
 #define BITS_IN_APLCHAR (NBIB * (sizeof (APLCHAR)))
@@ -231,18 +232,19 @@ typedef enum tagPERM_NDX
 
 typedef struct tagVARARRAY_HEADER
 {
-    HEADER_SIGNATURE Sig;       // 00:  Array header signature
-    UINT             ArrType:4, // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
-                     PermNdx:4, //      000000F0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
-                     SysVar:1,  //      00000100:  Izit for a Sysvar (***DEBUG*** only)?
-                     PV0:1,     //      00000200:  Permutation Vector in origin-0
-                     PV1:1,     //      00000400:  ...                          1
-                     Avail:21;  //      FFFFF800:  Available bits
-    UINT             RefCnt;    // 08:  Reference count
-    APLNELM          NELM;      // 0C:  # elements in the array
-    APLRANK          Rank;      // 10:  The rank of the array
-                                //      followed by the dimensions
-                                // 14:  Length
+    HEADER_SIGNATURE Sig;           // 00:  Array header signature
+    UINT             ArrType:4,     // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
+                     PermNdx:4,     //      000000F0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
+                     SysVar:1,      //      00000100:  Izit for a Sysvar (***DEBUG*** only)?
+                     PV0:1,         //      00000200:  Permutation Vector in origin-0
+                     PV1:1,         //      00000400:  ...                          1
+                     bSelSpec:1,    //      00000800:  Select Specification array
+                     Avail:20;      //      FFFFF000:  Available bits
+    UINT             RefCnt;        // 08:  Reference count
+    APLNELM          NELM;          // 0C:  # elements in the array
+    APLRANK          Rank;          // 10:  The rank of the array
+                                    //      followed by the dimensions
+                                    // 14:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
 
 // List array header

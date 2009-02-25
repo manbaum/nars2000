@@ -803,7 +803,7 @@ static char tabConvert[][STRAND_LENGTH] =
                             GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                              aplTypeNum,        // Item storage type
                                              uNum,              // Index into item
-                                             NULL,              // Ptr to result global memory handle (may be NULL)
+                                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                             &aplLongestNum,     // Ptr to result immediate value (may be NULL)
                                              NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                             // Copy the Boolean value to the result
@@ -896,7 +896,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                          aplTypeNum,        // Item storage type
                                          uNum,              // Index into item
-                                         NULL,              // Ptr to result global memory handle (may be NULL)
+                                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNum,     // Ptr to result immediate value (may be NULL)
                                          NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                         // Copy the integer value to the result
@@ -1064,7 +1064,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                          aplTypeNum,        // Item storage type
                                          uNum,              // Index into item
-                                         NULL,              // Ptr to result global memory handle (may be NULL)
+                                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNum,     // Ptr to result immediate value (may be NULL)
                                          NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                         // If the numeric strand is integer, ...
@@ -1168,7 +1168,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                          aplTypeNum,        // Item storage type
                                          uNum,              // Index into item
-                                         NULL,              // Ptr to result global memory handle (may be NULL)
+                                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNum,     // Ptr to result immediate value (may be NULL)
                                          NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                         // Make a SYMENTRY

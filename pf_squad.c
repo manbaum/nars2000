@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -420,10 +420,14 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             if (!IsGlbTypeLstDir (MakePtrTypeGlb (hGlbLft)))
             {
                 // Get next value from the left arg
-                GetNextValueMem (lpMemLft, aplTypeLft, 0, &hGlbSub, NULL, NULL);
-
+                GetNextValueMem (lpMemLft,      // Ptr to left arg global memory
+                                 aplTypeLft,    // Left arg storage type
+                                 0,             // Left arg index
+                                &hGlbSub,       // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                                 NULL,          // Ptr to left arg immediate value
+                                 NULL);         // Ptr to left arg immediate type
                 // The item must be a global
-                Assert (hGlbSub NE NULL);
+                Assert (GetPtrTypeDir (hGlbSub) EQ PTRTYPE_HGLOBAL);
 
                 // Get the global attrs
                 AttrsOfGlb (hGlbSub, &aplTypeSub, &aplNELMSub, NULL, NULL);
@@ -435,12 +439,16 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         } else
         for (uLft = 0; uLft < aplNELMLft; uLft++)
         {
-            APLLONGEST aplLongestSub;       // Left arg item immediate value
-            IMM_TYPES  immTypeSub;          // Left arg item immediate type
+            APLLONGEST aplLongestSub;           // Left arg item immediate value
+            IMM_TYPES  immTypeSub;              // Left arg item immediate type
 
             // Get next value from the left arg
-            GetNextValueMem (lpMemLft, aplTypeLft, uLft, &hGlbSub, &aplLongestSub, &immTypeSub);
-
+            GetNextValueMem (lpMemLft,          // Ptr to left arg global memory
+                             aplTypeLft,        // Left arg storage type
+                             uLft,              // Left arg index
+                            &hGlbSub,           // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestSub,     // Ptr to left arg immediate value
+                            &immTypeSub);       // Ptr to left arg immediate type
             // If the left arg item is a global, ...
             if (hGlbSub)
             {
@@ -459,7 +467,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 if (lptkSetArg && aplRankSub)
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemDimSub = MyGlobalLock (hGlbSub);
+                    lpMemDimSub = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbSub));
 
                     // Skip over the header to the dimensions
                     lpMemDimSub = VarArrayBaseToDim (lpMemDimSub);
@@ -469,7 +477,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                         aplRankN1Res +=  !IsUnitDim (*lpMemDimSub++);
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (hGlbSub); lpMemDimSub = NULL;
+                    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbSub)); lpMemDimSub = NULL;
                 } // End IF
             } else
             // The left arg item is immediate (in <aplLongestSub> and of type <immTypeSub>)
@@ -609,9 +617,17 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             // If the left arg is a global, ...
             if (hGlbLft)
             {
-                // Get next value from the left arg
-                GetNextValueMem (lpMemLft, aplTypeLft, uLft++, &hGlbSub, NULL, NULL);
+                IMM_TYPES immTypeSub;           // Item immediate type
 
+                // Get next value from the left arg
+                GetNextValueMem (lpMemLft,      // Ptr to left arg global memory
+                                 aplTypeLft,    // Left arg storage type
+                                 uLft++,        // Left arg index
+                                &hGlbSub,       // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                                 NULL,          // Ptr to left arg immediate value (may be NULL)
+                                &immTypeSub);   // Ptr to left arg immediate type (may be NULL)
+                                                // The above ptr is needed (but unused) to force
+                                                //   GetNextValueMem to return hGlbSub as an HGLOBAL only
                 // If the left arg item is a global, ...
                 if (hGlbSub)
                 {
@@ -624,7 +640,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     AttrsOfGlb (hGlbSub, NULL, &aplNELMSub, &aplRankSub, NULL);
 
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (hGlbSub);
+                    lpMemSub = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbSub));
 
                     // Skip over the header to the dimensions
                     lpMemSub = VarArrayBaseToDim (lpMemSub);
@@ -661,7 +677,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     } // End IF/ELSE/FOR
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbSub)); lpMemSub = NULL;
 
                     // Check for error
                     if (!bRet)
@@ -753,11 +769,11 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
             if (IsSingleton (aplNELMSet))
                 // Get the first item from the set arg
-                GetNextItemMem (lpMemSet,
-                                aplTypeSet,
-                                0,
-                               &hGlbSubSet,
-                               &aplLongestSet);
+                GetNextItemMem (lpMemSet,           // Ptr to item global memory data
+                                aplTypeSet,         // Item storage type
+                                0,                  // Index into item
+                               &hGlbSubSet,         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                               &aplLongestSet);     // Ptr to result immediate value (may be NULL)
             else
                 aplIndexSet = 0;
         } // End IF
@@ -862,8 +878,12 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 if (hGlbLft)
                 {
                     // Get the array of indices from the left arg
-                    GetNextValueMem (lpMemLft, aplTypeLft, iLft--, &hGlbSub, &aplLongestSub, &immTypeSub);
-
+                    GetNextValueMem (lpMemLft,          // Ptr to left arg global memory
+                                     aplTypeLft,        // Left arg storage type
+                                     iLft--,            // Left arg index
+                                    &hGlbSub,           // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                                    &aplLongestSub,     // Ptr to left arg immediate value
+                                    &immTypeSub);       // Ptr to left arg immediate type
                     // If the left arg item is a global, ...
                     if (hGlbSub)
                     {
@@ -946,11 +966,15 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         {
             // Extract the <aplIntAcc> value from the right arg
             //   and save into the result
-            GetNextValueMem (lpMemRht, aplTypeRht, aplIntAcc, &hGlbSub, &aplLongestSub, &immTypeSub);
-
+            GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
+                             aplTypeRht,        // Right arg storage type
+                             aplIntAcc,         // Right arg index
+                            &hGlbSub,           // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestSub,     // Ptr to right arg immediate value
+                            &immTypeSub);       // Ptr to right arg immediate type
             // If the right arg item is a global, ...
             if (hGlbSub)
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDirAsGlb (hGlbSub);
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hGlbSub);
             else
             // The right arg item is immediate
             //   (in <aplLongestSub> of immediate type <immTypeSub>)
@@ -1017,11 +1041,11 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         {
             // Get the next item from the set arg
             if (!IsSingleton (aplNELMSet))
-                GetNextItemMem (lpMemSet,
-                                aplTypeSet,
-                                aplIndexSet++,
-                               &hGlbSubSet,
-                               &aplLongestSet);
+                GetNextItemMem (lpMemSet,               // Ptr to item global memory data
+                                aplTypeSet,             // Item storage type
+                                aplIndexSet++,          // Index into item
+                               &hGlbSubSet,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                               &aplLongestSet);         // Ptr to result immediate value (may be NULL)
             // Replace the <aplIntAcc> element in hGlbRht
             //   with <aplLongestSet> or <hGlbSubSet> depending upon <aplTypeRht>
             if (!ArrayIndexReplace_EM (aplTypeRht,      // Right arg storage type

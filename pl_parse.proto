@@ -11,4 +11,5 @@ void AmbOpToFcn (LPPL_YYSTYPE lpYYFcn);
 void AmbOpToOp1 (LPPL_YYSTYPE lpYYFcn);
 void ArrExprCheckCaller (LPPLLOCALVARS lpplLocalVars, LPSIS_HEADER lpSISCur, LPPL_YYSTYPE lpYYArg);
 UBOOL CheckSelSpec_EM (LPPLLOCALVARS lpplLocalVars, LPTOKEN lptkNameVars);
+UBOOL IsSelectSpec (LPTOKEN lptkArg);
 PL_YYSTYPE MakeTempCopy (LPPL_YYSTYPE lpYYTmp);

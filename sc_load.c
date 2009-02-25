@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -805,7 +805,7 @@ CORRUPTWS_EXIT:
 //***************************************************************************
 //  $ParseSavedWsVar_EM
 //
-//  Parse a value of the form V FMTSTR_GLBCNT or V T N R S V
+//  Parse a value of the form FMTSTR_GLBCNT or T N R S V
 //***************************************************************************
 
 #ifdef DEBUG
@@ -827,7 +827,8 @@ LPWCHAR ParseSavedWsVar_EM
      LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant error message text
 
 {
-    WCHAR        wcTmp;                 // Temporary char
+    WCHAR        wcTmp,                 // Temporary char
+                 wcQuote;               // Surrounding quote mark for a char
     LPWCHAR      lpwCharEnd,            // Temporary ptr
                  lpwDataEnd;            // ...
     STFLAGS      stFlags = {0};         // SymTab flags
@@ -984,9 +985,13 @@ LPWCHAR ParseSavedWsVar_EM
                 break;
 
             case ARRAY_CHAR:        // Character
-                Assert (L'\'' EQ *lpwSrc); lpwSrc++;
+                // Get the leading quote mark
+                //   and skip over it
+                wcQuote = *lpwSrc++;
 
-                // Convert the single {name) or other char to UTF16_xxx
+                Assert (wcQuote EQ L'\'' || wcQuote EQ L'"');
+
+                // Convert the single {name} or other char to UTF16_xxx
                 if (L'{' EQ  *lpwSrc)
                 {
                     // Get the next char
@@ -999,7 +1004,10 @@ LPWCHAR ParseSavedWsVar_EM
                 } else
                     wcTmp = *lpwSrc++;
 
-                Assert (L'\'' EQ *lpwSrc); lpwSrc++;
+                Assert (wcQuote EQ *lpwSrc); lpwSrc++;
+
+                // Skip to the next field
+                lpwSrc = SkipPastCharW (lpwSrc, L' ');
 
                 // If we're to save the SymTab, ...
                 if (bSymTab)

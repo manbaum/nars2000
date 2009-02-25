@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -262,6 +262,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                   apaMulRht;        // ...           multiplier
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -369,6 +370,9 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   <aplRankRht> values in lpMemAxis
     lpMemGrUp = &lpMemAxis[aplRankRht];
 
+    // Save a ptr to the right arg header
+    lpMemHdrRht = lpMemRht;
+
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
@@ -416,6 +420,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+    lpHeader->bSelSpec   = lpMemHdrRht->bSelSpec;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;

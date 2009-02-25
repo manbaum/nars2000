@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1693,7 +1693,7 @@ APLINT GetQuadICValue
         GetNextItemMem (lpMemQuadIC,        // Ptr to item global memory data
                         aplTypeQuadIC,      // Item storage type
                         uIndex,             // Index into item
-                        NULL,               // Ptr to result global memory handle (may be NULL)
+                        NULL,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                        &aplIntQuadIC);      // Ptr to result immediate value (may be NULL)
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadIC); lpMemQuadIC = NULL;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -381,6 +381,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPVARARRAY_HEADER lpMemHdrRht;      // Ptr to right arg header
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -469,7 +470,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         aplRankRes = aplRankRht + 1 - aplNELMAxis;
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemRht = lpMemHdrRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type and NELM
@@ -554,6 +555,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->bSelSpec   = lpMemHdrRht->bSelSpec;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRes;
@@ -1356,7 +1358,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     //   at and beyond the axis taking into account
     //   laminate, scalar extension, and rank differing by one
     aplDimLftEnd = 1;
-    if (bFract || IsScalar (aplRankLft))
+    if (IsScalar (aplRankLft))
         for (uEnd = aplAxis + !bFract;
              uEnd < aplRankRht;
              uEnd++)
@@ -1371,7 +1373,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     //   at and beyond the axis taking into account
     //   laminate, scalar extension, and rank differing by one
     aplDimRhtEnd = 1;
-    if (bFract || IsScalar (aplRankRht))
+    if (IsScalar (aplRankRht))
         for (uEnd = aplAxis + !bFract;
              uEnd < aplRankLft;
              uEnd++)

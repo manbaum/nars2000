@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -293,7 +293,7 @@ WSFULL_EXIT:
 #endif
 
 LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
-    (HGLOBAL hGlbRht,               // Handle to right arg
+    (HGLOBAL hGlbRht,               // Right arg global memory handle
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
@@ -307,6 +307,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
                  uBitIndex = 0;     // Bit index ...
     UBOOL        bRet = TRUE;       // TRUE iff result is valid
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
 
     // Traverse the array counting the # simple scalars
     //   and keeping track of the common storage type --
@@ -332,16 +333,23 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
+    // Lock the memory to get a ptr to it
+    lpMemHdrRht = MyGlobalLock (hGlbRht);
+
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+    lpHeader->bSelSpec   = lpMemHdrRht->bSelSpec;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
 #undef  lpHeader
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
     // Save the dimension in the result
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
@@ -1820,16 +1828,18 @@ UBOOL PrimFnDydEpsilonOther
      LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
-    HGLOBAL    hGlbSubLft,              // Left arg item global memory handle
-               hGlbSubRht;              // Right ...
-    APLLONGEST aplLongestSubLft,        // Left arg item immediate value
-               aplLongestSubRht;        // Right ...
-    IMM_TYPES  immTypeSubLft,           // Left arg item immediate type
-               immTypeSubRht;           // Right ...
-    UINT       uBitIndex;               // Bit index for marching through Booleans
-    APLFLOAT   fQuadCT;                 // []CT
-    APLUINT    uLft,                    // Loop counter
-               uRht;                    // ...
+    HGLOBAL      hGlbSubLft,        // Left arg item global memory handle
+                 hGlbSubRht;        // Right ...
+    APLLONGEST   aplLongestSubLft,  // Left arg item immediate value
+                 aplLongestSubRht;  // Right ...
+    IMM_TYPES    immTypeSubLft,     // Left arg item immediate type
+                 immTypeSubRht;     // Right ...
+    UINT         uBitIndex;         // Bit index for marching through Booleans
+    APLFLOAT     fQuadCT;           // []CT
+    APLUINT      uLft,              // Loop counter
+                 uRht;              // ...
+    LPPL_YYSTYPE lpYYTmp;           // Ptr to the temporary result
+    UBOOL        bCmp;              // TRUE iff the comparison is TRUE
 
     // This leaves:  Left vs. Right
     //                B   vs.    FHN
@@ -1851,7 +1861,7 @@ UBOOL PrimFnDydEpsilonOther
         GetNextValueMem (lpMemLft,              // Ptr to left arg global memory
                          aplTypeLft,            // Left arg storage type
                          uLft,                  // Left arg index
-                        &hGlbSubLft,            // Left arg item global memory handle
+                        &hGlbSubLft,            // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                         &aplLongestSubLft,      // Ptr to left arg immediate value
                         &immTypeSubLft);        // Ptr to left arg immediate type
         // Loop through the right arg
@@ -1865,7 +1875,7 @@ UBOOL PrimFnDydEpsilonOther
             GetNextValueMem (lpMemRht,              // Ptr to right arg global memory
                              aplTypeRht,            // Right arg storage type
                              uRht,                  // Right arg index
-                            &hGlbSubRht,            // Right arg item global memory handle
+                            &hGlbSubRht,            // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestSubRht,      // Ptr to right arg immediate value
                             &immTypeSubRht);        // Ptr to right arg immediate type
             // If both items are globals, ...
@@ -1878,7 +1888,7 @@ UBOOL PrimFnDydEpsilonOther
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubLft.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
 ////////////////tkSubLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-                tkSubLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubLft);
+                tkSubLft.tkData.tkGlbData  = hGlbSubLft;
                 tkSubLft.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // Fill in the right arg item token
@@ -1889,10 +1899,18 @@ UBOOL PrimFnDydEpsilonOther
                 tkSubRht.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // Use match to determine equality
-                if (PrimFnDydEqualUnderbar_EM_YY (&tkSubLft,        // Ptr to left arg token
-                                                   lptkFunc,        // Ptr to function token
-                                                  &tkSubRht,        // Ptr to right arg token
-                                                   NULL))           // Ptr to axis token (may be NULL)
+                lpYYTmp =
+                  PrimFnDydEqualUnderbar_EM_YY (&tkSubLft,      // Ptr to left arg token
+                                                 lptkFunc,      // Ptr to function token
+                                                &tkSubRht,      // Ptr to right arg token
+                                                 NULL);         // Ptr to axis token (may be NULL)
+                // Save the result of the comparison
+                bCmp = lpYYTmp->tkToken.tkData.tkBoolean;
+
+                // Free the temporary result
+                YYFree (lpYYTmp); lpYYTmp = NULL;
+
+                if (bCmp)
                     goto SET_RESULT_BIT;
             } else
             // If both items are simple, ...

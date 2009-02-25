@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1150,14 +1150,14 @@ UBOOL PrimFnDydIotaOther
         GetNextValueMem (lpMemRht,              // Ptr to right arg global memory
                          aplTypeRht,            // Right arg storage type
                          uRht,                  // Right arg index
-                        &hGlbSubRht,            // Right arg item global memory handle
+                        &hGlbSubRht,            // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                         &aplLongestSubRht,      // Ptr to right arg immediate value
                         &immTypeSubRht);        // Ptr to right arg immediate type
         // Fill in the right arg item token
         tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkSubRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
 ////////tkSubRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-        tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
+        tkSubRht.tkData.tkGlbData  = hGlbSubRht;
         tkSubRht.tkCharIndex       = NEG1U;
 
         // Loop through the left arg
@@ -1171,7 +1171,7 @@ UBOOL PrimFnDydIotaOther
             GetNextValueMem (lpMemLft,              // Ptr to left arg global memory
                              aplTypeLft,            // Left arg storage type
                              uLft,                  // Left arg index
-                            &hGlbSubLft,            // Left arg item global memory handle
+                            &hGlbSubLft,            // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestSubLft,      // Ptr to left arg immediate value
                             &immTypeSubLft);        // Ptr to left arg immediate type
             // If both items are globals, ...
@@ -1183,7 +1183,7 @@ UBOOL PrimFnDydIotaOther
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubLft.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
 ////////////////tkSubLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-                tkSubLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubLft);
+                tkSubLft.tkData.tkGlbData  = hGlbSubLft;
                 tkSubLft.tkCharIndex       = NEG1U;
 
                 // Use match to determine equality

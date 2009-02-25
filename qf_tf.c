@@ -533,7 +533,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                 GetNextValueMem (lpMemItm,          // Ptr to item global memory data
                                                  aplTypeItm,        // Item storage type
                                                  uCnt,              // Index into item
-                                                 NULL,              // Ptr to result global memory handle (may be NULL)
+                                                 NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                                 &aplLongestItm,     // Ptr to result immediate value (may be NULL)
                                                  NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                                 if (IsSimpleInt (aplTypeItm))

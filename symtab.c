@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1510,7 +1510,7 @@ LPWCHAR CharToSymbolName
 //***************************************************************************
 //  $SymbolNameToChar
 //
-//  Translate a {symbol} name to its char allowing for {x\XXXX}
+//  Translate a {symbol} name to its char allowing for {\xXXXX} and {\uXXXXXX}
 //***************************************************************************
 
 WCHAR SymbolNameToChar
@@ -1522,34 +1522,42 @@ WCHAR SymbolNameToChar
     WCHAR      wcRes;               // Char result
     LPWCHAR    lpwCharEnd;          // Temporary ptr
     UINT       uChr;                // Loop counter
-    // Powers of 16 for converting {\xXXX} to a number
-    static UINT Pow16[] = {16 * 16 * 16,
+    // Powers of 16 for converting {\xXXX} or {\uXXXXXX} to a number
+    static UINT Pow16[] = {16 * 16 * 16 * 16 * 16,
+                           16 * 16 * 16 * 16,
+                           16 * 16 * 16,
                            16 * 16,
                            16,
                            1};
 
     Assert (lpwCharName[0] EQ L'{');
 
-    // Check for hex-notation as in {\xXXXX}
+    // Check for hex-notation as in {\xXXXX} or {\uXXXXXX}
     if (lpwCharName[1] EQ L'\\'
-     && lpwCharName[2] EQ L'x')
+     && (lpwCharName[2] EQ L'x'
+      || lpwCharName[2] EQ L'u'))
     {
-        // Loop through the four hex digits, converting them to a number
-        for (uChr = wcRes = 0; uChr < 4; uChr++)
+        UINT uLen;
+
+        // Get the # hex digits
+        uLen = (lpwCharName[2] EQ L'x') ? 4 : 6;
+
+        // Loop through the uLen hex digits, converting them to a number
+        for (uChr = wcRes = 0; uChr < uLen; uChr++)
         {
             WCHAR wChr = lpwCharName[3 + uChr];
 
             if (L'0' <= wChr
              &&         wChr <= L'9')
-                wcRes += (     wChr - L'0') * Pow16[uChr];
+                wcRes += (     wChr - L'0') * Pow16[uChr + (6 - uLen)];
             else
             if (L'A' <= wChr
              &&         wChr <= L'F')
-                wcRes += (10 + wChr - L'A') * Pow16[uChr];
+                wcRes += (10 + wChr - L'A') * Pow16[uChr + (6 - uLen)];
             else
             if (L'a' <= wChr
              &&         wChr <= L'f')
-                wcRes += (10 + wChr - L'a') * Pow16[uChr];
+                wcRes += (10 + wChr - L'a') * Pow16[uChr + (6 - uLen)];
             else
                 // We should never get here
                 DbgStop ();

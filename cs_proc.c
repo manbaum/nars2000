@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -546,6 +546,30 @@ UBOOL CS_ENDREPEAT_Stmt
 
 
 //***************************************************************************
+//  $CS_ENDWHILE_Stmt
+//
+//  Process ENDWHILE stmt (pl_yyparse)
+//***************************************************************************
+
+UBOOL CS_ENDWHILE_Stmt
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPPL_YYSTYPE  lpYYEndWhileArg)     // Ptr to ENDWHILE arg
+
+{
+    // Tell the lexical analyzer to get the next token from
+    //   the stmt at the token pointed to by the ENDWHILE stmt
+    CS_SetThisStmt (lpplLocalVars, &lpYYEndWhileArg->tkToken.tkData);
+
+    // If the starting and ending stmts are not on the same line, ...
+    if (lpYYEndWhileArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+        // Tell the parser to stop executing this line
+        lpplLocalVars->bStopExec = TRUE;
+
+    return TRUE;
+} // End CS_ENDWHILE_Stmt
+
+
+//***************************************************************************
 //  $CS_FOR_Stmt_EM
 //
 //  Process FOR/FORLCL stmt (pl_yyparse)
@@ -658,7 +682,7 @@ UBOOL CS_IF_Stmt_EM
     APLRANK    aplRankRht;              // Right arg rank
     APLLONGEST aplLongestRht;           // Right arg longest if immediate
     UBOOL      bRet,                    // TRUE iff the result is valid
-               bWhile;                  // TRUE iff the next token is WHILE
+               bWhile;                  // TRUE iff the next token is REPEAT/WHILE
     TOKEN_DATA tdNxt,                   // TOKEN_DATA of the IF/... stmt
                tdPrv;                   // ...               previous stmt
     TOKEN      tkNxt;                   // Next token

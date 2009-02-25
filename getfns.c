@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -205,9 +205,9 @@ void GetNextValueTokenIntoToken
     } // End SWITCH
 
     // Handle the HGLOBAL case
-    GetNextValueGlb (ClrPtrTypeDirAsGlb (hGlbData),     // The global memory handle
+    GetNextValueGlb (hGlbData,                          // The global memory handle
                      uIndex,                            // Index into item
-                    &hGlbSub,                           // Ptr to result global memory handle (may be NULL)
+                    &hGlbSub,                           // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                     &lptkRes->tkData.tkLongest,         // Ptr to result immediate value (may be NULL)
                     &immType);                          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
     // If the return value is immediate, ...
@@ -225,7 +225,7 @@ void GetNextValueTokenIntoToken
         lptkRes->tkFlags.TknType   = TKT_VARARRAY;
         lptkRes->tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////lptkRes->tkFlags.NoDisplay =                    // Filled in above
-        lptkRes->tkData.tkGlbData  = MakePtrTypeGlb (hGlbSub);
+        lptkRes->tkData.tkGlbData  = hGlbSub;
 ////////lptkRes->tkCharIndex       =                    // Filled in above
     } // End IF/ELSE
 } // End GetNextValueTokenIntoToken
@@ -343,9 +343,9 @@ void GetNextValueTokenIntoNamedVarToken
     } // End SWITCH
 
     // Handle the HGLOBAL case
-    GetNextValueGlb (ClrPtrTypeDirAsGlb (hGlbData),         // The global memory handle
+    GetNextValueGlb (hGlbData,                              // The global memory handle
                      uIndex,                                // Index into item
-                    &hGlbSub,                               // Ptr to result global memory handle (may be NULL)
+                    &hGlbSub,                               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                     &lptkRes->tkData.tkSym->stData.stLongest,// Ptr to result immediate value (may be NULL)
                     &immType);                              // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
     // If the return value is immediate, ...
@@ -373,7 +373,7 @@ void GetNextValueTokenIntoNamedVarToken
         lptkRes->tkData.tkSym->stFlags.Value      = TRUE;
         lptkRes->tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
         lptkRes->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
-        lptkRes->tkData.tkSym->stData.stGlbData   = CopySymGlbDirAsGlb (hGlbSub);
+        lptkRes->tkData.tkSym->stData.stGlbData   = CopySymGlbDir (hGlbSub);
 ////////lptkRes->tkCharIndex                      =     // Filled in above
     } // End IF/ELSE
 } // End GetNextValueTokenIntoNamedVarToken
@@ -468,18 +468,18 @@ void GetNextValueToken
     } // End SWITCH
 
     // Handle the HGLOBAL case
-    GetNextValueGlb (ClrPtrTypeDirAsGlb (hGlbData),     // The global memory handle
-                     uIndex,                            // Index into item
-                    &hGlbSub,                           // Ptr to result global memory handle (may be NULL)
-                    &aplLongest,                        // Ptr to result immediate value (may be NULL)
-                    &immType);                          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+    GetNextValueGlb (hGlbData,      // The global memory handle
+                     uIndex,        // Index into item
+                    &hGlbSub,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                    &aplLongest,    // Ptr to result immediate value (may be NULL)
+                    &immType);      // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
     // Fill in various result values
     if (lpaplLongest)
        *lpaplLongest = aplLongest;
     if (lpSymGlb)
-       *lpSymGlb = hGlbSub;
+       *lpSymGlb     = hGlbSub;
     if (lpImmType)
-       *lpImmType = immType;
+       *lpImmType    = immType;
     if (lpArrType)
        *lpArrType    = TranslateImmTypeToArrayType (immType);;
 
@@ -677,7 +677,7 @@ void GetFirstValueGlb
      LPVOID      *lpSymGlb,         // ...        LPSYMENTRY or HGLOBAL (may be NULL)
      LPIMM_TYPES  lpImmType,        // ...        immediate type (see IMM_TYPES) (may be NULL)
      LPAPLSTYPE   lpArrType,        // ...        array type -- ARRAY_TYPES (may be NULL)
-     UBOOL        bExpandSym)       // TRUE iff we should expand LPSYMENTRY intoimmediate value
+     UBOOL        bExpandSym)       // TRUE iff we should expand LPSYMENTRY into immediate value
 
 {
     LPVOID     lpMem;               // Ptr to global memory
@@ -745,7 +745,7 @@ void GetFirstValueGlb
             if (lpaplLongest)
                 *lpaplLongest = aplInteger;
             if (lpSymGlb)
-                *lpSymGlb = NULL;
+                *lpSymGlb     = NULL;
             break;
 
         case ARRAY_INT:
@@ -762,7 +762,7 @@ void GetFirstValueGlb
             if (lpaplLongest)
                 *lpaplLongest = aplInteger;
             if (lpSymGlb)
-                *lpSymGlb = NULL;
+                *lpSymGlb     = NULL;
             break;
 
         case ARRAY_APA:
@@ -779,7 +779,7 @@ void GetFirstValueGlb
             if (lpaplLongest)
                 *lpaplLongest = aplInteger;
             if (lpSymGlb)
-                *lpSymGlb = NULL;
+                *lpSymGlb     = NULL;
             break;
 
         case ARRAY_FLOAT:
@@ -796,7 +796,7 @@ void GetFirstValueGlb
             if (lpaplLongest)
                 *lpaplLongest = *(LPAPLLONGEST) &aplFloat;
             if (lpSymGlb)
-                *lpSymGlb = NULL;
+                *lpSymGlb     = NULL;
             break;
 
         case ARRAY_CHAR:
@@ -812,7 +812,7 @@ void GetFirstValueGlb
             if (lpaplLongest)
                 *lpaplLongest = aplChar;
             if (lpSymGlb)
-                *lpSymGlb = NULL;
+                *lpSymGlb     = NULL;
             break;
 
         case ARRAY_LIST:
@@ -859,7 +859,7 @@ void GetFirstValueGlb
                     if (lpaplLongest)
                         *lpaplLongest = L'\0';
                     if (lpSymGlb)
-                        *lpSymGlb = NULL;
+                        *lpSymGlb     = NULL;
                     break;
 
                 defstop
@@ -914,7 +914,7 @@ void GetFirstValueGlb
                     if (lpaplLongest)
                         *lpaplLongest = 0;
                     if (lpSymGlb)
-                        *lpSymGlb = *(LPAPLNESTED) lpMem;
+                        *lpSymGlb     = *(LPAPLNESTED) lpMem;
                     break;
 
                 defstop
@@ -1151,7 +1151,7 @@ APLSTYPE GetNextHetero
 void GetNextItemGlb
     (HGLOBAL     hGlbSub,                   // Item global memory handle
      APLUINT     uSub,                      // Index into item
-     HGLOBAL    *lphGlbRes,                 // Ptr to result global memory handle (may be NULL)
+     HGLOBAL    *lphGlbRes,                 // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
      APLLONGEST *lpaplLongestRes)           // Ptr to result immediate value (may be NULL)
 
 {
@@ -1183,7 +1183,7 @@ void GetNextItemGlb
     GetNextItemMem (lpMemSub,               // Ptr to item global memory data
                     aplTypeSub,             // Item storage type
                     uSub,                   // Index into item
-                    lphGlbRes,              // Ptr to result global memory handle (may be NULL)
+                    lphGlbRes,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                     lpaplLongestRes);       // Ptr to result immediate value (may be NULL)
     // We no longer need this ptr
     MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
@@ -1200,7 +1200,7 @@ void GetNextItemGlb
 void GetNextValueGlb
     (HGLOBAL     hGlbSub,                   // Item global memory handle
      APLUINT     uSub,                      // Index into item
-     HGLOBAL    *lphGlbRes,                 // Ptr to result global memory handle (may be NULL)
+     HGLOBAL    *lphGlbRes,                 // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
      APLLONGEST *lpaplLongestRes,           // Ptr to result immediate value (may be NULL)
      IMM_TYPES  *lpimmTypeRes)              // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
 
@@ -1211,6 +1211,9 @@ void GetNextValueGlb
 #endif
     APLRANK   aplRankSub;                   // Item rank
     LPVOID    lpMemSub;                     // Ptr to item global memory
+
+    // Clear the ptr type bits
+    hGlbSub = ClrPtrTypeDirAsGlb (hGlbSub);
 
     // Lock the memory to get a ptr to it
     lpMemSub = MyGlobalLock (hGlbSub);
@@ -1259,7 +1262,7 @@ void GetNextValueGlb
     GetNextValueMem (lpMemSub,              // Ptr to item global memory data
                      aplTypeSub,            // Item storage type
                      uSub,                  // Index into item
-                     lphGlbRes,             // Ptr to result global memory handle (may be NULL)
+                     lphGlbRes,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                      lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
                      lpimmTypeRes);         // Ptr to result immediate type (may be NULL)
     // We no longer need this ptr
@@ -1278,7 +1281,7 @@ void GetNextValueMem
     (LPVOID      lpMemSub,                  // Ptr to item global memory data
      APLSTYPE    aplTypeSub,                // Item storage type
      APLUINT     uSub,                      // Index into item
-     HGLOBAL    *lphGlbRes,                 // Ptr to result global memory handle (may be NULL)
+     HGLOBAL    *lphGlbRes,                 // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
      APLLONGEST *lpaplLongestRes,           // Ptr to result immediate value (may be NULL)
      IMM_TYPES  *lpimmTypeRes)              // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
 
@@ -1286,11 +1289,9 @@ void GetNextValueMem
     GetNextValueMemSub (lpMemSub,           // Ptr to item global memory data
                         aplTypeSub,         // Item storage type
                         uSub,               // Index into item
-                        lphGlbRes,          // Ptr to result global memory handle (may be NULL)
+                        lphGlbRes,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                         lpaplLongestRes,    // Ptr to result immediate value (may be NULL)
-                        lpimmTypeRes,       // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        TRUE,               // TRUE iff we should expand LPSYMENTRY into immediate value
-                        FALSE);             // TRUE if we're returning item (not value)
+                        lpimmTypeRes);      // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
 } // End GetNextValueMem
 
 
@@ -1305,18 +1306,16 @@ void GetNextItemMem
     (LPVOID      lpMemSub,              // Ptr to item global memory data
      APLSTYPE    aplTypeSub,            // Item storage type
      APLUINT     uSub,                  // Index into item
-     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
+     HGLOBAL    *lphGlbRes,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
      APLLONGEST *lpaplLongestRes)       // Ptr to result immediate value (may be NULL)
 
 {
     GetNextValueMemSub (lpMemSub,           // Ptr to item global memory data
                         aplTypeSub,         // Item storage type
                         uSub,               // Index into item
-                        lphGlbRes,          // Ptr to result global memory handle (may be NULL)
+                        lphGlbRes,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                         lpaplLongestRes,    // Ptr to result immediate value (may be NULL)
-                        NULL,               // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        FALSE,              // TRUE iff we should expand LPSYMENTRY into immediate value
-                        TRUE);              // TRUE if we're returning item (not value)
+                        NULL);              // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
 } // End GetNextItemMem
 
 
@@ -1325,17 +1324,18 @@ void GetNextItemMem
 //
 //  Get next value from global memory
 //  If *lphGlbRes is NULL on exit, the result is an immediate.
+//  If both lphGlbRes and lpimmTypeRes are not NULL, *lphGlbRes
+//    is never an LPSYMENTRY; instead *lpimmTypeRes is filled in
+//    with the immediate type.
 //***************************************************************************
 
 void GetNextValueMemSub
     (LPVOID      lpMemSub,              // Ptr to item global memory data
      APLSTYPE    aplTypeSub,            // Item storage type
      APLUINT     uSub,                  // Index into item
-     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
+     HGLOBAL    *lphGlbRes,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
      APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
-     IMM_TYPES  *lpimmTypeRes,          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-     UBOOL       bExpandSym,            // TRUE iff we should expand LPSYMENTRY into immediate value
-     UBOOL       bGetItem)              // TRUE if we're returning item (not value)
+     IMM_TYPES  *lpimmTypeRes)          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
 
 {
     APLHETERO lpSymSub;                 // Item as APLHETERO
@@ -1403,9 +1403,9 @@ void GetNextValueMemSub
                     if (lpaplLongestRes)
                         *lpaplLongestRes = 0;
                     if (lpimmTypeRes)
-                        *lpimmTypeRes = IMMTYPE_ERROR;
+                        *lpimmTypeRes    = IMMTYPE_ERROR;
                     if (lphGlbRes)
-                        *lphGlbRes = ClrPtrTypeDirAsGlb (lptkList->tkData.tkGlbData);
+                        *lphGlbRes       = ClrPtrTypeDirAsGlb (lptkList->tkData.tkGlbData);
                     break;
 
                 defstop
@@ -1423,12 +1423,14 @@ void GetNextValueMemSub
             switch (GetPtrTypeDir (lpSymSub))
             {
                 case PTRTYPE_STCONST:
-                    if (!bExpandSym
-                     && lphGlbRes)
+                    // If an immediate result is allowed, we never return the LPSYMENTRY
+                    if (lphGlbRes && lpimmTypeRes EQ NULL)
                     {
                         *lphGlbRes = lpSymSub;
-
-                        break;
+                        Assert (lpaplLongestRes EQ NULL);       // ***DEBUG***
+#ifdef DEBUG
+                        DbgBrk ();                              // ***DEBUG***
+#endif
                     } // End IF
 
                     // Extract the immediate type & value
@@ -1440,12 +1442,7 @@ void GetNextValueMemSub
 
                 case PTRTYPE_HGLOBAL:
                     if (lphGlbRes)
-                    {
-                        if (bGetItem)
-                            *lphGlbRes = lpSymSub;
-                        else
-                            *lphGlbRes = ClrPtrTypeDirAsGlb (lpSymSub);
-                    } // End IF
+                        *lphGlbRes       = lpSymSub;
 
                     break;
 

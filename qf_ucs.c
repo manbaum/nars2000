@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -135,7 +135,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
             // Check for out of range for Unicode
             //   as an APLUINT so we don't have to deal with negatives
-            if (INT_MAX < aplLongestRht)
+            if (MAX_UNICODE < aplLongestRht)
                 goto DOMAIN_EXIT;
 
             // Check for out of range for UCS-2
@@ -252,7 +252,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for Unicode
                 //   as an APLUINT so we don't have to deal with negatives
-                if (INT_MAX < aplLongestRht)
+                if (MAX_UNICODE < aplLongestRht)
                     goto DOMAIN_EXIT;
 
                 // Check for out of range for UCS-2
@@ -274,7 +274,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range for Unicode
                 //   as an APLUINT so we don't have to deal with negatives
-                if (INT_MAX < aplLongestRht)
+                if (MAX_UNICODE < aplLongestRht)
                     goto DOMAIN_EXIT;
 
                 // Check for out of range for UCS-2
@@ -297,13 +297,23 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
 #undef  lpAPA
-            // Check for out of range
-            if (0 > (apaOffRht + apaMulRht * 0)
-             ||     (apaOffRht + apaMulRht * (aplNELMRht - 1)) >= 64*1024)
-                goto DOMAIN_EXIT;
-
             for (uRht = 0; uRht < aplNELMRht; uRht++)
-                *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) (apaOffRht + apaMulRht * uRht);
+            {
+                // Get the next element
+                aplLongestRht = apaOffRht + apaMulRht * uRht;
+
+                // Check for out of range for Unicode
+                //   as an APLUINT so we don't have to deal with negatives
+                if (MAX_UNICODE < aplLongestRht)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for UCS-2
+                if (APLCHAR_SIZE <= aplLongestRht)
+                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                else
+                    *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
+            } // End IF
+
             break;
 
         case ARRAY_HETERO:
@@ -334,7 +344,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                     case IMMTYPE_INT:
                         // Check for out of range for Unicode
                         //   as an APLUINT so we don't have to deal with negatives
-                        if (INT_MAX < aplLongestRht)
+                        if (MAX_UNICODE < aplLongestRht)
                             goto DOMAIN_EXIT;
 
                         // Check for out of range for UCS-2

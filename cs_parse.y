@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -332,6 +332,26 @@ CSCLCSRec:
                                                                     // Move the ptr to encompass $1's ContinueLeave
                                                                     $2.lptkCL1st                =
                                                                     $2.lptk1st                  = $1.lptkCL1st;
+
+                                                                    $$ = $2;
+                                                                }
+  | CSRec CLRec                                                 {DbgMsgWP (L"%%CSCLCSRec:  CSRec CLRec");
+                                                                    // If $1 has an unmatched ContinueLeave, ...
+                                                                    if ($1.lptkCL1st)
+                                                                    // Loop through $1's unmatched ContinueLeave
+                                                                    for (lptk1st = $1.lptkCL1st; lptk1st <= $1.lptkCur; lptk1st++)
+                                                                    // If it's a ContinueLeave, ...
+                                                                    if (lptk1st->tkData.uCLIndex EQ $1.uCLIndex)
+                                                                    {
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
+
+                                                                        // If it's not ENDIF, ...
+                                                                        if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
+                                                                            // Convert to $2's CLIndex so they are all the same
+                                                                            lptk1st->tkData.uCLIndex = $2.uCLIndex;
+                                                                    } // End IF/FOR/IF
 
                                                                     $$ = $2;
                                                                 }

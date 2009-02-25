@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -221,8 +221,9 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-    lpHeader->PV0        = (lpMemHdrRht->PV0);
-    lpHeader->PV1        = (lpMemHdrRht->PV1);
+    lpHeader->PV0        = lpMemHdrRht->PV0;
+    lpHeader->PV1        = lpMemHdrRht->PV1;
+    lpHeader->bSelSpec   = lpMemHdrRht->bSelSpec;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
@@ -730,8 +731,9 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-    lpHeader->PV0        = (lpMemHdrRht && lpMemHdrRht->PV0);
-    lpHeader->PV1        = (lpMemHdrRht && lpMemHdrRht->PV1);
+    lpHeader->PV0        = lpMemHdrRht->PV0;
+    lpHeader->PV1        = lpMemHdrRht->PV1;
+    lpHeader->bSelSpec   = lpMemHdrRht->bSelSpec;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;

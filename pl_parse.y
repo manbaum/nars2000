@@ -104,6 +104,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 %token CS_ENDFOR
 %token CS_ENDFORLCL
 %token CS_ENDREPEAT
+%token CS_ENDWHILE
 %token CS_FOR
 %token CS_FORLCL
 %token CS_IF
@@ -234,7 +235,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -262,7 +263,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -290,7 +291,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | CS_CONTINUE                       {DbgMsgWP (L"%%StmtSing:  CS_CONTINUE");
                                          if (!lpplLocalVars->bLookAhead)
@@ -309,7 +310,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | CS_ENDREPEAT                      {DbgMsgWP (L"%%StmtSing:  CS_ENDREPEAT");
                                          if (!lpplLocalVars->bLookAhead)
@@ -328,7 +329,26 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
+                                        }
+    | CS_ENDWHILE                       {DbgMsgWP (L"%%StmtSing:  CS_ENDWHILE");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle ENDWHILE statement
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_ENDWHILE_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR2
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF
                                         }
     | CS_ELSE                           {DbgMsgWP (L"%%StmtSing:  CS_ELSE");
                                          if (!lpplLocalVars->bLookAhead)
@@ -347,7 +367,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -375,7 +395,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | CS_ENDFOR                         {DbgMsgWP (L"%%StmtSing:  CS_ENDFOR");
                                          if (!lpplLocalVars->bLookAhead)
@@ -394,7 +414,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | CS_ENDFORLCL                      {DbgMsgWP (L"%%StmtSing:  CS_ENDFORLCL");
                                          if (!lpplLocalVars->bLookAhead)
@@ -413,7 +433,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | ArrExpr CS_IN NameAnyVar CS_FOR   {DbgMsgWP (L"%%StmtSing:  CS_FOR NameAnyVar CS_IN ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
@@ -433,7 +453,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | ArrExpr CS_IN NameAnyVar CS_FORLCL{DbgMsgWP (L"%%StmtSing:  CS_FORLCL NameAnyVar CS_IN ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
@@ -453,7 +473,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -481,7 +501,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | CS_LEAVE                          {DbgMsgWP (L"%%StmtSing:  CS_LEAVE");
                                          if (!lpplLocalVars->bLookAhead)
@@ -500,7 +520,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -528,7 +548,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -556,7 +576,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | CS_SKIPCASE                       {DbgMsgWP (L"%%StmtSing:  CS_SKIPCASE");
                                          if (!lpplLocalVars->bLookAhead)
@@ -575,7 +595,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | CS_SKIPEND                        {DbgMsgWP (L"%%StmtSing:  CS_SKIPEND");
                                          if (!lpplLocalVars->bLookAhead)
@@ -594,7 +614,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -622,7 +642,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -650,7 +670,7 @@ StmtSing:
                                                  YYACCEPT;          // Stop executing this line
 
                                              // No return value needed
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | LeftOper                          {DbgMsgWP (L"%%StmtSing:  LeftOper");
                                          if (!lpplLocalVars->bLookAhead)
@@ -694,7 +714,7 @@ StmtSing:
                                                  else
                                                      lpplLocalVars->bRet =
                                                        ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
-                                             } // End IF
+                                             } // End IF/ELSE
 
 /////////////////////////////////////////////// If this is not a named variable, ...
 /////////////////////////////////////////////if ($1.tkToken.tkFlags.TknType NE TKT_VARNAMED)
@@ -705,7 +725,7 @@ StmtSing:
                                              // If the exit type isn't GOTO_LINE, mark it as already displayed
                                              if (lpplLocalVars->ExitType NE EXITTYPE_GOTO_LINE)
                                                  lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -716,14 +736,15 @@ StmtSing:
                                              YYERROR2
                                         }
     | ArrExpr GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"ArrExpr");
-                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR2
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR2
+                                             } // End IF
 
                                              lpplLocalVars->ExitType = GotoLine_EM (&$1.tkToken, &$2.tkToken);
                                              FreeResult (&$1.tkToken);
@@ -764,15 +785,16 @@ StmtSing:
                                                  defstop
                                                      break;
                                              } // End SWITCH
-                                         } // End IF/ELSE/IF
+                                         } // End IF
                                         }
     |         GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW);
-                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR || lpplLocalVars->bLookAhead)
-                                             YYERROR2
-                                         else
+                                         if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
                                              LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 YYERROR2
 
                                              // If we're not at the EOS or EOL, YYERROR
                                              if (lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOL
@@ -805,13 +827,13 @@ StmtSing:
                                              {
                                                  lpSISCur->ResetFlag = RESETFLAG_ONE_INIT;
                                                  lpplLocalVars->ExitType = EXITTYPE_RESET_ONE_INIT;
-                                             } // End IF
+                                             } // End IF/ELSE
 
                                              // We no longer need this ptr
                                              MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              YYACCEPT;              // Stop executing this line
-                                         } // End IF/ELSE
+                                         } // End IF
                                         }
     | error   ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -822,15 +844,16 @@ StmtSing:
                                              YYERROR2
                                         }
     | ArrExpr ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"ArrExpr");
-                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR2
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
                                              LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR2
+                                             } // End IF
 
                                              // Lock the memory to get a ptr to it
                                              lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
@@ -1940,12 +1963,6 @@ ArrExpr:
 ////| ArrExpr error                     //--Conflicts
     | ArrExpr LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper ArrExpr");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
-                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$2.tkToken);
-                                             YYERROR2
-                                         } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYFcn =
@@ -1970,7 +1987,7 @@ ArrExpr:
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                         } // End IF
+                                         } // End IF/ELSE/...
                                         }
     | error   Drv1Func                  {DbgMsgWP (L"%%ArrExpr:  Drv1Func error");
                                          if (!lpplLocalVars->bLookAhead)
@@ -2376,10 +2393,11 @@ SingVar:
                                          } // End IF
                                         }
     |     QUAD                          {DbgMsgWP (L"%%SingVar:  QUAD");
-                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR || lpplLocalVars->bLookAhead)
-                                             YYERROR2
-                                         else
+                                         if (!lpplLocalVars->bLookAhead)
                                          {
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 YYERROR2
+
                                              lpplLocalVars->lpYYRes =
                                                WaitForInput (lpplLocalVars->hWndSM, FALSE, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
@@ -2392,10 +2410,11 @@ SingVar:
                                          } // End IF
                                         }
     |     QUOTEQUAD                 {DbgMsgWP (L"%%SingVar:  QUOTEQUAD");
-                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR || lpplLocalVars->bLookAhead)
-                                             YYERROR2
-                                         else
+                                         if (!lpplLocalVars->bLookAhead)
                                          {
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 YYERROR2
+
                                              lpplLocalVars->lpYYRes =
                                                WaitForInput (lpplLocalVars->hWndSM, TRUE, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
@@ -2914,7 +2933,8 @@ SimpExpr:
 
                                                  lpplLocalVars->bRet =
                                                    AssignNamedVars_EM (&$4.tkToken, &$1.tkToken);
-                                             } // End IF/ELSE
+                                             } // End IF/ELSE/...
+
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeResult (&$4.tkToken);
 
@@ -5821,10 +5841,12 @@ IndexListBR:
 // Skip Ctrl-Break checking here so the List processing isn't interrupted
 IndexListWE:
       IndexListWE1                      {DbgMsgWP (L"%%IndexListWE:  IndexListWE1");
-                                         $$ = $1;
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
                                         }
     | IndexListWE2                      {DbgMsgWP (L"%%IndexListWE:  IndexListWE2");
-                                         $$ = $1;
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
                                         }
     ;
 
@@ -7537,6 +7559,9 @@ PL_YYLEX_START:
         case TKT_CS_ENDREPEAT:      // Control Structure:  ENDREPEAT
             return CS_ENDREPEAT;
 
+        case TKT_CS_ENDWHILE:       // Control Structure:  ENDWHILE
+            return CS_ENDWHILE;
+
         case TKT_CS_FOR:            // Control Structure:  FOR
             return CS_FOR;
 
@@ -7600,7 +7625,6 @@ PL_YYLEX_START:
 
         case TKT_CS_ENDIF:          // Control Structure:  ENDIF
         case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
-        case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
         case TKT_CS_FOR2:           // ...                 FOR2
         case TKT_CS_IF2:            // ...                 IF2
         case TKT_CS_REPEAT:         // ...                 REPEAT
@@ -7803,7 +7827,7 @@ void pl_yyfprintf
         DbgMsg (szTemp);        // Display in my debugger window.
 
         szTemp[0] = '\0';       // Restart the buffer
-    } // End IF/ELSE
+    } // End IF
 #endif
 } // End pl_yyfprintf
 
@@ -8217,6 +8241,7 @@ UBOOL CheckSelSpec_EM
     HGLOBAL hGlbNameVars;               // NameVars global memory handle
     LPTOKEN lpMemNameVars;              // Ptr to NameVars global memory
     UBOOL   bRet;                       // TRUE iff the result is valid
+    UBOOL   bSelSpec = FALSE;           // TRUE iff Selective Specification is in error ***DEBUG***
     UINT    uCharIndex;                 // Char index
 
     // If it's Selective Specification, and
@@ -8244,53 +8269,73 @@ UBOOL CheckSelSpec_EM
             LPPL_YYSTYPE lpYYRes,       // Ptr to result
                          lpYYRes2;      // ...
 
-            // Skip over the header to the data
-            lpMemNameVars = VarNamedBaseToData (lpMemNameVars);
-
-            // Save the token
-            lpplLocalVars->tkSelSpec = *lpMemNameVars;
-
-            // Change the one (and only) token to an APA
-            //   which maps the indices of the array
-            lpYYRes2 =
-              PrimFnMonRho_EM_YY (&lpplLocalVars->tkSelSpec,
-                                  &lpplLocalVars->tkSelSpec,
-                                   NULL);
-            if (lpYYRes2)
+            // Ensure the SelectSpec is properly marked
+            bRet = IsSelectSpec (lptkNameVars);
+            bSelSpec = !bRet;
+            if (bRet)
             {
-                lpYYRes =
-                  PrimFnMonIotaVector_EM_YY (&lpplLocalVars->tkSelSpec, // Ptr to function token
-                                             &lpYYRes2->tkToken,        // Ptr to right arg token
-                                              NULL);                    // Ptr to axis token (may be NULL)
-                FreeYYFcn1 (lpYYRes2); lpYYRes2 = NULL;
+                // Skip over the header to the data
+                lpMemNameVars = VarNamedBaseToData (lpMemNameVars);
 
-                if (lpYYRes)
+                // Save the token
+                lpplLocalVars->tkSelSpec = *lpMemNameVars;
+
+                // Change the one (and only) token to an APA
+                //   which maps the indices of the array
+                lpYYRes2 =
+                  PrimFnMonRho_EM_YY (&lpplLocalVars->tkSelSpec,
+                                      &lpplLocalVars->tkSelSpec,
+                                       NULL);
+                if (lpYYRes2)
                 {
-                    // Save the char index
-                    uCharIndex = lptkNameVars->tkCharIndex;
+                    lpYYRes =
+                      PrimFnMonIotaVector_EM_YY (&lpplLocalVars->tkSelSpec, // Ptr to function token
+                                                 &lpYYRes2->tkToken,        // Ptr to right arg token
+                                                  NULL);                    // Ptr to axis token (may be NULL)
+                    FreeYYFcn1 (lpYYRes2); lpYYRes2 = NULL;
 
-                    // Fill in the result token
-                    ZeroMemory (lptkNameVars, sizeof (lptkNameVars[0]));
-                    lptkNameVars->tkFlags.TknType   = TKT_VARARRAY;
-////////////////////lptkNameVars->tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from ZeroMemory
-////////////////////lptkNameVars->tkFlags.NoDisplay = FALSE;            // Already zero from ZeroMemory
-                    lptkNameVars->tkData.tkGlbData  = lpYYRes->tkToken.tkData.tkGlbData;
-                    lptkNameVars->tkCharIndex       = uCharIndex;
+                    if (lpYYRes)
+                    {
+                        LPVARARRAY_HEADER lpMemData;
 
-                    YYFree (lpYYRes); lpYYRes = NULL;
+                        // Save the char index
+                        uCharIndex = lptkNameVars->tkCharIndex;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemData = MyGlobalLock (ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData));
+
+                        // Mark as a Selective Specification array
+                        lpMemData->bSelSpec = TRUE;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData)); lpMemData = NULL;
+
+                        // Fill in the result token
+                        ZeroMemory (lptkNameVars, sizeof (lptkNameVars[0]));
+                        lptkNameVars->tkFlags.TknType   = TKT_VARARRAY;
+////////////////////////lptkNameVars->tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from ZeroMemory
+////////////////////////lptkNameVars->tkFlags.NoDisplay = FALSE;            // Already zero from ZeroMemory
+                        lptkNameVars->tkData.tkGlbData  = lpYYRes->tkToken.tkData.tkGlbData;
+                        lptkNameVars->tkCharIndex       = uCharIndex;
+
+                        YYFree (lpYYRes); lpYYRes = NULL;
+                    } else
+                        // Mark as unsuccessful
+                        bRet = FALSE;
                 } else
                     // Mark as unsuccessful
                     bRet = FALSE;
-            } else
-                // Mark as unsuccessful
-                bRet = FALSE;
-        } else
+            } // End IF
+        } // End IF
+
+        if (!bRet)
         {
             if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                ErrorMessageIndirectToken (bSelSpec ? L"SelSpec ERROR" APPEND_NAME          // ***DEBUG***
+                                                    : ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                            lptkNameVars);
             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-        } // End IF/ELSE
+        } // End IF
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbNameVars); lpMemNameVars = NULL;
@@ -8302,6 +8347,41 @@ UBOOL CheckSelSpec_EM
     return FALSE;
 } // End CheckSelSpec_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $IsSelectSpec
+//
+//  Determine whether or not the arg is a Select Specification array
+//***************************************************************************
+
+UBOOL IsSelectSpec
+    (LPTOKEN lptkArg)               // Ptr to arg token
+
+{
+    UBOOL bRet = FALSE;             // The result
+
+    // If the arg is not immediate, ...
+    if (lptkArg->tkFlags.TknType EQ TKT_VARARRAY)
+    {
+        HGLOBAL           hGlbArg;
+        LPVARARRAY_HEADER lpMemHdr;
+
+        // Get the global memory handle
+        hGlbArg = ClrPtrTypeDirAsGlb (lptkArg->tkData.tkGlbData);
+
+        // Lock the memory to get a ptr to it
+        lpMemHdr = MyGlobalLock (hGlbArg);
+
+        // Get the Selective Specification array bit
+        bRet = lpMemHdr->bSelSpec;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbArg); lpMemHdr = NULL;
+    } // End IF
+
+    return bRet;
+} // End IsSelectSpec
 
 
 //***************************************************************************

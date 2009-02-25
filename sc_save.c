@@ -1309,58 +1309,69 @@ LPAPLCHAR SavedWsFormGlbVar
             break;
 
         case ARRAY_HETERO:
+            // Write out each element as T N R S V
+
             // Loop through the array elements
             for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLHETERO) lpMemObj)++)
-            // Split cases based upon the element immediate type
-            switch ((*(LPAPLHETERO) lpMemObj)->stFlags.ImmType)
             {
-                case IMMTYPE_BOOL:
-                    lpaplChar =
-                      FormatAplintFC (lpaplChar,                                    // Ptr to output save area
-                                      (*(LPAPLHETERO) lpMemObj)->stData.stBoolean,  // The value to format
-                                      UTF16_BAR);                                   // Char to use as overbar
-                    break;
+                // Append the header for the simple scalar
+                lpaplChar =
+                  AppendArrayHeader (lpaplChar,                         // Ptr to output save area
+                                     TranslateImmTypeToChar ((*(LPAPLHETERO) lpMemObj)->stFlags.ImmType),// Object storage type as WCHAR
+                                     1,                                 // Object NELM
+                                     0,                                 // Object rank
+                                     NULL);                             // Ptr to object dimensions
+                // Split cases based upon the element immediate type
+                switch ((*(LPAPLHETERO) lpMemObj)->stFlags.ImmType)
+                {
+                    case IMMTYPE_BOOL:
+                        lpaplChar =
+                          FormatAplintFC (lpaplChar,                                    // Ptr to output save area
+                                          (*(LPAPLHETERO) lpMemObj)->stData.stBoolean,  // The value to format
+                                          UTF16_BAR);                                   // Char to use as overbar
+                        break;
 
-                case IMMTYPE_INT:
-                    lpaplChar =
-                      FormatAplintFC (lpaplChar,                                    // Ptr to output save area
-                                      (*(LPAPLHETERO) lpMemObj)->stData.stInteger,  // The value to format
-                                      UTF16_BAR);                                   // Char to use as overbar
-                    break;
+                    case IMMTYPE_INT:
+                        lpaplChar =
+                          FormatAplintFC (lpaplChar,                                    // Ptr to output save area
+                                          (*(LPAPLHETERO) lpMemObj)->stData.stInteger,  // The value to format
+                                          UTF16_BAR);                                   // Char to use as overbar
+                        break;
 
-                case IMMTYPE_CHAR:
-                    // Append a leading single quote
-                    *lpaplChar++ = L'\'';
+                    case IMMTYPE_CHAR:
+                        // Append a leading single quote
+                        *lpaplChar++ = L'\'';
 
-                    // Format the text as an ASCII string with non-ASCII chars
-                    //   represented as either {symbol} or {\xXXXX} where XXXX is
-                    //   a four-digit hex number.
-                    lpaplChar +=
-                      ConvertWideToNameLength (lpaplChar,                               // Ptr to output save buffer
-                                              &(*(LPAPLHETERO) lpMemObj)->stData.stChar,// Ptr to incoming chars
-                                               1);                                      // # chars to convert
-                    // Append a trailing single quote
-                    *lpaplChar++ = L'\'';
+                        // Format the text as an ASCII string with non-ASCII chars
+                        //   represented as either {symbol} or {\xXXXX} where XXXX is
+                        //   a four-digit hex number.
+                        lpaplChar +=
+                          ConvertWideToNameLength (lpaplChar,                               // Ptr to output save buffer
+                                                  &(*(LPAPLHETERO) lpMemObj)->stData.stChar,// Ptr to incoming chars
+                                                   1);                                      // # chars to convert
+                        // Append a trailing single quote
+                        *lpaplChar++ = L'\'';
 
-                    // Append a trailing blank
-                    *lpaplChar++ = L' ';
+                        // Append a trailing blank
+                        *lpaplChar++ = L' ';
 
-                    break;
+                        break;
 
-                case IMMTYPE_FLOAT:
-                    // Format the value
-                    lpaplChar =
-                      FormatFloatFC (lpaplChar,                                 // Ptr to output save area
-                                     (*(LPAPLHETERO) lpMemObj)->stData.stFloat, // The value to format
-                                     DEF_MAX_QUADPP,                            // Precision to use
-                                     UTF16_DOT,                                 // Char to use as decimal separator
-                                     UTF16_BAR,                                 // Char to use as overbar
-                                     DEF_DTOA_MODE);                            // DTOA mode (Mode 2: max (ndigits, 1))
-                    break;
+                    case IMMTYPE_FLOAT:
+                        // Format the value
+                        lpaplChar =
+                          FormatFloatFC (lpaplChar,                                 // Ptr to output save area
+                                         (*(LPAPLHETERO) lpMemObj)->stData.stFloat, // The value to format
+                                         DEF_MAX_QUADPP,                            // Precision to use
+                                         UTF16_DOT,                                 // Char to use as decimal separator
+                                         UTF16_BAR,                                 // Char to use as overbar
+                                         DEF_DTOA_MODE);                            // DTOA mode (Mode 2: max (ndigits, 1))
+                        break;
 
-                defstop
-                    break;
-            } // End SWITCH
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
 
             break;
 
@@ -1379,11 +1390,6 @@ LPAPLCHAR SavedWsFormGlbVar
                     // Get the SymTab flags
                     stFlags = lpSymEntry->stFlags;
 
-                    // Ensure we format with full precision in case it's floating point
-                    uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
-                    if (IsImmFlt (stFlags.ImmType))
-                        lpMemPTD->lpSymQuadPP->stData.stInteger = DEF_MAX_QUADPP;
-
                     // Append the header for the simple scalar
                     lpaplChar =
                       AppendArrayHeader (lpaplChar,                         // Ptr to output save area
@@ -1391,19 +1397,68 @@ LPAPLCHAR SavedWsFormGlbVar
                                          1,                                 // Object NELM
                                          0,                                 // Object rank
                                          NULL);                             // Ptr to object dimensions
-                    // Format the value
-                    lpaplChar =
-                      FormatImmedFC (lpaplChar,                             // Ptr to input string
-                                     stFlags.ImmType,                       // Immediate type
-                                    &lpSymEntry->stData.stLongest,          // Ptr to value to format
-                                     DEF_MAX_QUADPP,                        // Precision to use
-                                     UTF16_DOT,                             // Char to use as decimal separator
-                                     UTF16_BAR,                             // Char to use as overbar
-                                     DEF_DTOA_MODE);                        // DTOA mode (Mode 2: max (ndigits, 1))
-#undef  lpSymEntry
-                    // Restore user's precision
-                    lpMemPTD->lpSymQuadPP->stData.stInteger = uQuadPP;
+                    // Split cases based upon the immediate type
+                    switch (stFlags.ImmType)
+                    {
+                        WCHAR wcQuote,                      // Quote mark to use around char
+                              wcChar;                       // The char
 
+                        case IMMTYPE_BOOL:
+                        case IMMTYPE_INT:
+                        case IMMTYPE_FLOAT:
+                            // Ensure we format with full precision in case it's floating point
+                            uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
+                            if (IsImmFlt (stFlags.ImmType))
+                                lpMemPTD->lpSymQuadPP->stData.stInteger = DEF_MAX_QUADPP;
+
+                            // Format the value
+                            lpaplChar =
+                              FormatImmedFC (lpaplChar,                             // Ptr to input string
+                                             stFlags.ImmType,                       // Immediate type
+                                            &lpSymEntry->stData.stLongest,          // Ptr to value to format
+                                             DEF_MAX_QUADPP,                        // Precision to use
+                                             UTF16_DOT,                             // Char to use as decimal separator
+                                             UTF16_BAR,                             // Char to use as overbar
+                                             DEF_DTOA_MODE);                        // DTOA mode (Mode 2: max (ndigits, 1))
+                            // Restore user's precision
+                            lpMemPTD->lpSymQuadPP->stData.stInteger = uQuadPP;
+
+                            break;
+
+                        case IMMTYPE_CHAR:
+                            // Get the char to save
+                            wcChar = lpSymEntry->stData.stChar;
+
+                            // Get appropriate surrounding quote mark
+                            wcQuote = "\'\""[wcChar EQ L'\''];
+
+                            // Start with an initial quote mark
+                            *lpaplChar++ = wcQuote;
+
+                            // Handle non-ASCII chars
+                            if (0x0020 > wcChar
+                             ||          wcChar > 0x007E)
+                                // Format the char and skip over it
+                                lpaplChar +=
+                                  wsprintfW (L"{\\u%06u}",
+                                             lpaplChar,
+                                             wcChar);
+                            else
+                                *lpaplChar++ = wcChar;
+
+                            // End with the same quote mark
+                            *lpaplChar++ = wcQuote;
+
+                            // Append blank to delete
+                            *lpaplChar++ = L' ';
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+#undef  lpSymEntry
                     break;
 
                 case PTRTYPE_HGLOBAL:

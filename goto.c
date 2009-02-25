@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,22 +47,23 @@ EXIT_TYPES GotoLine_EM
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL       hGlbPTD,          // PerTabData global memory handle
-                  hGlbTknLine;      // Tokenized line global memory handle
-    LPPERTABDATA  lpMemPTD;         // Ptr to PerTabData global memory
-    EXIT_TYPES    exitType;         // Return value
-    APLSTYPE      aplTypeRht;       // Right arg storage type
-    APLNELM       aplNELMRht;       // ...       NELM
-    APLRANK       aplRankRht;       // ...       rank
-    IMM_TYPES     immType;          // Right arg first value immediate type
-    APLINT        aplIntegerRht;    // First value as integer
-    APLFLOAT      aplFloatRht;      // ...            float
-    LPSIS_HEADER  lpSISCur;         // Ptr to current SIS header
-    TOKEN_TYPES   TknType;          // Target token type
-    LPTOKEN       lpMemTknLine;     // Ptr to tokenized line global memory
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to PL local vars
-    TOKEN         tkNxt;            // Token of next stmt
-    UINT          uTknNum = 0;      // Starting token #
+    HGLOBAL        hGlbPTD,         // PerTabData global memory handle
+                   hGlbTknLine;     // Tokenized line global memory handle
+    LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
+    EXIT_TYPES     exitType;        // Return value
+    APLSTYPE       aplTypeRht;      // Right arg storage type
+    APLNELM        aplNELMRht;      // ...       NELM
+    APLRANK        aplRankRht;      // ...       rank
+    IMM_TYPES      immType;         // Right arg first value immediate type
+    APLINT         aplIntegerRht;   // First value as integer
+    APLFLOAT       aplFloatRht;     // ...            float
+    LPSIS_HEADER   lpSISCur;        // Ptr to current SIS header
+    TOKEN_TYPES    TknType;         // Target token type
+    LPTOKEN_HEADER lpMemTknHdr;     // Ptr to tokenized line header
+    LPTOKEN        lpMemTknLine;    // Ptr to tokenized line global memory
+    LPPLLOCALVARS  lpplLocalVars;   // Ptr to PL local vars
+    TOKEN          tkNxt;           // Token of next stmt
+    UINT           uTknNum = 0;     // Starting token #
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -137,23 +138,30 @@ EXIT_TYPES GotoLine_EM
         hGlbTknLine = GetTokenLineHandle (lpSISCur->hGlbDfnHdr, aplIntegerRht);
     if (hGlbTknLine)
     {
-        UINT uStmtLen;
+        UINT uStmtLen,
+             TokenCnt;
 
         // Lock the memory to get a ptr to it
-        lpMemTknLine = MyGlobalLock (hGlbTknLine);
+        lpMemTknHdr = MyGlobalLock (hGlbTknLine);
+
+        // Get the token count
+        TokenCnt = lpMemTknHdr->TokenCnt;
 
         // Skip over the header to the data
-        lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+        lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
 
         Assert (lpMemTknLine->tkFlags.TknType EQ TKT_EOS
              || lpMemTknLine->tkFlags.TknType EQ TKT_EOL);
         // Get the EOS/EOL token length and skip over it
         uStmtLen = lpMemTknLine->tkData.tkIndex;
-        lpMemTknLine++;
+        lpMemTknLine++; TokenCnt--;
 
         // Check for and skip over line label
-        if (lpMemTknLine[1].tkFlags.TknType EQ TKT_LABELSEP)
-            lpMemTknLine += 2;
+        if (TokenCnt > 1
+         && lpMemTknLine[1].tkFlags.TknType EQ TKT_LABELSEP)
+        {
+            lpMemTknLine += 2; TokenCnt -= 2;
+        } // End IF
 
         // Get the next token and its type
         tkNxt = *lpMemTknLine;

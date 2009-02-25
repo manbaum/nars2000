@@ -722,7 +722,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
                          NULL,              // Ptr to result immediate value (may be NULL)
                          NULL);             // Ptr to result immediate type (may be NULL)
         // Copy the global memory handle to the result
-        *((LPAPLNESTED) lpMemRes) = CopySymGlbDirAsGlb (hGlbSub);
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbDir (hGlbSub);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -930,7 +930,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         // Get the indexed item from the name arg
         GetNextItemGlb (hGlbNam,            // Item global memory handle
                         aplLongestLst,      // Index into item
-                       &hGlbSub,            // Ptr to result global memory handle (may be NULL)
+                       &hGlbSub,            // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                        &aplLongestNam);     // Ptr to result immediate value (may be NULL)
         // Split cases based upon the result storage type
         switch (aplTypeRes)
@@ -1927,12 +1927,12 @@ UBOOL ArrayIndexSetNamScalar_EM
 
     // Get the last item of the right arg
     if (hGlbRht)
-        GetNextValueMem (lpMemRht,
-                         aplTypeRht,
-                         aplNELMRht - 1,
-                        &hGlbSubRht,
-                        &aplLongestRht,
-                        &immTypeRht);
+        GetNextValueMem (lpMemRht,              // Ptr to item global memory data
+                         aplTypeRht,            // Item storage type
+                         aplNELMRht - 1,        // Index into item
+                        &hGlbSubRht,            // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                        &aplLongestRht,         // Ptr to result immediate value (may be NULL)
+                        &immTypeRht);           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
     else
         immTypeRht = TranslateArrayTypeToImmType (aplTypeRht);
 
@@ -1967,7 +1967,7 @@ UBOOL ArrayIndexSetNamScalar_EM
         lpMemRes = VarArrayBaseToData (lpMemRes, 0);
 
         // Fill in the data
-        *((LPAPLNESTED) lpMemRes) = CopySymGlbDir (MakePtrTypeGlb (hGlbSubRht));
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbDir (hGlbSubRht);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -2181,7 +2181,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
                 GetNextValueMem (lpMemRht,          // Ptr to item global memory data
                                  aplTypeRht,        // Item storage type
                                  uRht,              // Index into item
-                                 NULL,              // Ptr to result global memory handle (may be NULL)
+                                 NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                 &aplLongestRht,     // Ptr to result immediate value (may be NULL)
                                  NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
             // Validate all elements in the right arg
@@ -2718,11 +2718,11 @@ UBOOL ArrayIndexSetSingLst_EM
         {
             // Get the next item from the right arg
             if (!IsSingleton (aplNELMRht))
-                GetNextItemMem (lpMemRht,
-                                aplTypeRht,
-                                uRes,
-                               &hGlbSubRht,
-                               &aplLongestRht);
+                GetNextItemMem (lpMemRht,                   // Ptr to right arg global memory data
+                                aplTypeRht,                 // Right arg storage type
+                                uRes,                       // Index into right arg
+                               &hGlbSubRht,                 // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                               &aplLongestRht);             // Ptr to result immediate value (may be NULL)
             // Index assignment into the top level of a vector
             bRet = ArrayIndexSetVector_EM (aplNELMNam,      // Name arg NELM
                                            lpMemSubLst,     // Ptr to list arg subitem
@@ -2778,11 +2778,11 @@ UBOOL ArrayIndexSetSingLst_EM
         {
             // Get the next value from the right arg
             if (!IsSingleton (aplNELMRht))
-                GetNextItemMem (lpMemRht,
-                                aplTypeRht,
-                                uRes,
-                               &hGlbSubRht,
-                               &aplLongestRht);
+                GetNextItemMem (lpMemRht,                           // Ptr to right arg global memory data
+                                aplTypeRht,                         // Right arg storage type
+                                uRes,                               // Index into right arg
+                               &hGlbSubRht,                         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                               &aplLongestRht);                     // Ptr to result immediate value (may be NULL)
             // Split cases based upon the list arg subitem ptr type
             switch (GetPtrTypeDir (((LPAPLHETERO) lpMemSubLst)[uRes]))
             {
@@ -2976,7 +2976,7 @@ UBOOL ArrayIndexSetVector_EM
     GetNextItemMem (lpMemSubLst,        // Ptr to item global memory data
                     aplTypeSubLst,      // Item storage type
                     uRes,               // Index into item
-                   &hGlbSubLst,         // Ptr to result global memory handle (may be NULL)
+                   &hGlbSubLst,         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                    &aplLongestSubLst);  // Ptr to result immediate value (may be NULL)
     // Check for DOMAIN ERROR
     // Split cases based upon the list arg subitem storage type

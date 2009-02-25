@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -194,19 +194,19 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
             // Get the first value
-            GetNextValueMem (lpMemRht,
-                             aplTypeRht,
-                             0,
-                             NULL,
-                            &aplLongestRht1,
-                             NULL);
+            GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
+                             aplTypeRht,        // Right arg storage type
+                             0,                 // Right arg index
+                             NULL,              // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestRht1,    // Ptr to right arg immediate value
+                             NULL);             // Ptr to right arg immediate type
             // Get the second value
-            GetNextValueMem (lpMemRht,
-                             aplTypeRht,
-                             1,
-                             NULL,
-                            &aplLongestRht2,
-                             NULL);
+            GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
+                             aplTypeRht,        // Right arg storage type
+                             1,                 // Right arg index
+                             NULL,              // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestRht2,    // Ptr to right arg immediate value
+                             NULL);             // Ptr to right arg immediate type
             // If the right arg is float, attempt to convert it to integer
             if (IsSimpleFlt (aplTypeRht))
             {

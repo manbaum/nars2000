@@ -5188,7 +5188,9 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
 
     // Get the incoming DC
     hDCInc = hdc ? hdc : BeginPaint(es->hwndSelf, &ps);
-
+#ifdef DEBUG
+    GetClipBox (hDCInc, &rcClient);     // ***DEBUG***
+#endif
     // Get the client rectangle
     GetClientRect (es->hwndSelf, &rcClient);
 
@@ -5202,16 +5204,10 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
                                       rcClient.right,
                                       rcClient.bottom);
     hBitmapOld = SelectObject (hDCMem, hBitmap);
-
-#define hDCSub  hDCMem
-
+  #define hDCSub  hDCMem
 #else
-
-#define hDCSub  hDCInc
-
+  #define hDCSub  hDCInc
 #endif
-
-
     // Handle WM_ERASEBKGND here by filling in the client area
     //   with the class background brush
     FillRect (hDCSub, &rcClient, hBrush);

@@ -30,6 +30,9 @@
 extern HANDLE ahGLBALLOC[MAXOBJ];
 extern UINT auLinNumGLBALLOC[MAXOBJ];
 extern LPCHAR lpaFileNameGLBALLOC[MAXOBJ];
+
+// Debug level for display of function-related info
+UINT gFcnLvl = 3;
 #endif
 
 
@@ -237,7 +240,7 @@ void DisplaySymTab
     } else
     {
         DbgMsgW (L"********** Symbol Table Referenced Non-SysNames ********");
-    } // End IF/ELSE -- DO NOT REMOVE as the DbgMsgW2 macro needs
+    } // End IF/ELSE -- DO NOT REMOVE as the DbgMsgW macro needs
     //                  this because of the trailing semicolon
 
     wsprintfW (wszTemp,
@@ -678,7 +681,8 @@ void DisplayTokens
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
-    if (gDbgLvl <= 2)
+    // Check debug level
+    if (gDbgLvl < 3)
         return;
 
     DbgMsgW (L"********** Tokens **************************************");
@@ -864,6 +868,10 @@ void DisplayFcnStrand
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
+    // Check debug level
+    if (gDbgLvl < gFcnLvl)
+        return;
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -975,7 +983,7 @@ void DisplayFcnStrand
     *lpaplChar = L'\0';
 
     // Display the line in the debugging window
-    DbgMsgW2 (wszTemp);
+    DbgMsgW (wszTemp);
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1179,16 +1187,39 @@ LPWCHAR DisplayFcnSub
                     // Get the function array global memory handle
                     hGlbData = lpYYMem->tkToken.tkData.tkSym->stData.stGlbData;
 
-                    // stData is a valid HGLOBAL function array
-                    Assert (IsGlbTypeFcnDir (hGlbData));
+                    // Split cases based upon the array signature
+                    switch (GetSignatureGlb (hGlbData))
+                    {
+                        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
 
-                    // Display the function strand in global memory
-                    lpaplChar =
-                      DisplayFcnGlb (lpaplChar,                 // Ptr to output save area
-                                     hGlbData,                  // Function array global memory handle
-                                     FALSE,                     // TRUE iff we're to display the header
-                                     lpSavedWsGlbVarConv,       // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
-                                     lpSavedWsGlbVarParm);      // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                        case FCNARRAY_HEADER_SIGNATURE:
+                            // Display the function strand in global memory
+                            lpaplChar =
+                              DisplayFcnGlb (lpaplChar,                 // Ptr to output save area
+                                             hGlbData,                  // Function array global memory handle
+                                             FALSE,                     // TRUE iff we're to display the header
+                                             lpSavedWsGlbVarConv,       // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                                             lpSavedWsGlbVarParm);      // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                            break;
+
+                        case DFN_HEADER_SIGNATURE:
+                            // Clear the ptr type bits
+                            hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+
+                            // Lock the memory to get a ptr to it
+                            lpMemDfnHdr = MyGlobalLock (hGlbData);
+
+                            // Append the function name from the symbol table
+                            lpaplChar = CopySteName (lpaplChar, lpMemDfnHdr->steFcnName, NULL);
+
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
                 } // End IF/ELSE
             } else
                 // Handle the immediate case
@@ -1408,16 +1439,20 @@ void DisplayFcnArr
 
     Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbStr)));
 
-    DbgMsgW2 (L"********** Function Array ******************************");
+    // Check debug level
+    if (gDbgLvl < gFcnLvl)
+        return;
+
+    DbgMsgW (L"********** Function Array ******************************");
 
     DisplayFcnGlb (wszTemp,         // Ptr to output save area
                    hGlbStr,         // Function array global memory handle
                    TRUE,            // TRUE iff we're to display the header
                    NULL,            // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
                    NULL);           // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
-    DbgMsgW2 (wszTemp);
+    DbgMsgW (wszTemp);
 
-    DbgMsgW2 (L"********** End Function Array **************************");
+    DbgMsgW (L"********** End Function Array **************************");
 } // End DisplayFcnArr
 #endif
 
@@ -1440,9 +1475,25 @@ void DisplayStrand
     LPPERTABDATA  lpMemPTD;         // Ptr to PerTabData global memory
     WCHAR         wszTemp[1024];    // Ptr to temporary output area
 
-    // Check debug level
-    if (gDbgLvl <= 2)
-        return;
+    // Split cases based upon the strand type
+    //   so we can display or not depending upon the type
+    switch (strType)
+    {
+        case STRAND_VAR:
+            // Check debug level
+            if (gDbgLvl < 3)
+                return;
+            break;
+
+        case STRAND_FCN:
+            // Check debug level
+            if (gDbgLvl < gFcnLvl)
+                return;
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1456,12 +1507,12 @@ void DisplayStrand
     switch (strType)
     {
         case STRAND_VAR:
-            DbgMsgW2 (L"********** Variable Strands ****************************");
+            DbgMsgW (L"********** Variable Strands ****************************");
 
             break;
 
         case STRAND_FCN:
-            DbgMsgW2 (L"********** Function Strands ****************************");
+            DbgMsgW (L"********** Function Strands ****************************");
 
             break;
 
@@ -1474,7 +1525,7 @@ void DisplayStrand
                lpplLocalVars->lpYYStrandStart[strType],
                lpplLocalVars->lpYYStrandBase[strType],
                lpplLocalVars->lpYYStrandNext[strType]);
-    DbgMsgW2 (wszTemp);
+    DbgMsgW (wszTemp);
 
     for (lp = lpplLocalVars->lpYYStrandStart[strType], lpLast = NULL;
          lp NE lpplLocalVars->lpYYStrandNext[strType];
@@ -1482,12 +1533,12 @@ void DisplayStrand
     {
         if (lpLast NE lp->lpYYStrandBase)
         {
-            DbgMsgW2 (L"--------------------------------------------------------");
+            DbgMsgW (L"--------------------------------------------------------");
             lpLast  = lp->lpYYStrandBase;
         } // End IF
 
         wsprintfW (wszTemp,
-                   L"Strand (%p): %-9.9S D=%I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
+                   L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
                    lp,
                    GetTokenTypeName (lp->tkToken.tkFlags.TknType),
                    lp->tkToken.tkData.tkInteger,
@@ -1496,10 +1547,10 @@ void DisplayStrand
                    lp->YYIndirect,
                    lp->lpYYFcnBase,
                    lpLast);
-        DbgMsgW2 (wszTemp);
+        DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW2 (L"********** End Strands *********************************");
+    DbgMsgW (L"********** End Strands *********************************");
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1537,13 +1588,17 @@ void DisplayUndo
                               L"Back",
                               L"InsToggle"};
 
+    // Check debug level
+    if (gDbgLvl < 3)
+        return;
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    DbgMsgW2 (L"********** Undo Buffer *********************************");
+    DbgMsgW (L"********** Undo Buffer *********************************");
 
     // Get the shift key state
     bShift = (GetKeyState (VK_SHIFT) & 0x8000);
@@ -1621,10 +1676,10 @@ void DisplayUndo
                    lpUndoBeg->CharPosEnd,
                    lpUndoBeg->Group,
                    lpUndoBeg->Char);
-        DbgMsgW2 (wszTemp);
+        DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW2 (L"********** End Undo Buffer *****************************");
+    DbgMsgW (L"********** End Undo Buffer *****************************");
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1647,6 +1702,10 @@ void DisplayFnHdr
     HGLOBAL   hGlbName;
     LPAPLCHAR lpMemName;
     UINT      uLen, uItm;
+
+    // Check debug level
+    if (gDbgLvl < gFcnLvl)
+        return;
 
     // Initialize the output string
     lstrcpyW (wszTemp, L"Saving function header:  " WS_UTF16_DEL L" ");
@@ -1852,7 +1911,7 @@ void DisplayFnHdr
     } // End IF
 
     // Display it in the debug window
-    DbgMsgW2 (wszTemp);
+    DbgMsgW (wszTemp);
 } // End DisplayFnHdr
 #endif
 

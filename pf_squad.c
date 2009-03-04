@@ -888,8 +888,11 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     if (hGlbSub)
                     {
                         // The index value is the <lpMemOdo[iAxisNxt]> value in <hGlbSub>
-                        GetNextValueGlb (hGlbSub, lpMemOdo[iAxisNxt], NULL, &aplLongestNxt, &immTypeNxt);
-
+                        GetNextValueGlb (hGlbSub,               // The global memory handle
+                                         lpMemOdo[iAxisNxt],    // Index into item
+                                         NULL,                  // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                        &aplLongestNxt,         // Ptr to result immediate value (may be NULL)
+                                        &immTypeNxt);           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                         // If the index value is float, attempt to convert it to int
                         if (IsImmFlt (immTypeNxt))
                         {

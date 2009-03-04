@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -472,8 +472,11 @@ RESTART_INNERPROD_RES:
 
                     case ARRAY_NESTED:
                         // Get the first left arg value
-                        GetNextValueGlb (hGlbLft, 0, &hGlbItm, &aplLongestLft, &immTypeItm);
-
+                        GetNextValueGlb (hGlbLft,               // The global memory handle
+                                         0,                     // Index into item
+                                        &hGlbItm,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                        &aplLongestLft,         // Ptr to result immediate value (may be NULL)
+                                        &immTypeItm);           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                         // If the item is an array, ...
                         if (hGlbItm)
                         {
@@ -481,7 +484,7 @@ RESTART_INNERPROD_RES:
                             tkItmLft.tkFlags.TknType   = TKT_VARARRAY;
                             tkItmLft.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                            tkItmLft.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbItm);
+                            tkItmLft.tkData.tkGlbData  = CopySymGlbDir (hGlbItm);
                         } else
                         {
                             // Fill in the left arg item token
@@ -500,8 +503,11 @@ RESTART_INNERPROD_RES:
             } else
             {
                 // Get the first left arg value
-                GetNextValueGlb (hGlbLft, 0, &hGlbItm, &aplLongestLft, &immTypeItm);
-
+                GetNextValueGlb (hGlbLft,               // The global memory handle
+                                 0,                     // Index into item
+                                &hGlbItm,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                &aplLongestLft,         // Ptr to result immediate value (may be NULL)
+                                &immTypeItm);           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                 // If the item is an array, ...
                 if (hGlbItm)
                 {
@@ -509,7 +515,7 @@ RESTART_INNERPROD_RES:
                     tkItmLft.tkFlags.TknType   = TKT_VARARRAY;
                     tkItmLft.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmLft.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbItm);
+                    tkItmLft.tkData.tkGlbData  = CopySymGlbDir (hGlbItm);
                 } else
                 {
                     // Fill in the left arg item token
@@ -552,8 +558,11 @@ RESTART_INNERPROD_RES:
 
                     case ARRAY_NESTED:
                         // Get the first right arg value
-                        GetNextValueGlb (hGlbRht, 0, &hGlbItm, &aplLongestRht, &immTypeItm);
-
+                        GetNextValueGlb (hGlbRht,               // The global memory handle
+                                         0,                     // Index into item
+                                        &hGlbItm,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                        &aplLongestRht,         // Ptr to result immediate value (may be NULL)
+                                        &immTypeItm);           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                         // If the item is an array, ...
                         if (hGlbItm)
                         {
@@ -561,7 +570,7 @@ RESTART_INNERPROD_RES:
                             tkItmRht.tkFlags.TknType   = TKT_VARARRAY;
                             tkItmRht.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                            tkItmRht.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbItm);
+                            tkItmRht.tkData.tkGlbData  = CopySymGlbDir (hGlbItm);
                         } else
                         {
                             // Fill in the left arg item token
@@ -580,8 +589,11 @@ RESTART_INNERPROD_RES:
             } else
             {
                 // Get the first right arg value
-                GetNextValueGlb (hGlbRht, 0, &hGlbItm, &aplLongestRht, &immTypeItm);
-
+                GetNextValueGlb (hGlbRht,                       // The global memory handle
+                                 0,                             // Index into item
+                                &hGlbItm,                       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                &aplLongestRht,                 // Ptr to result immediate value (may be NULL)
+                                &immTypeItm);                   // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                 // If the item is an array, ...
                 if (hGlbItm)
                 {
@@ -1019,8 +1031,11 @@ RESTART_INNERPROD_RES:
                 if (hGlbLft)
                 {
                     // Get the next left arg value
-                    GetNextValueGlb (hGlbLft, uInnLft, &hGlbItm, &aplLongestLft, &immTypeItm);
-
+                    GetNextValueGlb (hGlbLft,                       // The global memory handle
+                                     uInnLft,                       // Index into item
+                                    &hGlbItm,                       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                    &aplLongestLft,                 // Ptr to result immediate value (may be NULL)
+                                    &immTypeItm);                   // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                     // If the item is an array, ...
                     if (hGlbItm)
                     {
@@ -1028,7 +1043,7 @@ RESTART_INNERPROD_RES:
                         tkItmLft.tkFlags.TknType = TKT_VARARRAY;
                         tkItmLft.tkFlags.ImmType = IMMTYPE_ERROR;
 ////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                        tkItmLft.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
+                        tkItmLft.tkData.tkGlbData = CopySymGlbDir (hGlbItm);
                     } else
                     {
                         // Fill in the left arg item token
@@ -1043,8 +1058,11 @@ RESTART_INNERPROD_RES:
                 if (hGlbRht)
                 {
                     // Get the next right arg value
-                    GetNextValueGlb (hGlbRht, uInnRht, &hGlbItm, &aplLongestRht, &immTypeItm);
-
+                    GetNextValueGlb (hGlbRht,                       // The global memory handle
+                                     uInnRht,                       // Index into item
+                                    &hGlbItm,                       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                    &aplLongestRht,                 // Ptr to result immediate value (may be NULL)
+                                    &immTypeItm);                   // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                     // If the item is an array, ...
                     if (hGlbItm)
                     {
@@ -1052,7 +1070,7 @@ RESTART_INNERPROD_RES:
                         tkItmRht.tkFlags.TknType = TKT_VARARRAY;
                         tkItmRht.tkFlags.ImmType = IMMTYPE_ERROR;
 ////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                        tkItmRht.tkData.tkGlbData = CopySymGlbDirAsGlb (hGlbItm);
+                        tkItmRht.tkData.tkGlbData = CopySymGlbDir (hGlbItm);
                     } else
                     {
                         // Fill in the right arg item token

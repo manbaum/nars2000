@@ -4553,9 +4553,6 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR2
 
-                                             // Mark as a Train in case we need to free
-                                             lpplLocalVars->lpYYMak->bTrain = TRUE;
-
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
@@ -4870,11 +4867,30 @@ LeftOper:
     | '%' Train '('                     {DbgMsgWP (L"%%LeftOper:  (Train)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             // The result is always the root of the function tree
-                                             $$ = $2;
+                                             // Initialize the function strand (Train) base
+                                             $2.lpYYStrandBase = $2.lpYYFcnBase;
 
-                                             // Mark as a Train in case we need to free
-                                             $$.bTrain = TRUE;
+                                             lpplLocalVars->lpYYLft =
+                                               MakeFcnStrand_EM_YY (&$2, NAMETYPE_TRN, TRUE);
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR2
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYStrL =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYLft, 1, DIRECT); // Lefthand function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYStrL;
+
+                                             YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
+#ifdef DEBUG
+                                             // Display the strand stack
+                                             DisplayStrand (STRAND_FCN);
+#endif
                                          } // End IF
                                         }
     ;
@@ -4893,21 +4909,34 @@ Train:
     | LeftOper LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper LeftOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Initialize the function strand (Train) base
+                                             $2.lpYYStrandBase = $2.lpYYFcnBase;
+
                                              lpplLocalVars->lpYYLft =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, TRUE);
 
-                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
-                                                 YYERROR2
-                                             } // End IF
+                                             // Initialize the function strand (Train) base
+                                             $1.lpYYStrandBase = $1.lpYYFcnBase;
 
                                              lpplLocalVars->lpYYRht =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
 
-                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             if (!lpplLocalVars->lpYYLft             // If not defined, free args and YYERROR
+                                              || !lpplLocalVars->lpYYRht)
                                              {
+                                                 FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
+
+                                                 if (lpplLocalVars->lpYYLft)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 } // End IF
+
+                                                 if (lpplLocalVars->lpYYRht)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                                 } // End IF
+
                                                  YYERROR2
                                              } // End IF
 
@@ -4924,14 +4953,15 @@ Train:
 
                                              YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
                                              YYFree (lpplLocalVars->lpYYStrR); lpplLocalVars->lpYYStrR = NULL;
+#ifdef DEBUG
+                                             // Display the strand stack
+                                             DisplayStrand (STRAND_FCN);
+#endif
                                          } // End IF
                                         }
     | Train    error                    {DbgMsgWP (L"%%Train:  error Train");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             // Mark as a Train in case we need to free
-                                             $1.bTrain = TRUE;
-
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
                                              YYERROR2
@@ -4941,8 +4971,8 @@ Train:
     | Train    LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper Train");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             // Mark as a Train in case we need to free
-                                             $1.bTrain = TRUE;
+                                             // Initialize the function strand (Train) base
+                                             $2.lpYYStrandBase = $2.lpYYFcnBase;
 
                                              lpplLocalVars->lpYYLft =
                                                MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, TRUE);
@@ -4950,6 +4980,7 @@ Train:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
                                                  YYERROR2
                                              } // End IF
 
@@ -4960,11 +4991,15 @@ Train:
                                              if (!lpplLocalVars->lpYYStrL)           // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
                                                  YYERROR2
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
-
+#ifdef DEBUG
+                                             // Display the strand stack
+                                             DisplayStrand (STRAND_FCN);
+#endif
                                              // The result is always the root of the function tree
                                              $$ = $1;
                                          } // End IF
@@ -5033,9 +5068,6 @@ RightOper:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR2
-
-                                             // Mark as a Train in case we need to free
-                                             lpplLocalVars->lpYYMak->bTrain = TRUE;
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
@@ -6040,7 +6072,7 @@ IndexListWE2:
 //  $ParseLine
 //
 //  Parse a line
-//  The result of parsing the line is in the return value (plLocalvars.ExitType)
+//  The result of parsing the line is in the return value (plLocalVars.ExitType)
 //    as well as in lpMemPTD->YYResExec if there is a value (EXITTYPE_DISPLAY
 //    or EXITTYPE_NODISPLAY).
 //***************************************************************************
@@ -6189,7 +6221,7 @@ EXIT_TYPES ParseLine
 
     // Allocate virtual memory for the Variable Strand accumulator
 #ifdef DEBUG
-    lclMemVirtStr[0].lpText   = "plLocalvars.lpYYStrandStart[STRAND_VAR] in <ParseLine>";
+    lclMemVirtStr[0].lpText   = "plLocalVars.lpYYStrandStart[STRAND_VAR] in <ParseLine>";
 #endif
     lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
@@ -6216,7 +6248,7 @@ EXIT_TYPES ParseLine
                     PAGE_READWRITE);
     // Allocate virtual memory for the Function Strand accumulator
 #ifdef DEBUG
-    lclMemVirtStr[1].lpText   = "plLocalvars.lpYYStrandStart[STRAND_FCN] in <ParseLine>";
+    lclMemVirtStr[1].lpText   = "plLocalVars.lpYYStrandStart[STRAND_FCN] in <ParseLine>";
 #endif
     lclMemVirtStr[1].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
     lclMemVirtStr[1].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);

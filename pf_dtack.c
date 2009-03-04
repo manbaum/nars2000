@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -299,8 +299,11 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     {
         // Get the next right arg value
         if (hGlbRht)
-            GetNextValueGlb (hGlbRht, uRht, NULL, &aplLongestRht, NULL);
-
+            GetNextValueGlb (hGlbRht,           // Right arg global memory handle
+                             uRht,              // Right arg index
+                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
+                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
         // The left arg is treated as a three-dimensional array of shape
         //   aplRestLft aplRowsLft aplColsLft
 

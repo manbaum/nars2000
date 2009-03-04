@@ -182,7 +182,12 @@ void StripStrand
     // If we're not back at the beginning, set the new base
     //   to the base of the token previous to the current base
     if (lpplLocalVars->lpYYStrandBase[strType] NE lpplLocalVars->lpYYStrandStart[strType])
+    {
+        Assert (lpplLocalVars->lpYYStrandStart[strType] <= lpplLocalVars->lpYYStrandBase[strType - STRAND_LEN]);
+        Assert (                                           lpplLocalVars->lpYYStrandBase[strType - STRAND_LEN] < lpplLocalVars->lpYYStrandNext[strType]);
+
         lpplLocalVars->lpYYStrandBase[strType] =  lpplLocalVars->lpYYStrandBase[strType - STRAND_LEN];
+    } // End IF
 
     // Set next available slot to this YYtoken's base
     lpplLocalVars->lpYYStrandNext[strType] = lpYYStrand->lpYYStrandBase;
@@ -245,8 +250,9 @@ void FreeStrand
             case TKT_NUMSTRAND:
             case TKT_VARARRAY:
             case TKT_AXISARRAY:
-                // Check for reused ptrs
-                if (!PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
+                // Check for reused and indirect ptrs
+                if (!lpYYToken->YYIndirect
+                 && !PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
                 {
                     // tkData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
@@ -265,8 +271,9 @@ void FreeStrand
                 break;
 
             case TKT_FCNARRAY:
-                // Check for reused ptrs
-                if (!PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
+                // Check for reused and indirect ptrs
+                if (!lpYYToken->YYIndirect
+                 && !PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
                 {
                     // tkData is a valid HGLOBAL function array
                     Assert (IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkGlbData));
@@ -1263,7 +1270,6 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 {
     UINT          uIniLen,          // Initial strand length
                   uActLen,          // Actual  ...
-                  uNELM,            // # elements in the strand
                   uCnt,             // Loop counter
                   TknCount;         // Token count
     APLUINT       ByteRes;          // # bytes in the result
@@ -1292,21 +1298,13 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYStrand              =
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
-    // Count the # tokens in the strand
-    uIniLen = YYCountFcnStr (lpYYArg->lpYYFcnBase);
-
-    // Get the # elements in the strand
-    uNELM = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand);
-
     // If the arg is a Train, ...
-    if (lpYYArg->bTrain)
-    {
-        // Save as the actual length (we've already done MakeFcnStrand on each function)
-        uIniLen = uNELM;
-
-        // Mark as a Train
-        fnNameType = NAMETYPE_TRN;
-    } // End IF
+    if (fnNameType EQ NAMETYPE_TRN)
+        // Count the # elements in the Train
+        uIniLen = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand);
+    else
+        // Count the # tokens in the strand
+        uIniLen = YYCountFcnStr (lpYYArg->lpYYFcnBase);
 
     //***********************************************************************
     //********** Single Element Case ****************************************
@@ -1384,7 +1382,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
 
     // If it's a Train, ...
-    if (lpYYArg->bTrain)
+    if (fnNameType EQ NAMETYPE_TRN)
     {
         // Copy the individual function strands to the result
         for (uCnt = 0; uCnt < uIniLen; uCnt++)
@@ -1394,7 +1392,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
             // Copy the function array
             lpYYTmp = CopyPL_YYSTYPE_EM_YY (&lpYYStrand[uCnt], FALSE);
 
-            // Save the result is memory
+            // Save the result in memory
             lpYYMemData[uCnt] = *lpYYTmp;
 
             // Free the result as CopyPL_YYSTYPE_EM_YY

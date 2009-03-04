@@ -109,8 +109,8 @@ PL_PARSE.PROTO:
 PL_PARSE.Y:
   Fix errors in comments.
   Fix Bug:  Define rule for ENDWHILE stmt which was previously ignored.
-  Fix Bug:  Never test for <lpplLocalVars->bYYERRORd> at the top of
-    rule becuase this might take an erroneous action in the case of a
+  Fix Bug:  Never test for <lpplLocalVars->bYYERROR> at the top of
+    rule because this might take an erroneous action in the case of a
     double error.
   In <pl_yylex>, return separate token for ENDWHILE.
   In <CheckSelSpec>, mark the index array as special.

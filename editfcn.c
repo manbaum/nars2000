@@ -116,7 +116,7 @@ UBOOL CreateFcnWindow
 
     hWnd =
       CreateMDIWindowW (LFEWNDCLASS,        // Class name
-                        wszFETitle,         // Window title
+                        NULL,               // Window title
                         0,                  // Styles
                         CW_USEDEFAULT,      // X-pos
                         CW_USEDEFAULT,      // Y-pos
@@ -513,6 +513,9 @@ LRESULT APIENTRY FEWndProc
         {
             APLU3264 uLineLen;      // Line length
 
+            // Write out the FE window title
+            SetFETitle (hWnd);
+
             // Draw the line #s
             DrawLineNumsFE (hWndEC);
 
@@ -676,13 +679,22 @@ LRESULT APIENTRY FEWndProc
                     SetWindowLongW (hWnd, GWLSF_CHANGED, TRUE);
 
                     // If the cursor is on line #0 (the function header),
-                    //   and Syntax Coloring is in effect, the user might
-                    //   have changed trhe localization status of a var,
+                    //   the user might have changed the name of the function,
+                    //   so we need to rewrite the Function Editor window title,
+                    //   or if Syntax Coloring is in effect, the user might
+                    //   have changed the localization status of a var,
                     //   so we need to repaint the whole window to reflect
                     //   the possible change in syntax colors.
-                    if (0 EQ SendMessageW (hWndEC, EM_LINEINDEX, -1, 0)
-                     && OptionFlags.bSyntClrFcns)
-                        InvalidateRect (hWndEC, NULL, FALSE);
+                    if (0 EQ SendMessageW (hWndEC, EM_LINEINDEX, -1, 0))
+                    {
+                        // Write out the FE window title
+                        SetFETitle (hWnd);
+
+                        // If we're Syntax Coloring function lines, ...
+                        if (OptionFlags.bSyntClrFcns)
+                            InvalidateRect (hWndEC, NULL, FALSE);
+                    } // End IF
+
                     break;
 
                 case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of Edit Ctrl
@@ -756,6 +768,73 @@ LRESULT APIENTRY FEWndProc
     return DefMDIChildProcW (hWnd, message, wParam, lParam);
 } // End FEWndProc
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SetFETitle
+//
+//  Write out the FE window title including the function name (if any)
+//***************************************************************************
+
+void SetFETitle
+    (HWND hWndFE)                   // FE window handle
+
+{
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPWCHAR      lpwszTemp;         // Ptr to temporary storage
+    HWND         hWndEC;            // Edit Ctrl window handle
+    APLU3264     uLineLen,          // Line length
+                 uNameLen;          // Function name length
+    LPSYMENTRY   lpSymName;         // Ptr to function name STE
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get ptr to temporary storage
+    lpwszTemp = lpMemPTD->lpwszTemp;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Get the handle to the Edit Ctrl
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
+
+    // Tell EM_GETLINE maximum # chars in the buffer
+    // The output array is a temporary so we don't have to
+    //   worry about overwriting outside the allocated buffer
+    ((LPWORD) lpwszTemp)[0] = -1;
+
+    // Get the contents of the line
+    uLineLen = (APLU3264) SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
+
+    // Ensure the line is properly terminated
+    lpwszTemp[uLineLen] = L'\0';
+
+    // Get the header line text
+    lpSymName = ParseFunctionName (hWndFE, lpwszTemp);
+    if (lpSymName)
+        // Append the function name from the symbol table
+        //   and calculate its length
+        uNameLen = (CopySteName (lpwszTemp, lpSymName, NULL) - lpwszTemp);
+    else
+        // Mark as no function name
+        uNameLen = 0;
+
+    // Ensure properly terminated
+    //   and increment the name length to the next position
+    lpwszTemp[uNameLen++] = L'\0';
+
+    // Format the new title in the memory following the name
+    wsprintfW (&lpwszTemp[uNameLen],
+                wszFETitle,
+                lpwszTemp);
+    // Rewrite the window title with the (new?) function name
+    SetWindowTextW (hWndFE, &lpwszTemp[uNameLen]);
+} // End SetFETitle
 
 
 //***************************************************************************
@@ -1050,19 +1129,61 @@ int LclECPaintHook
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #else
+//#define USECLIPRGN
     // If we're syntax coloring, ...
     if (hGlbClr)
     {
         UINT     uClr;                          // Loop counter
         HDC      hDCClient;                     // Client Area DC
         COLORREF clrBackDef;                    // Default background color
+#ifdef USECLIPRGN
+        HRGN     hRgnCpy,                       // Previous clipping region
+                 hRgnNew;                       // Incoming ...
+#endif
+        RECT     rcClip;
+        POINT    pt = {0, 0};                   // Temporary point for region offset
 
-        // Getr the default background color for this DC
+        // Get the default background color for this DC
         clrBackDef = GetBkColor (hDC);
+
+#ifdef USECLIPRGN
+        // Initialize the region copy to NULLREGION
+        hRgnCpy = CreateRectRgn (0, 0, 0, 0);
+
+        // Get and save the current clipping region
+        GetRandomRgn (hDC, hRgnCpy, SYSRGN);
+
+        // Get the current clipping box in window coords
+        GetClipBox (hDC, &rcClip);
+
+        // Stretch it to include the entire line so we can change
+        //   preceding chars Syntax Colors (e.g., change a quote mark
+        //   from unmatched to matched)
+        rcClip.left = 0;
+
+        // Define a new clipping region which is the entire line
+        //   in client coords
+        hRgnNew = CreateRectRgnIndirect (&rcClip);
+
+        // Because regions are stored in a DC in screen coords,
+        //   we need to map these to screen coords
+        MapWindowPoints (hWndEC, NULL, &pt, 1);
+
+        // Now offset the region so it's in screen coords
+        OffsetRgn (hRgnNew, pt.x, pt.y);
+
+        // Select the clipping region for the DC
+        SelectClipRgn (hDC, hRgnNew);
+
+        hDCClient = hDC;
+#else
+        GetClipBox (hDC, &rcClip);      // ***DEBUG***
 
         // Get a DC of the entire client area so we
         //   can draw outside the clipping region
         hDCClient = MyGetDC (hWndEC);
+#endif
+        GetClipBox (hDCClient, &rcClip);      // ***DEBUG***
 
         // Select the current font into the DC
         SelectObject (hDCClient, GetCurrentObject (hDC, OBJ_FONT));
@@ -1092,8 +1213,16 @@ int LclECPaintHook
             rcAct.left += cxAveChar;
         } // End FOR
 
+#ifdef USECLIPRGN
+        // Restore the previous clipping region
+        SelectClipRgn (hDC, hRgnCpy);
+
+        // We no longer need this recource
+        DeleteObject (hRgnNew); hRgnNew = NULL;
+#else
         // We no longer need this resource
         MyReleaseDC (hWndEC, hDCClient);
+#endif
     } else
         // Draw the line for real
         DrawTextW (hDC,
@@ -1550,7 +1679,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         // Copy the name (and its trailing zero) to temporary storage
                         //   which won't go away when we unlock the name's global
                         //   memory handle
-                        CopyMemory (lpwszFormat, lpMemName, (lstrlenW (lpMemName) + 1) * sizeof (APLCHAR));
+                        lstrcpyW (lpwszFormat, lpMemName);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
@@ -2826,17 +2955,14 @@ LRESULT WINAPI LclEditCtrlWndProc
             if (hGlbPTD EQ NULL)
                 break;
 
-            // Tell the ending code to draw the line #s afterwards
-            bDrawLineNums = TRUE;
-
             // If this tab isn't active, ignore the msg
             if (!IsCurTabActive ())
             {
-                PAINTSTRUCT ps;
-
                 // If there's no incoming HDC, ...
                 if (((HDC) wParam) EQ NULL)
                 {
+                    PAINTSTRUCT ps;
+
                     // Tell 'em we're done
                     BeginPaint (hWnd, &ps);
                     EndPaint   (hWnd, &ps);
@@ -2844,6 +2970,9 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 return FALSE;       // We ignored the msg
             } // End IF
+
+            // Tell the ending code to draw the line #s afterwards
+            bDrawLineNums = TRUE;
 
             break;
 
@@ -3920,7 +4049,7 @@ LPSYMENTRY ParseFunctionName
 
     // Tokenize the line
     hGlbTknHdr =
-      Tokenize_EM (lpaplChar,               // The line to tokenize (not necessarily zero-terminated)
+      Tokenize_EM (lpaplChar,               // The line to tokenize
                    lstrlenW (lpaplChar),    // The length of the above line
                    NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    0,                       // Function line # (0 = header)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1015,7 +1015,7 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
 ,
       wszFETitle[]                      // Function Editor ...
 #ifdef DEFINE_VALUES
- = WS_APPNAME L" Function Editor" WS_APPEND_DEBUG
+ = WS_APPNAME L" [%s]"
 #endif
 ,
       wszMETitle[]                      // Matrix Editor ...

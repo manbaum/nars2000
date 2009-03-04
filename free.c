@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -592,9 +592,30 @@ UBOOL FreeResultGlobalFcn
                 if (lpYYToken->tkToken.tkData.tkSym->stFlags.FcnDir)
                     break;          // Ignore internal functions
 
-                DbgBrk ();          // ***FIXME*** -- Can we ever get here??
+                // Get the global memory handle
+                hGlbLcl = lpYYToken->tkToken.tkData.tkSym->stData.stGlbData;
 
-                // Fall through to common code
+                // tkData is a valid HGLOBAL function array
+                //   or user-defined function/operator
+                Assert (IsGlbTypeFcnDir (hGlbLcl)
+                     || IsGlbTypeDfnDir (hGlbLcl));
+
+                // Clear the ptr type bits
+                hGlbLcl = ClrPtrTypeDirAsGlb (hGlbLcl);
+
+                // Free the function array or user-defined function/operator
+                if (FreeResultGlobalDFLV (hGlbLcl))
+                {
+#ifdef DEBUG_ZAP
+                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                              hGlbData,
+                              hGlbLcl,
+                              FNLN);
+#endif
+                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                } // End IF
+
+                break;
 
             case TKT_FCNARRAY:      // Free the function array
                 // Get the global memory handle

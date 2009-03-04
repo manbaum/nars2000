@@ -22,7 +22,6 @@ TO DO:  General:  Less Important (post-alpha)
 * Need an installation program which also sets up file associations for .ws.nars
 * Implement a toolbar with buttons for common actions.
 * When editing a function, check to see if it's already open for editing
-* Write the function name in the function editor title.
 * When removing a workspace tab, )RESET, terminate all threads, and then delete
   all globals.
 * User preference to avoid saving Undo buffer with user-defined functions/operators.
@@ -57,20 +56,10 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       expanded set of system functions, to wit:
 * ...         []CALL R
 * ...       L []CALL R
-* ...         []CRL R
-* ...         []CRLPC R
-* ...         []DEF R
-* ...         []DEFL R
 * ...       L []EA R    (Execute Alternate) (EAS--required)
 * ...         []EC R
-* ...         []ERASE R
 * ...         []FI R
 * ...       L []FMT R
-* ...         []IDLIST R
-* ...       L []IDLIST R
-* ...         []IDLOC R
-* ...         []SI
-* ...         []SINL
 * ...       L []SS R
 * ...         []STOP R  (Query Stop)  (EAS--Optional)
 * ...       L []STOP R  (Set Stop)    (EAS--Optional)
@@ -279,6 +268,7 @@ DONE:  General
 * Allow Alt-nnnn to enter an arbitrary Unicode characters
 * Document MAKEFILE so others may build the product
 * Check for 64-bit compile
+* Write the function name in the function editor title.
 *
 
 

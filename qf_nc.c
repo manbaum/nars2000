@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -464,6 +464,7 @@ APLINT CalcNameClass
 
         case NAMETYPE_FN0:
         case NAMETYPE_FN12:
+        case NAMETYPE_TRN:
             if (lpSymEntry->stFlags.ObjName EQ OBJNAME_USR)
                 return NAMECLASS_USRFCN;
             else

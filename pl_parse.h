@@ -30,13 +30,12 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
     UINT    TknCount;               // 10:  Token count
     UINT    YYInuse:1,              // 14:  00000001:  This entry is in use
             YYIndirect:1,           //      00000002:  Arg is indirect
-            bTrain:1,               //      00000004:  Arg is a Train
 #ifdef DEBUG
-            Avail:5,                //      000000F8:  Available bits
+            Avail:6,                //      000000FC:  Available bits
             YYIndex:23,             //      7FFFFF00:  Index #
             YYFlag:1;               //      80000000:  Flag to distinguish YYAlloc from yylex
 #else
-            Avail:29;               //      FFFFFFF8:  Available bits
+            Avail:30;               //      FFFFFFFC:  Available bits
 #endif
     struct tagPL_YYSTYPE
            *lpYYFcnBase,            // 18:  Ptr to base function/operator

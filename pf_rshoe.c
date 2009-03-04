@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1881,10 +1881,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
 
             // Extract an element from the right arg
             GetNextValueGlb (hGlbRht,               // Right arg global memory handle
-                             aplLongestLft,         // Index
-                            &hGlbRes,               // Ptr to result as HGLOBAL
-                            &aplLongestRes,         // Ptr to result immediate value
-                            &immTypeRes);           // Ptr to result immediate type
+                             aplLongestLft,         // Index into right arg
+                            &hGlbRes,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestRes,         // Ptr to result immediate value (may be NULL)
+                            &immTypeRes);           // Ptr to result immediate type (may be NULL)
             // Allocate a new YYRes
             lpYYRes = YYAlloc ();
 
@@ -1895,7 +1895,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (MakePtrTypeGlb (hGlbRes));
+                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (hGlbRes);
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
             } else
             {
@@ -2047,6 +2047,9 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                      iDim;                      // Loop counter
             APLUINT  aplWValSubLft,             // Left arg item weighting value
                      aplTmpSubLft;              // Left arg item temporary value
+
+            // Clear the ptr type bits
+            hGlbSubLft = ClrPtrTypeDirAsGlb (hGlbSubLft);
 
             // Get the attributes (Type, NELM, and Rank)
             //   of the left arg item global
@@ -2282,6 +2285,9 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         // If the right item arg is a global, ...
         if (hGlbSubRht)
         {
+            // Clear the ptr type bits
+            hGlbSubRht = ClrPtrTypeDirAsGlb (hGlbSubRht);
+
             // If we're assigning a new value
             //   and this is the last element in the
             //   left arg, ...

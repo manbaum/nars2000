@@ -365,6 +365,11 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                           NULL);            // Ptr to axis token
             if (lpYYRes1)
             {
+#ifdef DEBUG
+                // Decrement the SI level of lpYYRes1
+                //   so YYResIsEmpty won't complain
+                lpYYRes1->SILevel--;
+#endif
                 // If this derived function is monadic, ...
                 if (lptkLftArg EQ NULL)
                     lptkLftArg = lptkRhtArg;
@@ -375,6 +380,10 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                             &lpYYFcnStr[1],     // Ptr to function strand
                                             &lpYYRes1->tkToken, // Ptr to right arg token
                                              NULL);             // Ptr to axis token
+#ifdef DEBUG
+                // Restore the SI level of lpYYRes1
+                lpYYRes1->SILevel++;
+#endif
             } // End IF
 
             break;
@@ -388,6 +397,11 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                           NULL);            // Ptr to axis token
             if (lpYYRes1)
             {
+#ifdef DEBUG
+                // Decrement the SI level of lpYYRes1
+                //   so YYResIsEmpty won't complain
+                lpYYRes1->SILevel--;
+#endif
                 // Execute the lefthand function between
                 //   the left and right args
                 lpYYRes2 = ExecFuncStr_EM_YY (lptkLftArg,       // Ptr to left arg token
@@ -395,12 +409,27 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                               lptkRhtArg,       // Ptr to right arg token
                                               NULL);            // Ptr to axis token
                 if (lpYYRes2)
+                {
+#ifdef DEBUG
+                    // Decrement the SI level of lpYYRes2
+                    //   so YYResIsEmpty won't complain
+                    lpYYRes2->SILevel--;
+#endif
                     // Execute the middle function between
                     //   the two previous results
                     lpYYRes = ExecFuncStr_EM_YY (&lpYYRes2->tkToken,    // Ptr to left arg token
                                                  &lpYYFcnStr[1],        // Ptr to function strand
                                                  &lpYYRes1->tkToken,    // Ptr to right arg token
                                                   NULL);                // Ptr to axis token
+#ifdef DEBUG
+                    // Restore the SI level of lpYYRes2
+                    lpYYRes2->SILevel++;
+#endif
+                } // End IF
+#ifdef DEBUG
+                // Restore the SI level of lpYYRes1
+                lpYYRes1->SILevel++;
+#endif
             } // End IF
 
             break;
@@ -418,6 +447,11 @@ LPPL_YYSTYPE ExecTrain_EM_YY
 
                 if (lpYYRes1)
                 {
+#ifdef DEBUG
+                    // Decrement the SI level of lpYYRes1
+                    //   so YYResIsEmpty won't complain
+                    lpYYRes1->SILevel--;
+#endif
                     // Execute the leftmost function
                     //   between the left and right args
                     lpYYRes2 = ExecFuncStr_EM_YY (lptkLftArg,               // Ptr to left arg token
@@ -425,12 +459,27 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                                   lptkRhtArg,               // Ptr to right arg token
                                                   NULL);                    // Ptr to axis token
                     if (lpYYRes2)
+                    {
+#ifdef DEBUG
+                        // Decrement the SI level of lpYYRes2
+                        //   so YYResIsEmpty won't complain
+                        lpYYRes2->SILevel--;
+#endif
                         // Execute the next to the leftmost function
                         //   between the two previous results
                         lpYYRes = ExecFuncStr_EM_YY (&lpYYRes2->tkToken,        // Ptr to left arg token
                                                      &lpYYFcnStr[tknNELM - 2],  // Ptr to function strand
                                                      &lpYYRes1->tkToken,        // Ptr to right argtoken
                                                       NULL);                    // Ptr to axis token
+#ifdef DEBUG
+                        // Restore the SI level of lpYYRes2
+                        lpYYRes2->SILevel++;
+#endif
+                    } // End IF
+#ifdef DEBUG
+                    // Restore the SI level of lpYYRes1
+                    lpYYRes1->SILevel++;
+#endif
                 } // End IF
             } else
             // If the # elements in the Train is Even, ...
@@ -446,12 +495,23 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                             lptkRhtArg,     // Ptr to right arg token
                                             tknNELM - 1);   // # elements in the Train
                 if (lpYYRes1)
+                {
+#ifdef DEBUG
+                    // Decrement the SI level of lpYYRes1
+                    //   so YYResIsEmpty won't complain
+                    lpYYRes1->SILevel--;
+#endif
                     // Execute the leftmost function between
                     //   the left arg and the previous result
                     lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,                // Ptr to left arg token
                                                 &lpYYFcnStr[tknNELM - 1],   // Ptr to function strand
                                                 &lpYYRes1->tkToken,         // Ptr to right arg token
                                                  NULL);                     // Ptr to axis token
+#ifdef DEBUG
+                    // Restore the SI level of lpYYRes1
+                    lpYYRes1->SILevel++;
+#endif
+                } // End IF
             } // End IF/ELSE
 
             break;
@@ -577,6 +637,8 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                     break;
             } // End SWITCH
 
+            DbgStop ();             // We should never get here
+
         case TKT_FCNNAMED:
             Assert (lpYYFcnStr->TknCount EQ 1
                  || lpYYFcnStr->TknCount EQ 2);
@@ -588,6 +650,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
             Assert (GetPtrTypeDir (lpYYFcnStr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Get the global memory handle or function address if direct
+            hGlbFcn  =
             lpPrimFn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stNameFcn;
 
             // Check for internal functions
@@ -595,12 +658,31 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                 return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
 
             // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lpPrimFn));
+            //   or user-defined function/operator
+            Assert (IsGlbTypeFcnDir (hGlbFcn)
+                 || IsGlbTypeDfnDir (hGlbFcn));
 
-            return ExecFcnGlb_EM_YY (lptkLftArg,                        // Ptr to left arg token (may be NULL if monadic or niladic)
-                                      ClrPtrTypeDirAsGlb (lpPrimFn),    // Function array global memory handle
-                                      lptkRhtArg,                       // Ptr to right arg token (may be NULL if niladic)
-                                      lptkAxis);                        // Ptr to axis token (may be NULL)
+            // Split cases based upon the array signature
+            switch (GetSignatureGlb (hGlbFcn))
+            {
+                case FCNARRAY_HEADER_SIGNATURE:
+                    // Execute a function array global memory handle
+                    return ExecFcnGlb_EM_YY (lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
+                                              ClrPtrTypeDirAsGlb (hGlbFcn), // Function array global memory handle
+                                              lptkRhtArg,                   // Ptr to right arg token
+                                              lptkAxis);                    // Ptr to axis token (may be NULL)
+                case DFN_HEADER_SIGNATURE:
+                    // Execute a user-defined function/operator global memory handle
+                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbFcn),  // User-defined function/operator global memory handle
+                                             lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
+                                             lpYYFcnStr,                    // Ptr to function strand
+                                             lptkAxis,                      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                             lptkRhtArg,                    // Ptr to right arg token
+                                             LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
+                defstop
+                    break;
+            } // End SWITCH
+
         defstop
             goto ERROR_EXIT;
     } // End SWITCH

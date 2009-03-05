@@ -4899,6 +4899,35 @@ Train:
       LeftOper error                    {DbgMsgWP (L"%%Train:  error LeftOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Initialize the function strand (Train) base
+                                             $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYRht =
+                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
+                                             if (lpplLocalVars->lpYYRht)
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             } // End IF
+
+                                             FreeResult (&$1.tkToken);
+                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYERROR2
+                                         } else
+                                             YYERROR2
+                                        }
+    | AxisFunc error                    {DbgMsgWP (L"%%Train:  error AxisFunc");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Initialize the function strand (Train) base
+                                             $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYRht =
+                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
+                                             if (lpplLocalVars->lpYYRht)
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             } // End IF
+
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
                                              YYERROR2
@@ -4906,6 +4935,165 @@ Train:
                                              YYERROR2
                                         }
 ////| error    LeftOper                 //--Conflicts
+    | AxisFunc AxisFunc                 {DbgMsgWP (L"%%Train:  AxisFunc AxisFunc");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Initialize the function strand (Train) base
+                                             $2.lpYYStrandBase = $2.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYLft =
+                                               MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, TRUE);
+
+                                             // Initialize the function strand (Train) base
+                                             $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYRht =
+                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
+
+                                             if (!lpplLocalVars->lpYYLft             // If not defined, free args and YYERROR
+                                              || !lpplLocalVars->lpYYRht)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+
+                                                 if (lpplLocalVars->lpYYLft)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 } // End IF
+
+                                                 if (lpplLocalVars->lpYYRht)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                                 } // End IF
+
+                                                 YYERROR2
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYStrR =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYRht, 1, DIRECT); // Righthand function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+
+                                             lpplLocalVars->lpYYStrL =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYLft, 1, DIRECT); // Lefthand function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYStrR;
+
+                                             YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
+                                             YYFree (lpplLocalVars->lpYYStrR); lpplLocalVars->lpYYStrR = NULL;
+#ifdef DEBUG
+                                             // Display the strand stack
+                                             DisplayStrand (STRAND_FCN);
+#endif
+                                         } // End IF
+                                        }
+    | AxisFunc LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper AxisFunc");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Initialize the function strand (Train) base
+                                             $2.lpYYStrandBase = $2.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYLft =
+                                               MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, TRUE);
+
+                                             // Initialize the function strand (Train) base
+                                             $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYRht =
+                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
+
+                                             if (!lpplLocalVars->lpYYLft             // If not defined, free args and YYERROR
+                                              || !lpplLocalVars->lpYYRht)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+
+                                                 if (lpplLocalVars->lpYYLft)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 } // End IF
+
+                                                 if (lpplLocalVars->lpYYRht)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                                 } // End IF
+
+                                                 YYERROR2
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYStrR =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYRht, 1, DIRECT); // Righthand function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+
+                                             lpplLocalVars->lpYYStrL =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYLft, 1, DIRECT); // Lefthand function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYStrR;
+
+                                             YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
+                                             YYFree (lpplLocalVars->lpYYStrR); lpplLocalVars->lpYYStrR = NULL;
+#ifdef DEBUG
+                                             // Display the strand stack
+                                             DisplayStrand (STRAND_FCN);
+#endif
+                                         } // End IF
+                                        }
+    | LeftOper AxisFunc                 {DbgMsgWP (L"%%Train:  AxisFunc LeftOper");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Initialize the function strand (Train) base
+                                             $2.lpYYStrandBase = $2.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYLft =
+                                               MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, TRUE);
+
+                                             // Initialize the function strand (Train) base
+                                             $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYRht =
+                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
+
+                                             if (!lpplLocalVars->lpYYLft             // If not defined, free args and YYERROR
+                                              || !lpplLocalVars->lpYYRht)
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+
+                                                 if (lpplLocalVars->lpYYLft)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 } // End IF
+
+                                                 if (lpplLocalVars->lpYYRht)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                                 } // End IF
+
+                                                 YYERROR2
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYStrR =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYRht, 1, DIRECT); // Righthand function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+
+                                             lpplLocalVars->lpYYStrL =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYLft, 1, DIRECT); // Lefthand function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYStrR;
+
+                                             YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
+                                             YYFree (lpplLocalVars->lpYYStrR); lpplLocalVars->lpYYStrR = NULL;
+#ifdef DEBUG
+                                             // Display the strand stack
+                                             DisplayStrand (STRAND_FCN);
+#endif
+                                         } // End IF
+                                        }
     | LeftOper LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper LeftOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -4962,6 +5150,16 @@ Train:
     | Train    error                    {DbgMsgWP (L"%%Train:  error Train");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Initialize the function strand (Train) base
+                                             $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYRht =
+                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+                                             if (lpplLocalVars->lpYYRht)
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             } // End IF
+
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->ExitType = EXITTYPE_ERROR;
                                              YYERROR2
@@ -4979,6 +5177,16 @@ Train:
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
+                                                 // Initialize the function strand (Train) base
+                                                 $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                                 lpplLocalVars->lpYYRht =
+                                                   MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+                                                 if (lpplLocalVars->lpYYRht)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                                 } // End IF
+
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
                                                  YYERROR2
@@ -4990,6 +5198,72 @@ Train:
 
                                              if (!lpplLocalVars->lpYYStrL)           // If not defined, free args and YYERROR
                                              {
+                                                 // Initialize the function strand (Train) base
+                                                 $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                                 lpplLocalVars->lpYYRht =
+                                                   MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+                                                 if (lpplLocalVars->lpYYRht)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                                 } // End IF
+
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR2
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
+#ifdef DEBUG
+                                             // Display the strand stack
+                                             DisplayStrand (STRAND_FCN);
+#endif
+                                             // The result is always the root of the function tree
+                                             $$ = $1;
+                                         } // End IF
+                                        }
+    | Train    AxisFunc                 {DbgMsgWP (L"%%Train:  AxisFunc Train");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Initialize the function strand (Train) base
+                                             $2.lpYYStrandBase = $2.lpYYFcnBase;
+
+                                             lpplLocalVars->lpYYLft =
+                                               MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, TRUE);
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 // Initialize the function strand (Train) base
+                                                 $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                                 lpplLocalVars->lpYYRht =
+                                                   MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+                                                 if (lpplLocalVars->lpYYRht)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                                 } // End IF
+
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR2
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYStrL =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYLft, 1, DIRECT); // Lefthand function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+
+                                             if (!lpplLocalVars->lpYYStrL)           // If not defined, free args and YYERROR
+                                             {
+                                                 // Initialize the function strand (Train) base
+                                                 $1.lpYYStrandBase = $1.lpYYFcnBase;
+
+                                                 lpplLocalVars->lpYYRht =
+                                                   MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+                                                 if (lpplLocalVars->lpYYRht)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                                 } // End IF
+
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
                                                  YYERROR2

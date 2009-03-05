@@ -1,6 +1,11 @@
+.APL
+{
+  font-family: "SImPL", "SImPL medium", "APL385 Unicode", "APLX Upright", monospace;
+}
+
 code
 {
-  font-family:  "SImPL", "SImPL medium", "APL385 Unicode", monospace;
+  font-family: "SImPL", "SImPL medium", "APL385 Unicode", "APLX Upright", monospace;
 }
 
 .ttfRight

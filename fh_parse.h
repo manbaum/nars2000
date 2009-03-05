@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -164,7 +164,8 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  ListRes:1,         //      00000400:  TRUE iff the result is a list
                  ListLft:1,         //      00000800:  TRUE iff the left arg ...
                  ListRht:1,         //      00001000:  TRUE iff the right arg ...
-                 Avail:19;          //      FFFFE000:  Available bits
+                 ParseFcnName:1,    //      00002000:  TRUE iff we're parsing the function name
+                 Avail:18;          //      FFFFC000:  Available bits
     LPFH_YYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)
                  lpYYStrandBase,    // 28:  ...          base (dynamic)
                  lpYYStrandNext,    // 2C:  ...          next token (dynamic)
@@ -177,7 +178,7 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  lpYYRhtArg,        // 48:  ...    right arg name or list
                  lpYYLocals;        // 4C:  ...    locals name or list
     WCHAR        wszErrMsg[256];    // 50:  Save area for error message
-                                    //150:  Length
+                                    //250:  Length
 } FHLOCALVARS, *LPFHLOCALVARS;
 
 

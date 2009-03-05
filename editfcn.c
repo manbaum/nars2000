@@ -4085,6 +4085,9 @@ LPSYMENTRY ParseFunctionName
                     DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
+    // Mark as parsing the function name (generate fewer errors)
+    fhLocalVars.ParseFcnName = TRUE;
+
     // Parse the header
     if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, FALSE)
      && fhLocalVars.lpYYFcnName)

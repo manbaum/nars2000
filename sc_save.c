@@ -249,7 +249,7 @@ UBOOL CmdSave_EM
     // Close it after creating the file
     fclose (fStream); fStream = NULL;
 
-    // Write out the [General] section
+    // Write out to the [General] section
     WritePrivateProfileStringW (SECTNAME_GENERAL,   // Ptr to the section name
                                 KEYNAME_VERSION,    // Ptr to the key name
                                 L"0.01",            // Ptr to the key value
@@ -290,6 +290,31 @@ UBOOL CmdSave_EM
             // Get the flags
             stFlags = lpSymEntry->stFlags;
 
+            // Check for []WSID (if so, write out to [General] section and skip over it)
+            if (lstrcmpiW (lpwszTemp, L"{quad}wsid") EQ 0)
+            {
+                HGLOBAL hGlbWSID;
+                LPWCHAR lpMemWSID;
+
+                // Get the global memory handle and clear the ptr type bits
+                hGlbWSID = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+
+                // Lock the memory to get a ptr to it
+                lpMemWSID = MyGlobalLock (hGlbWSID);
+
+                // Skip oer the header and dimensions
+                lpMemWSID = VarArrayBaseToData (lpMemWSID, 1);
+
+                // Write out to the [General] section
+                WritePrivateProfileStringW (SECTNAME_GENERAL,   // Ptr to the section name
+                                            KEYNAME_WSID,       // Ptr to the key name
+                                            lpMemWSID,          // Ptr to the key value
+                                            lpMemSaveWSID);     // Ptr to the file name
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbWSID); lpMemWSID = NULL;
+
+                continue;
+            } else
             // Check for []DM
             if ((!stFlags.Value) && lstrcmpiW (lpwszTemp, L"{quad}dm") EQ 0)
             {

@@ -419,6 +419,10 @@ UBOOL LoadWorkspace_EM
                                           lpwSrc,               // Ptr to the output buffer
                                           uMaxSize,             // Byte size of the output buffer
                                           lpwszDPFE);           // Ptr to the file name
+                // Check for empty or missing counter
+                if (*lpwSrc EQ L'\0')
+                    continue;
+
                 // Look for the name separator (L'=')
                 lpwCharEnd = strchrW (lpwSrc, L'=');
                 Assert (lpwCharEnd NE NULL);
@@ -571,6 +575,10 @@ UBOOL LoadWorkspace_EM
                                           lpwSrc,               // Ptr to the output buffer
                                           uMaxSize,             // Byte size of the output buffer
                                           lpwszDPFE);           // Ptr to the file name
+                // Check for empty or missing counter
+                if (*lpwSrc EQ L'\0')
+                    continue;
+
                 // Look for the name separator (L'=')
                 lpwCharEnd = strchrW (lpwSrc, L'=');
                 Assert (lpwCharEnd NE NULL);

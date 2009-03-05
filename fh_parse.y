@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ void fh_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 %name-prefix="fh_yy"
 %parse-param {LPFHLOCALVARS lpfhLocalVars}
 %lex-param   {LPFHLOCALVARS lpfhLocalVars}
-%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK SOS
+%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK SOS NOMORE
 
 %start HeaderComm
 
@@ -207,7 +207,9 @@ List:
 
 Result:
       List    ASSIGN            {DbgMsgWP (L"%%Result:  List" WS_UTF16_LEFTARROW);
-                                 if ($1.lpYYStrandBase->uStrandLen EQ 1 && $1.List)
+                                 if ($1.lpYYStrandBase->uStrandLen EQ 1
+                                  && $1.List
+                                  && !lpfhLocalVars->ParseFcnName)
                                  {
                                      fh_yyerror (lpfhLocalVars, "length error");
                                      YYERROR;
@@ -218,7 +220,9 @@ Result:
                                  $$ = $1;
                                 }
     | OptArg  ASSIGN            {DbgMsgWP (L"%%Result:  OptArg" WS_UTF16_LEFTARROW);
-                                 if ($1.lpYYStrandBase->uStrandLen EQ 1 && $1.List)
+                                 if ($1.lpYYStrandBase->uStrandLen EQ 1
+                                  && $1.List
+                                  && !lpfhLocalVars->ParseFcnName)
                                  {
                                      fh_yyerror (lpfhLocalVars, "length error");
                                      YYERROR;
@@ -444,7 +448,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | OptArg  List     RhtArg   {DbgMsgWP (L"%%NoResHdr:  OptArg List RhtArg");     // Mon/Dyd operator, ambivalent derived function
-                                 if (!GetOprName_EM (&$2))
+                                  if (!GetOprName_EM (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
@@ -457,12 +461,15 @@ NoResHdr:                       // N.B. that this production does not need to re
 Locals:
               LINECONT          {DbgMsgWP (L"%%Locals:  LINECONT");
                                 }
+    |         ';'      NOMORE   {DbgMsgWP (L"%%Locals:  ';' NOMORE");
+                                }
     |         ';'      NAMEUNK  {DbgMsgWP (L"%%Locals:  ';' NAMEUNK");
                                  InitHdrStrand (&$2);
                                  $$ = *PushHdrStrand_YY (&$2);
                                 }
     |         ';'      NAMESYS  {DbgMsgWP (L"%%Locals:  ';' NAMESYS");
-                                 if (!$2.tkToken.tkData.tkSym->stFlags.Value)
+                                 if (!$2.tkToken.tkData.tkSym->stFlags.Value
+                                  && !lpfhLocalVars->ParseFcnName)
                                  {
                                      fh_yyerror (lpfhLocalVars, "value error");
                                      YYERROR;
@@ -473,11 +480,14 @@ Locals:
                                 }
     | Locals  LINECONT          {DbgMsgWP (L"%%Locals:  Locals LINECONT");
                                 }
+    | Locals  ';'      NOMORE   {DbgMsgWP (L"%%Locals:  Locals ';' NOMORE");
+                                }
     | Locals  ';'      NAMEUNK  {DbgMsgWP (L"%%Locals:  Locals ';' NAMEUNK");
                                  $$ = *PushHdrStrand_YY (&$3);
                                 }
     | Locals  ';'      NAMESYS  {DbgMsgWP (L"%%Locals:  Locals ';' NAMESYS");
-                                 if (!$3.tkToken.tkData.tkSym->stFlags.Value)
+                                 if (!$3.tkToken.tkData.tkSym->stFlags.Value
+                                  && !lpfhLocalVars->ParseFcnName)
                                  {
                                      fh_yyerror (lpfhLocalVars, "value error");
                                      YYERROR;
@@ -496,7 +506,8 @@ Header:
     |         NoResHdr          {DbgMsgWP (L"%%Header:  NoResHdr");
                                 }
     |         NoResHdr error    {DbgMsgWP (L"%%Header:  NoResHdr error");
-                                 YYABORT;
+                                 if (!lpfhLocalVars->ParseFcnName)
+                                     YYABORT;
                                 }
     |         NoResHdr Locals   {DbgMsgWP (L"%%Header:  NoResHdr Locals");
                                  lpfhLocalVars->lpYYLocals = MakeHdrStrand_YY (&$2);
@@ -510,7 +521,8 @@ Header:
                                  YYABORT;
                                 }
     | Result  NoResHdr error    {DbgMsgWP (L"%%Header:  Result NoResHdr error");
-                                 YYABORT;
+                                 if (!lpfhLocalVars->ParseFcnName)
+                                     YYABORT;
                                 }
     | Result  NoResHdr Locals   {DbgMsgWP (L"%%Header:  Result NoResHdr Locals");
                                  lpfhLocalVars->lpYYLocals = MakeHdrStrand_YY (&$3);
@@ -519,6 +531,11 @@ Header:
 
 HeaderComm:
       Header SOS                {DbgMsgWP (L"%%HeaderComm:  Header SOS");
+#ifdef DEBUG
+                                 DisplayFnHdr (lpfhLocalVars);
+#endif
+                                }
+    | Header SOS NOMORE         {DbgMsgWP (L"%%HeaderComm:  Header SOS NOMORE");
 #ifdef DEBUG
                                  DisplayFnHdr (lpfhLocalVars);
 #endif
@@ -647,7 +664,17 @@ int fh_yylex
 {
     // Check for stopping point
     if (lpfhLocalVars->lptkStop EQ lpfhLocalVars->lptkNext)
-        return '\0';
+    {
+        // If called from ParseFunctionName, ...
+        if (lpfhLocalVars->ParseFcnName)
+        {
+            // Reset so we return NOMORE only once
+            lpfhLocalVars->ParseFcnName = FALSE;
+
+            return NOMORE;
+        } else
+            return '\0';
+    } // End IF
 
 #if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
     dprintfW (L"==fh_yylex:  TknType = %S, CharIndex = %d",
@@ -736,8 +763,15 @@ void fh_yyerror                     // Called for Bison syntax error
 #ifdef DEBUG
     DbgMsg (s);
 #endif
-    // Get and save the character index position
-    uCharIndex = lpfhLocalVars->lptkNext->tkCharIndex;
+    // Check for stopping point
+    if (lpfhLocalVars->lptkStop EQ lpfhLocalVars->lptkNext)
+        // Get the character index position
+        uCharIndex = lpfhLocalVars->lptkNext[-1].tkCharIndex + 1;
+    else
+        // Get the character index position
+        uCharIndex = lpfhLocalVars->lptkNext[ 0].tkCharIndex;
+
+    // Save the character index position
     lpfhLocalVars->tkErrorCharIndex = uCharIndex;
 
     // Check for SYNTAX ERROR

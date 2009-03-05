@@ -680,8 +680,8 @@ UBOOL IsLocalName
 {
     LPWCHAR lpwszName,                  // Ptr to name
             wp,                         // Ptr to temp char
-            lpwBrkLead = L"( );" WS_UTF16_LEFTARROW,
-            lpwBrkTerm = L"( );" WS_UTF16_LEFTARROW WS_UTF16_LAMP;
+            lpwBrkLead = L"({ });" WS_UTF16_LEFTARROW,
+            lpwBrkTerm = L"({ });" WS_UTF16_LEFTARROW WS_UTF16_LAMP;
     WCHAR   sysName[32];                // Temp storage for sysnames in lowercase
 
     // If this is a sysname, ...

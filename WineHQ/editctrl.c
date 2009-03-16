@@ -2523,7 +2523,7 @@ static void EDIT_AdjustFormatRect(EDITSTATE *es)
     {
         INT fw, vlc, max_x_offset, max_y_offset;
 
-        vlc = (es->format_rect.bottom - es->format_rect.top) / es->line_height;
+        vlc = 1 + (es->format_rect.bottom - es->format_rect.top) / es->line_height;
         es->format_rect.bottom = es->format_rect.top + max(1, vlc) * es->line_height;
 
         /* correct es->x_offset */
@@ -5248,6 +5248,12 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
 } // End EDIT_WM_Paint
 
 
+/*********************************************************************
+ *
+ * EDIT_WM_Paint2
+ *
+ */
+
 static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg, long lFlags)
 {
     INT i;
@@ -5321,8 +5327,8 @@ static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg, long lFlags)
     GetClipBox(dc, &rcRgn);
     if (es->style & ES_MULTILINE) {
         INT vlc = (es->format_rect.bottom - es->format_rect.top) / es->line_height;
-        INT nLOP = (rcClient.bottom - rcClient.top) / es->line_height;
-        for (i = es->y_offset ; i <= min(es->y_offset + vlc, es->y_offset + es->line_count - 1) ; i++) {
+        INT nLOP = ((es->line_height - 1) + rcClient.bottom - rcClient.top) / es->line_height;
+        for (i = es->y_offset ; i <= es->y_offset + min(vlc, es->line_count - 1) ; i++) {
             EDIT_GetLineRect(es, i, 0, -1, &rcLine);
             if (lFlags & PRF_SELECTION  )
             {

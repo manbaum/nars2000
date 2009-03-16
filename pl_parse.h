@@ -109,10 +109,11 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     struct tagPLLOCALVARS
                 *lpPLPrev;          // 8C:  Ptr to previous PLLOCALVARS struct
                                     //      in thread creation order (NULL = none)
-    UINT         uLineNum;          // 90:  Function line # (1 for execute or immexec)
-    HGLOBAL      hGlbDfnHdr;        // 94:  User-defined functio/operator global memory handle (NULL = execute/immexec)
-    TOKEN        tkSelSpec;         // 98:  TOKEN for Selective Specification (16 bytes)
-                                    // 9C:  Length
+    UINT         uLineNum,          // 90:  Function line # (1 for execute or immexec)
+                 uTokenCnt;         // 94:  # tokens in the function line
+    HGLOBAL      hGlbDfnHdr;        // 98:  User-defined functio/operator global memory handle (NULL = execute/immexec)
+    TOKEN        tkSelSpec;         // 9C:  TOKEN for Selective Specification (16 bytes)
+                                    // AC:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

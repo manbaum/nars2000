@@ -24,8 +24,6 @@
 #include <windows.h>
 #include "headers.h"
 
-extern FASTBOOLFNS FastBoolFns[];   // ***FIXME*** -- move into externs.h
-
 
 //***************************************************************************
 //  $PrimOpSlope_EM_YY

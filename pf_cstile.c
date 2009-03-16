@@ -591,8 +591,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         if (!hGlbRot)
             goto WSFULL_EXIT;
 
-        // Lock the memory to get a ptr to it
-        lpMemRot = lpMemRotIni = MyGlobalLock (hGlbRot);
+        // If the left arg is non-empty, ...
+        if (ByteRes)
+            // Lock the memory to get a ptr to it
+            lpMemRot = lpMemRotIni = MyGlobalLock (hGlbRot);
+        else
+            // The left arg is empty and W doesn't handle
+            //   locking empty storage, so we just NULL the ptrs
+            lpMemRot = lpMemRotIni = NULL;
 
         // Skip over the header and dimensions to the data
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);

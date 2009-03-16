@@ -11,7 +11,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,35 +31,6 @@
 #include <windows.h>
 #include "headers.h"
 
-
-FASTBOOLFCN FastBoolRed;
-FASTBOOLFCN FastBoolRedQual;
-FASTBOOLFCN FastBoolRedPlus;
-
-FASTBOOLFCN FastBoolScan;
-FASTBOOLFCN FastBoolScanQual;
-
-#define NA  0,0,0
-
-FASTBOOLFNS FastBoolFns[] =                       // In the same order as FBFN_INDS
-{{ NULL           ,  NULL            ,    NA},    // 00 = No entry so we can catch this as an error
- {&FastBoolRed    , &FastBoolScan    , 0,0,0},    // 01 = Less
- {&FastBoolRed    , &FastBoolScan    , 0,0,1},    // 02 = Or
- {&FastBoolRed    , &FastBoolScan    , 0,1,0},    // 03 = Nor
- {&FastBoolRed    , &FastBoolScan    , 0,1,1},    // 04 = More or equal
- {&FastBoolRed    , &FastBoolScan    , 1,0,0},    // 05 = Nand
- {&FastBoolRed    , &FastBoolScan    , 1,0,1},    // 06 = More
- {&FastBoolRed    , &FastBoolScan    , 1,1,0},    // 07 = Less or equal
- {&FastBoolRed    , &FastBoolScan    , 1,1,1},    // 08 = And
- {&FastBoolRedQual, &FastBoolScanQual,    NA},    // 09 = Equal
- {&FastBoolRedQual, &FastBoolScanQual,    NA},    // 0A = Not equal
- {&FastBoolRed    , &FastBoolScan    , 0,0,1},    // 0B = Max
- {&FastBoolRed    , &FastBoolScan    , 1,1,1},    // 0C = Min
- {&FastBoolRedPlus,  NULL            ,    NA},    // 0D = Plus
- { NULL           ,  NULL            ,    NA},    // 0E = Minus
- { NULL           ,  NULL            ,    NA},    // 0F = Divide
-};
-#undef  NA
 
 // Define common macro
 #define CHECK_NEXT_RESULT_BYTE(lpmemRes,uDimRes)                                \

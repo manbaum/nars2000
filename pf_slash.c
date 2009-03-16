@@ -480,10 +480,12 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // Handle empty nested array results (prototypes)
-    if (IsEmpty (aplNELMRht) && IsNested (aplTypeRht))
+    if (IsEmpty (aplNELMRes) && IsNested (aplTypeRht))
     {
-        *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
-
+        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (
+          MakeMonPrototype_EM (hGlbRht,     // Proto arg handle
+                               lptkFunc,    // Ptr to function token
+                               MP_CHARS));  // CHARs allowed
         goto PROTO_EXIT;
     } // End IF
 

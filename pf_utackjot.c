@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -334,14 +334,15 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     hWndEC = GetThreadSMEC ();
 
     // Call common function which calls ParseCtrlStruc & ParseLine
-    if (PrimFnMonUpTackJotCSPLParse (hWndEC, hGlbPTD, lpwszCompLine, lptkFunc) EQ 0)
+    switch (PrimFnMonUpTackJotCSPLParse (hWndEC, hGlbPTD, lpwszCompLine, lptkFunc))
     {
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        case EXITTYPE_DISPLAY:
+        case EXITTYPE_NODISPLAY:
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
 
-        // If there's no error, ...
-        if (lpMemPTD->YYResExec.YYInuse)
-        {
+            Assert (lpMemPTD->YYResExec.YYInuse);
+
             // Allocate a new YYRes
             lpYYRes = YYAlloc ();
 
@@ -349,25 +350,39 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
             *lpYYRes = lpMemPTD->YYResExec;
             lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
             ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
-        } else
-        {
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            break;
+
+        case EXITTYPE_GOTO_ZILDE:
+        case EXITTYPE_GOTO_LINE:
+        case EXITTYPE_RESET_ONE:
+        case EXITTYPE_RESET_ONE_INIT:
+        case EXITTYPE_RESET_ALL:
+        case EXITTYPE_NOVALUE:
+        case EXITTYPE_QUADERROR_INIT:
+        case EXITTYPE_QUADERROR_EXEC:
+        case EXITTYPE_STOP:
+            // Make a PL_YYSTYPE NoValue entry
+            lpYYRes = MakeNoValue_YY (lptkFunc);
+
+            break;
+
+        case EXITTYPE_NONE:
+        case EXITTYPE_ERROR:
             // Mark as in error
             lpYYRes = NULL;
 
             // Set the error caret location
             ErrorMessageSetToken (lptkFunc);
-        } // End IF
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-    } else
-    {
-        // Mark as in error
-        lpYYRes = NULL;
+            break;
 
-        // Set the error caret location
-        ErrorMessageSetToken (lptkFunc);
-    } // End IF
+        defstop
+            break;
+    } // End SWITCH
 
     // Free the virtual memory for the complete line
     if (bFreeCompLine)
@@ -391,7 +406,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 #define APPEND_NAME
 #endif
 
-DWORD WINAPI PrimFnMonUpTackJotCSPLParse
+EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     (HWND         hWndEC,               // Edit Ctrl window handle
      HGLOBAL      hGlbPTD,              // PerTabData global memory handle
      LPAPLCHAR    lpwszCompLine,        // Ptr to text of line to execute
@@ -399,7 +414,6 @@ DWORD WINAPI PrimFnMonUpTackJotCSPLParse
 
 {
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
-    DWORD         dwRet = 0;            // Return code from this function
     HGLOBAL       hGlbToken = NULL;     // Tokenized line global memory handle
     HANDLE        hSigaphore = NULL;    // Semaphore handle to signal (NULL if none)
     EXIT_TYPES    exitType;             // Return code from ParseLine
@@ -428,7 +442,7 @@ DWORD WINAPI PrimFnMonUpTackJotCSPLParse
     // If it's invalid, ...
     if (hGlbToken EQ NULL)
     {
-        dwRet = 1;          // Mark as failed Tokenize_EM
+        exitType = EXITTYPE_ERROR;              // Mark as failed Tokenize_EM
 
         goto ERROR_EXIT;
     } // End IF
@@ -457,7 +471,7 @@ DWORD WINAPI PrimFnMonUpTackJotCSPLParse
         // Save the error message
         ErrorMessageIndirectToken (wszTemp, lptkFunc);
 
-        dwRet = 1;          // Mark as failed ParseCtrlStruc
+        exitType = EXITTYPE_ERROR;              // Mark as failed ParseCtrlStruc
 
         goto ERROR_EXIT;
     } // End IF
@@ -503,7 +517,7 @@ ERROR_EXIT:
         Sleep (0);
     } // End IF
 
-    return dwRet;
+    return exitType;
 } // End PrimFnMonUpTackJotCSPLParse
 #undef  APPEND_NAME
 
@@ -567,6 +581,35 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // If there's no result, ...
+    if (!lpMemPTD->YYResExec.YYInuse)
+    // Split cases based upon the exit type
+    switch (exitType)
+    {
+        case EXITTYPE_NODISPLAY:
+            // Mark as no value
+            exitType = EXITTYPE_NOVALUE;
+
+            break;
+
+        case EXITTYPE_NONE:
+        case EXITTYPE_GOTO_ZILDE:
+        case EXITTYPE_GOTO_LINE:
+        case EXITTYPE_RESET_ONE:
+        case EXITTYPE_RESET_ONE_INIT:
+        case EXITTYPE_RESET_ALL:
+        case EXITTYPE_QUADERROR_INIT:
+        case EXITTYPE_QUADERROR_EXEC:
+        case EXITTYPE_ERROR:
+        case EXITTYPE_STOP:
+        case EXITTYPE_DISPLAY:
+        case EXITTYPE_NOVALUE:
+            break;
+
+        defstop
+            break;
+    } // End IF/SWITCH
 
     // Save the semaphore handle to signal after Unlocalize (may be NULL if none)
     if (lphSigaphore)

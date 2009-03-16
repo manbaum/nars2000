@@ -1751,6 +1751,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+
     // Split cases based upon the left arg's token type
     switch (lptkLftArg->tkFlags.TknType)
     {
@@ -1769,28 +1771,34 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (hGlbLft));
 
-                return PrimFnDydRightShoeGlbGlb_EM_YY
-                       (ClrPtrTypeDirAsGlb (hGlbLft),           // Left arg global memory handle
-                        hGlbRht,                                // Right arg global memory handle
-                        lptkFunc,                               // Ptr to function token
-                        FALSE,                                  // TRUE iff array assignment
-                        ARRAY_ERROR,                            // Set arg storage type
-                        NULL,                                   // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-                        0);                                     // Set arg immediate value
-            } // End IF
+                lpYYRes =
+                  PrimFnDydRightShoeGlbGlb_EM_YY
+                  (ClrPtrTypeDirAsGlb (hGlbLft),            // Left arg global memory handle
+                   hGlbRht,                                 // Right arg global memory handle
+                   lptkFunc,                                // Ptr to function token
+                   FALSE,                                   // TRUE iff array assignment
+                   ARRAY_ERROR,                             // Set arg storage type
+                   NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+                   0);                                      // Set arg immediate value
+            } else
+                // Handle the immediate case
+                lpYYRes =
+                  PrimFnDydRightShoeImmGlb_EM_YY
+                  (lptkLftArg->tkData.tkSym->stFlags.ImmType,   // Immediate type
+                   lptkLftArg->tkData.tkSym->stData.stLongest,  // Immediate value
+                   hGlbRht,                                     // Right arg global memory handle
+                   lptkFunc);                                   // Ptr to function token
+            break;
 
-            // Handle the immediate case
-            return PrimFnDydRightShoeImmGlb_EM_YY
-                   (lptkLftArg->tkData.tkSym->stFlags.ImmType,  // Immediate type
-                    lptkLftArg->tkData.tkSym->stData.stLongest, // Immediate value
-                    hGlbRht,                                    // Right arg global memory handle
-                    lptkFunc);                                  // Ptr to function token
         case TKT_VARIMMED:
-            return PrimFnDydRightShoeImmGlb_EM_YY
-                   (lptkLftArg->tkFlags.ImmType,                // Immediate type
-                    lptkLftArg->tkData.tkLongest,               // Immediate value
-                    hGlbRht,                                    // Right arg global memory handle
-                    lptkFunc);                                  // Ptr to function token
+            lpYYRes =
+              PrimFnDydRightShoeImmGlb_EM_YY
+              (lptkLftArg->tkFlags.ImmType,                 // Immediate type
+               lptkLftArg->tkData.tkLongest,                // Immediate value
+               hGlbRht,                                     // Right arg global memory handle
+               lptkFunc);                                   // Ptr to function token
+            break;
+
         case TKT_VARARRAY:
             // Get the left arg global memory handle
             hGlbLft = lptkLftArg->tkData.tkGlbData;
@@ -1798,17 +1806,26 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbLft));
 
-            return PrimFnDydRightShoeGlbGlb_EM_YY
-                   (ClrPtrTypeDirAsGlb (hGlbLft),               // Left arg global memory handle
-                    hGlbRht,                                    // Right arg global memory handle
-                    lptkFunc,                                   // Ptr to function token
-                    FALSE,                                      // TRUE iff array assignment
-                    ARRAY_ERROR,                                // Set arg storage type
-                    NULL,                                       // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-                    0);                                         // Set arg immediate value
+            lpYYRes =
+              PrimFnDydRightShoeGlbGlb_EM_YY
+              (ClrPtrTypeDirAsGlb (hGlbLft),                // Left arg global memory handle
+               hGlbRht,                                     // Right arg global memory handle
+               lptkFunc,                                    // Ptr to function token
+               FALSE,                                       // TRUE iff array assignment
+               ARRAY_ERROR,                                 // Set arg storage type
+               NULL,                                        // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+               0);                                          // Set arg immediate value
+            break;
+
         defstop
             return NULL;
     } // End SWITCH
+
+    if (lpYYRes)
+        // See if it fits into a lower (but not necessarily smaller) datatype
+        TypeDemote (&lpYYRes->tkToken);
+
+    return lpYYRes;
 } // End PrimFnDydRightShoeGlb_EM_YY
 #undef  APPEND_NAME
 

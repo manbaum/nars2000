@@ -32,11 +32,7 @@
 #define IsGlbTypeDfnDir(a)  (IsGlobalTypeArray (            (a), DFN_HEADER_SIGNATURE))
 #define IsGlbTypeNamDir(a)  (IsGlobalTypeArray (            (a), VARNAMED_HEADER_SIGNATURE))
 #define IsGlbTypeLstDir(a)  (IsGlobalTypeArray (            (a), LSTARRAY_HEADER_SIGNATURE))
-#define IsSymNoValue(a)     ((a)->stHshEntry EQ NULL                \
-                          && (a)->stFlags.Perm                      \
-                          && (a)->stFlags.Value EQ 0                \
-                          && (a)->stFlags.ObjName EQ OBJNAME_NONE   \
-                          && (a)->stFlags.stNameType EQ NAMETYPE_UNK)
+#define IsSymNoValue(a)     ((a)->stFlags.Value EQ FALSE)
 #define IsTokenNoValue(a)   ((a)                                    \
                           && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
                           && IsSymNoValue ((a)->tkData.tkSym))

@@ -192,7 +192,7 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    // There can't be an unmatched CONTINUE/LEAVE in $2, so ignore it
                                                                     $$ = $1;
                                                                 }
   | CSRec ForLclStmt                                            {DbgMsgWP (L"%%CSRec:  CSRec ForLclStmt");
@@ -203,7 +203,7 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    // There can't be an unmatched CONTINUE/LEAVE in $2, so ignore it
                                                                     $$ = $1;
                                                                 }
   | CSRec GotoStmt                                              {DbgMsgWP (L"%%CSRec:  CSRec GotoStmt");
@@ -214,7 +214,7 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    // There can't be an unmatched CONTINUE/LEAVE in $2, so ignore it
                                                                     $$ = $1;
                                                                 }
   | CSRec IfStmt                                                {DbgMsgWP (L"%%CSRec:  CSRec IfStmt");
@@ -257,7 +257,7 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    // There can't be an unmatched CONTINUE/LEAVE in $2, so ignore it
                                                                     $$ = $1;
                                                                 }
   | CSRec ReturnStmt                                            {DbgMsgWP (L"%%CSRec:  CSRec ReturnStmt");
@@ -268,7 +268,7 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    // There can't be an unmatched CONTINUE/LEAVE in $2, so ignore it
                                                                     $$ = $1;
                                                                 }
   | CSRec SelectStmt                                            {DbgMsgWP (L"%%CSRec:  CSRec SelectStmt");
@@ -279,7 +279,7 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    // There can't be an unmatched CONTINUE/LEAVE in $2, so ignore it
                                                                     $$ = $1;
                                                                 }
   | CSRec WhileStmt                                             {DbgMsgWP (L"%%CSRec:  CSRec WhileStmt");
@@ -290,7 +290,7 @@ CSRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // There can't be an unkmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    // There can't be an unmatched CONTINUE/LEAVE in $2, so ignore it
                                                                     $$ = $1;
                                                                 }
   ;

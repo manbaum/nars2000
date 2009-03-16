@@ -149,7 +149,13 @@ typedef struct tagTKLOCALVARS
     HWND        hWndEC;             // 64:  Window handle of Edit Ctrl (parent is SM or FE)
     COLINDICES  colIndex;           // 68:  Current COL_xxx value
     UINT        uSyntClrLen;        // 6C:  # Syntax Color entries
-                                    // 70:  Length
+    HGLOBAL     hGlbNum,            // 70:  NumAlp global memory handle
+                hGlbStr;            // 74:  NumAlp global memory handle
+    int         iNumLen,            // 78:  # chars in lpszNumAlp
+                iStrLen,            // 7C:  ...        lpwszString
+                iNumLim,            // 80:  Current limit for lpszNumAlp
+                iStrLim;            // 84:  ...               lpwszString
+                                    // 88:  Length
 } TKLOCALVARS, *LPTKLOCALVARS;
 
 typedef UBOOL (*FNACTION) (LPTKLOCALVARS);

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -175,7 +175,7 @@ void ImmExecLine
              && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 10);
+                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 100);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -196,7 +196,7 @@ void ImmExecLine
             if (lpMemPTD->lpSISCur
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 11);
+                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 101);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -217,7 +217,7 @@ void ImmExecLine
             if (lpMemPTD->lpSISCur
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 12);
+                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 102);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -530,6 +530,11 @@ DWORD WINAPI ImmExecStmtInThread
         // Start with the preceding layer (if any)
         lpSISPrv = lpMemPTD->lpSISCur->lpSISPrv;
 
+        // Skip over SI levels of ImmExec
+        while (lpSISPrv
+            && lpSISPrv->DfnType EQ DFNTYPE_IMM)
+            lpSISPrv = lpSISPrv->lpSISPrv;
+
         // Split cases based upon the exit type
         switch (exitType)
         {
@@ -602,45 +607,51 @@ DWORD WINAPI ImmExecStmtInThread
                 break;
 
             case EXITTYPE_ERROR:
-                // If from Quad Input, tell SM to redisplay the prompt
-                if (lpSISPrv
-                 && lpSISPrv->DfnType EQ DFNTYPE_QUAD
-                 && bActOnErrors)
-                {
-                    // Tell SM to display the Quad Prompt
-                    PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
-
-                    // Do not display the prompt again
-                    bDispPrompt = FALSE;
+                // Do not display the prompt again
+                bDispPrompt = FALSE;
 #ifdef DEBUG
-                    uDispPrompt = 1;
+                uDispPrompt = 1;
 #endif
-                } // End IF
-
                 break;
 
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
             case EXITTYPE_DISPLAY:      // ...
-            case EXITTYPE_NOVALUE:      // ...
             case EXITTYPE_NONE:         // ...
                 break;
 
             case EXITTYPE_NODISPLAY:    // Signal previous SI layer's semaphore if it's Quad input
-                // If the previous layer in the SI stack is Quad input,
-                //   signal it to receive this value
+            case EXITTYPE_NOVALUE:      // ...
+                // If the previous layer in the SI stack is Quad input, ...
                 if (lpSISPrv
                  && lpSISPrv->DfnType EQ DFNTYPE_QUAD)
                 {
-                    // Lock the memory to get a ptr to it
-                    lpMemWFSO = MyGlobalLock (hGlbWFSO);
+                    // If there's no return value, ...
+                    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ 0
+                     || (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ TKT_VARNAMED
+                      && lpMemPTD->YYResExec.tkToken.tkData.tkSym->stFlags.Value EQ FALSE))
+                    {
+                        // Tell SM to display the Quad Prompt
+                        PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 104);
 
-                    Assert (lpSISPrv->hSemaphore NE NULL);
+                        // Do not display the prompt again
+                        bDispPrompt = FALSE;
+#ifdef DEBUG
+                        uDispPrompt = 4;
+#endif
+                    } else
+                    // else, signal it to receive this value
+                    {
+                        // Lock the memory to get a ptr to it
+                        lpMemWFSO = MyGlobalLock (hGlbWFSO);
 
-                    // Tell the wait handler to signal this layer
-                    hSigaphore = lpMemWFSO->hSigaphore = lpSISPrv->hSemaphore;
+                        Assert (lpSISPrv->hSemaphore NE NULL);
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+                        // Tell the wait handler to signal this layer
+                        hSigaphore = lpMemWFSO->hSigaphore = lpSISPrv->hSemaphore;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+                    } // End IF/ELSE
                 } // End IF
 
                 break;

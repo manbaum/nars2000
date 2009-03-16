@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -805,7 +805,6 @@ WM_NCCREATE_FAIL:
                                     // lpcs = (LPCREATESTRUCTW) lParam
         {
             int     i;                  // Loop counter
-            HGLOBAL hGlbTmp;            // Temporary hGlbNum/hGlbStr
             LRESULT lResult = -1;       // The result (assume we failed)
 
             PERFMON
@@ -909,48 +908,10 @@ WM_NCCREATE_FAIL:
 ////////////              MEM_COMMIT,
 ////////////              PAGE_READWRITE);
 
-            // *************** hGlbNum *********************************
-
-            // Allocate storage for hGlbNum
-            hGlbTmp = MyGlobalAlloc (GHND, DEF_NUM_INITSIZE * sizeof (char));
-            if (!hGlbTmp)
-                goto WM_CREATE_FAIL;
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Set initial limit for hGlbNum
-            lpMemPTD->iNumLim = DEF_NUM_INITSIZE;
-
-            // Save back into PTD var
-            lpMemPTD->hGlbNum = hGlbTmp;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-            // *************** hGlbStr *********************************
-
-            // Allocate storage for hGlbStr
-            hGlbTmp = MyGlobalAlloc (GHND, DEF_STR_INITSIZE * sizeof (APLCHAR));
-            if (!hGlbTmp)
-                goto WM_CREATE_FAIL;
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Set initial limit for hGlbNum
-            lpMemPTD->iStrLim = DEF_STR_INITSIZE;
-
-            // Save back into PTD var
-            lpMemPTD->hGlbStr = hGlbTmp;
-
-////////////// We no longer need this ptr
-////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             // *************** htsPTD.lpHshTab *************************
 
-////////////// Lock the memory to get a ptr to it
-////////////lpMemPTD = MyGlobalLock (hGlbPTD);
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the hash table
 #ifdef DEBUG
@@ -1654,8 +1615,9 @@ NORMAL_EXIT:
                              TRUE);                                     // TRUE iff errors are acted upon
             } else
             // If the SI level is for Quad Input
-            if (lpMemPTD->lpSISCur && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
-                PostMessageW (hWnd, MYWM_QUOTEQUAD, FALSE, 15);
+            if (lpMemPTD->lpSISCur
+             && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                PostMessageW (hWnd, MYWM_QUOTEQUAD, FALSE, 105);
             else
                 // Display the default prompt
                 DisplayPrompt (hWndEC, 1);
@@ -2164,18 +2126,6 @@ NORMAL_EXIT:
             if (lpMemPTD->hWndDB)
                 SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) lpMemPTD->hWndDB, 0);
 #endif
-            // *************** hGlbStr *********************************
-            if (lpMemPTD->hGlbStr)
-            {
-                MyGlobalFree (lpMemPTD->hGlbStr); lpMemPTD->hGlbStr = NULL;
-            } // End IF
-
-            // *************** hGlbNum *********************************
-            if (lpMemPTD->hGlbNum)
-            {
-                MyGlobalFree (lpMemPTD->hGlbNum); lpMemPTD->hGlbNum = NULL;
-            } // End IF
-
 ////////////// *************** lptkStackBase ***************************
 ////////////if (lpMemPTD->lptkStackBase)
 ////////////{

@@ -749,9 +749,7 @@ void GetFirstValueGlb
             break;
 
         case ARRAY_INT:
-            Assert (!IsEmpty (aplNELM));
-
-            aplInteger = *(LPAPLINT) lpMem;
+            aplInteger = aplNELM ? *(LPAPLINT) lpMem : 0;
 
             if (lpaplInteger)
                 *lpaplInteger = aplInteger;
@@ -783,9 +781,7 @@ void GetFirstValueGlb
             break;
 
         case ARRAY_FLOAT:
-            Assert (!IsEmpty (aplNELM));
-
-            aplFloat = *(LPAPLFLOAT) lpMem;
+            aplFloat = aplNELM ? *(LPAPLFLOAT) lpMem : 0;
 
             if (lpaplFloat)
                 *lpaplFloat   = aplFloat;

@@ -872,6 +872,9 @@ UBOOL SyntaxColor
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Skip over the temp storage ptr
+    ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
+
     // Save local vars in struct which we pass to each FSA action routine
     tkLocalVars.State[2]         =
     tkLocalVars.State[1]         =
@@ -888,11 +891,26 @@ UBOOL SyntaxColor
     tkLocalVars.hWndEC           = hWndEC;
     tkLocalVars.uSyntClrLen      = uLen;            // # Syntax Color entries
 
-    // Skip over the temp storage ptr
-    ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
+    // Set initial limit for hGlbNum
+    tkLocalVars.iNumLim = DEF_NUM_INITSIZE;
+
+    // Allocate storage for hGlbNum
+    tkLocalVars.hGlbNum =
+      MyGlobalAlloc (GHND, tkLocalVars.iNumLim * sizeof (char));
+    if (!tkLocalVars.hGlbNum)
+        goto FREEGLB_EXIT;
+
+    // Set initial limit for hGlbStr
+    tkLocalVars.iStrLim = DEF_STR_INITSIZE;
+
+    // Allocate storage for hGlbStr
+    tkLocalVars.hGlbStr =
+      MyGlobalAlloc (GHND, tkLocalVars.iStrLim * sizeof (APLCHAR));
+    if (!tkLocalVars.hGlbStr)
+        goto FREEGLB_EXIT;
 
     // Initialize the accumulation variables for the next constant
-    InitAccumVars ();
+    InitAccumVars (&tkLocalVars);
 
     // Skip over leading blanks (more to reduce clutter
     //   in the debugging window)
@@ -987,8 +1005,20 @@ NONCE_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     // Ensure numeric length has been reset
-    Assert (lpMemPTD->iNumLen EQ 0);
+    Assert (tkLocalVars.iNumLen EQ 0);
     Assert ((uChar - uCharIni) EQ (UINT) (tkLocalVars.lpMemClrNxt - lpMemClr));
+
+    // Free the global memory:  hGlbNum
+    if (tkLocalVars.hGlbNum)
+    {
+        MyGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
+    } // End IF
+
+    // Free the global memory:  hGlbStr
+    if (tkLocalVars.hGlbStr)
+    {
+        MyGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
+    } // End IF
 
     // Restore the temp storage ptr
     ((LPSCINDICES) lpMemPTD->lpwszTemp) -= uLen;
@@ -1129,61 +1159,19 @@ int LclECPaintHook
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #else
-//#define USECLIPRGN
     // If we're syntax coloring, ...
     if (hGlbClr)
     {
         UINT     uClr;                          // Loop counter
         HDC      hDCClient;                     // Client Area DC
         COLORREF clrBackDef;                    // Default background color
-#ifdef USECLIPRGN
-        HRGN     hRgnCpy,                       // Previous clipping region
-                 hRgnNew;                       // Incoming ...
-#endif
-        RECT     rcClip;
-        POINT    pt = {0, 0};                   // Temporary point for region offset
 
         // Get the default background color for this DC
         clrBackDef = GetBkColor (hDC);
 
-#ifdef USECLIPRGN
-        // Initialize the region copy to NULLREGION
-        hRgnCpy = CreateRectRgn (0, 0, 0, 0);
-
-        // Get and save the current clipping region
-        GetRandomRgn (hDC, hRgnCpy, SYSRGN);
-
-        // Get the current clipping box in window coords
-        GetClipBox (hDC, &rcClip);
-
-        // Stretch it to include the entire line so we can change
-        //   preceding chars Syntax Colors (e.g., change a quote mark
-        //   from unmatched to matched)
-        rcClip.left = 0;
-
-        // Define a new clipping region which is the entire line
-        //   in client coords
-        hRgnNew = CreateRectRgnIndirect (&rcClip);
-
-        // Because regions are stored in a DC in screen coords,
-        //   we need to map these to screen coords
-        MapWindowPoints (hWndEC, NULL, &pt, 1);
-
-        // Now offset the region so it's in screen coords
-        OffsetRgn (hRgnNew, pt.x, pt.y);
-
-        // Select the clipping region for the DC
-        SelectClipRgn (hDC, hRgnNew);
-
-        hDCClient = hDC;
-#else
-        GetClipBox (hDC, &rcClip);      // ***DEBUG***
-
         // Get a DC of the entire client area so we
         //   can draw outside the clipping region
         hDCClient = MyGetDC (hWndEC);
-#endif
-        GetClipBox (hDCClient, &rcClip);      // ***DEBUG***
 
         // Select the current font into the DC
         SelectObject (hDCClient, GetCurrentObject (hDC, OBJ_FONT));
@@ -1213,16 +1201,8 @@ int LclECPaintHook
             rcAct.left += cxAveChar;
         } // End FOR
 
-#ifdef USECLIPRGN
-        // Restore the previous clipping region
-        SelectClipRgn (hDC, hRgnCpy);
-
-        // We no longer need this recource
-        DeleteObject (hRgnNew); hRgnNew = NULL;
-#else
         // We no longer need this resource
         MyReleaseDC (hWndEC, hDCClient);
-#endif
     } else
         // Draw the line for real
         DrawTextW (hDC,

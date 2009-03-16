@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +50,8 @@ typedef struct tagSIS_HEADER
                      ResetFlag:3,   //      00000E00:  SI stack is resetting (see RESET_FLAGS)
                      PermFn:1,      //      00001000:  Permanent function (i.e. Magic Function)
                      Restartable:1, //      00002000:  This SI level is restartable
-                     Avail:18;      //      FFFFC000:  Available bits
+                     Unwind:1,      //      00004000:  Unwind this level for error message level
+                     Avail:17;      //      FFFF8000:  Available bits
     UINT             EventType,     // 1C:  Event type (Major, Minor) (see EVENT_TYPES)
                      CurLineNum,    // 20:  Current line # (origin-1)
                      NxtLineNum,    // 24:  Next    ...

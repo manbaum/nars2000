@@ -357,6 +357,10 @@ typedef enum tagFBFN_INDS               // Fast Boolean function indices
                                         //   in tagPRIMFLAGS
 } FBFN_INDS;
 
+// N.B.:  Whenever changing the above enum (FBFN_INDS),
+//   be sure to make a corresponding change to
+//    <FastBoolFns[]> in <externs.h>.
+
 EXTERN
 APLFLOAT PrimIdent[PF_INDEX_NEXT];      // Primitive scalar function identity elements
                                         //   in the same order as FBFN_INDS
@@ -381,6 +385,39 @@ typedef struct tagFASTBOOLFNS
                   Avail    :29;         //      FFFFFFF8:  Available bits
                                         // 0C:  Length
 } FASTBOOLFNS, *LPFASTBOOLFNS;
+
+FASTBOOLFCN FastBoolRed;
+FASTBOOLFCN FastBoolRedQual;
+FASTBOOLFCN FastBoolRedPlus;
+
+FASTBOOLFCN FastBoolScan;
+FASTBOOLFCN FastBoolScanQual;
+
+#define NA  0,0,0
+
+FASTBOOLFNS FastBoolFns[]
+#ifdef DEFINE_VALUES
+ = {                                                // In the same order as FBFN_INDS
+    { NULL           ,  NULL            ,    NA},   // 00 = No entry so we can catch this as an error
+    {&FastBoolRed    , &FastBoolScan    , 0,0,0},   // 01 = Less
+    {&FastBoolRed    , &FastBoolScan    , 0,0,1},   // 02 = Or
+    {&FastBoolRed    , &FastBoolScan    , 0,1,0},   // 03 = Nor
+    {&FastBoolRed    , &FastBoolScan    , 0,1,1},   // 04 = More or equal
+    {&FastBoolRed    , &FastBoolScan    , 1,0,0},   // 05 = Nand
+    {&FastBoolRed    , &FastBoolScan    , 1,0,1},   // 06 = More
+    {&FastBoolRed    , &FastBoolScan    , 1,1,0},   // 07 = Less or equal
+    {&FastBoolRed    , &FastBoolScan    , 1,1,1},   // 08 = And
+    {&FastBoolRedQual, &FastBoolScanQual,    NA},   // 09 = Equal
+    {&FastBoolRedQual, &FastBoolScanQual,    NA},   // 0A = Not equal
+    {&FastBoolRed    , &FastBoolScan    , 0,0,1},   // 0B = Max
+    {&FastBoolRed    , &FastBoolScan    , 1,1,1},   // 0C = Min
+    {&FastBoolRedPlus,  NULL            ,    NA},   // 0D = Plus
+    { NULL           ,  NULL            ,    NA},   // 0E = Minus
+    { NULL           ,  NULL            ,    NA},   // 0F = Divide
+   }
+#endif
+;
+#undef  NA
 
 // This array translates a byte index into
 //   [byte][0] = the index of the first 0 in the byte (from right to left)

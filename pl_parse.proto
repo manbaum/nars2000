@@ -13,3 +13,5 @@ void ArrExprCheckCaller (LPPLLOCALVARS lpplLocalVars, LPSIS_HEADER lpSISCur, LPP
 UBOOL CheckSelSpec_EM (LPPLLOCALVARS lpplLocalVars, LPTOKEN lptkNameVars);
 UBOOL IsSelectSpec (LPTOKEN lptkArg);
 PL_YYSTYPE MakeTempCopy (LPPL_YYSTYPE lpYYTmp);
+UINT GetEOSIndex (LPPLLOCALVARS lpplLocalVars, int tkCharIndex);
+UBOOL IsLastStmt (LPPLLOCALVARS lpplLocalVars, int tkCharIndex);

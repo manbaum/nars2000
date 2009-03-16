@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ void ErrorMessageDirect
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Clear any semaphore to signal
+    // Get ptr to current SI stack
     lpSISCur = lpMemPTD->lpSISCur;
 
     // Split cases based upon the DfnType
@@ -176,6 +176,11 @@ void ErrorMessageDirect
         // No signalling from here
         lpSISCur->hSigaphore = NULL;
 
+        // Unwind through SI levels as appropriate
+        while (lpSISCur && lpSISCur->Unwind)
+            lpSISCur = lpSISCur->lpSISPrv;
+
+        if (lpSISCur)
         switch (lpSISCur->DfnType)
         {
             case DFNTYPE_OP1:
@@ -339,6 +344,9 @@ void ErrorMessageDirect
     lpMemPTD->hGlbQuadDM = hGlbRes; hGlbRes = NULL;
 
     // Also create the corresponding value for []EM
+
+    // Get ptr to current SI stack
+    lpSISCur = lpMemPTD->lpSISCur;
 
     // If there's no user-defined function/operator at or
     //   above the current level, the default

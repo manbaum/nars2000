@@ -73,6 +73,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 #define yydestruct              pl_yydestruct
 
 #define YYERROR2        {lpplLocalVars->bYYERROR = TRUE; YYERROR;}
+#define YYERROR3        {lpplLocalVars->ExitType = EXITTYPE_ERROR; YYERROR2;}
 
 ////#define DbgMsgWP(a)         DbgMsgW2 (lpplLocalVars->bLookAhead ? L"==" a : a)
 ////#define DbgMsgWP(a)         DbgMsgW  (lpplLocalVars->bLookAhead ? L"==" a : a); DbgBrk ()
@@ -133,7 +134,6 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 
 /*  ToDo
     ----
-    * Control structures
     * J/Dyalog's dynamic functions
     * Allow f{is}MonOp MonOp
     * ...   f{is}      DydOp FcnOrVar
@@ -151,9 +151,9 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 
 // One or more statements
 StmtMult:
-      // All errors propagate up to this point where we ABORT -- this ensures
+      // All single stmt errors propagate up to this point where we ABORT -- this ensures
       //   that the call to pl_yyparse terminates wth a non-zero error code.
-      error                             {DbgMsgWP (L"%%StmtMult:  error");
+                       error            {DbgMsgWP (L"%%StmtMult:  error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -198,8 +198,46 @@ StmtMult:
     | StmtMult DIAMOND StmtSing         {DbgMsgWP (L"%%StmtMult:  StmtSing " WS_UTF16_DIAMOND L" StmtMult");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             Assert (YYResIsEmpty ());  // Likely not TRUE with non-empty SI
+                                             Assert (YYResIsEmpty ());
                                          } // End IF
+                                        }
+      // All multiple stmt errors propagate up to this point where we ABORT -- this ensures
+      //   that the call to pl_yyparse terminates wth a non-zero error code.
+    | StmtMult DIAMOND error            {DbgMsgWP (L"%%StmtMult:  error" WS_UTF16_DIAMOND L" StmtMult");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+                                             Assert (YYResIsEmpty ());
+
+                                             // Lock the memory to get a ptr to it
+                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+
+                                             // If we're resetting via {goto}, ...
+                                             if (lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_ONE
+                                              || lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_ONE_INIT)
+                                             {
+                                                // Mark as not resetting
+                                                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
+
+                                                 // Mark as a SYNTAX ERROR
+                                                 if (!lpplLocalVars->bYYERROR)
+                                                     ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR);
+                                             } // End IF
+
+                                             // If we're resetting, ...
+                                             if (lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
+                                                 lpplLocalVars->ExitType = TranslateResetFlagToExitType (lpMemPTD->lpSISCur->ResetFlag);
+
+                                             // We no longer need this ptr
+                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+
+                                             // Set the exit type to error unless already set
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_NONE)
+                                                 lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                             YYABORT;
+                                         } else
+                                             YYABORT;
                                         }
     ;
 
@@ -211,10 +249,8 @@ StmtSing:
                                         }
     | error   CS_ANDIF                  {DbgMsgWP (L"%%StmtSing:  CS_ANDIF error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_ANDIF                  {DbgMsgWP (L"%%StmtSing:  CS_ANDIF ArrExpr");
@@ -229,7 +265,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -239,10 +275,8 @@ StmtSing:
                                         }
     | error   CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE ArrExpr");
@@ -257,7 +291,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -267,10 +301,8 @@ StmtSing:
                                         }
     | error   CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST ArrExpr");
@@ -285,7 +317,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -304,7 +336,7 @@ StmtSing:
                                                    CS_CONTINUE_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -323,7 +355,7 @@ StmtSing:
                                                    CS_ENDREPEAT_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -342,7 +374,7 @@ StmtSing:
                                                    CS_ENDWHILE_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -361,7 +393,7 @@ StmtSing:
                                                    CS_ELSE_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -371,10 +403,8 @@ StmtSing:
                                         }
     | error   CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF ArrExpr");
@@ -389,7 +419,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -408,7 +438,7 @@ StmtSing:
                                                    CS_ENDFOR_Stmt (lpplLocalVars, &$1, FALSE);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -427,7 +457,7 @@ StmtSing:
                                                    CS_ENDFOR_Stmt (lpplLocalVars, &$1, TRUE);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -447,7 +477,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -467,7 +497,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -477,10 +507,8 @@ StmtSing:
                                         }
     | error   CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF ArrExpr");
@@ -495,7 +523,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -514,7 +542,7 @@ StmtSing:
                                                    CS_LEAVE_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -524,10 +552,8 @@ StmtSing:
                                         }
     | error   CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF ArrExpr");
@@ -542,7 +568,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -552,10 +578,8 @@ StmtSing:
                                         }
     | error   CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT ArrExpr");
@@ -570,7 +594,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -589,7 +613,7 @@ StmtSing:
                                                    CS_SKIPCASE_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -608,7 +632,7 @@ StmtSing:
                                                    CS_SKIPEND_Stmt (lpplLocalVars, &$1);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -618,10 +642,8 @@ StmtSing:
                                         }
     | error   CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL ArrExpr");
@@ -636,7 +658,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -646,10 +668,8 @@ StmtSing:
                                         }
     | error   CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE ArrExpr");
@@ -664,7 +684,7 @@ StmtSing:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
                                              else
                                              if (lpplLocalVars->bStopExec)
                                                  YYACCEPT;          // Stop executing this line
@@ -678,8 +698,7 @@ StmtSing:
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
                                                  // Mark as a SYNTAX ERROR
                                                  PrimFnSyntaxError_EM (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -704,11 +723,13 @@ StmtSing:
                                                  MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                                  // Do not display if caller is Execute or Quad
-                                                 if (lpSISCur->DfnType EQ DFNTYPE_EXEC
-                                                  || (lpSISCur->DfnType EQ DFNTYPE_IMM
-                                                   && lpSISCur->lpSISPrv NE NULL
-                                                   && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
-                                                    || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)))
+                                                 //   and the current statement is the last one on the line
+                                                 if (IsLastStmt (lpplLocalVars, $1.tkToken.tkCharIndex)
+                                                  && (lpSISCur->DfnType EQ DFNTYPE_EXEC
+                                                   || (lpSISCur->DfnType EQ DFNTYPE_IMM
+                                                    && lpSISCur->lpSISPrv NE NULL
+                                                    && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
+                                                     || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD))))
                                                      // Handle ArrExpr if caller is Execute or quad
                                                      ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1);
                                                  else
@@ -721,7 +742,12 @@ StmtSing:
                                                  FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->bRet)
-                                                 YYERROR2
+                                                 YYERROR3
+
+                                             // If we're resetting all levels, ...
+                                             if (lpSISCur->ResetFlag EQ RESETFLAG_ALL)
+                                                 lpplLocalVars->ExitType = EXITTYPE_RESET_ALL;
+                                             else
                                              // If the exit type isn't GOTO_LINE, mark it as already displayed
                                              if (lpplLocalVars->ExitType NE EXITTYPE_GOTO_LINE)
                                                  lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
@@ -729,10 +755,8 @@ StmtSing:
                                         }
     | error   GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"ArrExpr");
@@ -743,7 +767,7 @@ StmtSing:
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->ExitType = GotoLine_EM (&$1.tkToken, &$2.tkToken);
@@ -774,13 +798,12 @@ StmtSing:
                                                       && lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOL)
                                                      {
                                                          PrimFnSyntaxError_EM (&$2.tkToken);
-                                                         lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                                         YYERROR2
+                                                         YYERROR3
                                                      } else
                                                          YYACCEPT;          // Stop executing this line
 
                                                  case EXITTYPE_ERROR:       // Error
-                                                     YYERROR2               // Stop on error
+                                                     YYERROR3               // Stop on error
 
                                                  defstop
                                                      break;
@@ -794,7 +817,7 @@ StmtSing:
                                              LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // If we're not at the EOS or EOL, YYERROR
                                              if (lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOL
@@ -802,7 +825,7 @@ StmtSing:
                                              {
                                                  if (!lpplLocalVars->bYYERROR)
                                                      PrimFnSyntaxError_EM (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Lock the memory to get a ptr to it
@@ -837,10 +860,8 @@ StmtSing:
                                         }
     | error   ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"ArrExpr");
@@ -852,7 +873,7 @@ StmtSing:
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Lock the memory to get a ptr to it
@@ -865,11 +886,13 @@ StmtSing:
                                              MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              // Do not free if caller is Execute or Quad
-                                             if (lpSISCur->DfnType EQ DFNTYPE_EXEC
-                                              || (lpSISCur->DfnType EQ DFNTYPE_IMM
-                                               && lpSISCur->lpSISPrv NE NULL
-                                               && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
-                                                || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)))
+                                             //   and the current statement is the last one on the line
+                                             if (IsLastStmt (lpplLocalVars, $1.tkToken.tkCharIndex)
+                                              && (lpSISCur->DfnType EQ DFNTYPE_EXEC
+                                               || (lpSISCur->DfnType EQ DFNTYPE_IMM
+                                                && lpSISCur->lpSISPrv NE NULL
+                                                && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
+                                                 || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD))))
                                              {
                                                  // Handle ArrExpr if caller is Execute or quad
                                                  ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1);
@@ -895,7 +918,7 @@ StmtSing:
 ////                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
 ////                                              {
 ////                                                  FreeResult (&$1.tkToken);
-////                                                  YYERROR2
+////                                                  YYERROR3
 ////                                              } // End IF
 ////
 ////                                              // Change the first token in the function strand
@@ -909,7 +932,7 @@ StmtSing:
 ////                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
 ////                                              {
 ////                                                  FreeResult (&$1.tkToken);
-////                                                  YYERROR2
+////                                                  YYERROR3
 ////                                              } // End IF
 ////
 ////                                              lpplLocalVars->lpYYFcn =
@@ -918,7 +941,7 @@ StmtSing:
 ////                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
 ////                                              {
 ////                                                  FreeResult (&$1.tkToken);
-////                                                  YYERROR2
+////                                                  YYERROR3
 ////                                              } // End IF
 ////
 ////                                              lpplLocalVars->lpYYRes =
@@ -927,7 +950,7 @@ StmtSing:
 ////                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 ////
 ////                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-////                                                  YYERROR2
+////                                                  YYERROR3
 ////
 ////                                              $$ = *lpplLocalVars->lpYYRes;
 ////                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -1020,7 +1043,7 @@ StmtSing:
 // The following productions ending in EOL are for bLookAhead only
     |     error   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL error");
                                          if (lpplLocalVars->bLookAhead)
-                                             YYERROR2
+                                             YYERROR3
                                          else
                                              YYERROR2
                                         }
@@ -1205,7 +1228,7 @@ FcnSpec:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
 /////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1219,7 +1242,7 @@ FcnSpec:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1241,7 +1264,7 @@ FcnSpec:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
 /////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1255,7 +1278,7 @@ FcnSpec:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1277,7 +1300,7 @@ FcnSpec:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
 /////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1291,7 +1314,7 @@ FcnSpec:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1313,7 +1336,7 @@ FcnSpec:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
 /////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1327,7 +1350,7 @@ FcnSpec:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1350,7 +1373,7 @@ FcnSpec:
                                              {
                                                  FreeResult (&$2.tkToken);
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYLft =
@@ -1361,7 +1384,7 @@ FcnSpec:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRes =
@@ -1372,7 +1395,7 @@ FcnSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1389,7 +1412,7 @@ FcnSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1415,7 +1438,7 @@ FcnSpec:
                                              {
                                                  FreeResult (&$2.tkToken);
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYLft =
@@ -1426,7 +1449,7 @@ FcnSpec:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRes =
@@ -1437,7 +1460,7 @@ FcnSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1454,7 +1477,7 @@ FcnSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1484,7 +1507,7 @@ FcnSpec:
                                              {
                                                  FreeResult (&$2.tkToken);
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYLft =
@@ -1495,7 +1518,7 @@ FcnSpec:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRes =
@@ -1506,7 +1529,7 @@ FcnSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1523,7 +1546,7 @@ FcnSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1553,7 +1576,7 @@ FcnSpec:
                                              {
                                                  FreeResult (&$2.tkToken);
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYLft =
@@ -1564,7 +1587,7 @@ FcnSpec:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRes =
@@ -1575,7 +1598,7 @@ FcnSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1592,7 +1615,7 @@ FcnSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1620,7 +1643,7 @@ Op1Spec:
                                              {
                                                  FreeResult (&$1.tkToken);
 /////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1635,7 +1658,7 @@ Op1Spec:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1676,7 +1699,7 @@ Op1Spec:
 ////                                             } // End IF
 ////
 //// ////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-////                                             YYERROR2
+////                                             YYERROR3
 ////                                         } // End IF
 ////
 ////                                         lpplLocalVars->lpYYRes =
@@ -1687,7 +1710,7 @@ Op1Spec:
 ////                                             FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
 ////                                             FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
 //// ////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-////                                             YYERROR2
+////                                             YYERROR3
 ////                                         } // End IF
 ////
 ////                                         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1699,9 +1722,7 @@ Op1Spec:
 //// ////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 ////
 ////                                         if (!lpplLocalVars->bRet)
-////                                         {
-////                                             YYERROR2
-////                                         } // End IF
+////                                             YYERROR3
 ////
 ////                                         // The result is always the root of the function tree
 ////                                         $$ = *lpplLocalVars->YYRes;
@@ -1728,7 +1749,7 @@ Op2Spec:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
 /////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1742,7 +1763,7 @@ Op2Spec:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1767,14 +1788,14 @@ AmbOpAssign:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp3;
@@ -1790,7 +1811,7 @@ AmbOpAssign:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
@@ -1799,7 +1820,7 @@ AmbOpAssign:
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1823,7 +1844,7 @@ AmbOpAssign:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYOp3 =
@@ -1833,7 +1854,7 @@ AmbOpAssign:
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1846,7 +1867,7 @@ AmbOpAssign:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
@@ -1864,7 +1885,7 @@ AmbOpAssign:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYOp3 =
@@ -1874,7 +1895,7 @@ AmbOpAssign:
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1887,7 +1908,7 @@ AmbOpAssign:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
@@ -1910,7 +1931,7 @@ Op3Spec:
                                              {
                                                  FreeResult (&$1.tkToken);
 /////////////////////////////////////////////////FreeResult (&$3.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1925,7 +1946,7 @@ Op3Spec:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -1955,8 +1976,7 @@ ArrExpr:
                                              // If this is not a named function, ...
                                              if ($2.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
                                                  FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -1971,7 +1991,7 @@ ArrExpr:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -1983,7 +2003,7 @@ ArrExpr:
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -1993,8 +2013,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2009,7 +2028,7 @@ ArrExpr:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -2021,7 +2040,7 @@ ArrExpr:
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2031,8 +2050,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2047,7 +2065,7 @@ ArrExpr:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -2059,7 +2077,7 @@ ArrExpr:
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2072,8 +2090,7 @@ ArrExpr:
                                              // If this is not a named function, ...
                                              if ($2.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
                                                  FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2084,8 +2101,7 @@ ArrExpr:
                                              if ($2.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
                                                  FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2102,7 +2118,7 @@ ArrExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -2115,7 +2131,7 @@ ArrExpr:
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2126,8 +2142,7 @@ ArrExpr:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2136,8 +2151,7 @@ ArrExpr:
                                          {
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2152,8 +2166,7 @@ ArrExpr:
                                          {
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2169,7 +2182,7 @@ ArrExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Change the first token in the function strand
@@ -2184,7 +2197,7 @@ ArrExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYOp1 =
@@ -2195,7 +2208,7 @@ ArrExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
@@ -2206,7 +2219,7 @@ ArrExpr:
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -2221,7 +2234,7 @@ ArrExpr:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
@@ -2242,7 +2255,7 @@ ArrExpr:
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
@@ -2252,7 +2265,7 @@ ArrExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Because MakeFcnStrand might have brought in a function strand from
@@ -2272,7 +2285,7 @@ ArrExpr:
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2283,8 +2296,7 @@ ArrExpr:
                                          {
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2293,8 +2305,7 @@ ArrExpr:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2309,7 +2320,7 @@ ArrExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -2322,7 +2333,7 @@ ArrExpr:
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2333,8 +2344,7 @@ ArrExpr:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2343,8 +2353,7 @@ ArrExpr:
                                          {
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2361,7 +2370,7 @@ ArrExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -2374,7 +2383,7 @@ ArrExpr:
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2389,21 +2398,45 @@ SingVar:
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
                                                  PrimFnValueError_EM (&$1.tkToken);
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     |     QUAD                          {DbgMsgWP (L"%%SingVar:  QUAD");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             HGLOBAL      hGlbPTD;               // PerTabData global memory handle
+                                             LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+                                             RESET_FLAGS  resetFlag;             // The current Reset Flag
+
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYRes =
                                                WaitForInput (lpplLocalVars->hWndSM, FALSE, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
 
+                                             // Get the PerTabData global memory handle
+                                             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+                                             // Lock the memory to get a ptr to it
+                                             lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                                             // Get the Reset Flag
+                                             resetFlag = lpMemPTD->lpSISCur->ResetFlag;
+
+                                             // If we're resetting, ...
+                                             if (resetFlag NE RESETFLAG_NONE)
+                                                 lpplLocalVars->ExitType = TranslateResetFlagToExitType (resetFlag);
+
+                                             // We no longer need this ptr
+                                             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                                             // If we're resetting, ...
+                                             if (resetFlag NE RESETFLAG_NONE)
+                                                 YYACCEPT;
+
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2413,14 +2446,14 @@ SingVar:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYRes =
                                                WaitForInput (lpplLocalVars->hWndSM, TRUE, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2448,7 +2481,7 @@ SingVar:
                                                    ExecuteFn0 (&$1);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2464,7 +2497,7 @@ SingVar:
                                                    ExecuteFn0 (&$1);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2480,7 +2513,7 @@ SingVar:
                                                    CopyString_EM_YY (&$1);
 
                                              if (!lpplLocalVars->lpYYStr)
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYStr;
                                              YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
@@ -2496,7 +2529,7 @@ SingVar:
                                                    CopyString_EM_YY (&$1);
 
                                              if (!lpplLocalVars->lpYYStr)
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYStr;
                                              YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
@@ -2504,10 +2537,8 @@ SingVar:
                                         }
     | ')' error   '('                   {DbgMsgWP (L"%%SingVar:  error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ')' ArrExpr '('                   {DbgMsgWP (L"%%SingVar:  (ArrExpr)");
@@ -2532,7 +2563,7 @@ StrandRec:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
@@ -2547,12 +2578,11 @@ StrandRec:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
 
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2566,7 +2596,7 @@ StrandRec:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2586,7 +2616,7 @@ StrandInst:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYStr;
                                              YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
@@ -2596,8 +2626,7 @@ StrandInst:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2612,7 +2641,7 @@ StrandInst:
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -2624,7 +2653,7 @@ StrandInst:
                                              FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2638,12 +2667,11 @@ StrandInst:
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
 
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2688,7 +2716,7 @@ StrandInst:
                                                  // Signal an error
                                                  if (!lpplLocalVars->bYYERROR)
                                                      PrimFnSyntaxError_EM (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF/ELSE
                                          } // End IF
                                         }
@@ -2698,10 +2726,8 @@ StrandInst:
 SimpExpr:
       error   ASSIGN       QUAD         {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr ASSIGN       QUAD         {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"ArrExpr");
@@ -2720,7 +2746,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -2729,10 +2755,8 @@ SimpExpr:
                                         }
     | error   ASSIGN       QUOTEQUAD    {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | ArrExpr ASSIGN       QUOTEQUAD    {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrExpr");
@@ -2750,7 +2774,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -2761,8 +2785,7 @@ SimpExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2784,7 +2807,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -2797,8 +2820,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2824,7 +2846,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -2837,8 +2859,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2847,8 +2868,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2862,7 +2882,7 @@ SimpExpr:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     | ArrExpr ASSIGN error      NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error" WS_UTF16_LEFTARROW L"ArrExpr");
@@ -2870,8 +2890,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2883,8 +2902,7 @@ SimpExpr:
                                              lpplLocalVars->bSelSpec = FALSE;
 
                                              FreeResult (&$4.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2895,8 +2913,7 @@ SimpExpr:
                                              lpplLocalVars->bSelSpec = FALSE;
 
                                              FreeResult (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2941,7 +2958,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -2957,8 +2974,7 @@ SimpExpr:
 
                                              FreeResult (&$4.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -2986,7 +3002,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -3002,8 +3018,7 @@ SimpExpr:
 
                                              FreeResult (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3016,8 +3031,7 @@ SimpExpr:
 
                                              FreeResult (&$4.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3034,7 +3048,7 @@ SimpExpr:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$4.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     | ArrExpr ASSIGN   ')' error       NAMEUNK '('
@@ -3046,8 +3060,7 @@ SimpExpr:
 
                                              FreeResult (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3056,8 +3069,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3075,7 +3087,7 @@ SimpExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Copy as temporary var in case it's named
@@ -3094,7 +3106,7 @@ SimpExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->bRet =
@@ -3105,7 +3117,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -3117,8 +3129,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3139,7 +3150,7 @@ SimpExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3155,7 +3166,7 @@ SimpExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
 /////////////////////////////////////////////////FreeResult (&$4.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->bRet =
@@ -3166,7 +3177,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -3179,8 +3190,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$5.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3190,8 +3200,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3201,8 +3210,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$5.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3235,7 +3243,7 @@ SimpExpr:
                                                  } // End IF
 
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3250,7 +3258,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -3263,8 +3271,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$5.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3274,8 +3281,7 @@ SimpExpr:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3309,7 +3315,7 @@ SimpExpr:
                                                  } // End IF
 
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3324,7 +3330,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -3338,8 +3344,7 @@ SimpExpr:
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3350,8 +3355,7 @@ SimpExpr:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$4.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3373,7 +3377,7 @@ SimpExpr:
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$4.tkToken);
 /////////////////////////////////////////////////FreeResult (&$5.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3389,7 +3393,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -3405,8 +3409,7 @@ SimpExpr:
                                              if ($3.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
                                                  FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3419,8 +3422,7 @@ SimpExpr:
                                              if ($3.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
                                                  FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3431,8 +3433,7 @@ SimpExpr:
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3455,7 +3456,7 @@ SimpExpr:
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$4.tkToken);
 /////////////////////////////////////////////////FreeResult (&$5.tkToken);           // Validation only
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3471,7 +3472,7 @@ SimpExpr:
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Mark as already displayed
@@ -3485,8 +3486,7 @@ SimpExpr:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3503,7 +3503,7 @@ SelectSpec:
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by MakeNameStrand_EM_YY
 
                                              if (!lpplLocalVars->lpYYStrN)           // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYStrN;
                                              YYFree (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
@@ -3520,7 +3520,7 @@ SelectSpec:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Check on Selective Specification first (and only) name
@@ -3528,7 +3528,7 @@ SelectSpec:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3540,7 +3540,7 @@ SelectSpec:
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3557,7 +3557,7 @@ SelectSpec:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Check on Selective Specification first (and only) name
@@ -3565,7 +3565,7 @@ SelectSpec:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3577,7 +3577,7 @@ SelectSpec:
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3593,7 +3593,7 @@ SelectSpec:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Check on Selective Specification first (and only) name
@@ -3601,7 +3601,7 @@ SelectSpec:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3613,7 +3613,7 @@ SelectSpec:
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3626,8 +3626,7 @@ SelectSpec:
                                              // If this is not a named function, ...
                                              if ($2.tkToken.tkFlags.TknType NE TKT_FCNNAMED)
                                                  FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3643,7 +3642,7 @@ SelectSpec:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Check on Selective Specification first (and only) name
@@ -3652,7 +3651,7 @@ SelectSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3665,7 +3664,7 @@ SelectSpec:
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3676,8 +3675,7 @@ SelectSpec:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3693,7 +3691,7 @@ SelectSpec:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Check on Selective Specification first (and only) name
@@ -3702,7 +3700,7 @@ SelectSpec:
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3715,7 +3713,7 @@ SelectSpec:
                                              FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3738,7 +3736,7 @@ NameVals:
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3750,8 +3748,7 @@ NameVals:
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
                                                  PrimFnValueError_EM (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
-
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     | NameVals       NAMEVAR            {DbgMsgWP (L"%%NameVals:  NAMEVAR NameVals");
@@ -3765,7 +3762,7 @@ NameVals:
 /////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3778,8 +3775,7 @@ NameVals:
                                                  PrimFnValueError_EM (&$2.tkToken);
                                              FreeResult (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
-
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     |       ')' IndexListBR NAMEVAR '(' {DbgMsgWP (L"%%NameVals:  (NAMEVAR IndexListBR)");
@@ -3794,15 +3790,14 @@ NameVals:
                                                  PrimFnNonceError_EM (&$2.tkToken);
                                              FreeResult (&$2.tkToken);
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     |       ')' error       NAMEVAR '(' {DbgMsgWP (L"%%NameVals:  (NAMEVAR error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3814,15 +3809,14 @@ NameVals:
                                                  PrimFnValueError_EM (&$2.tkToken);
                                              FreeResult (&$2.tkToken);
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     |       ')' error       NAMEUNK '(' {DbgMsgWP (L"%%NameVals:  (NAMEUNK error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3840,7 +3834,7 @@ NameVals:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     | NameVals ')' error    NAMEVAR '(' {DbgMsgWP (L"%%NameVals:  (NAMEVAR error) NameVals");
@@ -3848,8 +3842,7 @@ NameVals:
                                          {
                                              FreeResult (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3862,8 +3855,7 @@ NameVals:
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     | NameVals ')' error    NAMEUNK '(' {DbgMsgWP (L"%%NameVals:  (NAMEUNK error) NameVals");
@@ -3871,8 +3863,7 @@ NameVals:
                                          {
                                              FreeResult (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     ;
@@ -3892,7 +3883,7 @@ NameVars:
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3909,7 +3900,7 @@ NameVars:
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3925,15 +3916,14 @@ NameVars:
 
                                              FreeResult (&$2.tkToken);
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     | ')' error       NAMEVAR '('       {DbgMsgWP (L"%%NameVars:  (NAMEVAR error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3944,15 +3934,14 @@ NameVars:
                                                  PrimFnValueError_EM (&$3.tkToken);
                                              FreeResult (&$2.tkToken);
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             YYERROR2
+                                             YYERROR3
                                          } // End IF
                                         }
     | ')' error       NAMEUNK '('       {DbgMsgWP (L"%%NameVars:  (NAMEUNK error)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -3967,7 +3956,7 @@ NameVars:
 /////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3982,7 +3971,7 @@ NameVars:
 /////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -3998,8 +3987,7 @@ Drv1Func:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4015,7 +4003,7 @@ Drv1Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4029,7 +4017,7 @@ Drv1Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRht =
@@ -4040,7 +4028,7 @@ Drv1Func:
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -4059,7 +4047,7 @@ Drv1Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4073,7 +4061,7 @@ Drv1Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRht =
@@ -4084,7 +4072,7 @@ Drv1Func:
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -4095,8 +4083,7 @@ Drv1Func:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4111,7 +4098,7 @@ Drv1Func:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4124,7 +4111,7 @@ Drv1Func:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
@@ -4141,8 +4128,7 @@ Drv2Func:
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4151,8 +4137,7 @@ Drv2Func:
                                          {
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4168,7 +4153,7 @@ Drv2Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4182,7 +4167,7 @@ Drv2Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRht =
@@ -4194,7 +4179,7 @@ Drv2Func:
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -4207,8 +4192,7 @@ Drv2Func:
                                          {
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4224,7 +4208,7 @@ Drv2Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4238,7 +4222,7 @@ Drv2Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRht =
@@ -4249,7 +4233,7 @@ Drv2Func:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -4262,8 +4246,7 @@ Drv2Func:
                                          {
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4280,7 +4263,7 @@ Drv2Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4294,7 +4277,7 @@ Drv2Func:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRht =
@@ -4305,7 +4288,7 @@ Drv2Func:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -4331,7 +4314,7 @@ Drv3Func:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYLft =
@@ -4341,7 +4324,7 @@ Drv3Func:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4361,7 +4344,7 @@ Drv3Func:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYLft =
@@ -4371,7 +4354,7 @@ Drv3Func:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4395,7 +4378,7 @@ Drv3Func:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYLft =
@@ -4405,7 +4388,7 @@ Drv3Func:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4444,7 +4427,7 @@ ParenFunc:
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
@@ -4455,8 +4438,7 @@ ParenFunc:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4471,7 +4453,7 @@ ParenFunc:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4484,7 +4466,7 @@ ParenFunc:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
@@ -4505,14 +4487,14 @@ LeftOper:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
@@ -4528,14 +4510,14 @@ LeftOper:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
@@ -4551,14 +4533,14 @@ LeftOper:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
@@ -4574,14 +4556,14 @@ LeftOper:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
@@ -4595,10 +4577,8 @@ LeftOper:
                                         }
     | '>' error    '('                  {DbgMsgWP (L"%%LeftOper:  (error)");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | '>' Drv1Func '('                  {DbgMsgWP (L"%%LeftOper:  (Drv1Func)");
@@ -4617,7 +4597,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4630,7 +4610,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -4652,7 +4632,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4665,7 +4645,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
@@ -4684,7 +4664,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4697,7 +4677,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
@@ -4716,7 +4696,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4729,7 +4709,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
@@ -4752,7 +4732,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4765,7 +4745,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
@@ -4785,7 +4765,7 @@ LeftOper:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4799,7 +4779,7 @@ LeftOper:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRht =
@@ -4810,7 +4790,7 @@ LeftOper:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -4831,7 +4811,7 @@ LeftOper:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -4845,7 +4825,7 @@ LeftOper:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRht =
@@ -4856,7 +4836,7 @@ LeftOper:
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
@@ -4876,7 +4856,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYStrL =
@@ -4910,8 +4890,7 @@ Train:
                                              } // End IF
 
                                              FreeResult (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4929,8 +4908,7 @@ Train:
                                              } // End IF
 
                                              FreeResult (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -4966,7 +4944,7 @@ Train:
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYStrR =
@@ -5019,7 +4997,7 @@ Train:
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYStrR =
@@ -5072,7 +5050,7 @@ Train:
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYStrR =
@@ -5125,7 +5103,7 @@ Train:
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYStrR =
@@ -5161,8 +5139,7 @@ Train:
                                              } // End IF
 
                                              FreeResult (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -5189,7 +5166,7 @@ Train:
 
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYStrL =
@@ -5210,7 +5187,7 @@ Train:
 
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
@@ -5245,7 +5222,7 @@ Train:
 
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYStrL =
@@ -5266,7 +5243,7 @@ Train:
 
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
@@ -5292,14 +5269,14 @@ RightOper:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
@@ -5315,7 +5292,7 @@ RightOper:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
@@ -5324,7 +5301,7 @@ RightOper:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -5341,7 +5318,7 @@ RightOper:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
@@ -5350,7 +5327,7 @@ RightOper:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -5367,14 +5344,14 @@ RightOper:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYFcn =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
@@ -5395,8 +5372,7 @@ AxisFunc:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -5411,7 +5387,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
@@ -5421,7 +5397,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -5434,7 +5410,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
@@ -5444,7 +5420,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
@@ -5455,8 +5431,7 @@ AxisFunc:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -5471,7 +5446,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
@@ -5481,7 +5456,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -5494,7 +5469,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
@@ -5504,7 +5479,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
@@ -5515,8 +5490,7 @@ AxisFunc:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -5531,7 +5505,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYFcn =
@@ -5541,7 +5515,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -5554,7 +5528,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
@@ -5564,7 +5538,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
@@ -5575,8 +5549,7 @@ AxisFunc:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -5591,7 +5564,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -5604,7 +5577,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
@@ -5614,7 +5587,7 @@ AxisFunc:
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
@@ -5635,14 +5608,14 @@ AmbOp:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp3;
@@ -5658,14 +5631,14 @@ AmbOp:
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp3 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Ambiguous operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp3;
@@ -5692,7 +5665,7 @@ AmbOp:
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYRes;
@@ -5708,8 +5681,7 @@ AmbOpAxis:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -5724,7 +5696,7 @@ AmbOpAxis:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYOp3 =
@@ -5734,7 +5706,7 @@ AmbOpAxis:
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -5747,7 +5719,7 @@ AmbOpAxis:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYAxis =
@@ -5757,7 +5729,7 @@ AmbOpAxis:
                                              if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
@@ -5778,14 +5750,14 @@ MonOp:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp1;
@@ -5801,14 +5773,14 @@ MonOp:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp1;
@@ -5824,14 +5796,14 @@ MonOp:
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp1;
@@ -5858,7 +5830,7 @@ MonOp:
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp1;
@@ -5874,8 +5846,7 @@ MonOpAxis:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -5890,7 +5861,7 @@ MonOpAxis:
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -5903,7 +5874,7 @@ MonOpAxis:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRes =
@@ -5913,7 +5884,7 @@ MonOpAxis:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -5934,14 +5905,14 @@ DydOp:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Dyadic operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp2;
@@ -5957,14 +5928,14 @@ DydOp:
                                              FreeResult (&$1.tkToken);               // Decrement reccnt
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Dyadic operator (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp2;
@@ -5991,7 +5962,7 @@ DydOp:
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYOp2;
@@ -6007,8 +5978,7 @@ DydOpAxis:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -6023,7 +5993,7 @@ DydOpAxis:
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // The result is always the root of the function tree
@@ -6036,7 +6006,7 @@ DydOpAxis:
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              lpplLocalVars->lpYYRes =
@@ -6046,7 +6016,7 @@ DydOpAxis:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -6064,24 +6034,22 @@ IndexListBR:
                                              lpplLocalVars->lpYYLst =
                                                InitList0_YY ();
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              lpplLocalVars->lpYYRes =
                                                MakeList_EM_YY (lpplLocalVars->lpYYLst, TRUE);
                                              YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     |             ']' error       '['   {DbgMsgWP (L"%%IndexListBR:  [error]");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     |             ']' IndexListWE '['   {DbgMsgWP (L"%%IndexListBR:  [IndexListWE]");
@@ -6093,7 +6061,7 @@ IndexListBR:
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYLst;
                                              YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
@@ -6106,10 +6074,8 @@ IndexListBR:
                                         }
     | IndexListBR ']' error       '['   {DbgMsgWP (L"%%IndexListBR:  [error] IndexListBR ");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     | IndexListBR ']' IndexListWE '['   {DbgMsgWP (L"%%IndexListBR:  [IndexListWE] IndexListBR ");
@@ -6123,7 +6089,7 @@ IndexListBR:
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -6135,7 +6101,7 @@ IndexListBR:
                                              FreeYYFcn1 (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -6167,7 +6133,7 @@ IndexListWE1:
                                                InitList1_YY (NULL);
 
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
@@ -6175,7 +6141,7 @@ IndexListWE1:
                                              FreeYYFcn1 (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -6183,10 +6149,8 @@ IndexListWE1:
                                         }
     |              ';' error            {DbgMsgWP (L"%%IndexListWE1:  error;");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
-                                         } else
+                                             YYERROR3
+                                         else
                                              YYERROR2
                                         }
     |              ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE1:  ArrExpr;");
@@ -6200,7 +6164,7 @@ IndexListWE1:
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$2.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              // Push an item onto the list
@@ -6210,7 +6174,7 @@ IndexListWE1:
                                              FreeYYFcn1 (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR2
+                                                 YYERROR3
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -6227,7 +6191,7 @@ IndexListWE1:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
@@ -6238,8 +6202,7 @@ IndexListWE1:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -6255,7 +6218,7 @@ IndexListWE1:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
@@ -6278,7 +6241,7 @@ IndexListWE2:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
@@ -6296,7 +6259,7 @@ IndexListWE2:
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
@@ -6307,8 +6270,7 @@ IndexListWE2:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             lpplLocalVars->ExitType = EXITTYPE_ERROR;
-                                             YYERROR2
+                                             YYERROR3
                                          } else
                                              YYERROR2
                                         }
@@ -6325,7 +6287,7 @@ IndexListWE2:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
-                                                 YYERROR2
+                                                 YYERROR3
                                              } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
@@ -6376,7 +6338,6 @@ EXIT_TYPES ParseLine
                  oldTlsType,        // Previous value of dwTlsType
                  uError,            // Error code
                  uRet,              // The result from pl_yyparse
-                 uTokenCnt,         // # tokens in the function line
                  uCnt;              // Loop counter
 #define MVS_CNT     2
     MEMVIRTSTR   lclMemVirtStr[MVS_CNT] = {0};// Room for MVS_CNT GuardAllocs
@@ -6456,10 +6417,10 @@ EXIT_TYPES ParseLine
     UTLockAndSet (plLocalVars.hGlbTknLine, &plLocalVars.t2);
 
     // Get # tokens in the line
-    uTokenCnt = ((LPTOKEN_HEADER) plLocalVars.t2.lpBase)->TokenCnt;
+    plLocalVars.uTokenCnt = ((LPTOKEN_HEADER) plLocalVars.t2.lpBase)->TokenCnt;
 
     // If the starting token # is outside the token count, ...
-    if (uTknNum >= uTokenCnt)
+    if (uTknNum >= plLocalVars.uTokenCnt)
     {
         // Set the exit type to exit normally
         plLocalVars.ExitType = EXITTYPE_GOTO_ZILDE;
@@ -6469,7 +6430,7 @@ EXIT_TYPES ParseLine
 
     // Skip over TOKEN_HEADER
     plLocalVars.lptkStart = TokenBaseToStart (plLocalVars.t2.lpBase);
-    plLocalVars.lptkEnd   = &plLocalVars.lptkStart[uTokenCnt];
+    plLocalVars.lptkEnd   = &plLocalVars.lptkStart[plLocalVars.uTokenCnt];
 
     Assert (plLocalVars.lptkStart->tkFlags.TknType EQ TKT_EOL
          || plLocalVars.lptkStart->tkFlags.TknType EQ TKT_EOS);
@@ -6793,23 +6754,6 @@ ERROR_EXIT:
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-////     // Signal an error
-////     ErrorMessageDirect (ERRMSG_WS_FULL APPEND_NAME,     // Ptr to error message text
-////                         L"",                            // Ptr to the line which generated the error
-////                         NEG1U,                          // Position of caret (origin-0)
-////                         hWndSM);                        // Window handle to the Session Manager
-////     // Execute []ELX
-////     plLocalVars.lpYYRes = PrimFnMonUpTackJotCommon_EM_YY (WS_UTF16_QUAD L"ELX", FALSE, NULL);
-////
-////     // Lock the memory to get a ptr to it
-////     lpMemPTD = MyGlobalLock (hGlbPTD);
-////
-////     lpMemPTD->YYResExec = *plLocalVars.lpYYRes;
-////     YYFree (plLocalVars.lpYYRes); plLocalVars.lpYYRes = NULL;
-////
-////     // We no longer need this ptr
-////     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 NORMAL_EXIT:
     for (uCnt = 0; uCnt < MVS_CNT; uCnt++)
     if (lclMemVirtStr[uCnt].IniAddr)
@@ -8269,14 +8213,21 @@ LPPL_YYSTYPE WaitForInput
      && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
         lpYYRes = NULL;
     else
+    // If there's no result from the expression, ...
+    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ 0)
+        // Make a PL_YYSTYPE NoValue entry
+        lpYYRes = MakeNoValue_YY (lptkFunc);
+    else
     {
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
 
         // Copy the result
         *lpYYRes = lpMemPTD->YYResExec;
-        ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
     } // End IF/ELSE
+
+    // We no longer need these values
+    ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -8324,7 +8275,7 @@ BOOL AmbOpSwap_EM
         case 3:
             // ***FIXME*** -- Multiple element function strand -- modify internal RPN structure
 
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                       &lpYYFcn->tkToken);
             return FALSE;
 
@@ -8475,7 +8426,7 @@ void AmbOpToOp1
 //***************************************************************************
 //  $ArrExprCheckCaller
 //
-//
+//  Tuck away the result from Execute/Quad.
 //***************************************************************************
 
 void ArrExprCheckCaller
@@ -8489,41 +8440,33 @@ void ArrExprCheckCaller
     // Mark as not in error
     lpplLocalVars->bRet = TRUE;
 
-    // If it's NoValue on Quad input, ...
-    if (IsTokenNoValue (&lpYYArg->tkToken)
-     && lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD)
-    {
-        // Check for NoValue
-        if (IsSymNoValue (lpYYArg->tkToken.tkData.tkSym))
-        {
-            if (lpplLocalVars->bYYERROR)
-                // Signal a VALUE ERROR
-                PrimFnValueError_EM (&lpYYArg->tkToken);
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
-            // Mark as in error
-            lpplLocalVars->bRet = FALSE;
-            lpplLocalVars->ExitType = EXITTYPE_ERROR;
-        } // End IF
-    } else
-    {
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
-
+    // If it's NoValue, ...
+    if (IsTokenNoValue (&lpYYArg->tkToken))
+        // Copy the result
+        lpplLocalVars->lpYYRes = lpYYArg;
+    else
         // Copy the result
         lpplLocalVars->lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
 
-        // If the Execute/Quad result is already filled, display it
-        if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
-            lpplLocalVars->bRet =
-              ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
+    // If the Execute/Quad result is already filled, display it
+    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+        lpplLocalVars->bRet =
+          ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
 
-        // Save the Execute/Quad result
-        lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
+    // Save the Execute/Quad result
+    lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
+
+    // If it's not NoValue, ...
+    if (!IsTokenNoValue (&lpYYArg->tkToken))
+    {
         YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+    } // End IF
 
-        // We no longer need this ptr
-        MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
-    } // End IF/ELSE
+    // We no longer need this ptr
+    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 } // End ArrExprCheckCaller
 
 
@@ -8730,6 +8673,70 @@ PL_YYSTYPE MakeTempCopy
 
     return YYTmp;
 } // End MakeTempCopy
+
+
+//***************************************************************************
+//  $GetEOSIndex
+//
+//  Return the index of the EOS stmt for a char index
+//***************************************************************************
+
+UINT GetEOSIndex
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to local vars
+     int           tkCharIndex)         // Character index of array to display/free
+
+{
+    UINT uCnt,                          // Loop counter
+         uLen;                          // # tokens in the stmt
+
+    // Loop through the tokens looking for this stmt's char index
+    for (uCnt = 0; uCnt < lpplLocalVars->uTokenCnt; uCnt += uLen)
+    {
+        Assert (lpplLocalVars->lptkStart[uCnt].tkFlags.TknType EQ TKT_EOL
+             || lpplLocalVars->lptkStart[uCnt].tkFlags.TknType EQ TKT_EOS);
+
+        // Get the # tokens in this stmt
+        uLen = lpplLocalVars->lptkStart[uCnt].tkData.tkIndex;
+
+        Assert (lpplLocalVars->lptkStart[uCnt + uLen - 1].tkFlags.TknType EQ TKT_SOS);
+
+        if (lpplLocalVars->lptkStart[uCnt].tkCharIndex < tkCharIndex
+         &&                                              tkCharIndex < lpplLocalVars->lptkStart[uCnt + uLen - 1].tkCharIndex)
+            break;
+    } // End FOR
+
+    // If we're still within the line, ...
+    if (uCnt < lpplLocalVars->uTokenCnt)
+        return uCnt;
+    else
+        return NEG1U;
+} // End GetEOSIndex
+
+
+//***************************************************************************
+//  $IsLastStmt
+//
+//  Return TRUE iff the current stmt is the last one on the line
+//  We need this to determine whether or not to print or return a result
+//    from within an Execute or Quad stmt.
+//***************************************************************************
+
+UBOOL IsLastStmt
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to local vars
+     int           tkCharIndex)         // Character index of array to display/free
+
+{
+    UINT uIndex;                        // Index of the corresponding EOS stmt
+
+    // Get the index of the EOS stmt
+    uIndex = GetEOSIndex (lpplLocalVars, tkCharIndex);
+
+    // If we're still within the line, ...
+    if (uIndex NE NEG1U)
+        return (lpplLocalVars->uTokenCnt EQ (uIndex + lpplLocalVars->lptkStart[uIndex].tkData.tkIndex));
+    else
+        return TRUE;
+} // End IsLastStmt
 
 
 //***************************************************************************

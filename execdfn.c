@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -750,6 +750,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Get the SM window handle
     hWndSM = lpMemPTD->hWndSM;
 
+    // Initialize the exit type in case we fall through
+    exitType = EXITTYPE_NONE;
+
     // Save current line & token #
     lpMemPTD->lpSISCur->CurLineNum = uLineNum;
     lpMemPTD->lpSISCur->NxtLineNum = uLineNum + 1;
@@ -823,7 +826,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         // If line monitoring is enabled, stop it for this line
         if (lpMemDfnHdr->MonOn)
             StartStopMonInfo (lpMemDfnHdr, uLineNum, FALSE);
-
+RESTART_AFTER_ERROR:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
@@ -903,6 +906,72 @@ NEXTLINE:
         lpMemPTD->lpSISCur->CurLineNum = uLineNum;
         lpMemPTD->lpSISCur->NxtTknNum = 0;
     } // End WHILE
+
+    // Split cases based upon the exit type
+    switch (exitType)
+    {
+        case EXITTYPE_RESET_ONE:
+        case EXITTYPE_RESET_ONE_INIT:
+            // Change the reset flag as we're done with
+            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
+
+            // Fall through to common code
+
+        case EXITTYPE_RESET_ALL:
+            // Make a PL_YYSTYPE NoValue entry
+            lpYYRes = MakeNoValue_YY (lptkFunc);
+
+            break;
+
+        case EXITTYPE_GOTO_ZILDE:
+        case EXITTYPE_GOTO_LINE:
+        case EXITTYPE_QUADERROR_INIT:
+        case EXITTYPE_QUADERROR_EXEC:
+        case EXITTYPE_ERROR:
+        case EXITTYPE_STOP:
+        case EXITTYPE_DISPLAY:
+        case EXITTYPE_NODISPLAY:
+        case EXITTYPE_NOVALUE:
+            break;
+
+        case EXITTYPE_NONE:
+            // In case we don't execute any lines and one or more of
+            //   the multiple results have no value, ...
+            if (CheckDfnExitError_EM (lpMemPTD))
+            {
+                LPWCHAR lpwszLine = L":return";
+                HGLOBAL hGlbTkn;
+
+                // Tokenize the line
+                hGlbTkn =
+                  Tokenize_EM (lpwszLine,               // The line to tokenize (not necessarily zero-terminated)
+                               lstrlenW (lpwszLine),    // NELM of lpwszLine
+                               NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                               1,                       // Function line # (0 = header)
+                               NULL);                   // Ptr to error handling function (may be NULL)
+                // Execute the line
+                exitType =
+                  ParseLine (hWndSM,                    // Session Manager window handle
+                             hGlbTkn,                   // Tokenized line global memory handle
+                             lpMemDfnHdr->hGlbTxtHdr,   // Text      ...
+                             NULL,                      // Ptr to line text global memory
+                             hGlbPTD,                   // PerTabData global memory handle
+                             1,                         // Function line # (1 for execute or immexec)
+                             0,                         // Starting token # in the above function line
+                             hGlbDfnHdr,                // User-defined function/operator global memory handle (NULL = execute/immexec)
+                             TRUE,                      // TRUE iff errors are acted upon
+                             FALSE);                    // TRUE iff executing only one stmt
+                // We no longer need this resource
+                MyGlobalFree (hGlbTkn); hGlbTkn = NULL;
+
+                goto RESTART_AFTER_ERROR;
+            } // End IF
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 #ifdef DEBUG
     DisplayFcnLine (NULL, lpMemPTD, NEG1U);
 #endif
@@ -1152,6 +1221,19 @@ UBOOL CheckDfnExitError_EM
     // Get a ptr to the current SIS
     lpSISCur = lpMemPTD->lpSISCur;
 
+    // If the current level is Immediate Execution Mode, Execute, or Quad Input
+    //   back off until it isn't
+    while (lpSISCur
+        && (lpSISCur->DfnType EQ DFNTYPE_IMM
+         || lpSISCur->DfnType EQ DFNTYPE_EXEC
+         || lpSISCur->DfnType EQ DFNTYPE_QUAD))
+        // Back off to the previous SI level
+        lpSISCur = lpSISCur->lpSISPrv;
+
+    // If we're back to the start, quit
+    if (lpSISCur EQ NULL)
+        goto NORMAL_EXIT;
+
     // If the current level isn't a user-defined function/operator, quit
     if (lpSISCur->DfnType NE DFNTYPE_OP1
      && lpSISCur->DfnType NE DFNTYPE_OP2
@@ -1202,7 +1284,12 @@ UBOOL CheckDfnExitError_EM
 
                 // If it's not a variable, ...
                 if ((*lplpSymEntry)->stFlags.stNameType NE NAMETYPE_VAR)
+                {
+                    // Initialize for ERROR_EXIT code
+                    numRes = 0;
+
                     goto SYNTAX_EXIT;
+                } // End IF
             } // End IF/ELSE
 
             break;
@@ -1227,12 +1314,7 @@ UBOOL CheckDfnExitError_EM
                 else
                 // If the name is not a variable, ...
                 if (lplpSymEntry[numRes]->stFlags.stNameType NE NAMETYPE_VAR)
-                {
-                    // Set the error message
-                    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
-                    goto ERROR_EXIT;
-                } // End IF/ELSE/...
+                    goto SYNTAX_EXIT;
             } // End FOR
 
             break;
@@ -1246,9 +1328,6 @@ UBOOL CheckDfnExitError_EM
 SYNTAX_EXIT:
     // Set the error message
     ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
-    // Initialize for ERROR_EXIT code
-    numRes = 0;
 
     goto ERROR_EXIT;
 
@@ -1267,6 +1346,23 @@ ERROR_EXIT:
 
     // Mark as suspended
     lpSISCur->Suspended = TRUE;
+
+    // Get a ptr to the current SIS
+    lpSISCur = lpMemPTD->lpSISCur;
+
+    // If the current level is Immediate Execution Mode, Execute, or Quad Input
+    //   back off until it isn't
+    while (lpSISCur
+        && (lpSISCur->DfnType EQ DFNTYPE_IMM
+         || lpSISCur->DfnType EQ DFNTYPE_EXEC
+         || lpSISCur->DfnType EQ DFNTYPE_QUAD))
+    {
+        // Mark as unwinding
+        lpSISCur->Unwind = TRUE;
+
+        // Back off to the previous SI level
+        lpSISCur = lpSISCur->lpSISPrv;
+    } // End WHILE
 
     // Mark as error on exit
     bRet = TRUE;

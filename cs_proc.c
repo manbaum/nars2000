@@ -312,12 +312,12 @@ UBOOL CS_CASE_Stmt
     lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
     // Copy the result
-    lpMemPTD->YYResExec = *lpYYRhtArg;
+    lpMemPTD->YYCaseExec = *lpYYRhtArg;
 
     // If the result is not immediate, ...
-    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_VARIMMED)
-        lpMemPTD->YYResExec.tkToken.tkData.tkGlbData =
-          CopySymGlbDirAsGlb (lpMemPTD->YYResExec.tkToken.tkData.tkGlbData);
+    if (lpMemPTD->YYCaseExec.tkToken.tkFlags.TknType NE TKT_VARIMMED)
+        lpMemPTD->YYCaseExec.tkToken.tkData.tkGlbData =
+          CopySymGlbDirAsGlb (lpMemPTD->YYCaseExec.tkToken.tkData.tkGlbData);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
@@ -510,7 +510,7 @@ void CS_DoneFOR
     if (bFORLCL)
     {
         // Free the value of the :IN var
-        FreeResult (&lpForStmtNext->tkForI);
+        FreeResultName (&lpForStmtNext->tkForI);
 
         // Restore the original :IN var
         *lpForStmtNext->tkForI.tkData.tkSym = lpForStmtNext->symForI;
@@ -616,10 +616,10 @@ UBOOL CS_FOR_Stmt_EM
     AttrsOfToken (&lpYYRhtArg->tkToken, NULL, &lpForStmtNext->uNELM, NULL, NULL);
 
     // Save initial values on the FORSTMT/FORLCLSTMT stack
-    lpForStmtNext->uIndex      = 0;
-    lpForStmtNext->tkForI      = lpYYNameArg->tkToken;
-    lpForStmtNext->tkForArr    = lpYYRhtArg->tkToken;
-    lpForStmtNext->uForStmtID  = lpYYForArg->tkToken.tkData.uCLIndex;
+    lpForStmtNext->uIndex     = 0;
+    lpForStmtNext->tkForI     = lpYYNameArg->tkToken;
+    lpForStmtNext->tkForArr   = *CopyToken_EM (&lpYYRhtArg->tkToken, FALSE);
+    lpForStmtNext->uForStmtID = lpYYForArg->tkToken.tkData.uCLIndex;
 
     if (bFORLCL)
     {
@@ -629,21 +629,15 @@ UBOOL CS_FOR_Stmt_EM
         // Set the ptr to the previous entry to the STE in its shadow chain
         lpYYNameArg->tkToken.tkData.tkSym->stPrvEntry = &lpForStmtNext->symForI;
 
-        // Set the STE to NoValue if FORLCL; otherwise the first assignment into the :IN var removes the old value
-        lpYYNameArg->tkToken.tkFlags.TknType                  = TKT_VARNAMED;
-        ZeroMemory (&lpYYNameArg->tkToken.tkData.tkSym->stFlags, sizeof (lpYYNameArg->tkToken.tkData.tkSym->stFlags));
-        lpYYNameArg->tkToken.tkData.tkSym->stFlags.Inuse      = TRUE;
-        lpYYNameArg->tkToken.tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
-        lpYYNameArg->tkToken.tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
-        lpYYNameArg->tkToken.tkData.tkSym->stData.stLongest   = 0;
+        // Set the STE to NoValue; otherwise the first assignment into the :IN var removes the old value
+        lpYYNameArg->tkToken.tkFlags.TknType             = TKT_VARNAMED;
+        lpYYNameArg->tkToken.tkFlags.ImmType             = IMMTYPE_ERROR;
+        lpYYNameArg->tkToken.tkData.tkSym->stFlags.Value = FALSE;
     } else
         // Mark as not valid
         lpForStmtNext->symForI.stFlags.Inuse = FALSE;
 
-    // If the token is not immediate, ...
-    if (!IsTknImmed (&lpForStmtNext->tkForArr))
-        // Increment the reference count
-        CopySymGlbDir (lpForStmtNext->tkForArr.tkData.tkGlbData);
+
 
     // Tell the lexical analyzer to get the next token from
     //   the stmt at the token pointed to by the FOR/FORLCL stmt (the ENDFOR/ENDFORLCL stmt)
@@ -1035,7 +1029,7 @@ UBOOL CS_SELECT_Stmt_EM
                         {
                             // Use match to determine equality
                             lpYYTmp =
-                              PrimFnDydEqualUnderbar_EM_YY (&lpMemPTD->YYResExec.tkToken,   // Ptr to left arg token
+                              PrimFnDydEqualUnderbar_EM_YY (&lpMemPTD->YYCaseExec.tkToken,  // Ptr to left arg token
                                                             &lpYYRhtArg->tkToken,           // Ptr to function token
                                                             &lpYYRhtArg->tkToken,           // Ptr to right arg token
                                                              NULL);                         // Ptr to axis token (may be NULL)
@@ -1052,13 +1046,13 @@ UBOOL CS_SELECT_Stmt_EM
 
                             // Get the attributes (Type, NELM, and Rank)
                             //   of the CASELIST arg
-                            AttrsOfToken (&lpMemPTD->YYResExec.tkToken, NULL, &aplNELMCL, NULL, NULL);
+                            AttrsOfToken (&lpMemPTD->YYCaseExec.tkToken, NULL, &aplNELMCL, NULL, NULL);
 
                             // Loop through the elements of the CASELIST arg
                             for (uCnt = 0, bCmp = FALSE; (!bCmp) && uCnt < aplNELMCL; uCnt++)
                             {
                                 // Get the next value from the CASELIST result token into a token
-                                GetNextValueTokenIntoToken (&lpMemPTD->YYResExec.tkToken,
+                                GetNextValueTokenIntoToken (&lpMemPTD->YYCaseExec.tkToken,
                                                              uCnt,
                                                             &tkCL);
                                 // Use match to determine equality

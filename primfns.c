@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2761,6 +2761,7 @@ void FillSISNxt
 ////lpMemPTD->lpSISNxt->ResetFlag     = RESETFLAG_NONE; // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->PermFn        = FALSE;          // Already zero from ZeroMemory
     lpMemPTD->lpSISNxt->Restartable   = Restartable;
+////lpMemPTD->lpSISNxt->Unwind        = FALSE;          // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->Avail         = 0;              // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->EventType     = 0;              // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->CurLineNum    = 0;              // Already zero from ZeroMemory

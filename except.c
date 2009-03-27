@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@
 
 #define STRICT
 #include <windows.h>
+#pragma pack(push,4)
+#include <dbghelp.h>
+#pragma pack(pop)
 #include "headers.h"
 #include "startaddr.h"
 
@@ -45,11 +48,54 @@ EXCEPT_NAMES ExceptNames[] =
 #define EXCEPT_NAMES_LENGTH         countof (ExceptNames)
 
 // Save area for exception address if EXCEPTION_BREAKPOINT
-DWORD glbExceptAddr;
+DWORD   gExceptAddr;            // Exception address
+LPWCHAR glpExceptionText;       // Ptr to Exception text
+LPUCHAR glpInvalidAddr;         // Ptr to invalid address
+EXCEPTION_CODES gExceptionCode;
 
 // Save area for crash information
-CONTEXT ContextRecord;
-EXCEPTION_RECORD ExceptionRecord;
+CONTEXT gContextRecord;
+EXCEPTION_RECORD gExceptionRecord;
+
+#define STACKWALK_MAX_NAMELEN       1024
+
+typedef struct tagCallstackEntry
+{
+    DWORD64 offset;                                     // If 0, we have no valid entry
+    CHAR    name[STACKWALK_MAX_NAMELEN];
+    CHAR    undName[STACKWALK_MAX_NAMELEN];
+    CHAR    undFullName[STACKWALK_MAX_NAMELEN];
+    DWORD64 offsetFromSmybol;
+    DWORD   offsetFromLine;
+    DWORD   lineNumber;
+    CHAR    lineFileName[STACKWALK_MAX_NAMELEN];
+    DWORD   symType;
+    LPCSTR  symTypeString;
+    CHAR    moduleName[STACKWALK_MAX_NAMELEN];
+    DWORD64 baseOfImage;
+    CHAR    loadedImageName[STACKWALK_MAX_NAMELEN];
+} CallstackEntry;
+
+typedef enum CallstackEntryType
+{
+    firstEntry,
+    nextEntry,
+    lastEntry
+};
+
+typedef struct tagIMAGEHLP_MODULE64_V2
+{
+    DWORD    SizeOfStruct;          // Set to sizeof(IMAGEHLP_MODULE64)
+    DWORD64  BaseOfImage;           // Base load address of module
+    DWORD    ImageSize;             // Virtual size of the loaded module
+    DWORD    TimeDateStamp;         // Date/time stamp from pe header
+    DWORD    CheckSum;              // Checksum from the pe header
+    DWORD    NumSyms;               // Number of symbols in the symbol table
+    SYM_TYPE SymType;               // Type of symbols loaded
+    CHAR     ModuleName[32];        // Module name
+    CHAR     ImageName[256];        // Image name
+    CHAR     LoadedImageName[256];  // Symbol file name
+} IMAGEHLP_MODULE64_V2;
 
 
 //***************************************************************************
@@ -62,62 +108,9 @@ EXCEPTION_CODES MyGetExceptionCode
     (void)
 
 {
-    HGLOBAL         hGlbPTD;        // PerTabData global memory handle
-    LPPERTABDATA    lpMemPTD;       // Ptr to PerTabData global memory
-    EXCEPTION_CODES ExceptionCode;  // Exception code
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // If hGlbPTD isn't set, just exit
-    if (hGlbPTD EQ NULL)
-        return EXCEPTION_SUCCESS;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the ExceptionCode
-    ExceptionCode = lpMemPTD->ExceptionCode;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return ExceptionCode;
+    // Return the ExceptionCode
+    return gExceptionCode;
 } // End MyGetExceptionCode
-
-
-//***************************************************************************
-//  $MyGetInvalidAddr
-//
-//  Return the current InvalidAddr
-//***************************************************************************
-
-LPUCHAR MyGetInvalidAddr
-    (void)
-
-{
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPUCHAR      lpInvalidAddr;     // Ptr to invalid address
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // If hGlbPTD isn't set, just exit
-    if (hGlbPTD EQ NULL)
-        return NULL;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the ContextRecord
-    lpInvalidAddr = lpMemPTD->lpInvalidAddr;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return lpInvalidAddr;
-} // End MyGetInvalidAddr
 
 
 //***************************************************************************
@@ -130,149 +123,9 @@ void MySetExceptionCode
     (EXCEPTION_CODES ExceptionCode) // Exception code
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // If hGlbPTD isn't set, just exit
-    if (hGlbPTD EQ NULL)
-        return;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Set the ExceptionCode
-    lpMemPTD->ExceptionCode = ExceptionCode;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    gExceptionCode = ExceptionCode;
 } // End MySetExceptionCode
-
-
-//***************************************************************************
-//  $MySetExceptionAddr
-//
-//  Set the current ExceptionAddr
-//***************************************************************************
-
-void MySetExceptionAddr
-    (LPVOID ExceptionAddr)      // Exception address
-
-{
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // If hGlbPTD isn't set, just exit
-    if (hGlbPTD EQ NULL)
-        return;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Set the ExceptionAddr
-    lpMemPTD->ExceptionAddr = (LPVOID) ExceptionAddr;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End MySetExceptionAddr
-
-
-//***************************************************************************
-//  $MySetExceptionText
-//
-//  Set the current ExceptionText
-//***************************************************************************
-
-void MySetExceptionText
-    (LPWCHAR ExceptionText)     // Exception text
-
-{
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // If hGlbPTD isn't set, just exit
-    if (hGlbPTD EQ NULL)
-        return;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Set the ExceptionText
-    lpMemPTD->ExceptionText = ExceptionText;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End MySetExceptionText
-
-
-//***************************************************************************
-//  $MySetInvalidAddr
-//
-//  Set the current InvalidAddr
-//***************************************************************************
-
-void MySetInvalidAddr
-    (LPUCHAR lpInvalidAddr)     // Ptr to invalid address
-
-{
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // If hGlbPTD isn't set, just exit
-    if (hGlbPTD EQ NULL)
-        return;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Set the InvalidAddr
-    lpMemPTD->lpInvalidAddr = lpInvalidAddr;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End MySetInvalidAddr
-
-
-//***************************************************************************
-//  $MySetRegisterEBP
-//
-//  Set the current EBP
-//***************************************************************************
-
-void MySetRegisterEBP
-    (UINT RegisterEBP)          // Register EBP contents
-
-{
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // If hGlbPTD isn't set, just exit
-    if (hGlbPTD EQ NULL)
-        return;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Set the register
-    lpMemPTD->RegisterEBP = RegisterEBP;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End MySetRegisterEBP
 
 
 //***************************************************************************
@@ -376,6 +229,9 @@ int CheckPTDVirtStr
             if (lpIniAddr <= lpInvalidAddr
              &&              lpInvalidAddr <  (lpIniAddr + PAGESIZE))
             {
+#ifdef DEBUG
+                dprintfW9 (L"Exceeded LIMIT of %08X @ %S", lpLstMVS->MaxSize, lpLstMVS->lpText);
+#endif
                 MySetExceptionCode (EXCEPTION_LIMIT_ERROR);
 
                 return EXCEPTION_EXECUTE_HANDLER;
@@ -463,34 +319,30 @@ long CheckException
      LPWCHAR              lpText)           // Ptr to text of exception handler
 
 {
-    int     iRet;               // Return code
-    LPUCHAR lpInvalidAddr;      // Ptr to invalid address
+    int iRet;                   // Return code
 
     // Save in globals
-    ContextRecord   = *lpExcept->ContextRecord;
-    ExceptionRecord = *lpExcept->ExceptionRecord;
+    gContextRecord   = *lpExcept->ContextRecord;
+    gExceptionRecord = *lpExcept->ExceptionRecord;
 
     // Get the invalid address
-    lpInvalidAddr = (LPUCHAR) lpExcept->ExceptionRecord->ExceptionInformation[1];
+    glpInvalidAddr = (LPUCHAR) lpExcept->ExceptionRecord->ExceptionInformation[1];   // Save as global
 
     // Save the exception code, address, and text for later use
-    MySetExceptionCode (lpExcept->ExceptionRecord->ExceptionCode);
-    MySetExceptionAddr (lpExcept->ExceptionRecord->ExceptionAddress);
-    MySetExceptionText (lpText);
-    MySetRegisterEBP   (lpExcept->ContextRecord->Ebp);
-    MySetInvalidAddr   (lpInvalidAddr);
+    MySetExceptionCode (lpExcept->ExceptionRecord->ExceptionCode);      // ***DELETEME***
+    glpExceptionText = lpText;
 
     // Split cases based upon the exception code
     switch (lpExcept->ExceptionRecord->ExceptionCode)
     {
         case EXCEPTION_ACCESS_VIOLATION:
             // Check on virtual allocs from <memVirtStr>
-            iRet = CheckMemVirtStr (lpInvalidAddr);
+            iRet = CheckMemVirtStr (glpInvalidAddr);
             if (iRet)
                 return iRet;
 
             // Check on virtual allocs in the <lpMemPTD->lpLstMVS> chain
-            iRet = CheckPTDVirtStr (lpInvalidAddr);
+            iRet = CheckPTDVirtStr (glpInvalidAddr);
             if (iRet)
                 return iRet;
 
@@ -512,7 +364,7 @@ long CheckException
             //   so we can report it to the end user
 
             // Save our return address for later use
-            glbExceptAddr = *(LPDWORD) ULongToPtr (lpExcept->ContextRecord->Esp);
+            gExceptAddr = *(LPDWORD) ULongToPtr (lpExcept->ContextRecord->Esp);
 
             return EXCEPTION_EXECUTE_HANDLER;
 
@@ -601,7 +453,6 @@ void DisplayException
     LPUCHAR      exceptAddr;    // Exception address
     DWORD        regEBP,        // Stack trace ptr
                  regEIP;        // Instruction ptr
-    LPBYTE       caller;        // Ptr to caller in stack trace
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS header
     LPMEMVIRTSTR lpLstMVS;      // Ptr to last MEMVIRTSTR (NULL = none)
 
@@ -621,11 +472,11 @@ void DisplayException
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Save the exception code & address, & text
-    exceptCode = lpMemPTD->ExceptionCode;
-    exceptAddr = lpMemPTD->ExceptionAddr;
-    exceptText = lpMemPTD->ExceptionText;
-    regEBP     = lpMemPTD->RegisterEBP;
+    // Get the saved exception code & address, & text
+    exceptCode = gExceptionCode;
+    exceptAddr = gExceptionRecord.ExceptionAddress;
+    exceptText = glpExceptionText;
+    regEBP     = gContextRecord.Ebp;
     lpSISCur   = lpMemPTD->lpSISCur;
     lpLstMVS   = lpMemPTD->lpLstMVS;
 
@@ -637,7 +488,7 @@ void DisplayException
     //   where we were called.  Displaying DbgStop address is
     //   of no help
     if (exceptCode EQ EXCEPTION_BREAKPOINT)
-        exceptAddr = *(LPUCHAR *) &glbExceptAddr;
+        exceptAddr = *(LPUCHAR *) &gExceptAddr;
 
     // Find the address closest to and at or below the given address
     // If the address is not found, it could be that we're
@@ -663,7 +514,7 @@ void DisplayException
     ShowWindow (hWndCC, SW_SHOWNORMAL);
     UpdateWindow (hWndCC);
 
-#define NewMsg(a)   SendMessageW (hWndCC, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC)
+#define NewMsg(a)   SendMessageW (hWndCC_LB, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC_LB)
 
     NewMsg (L"COPY THIS TEXT TO AN EMAIL MESSAGE"                    );
     NewMsg (L"----------------------------------------------------"  );
@@ -712,31 +563,31 @@ void DisplayException
     NewMsg (L"== REGISTERS ==");
     wsprintfW (wszTemp,
                L"EAX = %08X EBX = %08X ECX = %08X EDX = %08X EIP = %08X",
-               ContextRecord.Eax,
-               ContextRecord.Ebx,
-               ContextRecord.Ecx,
-               ContextRecord.Edx,
-               ContextRecord.Eip);
+               gContextRecord.Eax,
+               gContextRecord.Ebx,
+               gContextRecord.Ecx,
+               gContextRecord.Edx,
+               gContextRecord.Eip);
     NewMsg (wszTemp);
 
     wsprintfW (wszTemp,
                L"ESI = %08X EDI = %08X EBP = %08X ESP = %08X EFL = %08X",
-               ContextRecord.Esi,
-               ContextRecord.Edi,
-               ContextRecord.Ebp,
-               ContextRecord.Esp,
-               ContextRecord.EFlags);
+               gContextRecord.Esi,
+               gContextRecord.Edi,
+               gContextRecord.Ebp,
+               gContextRecord.Esp,
+               gContextRecord.EFlags);
     NewMsg (wszTemp);
 
     wsprintfW (wszTemp,
                L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X CR2 = %08X",
-               ContextRecord.SegCs,
-               ContextRecord.SegDs,
-               ContextRecord.SegEs,
-               ContextRecord.SegFs,
-               ContextRecord.SegGs,
-               ContextRecord.SegSs,
-               ExceptionRecord.ExceptionInformation[1]);
+               gContextRecord.SegCs,
+               gContextRecord.SegDs,
+               gContextRecord.SegEs,
+               gContextRecord.SegFs,
+               gContextRecord.SegGs,
+               gContextRecord.SegSs,
+               gExceptionRecord.ExceptionInformation[1]);
     NewMsg (wszTemp);
 
     // Display the instruction stream
@@ -744,7 +595,7 @@ void DisplayException
     NewMsg (L"== INSTRUCTIONS ==");
 
     // Start instruction display three rows before the actual fault instruction
-    regEIP = ContextRecord.Eip - 3 * 16;
+    regEIP = gContextRecord.Eip - 3 * 16;
 
     if (IsGoodReadPtr (*(LPUCHAR *) &regEIP, 48))
     {
@@ -766,64 +617,8 @@ void DisplayException
     NewMsg (L"");
     NewMsg (L"== BACKTRACE ==");
 
-    wsprintfW (wszTemp,
-               L"%p (%S + %p)",
-               exceptAddr,
-               StartAddresses[nearIndex].StartAddressName,
-               nearAddress);
-    NewMsg (wszTemp);
-
-    // Do a stack trace
-    while (TRUE)
-    {
-        // If the register is misaligned or a bad ptr, quit
-        if (regEBP & 3
-         || !IsGoodReadPtr (*(LPVOID *) &regEBP, 8))
-            break;
-
-        // Get the caller's address
-        caller = ((LPBYTE *) UlongToPtr (regEBP))[1];
-
-        // Check for all done
-        if (caller EQ 0)
-            break;
-
-        FindRoutineAddress (caller, &nearAddress0, &nearIndex0, FALSE);
-        FindRoutineAddress (caller, &nearAddress1, &nearIndex1, TRUE);
-        if (nearAddress0 < nearAddress1)
-        {
-            nearAddress = nearAddress0;
-            nearIndex   = nearIndex0;
-        } else
-        {
-            nearAddress = nearAddress1;
-            nearIndex   = nearIndex1;
-        } // End IF/ELSE
-
-        // If the address is out of bounds, just display the address
-        if (nearAddress > 0x00100000)
-            // Format the addresses
-            wsprintfW (wszTemp,
-                       L"%p -- EBP = %08X",
-                       caller,
-                       regEBP);
-        else
-            // Format the addresses
-            wsprintfW (wszTemp,
-                       L"%p (%S + %p) -- EBP = %08X",
-                       caller,
-                       StartAddresses[nearIndex].StartAddressName,
-                       nearAddress,
-                       regEBP);
-        NewMsg (wszTemp);
-
-        // Handle case where we get stuck
-        if (regEBP EQ *(DWORD *) UlongToPtr (regEBP))
-            break;
-
-        // Get the next EBP
-        regEBP = *(DWORD *) UlongToPtr (regEBP);
-    } // End WHILE
+    // Do a stack walk
+    DoStackWalk (&gContextRecord);
 
     // Display the virtual memory ranges
     NewMsg (L"");
@@ -946,6 +741,200 @@ void DisplayException
     exit (exceptCode);
 #endif
 } // End DisplayException
+
+
+//***************************************************************************
+//  $DoStackWalk
+//
+//  Display the stack backtrace
+//***************************************************************************
+
+void DoStackWalk
+    (LPCONTEXT lpContextRecord)
+
+{
+    STACKFRAME64         stackFrame = {0};
+    CONTEXT              context;
+    HANDLE               hProcess,
+                         hThread;
+////CallstackEntry       csEntry;
+////IMAGEHLP_SYMBOL64   *pSym = NULL;
+////IMAGEHLP_MODULE64_V2 Module;
+////IMAGEHLP_LINE64      Line;
+    LPBYTE               caller;            // Ptr to caller in stack trace
+    UINT                 nearAddress,       // Offset from closest address
+                         nearIndex,         // Index into StartAddresses
+                         nearAddress0,      // Offset from closest address
+                         nearIndex0,        // Index into StartAddresses
+                         nearAddress1,      // Offset from closest address
+                         nearIndex1;        // Index into StartAddresses
+    WCHAR                wszTemp[1024];     // Temp output save area
+////char                 szAppDPFE[_MAX_PATH],
+////                     szDir  [_MAX_DIR],
+////                     szDrive[_MAX_DRIVE],
+////                     szSymPath[_MAX_PATH];
+////PSYMBOL_INFO         lpSymInfo;         // Ptr to ...
+
+    // Initialize the handles
+    hProcess = GetCurrentProcess ();
+    hThread  = GetCurrentThread ();
+
+////// Allocate space for the symbol name struc
+////pSym = (IMAGEHLP_SYMBOL64 *) malloc (sizeof (IMAGEHLP_SYMBOL64) + STACKWALK_MAX_NAMELEN);
+////if (!pSym)
+////    goto CLEANUP;       // Not enough memory...
+////memset (pSym, 0, sizeof (IMAGEHLP_SYMBOL64) + STACKWALK_MAX_NAMELEN);
+////pSym->SizeOfStruct = sizeof (IMAGEHLP_SYMBOL64);
+////pSym->MaxNameLength = STACKWALK_MAX_NAMELEN;
+
+////// Allocate space for the symbol info struc
+////lpSymInfo = (PSYMBOL_INFO) malloc (sizeof (SYMBOL_INFO) + STACKWALK_MAX_NAMELEN);
+////if (!lpSymInfo)
+////    goto CLEANUP;       // Not enough memory...
+////memset (lpSymInfo, 0, sizeof (SYMBOL_INFO) + STACKWALK_MAX_NAMELEN);
+////lpSymInfo->SizeOfStruct = sizeof (SYMBOL_INFO);
+////lpSymInfo->MaxNameLen   = STACKWALK_MAX_NAMELEN;
+
+////memset (&Line, 0, sizeof (Line));
+////Line.SizeOfStruct = sizeof (Line);
+
+////memset (&Module, 0, sizeof (Module));
+////Module.SizeOfStruct = sizeof (Module);
+
+////if (GetModuleFileNameA (_hInstance, szAppDPFE, sizeof (szSymPath)))
+////{
+////    // Split out the drive and path from the module filename
+////    _splitpath (szAppDPFE, szDrive, szDir, NULL, NULL);
+////
+////    // Create the .HLP file name
+////    _makepath  (szSymPath, szDrive, szDir, NULL, NULL);
+////} else
+////    szSymPath[0] = '\0';
+////
+////// Set the symbol options
+////SymSetOptions (SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
+////
+////// Initialize the symbols
+////SymInitialize (hProcess, szSymPath, TRUE);
+
+    // Copy the outer ContextRecord
+    context = *lpContextRecord;
+
+    // Initialize these fields before the first call to StackWalk64
+    stackFrame.AddrPC.Offset     = lpContextRecord->Eip;    // Starting instruction address
+    stackFrame.AddrPC.Segment    = 0;                       // Used for 16-bit addressing only
+    stackFrame.AddrPC.Mode       = AddrModeFlat;            // Use flat mode addressing
+    stackFrame.AddrFrame.Offset  = lpContextRecord->Ebp;    // Starting frame address
+    stackFrame.AddrFrame.Segment = 0;                       // Used for 16-bit addressing only
+    stackFrame.AddrFrame.Mode    = AddrModeFlat;            // Use flat mode addressing
+    stackFrame.AddrStack.Offset  = lpContextRecord->Esp;    // Starting stack address
+    stackFrame.AddrStack.Segment = 0;                       // Used for 16-bit addressing only
+    stackFrame.AddrStack.Mode    = AddrModeFlat;            // Use flat mode addressing
+
+    // Walk the stack
+    while (StackWalk64 (
+#ifdef _WIN32
+                        IMAGE_FILE_MACHINE_I386,    // Machine architecture type
+#elif defined (_WIN64)
+                        IMAGE_FILE_MACHINE_AMD64,   // Machine architecture type
+#else
+#error Need code for this architecture.
+#endif
+                        hProcess,                   // Process handle
+                        hThread,                    // Thread handle
+                       &stackFrame,                 // Ptr to stack frame (input/output)
+                       &context,                    // Ptr to context struc (output)
+                        NULL,                       // Ptr to ReadMemoryRoutine (may be NULL)
+                       &SymFunctionTableAccess64,   // Ptr to function table access routine
+                       &SymGetModuleBase64,         // Ptr to get module base routine
+                        NULL))                      // Ptr to translate address routine for 16-bit addresses
+    {
+        // Check for infinite loop
+        if (stackFrame.AddrPC.Offset EQ stackFrame.AddrReturn.Offset)
+            break;
+
+        // Check for valid instruction offset
+        if (stackFrame.AddrPC.Offset EQ 0)
+            break;
+
+////    // Initialize the CallstackEntry struc
+////    csEntry.offset             = stackFrame.AddrPC.Offset;
+////    csEntry.name[0]            = 0;
+////    csEntry.undName[0]         = 0;
+////    csEntry.undFullName[0]     = 0;
+////    csEntry.offsetFromSmybol   = 0;
+////    csEntry.offsetFromLine     = 0;
+////    csEntry.lineFileName[0]    = 0;
+////    csEntry.lineNumber         = 0;
+////    csEntry.loadedImageName[0] = 0;
+////    csEntry.moduleName[0]      = 0;
+
+////    DbgBrk ();
+
+////    // Get the symbol name
+////    if (SymFromAddr (hProcess, stackFrame.AddrPC.Offset, &csEntry.offsetFromSmybol, lpSymInfo))
+////    {
+////        DbgBrk ();
+////
+////
+////
+////    } // End IF
+
+////    // Get the symbol name
+////    if (SymGetSymFromAddr64 (hProcess, stackFrame.AddrPC.Offset, &csEntry.offsetFromSmybol, pSym))
+////    {
+////        DbgBrk ();
+////
+////        // Copy to temporary storage
+////        lstrcpy (csEntry.name, pSym->Name);
+////
+////        // Undecorate the symbol name
+////        UnDecorateSymbolName (pSym->Name, csEntry.undName,     STACKWALK_MAX_NAMELEN, UNDNAME_NAME_ONLY);
+////        UnDecorateSymbolName (pSym->Name, csEntry.undFullName, STACKWALK_MAX_NAMELEN, UNDNAME_COMPLETE);
+////    } // End IF
+
+////    GetLastError ();
+
+        caller = (LPBYTE) stackFrame.AddrPC.Offset;
+
+        // Format the address
+        FindRoutineAddress (caller, &nearAddress0, &nearIndex0, FALSE);
+        FindRoutineAddress (caller, &nearAddress1, &nearIndex1, TRUE);
+        if (nearAddress0 < nearAddress1)
+        {
+            nearAddress = nearAddress0;
+            nearIndex   = nearIndex0;
+        } else
+        {
+            nearAddress = nearAddress1;
+            nearIndex   = nearIndex1;
+        } // End IF/ELSE
+
+        // If the address is out of bounds, just display the address
+        if (nearAddress > 0x00100000)
+            // Format the addresses
+            wsprintfW (wszTemp,
+                       L"%p -- EBP = %08X",
+                       caller,
+                       stackFrame.AddrFrame.Offset);
+        else
+            // Format the addresses
+            wsprintfW (wszTemp,
+                       L"%p (%S + %p) -- EBP = %08X",
+                       caller,
+                       StartAddresses[nearIndex].StartAddressName,
+                       nearAddress,
+                       stackFrame.AddrFrame.Offset);
+#define NewMsg(a)   SendMessageW (hWndCC_LB, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC_LB)
+        NewMsg (wszTemp);
+#undef  NewMsg
+    } // End WHILE
+////CLEANUP:
+////if (lpSymInfo)
+////    free (lpSymInfo);
+////if (pSym)
+////    free (pSym);
+} // End DoStackWalk
 
 
 //***************************************************************************

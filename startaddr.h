@@ -156,8 +156,6 @@ typedef struct tagSTART_ADDRESSES
     // except.c
     "MyGetExceptionCode"        , (LPUCHAR) &MyGetExceptionCode         ,
     "MySetExceptionCode"        , (LPUCHAR) &MySetExceptionCode         ,
-    "MySetExceptionAddr"        , (LPUCHAR) &MySetExceptionAddr         ,
-    "MySetExceptionText"        , (LPUCHAR) &MySetExceptionText         ,
     "CheckException"            , (LPUCHAR) &CheckException             ,
     "CompareStartAddresses"     , (LPUCHAR) &CompareStartAddresses      ,
     "_DisplayException"         , (LPUCHAR) &DisplayException           ,

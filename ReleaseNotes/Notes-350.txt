@@ -59,7 +59,7 @@ PL_PARSE.Y:
   Remove <bTrain> bit as it's no longer used.
   Fix Bug:  In <LeftOper:  (Train)> rule, force call to
     <MakeFcnStrand_EM_YY> so as to have one function
-    per element -- this way, we can easilt count the #
+    per element -- this way, we can easily count the #
     elements.
   Fix Bug:  In <Train:  LeftOper LeftOper> and
     <Train:  Train Leftoper>, set the strand base as
@@ -78,7 +78,7 @@ QF_NC.C:
 
 STRAND.C:
   In <StripStrand>, include debug assertions.
-  Fx Bug:  In <FreeStrand>, avoid freeing Indirect entries -- they'll
+  Fix Bug:  In <FreeStrand>, avoid freeing Indirect entries -- they'll
     be freed when they occur directly.
   In <MakeFcnStrand_EM_YY>, reorganize code and use incoming
     <NAMETYPE_xxx> to distinguish Trains.

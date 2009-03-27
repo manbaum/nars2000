@@ -2478,6 +2478,10 @@ UBOOL ArrayIndexSetSingLst_EM
       && !IsEmpty (aplNELMSubLst)))
         goto DOMAIN_EXIT;
 
+    // If the list is empty, there's no assignment
+    if (IsEmpty (aplNELMSubLst))
+        goto NORMAL_EXIT;
+
     // If the name arg is an APA, ...
     if (IsSimpleAPA (aplTypeNam))
     {

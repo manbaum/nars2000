@@ -42,9 +42,6 @@ extern FSA_ACTION fsaColTable [][COL_LENGTH];
 char szCloseMessage[] = "You have changed the body of this function;"
                         " save the changes?";
 
-COLORREF crLineNum = DEF_SCN_DARKSEAGREEN,
-         crLineTxt = DEF_SCN_ROYALBLUE;
-
 // Define struct for passing parameters to WM_NCCREATE/WM_CREATE
 //   for the Function Edit window
 typedef struct tagFE_CREATESTRUCTW
@@ -165,7 +162,7 @@ UBOOL CreateFcnWindow
     UpdateWindow (hWnd);
 
     // Set the appropriate font in place
-    SendMessageW (hWnd, WM_SETFONT, (WPARAM) hFontFE, MAKELPARAM (TRUE, 0));
+    SendMessageW (hWnd, WM_SETFONT, (WPARAM) GetFSIndFontHandle (FONTENUM_FE), MAKELPARAM (TRUE, 0));
 
     return TRUE;
 } // End CreateFcnWindow
@@ -320,8 +317,8 @@ LRESULT APIENTRY FEWndProc
 #ifdef DEBUG
             lpLclMemVirtStr[0].lpText   = "lpUndoBeg in <FEWndProc>";
 #endif
-            lpLclMemVirtStr[0].IncrSize = DEF_UNDOBUF_INCRSIZE * sizeof (UNDO_BUF);
-            lpLclMemVirtStr[0].MaxSize  = DEF_UNDOBUF_MAXSIZE  * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[0].IncrSize = DEF_UNDOBUF_INCRNELM * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[0].MaxSize  = DEF_UNDOBUF_MAXNELM  * sizeof (UNDO_BUF);
             lpLclMemVirtStr[0].IniAddr  = (LPUCHAR)
             lpUndoBeg =
               GuardAlloc (NULL,             // Any address
@@ -343,7 +340,7 @@ LRESULT APIENTRY FEWndProc
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[0].IniAddr,
-                            DEF_UNDOBUF_INITSIZE * sizeof (UNDO_BUF),
+                            DEF_UNDOBUF_INITNELM * sizeof (UNDO_BUF),
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // Save in window extra bytes
@@ -562,11 +559,19 @@ LRESULT APIENTRY FEWndProc
 
             break;                  // Continue with next handler
 
+        case WM_CTLCOLOREDIT:       // hdcEdit = (HDC) wParam;   // handle of display context
+                                    // hwndEdit = (HWND) lParam; // handle of static control
+            // Ensure it's from our Edit Ctrl
+            if (hWndEC EQ (HWND) lParam)
+                return (LRESULT) ghBrushBG;
+            else
+                break;
+
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
 #define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
 
-            // Check for from Edit Ctrl
+            // Ensure it's from our Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
             {
                 // Get the current vkState
@@ -608,7 +613,7 @@ LRESULT APIENTRY FEWndProc
 
             // Changing the font also means changing the size
             //   of the margins as the character width might change
-            SetMarginsFE (hWndEC, FCN_INDENT * cxAveCharFE);
+            SetMarginsFE (hWndEC, FCN_INDENT * GetFSIndAveCharSize (FONTENUM_FE)->cx);
 
             return FALSE;           // We handled the msg
 
@@ -872,9 +877,6 @@ UBOOL SyntaxColor
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Skip over the temp storage ptr
-    ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
-
     // Save local vars in struct which we pass to each FSA action routine
     tkLocalVars.State[2]         =
     tkLocalVars.State[1]         =
@@ -891,8 +893,11 @@ UBOOL SyntaxColor
     tkLocalVars.hWndEC           = hWndEC;
     tkLocalVars.uSyntClrLen      = uLen;            // # Syntax Color entries
 
+    // Skip over the temp storage ptr
+    ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
+
     // Set initial limit for hGlbNum
-    tkLocalVars.iNumLim = DEF_NUM_INITSIZE;
+    tkLocalVars.iNumLim = DEF_NUM_INITNELM;
 
     // Allocate storage for hGlbNum
     tkLocalVars.hGlbNum =
@@ -901,7 +906,7 @@ UBOOL SyntaxColor
         goto FREEGLB_EXIT;
 
     // Set initial limit for hGlbStr
-    tkLocalVars.iStrLim = DEF_STR_INITSIZE;
+    tkLocalVars.iStrLim = DEF_STR_INITNELM;
 
     // Allocate storage for hGlbStr
     tkLocalVars.hGlbStr =
@@ -922,7 +927,7 @@ UBOOL SyntaxColor
 
         // Save the color
         tkLocalVars.lpMemClrNxt++->syntClr =
-          gSyntaxColorWhite;
+          gSyntaxColorBG;
     } else
         break;
 
@@ -1131,8 +1136,8 @@ int LclECPaintHook
         SelectObject (hDC, hFontPR);
 
         // Respecify the horizontal & vertical positions in printer coordinates
-        rcAct.top  = cyAveCharPR * (rcAct.top  / line_height);
-        rcAct.left = cxAveCharPR * (rcAct.left / char_width);
+        rcAct.top  = GetFSIndAveCharSize (FONTENUM_PR)->cy * (rcAct.top  / line_height);
+        rcAct.left = GetFSIndAveCharSize (FONTENUM_PR)->cx * (rcAct.left / char_width);
 
         // Calculate the width & height of the line
         //   in printer coordinates
@@ -1519,32 +1524,15 @@ LRESULT WINAPI LclEditCtrlWndProc
         case WM_SETCURSOR:          // hwnd = (HWND) wParam;       // handle of window with cursor
                                     // nHittest = LOWORD(lParam);  // hit-test code
                                     // wMouseMsg = HIWORD(lParam); // mouse-message identifier
-            // If not from MF, ...
-            if (hGlbPTD)
-            {
-                UBOOL bExecuting;       // TRUE iff we're waiting for an execution to complete
-
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
-                // Mark as no longer executing
-                bExecuting = lpMemPTD->bExecuting;
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-                // If this is an Edit Ctrl for SM,
-                //   and we're executing
-                //   and the mouse is in the client area
-                if (IzitSM (GetParent (hWnd)) && bExecuting && LOWORD (lParam) EQ HTCLIENT)
-                {
-                    // Set a new cursor to indicate that we're waiting
-                    SetCursor (hCursorWait);
-                    SetStatusMsg (wszStatusRunning);
-
-                    return FALSE;           // We handled the msg
-                } // End IF
-            } // End IF
+            // If not from MF, and
+            //    this is an Edit Ctrl for SM, and
+            //    we set the cursor, ...
+            if (hGlbPTD
+             && IzitSM (GetParent (hWnd))
+             && LclSetCursor (hWnd,
+                              hGlbPTD,
+                              LOWORD (lParam)))
+                return TRUE;                // We handled the msg
 
             break;
 
@@ -1562,12 +1550,6 @@ LRESULT WINAPI LclEditCtrlWndProc
         //   send another WM_CONTEXTMENU.  To avoid this, we save the current
         //   tick count at the end of WM_RBUTTONDBLCLK.  If WM_RBUTTONUP
         //   occurs too soon, we ignore that message.
-
-        // ***FIXME*** -- If the user right double clicks on a name and the
-        //                editor window for the function overlaps the name,
-        //                then the last WM_RBUTTONUP message is sent to
-        //                the editor window and appears as a WM_CONTEXTMENU.
-        //                Maybe use SetCapture ??
 
 #define ID_TIMER        1729
         case WM_CONTEXTMENU:                // hwnd = (HWND) wParam;
@@ -1801,7 +1783,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 APLUINT aplInteger;
 
                 // Calculate new width in chars
-                aplInteger = nWidth / cxAveCharSM;
+                aplInteger = nWidth / GetFSIndAveCharSize (FONTENUM_SM)->cx;
 
                 // Validate the incoming value
                 if (ValidateIntegerTest (&aplInteger,       // Ptr to the integer to test
@@ -1928,10 +1910,10 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     // Set the cursor height
                     if (IzitSM (hWndParent))
-                        cyAveChar = cyAveCharSM;
+                        cyAveChar = GetFSIndAveCharSize (FONTENUM_SM)->cy;
                     else
 ////////////////////if (IzitFE (hWndParent))    // ***FIXME*** -- Handle other Edit Ctrl parents
-                        cyAveChar = cyAveCharFE;
+                        cyAveChar = GetFSIndAveCharSize (FONTENUM_FE)->cy;
 
                     // Get the current vkState
                     lvkState = GetWindowLongW (hWndParent, GWLSF_VKSTATE);
@@ -2008,8 +1990,8 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Less the # of the topmost visible line
                     uLineNum -= (UINT) SendMessageW (hWnd, EM_GETFIRSTVISIBLELINE, 0, 0);
 
-                    rcPaint.top = uLineNum * cyAveCharFE;
-                    rcPaint.bottom = rcPaint.top + cyAveCharFE;
+                    rcPaint.top = uLineNum * GetFSIndAveCharSize (FONTENUM_FE)->cy;
+                    rcPaint.bottom = rcPaint.top + GetFSIndAveCharSize (FONTENUM_FE)->cy;
 
                     // Invalidate this line
                     InvalidateRect (hWnd, &rcPaint, FALSE);
@@ -2995,6 +2977,80 @@ LRESULT WINAPI LclEditCtrlWndProc
 
 
 //***************************************************************************
+//  $LclSetCursor
+//
+//  Set cursor to idle or running
+//***************************************************************************
+
+UBOOL LclSetCursor
+    (HWND    hWndEC,                    // Edit Ctrl window handle
+     HGLOBAL hGlbPTD,                   // PerTabData global memory handle
+     UINT    hitTest)                   // Hit-test code
+
+{
+    // If the mouse is in the client area, ...
+    if (hitTest EQ HTCLIENT)
+    {
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+        UBOOL        bExecuting;        // TRUE iff we're waiting for an execution to complete
+
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Get executing flag
+        bExecuting = lpMemPTD->bExecuting;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+        // If we're executing, ...
+        if (bExecuting)
+        {
+            // Set a new cursor to indicate that we're waiting
+            SetClassLongPtrW (hWndEC, GCLP_HCURSOR, (HANDLE_PTR) hCursorWait);
+            SetStatusMsg (wszStatusRunning);
+        } else
+        {
+            // Set a new cursor to indicate that we're idle
+            SetClassLongPtrW (hWndEC, GCLP_HCURSOR, (HANDLE_PTR) hCursorIdle);
+            SetStatusMsg (wszStatusIdle);
+        } // End IF/ELSE
+
+        // Set the new cursor
+        SetCursor ((HCURSOR) GetClassLongPtrW (hWndEC, GCLP_HCURSOR));
+
+        return TRUE;                    // We set the cursor
+    } // End IF
+
+    return FALSE;                       // We didn't set the cursor
+} // End LclSetCursor
+
+
+//***************************************************************************
+//  $SendCursorMsg
+//
+//  Send WM_SETCURSOR message to the Edit Ctrl window
+//***************************************************************************
+
+void SendCursorMsg
+    (HWND hWndEC)               // Edit Ctrl window handle
+
+{
+    POINT ptCursor;             // Position of the mouse cursor
+    UINT  hitTest;              // Hit test for the mouse cursor
+
+    // Get the cursor position in screen coords
+    GetCursorPos (&ptCursor);
+
+    // Get the hit test value relative to the Edit Ctrl window
+    hitTest = (UINT) SendMessageW (hWndEC, WM_NCHITTEST, 0, MAKELPARAM (ptCursor.x, ptCursor.y));
+
+    // Set the cursor to indicate that we're executing
+    SendMessageW (hWndEC, WM_SETCURSOR, (WPARAM) hWndEC, MAKELPARAM (hitTest, WM_MOUSEMOVE));
+} // End SendCursorMsg
+
+
+//***************************************************************************
 //  $CopyGlbMemory
 //
 //  Copy global memory from one handle to another
@@ -3857,6 +3913,7 @@ void DrawLineNumsFE
             uCnt;           // Counter
     WCHAR   wszLineNum[FCN_INDENT + 1];  // Line # (e.g. L"[0000]\0"
     HWND    hWndParent;     // Window handle of the parent (i.e. hWndFE)
+    HBRUSH  hBrush;         // Brush for background color
 
     // Get the handle to the parent window (hWndFE)
     hWndParent = GetParent (hWndEC);
@@ -3869,8 +3926,10 @@ void DrawLineNumsFE
     hDC = MyGetDC (hWndEC);
 
     // Set our DC attributes
-    SetAttrs (hDC, hFontFE, crLineNum, DEF_SCN_WHITE);
-
+    SetAttrs (hDC,
+              GetFSIndFontHandle (FONTENUM_FE),
+              gSyntaxColors[SC_FCNLINES].crFore,
+              gSyntaxColors[SC_FCNLINES].crBack);
     // Get the # lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
@@ -3904,8 +3963,8 @@ void DrawLineNumsFE
                  | DT_CALCRECT
                  | DT_NOPREFIX);
         // Move the rectangle down
-        rcPaint.top    += uCnt * cyAveCharFE;
-        rcPaint.bottom += uCnt * cyAveCharFE;
+        rcPaint.top    += uCnt * GetFSIndAveCharSize (FONTENUM_FE)->cy;
+        rcPaint.bottom += uCnt * GetFSIndAveCharSize (FONTENUM_FE)->cy;
 
         // Draw the line #s
         DrawTextW (hDC,
@@ -3926,10 +3985,16 @@ void DrawLineNumsFE
     GetClientRect (hWndEC, &rcClient);
 
     // Set to the same top as the next line #
-    rcClient.top = rcPaint.top + cyAveCharFE;
+    rcClient.top = rcPaint.top + GetFSIndAveCharSize (FONTENUM_FE)->cy;
+
+    // Create a brush for the function lines background
+    hBrush = MyCreateSolidBrush (gSyntaxColors[SC_FCNLINES].crBack);
 
     // Pour on the white out
-    FillRect (hDC, &rcClient, (HBRUSH) (HANDLE_PTR) GetClassLongPtrW (hWndEC, GCL_HBRBACKGROUND));
+    FillRect (hDC, &rcClient, hBrush);
+
+    // We no longer need this resource
+    MyDeleteObject (hBrush);
 
     // We no longer need this DC
     MyReleaseDC (hWndEC, hDC); hDC = NULL;
@@ -4033,7 +4098,8 @@ LPSYMENTRY ParseFunctionName
                    lstrlenW (lpaplChar),    // The length of the above line
                    NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    0,                       // Function line # (0 = header)
-                   NULL);                   // Ptr to error handling function (may be NULL)
+                   NULL,                    // Ptr to error handling function (may be NULL)
+                   FALSE);                  // TRUE iff we're tokenizing a Magic Function
     if (!hGlbTknHdr)
         goto ERROR_EXIT;
 
@@ -4041,8 +4107,8 @@ LPSYMENTRY ParseFunctionName
 #ifdef DEBUG
     lclMemVirtStr[0].lpText   = "fhLocalvars.lpYYStrandStart in <ParseFunctionName>";
 #endif
-    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
-    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     fhLocalVars.lpYYStrandStart =
       GuardAlloc (NULL,       // Any address
@@ -4062,7 +4128,7 @@ LPSYMENTRY ParseFunctionName
 
     // Commit the intial size
     MyVirtualAlloc (lclMemVirtStr[0].IniAddr,
-                    DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                    DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
     // Mark as parsing the function name (generate fewer errors)

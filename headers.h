@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@
 #include "externs.h"
 #include "fh_parse.h"
 #include "tokenize.h"
+#include "execmfn.h"
 #include "pertab.h"
 #include "threads.h"
 #include "savefcn.h"
@@ -50,7 +51,6 @@
 #include "display.h"
 #include "grade.h"
 #include "sysvars.h"
-#include "execmfn.h"
 #include "sis.h"
 #include "editctrl.h"
 #include "termcode.h"

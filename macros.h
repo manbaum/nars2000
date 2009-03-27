@@ -36,6 +36,7 @@
 #define IsTokenNoValue(a)   ((a)                                    \
                           && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
                           && IsSymNoValue ((a)->tkData.tkSym))
+#define IsMFName(a)         ((a)[0] EQ L'#')
 #define IsSysName(a)        ((a)[0] EQ UTF16_QUAD  || (a)[0] EQ UTF16_QUOTEQUAD)
 #define IsDirectName(a)     ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA)
 
@@ -265,8 +266,8 @@
 //        IN THE DEBUG VERSION FROM THE NON-DEBUG VERSION IF THE ARGUMENT HAS
 //        ANY SIDE EFFECTS SUCH AS PRE- OR POST-INCREMENT/DECREMENT, OR THE LIKE.
 #ifdef DEBUG
-  #define GetPtrTypeDir(lpMem)      (BYTE) ((lpMem EQ NULL) ? PTRTYPE_LENGTH : (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem)))
-  #define GetPtrTypeInd(lpMem)      (BYTE) ((lpMem EQ NULL) ? PTRTYPE_LENGTH : (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem)))
+  #define GetPtrTypeDir(lpMem)      (BYTE) ( (lpMem EQ NULL)                                    ? PTRTYPE_LENGTH : (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem)))
+  #define GetPtrTypeInd(lpMem)      (BYTE) (((lpMem EQ NULL) || ((*(HANDLE_PTR *) lpMem) EQ 0)) ? PTRTYPE_LENGTH : (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem)))
 #else
   #define GetPtrTypeDir(lpMem)      (BYTE)       (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem))
   #define GetPtrTypeInd(lpMem)      (BYTE)       (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem))

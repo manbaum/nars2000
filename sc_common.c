@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -237,8 +237,8 @@ void MakeWorkspaceBackup
     while (feof (fStream) EQ 0
         && ferror (fBackup) EQ 0)
     {
-        uLen = (APLU3264) fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR), fStream);
-                           fwrite (lpwszTemp, 1, (APLU3264) uLen                      , fBackup);
+        uLen = (APLU3264) fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITNELM * sizeof (WCHAR), fStream);
+                          fwrite (lpwszTemp, 1, (APLU3264) uLen                       , fBackup);
     } // End WHILE
 
     // We no longer need this handle

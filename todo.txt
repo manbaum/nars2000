@@ -27,7 +27,7 @@ TO DO:  General:  Less Important (post-alpha)
 * User preference to avoid saving Undo buffer with user-defined functions/operators.
 * Convert from ARRAY_CHAR (UCS-2) to ARRAY_CHAR8  for 0x00-0x7F,
                                      ARRAY_CHAR16 for 0x0000-0xFFFF (excluding D800-DFFF), and
-                                     ARRAY_CHAR32 for the rest so as to handle Unicode.
+                                     ARRAY_CHAR32 for the rest so as to handle Unicode fully.
 * Convert from ARRAY_INT to ARRAY_INT64 and also allow narrower integer types such as
   ARRAY_INT8, ARRAY_INT16, and ARRAY_INT32 to be created by []DR.  If they
   are passed to any function but []DR or the native file functions, promote
@@ -90,7 +90,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       )COPY :nnn [objs]   to copy objects from another tab
 * ...       exploit parallelism (OpenMP)
 * ...       finish []MF
-* ...       code folding in the Function Editor for Control Structures
+* ...       code folding in the Function Editor for Control Structures, comments, etc.
 * ...
 
 
@@ -159,6 +159,7 @@ DONE:  General
 * ...       []AV
 * ...       []LC
 * ...       []DL R
+* ...       []FMT R
 * ...       []NC R
 * ...       []UCS R
 * ...       []NL R
@@ -269,6 +270,9 @@ DONE:  General
 * Document MAKEFILE so others may build the product
 * Check for 64-bit compile
 * Write the function name in the function editor title.
+* Implement boxed display function.
+* Allow boxed display (line drawing) chars to be syntax colored separately.
+* Allow function lines to be separately syntax colored.
 *
 
 

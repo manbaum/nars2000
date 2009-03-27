@@ -6341,8 +6341,8 @@ EXIT_TYPES ParseLine
                  uCnt;              // Loop counter
 #define MVS_CNT     2
     MEMVIRTSTR   lclMemVirtStr[MVS_CNT] = {0};// Room for MVS_CNT GuardAllocs
-    HCURSOR      hCursorOld;        // Handle to previous cursor
     UBOOL        bOldExecuting;     // Old value of bExecuting
+    HWND         hWndEC;            // Edit Ctrl window handle
 
     // Save the previous value of dwTlsType
     oldTlsType = PtrToUlong (TlsGetValue (dwTlsType));
@@ -6364,10 +6364,14 @@ EXIT_TYPES ParseLine
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Set the cursor to an hourglass and indicate that we're executing
-    hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
+    // Get the Edit Ctrl window handle
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
+
+    // Indicate that we're executing
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
-    SetStatusMsg (wszStatusRunning);
+
+    // Set the cursor to indicate that we're executing
+    SendCursorMsg (hWndEC);
 
     EnterCriticalSection (&CSOPL);
 
@@ -6458,8 +6462,8 @@ EXIT_TYPES ParseLine
 #ifdef DEBUG
     lclMemVirtStr[0].lpText   = "plLocalVars.lpYYStrandStart[STRAND_VAR] in <ParseLine>";
 #endif
-    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
-    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     plLocalVars.lpYYStrandStart[STRAND_VAR] =
       GuardAlloc (NULL,             // Any address
@@ -6478,15 +6482,15 @@ EXIT_TYPES ParseLine
 
     // Commit the intial size
     MyVirtualAlloc (lclMemVirtStr[0].IniAddr,
-                    DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                    DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
     // Allocate virtual memory for the Function Strand accumulator
 #ifdef DEBUG
     lclMemVirtStr[1].lpText   = "plLocalVars.lpYYStrandStart[STRAND_FCN] in <ParseLine>";
 #endif
-    lclMemVirtStr[1].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
-    lclMemVirtStr[1].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[1].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[1].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[1].IniAddr  = (LPUCHAR)
     plLocalVars.lpYYStrandStart[STRAND_FCN] =
       GuardAlloc (NULL,             // Any address
@@ -6505,7 +6509,7 @@ EXIT_TYPES ParseLine
 
     // Commit the intial size
     MyVirtualAlloc (lclMemVirtStr[1].IniAddr,
-                    DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                    DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
     // Initialize the base & next strand ptrs
@@ -6626,10 +6630,11 @@ EXIT_TYPES ParseLine
             } // End IF
 
             // If this level or an adjacent preceding level is from
-            //   the Execute primitive or immediate execution mode,
+            //   Execute or immediate execution mode,
             //   peel back to the preceding level
-            while (lpSISCur && lpSISCur->DfnType EQ DFNTYPE_EXEC
-                || lpSISCur && lpSISCur->DfnType EQ DFNTYPE_IMM)
+            while (lpSISCur
+                && (lpSISCur->DfnType EQ DFNTYPE_EXEC
+                 || lpSISCur->DfnType EQ DFNTYPE_IMM))
                 lpSISCur = lpSISCur->lpSISPrv;
 
             // If this level is a user-defined function/operator,
@@ -6639,7 +6644,6 @@ EXIT_TYPES ParseLine
               || lpSISCur->DfnType EQ DFNTYPE_OP2
               || lpSISCur->DfnType EQ DFNTYPE_FCN))
                 lpSISCur->Suspended = TRUE;
-
             break;
         } // End EXITTYPE_ERROR
 
@@ -6795,7 +6799,10 @@ NORMAL_EXIT:
     if (uError NE ERRORCODE_NONE
      && bActOnErrors)
     {
-        EXIT_TYPES exitType;    // Return code from ImmExecStmt
+        EXIT_TYPES   exitType;      // Return code from ImmExecStmt
+        HWND         hWndEC;        // Edit Ctrl window handle
+        LPSIS_HEADER lpSISCur,      // Ptr to current SIS header
+                     lpSISPrv;      // Ptr to previous ...
 
 #ifdef DEBUG
         if (uError EQ ERRORCODE_ELX)
@@ -6830,13 +6837,16 @@ NORMAL_EXIT:
         else
             lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ALX";
 
+        // Get the Edit Ctrl window handle
+        hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),
+
         // Execute the statement in immediate execution mode
         exitType =
           ImmExecStmt (lpwszLine,           // Ptr to line to execute
                        lstrlenW (lpwszLine),// NELM of line to execute
                        FALSE,               // TRUE iff free the lpwszLine on completion
                        TRUE,                // TRUE iff wait until finished
-                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Ctrl window handle
+                       hWndEC,              // Edit Ctrl window handle
                        TRUE);               // TRUE iff errors are acted upon
         // Split cases based upon the exit type
         switch (exitType)
@@ -6850,11 +6860,58 @@ NORMAL_EXIT:
 
                 break;
 
-            case EXITTYPE_ERROR:        // Nothing more to do with these
+            case EXITTYPE_ERROR:        // Display the prompt unless called by Quad or User fcn/opr
             case EXITTYPE_DISPLAY:      // ...
             case EXITTYPE_NODISPLAY:    // ...
             case EXITTYPE_NOVALUE:      // ...
-            case EXITTYPE_GOTO_ZILDE:   // ...
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Get the ptr to the current SIS header
+                lpSISPrv =
+                lpSISCur = lpMemPTD->lpSISCur;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                // If this level is Immediate Execution Mode, peel back
+                while (lpSISPrv
+                    && lpSISPrv->DfnType EQ DFNTYPE_IMM)
+                    lpSISPrv = lpSISPrv->lpSISPrv;
+
+                // If this level is Execute, skip the prompt
+                //   as Execute will handle that
+                if (lpSISPrv
+                 && lpSISPrv->DfnType EQ DFNTYPE_EXEC)
+                {
+                    // Pass on this exit type to the caller
+                    plLocalVars.ExitType = exitType;
+
+                    break;
+                } // End IF
+
+                // If this level or an adjacent preceding level is from
+                //   Execute or Immediate Execution Mode,
+                //   peel back to the preceding level
+                while (lpSISPrv
+                    && (lpSISPrv->DfnType EQ DFNTYPE_EXEC
+                     || lpSISPrv->DfnType EQ DFNTYPE_IMM))
+                    lpSISPrv = lpSISPrv->lpSISPrv;
+
+                // If we're back to the beginning,
+                //   or in Immediate Execution Mode
+                //   or the caller is neither Quad or a User fcn/opr,
+                //   display the prompt
+                if (lpSISCur EQ NULL
+                 || lpSISPrv EQ NULL
+                 || lpSISCur->DfnType EQ DFNTYPE_IMM
+                 || (lpSISPrv->DfnType NE DFNTYPE_QUAD
+                  && lpSISPrv->DfnType NE DFNTYPE_FCN))
+                    DisplayPrompt (hWndEC, 7);
+
+                break;
+
+            case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these
             case EXITTYPE_NONE:         // ...
                 break;
 
@@ -6866,9 +6923,11 @@ NORMAL_EXIT:
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Restore the previous cursor and its state
-    SetCursor (hCursorOld); ShowCursor (FALSE); lpMemPTD->bExecuting = bOldExecuting;
-    SetStatusMsg (bOldExecuting ? wszStatusRunning : wszStatusIdle);
+    // Restore the previous executing state
+    lpMemPTD->bExecuting = bOldExecuting;
+
+    // Restore the cursor
+    SendCursorMsg (hWndEC);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

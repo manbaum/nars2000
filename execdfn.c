@@ -160,8 +160,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  symRhtArg;         // ...               right arg
     UBOOL        bNamedLftFcn,      // TRUE iff the left operand is a named function
                  bNamedRhtFcn;      // ...          right ...
-    HCURSOR      hCursorOld;        // Handle to previous cursor
     UBOOL        bOldExecuting;     // Old value of bExecuting
+    HWND         hWndEC;            // Edit Ctrl window handle
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -169,10 +169,14 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Set the cursor to an hourglass and indicate that we're executing
-    hCursorOld = SetCursor (hCursorWait); ShowCursor (TRUE);
+    // Get the Edit Ctrl window handle
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
+
+    // Indicate that we're executing
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
-    SetStatusMsg (wszStatusRunning);
+
+    // Set the cursor to indicate that we're executing
+    SendCursorMsg (hWndEC);
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -487,9 +491,11 @@ RIGHT_SYNTAX_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    // Restore the previous cursor and its state
-    SetCursor (hCursorOld); ShowCursor (FALSE); lpMemPTD->bExecuting = bOldExecuting;
-    SetStatusMsg (bOldExecuting ? wszStatusRunning : wszStatusIdle);
+    // Restore the previous executing state
+    lpMemPTD->bExecuting = bOldExecuting;
+
+    // Restore the previous cursor
+    SendCursorMsg (hWndEC);
 
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
@@ -948,7 +954,8 @@ NEXTLINE:
                                lstrlenW (lpwszLine),    // NELM of lpwszLine
                                NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                1,                       // Function line # (0 = header)
-                               NULL);                   // Ptr to error handling function (may be NULL)
+                               NULL,                    // Ptr to error handling function (may be NULL)
+                               FALSE);                  // TRUE iff we're tokenizing a Magic Function
                 // Execute the line
                 exitType =
                   ParseLine (hWndSM,                    // Session Manager window handle
@@ -1141,56 +1148,6 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End ExecuteFunction_EM_YY
 #undef  APPEND_NAME
-
-
-#ifdef DEBUG
-//***************************************************************************
-//  $DisplayFcnLine
-//
-//  Display a given function line
-//***************************************************************************
-
-void DisplayFcnLine
-    (HGLOBAL      hGlbTxtLine,      // Function line text global memory handle (may be NULL if uLineNum EQ NEG1U)
-     LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
-     UINT         uLineNum)         // Function line # (NEG1U for terminating)
-
-{
-    LPMEMTXT_UNION lpMemTxtLine;
-    LPAPLCHAR      lpMemFcnName;
-
-    if (gDbgLvl <= 2)
-        return;
-
-    // If the handle is valid, ...
-    if (hGlbTxtLine)
-        // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
-
-    // Lock the memory to get a ptr to it
-    lpMemFcnName = MyGlobalLock (lpMemPTD->lpSISCur->hGlbFcnName);
-
-    if (uLineNum EQ NEG1U)
-        wsprintfW (lpMemPTD->lpwszTemp,
-                   L"Terminating <%s>",
-                   lpMemFcnName);
-    else
-        wsprintfW (lpMemPTD->lpwszTemp,
-                   L"Executing line %d of <%s>:  %s",
-                   uLineNum,
-                   lpMemFcnName,
-                  &lpMemTxtLine->C);
-    DbgMsgW (lpMemPTD->lpwszTemp);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemFcnName = NULL;
-
-    // If the handle is valid, ...
-    if (hGlbTxtLine)
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-} // End DisplayFcnline
-#endif
 
 
 //***************************************************************************

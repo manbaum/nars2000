@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,6 +93,8 @@
 #define KEYNAME_SC_NUMCONST             L"NumConst"
 #define KEYNAME_SC_CHRCONST             L"ChrConst"
 #define KEYNAME_SC_COMMENT              L"Comment"
+#define KEYNAME_SC_LINEDRAWING          L"LineDrawing"
+#define KEYNAME_SC_FCNLINES             L"FcnLines"
 #define KEYNAME_SC_MATCHGRP1            L"MatchGrp1"
 #define KEYNAME_SC_MATCHGRP2            L"MatchGrp2"
 #define KEYNAME_SC_MATCHGRP3            L"MatchGrp3"
@@ -116,24 +118,26 @@
 
 // Array of keynames for use in [Colors] section
 LPWCHAR aColorKeyNames[] =
-{KEYNAME_SC_GLBNAME   ,
- KEYNAME_SC_LCLNAME   ,
- KEYNAME_SC_LABEL     ,
- KEYNAME_SC_PRIM      ,
- KEYNAME_SC_SYSFCN    ,
- KEYNAME_SC_GLBSYSVAR ,
- KEYNAME_SC_LCLSYSVAR ,
- KEYNAME_SC_CTRLSTRUC ,
- KEYNAME_SC_NUMCONST  ,
- KEYNAME_SC_CHRCONST  ,
- KEYNAME_SC_COMMENT   ,
- KEYNAME_SC_MATCHGRP1 ,
- KEYNAME_SC_MATCHGRP2 ,
- KEYNAME_SC_MATCHGRP3 ,
- KEYNAME_SC_MATCHGRP4 ,
- KEYNAME_SC_UNMATCHGRP,
- KEYNAME_SC_UNNESTED  ,
- KEYNAME_SC_UNK       ,
+{KEYNAME_SC_GLBNAME     ,       // 00:  Global Name
+ KEYNAME_SC_LCLNAME     ,       // 01:  Local  ...
+ KEYNAME_SC_LABEL       ,       // 02:  Label
+ KEYNAME_SC_PRIM        ,       // 03:  Primitive Function/Operator
+ KEYNAME_SC_SYSFCN      ,       // 04:  System Function
+ KEYNAME_SC_GLBSYSVAR   ,       // 05:  Global System Variable
+ KEYNAME_SC_LCLSYSVAR   ,       // 06:  Local  ...
+ KEYNAME_SC_CTRLSTRUC   ,       // 07:  Control Structure
+ KEYNAME_SC_NUMCONST    ,       // 08:  Numeric constant
+ KEYNAME_SC_CHRCONST    ,       // 09:  Character constant
+ KEYNAME_SC_COMMENT     ,       // 0A:  Comment
+ KEYNAME_SC_LINEDRAWING ,       // 0B:  Line drawing chars
+ KEYNAME_SC_FCNLINES    ,       // 0C:  Function lines
+ KEYNAME_SC_MATCHGRP1   ,       // 0D:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP2   ,       // 0E:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP3   ,       // 0F:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP4   ,       // 10:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_UNMATCHGRP  ,       // 11:  Unmatched Grouping Symbols [] () {} ' "
+ KEYNAME_SC_UNNESTED    ,       // 12:  Improperly Nested Grouping Symbols [] () {}
+ KEYNAME_SC_UNK         ,       // 13:  Unknown symbol
 };
 
 

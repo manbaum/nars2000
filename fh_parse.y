@@ -279,6 +279,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // Mark as a niladic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
                                 }
 
@@ -290,6 +291,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
 
@@ -301,6 +303,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
 
@@ -317,6 +320,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
     | NAMEUNK NAMEUNK  RhtArg   {DbgMsgWP (L"%%NoResHdr:  NAMEUNK NAMEUNK RhtArg"); // Dyadic function
@@ -332,6 +336,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
     | List    AxisOpr  RhtArg   {DbgMsgWP (L"%%NoResHdr:  List AxisOpr RhtArg");    // Dyadic function w/axis operator
@@ -343,6 +348,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
@@ -355,6 +361,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
@@ -367,6 +374,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
@@ -379,6 +387,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
@@ -1013,12 +1022,14 @@ BOOL GetOprName_EM
     {
         case 1:         // Function
             lpfhLocalVars->DfnType     = DFNTYPE_FCN;
+            lpfhLocalVars->fhNameType  = NAMETYPE_FN12;
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[0];
 
             return TRUE;
 
         case 2:         // Monadic operator
             lpfhLocalVars->DfnType     = DFNTYPE_OP1;
+            lpfhLocalVars->fhNameType  = NAMETYPE_OP1;
             lpfhLocalVars->lpYYLftOpr  = &lpYYArg->lpYYStrandBase[0];
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[1];
 
@@ -1026,6 +1037,7 @@ BOOL GetOprName_EM
 
         case 3:         // Dyadic operator
             lpfhLocalVars->DfnType     = DFNTYPE_OP2;
+            lpfhLocalVars->fhNameType  = NAMETYPE_OP2;
             lpfhLocalVars->lpYYLftOpr  = &lpYYArg->lpYYStrandBase[0];
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[1];
             lpfhLocalVars->lpYYRhtOpr  = &lpYYArg->lpYYStrandBase[2];

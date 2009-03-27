@@ -349,11 +349,29 @@ UBOOL AssignName_EM
     // Mark as not displayable
     lptkNam->tkFlags.NoDisplay = TRUE;
 
-    Assert (HshTabFrisk (FALSE));
-
 #ifdef DEBUG
+{
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get a ptr to the HshTab struc
+    lpHTS = &lpMemPTD->htsPTD;
+
+    Assert (HshTabFrisk (lpHTS));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     if (bFcnOpr)
-        DisplayFcnStrand (lptkSrc);
+        DisplayFcnStrand (lptkSrc, TRUE);
+}
 #endif
 
     goto NORMAL_EXIT;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@
 #define SysFnES_EM_YY       NULL
 #define SysFnET_EM_YY       NULL
 #define SysFnEX_EM_YY       NULL
+#define SysFnFMT_EM_YY      NULL
 #define SysFnFX_EM_YY       NULL
 #define SysFnLC_EM_YY       NULL
 #define SysFnNC_EM_YY       NULL
@@ -120,7 +121,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"es"       ,      1,      FALSE, SysFnES_EM_YY     , 0          },  // Event Simulate
     {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM_YY     , 0          },  // Expunge Names
 ////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM_YY     , 0          },  // Format Items
-////{WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM_YY    , 0          },  // Format
+    {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM_YY    , 0          },  // Format
     {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY     , 0          },  // Function Fix
 ////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM_YY , 0          },  // Identifier List
 ////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM_YY  , 0          },  // Identifier Localization
@@ -398,10 +399,13 @@ UBOOL InitSystemNames_EM
     (void)
 
 {
-    int          i;             // Loop counter
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet = TRUE;   // TRUE iff result is valid
+    int          i;                 // Loop counter
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+#ifdef DEBUG
+    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
+#endif
+    UBOOL        bRet = TRUE;       // TRUE iff result is valid
     LPSYMENTRY  *ptdSysVarSym[SYSVAR_LENGTH];
 
     // Get the thread's PerTabData global memory handle
@@ -425,12 +429,12 @@ UBOOL InitSystemNames_EM
     ptdSysVarSym[SYSVAR_SA  ] = &lpMemPTD->lpSymQuadSA  ;
     ptdSysVarSym[SYSVAR_WSID] = &lpMemPTD->lpSymQuadWSID;
     ptdSysVarSym[SYSVAR_Z   ] = &lpMemPTD->lpSymQuadZ   ;
+#ifdef DEBUG
+    // Get a ptr to the HshTab struc
+    lpHTS = &lpMemPTD->htsPTD;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    Assert (HshTabFrisk (FALSE));
-
+    Assert (HshTabFrisk (lpHTS));
+#endif
     // Append all system names
     for (i = 0; bRet && i < ASYSTEMNAMES_NROWS; i++)
     if (!SymTabAppendSysName_EM (&aSystemNames[i], ptdSysVarSym[aSystemNames[i].sysVarIndex]))
@@ -440,7 +444,10 @@ UBOOL InitSystemNames_EM
         break;
     } // End FOR/IF
 
-    Assert (HshTabFrisk (FALSE));
+    Assert (HshTabFrisk (lpHTS));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End InitSystemNames_EM

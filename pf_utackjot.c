@@ -326,6 +326,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
     HWND           hWndEC;          // Edit Ctrl window handle
+    EXIT_TYPES     exitType;        // Exit type from CSPLParse
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -334,7 +335,10 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     hWndEC = GetThreadSMEC ();
 
     // Call common function which calls ParseCtrlStruc & ParseLine
-    switch (PrimFnMonUpTackJotCSPLParse (hWndEC, hGlbPTD, lpwszCompLine, lptkFunc))
+    exitType = PrimFnMonUpTackJotCSPLParse (hWndEC, hGlbPTD, lpwszCompLine, lptkFunc);
+
+    // Split cases based upon the exit type
+    switch (exitType)
     {
         case EXITTYPE_DISPLAY:
         case EXITTYPE_NODISPLAY:
@@ -438,7 +442,8 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
                    lstrlenW (lpwszCompLine),    // NELM of lpwszLine
                    hWndEC,                      // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    1,                           // Function line # (0 = header)
-                  &ErrorMessageDirect);         // Ptr to error handling function (may be NULL)
+                  &ErrorMessageDirect,          // Ptr to error handling function (may be NULL)
+                   FALSE);                      // TRUE iff we're tokenizing a Magic Function
     // If it's invalid, ...
     if (hGlbToken EQ NULL)
     {
@@ -460,8 +465,6 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     if (!ParseCtrlStruc_EM (&csLocalVars))
     {
         static WCHAR wszTemp[1024];
-
-        DbgBrk ();          // ***TESTME***
 
         // Format the error message
         wsprintfW (wszTemp,
@@ -550,7 +553,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
     // Get the window handle of the Session Manager
     hWndSM = lpMemPTD->hWndSM;
 
-    // Fill in the SIS header for the Execute primitive
+    // Fill in the SIS header for Execute
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 NULL,                   // Semaphore handle
                 DFNTYPE_EXEC,           // DfnType

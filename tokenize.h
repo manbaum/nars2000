@@ -28,42 +28,41 @@
 
 // The order of the values of these constants *MUST* match the
 //   column order in fsaColTable.
-#define COL_FIRST 0     // It's origin-0
 
 typedef enum tagCOL_INDICES
-{COL_DIGIT = COL_FIRST, // 00:  Digit
- COL_DOT         ,      // 01:  Decimal number, inner & outer product separator
- COL_ALPHA       ,      // 02:  Alphabetic
- COL_OVERBAR     ,      // 03:  Overbar
- COL_DIRIDENT    ,      // 04:  Alpha or Omega
- COL_Q_QQ        ,      // 05:  Quad
- COL_UNDERBAR    ,      // 06:  Underbar
- COL_INFINITY    ,      // 07:  Infinity
- COL_ASSIGN      ,      // 08:  Assignment symbol
- COL_SEMICOLON   ,      // 09:  Semicolon symbol
- COL_COLON       ,      // 0A:  Colon symbol
- COL_CTRLSTRUC   ,      // 0B:  Control Structure
- COL_PRIM_FN     ,      // 0C:  Primitive monadic or dyadic function
- COL_PRIM_FN0    ,      // 0D:  ...       niladic function
- COL_PRIM_OP1    ,      // 0E:  ...       monadic/ambiguous operator
- COL_PRIM_OP2    ,      // 0F:  ...       dyadic  ...
- COL_JOT         ,      // 10:  Jot symbol
- COL_LEFTPAREN   ,      // 11:  Left paren
- COL_RIGHTPAREN  ,      // 12:  Right ...
- COL_LEFTBRACKET ,      // 13:  Left bracket
- COL_RIGHTBRACKET,      // 14:  Right ...
- COL_LEFTBRACE   ,      // 15:  Left brace
- COL_RIGHTBRACE  ,      // 16:  Right ...
- COL_SPACE       ,      // 17:  White space (' ' or '\t')
- COL_QUOTE1      ,      // 18:  Single quote symbol
- COL_QUOTE2      ,      // 19:  Double ...
- COL_DIAMOND     ,      // 1A:  Diamond symbol
- COL_LAMP        ,      // 1B:  Comment symbol
- COL_EOL         ,      // 1C:  End-Of-Line
+{COL_DIGIT = 0   ,                  // 00:  Digit
+ COL_DOT         ,                  // 01:  Decimal number, inner & outer product separator
+ COL_ALPHA       ,                  // 02:  Alphabetic
+ COL_OVERBAR     ,                  // 03:  Overbar
+ COL_DIRIDENT    ,                  // 04:  Alpha or Omega
+ COL_Q_QQ        ,                  // 05:  Quad
+ COL_UNDERBAR    ,                  // 06:  Underbar
+ COL_INFINITY    ,                  // 07:  Infinity
+ COL_ASSIGN      ,                  // 08:  Assignment symbol
+ COL_SEMICOLON   ,                  // 09:  Semicolon symbol
+ COL_COLON       ,                  // 0A:  Colon symbol
+ COL_CTRLSTRUC   ,                  // 0B:  Control Structure
+ COL_PRIM_FN     ,                  // 0C:  Primitive monadic or dyadic function
+ COL_PRIM_FN0    ,                  // 0D:  ...       niladic function
+ COL_PRIM_OP1    ,                  // 0E:  ...       monadic/ambiguous operator
+ COL_PRIM_OP2    ,                  // 0F:  ...       dyadic  ...
+ COL_JOT         ,                  // 10:  Jot symbol
+ COL_LEFTPAREN   ,                  // 11:  Left paren
+ COL_RIGHTPAREN  ,                  // 12:  Right ...
+ COL_LEFTBRACKET ,                  // 13:  Left bracket
+ COL_RIGHTBRACKET,                  // 14:  Right ...
+ COL_LEFTBRACE   ,                  // 15:  Left brace
+ COL_RIGHTBRACE  ,                  // 16:  Right ...
+ COL_SPACE       ,                  // 17:  White space (' ' or '\t')
+ COL_QUOTE1      ,                  // 18:  Single quote symbol
+ COL_QUOTE2      ,                  // 19:  Double ...
+ COL_DIAMOND     ,                  // 1A:  Diamond symbol
+ COL_LAMP        ,                  // 1B:  Comment symbol
+ COL_EOL         ,                  // 1C:  End-Of-Line
  COL_UNK         ,      // 1D:  Unknown symbols
 
  COL_LENGTH      ,      // 1E: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
-                        //     Because this enum is origin-0, this value is the # valid columns.
+                                    //     Because this enum is origin-0, this value is the # valid columns.
 } COLINDICES, *LPCOLINDICES;
 
 // Whenever you add a new COL_*** entry,
@@ -75,21 +74,21 @@ typedef enum tagCOL_INDICES
 // The order of the values of these constants *MUST* match the
 //   row order in fsaColTable.
 typedef enum tagFSA_TOKENS
-{FSA_SOS = 0 ,  // 00:  Start of stmt
- FSA_INIT    ,  // 01:  Initial state
- FSA_POINTNOT,  // 02:  Point Notation
- FSA_ALPHA   ,  // 03:  Alphabetic char
- FSA_SYSNAME ,  // 04:  System name
- FSA_QUOTE1A ,  // 05:  Start of or within single quoted char or char vector
- FSA_QUOTE1Z ,  // 06:  End of   ...
- FSA_QUOTE2A ,  // 07:  Start of or within double quoted char or char vector
- FSA_QUOTE2Z ,  // 08:  End of   ...
- FSA_DOTAMBIG,  // 09:  Ambiguous dot:  either FSA_POINTNOT or FSA_INIT w/fnOp2Done
- FSA_JOTAMBIG,  // 0A:  Ambiguous jot:  either FSA_INIT w/fnOp2Done or FSA_OUTAMBIG
- FSA_OUTAMBIG,  // 0B:  Ambiguous outer product:  either FSA_INIT w/fnOutDone or FSA_POINTNOT w/fnOp2Done
+{FSA_SOS = 0 ,                      // 00:  Start of stmt
+ FSA_INIT    ,                      // 01:  Initial state
+ FSA_POINTNOT,                      // 02:  Point Notation
+ FSA_ALPHA   ,                      // 03:  Alphabetic char
+ FSA_SYSNAME ,                      // 04:  System name
+ FSA_QUOTE1A ,                      // 05:  Start of or within single quoted char or char vector
+ FSA_QUOTE1Z ,                      // 06:  End of   ...
+ FSA_QUOTE2A ,                      // 07:  Start of or within double quoted char or char vector
+ FSA_QUOTE2Z ,                      // 08:  End of   ...
+ FSA_DOTAMBIG,                      // 09:  Ambiguous dot:  either FSA_POINTNOT or FSA_INIT w/fnOp2Done
+ FSA_JOTAMBIG,                      // 0A:  Ambiguous jot:  either FSA_INIT w/fnOp2Done or FSA_OUTAMBIG
+ FSA_OUTAMBIG,                      // 0B:  Ambiguous outer product:  either FSA_INIT w/fnOutDone or FSA_POINTNOT w/fnOp2Done
 
- FSA_LENGTH     // 0C:  # FSA terminal states (rows in fsaColTable) ***MUST*** BE THE LAST ENTRY
-                // Because this enum is origin-0, this value is the # valid columns.
+ FSA_LENGTH                         // 0C:  # FSA terminal states (rows in fsaColTable) ***MUST*** BE THE LAST ENTRY
+                                    // Because this enum is origin-0, this value is the # valid columns.
 } FSATOKENS, *LPFSATOKENS;
 
 typedef struct tagSC_INDICES
@@ -155,7 +154,9 @@ typedef struct tagTKLOCALVARS
                 iStrLen,            // 7C:  ...        lpwszString
                 iNumLim,            // 80:  Current limit for lpszNumAlp
                 iStrLim;            // 84:  ...               lpwszString
-                                    // 88:  Length
+    UINT        bMF:1,              // 88:  00000001:  TRUE iff this is a Magic Function
+                :31;                //      FFFFFFFE:  Available bits
+                                    // 8C:  Length
 } TKLOCALVARS, *LPTKLOCALVARS;
 
 typedef UBOOL (*FNACTION) (LPTKLOCALVARS);

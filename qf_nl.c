@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -330,8 +330,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
     // Loop through the symbol table looking for STEs
     //   with one of the right arg name classes
-    for (lpSymEntry = lpMemPTD->lpSymTab, uSymCnt = 0;
-         lpSymEntry < lpMemPTD->lpSymTabNext;
+    for (lpSymEntry = lpMemPTD->htsPTD.lpSymTab, uSymCnt = 0;
+         lpSymEntry < lpMemPTD->htsPTD.lpSymTabNext;
          lpSymEntry++)
     if (lpSymEntry->stFlags.Inuse                   // It's in use
      && nameClasses & (BIT0 << CalcNameClass (lpSymEntry))) // It's in one of the specified name classes

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 //
 //  Execute the system command:  )COPY wsid [obj1 [obj2 ...]]
 //                               )COPY :nnn [obj1 [obj2 ...]]
-//    where wsid is a workspace identifier and #nnn is a tab identifier.
+//    where wsid is a workspace identifier and :nnn is a tab identifier.
 //***************************************************************************
 
 #ifdef DEBUG

@@ -89,7 +89,7 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
 				UseLibraryDependencyInputs="false"
-				AdditionalOptions="comctl32.lib Wininet.lib libgsl-double.a libgslcblas-double.a version.lib qdebug32.lib libcmt.lib oldnames.lib"
+				AdditionalOptions="comctl32.lib Wininet.lib libgsl-double.a libgslcblas-double.a version.lib qdebug32.lib libcmt.lib oldnames.lib dbghelp.lib"
 				AdditionalLibraryDirectories="gsl\.libs;gsl\cblas\.libs;qdebug"
 				GenerateManifest="false"
 				IgnoreAllDefaultLibraries="true"
@@ -757,6 +757,10 @@
 			</File>
 			<File
 				RelativePath=".\qf_ex.c"
+				>
+			</File>
+			<File
+				RelativePath=".\qf_fmt.c"
 				>
 			</File>
 			<File

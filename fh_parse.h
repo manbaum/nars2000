@@ -45,7 +45,7 @@ typedef struct tagFCNLINE           // Function line structure, one per function
     UINT    bStop:1,                // 08:  00000001:  Stop on this line
             bTrace:1,               //      00000002:  Trace this line
             bEmpty:1,               //      00000004:  Empty line
-            Avail:29;               //      FFFFFFF8:  Available bits
+            :29;                    //      FFFFFFF8:  Available bits
                                     // 0C:  Length
 } FCNLINE, *LPFCNLINE;
 
@@ -91,7 +91,7 @@ typedef struct tagDFN_HEADER        // Function header structure
                      ListRht:1,     //      00001000:  TRUE iff the right arg is a list
                      MonOn:1,       //      00002000:  TRUE iff function line monitoring is on for this function
                      SaveSTEFlags:1,//      00004000:  TRUE iff on free were to save the function name STE flags
-                     Avail:17;      //      FFFF8000:  Available bits
+                     :17;           //      FFFF8000:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nInverseLine,  // 10:  Line # of the []IDENTITY label (0 if not present)
                      nIdentityLine, // 14:  Line # of the []INVERSE label (0 if not present)
@@ -165,7 +165,8 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  ListLft:1,         //      00000800:  TRUE iff the left arg ...
                  ListRht:1,         //      00001000:  TRUE iff the right arg ...
                  ParseFcnName:1,    //      00002000:  TRUE iff we're parsing the function name
-                 Avail:18;          //      FFFFC000:  Available bits
+                 fhNameType:4,      //      0003C000:  Function name type (see NAME_TYPES)
+                 :14;               //      FFFC0000:  Available bits
     LPFH_YYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)
                  lpYYStrandBase,    // 28:  ...          base (dynamic)
                  lpYYStrandNext,    // 2C:  ...          next token (dynamic)

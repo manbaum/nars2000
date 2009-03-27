@@ -237,8 +237,8 @@ UBOOL DisplayGlbArr_EM
 #ifdef DEBUG
     lclMemVirtStr[0].lpText   = "lpaplCharIni in <DisplayGlbArr_EM>";
 #endif
-    lclMemVirtStr[0].IncrSize = DEF_DISPLAY_INCRSIZE * sizeof (APLCHAR);
-    lclMemVirtStr[0].MaxSize  = DEF_DISPLAY_MAXSIZE  * sizeof (APLCHAR);
+    lclMemVirtStr[0].IncrSize = DEF_DISPLAY_INCRNELM * sizeof (APLCHAR);
+    lclMemVirtStr[0].MaxSize  = DEF_DISPLAY_MAXNELM  * sizeof (APLCHAR);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     lpaplCharIni =
       GuardAlloc (NULL,             // Any address
@@ -258,7 +258,7 @@ UBOOL DisplayGlbArr_EM
 
 ////// Commit the intial size
 ////VirtualAlloc (lclMemVirtStr[0].IniAddr,
-////              DEF_DISPLAY_INITSIZE * sizeof (APLCHAR),
+////              DEF_DISPLAY_INITNELM * sizeof (APLCHAR),
 ////              MEM_COMMIT,
 ////              PAGE_READWRITE);
     __try

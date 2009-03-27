@@ -5195,7 +5195,7 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
     GetClientRect (es->hwndSelf, &rcClient);
 
     // Get the background brush
-    hBrush = (HBRUSH) (HANDLE_PTR) GetClassLongPtrW (es->hwndSelf, GCL_HBRBACKGROUND);
+    hBrush = EDIT_NotifyCtlColor(es, hDCInc);
 
 #ifdef USEMEMDC
     // Create a compatible DC and bitmap

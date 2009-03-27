@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -635,7 +635,7 @@ void CreateNewFontCom
 //***************************************************************************
 
 void CreateNewFontTC
-    (void)
+    (UBOOL bApply)                      // TRUE iff we should apply the new font
 
 {
     // Call common routine to set various variables
@@ -643,15 +643,94 @@ void CreateNewFontTC
                       &lfTC,
                       &cfTC,
                       &tmTC,
-                      &cxAveCharTC,
-                      &cyAveCharTC,
+                      &GetFSDirAveCharSize (FONTENUM_TC)->cx,
+                      &GetFSDirAveCharSize (FONTENUM_TC)->cy,
                        NULL);
+    // If we are also applying the font, ...
+    if (bApply)
+        ApplyNewFontEnum (FONTENUM_TC);
+} // End CreateNewFontTC
+
+
+//***************************************************************************
+//  $ApplyNewFontEnum
+//
+//  Apply a new font to any matching windows in <glbSameFontAs>
+//***************************************************************************
+
+void ApplyNewFontEnum
+    (FONTENUM fontEnum)                 // FONTENUM_xxx value to match
+
+{
+    UINT uCnt;                          // Loop counter
+
+    // Loop through glbSameFontAs to apply this font to similar windows
+    for (uCnt = 0 ; uCnt < FONTENUM_LENGTH; uCnt++)
+    if (glbSameFontAs[uCnt] EQ fontEnum)
+        (*fontStruc[uCnt].lpApplyNewFont) (*fontStruc[fontEnum].lphFont);
+} // End ApplyNewFontEnum
+
+
+//***************************************************************************
+//  $GetFSIndFontHandle
+//
+//  From FontStruc, get the indirect font handle taking into account
+//    <glbSameFontAs>.
+//***************************************************************************
+
+HFONT GetFSIndFontHandle
+    (FONTENUM fontEnum)                 // FONTENUM_xxx index
+
+{
+    return *fontStruc[glbSameFontAs[fontEnum]].lphFont;
+} // End GetFSIndFontHandle
+
+
+//***************************************************************************
+//  $GetFSIndAveCharSize
+//
+//  From FontStruc, get the indirect average char size taking into account
+//    <glbSameFontAs>.
+//***************************************************************************
+
+LPSIZE GetFSIndAveCharSize
+    (FONTENUM fontEnum)                 // FONTENUM_xxx index
+
+{
+    return &fontStruc[glbSameFontAs[fontEnum]].charSize;
+} // End GetFSIndAveCharSize
+
+
+//***************************************************************************
+//  $GetFSDirAveCharSize
+//
+//  From FontStruc, get the direct average char size
+//***************************************************************************
+
+LPSIZE GetFSDirAveCharSize
+    (FONTENUM fontEnum)                 // FONTENUM_xxx index
+
+{
+    return &fontStruc[fontEnum].charSize;
+} // End GetFSDirAveCharSize
+
+
+//***************************************************************************
+//  $ApplyNewFontTC
+//
+//  Apply the TC font to the appropriate windows
+//***************************************************************************
+
+void ApplyNewFontTC
+    (HFONT hFont)                   // Font handle to use
+
+{
     // Tell the TC about the new font
-    SendMessageW (hWndTC, WM_SETFONT, (WPARAM) hFontTC, MAKELPARAM (TRUE, 0));
+    SendMessageW (hWndTC, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
 
     // Repaint the TC labels
     InvalidateRect (hWndTC, NULL, TRUE);
-} // End CreateNewFontTC
+} // End ApplyNewFontTC
 
 
 //***************************************************************************
@@ -661,7 +740,7 @@ void CreateNewFontTC
 //***************************************************************************
 
 void CreateNewFontCC
-    (void)
+    (UBOOL bApply)                      // TRUE iff we should apply the new font
 
 {
     // Call common routine to set various variables
@@ -672,12 +751,28 @@ void CreateNewFontCC
                        NULL,
                        NULL,
                        NULL);
+    // If we are also applying the font, ...
+    if (bApply)
+        ApplyNewFontEnum (FONTENUM_CC);
+} // End CreateNewFontCC
+
+
+//***************************************************************************
+//  $ApplyNewFontCC
+//
+//  Apply the CC font to the appropriate windows
+//***************************************************************************
+
+void ApplyNewFontCC
+    (HFONT hFont)                   // Font handle to use
+
+{
     // Tell the CC about the new font
-    SendMessageW (hWndCC, WM_SETFONT, (WPARAM) hFontCC, MAKELPARAM (TRUE, 0));
+    SendMessageW (hWndCC, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
 
     // Repaint the CC text
     InvalidateRect (hWndCC, NULL, TRUE);
-} // End CreateNewFontCC
+} // End ApplyNewFontCC
 
 
 //***************************************************************************
@@ -687,7 +782,31 @@ void CreateNewFontCC
 //***************************************************************************
 
 void CreateNewFontSM
-    (void)
+    (UBOOL bApply)                      // TRUE iff we should apply the new font
+
+{
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontSM,
+                      &lfSM,
+                      &cfSM,
+                      &tmSM,
+                      &GetFSDirAveCharSize (FONTENUM_SM)->cx,
+                      &GetFSDirAveCharSize (FONTENUM_SM)->cy,
+                       NULL);
+    // If we are also applying the font, ...
+    if (bApply)
+        ApplyNewFontEnum (FONTENUM_SM);
+} // End CreateNewFontSM
+
+
+//***************************************************************************
+//  $ApplyNewFontSM
+//
+//  Apply the SM font to the appropriate windows
+//***************************************************************************
+
+void ApplyNewFontSM
+    (HFONT hFont)                   // Font handle to use
 
 {
     ENUMSETFONTW enumSetFontW;
@@ -696,17 +815,9 @@ void CreateNewFontSM
     TEXTMETRIC   tmAlt;
 #endif
 
-    // Call common routine to set various variables
-    CreateNewFontCom (&hFontSM,
-                      &lfSM,
-                      &cfSM,
-                      &tmSM,
-                      &cxAveCharSM,
-                      &cyAveCharSM,
-                       NULL);
     // Initialize the struct
     enumSetFontW.lpwClassName = LSMWNDCLASS;
-    enumSetFontW.hFont        = hFontSM;
+    enumSetFontW.hFont        = hFont;
 
     // Refont the SM windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
@@ -731,12 +842,12 @@ void CreateNewFontSM
 #ifdef DEBUG
     // Initialize the struct
     enumSetFontW.lpwClassName = LDBWNDCLASS;
-    enumSetFontW.hFont        = hFontSM;
+    enumSetFontW.hFont        = hFont;
 
     // Refont the DB windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
 #endif
-} // End CreateNewFontSM
+} // End ApplyNewFontSM
 
 
 //***************************************************************************
@@ -746,7 +857,7 @@ void CreateNewFontSM
 //***************************************************************************
 
 void CreateNewFontPR
-    (void)
+    (UBOOL bApply)                      // TRUE iff we should apply the new font
 
 {
     HDC hDC;                    // Handle to the printer device context
@@ -759,12 +870,29 @@ void CreateNewFontPR
                       &lfPR,
                       &cfPR,
                       &tmPR,
-                      &cxAveCharPR,
-                      &cyAveCharPR,
+                      &GetFSDirAveCharSize (FONTENUM_PR)->cx,
+                      &GetFSDirAveCharSize (FONTENUM_PR)->cy,
                        hDC);
     // We no longer need this resource
     DeleteDC (hDC);
+
+    // If we are also applying the font, ...
+    if (bApply)
+        ApplyNewFontEnum (FONTENUM_PR);
 } // End CreateNewFontPR
+
+
+//***************************************************************************
+//  $ApplyNewFontPR
+//
+//  Apply the PR font to the appropriate windows
+//***************************************************************************
+
+void ApplyNewFontPR
+    (HFONT hFont)                   // Font handle to use
+
+{
+} // End ApplyNewFontPR
 
 
 //***************************************************************************
@@ -795,26 +923,42 @@ HDC GetPrinterDC
 //***************************************************************************
 
 void CreateNewFontFE
-    (void)
+    (UBOOL bApply)                      // TRUE iff we should apply the new font
 
 {
-    ENUMSETFONTW enumSetFontW;
-
     // Call common routine to set various variables
     CreateNewFontCom (&hFontFE,
                       &lfFE,
                       &cfFE,
                       &tmFE,
-                      &cxAveCharFE,
-                      &cyAveCharFE,
+                      &GetFSDirAveCharSize (FONTENUM_FE)->cx,
+                      &GetFSDirAveCharSize (FONTENUM_FE)->cy,
                        NULL);
+    // If we are also applying the font, ...
+    if (bApply)
+        ApplyNewFontEnum (FONTENUM_FE);
+} // End CreateNewFontFE
+
+
+//***************************************************************************
+//  $ApplyNewFontFE
+//
+//  Apply the FE font to the appropriate windows
+//***************************************************************************
+
+void ApplyNewFontFE
+    (HFONT hFont)                   // Font handle to use
+
+{
+    ENUMSETFONTW enumSetFontW;
+
     // Initialize the struct
     enumSetFontW.lpwClassName = LFEWNDCLASS;
-    enumSetFontW.hFont        = hFontFE;
+    enumSetFontW.hFont        = hFont;
 
     // Refont the FE windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
-} // End CreateNewFontFE
+} // End ApplyNewFontFE
 
 
 //***************************************************************************
@@ -824,26 +968,42 @@ void CreateNewFontFE
 //***************************************************************************
 
 void CreateNewFontME
-    (void)
+    (UBOOL bApply)                      // TRUE iff we should apply the new font
 
 {
-    ENUMSETFONTW enumSetFontW;
-
     // Call common routine to set various variables
     CreateNewFontCom (&hFontME,
                       &lfME,
                       &cfME,
                       &tmME,
-                      &cxAveCharME,
-                      &cyAveCharME,
+                      &GetFSDirAveCharSize (FONTENUM_ME)->cx,
+                      &GetFSDirAveCharSize (FONTENUM_ME)->cy,
                        NULL);
+    // If we are also applying the font, ...
+    if (bApply)
+        ApplyNewFontEnum (FONTENUM_ME);
+} // End CreateNewFontME
+
+
+//***************************************************************************
+//  $ApplyNewFontME
+//
+//  Apply the ME font to the appropriate windows
+//***************************************************************************
+
+void ApplyNewFontME
+    (HFONT hFont)                   // Font handle to use
+
+{
+    ENUMSETFONTW enumSetFontW;
+
     // Initialize the struct
-    enumSetFontW.lpwClassName = LMEWNDCLASS;
-    enumSetFontW.hFont        = hFontME;
+    enumSetFontW.lpwClassName = LFEWNDCLASS;
+    enumSetFontW.hFont        = hFont;
 
     // Refont the ME windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
-} // End CreateNewFontME
+} // End ApplyNewFontME
 
 
 //***************************************************************************
@@ -853,26 +1013,42 @@ void CreateNewFontME
 //***************************************************************************
 
 void CreateNewFontVE
-    (void)
+    (UBOOL bApply)                      // TRUE iff we should apply the new font
 
 {
-    ENUMSETFONTW enumSetFontW;
-
     // Call common routine to set various variables
     CreateNewFontCom (&hFontVE,
                       &lfVE,
                       &cfVE,
                       &tmVE,
-                      &cxAveCharVE,
-                      &cyAveCharVE,
+                      &GetFSDirAveCharSize (FONTENUM_VE)->cx,
+                      &GetFSDirAveCharSize (FONTENUM_VE)->cy,
                        NULL);
+    // If we are also applying the font, ...
+    if (bApply)
+        ApplyNewFontEnum (FONTENUM_VE);
+} // End CreateNewFontVE
+
+
+//***************************************************************************
+//  $ApplyNewFontVE
+//
+//  Apply the VE font to the appropriate windows
+//***************************************************************************
+
+void ApplyNewFontVE
+    (HFONT hFont)                   // Font handle to use
+
+{
+    ENUMSETFONTW enumSetFontW;
+
     // Initialize the struct
-    enumSetFontW.lpwClassName = LVEWNDCLASS;
-    enumSetFontW.hFont        = hFontVE;
+    enumSetFontW.lpwClassName = LFEWNDCLASS;
+    enumSetFontW.hFont        = hFont;
 
     // Refont the VE windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
-} // End CreateNewFontVE
+} // End ApplyNewFontVE
 
 
 //***************************************************************************
@@ -1194,13 +1370,13 @@ LRESULT APIENTRY MFWndProc
 
             // *************** Fonts ***********************************
             // Create a new font for various windows
-            CreateNewFontTC ();
-            CreateNewFontSM ();
-            CreateNewFontPR ();
-            CreateNewFontCC ();
-            CreateNewFontFE ();
-            CreateNewFontME ();
-            CreateNewFontVE ();
+            CreateNewFontSM (TRUE);
+            CreateNewFontFE (TRUE);
+            CreateNewFontPR (TRUE);
+            CreateNewFontCC (TRUE);
+            CreateNewFontTC (TRUE);
+            CreateNewFontVE (TRUE);
+            CreateNewFontME (TRUE);
 
             break;                  // Continue with next handler
 
@@ -1852,8 +2028,8 @@ LRESULT APIENTRY MFWndProc
                                               &lfPR,
                                               &cfPR,
                                               &tmPR,
-                                              &cxAveCharPR,
-                                              &cyAveCharPR,
+                                              &GetFSDirAveCharSize (FONTENUM_PR)->cx,
+                                              &GetFSDirAveCharSize (FONTENUM_PR)->cy,
                                                pdex.hDC);
                             // Setup the DOCINFO struc for the print job
                             docInfo.cbSize       = sizeof (docInfo);
@@ -2814,8 +2990,8 @@ UBOOL InitInstance
 #ifdef DEBUG
     memVirtStr[MEMVIRT_WSZGLBTEMP].lpText   = "lpwszGlbTemp in <InitInstance>";
 #endif
-    memVirtStr[MEMVIRT_WSZGLBTEMP].IncrSize = DEF_WGLBTEMP_INCRSIZE * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZGLBTEMP].MaxSize  = DEF_WGLBTEMP_MAXSIZE  * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZGLBTEMP].IncrSize = DEF_WGLBTEMP_INCRNELM * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZGLBTEMP].MaxSize  = DEF_WGLBTEMP_MAXNELM  * sizeof (WCHAR);
     memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr  = (LPUCHAR)
     lpwszGlbTemp =
       GuardAlloc (NULL,             // Any address
@@ -2832,7 +3008,7 @@ UBOOL InitInstance
 
     // Commit the intial size
     MyVirtualAlloc (memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr,
-                    DEF_WGLBTEMP_INITSIZE * sizeof (WCHAR),
+                    DEF_WGLBTEMP_INITNELM * sizeof (WCHAR),
                     MEM_COMMIT,
                     PAGE_READWRITE);
 
@@ -2842,8 +3018,8 @@ UBOOL InitInstance
 #ifdef DEBUG
     memVirtStr[MEMVIRT_GLBHSHTAB].lpText   = "htsGLB.lpHshTab in <InitInstance>";
 #endif
-    memVirtStr[MEMVIRT_GLBHSHTAB].IncrSize = DEF_GLBHSHTAB_INCRSIZE * sizeof (htsGLB.lpHshTab[0]);
-    memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize  = DEF_GLBHSHTAB_MAXSIZE  * sizeof (htsGLB.lpHshTab[0]);
+    memVirtStr[MEMVIRT_GLBHSHTAB].IncrSize = DEF_GLBHSHTAB_INCRNELM * sizeof (htsGLB.lpHshTab[0]);
+    memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize  = DEF_GLBHSHTAB_MAXNELM  * sizeof (htsGLB.lpHshTab[0]);
     memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr  = (LPUCHAR)
     htsGLB.lpHshTab =
       GuardAlloc (NULL,             // Any address
@@ -2860,31 +3036,36 @@ UBOOL InitInstance
 
     // Commit the intial size
     MyVirtualAlloc (memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr,
-                    DEF_GLBHSHTAB_INITSIZE * sizeof (htsGLB.lpHshTab[0]),
+                    DEF_GLBHSHTAB_INITNELM * sizeof (htsGLB.lpHshTab[0]),
                     MEM_COMMIT,
                     PAGE_READWRITE);
 
     // Initialize the principal hash entry (1st one in each block).
     // This entry is never overwritten with an entry with a
     //   different hash value.
-    for (i = 0; i < DEF_GLBHSHTAB_INITSIZE; i += DEF_GLBHSHTAB_EPB)
+    for (i = 0; i < DEF_GLBHSHTAB_INITNELM; i += DEF_GLBHSHTAB_EPB)
         htsGLB.lpHshTab[i].htFlags.PrinHash = TRUE;
 
     // Initialize the next & prev same HTE values
-    for (i = 0; i < DEF_GLBHSHTAB_INITSIZE; i++)
+    for (i = 0; i < DEF_GLBHSHTAB_INITNELM; i++)
     {
         htsGLB.lpHshTab[i].NextSameHash =
         htsGLB.lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
     } // End FOR
 
     // Initialize the global HshTab values
+    htsGLB.lpHshTabPrv       = NULL;
     htsGLB.lpHshTabSplitNext = htsGLB.lpHshTab;
-    htsGLB.iHshTabTotalSize  = DEF_GLBHSHTAB_INITSIZE;
-    htsGLB.iHshTabBaseSize   = DEF_GLBHSHTAB_INITSIZE;
-    htsGLB.iHshTabIncr       = DEF_GLBHSHTAB_INCR;
+    htsGLB.iHshTabBaseNelm   = DEF_GLBHSHTAB_INITNELM;
+    htsGLB.iHshTabTotalNelm  = DEF_GLBHSHTAB_INITNELM;
+    htsGLB.iHshTabIncrFree   = DEF_GLBHSHTAB_INCRFREE;
+    htsGLB.iHshTabIncrNelm   = DEF_GLBHSHTAB_INCRNELM;
     htsGLB.iHshTabEPB        = DEF_GLBHSHTAB_EPB;
-    htsGLB.iHshTabIncrSize   = DEF_GLBHSHTAB_INCRSIZE;
     htsGLB.uHashMask         = DEF_GLBHSHTAB_HASHMASK;
+    htsGLB.bGlbHshTab        = TRUE;
+    htsGLB.lpSymTab          = NULL;
+    htsGLB.lpSymTabNext      = NULL;
+    htsGLB.iSymTabTotalNelm  = 0;
 
     // Read in the icons
     hIconMF_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_LARGE));
@@ -2924,6 +3105,9 @@ UBOOL InitInstance
     hCursorWait = LoadCursor (NULL, MAKEINTRESOURCE (IDC_WAIT));
     hCursorIdle = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
 
+    // Initialize the window background brush
+    ghBrushBG = CreateSolidBrush (gSyntaxColorBG.crBack);
+
     return TRUE;
 } // End InitInstance
 
@@ -2939,6 +3123,13 @@ void UninitInstance
 
 {
     UINT uCnt;              // Loop counter
+
+    // Delete the window background brush
+    if (ghBrushBG)
+    {
+        DeleteObject (ghBrushBG); ghBrushBG = NULL;
+    } // End IF
+
 
     // *************** Temporary Storage ***********************
     for (uCnt = 0; uCnt < MEMVIRT_LENGTH; uCnt++)

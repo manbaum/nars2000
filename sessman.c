@@ -47,9 +47,6 @@ In any case,
 
  */
 
-//// COLORREF crTextColor = DEF_TEXT_FG_COLOR,
-////          crBkColor   = DEF_TEXT_BG_COLOR;
-
 ////LPTOKEN lptkStackBase;          // Ptr to base of token stack used in parsing
 
 // MDI WM_NCCREATE & WM_CREATE parameter passing convention
@@ -70,7 +67,9 @@ In any case,
 //      #undef  lpMDIcs
 
 APLCHAR wszQuadInput[] = WS_UTF16_QUAD L":";
-
+#ifdef DEBUG
+UBOOL gPrompt = FALSE;
+#endif
 
 typedef enum tagPTDMEMVIRTENUM
 {
@@ -86,7 +85,9 @@ typedef enum tagPTDMEMVIRTENUM
     PTDMEMVIRT_WSZFORMAT,               // 09:  Temporary formatting
     PTDMEMVIRT_WSZTEMP,                 // 0A:  Temporary save area
     PTDMEMVIRT_FORSTMT,                 // 0B:  FOR ... IN stmts
-    PTDMEMVIRT_LENGTH                   // 0C:  # entries
+    PTDMEMVIRT_MF1,                     // 0C:  Magic functions
+    PTDMEMVIRT_MF2,                     // 0D:  ...
+    PTDMEMVIRT_LENGTH                   // 0E:  # entries
 } PTDMEMVIRTENUM;
 
 
@@ -331,8 +332,8 @@ UBOOL IzitLastLine
 ////     DrawBitmap (hDC,
 ////                 hBitMapLineCont,
 ////                 0,
-////                 (iLineNum * cyAveCharSM)
-////               + (cyAveCharSM - bmLineCont.bmHeight) / 2   // Vertically centered
+////                 (iLineNum * GetFSIndAveCharSize (FONTENUM_SM)->cy)
+////               + (GetFSIndAveCharSize (FONTENUM_SM)->cy - bmLineCont.bmHeight) / 2   // Vertically centered
 ////                );
 //// } // End DrawLineCont
 
@@ -460,7 +461,6 @@ void MoveCaretEOB
 
 void DisplayPrompt
     (HWND hWndEC,       // Window handle of the Edit Ctrl
-/////UBOOL bSetFocusSM, // TRUE iff we're to set the focus to the Session Manager
      UINT uCaller)      // ***DEBUG***
 
 {
@@ -468,7 +468,10 @@ void DisplayPrompt
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
 #ifdef DEBUG
-    dprintfW (L"~~DisplayPrompt (%d)", uCaller);
+    if (gPrompt)
+        dprintfW9 (L"~~DisplayPrompt (%d)", uCaller);
+    else
+        dprintfW  (L"~~DisplayPrompt (%d)", uCaller);
 #endif
     // Move the text caret to the end of the buffer
     MoveCaretEOB (hWndEC);
@@ -487,10 +490,6 @@ void DisplayPrompt
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-////if (bSetFocusSM)
-////    // Set the focus to the Session Manager so the prompt displays
-////    PostMessageW (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
 
     PERFMON
 ////PERFMONSHOW
@@ -762,8 +761,8 @@ LRESULT APIENTRY SMWndProc
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].lpText   = "lpMemPTD->lpwszQuadErrorMsg in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IncrSize = DEF_QUADERROR_INCRSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize  = DEF_QUADERROR_MAXSIZE  * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IncrSize = DEF_QUADERROR_INCRNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize  = DEF_QUADERROR_MAXNELM  * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
             lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr  = (LPVOID)
             lpMemPTD->lpwszQuadErrorMsg =
               GuardAlloc (NULL,             // Any address
@@ -786,7 +785,7 @@ LRESULT APIENTRY SMWndProc
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr,
-                            DEF_QUADERROR_INITSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
+                            DEF_QUADERROR_INITNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
                             MEM_COMMIT,
                             PAGE_READWRITE);
             PERFMON
@@ -804,8 +803,8 @@ WM_NCCREATE_FAIL:
         case WM_CREATE:             // 0 = (int) wParam
                                     // lpcs = (LPCREATESTRUCTW) lParam
         {
-            int     i;                  // Loop counter
             LRESULT lResult = -1;       // The result (assume we failed)
+            UBOOL   bRet;               // TRUE iff the result is valid
 
             PERFMON
 
@@ -839,8 +838,8 @@ WM_NCCREATE_FAIL:
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].lpText   = "lpUndoBeg in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IncrSize = DEF_UNDOBUF_INCRSIZE * sizeof (UNDO_BUF);
-            lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].MaxSize  = DEF_UNDOBUF_MAXSIZE  * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IncrSize = DEF_UNDOBUF_INCRNELM * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].MaxSize  = DEF_UNDOBUF_MAXNELM  * sizeof (UNDO_BUF);
             lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IniAddr  = (LPVOID)
             lpUndoBeg =
               GuardAlloc (NULL,             // Any address
@@ -860,7 +859,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IniAddr,
-                            DEF_UNDOBUF_INITSIZE * sizeof (lpUndoBeg[0]),
+                            DEF_UNDOBUF_INITNELM * sizeof (lpUndoBeg[0]),
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // Save in window extra bytes
@@ -888,7 +887,7 @@ WM_NCCREATE_FAIL:
 ////////////// Allocate virtual memory for the token stack used in parsing
 ////////////lpMemPTD->lptkStackBase =
 ////////////  GuardAlloc (NULL,         // Any address
-////////////              DEF_TOKENSTACK_MAXSIZE * sizeof (TOKEN),
+////////////              DEF_TOKENSTACK_MAXNELM * sizeof (TOKEN),
 ////////////              MEM_RESERVE,
 ////////////              PAGE_READWRITE);
 ////////////// We no longer need this ptr
@@ -904,7 +903,7 @@ WM_NCCREATE_FAIL:
 ////////////
 ////////////// Commit the intial size
 ////////////VirtualAlloc (p,
-////////////              DEF_TOKENSTACK_INITSIZE * sizeof (TOKEN),
+////////////              DEF_TOKENSTACK_INITNELM * sizeof (TOKEN),
 ////////////              MEM_COMMIT,
 ////////////              PAGE_READWRITE);
 
@@ -912,23 +911,19 @@ WM_NCCREATE_FAIL:
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Allocate virtual memory for the hash table
 #ifdef DEBUG
-            lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].lpText   = "lpMemPTD->htsPTD.lpHshTab in <SMWndProc>";
+            lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].lpText = "lpMemPTD->htsPTD.lpHshTab in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].IncrSize = DEF_HSHTAB_INCRSIZE * sizeof (lpMemPTD->htsPTD.lpHshTab[0]);
-            lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].MaxSize  = DEF_HSHTAB_MAXSIZE  * sizeof (lpMemPTD->htsPTD.lpHshTab[0]);
-            lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].IniAddr  = (LPVOID)
-            lpMemPTD->htsPTD.lpHshTab =
-              GuardAlloc (NULL,             // Any address
-                          lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].MaxSize,
-                          MEM_RESERVE,
-                          PAGE_READWRITE);
+            // Allocate virtual memory for the hash table
+            bRet = AllocHshTab (&lpLclMemVirtStr[PTDMEMVIRT_HSHTAB],    // Ptr to this entry in MemVirtStr
+                                &lpMemPTD->htsPTD,                      // Ptr to this HSHTABSTR
+                                 DEF_HSHTAB_NBLKS,                      // Initial # blocks in HshTab
+                                 DEF_HSHTAB_INCRNELM,                   // # HTEs by which to resize when low
+                                 DEF_HSHTAB_MAXNELM);                   // Maximum # HTEs
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].IniAddr)
+            if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpHshTab> failed");
@@ -936,58 +931,25 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
-            // Link this struc into the chain
-            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_HSHTAB]);
-
-            // Commit the intial size
-            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].IniAddr,
-                            DEF_HSHTAB_INITSIZE * sizeof (lpMemPTD->htsPTD.lpHshTab[0]),
-                            MEM_COMMIT,
-                            PAGE_READWRITE);
+            // *************** htsPTD.lpSymTab *************************
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Initialize the principal hash entry (1st one in each block).
-            // This entry is never overwritten with an entry with a
-            //   different hash value.
-            for (i = 0; i < DEF_HSHTAB_INITSIZE; i += DEF_HSHTAB_EPB)
-                lpMemPTD->htsPTD.lpHshTab[i].htFlags.PrinHash = TRUE;
-
-            // Initialize the next & prev same HTE values
-            for (i = 0; i < DEF_HSHTAB_INITSIZE; i++)
-            {
-                lpMemPTD->htsPTD.lpHshTab[i].NextSameHash =
-                lpMemPTD->htsPTD.lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
-            } // End FOR
-
-            // Initialize next split entry
-            lpMemPTD->htsPTD.lpHshTabSplitNext = lpMemPTD->htsPTD.lpHshTab;
-
-////////////// We no longer need this ptr
-////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-            // *************** lpSymTab ********************************
-
-////////////// Lock the memory to get a ptr to it
-////////////lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Allocate virtual memory for the symbol table
 #ifdef DEBUG
-            lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].lpText   = "lpMemPTD->lpSymTab in <SMWndProc>";
+            lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].lpText = "lpMemPTD->htsPTD.lpSymTab in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].IncrSize = DEF_SYMTAB_INCRSIZE * sizeof (lpMemPTD->lpSymTab[0]);
-            lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].MaxSize  = DEF_SYMTAB_MAXSIZE  * sizeof (lpMemPTD->lpSymTab[0]);
-            lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].IniAddr  = (LPVOID)
-            lpMemPTD->lpSymTab =
-              GuardAlloc (NULL,             // Any address
-                          lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].MaxSize,
-                          MEM_RESERVE,
-                          PAGE_READWRITE);
+            // Allocate virtual memory for the symbol table
+            bRet = AllocSymTab (&lpLclMemVirtStr[PTDMEMVIRT_SYMTAB],    // Ptr to this entry in MemVirtStr
+                                 hGlbPTD,                               // PerTabData global memory handle
+                                &lpMemPTD->htsPTD,                      // Ptr to this HSHTABSTR
+                                 TRUE,                                  // TRUE iff we're to initialize the constant STEs
+                                 DEF_SYMTAB_INITNELM,                   // Initial # STEs in SymTab
+                                 DEF_SYMTAB_INCRNELM,                   // # STEs by which to resize when low
+                                 DEF_SYMTAB_MAXNELM);                   // Maximum # STEs
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].IniAddr)
+            if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSymTab> failed");
@@ -995,58 +957,17 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
-            // Link this struc into the chain
-            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_SYMTAB]);
-
-            // Commit the intial size
-            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].IniAddr,
-                            DEF_SYMTAB_INITSIZE * sizeof (lpMemPTD->lpSymTab[0]),
-                            MEM_COMMIT,
-                            PAGE_READWRITE);
+            // *************** State Indicator Stack *******************
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Initialize next available entry
-            lpMemPTD->lpSymTabNext = lpMemPTD->lpSymTab;
-
-            // Initialize the Symbol table Entry for the constants zero, one, blank, and No Value
-            lpMemPTD->steZero    = SymTabAppendPermInteger_EM (0);
-            lpMemPTD->steOne     = SymTabAppendPermInteger_EM (1);
-            lpMemPTD->steBlank   = SymTabAppendPermChar_EM    (L' ');
-            lpMemPTD->steNoValue = lpMemPTD->lpSymTabNext++;
-
-            if (lpMemPTD->steZero    EQ NULL
-             || lpMemPTD->steOne     EQ NULL
-             || lpMemPTD->steBlank   EQ NULL
-             || lpMemPTD->steNoValue EQ NULL)
-            {
-                // ***FIXME*** -- SYMBOL TABLE FULL before we got started???
-                DbgMsgW (L"WM_CREATE:  SymTabAppendPermXXX failed");
-
-                goto WM_CREATE_FAIL;    // Mark as failed
-            } // End IF
-
-            // Set the flags for the NoValue entry
-            lpMemPTD->steNoValue->stFlags.Perm       = TRUE;
-            lpMemPTD->steNoValue->stFlags.ObjName    = OBJNAME_NONE;
-            lpMemPTD->steNoValue->stFlags.stNameType = NAMETYPE_UNK;
-
-            Assert (IsSymNoValue (lpMemPTD->steNoValue));
-
-////////////// We no longer need this ptr
-////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-            // *************** State Indicator Stack *******************
-////////////// Lock the memory to get a ptr to it
-////////////lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the State Indicator Stack
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_SIS].lpText   = "lpMemPTD->lpSISBeg in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_SIS].IncrSize = DEF_SIS_INCRSIZE * sizeof (SYMENTRY);
-            lpLclMemVirtStr[PTDMEMVIRT_SIS].MaxSize  = DEF_SIS_MAXSIZE  * sizeof (SYMENTRY);
+            lpLclMemVirtStr[PTDMEMVIRT_SIS].IncrSize = DEF_SIS_INCRNELM * sizeof (SYMENTRY);
+            lpLclMemVirtStr[PTDMEMVIRT_SIS].MaxSize  = DEF_SIS_MAXNELM  * sizeof (SYMENTRY);
             lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr  = (LPVOID)
             lpMemPTD->lpSISBeg = lpMemPTD->lpSISNxt =
               GuardAlloc (NULL,             // Any address
@@ -1069,7 +990,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr,
-                            DEF_SIS_INITSIZE * sizeof (SYMENTRY),
+                            DEF_SIS_INITNELM * sizeof (SYMENTRY),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
@@ -1081,8 +1002,8 @@ WM_NCCREATE_FAIL:
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_CS].lpText   = "lpMemPTD->lptkCSIni in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_CS].IncrSize = DEF_CS_INCRSIZE * sizeof (TOKEN);
-            lpLclMemVirtStr[PTDMEMVIRT_CS].MaxSize  = DEF_CS_MAXSIZE  * sizeof (TOKEN);
+            lpLclMemVirtStr[PTDMEMVIRT_CS].IncrSize = DEF_CS_INCRNELM * sizeof (TOKEN);
+            lpLclMemVirtStr[PTDMEMVIRT_CS].MaxSize  = DEF_CS_MAXNELM  * sizeof (TOKEN);
             lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr  = (LPVOID)
             lpMemPTD->lptkCSIni = lpMemPTD->lptkCSNxt =
               GuardAlloc (NULL,             // Any address
@@ -1105,7 +1026,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr,
-                            DEF_CS_INITSIZE * sizeof (TOKEN),
+                            DEF_CS_INITNELM * sizeof (TOKEN),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
@@ -1117,8 +1038,8 @@ WM_NCCREATE_FAIL:
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_YYRES].lpText   = "lpMemPTD->lpYYRes in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_YYRES].IncrSize = DEF_YYRES_INCRSIZE * sizeof (PL_YYSTYPE);
-            lpLclMemVirtStr[PTDMEMVIRT_YYRES].MaxSize  = DEF_YYRES_MAXSIZE  * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_YYRES].IncrSize = DEF_YYRES_INCRNELM * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_YYRES].MaxSize  = DEF_YYRES_MAXNELM  * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr  = (LPVOID)
             lpMemPTD->lpYYRes =
               GuardAlloc (NULL,             // Any address
@@ -1141,7 +1062,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr,
-                            DEF_YYRES_INITSIZE * sizeof (PL_YYSTYPE),
+                            DEF_YYRES_INITNELM * sizeof (PL_YYSTYPE),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
@@ -1153,8 +1074,8 @@ WM_NCCREATE_FAIL:
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].lpText   = "lpMemPTD->lpStrand[STRAND_VAR] in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
-            lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr  = (LPVOID)
             lpMemPTD->lpStrand[STRAND_VAR] =
               GuardAlloc (NULL,             // Any address
@@ -1177,7 +1098,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr,
-                            DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                            DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // Lock the memory to get a ptr to it
@@ -1187,8 +1108,8 @@ WM_NCCREATE_FAIL:
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].lpText   = "lpMemPTD->lpStrand[STRAND_FCN] in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
-            lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr  = (LPVOID)
             lpMemPTD->lpStrand[STRAND_FCN] =
               GuardAlloc (NULL,             // Any address
@@ -1211,7 +1132,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr,
-                            DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                            DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
@@ -1223,8 +1144,8 @@ WM_NCCREATE_FAIL:
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].lpText   = "lpMemPTD->lpwszFormat in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IncrSize = DEF_WFORMAT_INCRSIZE * sizeof (WCHAR);
-            lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].MaxSize  = DEF_WFORMAT_MAXSIZE  * sizeof (WCHAR);
+            lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IncrSize = DEF_WFORMAT_INCRNELM * sizeof (WCHAR);
+            lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].MaxSize  = DEF_WFORMAT_MAXNELM  * sizeof (WCHAR);
             lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr  = (LPVOID)
             lpMemPTD->lpwszFormat =
               GuardAlloc (NULL,             // Any address
@@ -1247,7 +1168,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr,
-                            DEF_WFORMAT_INITSIZE * sizeof (WCHAR),
+                            DEF_WFORMAT_INITNELM * sizeof (WCHAR),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
@@ -1259,8 +1180,8 @@ WM_NCCREATE_FAIL:
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].lpText   = "lpMemPTD->lpwszTemp in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IncrSize = DEF_WPTDTEMP_INCRSIZE * sizeof (WCHAR);
-            lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize  = DEF_WPTDTEMP_MAXSIZE  * sizeof (WCHAR);
+            lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IncrSize = DEF_WPTDTEMP_INCRNELM * sizeof (WCHAR);
+            lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize  = DEF_WPTDTEMP_MAXNELM  * sizeof (WCHAR);
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr  = (LPVOID)
             lpMemPTD->lpwszBaseTemp =
             lpMemPTD->lpwszTemp =
@@ -1287,7 +1208,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr,
-                            DEF_WPTDTEMP_INITSIZE * sizeof (WCHAR),
+                            DEF_WPTDTEMP_INITNELM * sizeof (WCHAR),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
@@ -1299,8 +1220,8 @@ WM_NCCREATE_FAIL:
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].lpText   = "lpMemPTD->lpForStmt in <SMWndProc>";
 #endif
-            lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IncrSize = DEF_FORSTMT_INCRSIZE * sizeof (FORSTMT);
-            lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].MaxSize  = DEF_FORSTMT_MAXSIZE  * sizeof (FORSTMT);
+            lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IncrSize = DEF_FORSTMT_INCRNELM * sizeof (FORSTMT);
+            lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].MaxSize  = DEF_FORSTMT_MAXNELM  * sizeof (FORSTMT);
             lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr  = (LPVOID)
             lpMemPTD->lpForStmtBase =
               GuardAlloc (NULL,             // Any address
@@ -1323,7 +1244,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr,
-                            DEF_FORSTMT_INITSIZE * sizeof (FORSTMT),
+                            DEF_FORSTMT_INITNELM * sizeof (FORSTMT),
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
@@ -1393,7 +1314,7 @@ WM_NCCREATE_FAIL:
             // *************** Magic Functions *************************
 
             // Initialize all magic functions
-            if (!InitMagicFunctions (hGlbPTD, hWndEC))
+            if (!InitMagicFunctions (hGlbPTD, hWndEC, lpLclMemVirtStr, PTDMEMVIRT_MF1, PTDMEMVIRT_LENGTH))
             {
                 DbgMsgW (L"WM_CREATE:  InitMagicFunctions failed");
 
@@ -1467,35 +1388,6 @@ NORMAL_EXIT:
         } // End WM_CREATE
 #undef  lpMDIcs
 
-        case WM_SETCURSOR:          // hwnd = (HWND) wParam;       // handle of window with cursor
-                                    // nHittest = LOWORD(lParam);  // hit-test code
-                                    // wMouseMsg = HIWORD(lParam); // mouse-message identifier
-        {
-            UBOOL bExecuting;       // TRUE iff we're waiting for an execution to complete
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Mark as no longer executing
-            bExecuting = lpMemPTD->bExecuting;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-            // If we're executing
-            //   and the mouse is in the client area
-            if (bExecuting && LOWORD (lParam) EQ HTCLIENT)
-            {
-                // Set a new cursor to indicate that we're waiting
-                SetCursor (hCursorWait);
-                SetStatusMsg (wszStatusRunning);
-
-                return FALSE;           // We handled the msg
-            } // End IF
-
-            break;
-        } // End WM_SETCURSOR
-
         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
                                     // idChild = HIWORD(wParam);  // Identifier of child window
                                     // lValue = lParam;           // Child handle, or cursor coordinates
@@ -1562,7 +1454,7 @@ NORMAL_EXIT:
         case MYWM_INIT_EC:
             // Wait for the third receipt of this message
             //   so we are sure everything is initialized
-            switch ((APLU3264) (LONG_PTR)GetPropW (hWnd, L"INIT_EC"))
+            switch ((APLU3264) (LONG_PTR) GetPropW (hWnd, L"INIT_EC"))
             {
                 case 0:
                     SetPropW (hWnd, L"INIT_EC", (HANDLE) 1);
@@ -1593,7 +1485,7 @@ NORMAL_EXIT:
             PostMessageW (hWndMF, MYWM_RESIZE, 0, 0);
 
             // Tell the Edit Ctrl about its font
-            SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
+            SendMessageW (hWndEC, WM_SETFONT, (WPARAM) GetFSIndFontHandle (FONTENUM_SM), MAKELPARAM (TRUE, 0));
 #ifdef DEBUG
             PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
 #endif
@@ -1614,13 +1506,18 @@ NORMAL_EXIT:
                              hWndEC,                                    // Edit Ctrl window handle
                              TRUE);                                     // TRUE iff errors are acted upon
             } else
-            // If the SI level is for Quad Input
-            if (lpMemPTD->lpSISCur
-             && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
-                PostMessageW (hWnd, MYWM_QUOTEQUAD, FALSE, 105);
-            else
-                // Display the default prompt
-                DisplayPrompt (hWndEC, 1);
+            {
+                // If the SI level is for Quad Input
+                if (lpMemPTD->lpSISCur
+                 && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                    PostMessageW (hWnd, MYWM_QUOTEQUAD, FALSE, 105);
+                else
+                    // Display the default prompt
+                    DisplayPrompt (hWndEC, 1);
+
+                // Set the default cursor
+                SendCursorMsg (hWndEC);
+            } // End IF/ELSE
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1884,8 +1781,14 @@ NORMAL_EXIT:
 #endif
 #ifdef DEBUG
                 case VK_F2:             // Display hash table entries
-                    DisplayHshTab (FALSE);
-                    DisplayHshTab (TRUE);
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                    DisplayHshTab (&lpMemPTD->htsPTD);
+                    DisplayHshTab (&htsGLB);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     return FALSE;
 #endif
@@ -1898,11 +1801,17 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F4:             // Display symbol table entries
                                         //   with non-zero reference counts
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
                     // If it's Shift-, then display all
                     if (GetKeyState (VK_SHIFT) & 0x8000)
-                        DisplaySymTab (TRUE);
+                        DisplaySymTab (&lpMemPTD->htsPTD, TRUE);
                     else
-                        DisplaySymTab (FALSE);
+                        DisplaySymTab (&lpMemPTD->htsPTD, FALSE);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     return FALSE;
 #endif
@@ -2041,11 +1950,18 @@ NORMAL_EXIT:
 
             return FALSE;           // We handled the msg
 
+        case WM_CTLCOLOREDIT:
+            // Ensure it's from our Edit Ctrl
+            if (hWndEC EQ (HWND) lParam)
+                return (LRESULT) ghBrushBG;
+            else
+                break;
+
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
 #define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
 
-            // Ensure from Edit Ctrl
+            // Ensure it's from our Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
             {
                 // Get the current vkState
@@ -2172,7 +2088,7 @@ NORMAL_EXIT:
                 lpMemPTD->lpwszQuadErrorMsg    = NULL;
                 lpUndoBeg                      = NULL;
                 lpMemPTD->htsPTD.lpHshTab      = NULL;
-                lpMemPTD->lpSymTab             = NULL;
+                lpMemPTD->htsPTD.lpSymTab      = NULL;
                 lpMemPTD->lpSISBeg             = NULL;
                 lpMemPTD->lptkCSIni            = NULL;
                 lpMemPTD->lpYYRes              = NULL;

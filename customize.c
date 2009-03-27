@@ -602,8 +602,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                             // Copy the global CHOOSEFONTW data to the local
                             fontStruc[uCnt].cfLcl    = *fontStruc[uCnt].lpcf;
 
-                            // Clear the changed flag
-                            fontStruc[uCnt].bChanged = FALSE;
+                            // Clear the changed and applied flags
+                            fontStruc[uCnt].bChanged =
+                            fontStruc[uCnt].bApplied = FALSE;
 
                             // Set the radio button initial states
                             SendMessageW (GetDlgItem (hWndProp, FontsRadioPtr[uCnt][glbSameFontAs[uCnt]]), BM_SETCHECK, TRUE, 0);
@@ -1463,13 +1464,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 // If its SameFontAs state changed, ...
                                 if (glbSameFontAs[uCnt] NE lclSameFontAs[uCnt])
                                 {
-                                    // Note that we don't copy the CHOOSEFONTW struc values
-                                    //   (.lpcf) as they are specific to the category
-                                    *fontStruc[uCnt].lplf = *fontStruc[lclSameFontAs[uCnt]].lplf;
-                                    *fontStruc[uCnt].lptm = *fontStruc[lclSameFontAs[uCnt]].lptm;
-
                                     // Copy the local SameFontAs value to the global
                                     glbSameFontAs[uCnt] = lclSameFontAs[uCnt];
+
+                                    // Mark as should be applied
+                                    fontStruc[glbSameFontAs[uCnt]].bApplied = TRUE;
                                 } // End IF
                             } else
                             // If the font changed, ...
@@ -1479,9 +1478,26 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 *fontStruc[uCnt].lpcf = fontStruc[uCnt].cfLcl;
 
                                 // Call the CreateNewFontXX for this font
-                                (*fontStruc[uCnt].lpCreateNewFont)();
-                            } // End IF
+                                //   but don't apply it as yet as other
+                                //   windows might depend upon it.
+                                (*fontStruc[uCnt].lpCreateNewFont) (FALSE);
+
+                                // Mark as should be applied
+                                fontStruc[uCnt].bApplied = TRUE;
+                            } // End IF/ELSE/...
                         } // End FOR
+
+                        // Loop through the fonts again, this time applying them
+                        for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
+                        // If the font should be applied, ...
+                        if (fontStruc[uCnt].bApplied)
+                        {
+                            // Clear the bit field for next time
+                            fontStruc[uCnt].bApplied = FALSE;
+
+                            // Call the appropriate ApplyNewFontXX for this fontEnum
+                            ApplyNewFontEnum (uCnt);
+                        } // End IF
                     } // End IF
 
 
@@ -1516,13 +1532,19 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Get the associated item data (window handle of the Property Page)
                         (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
-                        // Copy the local Foreground/Background Colors to the global var
+                        // Loop through the Syntax Colors
                         for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+                        {
+                            // Copy the state of the "Background Transparent" checkboxes to the global var
+                            gSyntClrBGTrans[uCnt] = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt);
+
+                            // Copy the local Foreground/Background Colors to the global var
                             gSyntaxColors[uCnt] = lclSyntaxColors[uCnt];
 
-                        // Copy the state of the "Background Transparent" checkboxes to the global var
-                        for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
-                            gSyntClrBGTrans[uCnt] = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt);
+                            // If the background is transparent, change it
+                            if (gSyntClrBGTrans[uCnt])
+                                gSyntaxColors[uCnt].crBack = gSyntaxColorBG.crBack;
+                        } // End IF
 
                         // Copy the state of the "Enable ... Coloring" checkboxes to the OptionFlags
                         OptionFlags.bSyntClrFcns = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_CLRFCNS);

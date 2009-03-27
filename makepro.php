@@ -165,6 +165,9 @@ function ProcessFile ($FileName, $OutFile)
     // Strip out #include lines
     $FileNew = preg_replace ('/#\s*include.*?\r\n/', '', $FileNew);
 
+    // Strip out #pragma lines
+    $FileNew = preg_replace ('/#\s*pragma.*?\r\n/', '', $FileNew);
+
     // Strip out #define .*
     $FileNew = preg_replace ('/#\s*define .*?\r\n/', '', $FileNew);
 

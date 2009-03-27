@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1114,7 +1114,8 @@ UBOOL SaveFunctionCom
                         uLineLen,           // NELM of lpwszLine
                         hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                         0,                  // Function line # (0 = header)
-                       &ErrorHandler);      // Ptr to error handling function (may be NULL)
+                       &ErrorHandler,       // Ptr to error handling function (may be NULL)
+                        FALSE);             // TRUE iff we're tokenizing a Magic Function
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } // End IF
@@ -1150,8 +1151,8 @@ UBOOL SaveFunctionCom
 #ifdef DEBUG
     lclMemVirtStr[0].lpText   = "fhLocalvars.lpYYStrandStart in <SaveFunctionCom>";
 #endif
-    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
-    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     fhLocalVars.lpYYStrandStart =
       GuardAlloc (NULL,             // Any address
@@ -1176,7 +1177,7 @@ UBOOL SaveFunctionCom
 
     // Commit the intial size
     MyVirtualAlloc (lclMemVirtStr[0].IniAddr,
-                    DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                    DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
     // Parse the header
@@ -1492,7 +1493,8 @@ UBOOL SaveFunctionCom
                                 uLineLen,           // NELM of lpwszLine
                                 hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                 uLineNum + 1,       // Function line # (0 = header)
-                               &ErrorHandler);      // Ptr to error handling function (may be NULL)
+                               &ErrorHandler,       // Ptr to error handling function (may be NULL)
+                                FALSE);             // TRUE iff we're tokenizing a Magic Function
             } else
                 // Tokenize the (empty) line
                 lpFcnLines->hGlbTknLine =
@@ -1500,7 +1502,8 @@ UBOOL SaveFunctionCom
                                0,                   // NELM of lpwszLine
                                hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                uLineNum + 1,        // Function line # (0 = header)
-                              &ErrorHandler);       // Ptr to error handling function (may be NULL)
+                              &ErrorHandler,        // Ptr to error handling function (may be NULL)
+                               FALSE);              // TRUE iff we're tokenizing a Magic Function
             // Check the line for empty
             lpFcnLines->bEmpty =
               IsLineEmpty (lpFcnLines->hGlbTknLine);

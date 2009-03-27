@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -327,10 +327,10 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR Header[] =
-  $Z $IS $L L" " $F L" " $R;
+  L"Z" $IS L"L " MFN_DydTilde L" R";
 
 static APLCHAR Line1[] =
-  $Z $IS L"(~" $L $EPSILON $R L")/" $L;
+  L"Z" $IS L"(~L" $EPSILON L"R)/L";
 
 static LPAPLCHAR Body[] =
 {Line1,

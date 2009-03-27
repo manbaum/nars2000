@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the magic function global memory handle
-    hGlbMF = lpMemPTD->hGlbMF_MonUpShoe;
+    hGlbMF = lpMemPTD->hGlbMF_MonDnShoe;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -182,16 +182,16 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR Header[] =
-  $Z $IS $F L" " $R;
+  L"Z" $IS MFN_MonDnShoe L" R";
 
 static APLCHAR Line1[] =
-  $Z $IS L"((" $R $IOTA $R L")=" $IOTA $RHO $R L")/" $R $IS L"," $R;
+  L"Z" $IS L"((R" $IOTA L"R)=" $IOTA $RHO L"R)/R" $IS L",R";
 
 static LPAPLCHAR Body[] =
 {Line1,
 };
 
-MAGIC_FUNCTION MF_MonUpShoe =
+MAGIC_FUNCTION MF_MonDnShoe =
 {Header,
  Body,
  countof (Body),

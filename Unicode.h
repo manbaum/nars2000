@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,6 +64,16 @@
 #define UTF16_HORIZELLIPSIS      0x2026         // Horizontal ellipsis
 #define UTF16_CHECKMARK          0x221A         // Check mark
 #define UTF16_REPLACEMENTCHAR    0xFFFD         // Replacement char for unknown
+#define UTF16_LDC_LT_HORZ        0x2500         // LDC light horizontal
+#define UTF16_LDC_LT_VERT        0x2502         // LDC light vertical
+#define UTF16_LDC_LT_UL          0x250C         // LDC light upper left
+#define UTF16_LDC_LT_UR          0x2510         // LDC light upper right
+#define UTF16_LDC_LT_LL          0x2514         // LDC light lower left
+#define UTF16_LDC_LT_LR          0x2518         // LDC light lower right
+#define UTF16_LDC_LT_VERT_R      0x251C         // LDC light vertical and right
+#define UTF16_LDC_LT_VERT_L      0x2524         // LDC light vertical and left
+#define UTF16_LDC_LT_HORZ_D      0x252C         // LDC light horizontal and down
+#define UTF16_LDC_LT_HORZ_U      0x2534         // LDC light horizontal and up
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha
@@ -252,6 +262,16 @@
 #define WS_UTF16_HORIZELLIPSIS      L"\x2026"   // Horizontal ellipsis
 #define WS_UTF16_CHECKMARK          L"\x221A"   // Check mark
 #define WS_UTF16_REPLACEMENTCHAR    L"\xFFFD"   // Replacement char for unknown
+#define WS_UTF16_LDC_LT_HORZ        L"\x2500"   // LDC light horizontal
+#define WS_UTF16_LDC_LT_VERT        L"\x2502"   // LDC light vertical
+#define WS_UTF16_LDC_LT_UL          L"\x250C"   // LDC light upper left
+#define WS_UTF16_LDC_LT_UR          L"\x2510"   // LDC light upper right
+#define WS_UTF16_LDC_LT_LL          L"\x2514"   // LDC light lower left
+#define WS_UTF16_LDC_LT_LR          L"\x2518"   // LDC light lower right
+#define WS_UTF16_LDC_LT_VERT_R      L"\x251C"   // LDC light vertical and right
+#define WS_UTF16_LDC_LT_VERT_L      L"\x2524"   // LDC light vertical and left
+#define WS_UTF16_LDC_LT_HORZ_D      L"\x252C"   // LDC light horizontal and down
+#define WS_UTF16_LDC_LT_HORZ_U      L"\x2534"   // LDC light horizontal and up
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA              L"\x237A"   // Alt-'a' - alpha

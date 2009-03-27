@@ -158,7 +158,7 @@ void ImmExecLine
     for (lpwszLine = lpwszCompLine;
          lpwszLine[0] && lpwszLine[0] EQ L' ';
          lpwszLine++)
-    {};
+    {}
 
     // Split cases based upon the first non-blank char
     switch (lpwszLine[0])
@@ -458,7 +458,8 @@ DWORD WINAPI ImmExecStmtInThread
                        aplNELM,             // NELM of lpwszLine
                        hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                        1,                   // Function line # (0 = header)
-                      &ErrorMessageDirect); // Ptr to error handling function (may be NULL)
+                      &ErrorMessageDirect,  // Ptr to error handling function (may be NULL)
+                       FALSE);              // TRUE iff we're tokenizing a Magic Function
         // If it's invalid, ...
         if (hGlbToken EQ NULL)
         {

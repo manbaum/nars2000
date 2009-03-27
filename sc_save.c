@@ -257,8 +257,8 @@ UBOOL CmdSave_EM
     __try
     {
         // Trundle through the Symbol Table
-        for (lpSymTabNext = lpMemPTD->lpSymTab;
-             lpSymTabNext < lpMemPTD->lpSymTabNext;
+        for (lpSymTabNext = lpMemPTD->htsPTD.lpSymTab;
+             lpSymTabNext < lpMemPTD->htsPTD.lpSymTabNext;
              lpSymTabNext++)
         if (lpSymTabNext->stFlags.Inuse)        // Must be Inuse
         // Handle different SI levels

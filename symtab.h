@@ -65,17 +65,17 @@ http://portal.acm.org/citation.cfm?id=3324
 #define DEF_HSHTAB_EPB         8
 
 // Maximum hash table size (# entries)
-#define DEF_HSHTAB_MAXSIZE  (  64 * 1024 * DEF_HSHTAB_EPB)
+#define DEF_HSHTAB_MAXNELM  (  64 * 1024 * DEF_HSHTAB_EPB)
 
 // Starting hash table size (# entries)
-#define DEF_HSHTAB_INITSIZE (DEF_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
+#define DEF_HSHTAB_INITNELM (DEF_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
 
-// Amount to resize -- this value must be a divisor of DEF_HSHTAB_INITSIZE
-#define DEF_HSHTAB_INCRSIZE DEF_HSHTAB_INITSIZE
+// Amount to resize -- this value must be a divisor of DEF_HSHTAB_INITNELM
+#define DEF_HSHTAB_INCRNELM DEF_HSHTAB_INITNELM
 
-#if ((DEF_HSHTAB_INITSIZE / DEF_HSHTAB_INCRSIZE) * DEF_HSHTAB_INCRSIZE) != \
-      DEF_HSHTAB_INITSIZE
-  #error DEF_HSHTAB_INCRSIZE not an integral divisor of DEF_HSHTAB_INITSIZE.
+#if ((DEF_HSHTAB_INITNELM / DEF_HSHTAB_INCRNELM) * DEF_HSHTAB_INCRNELM) != \
+      DEF_HSHTAB_INITNELM
+  #error DEF_HSHTAB_INCRNELM not an integral divisor of DEF_HSHTAB_INITNELM.
 #endif
 
 // Starting hash mask
@@ -83,12 +83,12 @@ http://portal.acm.org/citation.cfm?id=3324
 
 // The increment used when looking for the next available HSHENTRY
 // This number must be relatively prime to each of
-//   DEF_HSHTAB_INITSIZE + DEF_HSHTAB_INCRSIZE * {iota} DEF_HSHTAB_LARGEST / DEF_HSHTAB_INCRSIZE
+//   DEF_HSHTAB_INITNELM + DEF_HSHTAB_INCRNELM * {iota} DEF_HSHTAB_LARGEST / DEF_HSHTAB_INCRNELM
 // An easy way to make this happen is to use a prime guaranteed to be
 //   larger than the largest symbol table size, and then use as an increment
-//   DEF_HSHTAB_PRIME % iHshTabTotalSize.
+//   DEF_HSHTAB_PRIME % iHshTabTotalNelm.
 #define DEF_HSHTAB_PRIME    ((UINT) 0x7FFFFFFF)  // (2^31 - 1)
-#define DEF_HSHTAB_INCR     (DEF_HSHTAB_PRIME % DEF_HSHTAB_INITSIZE)
+#define DEF_HSHTAB_INCRFREE (DEF_HSHTAB_PRIME % DEF_HSHTAB_INITNELM)
 
 
 // Hash table flags
@@ -100,9 +100,9 @@ typedef struct tagHTFLAGS
                             //            ptr to the name)
 #ifdef DEBUG
          Temp:1,            // 00000008:  Temporary flag used for debugging
-         Avail:11,          // 0000FFF0:  Available bits
+         :11,               // 0000FFF0:  Available bits
 #else
-         Avail:12,          // 0000FFF8:  Available bits
+         :12,               // 0000FFF8:  Available bits
 #endif
          htChar:16;         // FFFF0000:  Char if CharIsValid is TRUE
 } HTFLAGS, *LPHTFLAGS;
@@ -147,13 +147,13 @@ typedef struct tagHSHENTRY
 //********************* SYMBOL TABLE ****************************************
 
 // Maximum symbol table size (# entries)
-#define DEF_SYMTAB_MAXSIZE  (  64*1024)
+#define DEF_SYMTAB_MAXNELM  (  64*1024)
 
 // Starting symbol table size (# entries)
-#define DEF_SYMTAB_INITSIZE (   4*1024)
+#define DEF_SYMTAB_INITNELM (   4*1024)
 
-// Amount to resize
-#define DEF_SYMTAB_INCRSIZE DEF_SYMTAB_INITSIZE
+// Amount to resize -- this value must be a divisor of DEF_SYMTAB_INITNELM
+#define DEF_SYMTAB_INCRNELM DEF_SYMTAB_INITNELM
 
 typedef enum tagIMM_TYPES
 {
@@ -241,7 +241,7 @@ typedef struct tagSTFLAGS
          DfnSysLabel:1,     // 00400000:  User-defined function/operator system label (valid only if .Value is set)
          DfnAxis:1,         // 00800000:  User-defined function/operator accepts axis value
          FcnDir:1,          // 01000000:  Direct function/operator               (stNameFcn is valid)
-         Avail:7;           // FE000000:  Available bits
+         :7;                // FE000000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
 // N.B.:  Whenever changing the above struct (STFLAGS),

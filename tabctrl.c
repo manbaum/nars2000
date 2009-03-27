@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -832,7 +832,7 @@ LRESULT WINAPI LclTabCtrlWndProc
 #endif
 
             // Free global storage if the SymTab is valid
-            if (lpMemPTD->lpSymTab)
+            if (lpMemPTD->htsPTD.lpSymTab)
             {
                 // ***FINISHME*** -- Free all global vars in the workspace
 
@@ -1196,7 +1196,7 @@ void DrawTab
     else
         crfg = crTab[crIndex].fg;
 
-    SetAttrs (hDC, hFontTC, crfg, crbk);
+    SetAttrs (hDC, GetFSIndFontHandle (FONTENUM_TC), crfg, crbk);
 
 #if 0
     // Create a compatible DC and bitmap
@@ -1205,7 +1205,7 @@ void DrawTab
                                         lpRect->right,
                                         lpRect->bottom);
     hBitmapOld = SelectObject (hDCMem, hBitmap);
-    SetAttrs (hDCMem, hFontTC, crfg, crbk);
+    SetAttrs (hDCMem, GetFSIndFontHandle (FONTENUM_TC), crfg, crbk);
 #endif
 
 #define hDCMem  hDC

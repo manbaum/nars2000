@@ -392,10 +392,10 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  $Z $IS $F L" " $R;
+  L"Z" $IS MFN_MonIota L" R";
 
 static APLCHAR MonLine1[] =
-  $Z $IS $DISCLOSE $JOT L".,/" $IOTA $EACH $R;
+  L"Z" $IS $DISCLOSE $JOT L".,/" $IOTA $EACH L"R";
 
 static LPAPLCHAR MonBody[] =
 {MonLine1,
@@ -1328,14 +1328,14 @@ ERROR_EXIT:
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  $Z $IS $L L" " $F L" " $R L";" $QUAD_IO L";" $O;
+  L"Z" $IS L"L " MFN_DydIota L" R;" $QUAD_IO L";O";
 
 static APLCHAR DydLine1[] =
-  $O $IS $QUAD_IO
+  L"O" $IS $QUAD_IO
   $DIAMOND $QUAD_IO $IS L"0";
 
 static APLCHAR DydLine2[] =
-  $Z $IS $ENCLOSE L"[0]" $O L"+(1+" $RHO $L L")" $ENCODE L"(" $NEG L"1" $DROP L",(1+" $RHO $L L")" $TAKE $L L")" $IOTA $R;
+  L"Z" $IS $ENCLOSE L"[0]O+(1+" $RHO L"L)" $ENCODE L"(" $NEG L"1" $DROP L",(1+" $RHO L"L)" $TAKE L"L)" $IOTA L"R";
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,

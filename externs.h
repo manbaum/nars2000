@@ -880,82 +880,6 @@ EXTERN
 HCURSOR hCursorWait,                    // Hourglass cursor
         hCursorIdle;                    // Arrow     ...
 
-// FONTS
-EXTERN
-LOGFONTW lfSM                           // LOGFONTW for the SM
-#ifdef DEFINE_VALUES
- = {DEF_SMLOGFONT}
-#endif
-,
-         lfPR                           // LOGFONTW for the Printer
-#ifdef DEFINE_VALUES
- = {DEF_PRLOGFONT}
-#endif
-,
-         lfCC                           // LOGFONTW for the CC
-#ifdef DEFINE_VALUES
- = {DEF_CCLOGFONT}
-#endif
-,
-         lfTC                           // LOGFONTW for the TC
-#ifdef DEFINE_VALUES
- = {DEF_TCLOGFONT}
-#endif
-,
-         lfFE                           // LOGFONTW for the FE
-#ifdef DEFINE_VALUES
- = {DEF_FELOGFONT}
-#endif
-,
-         lfME                           // LOGFONTW for the ME
-#ifdef DEFINE_VALUES
- = {DEF_MELOGFONT}
-#endif
-,
-         lfVE                           // LOGFONTW for the VE
-#ifdef DEFINE_VALUES
- = {DEF_VELOGFONT}
-#endif
-;
-
-EXTERN
-HFONT hFontTC,                          // Handle to font for the TC
-#ifndef UNISCRIBE
-      hFontAlt,                         // ...                    Alternate SM
-#endif
-      hFontSM,                          // ...                    SM
-      hFontPR,                          // ...                    Printer
-      hFontCC,                          // ...                    CC
-      hFontFE,                          // ...                    FE
-      hFontME,                          // ...                    ME
-      hFontVE;                          // ...                    VE
-
-EXTERN
-CHOOSEFONTW cfTC,                       // Global for ChooseFont for the TC
-            cfSM,                       // ...                           SM
-            cfPR,                       // ...                           Printer
-            cfCC,                       // ...                           CC
-            cfFE,                       // ...                           FE
-            cfME,                       // ...                           ME
-            cfVE;                       // ...                           VE
-
-EXTERN
-TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
-           tmSM,                        // ...                           SM
-           tmPR,                        // ...                           Printer
-           tmCC,                        // ...                           CC
-           tmFE,                        // ...                           FE
-           tmME,                        // ...                           ME
-           tmVE;                        // ...                           VE
-
-EXTERN
-long cxAveCharTC, cyAveCharTC,          // Size of an average character in the TC font
-     cxAveCharSM, cyAveCharSM,          // ...                                 SM ...
-     cxAveCharPR, cyAveCharPR,          // ...                                 PR ...
-     cxAveCharFE, cyAveCharFE,          // ...                                 FE ...
-     cxAveCharME, cyAveCharME,          // ...                                 ME ...
-     cxAveCharVE, cyAveCharVE;          // ...                                 VE ...
-
 EXTERN
 WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure
 
@@ -1102,15 +1026,25 @@ UINT uMemVirtCnt
 
 typedef struct tagHSHTABSTR
 {
-    LPHSHENTRY lpHshTab,                // 00:  Ptr to start of HshTab
-               lpHshTabSplitNext;       // 04:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
-    int        iHshTabBaseSize,         // 08:  Base size of hash table
-               iHshTabTotalSize,        // 0C:  # HTEs, currently, including EPBs
-               iHshTabIncr,             // 10:  Increment when looping through HshTab
-               iHshTabIncrSize,         // 14:  Incremental size
-               iHshTabEPB;              // 18:  # entries per block
-    UINT       uHashMask;               // 1C:  Mask for all HshTab lookups
-} HSHTABSTR, *LPHSHTABSTR;              // 20:  Length
+    struct tagHSHTABSTR
+              *lpHshTabPrv;             // 00:  Ptr to previous HSHTABSTR (NULL = none)
+    LPHSHENTRY lpHshTab,                // 04:  Ptr to start of HshTab
+               lpHshTabSplitNext;       // 08:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
+    int        iHshTabBaseNelm,         // 0C:  Base size of hash table
+               iHshTabTotalNelm,        // 10:  # HTEs, currently, including EPBs
+               iHshTabIncrFree,         // 14:  Increment when looping through HshTab looking for free entry
+               iHshTabIncrNelm,         // 18:  Incremental size
+               iHshTabEPB;              // 1C:  # entries per block
+    UINT       uHashMask,               // 20:  Mask for all HshTab lookups
+               uHshTabNBlks;            // 24:  # blocks in this HshTab
+    UINT       bGlbHshTab:1,            // 28:  00000001:  This HTS is global
+               :31;                     //      FFFFFFFE:  Available bits
+
+    LPSYMENTRY lpSymTab,                // 2C:  Ptr to start of Symtab
+               lpSymTabNext;            // 30:  Ptr to next available STE
+    UINT       uSymTabIncrNelm;         // 34:  # STEs by which to resize when low
+    int        iSymTabTotalNelm;        // 38:  # STEs, currently
+} HSHTABSTR, *LPHSHTABSTR;              // 3C:  Length
 
 EXTERN
 HSHTABSTR htsGLB;                       // Global HshTab struc
@@ -1145,6 +1079,10 @@ APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #endif
 ;
 
+//***************************************************************************
+//  Colors
+//***************************************************************************
+
 // Syntax Coloring default colors
 EXTERN
 SYNTAXCOLORS defSyntaxColors[SC_LENGTH];
@@ -1153,34 +1091,39 @@ SYNTAXCOLORS defSyntaxColors[SC_LENGTH];
 EXTERN
 SYNTAXCOLORS gSyntaxColors[SC_LENGTH]
 #ifdef DEFINE_VALUES
-= {{DEF_SC_GLBNAME   },
-   {DEF_SC_LCLNAME   },
-   {DEF_SC_LABEL     },
-   {DEF_SC_PRIMITIVE },
-   {DEF_SC_SYSFCN    },
-   {DEF_SC_GLBSYSVAR },
-   {DEF_SC_LCLSYSVAR },
-   {DEF_SC_CTRLSTRUC },
-   {DEF_SC_NUMCONST  },
-   {DEF_SC_CHRCONST  },
-   {DEF_SC_COMMENT   },
-   {DEF_SC_MATCHGRP1 },
-   {DEF_SC_MATCHGRP2 },
-   {DEF_SC_MATCHGRP3 },
-   {DEF_SC_MATCHGRP4 },
-   {DEF_SC_UNMATCHGRP},
-   {DEF_SC_UNNESTED  },
-   {DEF_SC_UNK       },
+= {{DEF_SC_GLBNAME    },        // 00:  Global Name
+   {DEF_SC_LCLNAME    },        // 01:  Local  ...
+   {DEF_SC_LABEL      },        // 02:  Label
+   {DEF_SC_PRIMITIVE  },        // 03:  Primitive Function/Operator
+   {DEF_SC_SYSFCN     },        // 04:  System Function
+   {DEF_SC_GLBSYSVAR  },        // 05:  Global System Variable
+   {DEF_SC_LCLSYSVAR  },        // 06:  Local  ...
+   {DEF_SC_CTRLSTRUC  },        // 07:  Control Structure
+   {DEF_SC_NUMCONST   },        // 08:  Numeric constant
+   {DEF_SC_CHRCONST   },        // 09:  Character constant
+   {DEF_SC_COMMENT    },        // 0A:  Comment
+   {DEF_SC_LINEDRAWING},        // 0B:  Line drawing chars
+   {DEF_SC_FCNLINES   },        // 0C:  Function lines
+   {DEF_SC_MATCHGRP1  },        // 0D:  Matched Grouping Symbols [] () {}
+   {DEF_SC_MATCHGRP2  },        // 0E:  Matched Grouping Symbols [] () {}
+   {DEF_SC_MATCHGRP3  },        // 0F:  Matched Grouping Symbols [] () {}
+   {DEF_SC_MATCHGRP4  },        // 10:  Matched Grouping Symbols [] () {}
+   {DEF_SC_UNMATCHGRP },        // 11:  Unmatched Grouping Symbols [] () {} ' "
+   {DEF_SC_UNNESTED   },        // 12:  Improperly Nested Grouping Symbols [] () {}
+   {DEF_SC_UNK        },        // 13:  Unknown symbol
   }
 #endif
 ;
 
 EXTERN
-SYNTAXCOLORS gSyntaxColorWhite
+SYNTAXCOLORS gSyntaxColorBG
 #ifdef DEFINE_VALUES
-= {DEF_SC_WHITE}
+ = {CLR_INVALID, DEF_SCN_WHITE}
 #endif
 ;
+
+EXTERN
+HBRUSH ghBrushBG;           // Window background brush
 
 // Syntax Coloring Background Transparent default settings
 EXTERN
@@ -1201,13 +1144,15 @@ UBOOL gSyntClrBGTrans[SC_LENGTH]
    TRUE,                    // 08:  Numeric Constant
    TRUE,                    // 09:  Character ...
    TRUE,                    // 0A:  Comment
-   TRUE,                    // 0B:  Matched Grouping Symbol, Level 1
-   TRUE,                    // 0C:  ...                            2
-   TRUE,                    // 0D:  ...                            3
-   TRUE,                    // 0E:  ...                            4
-   FALSE,                   // 0F:  Unmatched Grouping Symbol
-   FALSE,                   // 10:  Improperly Nested Grouping Symbol
-   FALSE,                   // 12:  Unknown Symbol
+   TRUE,                    // 0B:  Line drawing chars
+   TRUE,                    // 0C:  Function lines
+   TRUE,                    // 0D:  Matched Grouping Symbol, Level 1
+   TRUE,                    // 0E:  ...                            2
+   TRUE,                    // 0F:  ...                            3
+   TRUE,                    // 10:  ...                            4
+   FALSE,                   // 11:  Unmatched Grouping Symbol
+   FALSE,                   // 12:  Improperly Nested Grouping Symbol
+   FALSE,                   // 13:  Unknown Symbol
   }
 #endif
 ;
@@ -1215,22 +1160,22 @@ UBOOL gSyntClrBGTrans[SC_LENGTH]
 EXTERN
 COLORREF   aCustomColors[16]        // Custom colors for ChooseColor
 #ifdef DEFINE_VALUES
-= {CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID,
-   CLR_INVALID}
+= {CLR_INVALID,             // 00:  No particular name, just 16 of them
+   CLR_INVALID,             // 01:  ...
+   CLR_INVALID,             // 02:  ...
+   CLR_INVALID,             // 03:  ...
+   CLR_INVALID,             // 04:  ...
+   CLR_INVALID,             // 05:  ...
+   CLR_INVALID,             // 06:  ...
+   CLR_INVALID,             // 07:  ...
+   CLR_INVALID,             // 08:  ...
+   CLR_INVALID,             // 09:  ...
+   CLR_INVALID,             // 0A:  ...
+   CLR_INVALID,             // 0B:  ...
+   CLR_INVALID,             // 0C:  ...
+   CLR_INVALID,             // 0D:  ...
+   CLR_INVALID,             // 0E:  ...
+   CLR_INVALID}             // 0F:  ...
 #endif
 ;
 
@@ -1607,7 +1552,10 @@ WCHAR APL2_ASCIItoNARS[257]
 ;
 
 
-// Define global option flags
+//***************************************************************************
+//  Define global option flags
+//***************************************************************************
+
 typedef struct tagOPTIONFLAGS
 {
     UINT bAdjustPW           :1,    // 00000001:  TRUE iff WM_SIZE changes []PW
@@ -1654,9 +1602,80 @@ OPTIONFLAGS OptionFlags
 #endif
 ;
 
+//***************************************************************************
+//  Fonts
+//***************************************************************************
+
+EXTERN
+LOGFONTW lfSM                           // LOGFONTW for the SM
+#ifdef DEFINE_VALUES
+ = {DEF_SMLOGFONT}
+#endif
+,
+         lfPR                           // LOGFONTW for the Printer
+#ifdef DEFINE_VALUES
+ = {DEF_PRLOGFONT}
+#endif
+,
+         lfCC                           // LOGFONTW for the CC
+#ifdef DEFINE_VALUES
+ = {DEF_CCLOGFONT}
+#endif
+,
+         lfTC                           // LOGFONTW for the TC
+#ifdef DEFINE_VALUES
+ = {DEF_TCLOGFONT}
+#endif
+,
+         lfFE                           // LOGFONTW for the FE
+#ifdef DEFINE_VALUES
+ = {DEF_FELOGFONT}
+#endif
+,
+         lfME                           // LOGFONTW for the ME
+#ifdef DEFINE_VALUES
+ = {DEF_MELOGFONT}
+#endif
+,
+         lfVE                           // LOGFONTW for the VE
+#ifdef DEFINE_VALUES
+ = {DEF_VELOGFONT}
+#endif
+;
+
+EXTERN
+HFONT hFontTC,                          // Handle to font for the TC
+#ifndef UNISCRIBE
+      hFontAlt,                         // ...                    Alternate SM
+#endif
+      hFontSM,                          // ...                    SM
+      hFontPR,                          // ...                    Printer
+      hFontCC,                          // ...                    CC
+      hFontFE,                          // ...                    FE
+      hFontME,                          // ...                    ME
+      hFontVE;                          // ...                    VE
+
+EXTERN
+CHOOSEFONTW cfTC,                       // Global for ChooseFont for the TC
+            cfSM,                       // ...                           SM
+            cfPR,                       // ...                           Printer
+            cfCC,                       // ...                           CC
+            cfFE,                       // ...                           FE
+            cfME,                       // ...                           ME
+            cfVE;                       // ...                           VE
+
+EXTERN
+TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
+           tmSM,                        // ...                           SM
+           tmPR,                        // ...                           Printer
+           tmCC,                        // ...                           CC
+           tmFE,                        // ...                           FE
+           tmME,                        // ...                           ME
+           tmVE;                        // ...                           VE
+
 typedef enum tagFONTENUM
 {
-    FONTENUM_SM = 0,                    // 00:  Session Manager font
+    FONTENUM_SM = 0,                    // 00:  Session Manager
     FONTENUM_FE,                        // 01:  Function Editor
     FONTENUM_PR,                        // 02:  Printer
     FONTENUM_CC,                        // 03:  Crash Control window
@@ -1669,41 +1688,58 @@ typedef enum tagFONTENUM
 EXTERN
 FONTENUM glbSameFontAs[FONTENUM_LENGTH];
 
-void CreateNewFontSM (void);
-void CreateNewFontFE (void);
-void CreateNewFontPR (void);
-void CreateNewFontCC (void);
-void CreateNewFontTC (void);
-void CreateNewFontME (void);
-void CreateNewFontVE (void);
+void CreateNewFontSM (UBOOL);
+void CreateNewFontFE (UBOOL);
+void CreateNewFontPR (UBOOL);
+void CreateNewFontCC (UBOOL);
+void CreateNewFontTC (UBOOL);
+void CreateNewFontME (UBOOL);
+void CreateNewFontVE (UBOOL);
+
+void ApplyNewFontSM (HFONT);
+void ApplyNewFontFE (HFONT);
+void ApplyNewFontPR (HFONT);
+void ApplyNewFontCC (HFONT);
+void ApplyNewFontTC (HFONT);
+void ApplyNewFontME (HFONT);
+void ApplyNewFontVE (HFONT);
 
 typedef struct tagFONTSTRUC
 {
-    LPLOGFONTW    lplf;                     // Ptr to LOGFONTW    struct for this font
-    LPCHOOSEFONTW lpcf;                     // Ptr to CHOOSEFONTW ...
-    LPTEXTMETRIC  lptm;                     // Ptr to TEXTMETRIC  ...
-    int           iDefPtSize;               // Default point size
-    UBOOL         bPrinter,                 // TRUE iff this font is for the printer
-                  bChanged;                 // TRUE iff ChooseFont changed the font (the user exited via OK)
-    void        (*lpCreateNewFont) (void);  // Ptr to CreateNewFontXX for this font
-    LPWCHAR       lpwTitle;                 // Ptr to window title
-    CHOOSEFONTW   cfLcl;                    // Local CHOOSEFONTW while Customize Dialog is running
+    LPLOGFONTW    lplf;                         // 00:  Ptr to LOGFONTW    struct for this font
+    LPCHOOSEFONTW lpcf;                         // 04:  Ptr to CHOOSEFONTW ...
+    LPTEXTMETRIC  lptm;                         // 08:  Ptr to TEXTMETRIC  ...
+    int           iDefPtSize;                   // 0C:  Default point size
+    SIZE          charSize;                     // 10:  x- and y-character size (8 bytes)
+    UBOOL         bPrinter:1,                   // 14:  00000001:  TRUE iff this font is for the printer
+                  bChanged:1,                   //      00000002:  TRUE iff ChooseFont changed the font (the user exited via OK)
+                  bApplied:1,                   //      00000004:  TRUE iff this font
+                  :29;                          //      FFFFFFF8:  Available bits
+    HFONT        *lphFont;                      // 18:  Ptr to font handle for this font
+    void        (*lpCreateNewFont) (UBOOL);     // 1C:  Ptr to CreateNewFontXX for this font
+    void        (*lpApplyNewFont)  (FONT);      // 20:  Ptr to ApplyNewFontXX  ...
+    LPWCHAR       lpwTitle;                     // 24:  Ptr to window title
+    CHOOSEFONTW   cfLcl;                        // 28:  Local CHOOSEFONTW while Customize Dialog is running
 } FONTSTRUC, *LPFONTSTRUC;
 
 EXTERN
 FONTSTRUC fontStruc[FONTENUM_LENGTH]
 #ifdef DEFINE_VALUES
-= {{&lfSM, &cfSM, &tmSM, DEF_SMPTSIZE, FALSE, FALSE, &CreateNewFontSM, L"Session Manager Font"   },  // Session Manager
-   {&lfFE, &cfFE, &tmFE, DEF_FEPTSIZE, FALSE, FALSE, &CreateNewFontFE, L"Function Editor Font"   },  // Function Editor
-   {&lfPR, &cfPR, &tmPR, DEF_PRPTSIZE, TRUE , FALSE, &CreateNewFontPR, L"Printer Font"           },  // Printer
-   {&lfCC, &cfCC, &tmCC, DEF_CCPTSIZE, FALSE, FALSE, &CreateNewFontCC, L"Crash Window Font"      },  // Crash window
-   {&lfTC, &cfTC, &tmTC, DEF_TCPTSIZE, FALSE, FALSE, &CreateNewFontTC, L"Tab Control Font"       },  // Tab Control
-   {&lfVE, &cfVE, &tmVE, DEF_VEPTSIZE, FALSE, FALSE, &CreateNewFontME, L"Vector Editor Font"     },  // Vector Editor
-   {&lfME, &cfME, &tmME, DEF_MEPTSIZE, FALSE, FALSE, &CreateNewFontVE, L"Matrix Editor Font"     },  // Matrix Editor
+= {{&lfSM, &cfSM, &tmSM, DEF_SMPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontSM, &CreateNewFontSM, &ApplyNewFontSM, L"Session Manager Font"   },  // Session Manager
+   {&lfFE, &cfFE, &tmFE, DEF_FEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFE, &CreateNewFontFE, &ApplyNewFontFE, L"Function Editor Font"   },  // Function Editor
+   {&lfPR, &cfPR, &tmPR, DEF_PRPTSIZE, {0, 0}, TRUE , FALSE, FALSE, &hFontPR, &CreateNewFontPR, &ApplyNewFontPR, L"Printer Font"           },  // Printer
+   {&lfCC, &cfCC, &tmCC, DEF_CCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontCC, &CreateNewFontCC, &ApplyNewFontCC, L"Crash Window Font"      },  // Crash window
+   {&lfTC, &cfTC, &tmTC, DEF_TCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontTC, &CreateNewFontTC, &ApplyNewFontTC, L"Tab Control Font"       },  // Tab Control
+   {&lfVE, &cfVE, &tmVE, DEF_VEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontME, &CreateNewFontME, &ApplyNewFontME, L"Vector Editor Font"     },  // Vector Editor
+   {&lfME, &cfME, &tmME, DEF_MEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontVE, &CreateNewFontVE, &ApplyNewFontVE, L"Matrix Editor Font"     },  // Matrix Editor
   }
 #endif
 ;
 
+
+//***************************************************************************
+//  Customize
+//***************************************************************************
 
 typedef struct tagCUSTOMIZE
 {

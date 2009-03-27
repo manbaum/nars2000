@@ -37,6 +37,7 @@ LIBS_WEXE = gdi32.lib           \
             uuid.lib            \
             winspool.lib        \
             advapi32.lib        \
+            dbghelp.lib         \
 !if "$(DEBUG)" == "1"
             qdebug32.lib        \
 !endif
@@ -347,6 +348,7 @@ $(O)qf_error.obj:       $(@B).c         $(QF_ERROR_DEP)
 $(O)qf_es.obj:          $(@B).c         $(QF_ES_DEP)
 $(O)qf_et.obj:          $(@B).c         $(QF_ET_DEP)
 $(O)qf_ex.obj:          $(@B).c         $(QF_EX_DEP)
+$(O)qf_fmt.obj:         $(@B).c         $(QF_FMT_DEP)
 $(O)qf_fx.obj:          $(@B).c         $(QF_FX_DEP)
 $(O)qf_lc.obj:          $(@B).c         $(QF_LC_DEP)
 $(O)qf_mf.obj:          $(@B).c         $(QF_MF_DEP)

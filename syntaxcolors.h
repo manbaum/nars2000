@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,28 +20,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-#define DEF_SCN_TRANSPARENT    CLR_INVALID
+#define DEF_SCN_TRANSPARENT    DEF_SCN_WHITE
 
-#define DEF_SC_GLBNAME         DEF_SCN_RED        , DEF_SCN_TRANSPARENT
-#define DEF_SC_LCLNAME         DEF_SCN_GRAY       , DEF_SCN_TRANSPARENT
-#define DEF_SC_LABEL           DEF_SCN_MAROON     , DEF_SCN_TRANSPARENT
-#define DEF_SC_PRIMITIVE       DEF_SCN_NAVY       , DEF_SCN_TRANSPARENT
-#define DEF_SC_SYSFCN          DEF_SCN_NAVY       , DEF_SCN_TRANSPARENT
-#define DEF_SC_GLBSYSVAR       DEF_SCN_PURPLE     , DEF_SCN_TRANSPARENT
-#define DEF_SC_LCLSYSVAR       DEF_SCN_PURPLE     , DEF_SCN_TRANSPARENT
-#define DEF_SC_CTRLSTRUC       DEF_SCN_MAROON     , DEF_SCN_TRANSPARENT
-#define DEF_SC_NUMCONST        DEF_SCN_GRAY       , DEF_SCN_TRANSPARENT
-#define DEF_SC_CHRCONST        DEF_SCN_TEAL       , DEF_SCN_TRANSPARENT
-#define DEF_SC_COMMENT         DEF_SCN_GREEN      , DEF_SCN_TRANSPARENT
-#define DEF_SC_MATCHGRP1       DEF_SCN_BLUE       , DEF_SCN_TRANSPARENT
-#define DEF_SC_MATCHGRP2       DEF_SCN_DARKGREEN  , DEF_SCN_TRANSPARENT
-#define DEF_SC_MATCHGRP3       DEF_SCN_DARKCYAN   , DEF_SCN_TRANSPARENT
-#define DEF_SC_MATCHGRP4       DEF_SCN_DARKMAGENTA, DEF_SCN_TRANSPARENT
-#define DEF_SC_UNMATCHGRP      DEF_SCN_BLUE       , DEF_SCN_LIGHTCYAN
-#define DEF_SC_UNNESTED        DEF_SCN_BLUE       , DEF_SCN_LIGHTPINK
-#define DEF_SC_UNK             DEF_SCN_BLUE       , DEF_SCN_VIOLET
-
-#define DEF_SC_WHITE           DEF_SCN_WHITE      , DEF_SCN_TRANSPARENT
+#define DEF_SC_GLBNAME         DEF_SCN_RED          , DEF_SCN_TRANSPARENT
+#define DEF_SC_LCLNAME         DEF_SCN_GRAY         , DEF_SCN_TRANSPARENT
+#define DEF_SC_LABEL           DEF_SCN_MAROON       , DEF_SCN_TRANSPARENT
+#define DEF_SC_PRIMITIVE       DEF_SCN_NAVY         , DEF_SCN_TRANSPARENT
+#define DEF_SC_SYSFCN          DEF_SCN_NAVY         , DEF_SCN_TRANSPARENT
+#define DEF_SC_GLBSYSVAR       DEF_SCN_PURPLE       , DEF_SCN_TRANSPARENT
+#define DEF_SC_LCLSYSVAR       DEF_SCN_PURPLE       , DEF_SCN_TRANSPARENT
+#define DEF_SC_CTRLSTRUC       DEF_SCN_MAROON       , DEF_SCN_TRANSPARENT
+#define DEF_SC_NUMCONST        DEF_SCN_GRAY         , DEF_SCN_TRANSPARENT
+#define DEF_SC_CHRCONST        DEF_SCN_TEAL         , DEF_SCN_TRANSPARENT
+#define DEF_SC_COMMENT         DEF_SCN_GREEN        , DEF_SCN_TRANSPARENT
+#define DEF_SC_LINEDRAWING     DEF_SCN_TEAL         , DEF_SCN_TRANSPARENT
+#define DEF_SC_FCNLINES        DEF_SCN_DARKSEAGREEN , DEF_SCN_TRANSPARENT
+#define DEF_SC_MATCHGRP1       DEF_SCN_BLUE         , DEF_SCN_TRANSPARENT
+#define DEF_SC_MATCHGRP2       DEF_SCN_DARKGREEN    , DEF_SCN_TRANSPARENT
+#define DEF_SC_MATCHGRP3       DEF_SCN_DARKCYAN     , DEF_SCN_TRANSPARENT
+#define DEF_SC_MATCHGRP4       DEF_SCN_DARKMAGENTA  , DEF_SCN_TRANSPARENT
+#define DEF_SC_UNMATCHGRP      DEF_SCN_BLUE         , DEF_SCN_LIGHTCYAN
+#define DEF_SC_UNNESTED        DEF_SCN_BLUE         , DEF_SCN_LIGHTPINK
+#define DEF_SC_UNK             DEF_SCN_BLUE         , DEF_SCN_VIOLET
 
 // Syntax Coloring categories
 typedef enum tagSC_TYPE
@@ -58,14 +58,16 @@ typedef enum tagSC_TYPE
     SC_NUMCONST,        // 08:  Numeric constant (including leading overbar)
     SC_CHRCONST,        // 09:  Character constant (including single- or double-quote marks)
     SC_COMMENT,         // 0A:  Comment (including comment symbol)
-    SC_MATCHGRP1,       // 0B:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP2,       // 0C:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP3,       // 0D:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP4,       // 0E:  Matched Grouping Symbols [] () {}
-    SC_UNMATCHGRP,      // 0F:  Unmatched Grouping Symbols [] () {} ' "
-    SC_UNNESTED,        // 10:  Improperly Nested Grouping Symbols [] () {}
-    SC_UNK,             // 11:  Unknown symbol
-    SC_LENGTH           // 12:  Length
+    SC_LINEDRAWING,     // 0B:  Line drawing chars
+    SC_FCNLINES,        // 0C:  Function Lines
+    SC_MATCHGRP1,       // 0D:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP2,       // 0E:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP3,       // 0F:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP4,       // 10:  Matched Grouping Symbols [] () {}
+    SC_UNMATCHGRP,      // 11:  Unmatched Grouping Symbols [] () {} ' "
+    SC_UNNESTED,        // 12:  Improperly Nested Grouping Symbols [] () {}
+    SC_UNK,             // 13:  Unknown symbol
+    SC_LENGTH           // 14:  Length
                         //      Because this enum is origin-0, this value is the # valid columns.
 } SCTYPE, *LPSCTYPE;
 
@@ -75,7 +77,11 @@ typedef enum tagSC_TYPE
 //   be sure to make a corresponding change to
 //   <gSyntaxColors> and <gSyntClrBGTrans> in <externs.h>,
 //   <KEYNAME_SC_xxx> and <aColorKeyNames> in <inifile.c>,
-//   <#define IDC_SYNTCLR_xxx> in <resource.h>, and
+//   <#define IDC_SYNTCLR_XB_TRANSxx>,
+//   <#define IDC_SYNTCLR_BN_FGCLRxx>,
+//   <#define IDC_SYNTCLR_BN_BGCLRxx>,
+//   <#define IDC_SYNTCLR_LT_FGMRKxx>,
+//   <#define IDC_SYNTCLR_LT_BGMRKxx> in <resource.h>, and
 //   <SYNTAX COLORING -- WM_COMMAND> in <CustomizeDlgProc> in <customize.c>.
 // If changing the # SC_MATCHGRPn,
 //   be sure to make a corresponding change to
@@ -85,6 +91,7 @@ typedef struct tagSYNTAX_COLORS
 {
     COLORREF crFore,        // 00:  Foreground color
              crBack;        // 04:  Background color (-1 = transparent)
+                            // 08:  Length
 } SYNTAXCOLORS, *LPSYNTAXCOLORS;
 
 

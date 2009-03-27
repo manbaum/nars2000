@@ -1039,7 +1039,7 @@ LPWCHAR ParseSavedWsVar_EM
                 wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
 
                 // Convert the format string to ASCII
-                W2A ((LPCHAR) lpwszFormat, lpwSrc, DEF_WFORMAT_MAXSIZE - 1);
+                W2A ((LPCHAR) lpwszFormat, lpwSrc, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
 
                 // Restore the original value
                 *lpwCharEnd = wcTmp;
@@ -1303,7 +1303,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
 
                         // Convert the format string to ASCII
-                        W2A ((LPCHAR) lpwszFormat, lpwSrc, DEF_WFORMAT_MAXSIZE - 1);
+                        W2A ((LPCHAR) lpwszFormat, lpwSrc, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
 
                         // Restore the original value
                         *lpwCharEnd = wcTmp;

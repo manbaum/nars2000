@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -422,26 +422,26 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  $Z $IS L"(" $LO L" " $F L" " $Y L") " $R L";" $O;
+  L"Z" $IS L"(LO " MFN_MonRank L" Y) R;O";
 
 static APLCHAR MonLine1[] =
-  $Y $IS L"1" $RHO $Y;
+  L"Y" $IS L"1" $RHO L"Y";
 
 static APLCHAR MonLine2[] =
-  $O $IS $RHO $RHO $R;
+  L"O" $IS $RHO $RHO L"R";
 
 static APLCHAR MonLine3[] =
-  $Y $IS L"(-" $O L")" $MAX $O $MIN $Y;
+  L"Y" $IS L"(-" L"O" L")" $MAX L"O" $MIN L"Y";
 
 static APLCHAR MonLine4[] =
-//$Z $IS $DISCLOSE $LO $EACH $ENCLOSE L"[" $IOTA L"-" $Y L"]" $R
-  $Z $IS           $LO $EACH $ENCLOSE L"[" $IOTA L"-" $Y L"]" $R
+//L"Z" $IS $DISCLOSE L"LO" $EACH $ENCLOSE L"[" $IOTA L"-Y]R"
+  L"Z" $IS           L"LO" $EACH $ENCLOSE L"[" $IOTA L"-Y]R"
   $DIAMOND $GOTO L"0";
 
 static APLCHAR MonLine5[] =
   $QUAD_PROTOTYPE L":"
-//$Z $IS $DISCLOSE $DISCLOSE $LO $EACH $EACH $ENCLOSE L"[" $IOTA L"-" $Y L"]" $EACH L"0" $RHO $ENCLOSE $R;
-  $Z $IS           $DISCLOSE $LO $EACH $EACH $ENCLOSE L"[" $IOTA L"-" $Y L"]" $EACH L"0" $RHO $ENCLOSE $R;
+//L"Z" $IS $DISCLOSE $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
+  L"Z" $IS           $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
 
 static LPAPLCHAR MonBody[] =
 {MonLine1,
@@ -459,10 +459,10 @@ MAGIC_FUNCTION MF_MonRank =
 
 
 static APLCHAR ConHeader[] =
-  $Z $IS $L L" " $F L" " $R;
+  L"Z" $IS L"L " MFN_Conform L" R";
 
 static APLCHAR ConLine1[] =
-  $Z $IS $DISCLOSE L"(((" $L L"-" $EPSILON $RHO $JOT $RHO $EACH $R L")" $RHO $EACH L"1" L")," $EACH $RHO $EACH $R L")" $RHO $EACH $R;
+  L"Z" $IS $DISCLOSE L"(((L-" $EPSILON $RHO $JOT $RHO $EACH L"R)" $RHO $EACH L"1)," $EACH $RHO $EACH L"R)" $RHO $EACH L"R";
 
 static LPAPLCHAR ConBody[] =
 {ConLine1,
@@ -530,28 +530,26 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  $Z $IS $L L" (" $LO L" " $F L" " $Y L") " $R L";" $O;
+  L"Z" $IS L"L (LO " MFN_DydRank L" Y) R;O";
 
 static APLCHAR DydLine1[] =
-  $Y $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE $Y;
+  L"Y" $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y";
 
 static APLCHAR DydLine2[] =
-  $O $IS L"(" $RHO $RHO $L L")," $RHO $RHO $R;
+  L"O" $IS L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
 
 static APLCHAR DydLine3[] =
-  $Y $IS L"(-" $O L")" $MAX $O $MIN $Y;
+  L"Y" $IS L"(-O)" $MAX L"O" $MIN L"Y";
 
 static APLCHAR DydLine4[] =
-  $Z $IS L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $Y L"]" $L L")"
-         $LO $EACH
-              $ENCLOSE L"[" $IOTA L"-1" $DROP $Y L"]" $R
+  L"Z" $IS L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE L"Y]L) LO" $EACH
+                $ENCLOSE L"[" $IOTA L"-1" $DROP L"Y]R"
   $DIAMOND $GOTO L"0";
 
 static APLCHAR DydLine5[] =
   $QUAD_PROTOTYPE L":"
-  $Z $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $Y L"]" $EACH L"0" $RHO $ENCLOSE $L L")"
-                   $LO $EACH $EACH
-                        $ENCLOSE L"[" $IOTA L"-1" $DROP $Y L"]" $EACH L"0" $RHO $ENCLOSE $R;
+  L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE L"Y]" $EACH L"0" $RHO $ENCLOSE L"L)LO" $EACH $EACH
+                          $ENCLOSE L"[" $IOTA L"-1" $DROP L"Y]" $EACH L"0" $RHO $ENCLOSE L"R";
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,

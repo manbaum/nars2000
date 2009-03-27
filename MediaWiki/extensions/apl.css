@@ -3,6 +3,13 @@
   font-family: "SImPL", "SImPL medium", "APL385 Unicode", "APLX Upright", monospace;
 }
 
+.APLL
+{
+  font-family: "SImPL", "SImPL medium", "APL385 Unicode", "APLX Upright", monospace;
+  font-size: large;
+  font-weight: bold;
+}
+
 code
 {
   font-family: "SImPL", "SImPL medium", "APL385 Unicode", "APLX Upright", monospace;

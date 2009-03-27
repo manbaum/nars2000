@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1055,6 +1055,31 @@ UBOOL TypePromoteGlb_EM
         case ARRAY_NESTED:              // B/I/F/C/A/H -> N
             Assert (IsSimple   (aplTypeArg));
 
+            // Check for empty arg
+            if (IsEmpty (aplNELMArg))
+            {
+                // Split cases based upon the arg storage type
+                switch (aplTypeArg)
+                {
+                    case ARRAY_BOOL:
+                    case ARRAY_INT:
+                    case ARRAY_FLOAT:
+                    case ARRAY_APA:
+                        // Save a zero STE as the prototype
+                        *((LPAPLHETERO) lpMemRes)++ = GetSteZero ();
+
+                        break;
+
+                    case ARRAY_CHAR:
+                        // Save a zero STE as the prototype
+                        *((LPAPLHETERO) lpMemRes)++ = GetSteBlank ();
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } else
             // Split cases based upon the arg storage type
             switch (aplTypeArg)
             {

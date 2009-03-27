@@ -538,10 +538,10 @@ UBOOL CheckResizeNum_EM
     if (lptkLocalVars->iNumLen >= (lptkLocalVars->iNumLim - 1))
     {
         // Get desired size
-        iNumLim = lptkLocalVars->iNumLim + DEF_NUM_INCRSIZE;
+        iNumLim = lptkLocalVars->iNumLim + DEF_NUM_INCRNELM;
 
         // If it's out of range, ...
-        if (iNumLim > DEF_NUM_MAXSIZE)
+        if (iNumLim > DEF_NUM_MAXNELM)
             goto LIMIT_EXIT;
         else
         {
@@ -606,10 +606,10 @@ UBOOL CheckResizeStr_EM
     if (lptkLocalVars->iStrLen >= (lptkLocalVars->iStrLim - 1))
     {
         // Get desired size
-        iStrLim = lptkLocalVars->iStrLim + DEF_STR_INCRSIZE;
+        iStrLim = lptkLocalVars->iStrLim + DEF_STR_INCRNELM;
 
         // If it's out of range, ...
-        if (iStrLim > DEF_STR_MAXSIZE)
+        if (iStrLim > DEF_STR_MAXNELM)
             goto LIMIT_EXIT;
         else
         {
@@ -724,13 +724,26 @@ UBOOL IsLocalName
         wp = strpbrkW (wp, lpwBrkTerm);
     } // End WHILE
 
-    // Mark as NOT FOUND
+    // If position is desired, ...
     if (lpPosition)
     {
+        // Remove the trailing lamp
+        lpwszTemp[lstrlenW (lpwszTemp) - 1] = L'\0';
+
+        // Zap any other lamp
+        *SkipToCharW (lpwszTemp, UTF16_LAMP) = L'\0';
+
         // Find first semicolon
         wp = SkipToCharW (lpwszTemp, L';');
+
+        // If no semicolon, backup over trailing blanks
+        if (*wp NE L';')
+            while (wp > lpwszTemp && wp[-1] EQ L' ')
+                wp--;
+
+        // Mark as NOT FOUND
         *lpPosition = (UINT) (wp - lpwszTemp);
-     } // End IF
+    } // End IF
 
     return FALSE;
 } // End IsLocalName
@@ -776,7 +789,7 @@ UBOOL fnAlpha
     lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
 
     // Check for overflow -- LIMIT ERROR
-    bRet = (lptkLocalVars->iStrLen < DEF_STR_MAXSIZE);
+    bRet = (lptkLocalVars->iStrLen < DEF_STR_MAXNELM);
     if (bRet)
         // Save the char
         lpwszStr[lptkLocalVars->iStrLen++] = *lptkLocalVars->lpwszCur;
@@ -1648,7 +1661,7 @@ UBOOL fnPointSub
         goto ERROR_EXIT;
 
     // Check for overflow -- LIMIT ERROR
-    bRet = (lptkLocalVars->iNumLen < DEF_NUM_MAXSIZE);
+    bRet = (lptkLocalVars->iNumLen < DEF_NUM_MAXNELM);
     if (bRet)
         // Save the current char
         lpszNum[lptkLocalVars->iNumLen++] = (char) wchCur;
@@ -2229,7 +2242,7 @@ UBOOL fnQuoAccumSub
     lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
 
     // Check for overflow -- LIMIT ERROR
-    bRet = (lptkLocalVars->iStrLen < DEF_STR_MAXSIZE);
+    bRet = (lptkLocalVars->iStrLen < DEF_STR_MAXNELM);
     if (bRet)
         lpwszStr[lptkLocalVars->iStrLen++] = *lptkLocalVars->lpwszCur;
     else
@@ -3173,7 +3186,7 @@ UBOOL fnSyntWhite
     if (lptkLocalVars->lpMemClrNxt)
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorWhite;
+          gSyntaxColorBG;
 
     // Mark as successful
     return TRUE;
@@ -3221,17 +3234,44 @@ UBOOL fnUnkDone
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
+        SCTYPE scType;
+
         // If the col is not EOL, ...
         if (lptkLocalVars->colIndex NE COL_EOL)
+        {
+            // Split cases based upon the unknown char
+            switch (*lptkLocalVars->lpwszCur)
+            {
+                case UTF16_LDC_LT_HORZ:         // Line drawing chars
+                case UTF16_LDC_LT_VERT:         // ...
+                case UTF16_LDC_LT_UL:           // ...
+                case UTF16_LDC_LT_UR:           // ...
+                case UTF16_LDC_LT_LL:           // ...
+                case UTF16_LDC_LT_LR:           // ...
+                case UTF16_LDC_LT_VERT_R:       // ...
+                case UTF16_LDC_LT_VERT_L:       // ...
+                case UTF16_LDC_LT_HORZ_D:       // ...
+                case UTF16_LDC_LT_HORZ_U:       // ...
+                    scType = SC_LINEDRAWING;
+
+                    break;
+
+                default:
+                    scType = SC_UNK;
+
+                    break;
+            } // End SWITCH
+
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColors[SC_UNK];
+              gSyntaxColors[scType];
+        } // End IF
 
         // Mark as successful
         return TRUE;
     } // End IF
 
-    // Mark the data as a dyadic primitive operator
+    // Mark the data as a SYNTAX ERROR
     tkFlags.TknType = TKT_SYNTERR;
     tkFlags.ImmType = IMMTYPE_ERROR;
 
@@ -3273,7 +3313,8 @@ HGLOBAL Tokenize_EM
      APLNELM     aplNELM,           // NELM of lpwszLine
      HWND        hWndEC,            // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
      UINT        uLineNum,          // Function line # (0 = header)
-     LPERRHANDFN lpErrHandFn)       // Ptr to error handling function (may be NULL)
+     LPERRHANDFN lpErrHandFn,       // Ptr to error handling function (may be NULL)
+     UBOOL       bMF)               // TRUE iff we're tokenizing a Magic Function
 
 {
     UINT         uChar;             // Loop counter
@@ -3306,6 +3347,7 @@ HGLOBAL Tokenize_EM
     tkLocalVars.State[0] = FSA_SOS;
     tkLocalVars.uLineNum = uLineNum;
     tkLocalVars.uStmtNum = 0;
+    tkLocalVars.bMF      = bMF;
 
     // If this is the function header (uLineNum EQ 0)
     //   save and restore the ptr to the next token
@@ -3355,7 +3397,7 @@ HGLOBAL Tokenize_EM
     tkLocalVars.lpwszCur                = &lpwszLine[0];// Just so it has a known value
 
     // Set initial limit for hGlbNum
-    tkLocalVars.iNumLim = DEF_NUM_INITSIZE;
+    tkLocalVars.iNumLim = DEF_NUM_INITNELM;
 
     // Allocate storage for hGlbNum
     tkLocalVars.hGlbNum =
@@ -3364,7 +3406,7 @@ HGLOBAL Tokenize_EM
         goto ERROR_EXIT;
 
     // Set initial limit for hGlbStr
-    tkLocalVars.iStrLim = DEF_STR_INITSIZE;
+    tkLocalVars.iStrLim = DEF_STR_INITNELM;
 
     // Allocate storage for hGlbStr
     tkLocalVars.hGlbStr =
@@ -4514,11 +4556,17 @@ WCHAR CharTrans
         case UTF16_RIGHTBRACE:          //     '}' - right brace
             return COL_RIGHTBRACE;
 
+        case L'#':
+            // If we're tokenizing a Magic Function, ...
+            if (lptkLocalVars->bMF)
+                return COL_ALPHA;
+            else
+                return COL_UNK;
+
         case UTF16_DEL:                 // Alt-'g' - del
         case UTF16_DIERESISCIRCLE:      // Alt-'O' - ??? (holler)
         case L'`':
         case L'@':
-        case L'#':
         case L'$':
         case L'%':
         case L'&':
@@ -4632,8 +4680,8 @@ static COLNAMES colNames[] =
  {L"EOL"         , COL_EOL         },   // 1C: End-Of-Line
  {L"UNK"         , COL_UNK         },   // 1D: Unknown symbols
 };
-    if (COL_LENGTH > (uType - COL_FIRST))
-        return colNames[uType - COL_FIRST].lpwsz;
+    if (COL_LENGTH > uType)
+        return colNames[uType].lpwsz;
     else
     {
         static WCHAR wszTemp[64];

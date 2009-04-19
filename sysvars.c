@@ -60,6 +60,7 @@
 #define SysFnTS_EM_YY       NULL
 #define SysFnTYPE_EM_YY     NULL
 #define SysFnUCS_EM_YY      NULL
+#define SysFnWA_EM_YY       NULL
 #endif
 
 #define SYSLBL      8
@@ -139,6 +140,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, SysFnUCS_EM_YY    , 0          },  // Universal Character Set
 ////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, StsFnVI_EM        , 0          },  // Verify Items
 ////{WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM_YY     , 0          },  // Vector Representation of a Function
+    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
 };
 
 // The # rows in the above table

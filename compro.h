@@ -144,6 +144,7 @@
   #include "qf_ts.pro"
   #include "qf_type.pro"
   #include "qf_ucs.pro"
+  #include "qf_wa.pro"
   #include "refcnt.pro"
   //nclude "resdebug.pro"
   #include "savefcn.pro"

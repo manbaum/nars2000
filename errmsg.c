@@ -430,7 +430,7 @@ void ErrorMessageDirect
             // Save the global in the current SIS header
             lpSISCur->hGlbQuadEM = hGlbRes;
         } else
-            lpSISCur->hGlbQuadEM = hGlbM3x0Char;
+            lpSISCur->hGlbQuadEM = hGlbQuadEM;
     } // End IF
 
     if (lpMemTxtLine)

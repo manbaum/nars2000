@@ -2753,7 +2753,7 @@ void FillSISNxt
 ////lpMemPTD->lpSISNxt->hSigaphore    = NULL;           // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;           // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;           // Already zero from ZeroMemory
-    lpMemPTD->lpSISNxt->hGlbQuadEM    = hGlbM3x0Char;
+    lpMemPTD->lpSISNxt->hGlbQuadEM    = hGlbQuadEM;
     lpMemPTD->lpSISNxt->DfnType       = DfnType;
     lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
 ////lpMemPTD->lpSISNxt->DfnAxis       = FALSE;          // Already zero from ZeroMemory

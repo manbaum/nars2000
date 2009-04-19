@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- System Function -- Quad EM
+//  NARS2000 -- System Function -- Quad A
 //***************************************************************************
 
 /***************************************************************************
@@ -26,70 +26,56 @@
 
 
 //***************************************************************************
-//  $SysFnEM_EM_YY
+//  $SysFnA_EM_YY
 //
-//  System function:  []EM -- Event Message
+//  System function:  []A -- Alphabet
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnEM_EM_YY"
+#define APPEND_NAME     L" -- SysFnA_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnEM_EM_YY
+LPPL_YYSTYPE SysFnA_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token  (should be NULL)
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
-    HGLOBAL      hGlbRes = NULL;    // Result ...
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    // Niladic functions cannot have axis operator
-    Assert (lptkAxis EQ NULL);
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get ptr to current SIS header
-    lpSISCur = lpMemPTD->lpSISCur;
-        while (lpSISCur
-        && lpSISCur->DfnType NE DFNTYPE_FCN
-        && lpSISCur->DfnType NE DFNTYPE_OP1
-        && lpSISCur->DfnType NE DFNTYPE_OP2)
-        lpSISCur = lpSISCur->lpSISPrv;
-
-    if (lpSISCur)
-        hGlbRes = CopySymGlbDirAsGlb (MakePtrTypeGlb (lpSISCur->hGlbQuadEM));
-    else
-        hGlbRes = hGlbQuadEM;
-
-    // Allocate a YYRes
+    // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbQuadA);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnEM_EM_YY
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+} // End SysFnA_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  End of File: qf_em.c
+//  End of File: qf_a.c
 //***************************************************************************

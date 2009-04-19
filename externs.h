@@ -797,19 +797,20 @@ HWND hWndTC,                            // Global Tab Control window handle
      hWndTT;                            // ...    ToolTip      ...
 
 EXTERN
-HGLOBAL hGlbZilde,
-        hGlbQuadDM,
-        hGlbQuadFC,
-        hGlbQuadIC,
-        hGlbV0Char,
-        hGlbM3x0Char,
-        hGlbSAEmpty,
-        hGlbSAClear,
-        hGlbSAError,
-        hGlbSAExit,
-        hGlbSAOff,
-        hGlbQuadWSID_CWS,
-        hGlbAV;
+HGLOBAL hGlbQuadA,                      // []A
+        hGlbQuadAV,                     // []AV
+        hGlbQuadDM,                     // []DM default
+        hGlbQuadEM,                     // []EM default
+        hGlbQuadFC,                     // []FC default
+        hGlbQuadIC,                     // []IC default
+        hGlbQuadWSID_CWS,               // []WSID in CLEAR WS
+        hGlbSAEmpty,                    // ''
+        hGlbSAClear,                    // 'CLEAR'
+        hGlbSAError,                    // 'ERROR'
+        hGlbSAExit,                     // 'EXIT'
+        hGlbSAOff,                      // 'OFF'
+        hGlbV0Char,                     // ''
+        hGlbZilde;                      // {zilde}
 
 EXTERN
 APLFLOAT PosInfinity,                   // Positive infinity

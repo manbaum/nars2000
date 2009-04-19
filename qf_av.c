@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ LPPL_YYSTYPE SysFnAV_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbAV);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbQuadAV);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -99,14 +99,14 @@ void MakeQuadAV
     // Create []AV
     // N.B.:  Conversion from APLUINT to UINT
     Assert (ByteRes EQ (APLU3264) ByteRes);
-    hGlbAV = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbAV)
+    hGlbQuadAV = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbQuadAV)
     {
         DbgStop ();         // We should never get here
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbAV);
+    lpHeader = MyGlobalLock (hGlbQuadAV);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -128,7 +128,7 @@ void MakeQuadAV
         lpMemRes[uRes] = uRes;
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbAV); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbQuadAV); lpMemRes = NULL;
 } // End MakeQuadAV
 
 

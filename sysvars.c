@@ -26,6 +26,7 @@
 
 
 #ifdef PROTO
+#define SysFnA_EM_YY        NULL
 #define SysFnAV_EM_YY       NULL
 #define SysFnCR_EM_YY       NULL
 #define SysFnDL_EM_YY       NULL
@@ -84,6 +85,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            Inverse
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            Singleton
 
+    {WS_UTF16_QUAD L"a"        ,      0,      FALSE, SysFnA_EM_YY      , 0          },  // Alphabet
     {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM_YY     , 0          },  // Atomic Vector
     {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM_YY     , 0          },  // Diagnostic Message
     {WS_UTF16_QUAD L"em"       ,      0,      FALSE, SysFnEM_EM_YY     , 0          },  // Event Message
@@ -162,8 +164,48 @@ void MakePermVars
     LPVARARRAY_HEADER lpHeader;     // Ptr to array header
 
     //***************************************************************
+    // Create []A
+    //***************************************************************
+
+#define ALPHABET    L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define ALPHANELM   strcountof (ALPHABET)
+
+    // Note, we can't use DbgGlobalAlloc here as the
+    //   PTD has not been allocated as yet
+    hGlbQuadA = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, ALPHANELM, 1));
+    if (!hGlbQuadA)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpHeader = MyGlobalLock (hGlbQuadA);
+
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+    lpHeader->PermNdx    = PERMNDX_QUADA;   // So we don't free it
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+////lpHeader->RefCnt     = 0;               // Ignore as this is perm
+    lpHeader->NELM       = ALPHANELM;
+    lpHeader->Rank       = 1;
+
+    // Save the vector length
+    *VarArrayBaseToDim (lpHeader) = ALPHANELM;
+
+    // Skip over the header and dimensions to the data
+    lpHeader = VarArrayBaseToData (lpHeader, 1);
+
+    // Copy the data to the result
+    CopyMemory (lpHeader, ALPHABET, ALPHANELM * sizeof (WCHAR));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadA); lpHeader = NULL;
+
+    //***************************************************************
     // Create zilde
     //***************************************************************
+
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
     hGlbZilde = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 1));
@@ -193,14 +235,14 @@ void MakePermVars
     //***************************************************************
     // Create initial value for []EM (3 x 0 char matrix)
     //***************************************************************
-    hGlbM3x0Char = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, 0, 2));
-    if (!hGlbM3x0Char)
+    hGlbQuadEM = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, 0, 2));
+    if (!hGlbQuadEM)
     {
         DbgStop ();         // We should never get here
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbM3x0Char);
+    lpHeader = MyGlobalLock (hGlbQuadEM);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -216,13 +258,13 @@ void MakePermVars
 ////(VarArrayBaseToDim (lpHeader))[1] = 0;  // Already zero from GHND
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbM3x0Char); lpHeader = NULL;
+    MyGlobalUnlock (hGlbQuadEM); lpHeader = NULL;
 
     //***************************************************************
     // Create various permanent vectors
     //***************************************************************
     hGlbQuadDM       = MakePermCharVector (WS_QUADDM     , PERMNDX_QUADDM);
-    hGlbV0Char       = MakePermCharVector (V0Char        , PERMNDX_MTCHAR);
+    hGlbV0Char       = MakePermCharVector (V0Char        , PERMNDX_V0CHAR);
     hGlbSAEmpty      = hGlbV0Char;
     hGlbSAClear      = MakePermCharVector (SAClear       , PERMNDX_SACLEAR);
     hGlbSAError      = MakePermCharVector (SAError       , PERMNDX_SAERROR);

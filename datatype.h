@@ -214,17 +214,19 @@ typedef struct tagHEADER_SIGNATURE
 typedef enum tagPERM_NDX
 {
     PERMNDX_NONE = 0,           // 00:  Not a permanent array
-    PERMNDX_ZILDE,              // 01:  {zilde}
-    PERMNDX_QUADEM,             // 02:  {quad}EM default
-    PERMNDX_QUADDM,             // 03:  {quad}DM default
-    PERMNDX_MTCHAR,             // 04:  ''
-    PERMNDX_SACLEAR,            // 05:  'CLEAR'
-    PERMNDX_SAERROR,            // 06:  'ERROR'
-    PERMNDX_SAEXIT,             // 07:  'EXIT'
-    PERMNDX_SAOFF,              // 08:  'OFF'
-    PERMNDX_QUADFC,             // 09:  []FC default
-    PERMNDX_QUADIC,             // 0A:  []IC default
-    PERMNDX_QUADAV,             // 0B:  []AV
+    PERMNDX_QUADA,              // 01:  []A
+    PERMNDX_QUADAV,             // 02:  []AV
+    PERMNDX_QUADDM,             // 03:  []DM default
+    PERMNDX_QUADEM,             // 04:  []EM default
+    PERMNDX_QUADFC,             // 05:  []FC default
+    PERMNDX_QUADIC,             // 06:  []IC default
+    PERMNDX_SACLEAR,            // 07:  'CLEAR'
+    PERMNDX_SAERROR,            // 08:  'ERROR'
+    PERMNDX_SAEXIT,             // 09:  'EXIT'
+    PERMNDX_SAOFF,              // 0A:  'OFF'
+    PERMNDX_V0CHAR,             // 0B:  ''
+    PERMNDX_ZILDE,              // 0C:  {zilde}
+                                // 0D:  Length
 } PERM_NDX;
 
 // Variable array header

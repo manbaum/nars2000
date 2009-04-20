@@ -836,9 +836,8 @@ typedef enum tagSYS_VARS
     SYSVAR_RL  ,                // 0B:  []RL
     SYSVAR_SA  ,                // 0C:  []SA
     SYSVAR_WSID,                // 0D:  []WSID
-    SYSVAR_Z   ,                // 0E:  []Z
-    SYSVAR_LENGTH               // 0F:  # entries in the enum
-                                // 10-1F:  Available entries (5 bits)
+    SYSVAR_LENGTH               // 0E:  # entries in the enum
+                                // 0F-1F:  Available entries (5 bits)
 } SYS_VARS;
 
 typedef UBOOL (*ASYSVARVALIDSET) (LPTOKEN, LPTOKEN);

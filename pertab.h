@@ -87,62 +87,62 @@ typedef struct tagPERTABDATA
                  lpSymQuadPW  ,     // B0:  ...            []PW
                  lpSymQuadRL  ,     // B4:  ...            []RL
                  lpSymQuadSA  ,     // B8:  ...            []SA
-                 lpSymQuadWSID,     // BC:  ...            []WSID
-                 lpSymQuadZ   ;     // C0:  ...            []Z
+                 lpSymQuadWSID;     // BC:  ...            []WSID
     struct tagSIS_HEADER
-                *lpSISBeg,          // C4:  Ptr to State Indicator Stack beginning
-                *lpSISCur,          // C8:  ...                          current (may be NULL if SI is empty)
-                *lpSISNxt;          // CC:  ...                          next
+                *lpSISBeg,          // C0:  Ptr to State Indicator Stack beginning
+                *lpSISCur,          // C4:  ...                          current (may be NULL if SI is empty)
+                *lpSISNxt;          // C8:  ...                          next
     struct tagPLLOCALVARS
-                *lpPLCur;           // D0:  Ptr to current plLocalVars struct
+                *lpPLCur;           // CC:  Ptr to current plLocalVars struct
                                     //      in thread creation order (NULL = none)
-    WNDPROC lpfnOldListboxWndProc,  // D4:  Save area for old Listbox procedure
-            lpfnOldEditCtrlWndProc; // D8:  Save area for old Edit Ctrl procedure
+    WNDPROC lpfnOldListboxWndProc,  // D0:  Save area for old Listbox procedure
+            lpfnOldEditCtrlWndProc; // D4:  Save area for old Edit Ctrl procedure
 
     // Magic function handles and strucs
-    HGLOBAL      hGlbMF_MonIota,    // DC:  Extended Monadic Iota
-                 hGlbMF_DydIota,    // E0:  Extended Dyadic Iota
-                 hGlbMF_MonDnShoe,  // E4:  Monadic Down Shoe
-                 hGlbMF_DydTilde,   // E8:  Dyadic Tilde
-                 hGlbMF_MonRank,    // EC:  Monadic Rank
-                 hGlbMF_DydRank,    // F0:  Dyadic Rank
-                 hGlbMF_Conform,    // F4:  Conform for Rank operator
-                 hGlbMF_MonFMT,     // F8:  Display function (monadic []FMT)
-                 hGlbMF_Box;        // FC:  Box     ...
-    HSHTABSTR    htsPTD_MonFMT;     //100:  HTS for monadic []FMT (60 bytes)
+    HGLOBAL      hGlbMF_MonIota,    // D8:  Extended Monadic Iota
+                 hGlbMF_DydIota,    // DC:  Extended Dyadic Iota
+                 hGlbMF_MonDnShoe,  // E0:  Monadic Down Shoe
+                 hGlbMF_DydTilde,   // E4:  Dyadic Tilde
+                 hGlbMF_MonRank,    // E8:  Monadic Rank
+                 hGlbMF_DydRank,    // EC:  Dyadic Rank
+                 hGlbMF_Conform,    // F0:  Conform for Rank operator
+                 hGlbMF_MonFMT,     // F4:  Display function (monadic []FMT)
+                 hGlbMF_Box;        // F8:  Box     ...
+    HSHTABSTR    htsPTD_MonFMT;     // FC:  HTS for monadic []FMT (60 bytes)
 
-    UINT         SILevel,           //13C:  Current State Indicator level
-                 CurTabID,          //140:  ID of the corresponding tab
-                 PrvTabID;          //144:  ID of the preceding tab (from which we were loaded)
-    HANDLE       hSemaDelay;        //148:  Delay semaphore (NULL if no delay active)
-    EXIT_TYPES   ImmExecExitType;   //14C:  ImmExec exit type (see EXIT_TYPES)
-    PL_YYSTYPE   YYResExec,         //150:  Result from execute primitive
+    UINT         SILevel,           //138:  Current State Indicator level
+                 CurTabID,          //13C:  ID of the corresponding tab
+                 PrvTabID;          //140:  ID of the preceding tab (from which we were loaded)
+    HANDLE       hSemaDelay;        //144:  Delay semaphore (NULL if no delay active)
+    EXIT_TYPES   ImmExecExitType;   //148:  ImmExec exit type (see EXIT_TYPES)
+    PL_YYSTYPE   YYResExec,         //14C:  Result from execute primitive
                                     //      Size = 2Ch for DEBUG, 20h otherwise
-                 YYCaseExec;        //17C:  Result from CASE arg execution
+                 YYCaseExec;        //178:  Result from CASE arg execution
                                     //      Size = 2Ch for DEBUG, 20h otherwise
-    LPPL_YYSTYPE lpStrand[STRAND_LEN];//1A8:  Ptrs to strand accumulators in parser (4 bytes each)
+    LPPL_YYSTYPE lpStrand[STRAND_LEN];//1A4:  Ptrs to strand accumulators in parser (4 bytes each)
     LPLOADWSGLBVARCONV
-                 lpLoadWsGlbVarConv;//1AC:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
+                 lpLoadWsGlbVarConv;//1A8:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
     LPLOADWSGLBVARPARM
-                 lpLoadWsGlbVarParm;//1B0:  Ptr to extra parms for LoadWsGlbVarConv
-    LPMEMVIRTSTR lpLstMVS;          //1B4:  Ptr to last MEMVIRTSTR (NULL = none)
-    LPWCHAR      lpwszFormat,       //1B8:  Ptr to formatting save area
-                 lpwszBaseTemp,     //1BC:  Ptr to base of lpwszTemp
-                 lpwszTemp;         //1C0:  Ptr to temporary  ...
-    UINT         uTempMaxSize,      //1C4:  Maximum size of lpwszTemp
-                 RegisterEBP,       //1C8:  Register EBP from an exception
-                 uErrLine;          //1CC:  Error line # from []FX for )IN
-    LPTOKEN      lptkCSIni,         //1D0:  Ptr to start of CtrlStruc token stack (static)
-                 lptkCSNxt;         //1D4:  Ptr to next available slot in CS ...  (dynamic)
+                 lpLoadWsGlbVarParm;//1AC:  Ptr to extra parms for LoadWsGlbVarConv
+    LPMEMVIRTSTR lpLstMVS;          //1B0:  Ptr to last MEMVIRTSTR (NULL = none)
+    LPWCHAR      lpwszFormat,       //1B4:  Ptr to formatting save area
+                 lpwszBaseTemp,     //1B8:  Ptr to base of lpwszTemp
+                 lpwszTemp;         //1BC:  Ptr to temporary  ...
+    UINT         uTempMaxSize,      //1C0:  Maximum size of lpwszTemp
+                 RegisterEBP,       //1C4:  Register EBP from an exception
+                 uErrLine;          //1C8:  Error line # from []FX for )IN
+    LPTOKEN      lptkCSIni,         //1CC:  Ptr to start of CtrlStruc token stack (static)
+                 lptkCSNxt;         //1D0:  Ptr to next available slot in CS ...  (dynamic)
     struct tagFORSTMT *
-                 lpForStmtBase;     //1D8:  Ptr to base of FORSTMT stack
+                 lpForStmtBase;     //1D4:  Ptr to base of FORSTMT stack
 #ifndef UNISCRIBE
     IMLangFontLink
-                *lpFontLink;        //1DC:  Ptr to FontLink struc
+                *lpFontLink;        //1D8:  Ptr to FontLink struc
 #endif
-    APLCHAR      cQuadPR,           //1E0:  []PR     (' ') (When a char scalar)
-                 cQuadxSA;          //1E2:  []SA     (0)   (in its index form as an integer)
-    DWORD        dwThreadId;        //1E4:  Corresponding thread ID
+    APLCHAR      cQuadPR,           //1DC:  []PR     (' ') (When a char scalar)
+                 cQuadxSA;          //1DE:  []SA     (0)   (in its index form as an integer)
+    DWORD        dwThreadId;        //1E0:  Corresponding thread ID
+    HANDLE       hExitphore;        //1E4:  Semaphore used to close a tab (may be NULL)
                                     //1E8:  Length
 } PERTABDATA, *LPPERTABDATA;
 

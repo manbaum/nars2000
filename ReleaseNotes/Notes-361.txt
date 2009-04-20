@@ -4,8 +4,11 @@ Build #361 -- Version 0.0.1.12
 Directory trunk:
 
 EDITFCN.C:
-TOKENIZE.C:
 TOKENIZE.H:
+  Rename FSA-related vars to make parallel with the <FmtSpec> FSA.
+
+TOKENIZE.C:
+  Delete <SaveErrorPosition> and replace by one line equivalent.
   Rename FSA-related vars to make parallel with the <FmtSpec> FSA.
 
 TOKENS.H:

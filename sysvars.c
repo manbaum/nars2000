@@ -81,7 +81,6 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , NULL              , SYSVAR_RL  },  // Random Link
     {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL              , SYSVAR_SA  },  // Stop Action
     {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL              , SYSVAR_WSID},  // Workspace Identifier
-    {WS_UTF16_QUAD L"z"        , SYSVAR,      TRUE , NULL              , SYSVAR_Z   },  // Temporary result
     {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL              , 0          },  // User-defined function/operator entry point for Prototype
     {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            Inverse
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            Singleton
@@ -472,7 +471,6 @@ UBOOL InitSystemNames_EM
     ptdSysVarSym[SYSVAR_RL  ] = &lpMemPTD->lpSymQuadRL  ;
     ptdSysVarSym[SYSVAR_SA  ] = &lpMemPTD->lpSymQuadSA  ;
     ptdSysVarSym[SYSVAR_WSID] = &lpMemPTD->lpSymQuadWSID;
-    ptdSysVarSym[SYSVAR_Z   ] = &lpMemPTD->lpSymQuadZ   ;
 #ifdef DEBUG
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
@@ -3085,49 +3083,6 @@ UBOOL ValidSetWSID_EM
 
 
 //***************************************************************************
-//  $ValidSetZ_EM
-//
-//  Validate a value before assigning it to []Z
-//***************************************************************************
-
-UBOOL ValidSetZ_EM
-    (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkRhtArg)            // Ptr to right arg token
-
-{
-    HGLOBAL    hGlbRht;             // Right arg global memory handle
-    APLLONGEST aplLongestRht;       // Right arg immediate value
-
-    // Get right arg's global ptrs
-    aplLongestRht = GetGlbPtrs (lptkRhtArg, &hGlbRht);
-
-    // Free the old value (if there is one)
-    if (lptkNamArg->tkData.tkSym->stFlags.Value)
-    {
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
-    } // End IF
-
-    // If the right arg is a global, ...
-    if (hGlbRht)
-        // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = CopySymGlbDirAsGlb (hGlbRht);
-    else
-    {
-        // Save as new value
-        lptkNamArg->tkData.tkSym->stFlags.Imm      = TRUE;
-        lptkNamArg->tkData.tkSym->stFlags.ImmType  = lptkRhtArg->tkFlags.ImmType;
-        lptkNamArg->tkData.tkSym->stData.stLongest = aplLongestRht;
-    } // End IF/ELSE
-
-    // Set common flags
-    lptkNamArg->tkFlags.NoDisplay = TRUE;
-    lptkNamArg->tkData.tkSym->stFlags.Value = TRUE;
-
-    return TRUE;
-} // End ValidSetZ_EM
-
-
-//***************************************************************************
 //  $ValidNdxAny
 //
 //  Validate a single value before assigning it to
@@ -3178,7 +3133,6 @@ UBOOL InitSystemVars
     aSysVarValidSet[SYSVAR_RL  ] = ValidSetRL_EM  ;
     aSysVarValidSet[SYSVAR_SA  ] = ValidSetSA_EM  ;
     aSysVarValidSet[SYSVAR_WSID] = ValidSetWSID_EM;
-    aSysVarValidSet[SYSVAR_Z   ] = ValidSetZ_EM   ;
 
     // Set the array index validation routine
     aSysVarValidNdx[SYSVAR_ALX ] = ValidNdxChar   ;
@@ -3194,7 +3148,6 @@ UBOOL InitSystemVars
     aSysVarValidNdx[SYSVAR_RL  ] = ValidNdxRL     ;
     aSysVarValidNdx[SYSVAR_SA  ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_WSID] = ValidNdxChar   ;
-    aSysVarValidNdx[SYSVAR_Z   ] = ValidNdxAny    ;
 
     // Assign default values to the system vars
     if (!AssignGlobalCWS     (hGlbQuadALX_CWS   , SYSVAR_ALX , lpMemPTD->lpSymQuadALX      )) return FALSE;   // Attention Latent Expression
@@ -3216,9 +3169,6 @@ UBOOL InitSystemVars
     if (!AssignIntScalarCWS  (uQuadRL_CWS       , SYSVAR_RL  , lpMemPTD->lpSymQuadRL       )) return FALSE;   // Random Link
     if (!AssignGlobalCWS     (hGlbQuadSA_CWS    , SYSVAR_SA  , lpMemPTD->lpSymQuadSA       )) return FALSE;   // Stop Action
     if (!AssignGlobalCWS     (hGlbQuadWSID_CWS  , SYSVAR_WSID, lpMemPTD->lpSymQuadWSID     )) return FALSE;   // Workspace Identifier
-
-    // Set the values for []Z
-    lpMemPTD->lpSymQuadZ->stFlags.SysVarValid = SYSVAR_Z;
 
     // Save the index value
     lpMemPTD->cQuadxSA = cQuadxSA_CWS;

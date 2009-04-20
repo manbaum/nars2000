@@ -1451,12 +1451,8 @@ UBOOL ValidateCharVector_EM
         // If there's anything left, ...
         if (aplNELMRes)
         {
-            // Copy the right arg to a location with a terminating zero
-            CopyMemory (lpwszTemp, lpMemRht, (APLU3264) aplNELMRht * sizeof (APLCHAR));
-            lpwszTemp[aplNELMRht] = L'\0';
-
             // Convert the []WSID workspace name into a canonical form
-            MakeWorkspaceNameCanonical (lpwszTemp, lpwszTemp, lpwszWorkDir);
+            MakeWorkspaceNameCanonical (lpwszTemp, lpMemRht, lpwszWorkDir);
 
             // Get length of the name as the NELM
             aplNELMRes = lstrlenW (lpwszTemp);
@@ -1496,8 +1492,7 @@ MAKE_VECTOR:
 ALLOC_VECTOR:
     // Calculate space needed for the result
     //   (a character vector)
-    // Include "+ bWSID" for a trailing zero
-    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes + bWSID, 1);
+    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);

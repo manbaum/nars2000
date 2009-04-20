@@ -375,7 +375,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     ShellSort (lpSymSort, uSymCnt, CmpLPSYMENTRY);
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_CHAR, uSymCnt * uMaxNameLen * sizeof (APLCHAR), 2);
+    ByteRes = CalcArraySize (ARRAY_CHAR, uSymCnt * uMaxNameLen, 2);
 
     //***************************************************************
     // Now we can allocate the storage for the result

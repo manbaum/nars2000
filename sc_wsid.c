@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -85,11 +85,11 @@ UBOOL CmdWsid_EM
         // Convert the given workspace name into a canonical form
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
-        // Calculate space needed for the WSID
+        // Get the WSID length
         uLen = lstrlenW (wszTailDPFE);
 
-        // Include "+ 1" for a trailing zero
-        ByteWSID = CalcArraySize (ARRAY_CHAR, uLen + 1, 1);
+        // Calculate space needed for the WSID
+        ByteWSID = CalcArraySize (ARRAY_CHAR, uLen, 1);
 
         // Allocate space for the WSID
         // N.B. Conversion from APLUINT to UINT.

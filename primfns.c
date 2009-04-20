@@ -2606,7 +2606,9 @@ APLUINT CalcArraySize
             break;
 
         case ARRAY_CHAR:
-            ByteRes = sizeof (APLCHAR)   * aplNELM;
+            // Add in one element so we always have
+            //   a zero-terminated string
+            ByteRes = sizeof (APLCHAR)   * (aplNELM + 1);
 
             break;
 

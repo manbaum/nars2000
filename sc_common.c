@@ -152,7 +152,7 @@ void SendMessageLastTab
 
 {
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    int          iPrvTabIndex;          // Index of previous tab
+    int iPrvTabIndex;                   // Index of previous tab
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -313,8 +313,7 @@ UBOOL SaveNewWsid_EM
         lpMemSaveWSID[iLen2] = L'\0';
 
         // Calculate space needed for the new WSID
-        // Include "+ 1" for a trailing zero
-        ByteWSID = CalcArraySize (ARRAY_CHAR, iLen2 + 1, 1);
+        ByteWSID = CalcArraySize (ARRAY_CHAR, iLen2, 1);
 
         // Allocate space for the new WSID
         // N.B. Conversion from APLUINT to UINT.

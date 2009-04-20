@@ -70,392 +70,394 @@ UBOOL bInUse = FALSE;
 #define fnQuo1Exit  fnQuoExit
 #define fnQuo2Exit  fnQuoExit
 
-FSA_ACTION fsaColTable [][COL_LENGTH]
+// The following struc should have as many rows as TKROW_LENGTH
+//   and as many columns as TKCOL_LENGTH.
+TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
 #ifndef PROTO
  =
-{   // FSA_SOS      Start of stmt ('')
- {{FSA_POINTNOT, NULL        , fnPointAcc  },   // '0123456789'
-  {FSA_DOTAMBIG, NULL        , fnPointAcc  },   // '.'
-  {FSA_ALPHA   , NULL        , fnAlpInit   },   // 'a..zA..Z'
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Overbar
-  {FSA_INIT    , NULL        , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , NULL        , fnSysInit   },   // Quad
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Underbar
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Infinity
-  {FSA_INIT    , NULL        , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , NULL        , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , NULL        , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , NULL        , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , NULL        , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , NULL        , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , NULL        , fnOp1Done   },   // ...       monadic/ambiguous operator
-  {FSA_INIT    , NULL        , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, NULL        , NULL        },   // Jot
-  {FSA_INIT    , NULL        , fnParInit   },   // Left paren
-  {FSA_INIT    , NULL        , fnParDone   },   // Right ...
-  {FSA_INIT    , NULL        , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , NULL        , fnBrkDone   },   // Right ...
-  {FSA_INIT    , NULL        , fnBrcInit   },   // Left brace
-  {FSA_INIT    , NULL        , fnBrcDone   },   // Right ...
-  {FSA_INIT    , NULL        , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , NULL        , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , NULL        , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , NULL        , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , NULL        , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , NULL        , NULL        },   // EOL
-  {FSA_INIT    , NULL        , fnUnkDone   },   // Unknown symbols
+{   // TKROW_SOS      Start of stmt ('')
+ {{TKROW_POINTNOT, NULL        , fnPointAcc  },     // '0123456789'
+  {TKROW_DOTAMBIG, NULL        , fnPointAcc  },     // '.'
+  {TKROW_ALPHA   , NULL        , fnAlpInit   },     // 'a..zA..Z'
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , NULL        , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , NULL        , fnSysInit   },     // Quad
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Underbar
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , NULL        , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , NULL        , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , NULL        , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , NULL        , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , NULL        , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , NULL        , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , NULL        , fnOp1Done   },     // ...       monadic/ambiguous operator
+  {TKROW_INIT    , NULL        , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, NULL        , NULL        },     // Jot
+  {TKROW_INIT    , NULL        , fnParInit   },     // Left paren
+  {TKROW_INIT    , NULL        , fnParDone   },     // Right ...
+  {TKROW_INIT    , NULL        , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , NULL        , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , NULL        , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , NULL        , fnBrcDone   },     // Right ...
+  {TKROW_INIT    , NULL        , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , NULL        , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , NULL        , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , NULL        , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , NULL        , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , NULL        , NULL        },     // EOL
+  {TKROW_INIT    , NULL        , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_INIT     Initial state ('')
- {{FSA_POINTNOT, NULL        , fnPointAcc  },   // '0123456789'
-  {FSA_DOTAMBIG, NULL        , fnPointAcc  },   // '.'
-  {FSA_ALPHA   , NULL        , fnAlpInit   },   // 'a..zA..Z'
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Overbar
-  {FSA_INIT    , NULL        , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , NULL        , fnSysInit   },   // Quad
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Underbar
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Infinity
-  {FSA_INIT    , NULL        , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , NULL        , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , NULL        , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , NULL        , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , NULL        , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , NULL        , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , NULL        , fnOp1Done   },   // ...       monadic/ambiguous operator
-  {FSA_INIT    , NULL        , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, NULL        , NULL        },   // Jot
-  {FSA_INIT    , NULL        , fnParInit   },   // Left paren
-  {FSA_INIT    , NULL        , fnParDone   },   // Right ...
-  {FSA_INIT    , NULL        , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , NULL        , fnBrkDone   },   // Right ...
-  {FSA_INIT    , NULL        , fnBrcInit   },   // Left brace
-  {FSA_INIT    , NULL        , fnBrcDone   },   // Right ...
-  {FSA_INIT    , NULL        , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , NULL        , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , NULL        , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , NULL        , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , NULL        , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , NULL        , NULL        },   // EOL
-  {FSA_INIT    , NULL        , fnUnkDone   },   // Unknown symbols
+    // TKROW_INIT     Initial state ('')
+ {{TKROW_POINTNOT, NULL        , fnPointAcc  },     // '0123456789'
+  {TKROW_DOTAMBIG, NULL        , fnPointAcc  },     // '.'
+  {TKROW_ALPHA   , NULL        , fnAlpInit   },     // 'a..zA..Z'
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , NULL        , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , NULL        , fnSysInit   },     // Quad
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Underbar
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , NULL        , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , NULL        , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , NULL        , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , NULL        , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , NULL        , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , NULL        , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , NULL        , fnOp1Done   },     // ...       monadic/ambiguous operator
+  {TKROW_INIT    , NULL        , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, NULL        , NULL        },     // Jot
+  {TKROW_INIT    , NULL        , fnParInit   },     // Left paren
+  {TKROW_INIT    , NULL        , fnParDone   },     // Right ...
+  {TKROW_INIT    , NULL        , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , NULL        , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , NULL        , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , NULL        , fnBrcDone   },     // Right ...
+  {TKROW_INIT    , NULL        , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , NULL        , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , NULL        , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , NULL        , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , NULL        , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , NULL        , NULL        },     // EOL
+  {TKROW_INIT    , NULL        , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_POINTNOT Point Notation
- {{FSA_POINTNOT, NULL        , fnPointAcc  },   // '0123456789'
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // '.'
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // 'a..zA..Z'
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Overbar
-  {FSA_INIT    , fnPointDone , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnPointDone , fnSysInit   },   // Quad
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Underbar
-  {FSA_POINTNOT, NULL        , fnPointAcc  },   // Infinity
-  {FSA_INIT    , fnPointDone , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnPointDone , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnPointDone , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnPointDone , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , fnPointDone , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnPointDone , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnPointDone , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnPointDone , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnPointDone , NULL        },   // Jot
-  {FSA_INIT    , fnPointDone , fnParInit   },   // Left paren
-  {FSA_INIT    , fnPointDone , fnParDone   },   // Right ...
-  {FSA_INIT    , fnPointDone , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnPointDone , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnPointDone , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnPointDone , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnPointDone , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , fnPointDone , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnPointDone , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , fnPointDone , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnPointDone , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnPointDone , NULL        },   // EOL
-  {FSA_INIT    , fnPointDone , fnUnkDone   },   // Unknown symbols
+    // TKROW_POINTNOT Point Notation
+ {{TKROW_POINTNOT, NULL        , fnPointAcc  },     // '0123456789'
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // '.'
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // 'a..zA..Z'
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , fnPointDone , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , fnPointDone , fnSysInit   },     // Quad
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Underbar
+  {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , fnPointDone , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , fnPointDone , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , fnPointDone , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , fnPointDone , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , fnPointDone , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , fnPointDone , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , fnPointDone , fnOp1Done   },     // ...       monadic operator
+  {TKROW_INIT    , fnPointDone , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, fnPointDone , NULL        },     // Jot
+  {TKROW_INIT    , fnPointDone , fnParInit   },     // Left paren
+  {TKROW_INIT    , fnPointDone , fnParDone   },     // Right ...
+  {TKROW_INIT    , fnPointDone , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , fnPointDone , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , fnPointDone , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , fnPointDone , fnBrcDone   },     // Right ...
+  {TKROW_INIT    , fnPointDone , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , fnPointDone , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , fnPointDone , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , fnPointDone , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , fnPointDone , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , fnPointDone , NULL        },     // EOL
+  {TKROW_INIT    , fnPointDone , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_ALPHA    Alphabetic char
- {{FSA_ALPHA   , fnAlpAccum  , NULL        },   // '0123456789'
-  {FSA_DOTAMBIG, fnAlpDone   , fnPointAcc  },   // '.'
-  {FSA_ALPHA   , fnAlpAccum  , NULL        },   // 'a..zA..Z'
-  {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Overbar
-  {FSA_INIT    , fnAlpDone   , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnAlpDone   , fnSysInit   },   // Quad
-  {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Underbar
-  {FSA_POINTNOT, fnAlpDone   , fnPointAcc  },   // Infinity
-  {FSA_INIT    , fnAlpDone   , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnAlpDone   , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnAlpDone   , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnAlpDone   , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , fnAlpDone   , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnAlpDone   , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnAlpDone   , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnAlpDone   , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnAlpDone   , NULL        },   // Jot
-  {FSA_INIT    , fnAlpDone   , fnParInit   },   // Left paren
-  {FSA_INIT    , fnAlpDone   , fnParDone   },   // Right ...
-  {FSA_INIT    , fnAlpDone   , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnAlpDone   , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnAlpDone   , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnAlpDone   , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnAlpDone   , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , fnAlpDone   , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnAlpDone   , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , fnAlpDone   , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnAlpDone   , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnAlpDone   , NULL        },   // EOL
-  {FSA_INIT    , fnAlpDone   , fnUnkDone   },   // Unknown symbols
+    // TKROW_ALPHA    Alphabetic char
+ {{TKROW_ALPHA   , fnAlpAccum  , NULL        },     // '0123456789'
+  {TKROW_DOTAMBIG, fnAlpDone   , fnPointAcc  },     // '.'
+  {TKROW_ALPHA   , fnAlpAccum  , NULL        },     // 'a..zA..Z'
+  {TKROW_ALPHA   , fnAlpAccum  , NULL        },     // Overbar
+  {TKROW_INIT    , fnAlpDone   , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , fnAlpDone   , fnSysInit   },     // Quad
+  {TKROW_ALPHA   , fnAlpAccum  , NULL        },     // Underbar
+  {TKROW_POINTNOT, fnAlpDone   , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , fnAlpDone   , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , fnAlpDone   , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , fnAlpDone   , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , fnAlpDone   , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , fnAlpDone   , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , fnAlpDone   , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , fnAlpDone   , fnOp1Done   },     // ...       monadic operator
+  {TKROW_INIT    , fnAlpDone   , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, fnAlpDone   , NULL        },     // Jot
+  {TKROW_INIT    , fnAlpDone   , fnParInit   },     // Left paren
+  {TKROW_INIT    , fnAlpDone   , fnParDone   },     // Right ...
+  {TKROW_INIT    , fnAlpDone   , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , fnAlpDone   , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , fnAlpDone   , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , fnAlpDone   , fnBrcDone   },     // Right ...
+  {TKROW_INIT    , fnAlpDone   , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , fnAlpDone   , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , fnAlpDone   , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , fnAlpDone   , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , fnAlpDone   , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , fnAlpDone   , NULL        },     // EOL
+  {TKROW_INIT    , fnAlpDone   , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_SYSNAME  System name (begins with a Quad or Quote-quad)
- {{FSA_SYSNAME , fnSysAccum  , NULL        },   // '0123456789'
-  {FSA_DOTAMBIG, fnSysDone   , fnPointAcc  },   // '.'
-  {FSA_SYSNAME , fnSysAccum  , NULL        },   // 'a..zA..Z'
-  {FSA_POINTNOT, fnSysDone   , fnPointAcc  },   // Overbar
-  {FSA_INIT    , fnSysDone   , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnSysDone   , fnSysInit   },   // Quad
-  {FSA_SYSNAME , fnSysAccum  , NULL        },   // Underbar
-  {FSA_POINTNOT, fnSysDone   , fnPointAcc  },   // Infinity
-  {FSA_INIT    , fnSysDone   , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnSysDone   , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnSysDone   , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnSysDone   , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , fnSysDone   , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnSysDone   , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnSysDone   , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnSysDone   , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnSysDone   , NULL        },   // Jot
-  {FSA_INIT    , fnSysDone   , fnParInit   },   // Left paren
-  {FSA_INIT    , fnSysDone   , fnParDone   },   // Right ...
-  {FSA_INIT    , fnSysDone   , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnSysDone   , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnSysDone   , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnSysDone   , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnSysDone   , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , fnSysDone   , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnSysDone   , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , fnSysDone   , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnSysDone   , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnSysDone   , NULL        },   // EOL
-  {FSA_INIT    , fnSysDone   , fnUnkDone   },   // Unknown symbols
+    // TKROW_SYSNAME  System name (begins with a Quad or Quote-quad)
+ {{TKROW_SYSNAME , fnSysAccum  , NULL        },     // '0123456789'
+  {TKROW_DOTAMBIG, fnSysDone   , fnPointAcc  },     // '.'
+  {TKROW_SYSNAME , fnSysAccum  , NULL        },     // 'a..zA..Z'
+  {TKROW_POINTNOT, fnSysDone   , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , fnSysDone   , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , fnSysDone   , fnSysInit   },     // Quad
+  {TKROW_SYSNAME , fnSysAccum  , NULL        },     // Underbar
+  {TKROW_POINTNOT, fnSysDone   , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , fnSysDone   , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , fnSysDone   , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , fnSysDone   , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , fnSysDone   , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , fnSysDone   , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , fnSysDone   , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , fnSysDone   , fnOp1Done   },     // ...       monadic operator
+  {TKROW_INIT    , fnSysDone   , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, fnSysDone   , NULL        },     // Jot
+  {TKROW_INIT    , fnSysDone   , fnParInit   },     // Left paren
+  {TKROW_INIT    , fnSysDone   , fnParDone   },     // Right ...
+  {TKROW_INIT    , fnSysDone   , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , fnSysDone   , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , fnSysDone   , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , fnSysDone   , fnBrcDone   },     // Right ...
+  {TKROW_INIT    , fnSysDone   , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , fnSysDone   , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , fnSysDone   , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , fnSysDone   , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , fnSysDone   , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , fnSysDone   , NULL        },     // EOL
+  {TKROW_INIT    , fnSysDone   , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_QUOTE1A  Start of or within single quoted char or char vector
- {{FSA_QUOTE1A , fnQuo1Accum , NULL        },   // '0123456789'
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // '.'
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // 'a..zA..Z'
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Overbar
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Alpha or Omega
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Quad
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Underbar
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Infinity
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Assignment symbol
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Semicolon  ...
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Colon  ...
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Control Structure
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Primitive monadic or dyadic function
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // ...       niladic           ...
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // ...       monadic operator
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // ...       dyadic  ...
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Jot
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Left paren
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Right ...
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Left bracket
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Right ...
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Left brace
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Right ...
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // White space
-  {FSA_QUOTE1Z , NULL        , fnSyntQuote },   // Single quote
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Double ...
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Diamond symbol
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Comment symbol
-  {FSA_EXIT    , fnQuo1Exit  , fnUnkDone   },   // EOL
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Unknown symbols
+    // TKROW_QUOTE1A  Start of or within single quoted char or char vector
+ {{TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // '0123456789'
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // '.'
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // 'a..zA..Z'
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Overbar
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Alpha or Omega
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Quad
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Underbar
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Infinity
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Assignment symbol
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Semicolon  ...
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Colon  ...
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Control Structure
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Primitive monadic or dyadic function
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // ...       niladic           ...
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // ...       monadic operator
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // ...       dyadic  ...
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Jot
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Left paren
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Right ...
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Left bracket
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Right ...
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Left brace
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Right ...
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // White space
+  {TKROW_QUOTE1Z , NULL        , fnSyntQuote },     // Single quote
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Double ...
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Diamond symbol
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Comment symbol
+  {TKROW_EXIT    , fnQuo1Exit  , fnUnkDone   },     // EOL
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Unknown symbols
  },
-    // FSA_QUOTE1Z  End of single quoted char or char vector
- {{FSA_POINTNOT, fnQuo1Done  , fnPointAcc  },   // '0123456789'
-  {FSA_DOTAMBIG, fnQuo1Done  , fnPointAcc  },   // '.'
-  {FSA_ALPHA   , fnQuo1Done  , fnAlpInit   },   // 'a..zA..Z'
-  {FSA_POINTNOT, fnQuo1Done  , fnPointAcc  },   // Overbar
-  {FSA_INIT    , fnQuo1Done  , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnQuo1Done  , fnSysInit   },   // Quad
-  {FSA_POINTNOT, fnQuo1Done  , fnPointAcc  },   // Underbar
-  {FSA_POINTNOT, fnQuo1Done  , fnPointAcc  },   // Infinity
-  {FSA_INIT    , fnQuo1Done  , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnQuo1Done  , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnQuo1Done  , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnQuo1Done  , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , fnQuo1Done  , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnQuo1Done  , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnQuo1Done  , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnQuo1Done  , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnQuo1Done  , NULL        },   // Jot
-  {FSA_INIT    , fnQuo1Done  , fnParInit   },   // Left paren
-  {FSA_INIT    , fnQuo1Done  , fnParDone   },   // Right ...
-  {FSA_INIT    , fnQuo1Done  , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnQuo1Done  , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnQuo1Done  , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnQuo1Done  , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnQuo1Done  , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Single quote
-  {FSA_QUOTE2A , fnQuo1Done  , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , fnQuo1Done  , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnQuo1Done  , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnQuo1Done  , NULL        },   // EOL
-  {FSA_INIT    , fnQuo1Done  , fnUnkDone   },   // Unknown symbols
+    // TKROW_QUOTE1Z  End of single quoted char or char vector
+ {{TKROW_POINTNOT, fnQuo1Done  , fnPointAcc  },     // '0123456789'
+  {TKROW_DOTAMBIG, fnQuo1Done  , fnPointAcc  },     // '.'
+  {TKROW_ALPHA   , fnQuo1Done  , fnAlpInit   },     // 'a..zA..Z'
+  {TKROW_POINTNOT, fnQuo1Done  , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , fnQuo1Done  , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , fnQuo1Done  , fnSysInit   },     // Quad
+  {TKROW_POINTNOT, fnQuo1Done  , fnPointAcc  },     // Underbar
+  {TKROW_POINTNOT, fnQuo1Done  , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , fnQuo1Done  , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , fnQuo1Done  , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , fnQuo1Done  , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , fnQuo1Done  , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , fnQuo1Done  , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , fnQuo1Done  , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , fnQuo1Done  , fnOp1Done   },     // ...       monadic operator
+  {TKROW_INIT    , fnQuo1Done  , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, fnQuo1Done  , NULL        },     // Jot
+  {TKROW_INIT    , fnQuo1Done  , fnParInit   },     // Left paren
+  {TKROW_INIT    , fnQuo1Done  , fnParDone   },     // Right ...
+  {TKROW_INIT    , fnQuo1Done  , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , fnQuo1Done  , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , fnQuo1Done  , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , fnQuo1Done  , fnBrcDone   },     // Right ...
+  {TKROW_INIT    , fnQuo1Done  , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        },     // Single quote
+  {TKROW_QUOTE2A , fnQuo1Done  , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , fnQuo1Done  , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , fnQuo1Done  , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , fnQuo1Done  , NULL        },     // EOL
+  {TKROW_INIT    , fnQuo1Done  , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_QUOTE2A  Start of or within double quoted char or char vector
- {{FSA_QUOTE2A , fnQuo2Accum , NULL        },   // '0123456789'
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // '.'
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // 'a..zA..Z'
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Overbar
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Alpha or Omega
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Quad
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Underbar
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Infinity
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Assignment symbol
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Semicolon  ...
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Colon  ...
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Control Structure
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Primitive monadic or dyadic function
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // ...       niladic           ...
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // ...       monadic operator
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // ...       dyadic  ...
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Jot
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Left paren
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Right ...
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Left bracket
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Right ...
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Left brace
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Right ...
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // White space
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Single quote
-  {FSA_QUOTE2Z , NULL        , fnSyntQuote },   // Double ...
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Diamond symbol
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Comment symbol
-  {FSA_EXIT    , fnQuo2Exit  , fnUnkDone   },   // EOL
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Unknown symbols
+    // TKROW_QUOTE2A  Start of or within double quoted char or char vector
+ {{TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // '0123456789'
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // '.'
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // 'a..zA..Z'
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Overbar
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Alpha or Omega
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Quad
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Underbar
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Infinity
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Assignment symbol
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Semicolon  ...
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Colon  ...
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Control Structure
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Primitive monadic or dyadic function
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // ...       niladic           ...
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // ...       monadic operator
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // ...       dyadic  ...
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Jot
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Left paren
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Right ...
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Left bracket
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Right ...
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Left brace
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Right ...
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // White space
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Single quote
+  {TKROW_QUOTE2Z , NULL        , fnSyntQuote },     // Double ...
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Diamond symbol
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Comment symbol
+  {TKROW_EXIT    , fnQuo2Exit  , fnUnkDone   },     // EOL
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Unknown symbols
  },
-    // FSA_QUOTE2Z  End of double quoted char or char vector
- {{FSA_POINTNOT, fnQuo2Done  , fnPointAcc  },   // '0123456789'
-  {FSA_DOTAMBIG, fnQuo2Done  , fnPointAcc  },   // '.'
-  {FSA_ALPHA   , fnQuo2Done  , fnAlpInit   },   // 'a..zA..Z'
-  {FSA_POINTNOT, fnQuo2Done  , fnPointAcc  },   // Overbar
-  {FSA_INIT    , fnQuo2Done  , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnQuo2Done  , fnSysInit   },   // Quad
-  {FSA_POINTNOT, fnQuo2Done  , fnPointAcc  },   // Underbar
-  {FSA_POINTNOT, fnQuo2Done  , fnPointAcc  },   // Infinity
-  {FSA_INIT    , fnQuo2Done  , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnQuo2Done  , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnQuo2Done  , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnQuo2Done  , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , fnQuo2Done  , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnQuo2Done  , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnQuo2Done  , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnQuo2Done  , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnQuo2Done  , NULL        },   // Jot
-  {FSA_INIT    , fnQuo2Done  , fnParInit   },   // Left paren
-  {FSA_INIT    , fnQuo2Done  , fnParDone   },   // Right ...
-  {FSA_INIT    , fnQuo2Done  , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnQuo2Done  , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnQuo2Done  , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnQuo2Done  , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnQuo2Done  , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , fnQuo2Done  , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Double ...
-  {FSA_SOS     , fnQuo2Done  , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnQuo2Done  , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnQuo2Done  , NULL        },   // EOL
-  {FSA_INIT    , fnQuo2Done  , fnUnkDone   },   // Unknown symbols
+    // TKROW_QUOTE2Z  End of double quoted char or char vector
+ {{TKROW_POINTNOT, fnQuo2Done  , fnPointAcc  },     // '0123456789'
+  {TKROW_DOTAMBIG, fnQuo2Done  , fnPointAcc  },     // '.'
+  {TKROW_ALPHA   , fnQuo2Done  , fnAlpInit   },     // 'a..zA..Z'
+  {TKROW_POINTNOT, fnQuo2Done  , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , fnQuo2Done  , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , fnQuo2Done  , fnSysInit   },     // Quad
+  {TKROW_POINTNOT, fnQuo2Done  , fnPointAcc  },     // Underbar
+  {TKROW_POINTNOT, fnQuo2Done  , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , fnQuo2Done  , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , fnQuo2Done  , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , fnQuo2Done  , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , fnQuo2Done  , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , fnQuo2Done  , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , fnQuo2Done  , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , fnQuo2Done  , fnOp1Done   },     // ...       monadic operator
+  {TKROW_INIT    , fnQuo2Done  , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, fnQuo2Done  , NULL        },     // Jot
+  {TKROW_INIT    , fnQuo2Done  , fnParInit   },     // Left paren
+  {TKROW_INIT    , fnQuo2Done  , fnParDone   },     // Right ...
+  {TKROW_INIT    , fnQuo2Done  , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , fnQuo2Done  , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , fnQuo2Done  , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , fnQuo2Done  , fnBrcDone   },     // Right ...
+  {TKROW_INIT    , fnQuo2Done  , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , fnQuo2Done  , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        },     // Double ...
+  {TKROW_SOS     , fnQuo2Done  , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , fnQuo2Done  , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , fnQuo2Done  , NULL        },     // EOL
+  {TKROW_INIT    , fnQuo2Done  , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_DOTAMBIG Ambiguous dot:  either FSA_POINTNOT or FSA_INIT w/fnOp2Done ('+.' or 'name.' or '[]name.')
- {{FSA_POINTNOT, NULL        , fnPointAcc  },   // '0123456789'
-  {FSA_DOTAMBIG, fnDotDone   , fnPointAcc  },   // '.'
-  {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // 'a..zA..Z'
-  {FSA_POINTNOT, fnDotDone   , fnPointAcc  },   // Overbar
-  {FSA_INIT    , fnDotDone   , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnDotDone   , fnSysInit   },   // Quad
-  {FSA_POINTNOT, fnDotDone   , fnPointAcc  },   // Underbar
-  {FSA_POINTNOT, fnDotDone   , fnPointAcc  },   // Infinity
-  {FSA_INIT    , fnDotDone   , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnDotDone   , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnDotDone   , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnDotDone   , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , fnDotDone   , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnDotDone   , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnDotDone   , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnDotDone   , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnDotDone   , NULL        },   // Jot
-  {FSA_INIT    , fnDotDone   , fnParInit   },   // Left paren
-  {FSA_INIT    , fnDotDone   , fnParDone   },   // Right ...
-  {FSA_INIT    , fnDotDone   , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnDotDone   , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnDotDone   , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnDotDone   , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnDotDone   , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , fnDotDone   , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnDotDone   , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , fnDotDone   , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnDotDone   , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnDotDone   , NULL        },   // EOL
-  {FSA_INIT    , fnDotDone   , fnUnkDone   },   // Unknown symbols
+    // TKROW_DOTAMBIG Ambiguous dot:  either TKROW_POINTNOT or TKROW_INIT w/fnOp2Done ('+.' or 'name.' or '[]name.')
+ {{TKROW_POINTNOT, NULL        , fnPointAcc  },     // '0123456789'
+  {TKROW_DOTAMBIG, fnDotDone   , fnPointAcc  },     // '.'
+  {TKROW_ALPHA   , fnDotDone   , fnAlpInit   },     // 'a..zA..Z'
+  {TKROW_POINTNOT, fnDotDone   , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , fnDotDone   , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , fnDotDone   , fnSysInit   },     // Quad
+  {TKROW_POINTNOT, fnDotDone   , fnPointAcc  },     // Underbar
+  {TKROW_POINTNOT, fnDotDone   , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , fnDotDone   , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , fnDotDone   , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , fnDotDone   , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , fnDotDone   , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , fnDotDone   , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , fnDotDone   , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , fnDotDone   , fnOp1Done   },     // ...       monadic operator
+  {TKROW_INIT    , fnDotDone   , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, fnDotDone   , NULL        },     // Jot
+  {TKROW_INIT    , fnDotDone   , fnParInit   },     // Left paren
+  {TKROW_INIT    , fnDotDone   , fnParDone   },     // Right ...
+  {TKROW_INIT    , fnDotDone   , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , fnDotDone   , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , fnDotDone   , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , fnDotDone   , fnBrcDone   },     // Right ...
+  {TKROW_INIT    , fnDotDone   , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , fnDotDone   , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , fnDotDone   , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , fnDotDone   , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , fnDotDone   , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , fnDotDone   , NULL        },     // EOL
+  {TKROW_INIT    , fnDotDone   , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_JOTAMBIG Ambiguous jot:  either FSA_OUTAMBIG or normal w/fnJotDone ('J')
- {{FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // '0123456789'
-  {FSA_OUTAMBIG, fnSyntPrm   , fnPointAcc  },   // '.'
-  {FSA_ALPHA   , fnJotDone   , fnAlpInit   },   // 'a..zA..Z'
-  {FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // Overbar
-  {FSA_INIT    , fnJotDone   , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnJotDone   , fnSysInit   },   // Quad
-  {FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // Underbar
-  {FSA_POINTNOT, fnJotDone   , fnPointAcc  },   // Infinity
-  {FSA_INIT    , fnJotDone   , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnJotDone   , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnJotDone   , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnJotDone   , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , fnJotDone   , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnJotDone   , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnJotDone   , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnJotDone   , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnJotDone   , NULL        },   // Jot
-  {FSA_INIT    , fnJotDone   , fnParInit   },   // Left paren
-  {FSA_INIT    , fnJotDone   , fnParDone   },   // Right ...
-  {FSA_INIT    , fnJotDone   , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnJotDone   , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnJotDone   , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnJotDone   , fnBrcDone   },   // Right ...
-  {FSA_JOTAMBIG, NULL        , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , fnJotDone   , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnJotDone   , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , fnJotDone   , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnJotDone   , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnJotDone   , NULL        },   // EOL
-  {FSA_INIT    , fnJotDone   , fnUnkDone   },   // Unknown symbols
+    // TKROW_JOTAMBIG Ambiguous jot:  either TKROW_OUTAMBIG or normal w/fnJotDone ('J')
+ {{TKROW_POINTNOT, fnJotDone   , fnPointAcc  },     // '0123456789'
+  {TKROW_OUTAMBIG, fnSyntPrm   , fnPointAcc  },     // '.'
+  {TKROW_ALPHA   , fnJotDone   , fnAlpInit   },     // 'a..zA..Z'
+  {TKROW_POINTNOT, fnJotDone   , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , fnJotDone   , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , fnJotDone   , fnSysInit   },     // Quad
+  {TKROW_POINTNOT, fnJotDone   , fnPointAcc  },     // Underbar
+  {TKROW_POINTNOT, fnJotDone   , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , fnJotDone   , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , fnJotDone   , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , fnJotDone   , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , fnJotDone   , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , fnJotDone   , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , fnJotDone   , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , fnJotDone   , fnOp1Done   },     // ...       monadic operator
+  {TKROW_INIT    , fnJotDone   , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, fnJotDone   , NULL        },     // Jot
+  {TKROW_INIT    , fnJotDone   , fnParInit   },     // Left paren
+  {TKROW_INIT    , fnJotDone   , fnParDone   },     // Right ...
+  {TKROW_INIT    , fnJotDone   , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , fnJotDone   , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , fnJotDone   , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , fnJotDone   , fnBrcDone   },     // Right ...
+  {TKROW_JOTAMBIG, NULL        , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , fnJotDone   , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , fnJotDone   , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , fnJotDone   , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , fnJotDone   , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , fnJotDone   , NULL        },     // EOL
+  {TKROW_INIT    , fnJotDone   , fnUnkDone   },     // Unknown symbols
  },
-    // FSA_OUTAMBIG Ambiguous outer product:  either FSA_INIT w/fnOutDone or FSA_POINTNOT w/fnOutDone ('J.')
- {{FSA_POINTNOT, fnJotDone0  , fnPointAcc  },   // '0123456789'
-  {FSA_JOTAMBIG, fnOutDone   , fnPointAcc  },   // '.'
-  {FSA_ALPHA   , fnOutDone   , fnAlpInit   },   // 'a..zA..Z'
-  {FSA_POINTNOT, fnOutDone   , fnPointAcc  },   // Overbar
-  {FSA_INIT    , fnOutDone   , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnOutDone   , fnSysInit   },   // Quad
-  {FSA_POINTNOT, fnOutDone   , fnPointAcc  },   // Underbar
-  {FSA_POINTNOT, fnOutDone   , fnPointAcc  },   // Infinity
-  {FSA_INIT    , fnOutDone   , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnOutDone   , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnOutDone   , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnOutDone   , fnCtrlDone  },   // Control Structure
-  {FSA_INIT    , fnOutDone   , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnOutDone   , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnOutDone   , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnOutDone   , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnOutDone   , NULL        },   // Jot
-  {FSA_INIT    , fnOutDone   , fnParInit   },   // Left paren
-  {FSA_INIT    , fnOutDone   , fnParDone   },   // Right ...
-  {FSA_INIT    , fnOutDone   , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnOutDone   , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnOutDone   , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnOutDone   , fnBrcDone   },   // Right ...
-  {FSA_OUTAMBIG, NULL        , fnSyntWhite },   // White space
-  {FSA_QUOTE1A , fnOutDone   , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnOutDone   , fnQuo2Init  },   // Double ...
-  {FSA_SOS     , fnOutDone   , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnOutDone   , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnOutDone   , NULL        },   // EOL
-  {FSA_INIT    , fnOutDone   , fnUnkDone   },   // Unknown symbols
+    // TKROW_OUTAMBIG Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOutDone ('J.')
+ {{TKROW_POINTNOT, fnJotDone0  , fnPointAcc  },     // '0123456789'
+  {TKROW_JOTAMBIG, fnOutDone   , fnPointAcc  },     // '.'
+  {TKROW_ALPHA   , fnOutDone   , fnAlpInit   },     // 'a..zA..Z'
+  {TKROW_POINTNOT, fnOutDone   , fnPointAcc  },     // Overbar
+  {TKROW_INIT    , fnOutDone   , fnDirIdent  },     // Alpha or Omega
+  {TKROW_SYSNAME , fnOutDone   , fnSysInit   },     // Quad
+  {TKROW_POINTNOT, fnOutDone   , fnPointAcc  },     // Underbar
+  {TKROW_POINTNOT, fnOutDone   , fnPointAcc  },     // Infinity
+  {TKROW_INIT    , fnOutDone   , fnAsnDone   },     // Assignment symbol
+  {TKROW_INIT    , fnOutDone   , fnLstDone   },     // Semicolon  ...
+  {TKROW_INIT    , fnOutDone   , fnClnDone   },     // Colon  ...
+  {TKROW_INIT    , fnOutDone   , fnCtrlDone  },     // Control Structure
+  {TKROW_INIT    , fnOutDone   , fnPrmDone   },     // Primitive monadic or dyadic function
+  {TKROW_INIT    , fnOutDone   , fnPrmDone   },     // ...       niladic           ...
+  {TKROW_INIT    , fnOutDone   , fnOp1Done   },     // ...       monadic operator
+  {TKROW_INIT    , fnOutDone   , fnOp2Done   },     // ...       dyadic  ...
+  {TKROW_JOTAMBIG, fnOutDone   , NULL        },     // Jot
+  {TKROW_INIT    , fnOutDone   , fnParInit   },     // Left paren
+  {TKROW_INIT    , fnOutDone   , fnParDone   },     // Right ...
+  {TKROW_INIT    , fnOutDone   , fnBrkInit   },     // Left bracket
+  {TKROW_INIT    , fnOutDone   , fnBrkDone   },     // Right ...
+  {TKROW_INIT    , fnOutDone   , fnBrcInit   },     // Left brace
+  {TKROW_INIT    , fnOutDone   , fnBrcDone   },     // Right ...
+  {TKROW_OUTAMBIG, NULL        , fnSyntWhite },     // White space
+  {TKROW_QUOTE1A , fnOutDone   , fnQuo1Init  },     // Single quote
+  {TKROW_QUOTE2A , fnOutDone   , fnQuo2Init  },     // Double ...
+  {TKROW_SOS     , fnOutDone   , fnDiaDone   },     // Diamond symbol
+  {TKROW_INIT    , fnOutDone   , fnComDone   },     // Comment symbol
+  {TKROW_EXIT    , fnOutDone   , NULL        },     // EOL
+  {TKROW_INIT    , fnOutDone   , fnUnkDone   },     // Unknown symbols
  },
 }
 #endif
@@ -486,7 +488,7 @@ void UTLockAndSet
 
 void UTRelockAndSet
     (HGLOBAL       hGlbToken,
-     LPTKLOCALVARS lptkLocalVars)
+     LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     // Lock the memory to get a ptr to it
@@ -503,7 +505,7 @@ void UTRelockAndSet
 //***************************************************************************
 
 void InitAccumVars
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     // Integers & floating points
@@ -525,7 +527,7 @@ void InitAccumVars
 #endif
 
 UBOOL CheckResizeNum_EM
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     UBOOL   bRet = FALSE;               // TRUE iff result is valid
@@ -593,7 +595,7 @@ NORMAL_EXIT:
 #endif
 
 UBOOL CheckResizeStr_EM
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     UBOOL   bRet = FALSE;               // TRUE iff result is valid
@@ -761,7 +763,7 @@ UBOOL IsLocalName
 #endif
 
 UBOOL fnAlpha
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -809,7 +811,7 @@ UBOOL fnAlpha
         uLen = lptkLocalVars->iStrLen;
 
         // Save the column index
-        lptkLocalVars->lpMemClrNxt->colIndex = COL_ALPHA;
+        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_ALPHA;
 
         // If it's the first character, ...
         if (uLen EQ 1)
@@ -981,7 +983,7 @@ ERROR_EXIT:
 //***************************************************************************
 
 UBOOL fnAlpDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     LPSYMENTRY   lpSymEntry;            // Ptr to the name's STE
@@ -1076,14 +1078,14 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL fnDirIdent
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     LPSYMENTRY   lpSymEntry;            // Ptr to the SYMENTRY for the name
     UBOOL        bRet;                  // TRUE iff the result is valid
-    APLINT       aplInteger;
-    TKFLAGS      tkFlags = {0};
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    APLINT       aplInteger;            // Temporary integer
+    TKFLAGS      tkFlags = {0};         // Token flags
+    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
@@ -1095,7 +1097,7 @@ UBOOL fnDirIdent
     if (lptkLocalVars->lpMemClrNxt)
     {
         // Save the column index
-        lptkLocalVars->lpMemClrNxt->colIndex = COL_PRIM_FN;
+        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_PRIM_FN;
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
@@ -1163,7 +1165,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL fnAsnDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS    tkFlags = {0};
@@ -1177,7 +1179,7 @@ UBOOL fnAsnDone
     if (lptkLocalVars->lpMemClrNxt)
     {
         // Save the column index
-        lptkLocalVars->lpMemClrNxt->colIndex = COL_PRIM_FN;
+        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_PRIM_FN;
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
@@ -1208,7 +1210,7 @@ UBOOL fnAsnDone
 //***************************************************************************
 
 UBOOL fnLstDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS    tkFlags = {0};
@@ -1250,7 +1252,7 @@ UBOOL fnLstDone
 //***************************************************************************
 
 UBOOL fnClnDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS    tkFlags = {0};
@@ -1272,7 +1274,7 @@ UBOOL fnClnDone
 
         // Skip over leading white space
         for (uVar = 0; uVar < uLen; uVar++)
-        if (lptkLocalVars->lpMemClrIni[uVar].colIndex NE COL_SPACE)
+        if (lptkLocalVars->lpMemClrIni[uVar].colIndex NE TKCOL_SPACE)
             break;
 
         // Putative start of label
@@ -1280,11 +1282,11 @@ UBOOL fnClnDone
 
         // If the tokens up to this point have all been alpha, ...
         for (        ; uVar < uLen; uVar++)
-        if (lptkLocalVars->lpMemClrIni[uVar].colIndex NE COL_ALPHA)
+        if (lptkLocalVars->lpMemClrIni[uVar].colIndex NE TKCOL_ALPHA)
             break;
 
         // Save the column index
-        lptkLocalVars->lpMemClrNxt->colIndex = COL_COLON;
+        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_COLON;
 
         // If we're up to the current char, ...
         if (uVar EQ uLen && uLblIni NE uVar)
@@ -1299,8 +1301,8 @@ UBOOL fnClnDone
                 // Save the color (label separator)
                 lptkLocalVars->lpMemClrIni[uVar].syntClr =
                   gSyntaxColorName[SC_LABEL].syntClr;
-            // Set the new state to FSA_SOS so we can accept Control Strucures
-            SetTokenStates (lptkLocalVars, FSA_SOS);
+            // Set the new state to TKROW_SOS so we can accept Control Strucures
+            SetTokenStatesTK (lptkLocalVars, TKROW_SOS);
         } else
             // Save the color (plain old colon)
             lptkLocalVars->lpMemClrNxt++->syntClr =
@@ -1322,8 +1324,8 @@ UBOOL fnClnDone
         // Mark the data as a label separator
         tkFlags.TknType = TKT_LABELSEP;
 
-        // Set the new state to FSA_SOS so we can accept Control Strucures
-        SetTokenStates (lptkLocalVars, FSA_SOS);
+        // Set the new state to TKROW_SOS so we can accept Control Strucures
+        SetTokenStatesTK (lptkLocalVars, TKROW_SOS);
 
         // Save as index of new initial char
         lptkLocalVars->uCharIni = lptkLocalVars->uChar + 1;
@@ -1370,7 +1372,7 @@ UBOOL fnClnDone
 //***************************************************************************
 
 UBOOL fnCtrlDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS         tkFlags = {0};
@@ -1525,7 +1527,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL fnPrmDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS tkFlags = {0};
@@ -1580,7 +1582,7 @@ UBOOL fnPrmDone
 //***************************************************************************
 
 UBOOL fnPointAcc
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -1639,7 +1641,7 @@ ERROR_EXIT:
 #endif
 
 UBOOL fnPointSub
-    (LPTKLOCALVARS lptkLocalVars,   // Ptr to TK Local Vars
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      LPPERTABDATA  lpMemPTD,            // Ptr to PerTabData global memory
      WCHAR         wchCur)              // The char to accumulate
 
@@ -1683,7 +1685,7 @@ ERROR_EXIT:
 //***************************************************************************
 
 UBOOL fnPointDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -1807,7 +1809,7 @@ UBOOL fnPointDone
 
 NONCE_EXIT:
     // Set new state
-    lptkLocalVars->State[0] = FSA_NONCE;
+    lptkLocalVars->State[0] = TKROW_NONCE;
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbNum); lpszNum = NULL;
@@ -1829,7 +1831,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL fnOp1Done
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS    tkFlags = {0};
@@ -1886,7 +1888,7 @@ UBOOL fnOp1Done
 //***************************************************************************
 
 UBOOL fnOp2Done
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS    tkFlags = {0};
@@ -1928,7 +1930,7 @@ UBOOL fnOp2Done
 //***************************************************************************
 
 UBOOL fnDotDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS    tkFlags = {0};
@@ -1973,7 +1975,7 @@ UBOOL fnDotDone
 //***************************************************************************
 
 UBOOL fnJotDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     return fnJotDoneSub (lptkLocalVars, TRUE);
@@ -1988,7 +1990,7 @@ UBOOL fnJotDone
 //***************************************************************************
 
 UBOOL fnJotDone0
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     return fnJotDoneSub (lptkLocalVars, FALSE);
@@ -2002,8 +2004,8 @@ UBOOL fnJotDone0
 //***************************************************************************
 
 UBOOL fnJotDoneSub
-    (LPTKLOCALVARS lptkLocalVars,
-     UBOOL         bInitAcc)
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     UBOOL         bInitAcc)            // TRUE iff we shoudl initialize the accumulator vars
 
 {
     TKFLAGS tkFlags = {0};
@@ -2051,7 +2053,7 @@ UBOOL fnJotDoneSub
 //***************************************************************************
 
 UBOOL fnOutDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS tkFlags = {0};
@@ -2103,7 +2105,7 @@ UBOOL fnOutDone
 #endif
 
 UBOOL fnComDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     int     iLen;
@@ -2166,7 +2168,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL fnQuoInit
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     return fnQuoAccumSub (lptkLocalVars, SC_UNMATCHGRP);
@@ -2180,7 +2182,7 @@ UBOOL fnQuoInit
 //***************************************************************************
 
 UBOOL fnQuoAccum
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     return fnQuoAccumSub (lptkLocalVars, SC_CHRCONST);
@@ -2200,8 +2202,8 @@ UBOOL fnQuoAccum
 #endif
 
 UBOOL fnQuoAccumSub
-    (LPTKLOCALVARS lptkLocalVars,
-     SCTYPE        scType)
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     SCTYPE        scType)              // Syntax Color type (see SCTYPE)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -2222,10 +2224,10 @@ UBOOL fnQuoAccumSub
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
-        // Save the column index (COL_QUOTE1 marks the start,
-        //   COL_QUOTE2 is a subsequent char)
+        // Save the column index (TKCOL_QUOTE1 marks the start,
+        //   TKCOL_QUOTE2 is a subsequent char)
         lptkLocalVars->lpMemClrNxt->colIndex =
-          (scType EQ SC_UNMATCHGRP) ? COL_QUOTE1 : COL_QUOTE2;
+          (scType EQ SC_UNMATCHGRP) ? TKCOL_QUOTE1 : TKCOL_QUOTE2;
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
@@ -2266,7 +2268,7 @@ ERROR_EXIT:
 //***************************************************************************
 
 UBOOL fnQuoDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     return fnQuoDoneSub (lptkLocalVars, TRUE);
@@ -2280,7 +2282,7 @@ UBOOL fnQuoDone
 //***************************************************************************
 
 UBOOL fnQuoExit
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     return fnQuoDoneSub (lptkLocalVars, FALSE);
@@ -2300,14 +2302,14 @@ UBOOL fnQuoExit
 #endif
 
 UBOOL fnQuoDoneSub
-    (LPTKLOCALVARS lptkLocalVars,
-     UBOOL         bNormal)
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     UBOOL         bNormal)             // TRUE iff normal completion (as opposed to unmatched at EOL)
 
 {
-    HGLOBAL      hGlb;
-    TKFLAGS      tkFlags = {0};
-    APLINT       aplInteger;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    HGLOBAL      hGlb;                  // Temporary global memory handle
+    TKFLAGS      tkFlags = {0};         // Token flags
+    APLINT       aplInteger;            // Temporary integer
+    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet;                  // TRUE iff result is valid
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
@@ -2337,15 +2339,15 @@ UBOOL fnQuoDoneSub
             lpMemClrCol = &lptkLocalVars->lpMemClrNxt[-1];
 
             // Search backwards to find the matching quote mark
-            //  (it's COL_QUOTE1)
-            while (lpMemClrCol->colIndex EQ COL_QUOTE2)
+            //  (it's TKCOL_QUOTE1)
+            while (lpMemClrCol->colIndex EQ TKCOL_QUOTE2)
                 lpMemClrCol--;
 
             // If we found it, ...
-            if (lpMemClrCol->colIndex EQ COL_QUOTE1)
+            if (lpMemClrCol->colIndex EQ TKCOL_QUOTE1)
             {
                 // Mark as matched
-                lpMemClrCol->colIndex = COL_QUOTE2;
+                lpMemClrCol->colIndex = TKCOL_QUOTE2;
                 lpMemClrCol->syntClr  =
                   gSyntaxColorName[SC_CHRCONST].syntClr;
             } // End IF
@@ -2485,7 +2487,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL fnParInit
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
 
@@ -2504,7 +2506,7 @@ UBOOL fnParInit
 //***************************************************************************
 
 UBOOL fnBrkInit
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2522,7 +2524,7 @@ UBOOL fnBrkInit
 //***************************************************************************
 
 UBOOL fnBrcInit
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2545,8 +2547,8 @@ UBOOL fnBrcInit
 //***************************************************************************
 
 UBOOL GroupInitCom
-    (LPTKLOCALVARS lptkLocalVars,
-     UINT          uType)
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     TOKEN_TYPES   tknType)             // Token type (see TOKEN_TYPES)
 
 {
     TKFLAGS     tkFlags = {0};
@@ -2568,7 +2570,7 @@ UBOOL GroupInitCom
         lptkLocalVars->lpGrpSeqNxt->clrIndex  = (UINT) (lptkLocalVars->lpMemClrNxt++ - lptkLocalVars->lpMemClrIni);
 
         // Save the the token type of this (left) grouping symbol
-        lptkLocalVars->lpGrpSeqNxt->TknType   = uType;
+        lptkLocalVars->lpGrpSeqNxt->TknType   = tknType;
 
         // Save the index of this GrpSeq entry and skip over it
         lptkLocalVars->PrevGroup              = (UINT) (lptkLocalVars->lpGrpSeqNxt++ - lptkLocalVars->lpGrpSeqIni);
@@ -2578,7 +2580,7 @@ UBOOL GroupInitCom
     } // End IF
 
     // Mark the data as a left grouping symbol
-    tkFlags.TknType = uType;
+    tkFlags.TknType = tknType;
 
     // Copy the address of the token we're about to create
     lpNext = lptkLocalVars->lpNext;
@@ -2604,7 +2606,7 @@ UBOOL GroupInitCom
 //***************************************************************************
 
 UBOOL fnParDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2622,7 +2624,7 @@ UBOOL fnParDone
 //***************************************************************************
 
 UBOOL fnBrkDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2640,7 +2642,7 @@ UBOOL fnBrkDone
 //***************************************************************************
 
 UBOOL fnBrcDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2664,20 +2666,19 @@ UBOOL fnBrcDone
 #endif
 
 UBOOL GroupDoneCom
-    (LPTKLOCALVARS lptkLocalVars,
-     TOKEN_TYPES   uTypeCurr,
-     TOKEN_TYPES   uTypePrev)
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     TOKEN_TYPES   tknTypeCurr,         // Token type of current grouping symbol
+     TOKEN_TYPES   tknTypePrev)         // ...           previous ...
 
 {
-    UINT        uPrevGroup;
-    UBOOL       bRet = TRUE;
-    APLLONGEST  aplLongest;
+    UINT        uPrevGroup;             // Index of the previous grouping symbol
+    UBOOL       bRet = TRUE;            // TRUE iff the result is valid
+    APLLONGEST  aplLongest;             // Temporary value
 
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
-        UINT PrevGroup,
-             uCount,
+        UINT uCount,
              uMatchGrp;
         static UINT aMatchGrp[] = {SC_MATCHGRP1,
                                    SC_MATCHGRP2,
@@ -2686,17 +2687,17 @@ UBOOL GroupDoneCom
         Assert (NUM_MATCHGRPS EQ countof (aMatchGrp));
 
         // Get the index in lpGrpSeqIni of the previous grouping symbol
-        PrevGroup = lptkLocalVars->PrevGroup;
+        uPrevGroup = lptkLocalVars->PrevGroup;
 
         // If there's no previous grouping symbol, ...
-        if (PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
+        if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
             // Save the color and skip over it
             lptkLocalVars->lpMemClrNxt++->syntClr =
               gSyntaxColorName[SC_UNMATCHGRP].syntClr;
         else
         {
             // Check for improper nesting
-            if (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType NE uTypePrev)
+            if (lptkLocalVars->lpGrpSeqIni[uPrevGroup].TknType NE tknTypePrev)
                 // Save the color and skip over it
                 lptkLocalVars->lpMemClrNxt++->syntClr =
                   gSyntaxColorName[SC_UNNESTED].syntClr;
@@ -2706,11 +2707,11 @@ UBOOL GroupDoneCom
                 uCount = 0;
 
                 // Count the nesting level of grouping symbol
-                while (lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
+                while (lptkLocalVars->lpGrpSeqIni[uPrevGroup].PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
                 {
-                    if (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType EQ uTypePrev)
+                    if (lptkLocalVars->lpGrpSeqIni[uPrevGroup].TknType EQ tknTypePrev)
                         uCount++;
-                    PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+                    uPrevGroup = lptkLocalVars->lpGrpSeqIni[uPrevGroup].PrevGroup;
                 } // End WHILE
 
                 // Get the matching level color index
@@ -2721,18 +2722,18 @@ UBOOL GroupDoneCom
                   gSyntaxColorName[uMatchGrp].syntClr;
 
                 // Get the index in lpGrpSeqIni of the previous grouping symbol
-                PrevGroup = lptkLocalVars->PrevGroup;
+                uPrevGroup = lptkLocalVars->PrevGroup;
 
                 // Loop through the previous grouping symbols until we find one of our kind
-                while (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType NE uTypePrev)
-                    PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+                while (lptkLocalVars->lpGrpSeqIni[uPrevGroup].TknType NE tknTypePrev)
+                    uPrevGroup = lptkLocalVars->lpGrpSeqIni[uPrevGroup].PrevGroup;
 
                 // Reset the preceding matching symbol's color
-                lptkLocalVars->lpMemClrIni[lptkLocalVars->lpGrpSeqIni[PrevGroup].clrIndex].syntClr =
+                lptkLocalVars->lpMemClrIni[lptkLocalVars->lpGrpSeqIni[uPrevGroup].clrIndex].syntClr =
                   gSyntaxColorName[uMatchGrp].syntClr;
 
                 // Save the index of the previous previous grouping symbol
-                lptkLocalVars->PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
+                lptkLocalVars->PrevGroup = lptkLocalVars->lpGrpSeqIni[uPrevGroup].PrevGroup;
             } // End IF/ELSE
         } // End IF/ELSE
 
@@ -2745,10 +2746,10 @@ UBOOL GroupDoneCom
 
     // Ensure proper nesting
     if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL
-     || lptkLocalVars->lpStart[uPrevGroup].tkFlags.TknType NE (UINT) uTypePrev)
+     || lptkLocalVars->lpStart[uPrevGroup].tkFlags.TknType NE (UINT) tknTypePrev)
     {
         // Save the error caret position
-        SaveErrorPosition (lptkLocalVars->uChar);
+        lptkLocalVars->lpMemPTD->uCaret = lptkLocalVars->uChar;
 
         bRet = FALSE;
 
@@ -2759,7 +2760,7 @@ UBOOL GroupDoneCom
         TKFLAGS tkFlags = {0};
 
         // Mark the data as a right grouping symbol
-        tkFlags.TknType = uTypeCurr;
+        tkFlags.TknType = tknTypeCurr;
 
         // Copy the address of the token we're about to create
         lpNext = lptkLocalVars->lpNext;
@@ -2800,7 +2801,7 @@ NORMAL_EXIT:
 #endif
 
 UBOOL MergeNumbers
-    (LPTKLOCALVARS lptkLocalVars,   // Ptr to local vars
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      LPPNLOCALVARS lppnLocalVars,       // Ptr to PNLOCALVARS global memory
      LPUBOOL       lpbRet)              // Ptr to TRUE iff the result is valid
 
@@ -3055,40 +3056,13 @@ UBOOL MergeNumbers
 
 
 //***************************************************************************
-//  $SaveErrorPosition
-//
-//  Save the error caret position
-//***************************************************************************
-
-void SaveErrorPosition
-    (UINT uChar)            // Error caret position
-
-{
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Save the caret position
-    lpMemPTD->uCaret = uChar;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End SaveErrorPosition
-
-
-//***************************************************************************
 //  $fnDiaDone
 //
 //  Done with this stmt
 //***************************************************************************
 
 UBOOL fnDiaDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS tkFlags = {0};
@@ -3153,14 +3127,14 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL fnSyntQuote
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
         // Save the column index
-        lptkLocalVars->lpMemClrNxt->colIndex = COL_QUOTE2;
+        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_QUOTE2;
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
@@ -3179,7 +3153,7 @@ UBOOL fnSyntQuote
 //***************************************************************************
 
 UBOOL fnSyntWhite
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     // Check for Syntax Coloring
@@ -3200,7 +3174,7 @@ UBOOL fnSyntWhite
 //***************************************************************************
 
 UBOOL fnSyntPrm
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     // Check for Syntax Coloring
@@ -3221,7 +3195,7 @@ UBOOL fnSyntPrm
 //***************************************************************************
 
 UBOOL fnUnkDone
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     TKFLAGS    tkFlags = {0};
@@ -3237,7 +3211,7 @@ UBOOL fnUnkDone
         SCTYPE scType;
 
         // If the col is not EOL, ...
-        if (lptkLocalVars->colIndex NE COL_EOL)
+        if (lptkLocalVars->colIndex NE TKCOL_EOL)
         {
             // Split cases based upon the unknown char
             switch (*lptkLocalVars->lpwszCur)
@@ -3318,9 +3292,9 @@ HGLOBAL Tokenize_EM
 
 {
     UINT         uChar;             // Loop counter
-    WCHAR        wchOrig,           // The original char
-                 wchColNum;         // The translated char for tokenization as a COL_*** value
-    FNACTION     fnAction1_EM,      // Ptr to 1st action
+    WCHAR        wchOrig;           // The original char
+    TKCOLINDICES colIndex;          // The translated char for tokenization as a TKCOL_*** value
+    TK_ACTION    fnAction1_EM,      // Ptr to 1st action
                  fnAction2_EM;      // ...    2nd ...
     TKLOCALVARS  tkLocalVars = {0}; // Local vars
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
@@ -3344,10 +3318,10 @@ HGLOBAL Tokenize_EM
     // Save local vars in struct which we pass to each FSA action routine
     tkLocalVars.State[2] =
     tkLocalVars.State[1] =
-    tkLocalVars.State[0] = FSA_SOS;
+    tkLocalVars.State[0] = TKROW_SOS;
     tkLocalVars.uLineNum = uLineNum;
     tkLocalVars.uStmtNum = 0;
-    tkLocalVars.bMF      = bMF;
+    tkLocalVars.bMF      = bMF;             // TRUE iff this is a Magic Function
 
     // If this is the function header (uLineNum EQ 0)
     //   save and restore the ptr to the next token
@@ -3456,9 +3430,9 @@ HGLOBAL Tokenize_EM
         /* The FSA works as follows:
 
            1.  Get the next WCHAR from the input;
-           2.  Translate it into a COL_*** index;
+           2.  Translate it into a TKCOL_*** index;
            3.  Use the current state as a row index and the
-               above index as a column index into fsaColTable,
+               above index as a column index into fsaActTableTK,
                take the appropriate action.
            4.  Repeat until EOL or an error occurs.
          */
@@ -3493,31 +3467,31 @@ HGLOBAL Tokenize_EM
 
         // Strip out EOL check so we don't confuse a zero-value char with EOL
         if (uChar EQ aplNELM)
-            wchColNum = COL_EOL;
+            colIndex = TKCOL_EOL;
         else
-            wchColNum = CharTrans (wchOrig, &tkLocalVars);
+            colIndex = CharTransTK (wchOrig, &tkLocalVars);
 
-        // Save the COL_xxx value
-        tkLocalVars.colIndex = wchColNum;
+        // Save the TKCOL_xxx value
+        tkLocalVars.colIndex = colIndex;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         wsprintfW (wszTemp,
                    L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
                    wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
                    wchOrig,
-                   GetColName (wchColNum),
-                   wchColNum,
+                   GetColName (colIndex),
+                   colIndex,
                    tkLocalVars.State[0],
-                   fsaColTable[tkLocalVars.State[0]][wchColNum].iNewState,
-                   fsaColTable[tkLocalVars.State[0]][wchColNum].fnAction1,
-                   fsaColTable[tkLocalVars.State[0]][wchColNum].fnAction2);
+                   fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState,
+                   fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
+                   fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
         DbgMsgW (wszTemp);
 #endif
 
         // Get primary action and new state
-        fnAction1_EM = fsaColTable[tkLocalVars.State[0]][wchColNum].fnAction1;
-        fnAction2_EM = fsaColTable[tkLocalVars.State[0]][wchColNum].fnAction2;
-        SetTokenStates (&tkLocalVars, fsaColTable[tkLocalVars.State[0]][wchColNum].iNewState);
+        fnAction1_EM = fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1;
+        fnAction2_EM = fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2;
+        SetTokenStatesTK (&tkLocalVars, fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState);
 
         // Check for primary action
         if (fnAction1_EM
@@ -3532,13 +3506,13 @@ HGLOBAL Tokenize_EM
         // Split cases based upon the return code
         switch (tkLocalVars.State[0])
         {
-            case FSA_NONCE:
+            case TKROW_NONCE:
                 // Save the error caret position
-                SaveErrorPosition (tkLocalVars.uChar);
+                tkLocalVars.lpMemPTD->uCaret = tkLocalVars.uChar;
 
                 goto NONCE_EXIT;
 
-            case FSA_EXIT:
+            case TKROW_EXIT:
             {
                 UINT    uNext;              // Offset from Start to Next in units of sizeof (TOKEN)
                 APLINT  aplInteger;         // Temporary integer for SOS token
@@ -3582,7 +3556,7 @@ HGLOBAL Tokenize_EM
                                  + uNext * sizeof (TOKEN),
                                    GHND);
                 goto UNLOCKED_EXIT;
-            } // End FSA_EXIT
+            } // End TKROW_EXIT
         } // End SWITCH
 
         // Get next index (may have been modified by an action)
@@ -3591,7 +3565,7 @@ HGLOBAL Tokenize_EM
 
     // We should never get here as we process the
     //   trailing zero in the input line which should
-    //   exit from one of the actions with FSA_EXIT.
+    //   exit from one of the actions with TKROW_EXIT.
     DbgStop ();
 
 WSFULL_EXIT:
@@ -3704,7 +3678,7 @@ FREED_EXIT:
 #endif
 
 UBOOL CheckGroupSymbols_EM
-    (LPTKLOCALVARS lptkLocalVars)
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     if ((!OptionFlags.bCheckGroup)
@@ -3712,7 +3686,7 @@ UBOOL CheckGroupSymbols_EM
         return TRUE;
 
     // Save the error caret position
-    SaveErrorPosition (lptkLocalVars->uChar);
+    lptkLocalVars->lpMemPTD->uCaret = lptkLocalVars->uChar;
 
     // Save the error message
     ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
@@ -3735,7 +3709,7 @@ UBOOL CheckGroupSymbols_EM
 #endif
 
 void Untokenize
-    (HGLOBAL hGlbToken)
+    (HGLOBAL hGlbToken)                 // Token global memory handle
 
 {
     LPTOKEN lpToken;
@@ -3918,11 +3892,11 @@ void Untokenize
 //***************************************************************************
 
 UBOOL AppendEOSToken_EM
-    (LPTKLOCALVARS lptkLocalVars,
-     UBOOL         bAppend)
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     UBOOL         bAppend)             // TRUE iff append EOS token
 
 {
-    APLINT aplInteger;
+    APLINT aplInteger;                  // Temporary integer
 
     // Calculate the # tokens in this stmt
     lptkLocalVars->lpLastEOS->tkData.tkIndex = (UINT) (lptkLocalVars->lpNext - lptkLocalVars->lpLastEOS);
@@ -3979,7 +3953,7 @@ UBOOL AppendEOSToken_EM
 #endif
 
 UBOOL AppendNewToken_EM
-    (LPTKLOCALVARS lptkLocalVars,       // Ptr to local vars
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      LPTKFLAGS     lptkFlags,           // Ptr to token flags
      LPAPLLONGEST  lptkData,            // Ptr to token data (may be NULL)
      int           iCharOffset)         // Offset from lpwszCur of the token (where the caret goes)
@@ -4219,14 +4193,14 @@ SKIP_EXIT:
 
 
 //***************************************************************************
-//  $CharTrans
+//  $CharTransTK
 //
 //  Translate a character in preparation for tokenizing
 //***************************************************************************
 
-WCHAR CharTrans
-    (WCHAR         wchOrig,             // Char to translate into a COL_xxx index
-     LPTKLOCALVARS lptkLocalVars)       // Ptr to local vars
+TKCOLINDICES CharTransTK
+    (WCHAR         wchOrig,             // Char to translate into a TKCOL_xxx index
+     LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
     // Split cases
@@ -4315,16 +4289,16 @@ WCHAR CharTrans
 
         case UTF16_DELTA:               // Alt-'h' - delta
         case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar
-            return COL_ALPHA;
+            return TKCOL_ALPHA;
 
         case L'_':
-            return COL_UNDERBAR;
+            return TKCOL_UNDERBAR;
 
         case UTF16_INFINITY:
-            return COL_INFINITY;
+            return TKCOL_INFINITY;
 
         case L'.':
-            return COL_DOT;
+            return TKCOL_DOT;
 
         case L'0':
         case L'1':
@@ -4336,28 +4310,28 @@ WCHAR CharTrans
         case L'7':
         case L'8':
         case L'9':
-            return COL_DIGIT;
+            return TKCOL_DIGIT;
 
         case L' ':
         case L'\t':
-            return COL_SPACE;
+            return TKCOL_SPACE;
 
         case UTF16_ALPHA:               // Alt-'a' - alpha
         case UTF16_OMEGA:               // Alt-'w' - omega
-            return COL_DIRIDENT;
+            return TKCOL_DIRIDENT;
 
-////////case UTF16_ALPHA:               // Alt-'a' - alpha (COL_DIRIDENT)
+////////case UTF16_ALPHA:               // Alt-'a' - alpha (TKCOL_DIRIDENT)
         case UTF16_UPTACK:              // Alt-'b' - up tack
         case UTF16_UPSHOE:              // Alt-'c' - up shoe
         case UTF16_DOWNSTILE:           // Alt-'d' - down stile
         case UTF16_EPSILON:             // Alt-'e' - epsilon
-////////case UTF16_INFINITY:            // Alt-'f' - infinity (COL_INFINITY)
-////////case UTF16_DEL:                 // Alt-'g' - del (COL_UNK)
-////////case UTF16_DELTA:               // Alt-'h' - delta (COL_ALPHA)
+////////case UTF16_INFINITY:            // Alt-'f' - infinity (TKCOL_INFINITY)
+////////case UTF16_DEL:                 // Alt-'g' - del (TKCOL_UNK)
+////////case UTF16_DELTA:               // Alt-'h' - delta (TKCOL_ALPHA)
         case UTF16_IOTA:                // Alt-'i' - iota
-////////case UTF16_JOT:                 // Alt-'j' - jot (COL_JOT)
-////////case UTF16_APOSTROPHE:          // Alt-'k' - single quote (COL_QUOTE1)
-////////case UTF16_QUAD:                // Alt-'l' - quad (COL_Q_QQ)
+////////case UTF16_JOT:                 // Alt-'j' - jot (TKCOL_JOT)
+////////case UTF16_APOSTROPHE:          // Alt-'k' - single quote (TKCOL_QUOTE1)
+////////case UTF16_QUAD:                // Alt-'l' - quad (TKCOL_Q_QQ)
         case UTF16_STILE:               // Alt-'m' - stile
         case UTF16_DOWNTACK:            // Alt-'n' - down tack
         case UTF16_CIRCLE:              // Alt-'o' - circle
@@ -4368,7 +4342,7 @@ WCHAR CharTrans
         case UTF16_TILDE:               // Alt-'t' - tilde
         case UTF16_DOWNARROW:           // Alt-'u' - down arrow
         case UTF16_DOWNSHOE:            // Alt-'v' - down shoe
-////////case UTF16_OMEGA:               // Alt-'w' - omega (COL_DIRIDENT)
+////////case UTF16_OMEGA:               // Alt-'w' - omega (TKCOL_DIRIDENT)
         case UTF16_RIGHTSHOE:           // Alt-'x' - right shoe
         case UTF16_UPARROW:             // Alt-'y' - up arrow
         case UTF16_LEFTSHOE:            // Alt-'z' - left shoe
@@ -4384,13 +4358,13 @@ WCHAR CharTrans
         case UTF16_UPCARETTILDE:        // Alt-')' - nand
         case UTF16_CIRCLESTAR:          // Alt-'*' - log
         case UTF16_DOMINO:              // Alt-'+' - domino
-////////case UTF16_LAMP:                // Alt-',' - comment (COL_LAMP)
+////////case UTF16_LAMP:                // Alt-',' - comment (TKCOL_LAMP)
         case UTF16_TIMES:               // Alt-'-' - times
-////////case UTF16_SLOPEBAR:            // Alt-'.' - slope-bar (COL_PRIM_OP1)
-////////case UTF16_SLASHBAR:            // Alt-'/' - slash-bar (COL_PRIM_OP1)
+////////case UTF16_SLOPEBAR:            // Alt-'.' - slope-bar (TKCOL_PRIM_OP1)
+////////case UTF16_SLASHBAR:            // Alt-'/' - slash-bar (TKCOL_PRIM_OP1)
         case UTF16_UPCARET:             // Alt-'0' - and (94??)
-////////case UTF16_DIERESIS:            // Alt-'1' - dieresis (COL_PRIM_OP1)
-////////case UTF16_OVERBAR:             // Alt-'2' - overbar (COL_OVERBAR)
+////////case UTF16_DIERESIS:            // Alt-'1' - dieresis (TKCOL_PRIM_OP1)
+////////case UTF16_OVERBAR:             // Alt-'2' - overbar (TKCOL_OVERBAR)
         case UTF16_LEFTCARET:           // Alt-'3' - less
         case UTF16_LEFTCARETUNDERBAR:   // Alt-'4' - not more
         case UTF16_EQUAL:               // Alt-'5' - equal
@@ -4404,42 +4378,42 @@ WCHAR CharTrans
         case UTF16_COLONBAR:            // Alt-'=' - divide
 ////////case UTF16_                     // Alt-'>' - (none)
 ////////case UTF16_                     // Alt-'?' - (none)
-////////case UTF16_CIRCLEMIDDLEDOT      // Alt-'@' - circle-middle-dot (COL_PRIM_OP1)
+////////case UTF16_CIRCLEMIDDLEDOT      // Alt-'@' - circle-middle-dot (TKCOL_PRIM_OP1)
 ////////case UTF16_                     // Alt-'A' - (none)
 ////////case UTF16_                     // Alt-'B' - (none)
 ////////case UTF16_                     // Alt-'C' - (none)
 ////////case UTF16_                     // Alt-'D' - (none)
         case UTF16_EPSILONUNDERBAR:     // Alt-'E' - epsilon-underbar
 ////////case UTF16_                     // Alt-'F' - (none)
-////////case UTF16_DIERESISDEL:         // Alt-'G' - dual (COL_PRIM_OP2)
-////////case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar (COL_ALPHA)
+////////case UTF16_DIERESISDEL:         // Alt-'G' - dual (TKCOL_PRIM_OP2)
+////////case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar (TKCOL_ALPHA)
         case UTF16_IOTAUNDERBAR:        // Alt-'I' - iota-underbar
-////////case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot) (COL_PRIM_OP2)
+////////case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot) (TKCOL_PRIM_OP2)
 ////////case UTF16_                     // Alt-'K' - (none)
         case UTF16_SQUAD:               // Alt-'L' - squad
 ////////case UTF16_                     // Alt-'M' - (none)
-////////case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution (COL_PRIM_OP2)
+////////case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution (TKCOL_PRIM_OP2)
 ////////case UTF16_DIERESISCIRCLE:      // Alt-'O' - ??? (holler)
-////////case UTF16_DIERESISSTAR:        // Alt-'P' - power  (COL_PRIM_OP2)
+////////case UTF16_DIERESISSTAR:        // Alt-'P' - power  (TKCOL_PRIM_OP2)
 ////////case UTF16_                     // Alt-'Q' - (none)
 ////////case UTF16_                     // Alt-'R' - (none)
 ////////case UTF16_                     // Alt-'S' - (none)
-////////case UTF16_DIERESISTILDE:       // Alt-'T' - commute (COL_PRIM_OP1)
+////////case UTF16_DIERESISTILDE:       // Alt-'T' - commute (TKCOL_PRIM_OP1)
 ////////case UTF16_                     // Alt-'U' - (none)
 ////////case UTF16_                     // Alt-'V' - (none)
 ////////case UTF16_                     // Alt-'W' - (none)
 ////////case UTF16_                     // Alt-'X' - (none)
 ////////case UTF16_                     // Alt-'Y' - (none)
 ////////case UTF16_                     // Alt-'Z' - (none)
-////////case UTF16_LEFTARROW:           // Alt-'[' - left arrow (COL_ASSIGN)
+////////case UTF16_LEFTARROW:           // Alt-'[' - left arrow (TKCOL_ASSIGN)
         case UTF16_LEFTTACK:            // Alt-'\' - left tack
         case UTF16_RIGHTARROW:          // Alt-']' - right arrow
         case UTF16_CIRCLESLOPE:         // Alt-'^' - transpose
         case UTF16_QUOTEDOT:            // Alt-'_' - quote-dot
-////////case UTF16_DIAMOND:             // Alt-'`' - diamond (COL_DIAMOND)
+////////case UTF16_DIAMOND:             // Alt-'`' - diamond (TKCOL_DIAMOND)
 ////////case UTF16_QUOTEQUAD:           // Alt-'{' - quote-quad
         case UTF16_RIGHTTACK:           // Alt-'|' - right tack
-////////case UTF16_ZILDE:               // Alt-'}' - zilde (COL_PRIM_FN0)
+////////case UTF16_ZILDE:               // Alt-'}' - zilde (TKCOL_PRIM_FN0)
         case UTF16_COMMABAR:            // Alt-'~' - comma-bar
 ////////case UTF16_TILDE:               //     '~' - tilde
 ////////case UTF16_QUOTEDOT:            //     '!' - shreik
@@ -4453,7 +4427,7 @@ WCHAR CharTrans
 ////////case UTF16_LEFTCARET:           //     '<' - left caret
 ////////case UTF16_RIGHTCARET:          //     '>' - right caret
 ////////case UTF16_QUERY:               //     '?' - query
-            return COL_PRIM_FN;
+            return TKCOL_PRIM_FN;
 
         case UTF16_SLOPE:               //     '\' - slope
         case UTF16_SLOPEBAR:            // Alt-'.' - slope-bar
@@ -4462,62 +4436,62 @@ WCHAR CharTrans
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
         case UTF16_DIERESISTILDE:       // Alt-'T' - commute/duplicate
         case UTF16_CIRCLEMIDDLEDOT:     // Alt-'@' - circle-middle-dot
-            return COL_PRIM_OP1;
+            return TKCOL_PRIM_OP1;
 
         case UTF16_DIERESISDEL:         // Alt-'G' - dual
         case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot)
         case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution
         case UTF16_DIERESISSTAR:        // Alt-'P' - power
-            return COL_PRIM_OP2;
+            return TKCOL_PRIM_OP2;
 
         case UTF16_JOT:                 // Alt-'j' - jot
-            return COL_JOT;
+            return TKCOL_JOT;
 
         case UTF16_APOSTROPHE:          // Alt-'k' - single quote
-            return COL_QUOTE1;
+            return TKCOL_QUOTE1;
 
         case UTF16_DOUBLEQUOTE:         //     '"' - double quote
-            return COL_QUOTE2;
+            return TKCOL_QUOTE2;
 
         case UTF16_QUAD:                // Alt-'l' - quad
         case UTF16_QUOTEQUAD:           // Alt-'{' - quote-quad
-            return COL_Q_QQ;
+            return TKCOL_Q_QQ;
 
         case UTF16_LAMP:                // Alt-',' - comment
-            return COL_LAMP;
+            return TKCOL_LAMP;
 
         case UTF16_LEFTARROW:           // Alt-'[' - left arrow
-            return COL_ASSIGN;
+            return TKCOL_ASSIGN;
 
         case UTF16_OVERBAR:             // Alt-'2' - high minus
-            return COL_OVERBAR;
+            return TKCOL_OVERBAR;
 
         case UTF16_DIAMOND:             // Alt-'`' - diamond
-            return COL_DIAMOND;
+            return TKCOL_DIAMOND;
 
         case UTF16_ZILDE:               // Alt-'}' - zilde
-            return COL_PRIM_FN0;
+            return TKCOL_PRIM_FN0;
 
         case UTF16_LEFTPAREN:           //     '(' - left paren
-            return COL_LEFTPAREN;
+            return TKCOL_LEFTPAREN;
 
         case UTF16_RIGHTPAREN:          //     ')' - right paren
-            return COL_RIGHTPAREN;
+            return TKCOL_RIGHTPAREN;
 
         case UTF16_LEFTBRACKET:         //     '[' - left bracket
-            return COL_LEFTBRACKET;
+            return TKCOL_LEFTBRACKET;
 
         case UTF16_RIGHTBRACKET:        //     ']' - right bracket
-            return COL_RIGHTBRACKET;
+            return TKCOL_RIGHTBRACKET;
 
         case UTF16_SEMICOLON:           // Lists (bracketed and otherwise)
-            return COL_SEMICOLON;
+            return TKCOL_SEMICOLON;
 
         case UTF16_COLON:               // Line labels
             // Handle odd cases such as L1:in{is}1
-            if ((lptkLocalVars->State[1] EQ FSA_SOS && lptkLocalVars->State[0] EQ FSA_ALPHA)
-             || (lptkLocalVars->State[2] EQ FSA_SOS && lptkLocalVars->State[1] EQ FSA_ALPHA && lptkLocalVars->State[0] EQ FSA_INIT))
-                return COL_COLON;
+            if ((lptkLocalVars->State[1] EQ TKROW_SOS && lptkLocalVars->State[0] EQ TKROW_ALPHA)
+             || (lptkLocalVars->State[2] EQ TKROW_SOS && lptkLocalVars->State[1] EQ TKROW_ALPHA && lptkLocalVars->State[0] EQ TKROW_INIT))
+                return TKCOL_COLON;
 
             // Check the next few chars to see if they match any
             //   Control Structures
@@ -4546,22 +4520,22 @@ WCHAR CharTrans
              || CtrlStrucCmpi (lptkLocalVars, L":select"   , TKT_CS_SELECT   )
              || CtrlStrucCmpi (lptkLocalVars, L":until"    , TKT_CS_UNTIL    )
              || CtrlStrucCmpi (lptkLocalVars, L":while"    , TKT_CS_WHILE    ))
-                return COL_CTRLSTRUC;
+                return TKCOL_CTRLSTRUC;
             else
-                return COL_COLON;
+                return TKCOL_COLON;
 
         case UTF16_LEFTBRACE:           //     '{' - left brace
-            return COL_LEFTBRACE;
+            return TKCOL_LEFTBRACE;
 
         case UTF16_RIGHTBRACE:          //     '}' - right brace
-            return COL_RIGHTBRACE;
+            return TKCOL_RIGHTBRACE;
 
         case L'#':
             // If we're tokenizing a Magic Function, ...
             if (lptkLocalVars->bMF)
-                return COL_ALPHA;
+                return TKCOL_ALPHA;
             else
-                return COL_UNK;
+                return TKCOL_UNK;
 
         case UTF16_DEL:                 // Alt-'g' - del
         case UTF16_DIERESISCIRCLE:      // Alt-'O' - ??? (holler)
@@ -4571,7 +4545,7 @@ WCHAR CharTrans
         case L'%':
         case L'&':
         case L'\0':
-            return COL_UNK;
+            return TKCOL_UNK;
 
         default:
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -4579,15 +4553,15 @@ WCHAR CharTrans
             WCHAR wszTemp[64];
 
             wsprintfW (wszTemp,
-                       L"CharTrans:  Unknown char: %c (%d)",
+                       L"CharTransTK:  Unknown char: %c (%d)",
                        wchOrig,
                        wchOrig);
             DbgMsgW (wszTemp);
         }
 #endif
-            return COL_UNK;
+            return TKCOL_UNK;
     } // End SWITCH
-} // End CharTrans
+} // End CharTransTK
 
 
 //***************************************************************************
@@ -4597,7 +4571,7 @@ WCHAR CharTrans
 //***************************************************************************
 
 UBOOL CtrlStrucCmpi
-    (LPTKLOCALVARS lptkLocalVars,       // Ptr to local vars
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      LPWCHAR       lpwCSName,           // Ptr to Control Structure name
      TOKEN_TYPES   TknType)             // Matching token type
 
@@ -4639,7 +4613,7 @@ UBOOL CtrlStrucCmpi
 //***************************************************************************
 
 LPWCHAR GetColName
-    (UINT uType)
+    (TKCOLINDICES colIndex)             // TKCOL_xxx index (see TKCOLINDICES)
 
 {
 typedef struct tagCOLNAMES
@@ -4649,46 +4623,46 @@ typedef struct tagCOLNAMES
 } COLNAMES, *LPCOLNAMES;
 
 static COLNAMES colNames[] =
-{{L"DIGIT"       , COL_DIGIT       },   // 00: Digit
- {L"DOT"         , COL_DOT         },   // 01: Decimal number, inner & outer product separator
- {L"ALPHA"       , COL_ALPHA       },   // 02: Alphabetic
- {L"OVERBAR"     , COL_OVERBAR     },   // 03: Overbar
- {L"DIRIDENT"    , COL_DIRIDENT    },   // 04: Alpha or Omega
- {L"Q_QQ"        , COL_Q_QQ        },   // 05: Quad
- {L"UNDERBAR"    , COL_UNDERBAR    },   // 06: Underbar
- {L"INFINITY"    , COL_INFINITY    },   // 07: Infinity
- {L"ASSIGN"      , COL_ASSIGN      },   // 08: Assignment symbol
- {L"SEMICOLON"   , COL_SEMICOLON   },   // 09: Semicolon symbol
- {L"COLON"       , COL_COLON       },   // 0A: Colon symbol
- {L"CTRLSTRUC"   , COL_CTRLSTRUC   },   // 0B: Control Structure
- {L"PRIM_FN"     , COL_PRIM_FN     },   // 0C: Primitive monadic or dyadic function
- {L"PRIM_FN0"    , COL_PRIM_FN0    },   // 0D: ...       niladic function
- {L"PRIM_OP1"    , COL_PRIM_OP1    },   // 0E: ...       monadic operator
- {L"PRIM_OP2"    , COL_PRIM_OP2    },   // 0F: ...       dyadic  ...
- {L"JOT"         , COL_JOT         },   // 10: Jot symbol
- {L"LEFTPAREN"   , COL_LEFTPAREN   },   // 11: Left paren
- {L"RIGHTPAREN"  , COL_RIGHTPAREN  },   // 12: Right ...
- {L"LEFTBRACKET" , COL_LEFTBRACKET },   // 13: Left bracket
- {L"RIGHTBRACKET", COL_RIGHTBRACKET},   // 14: Right ...
- {L"LEFTBRACE"   , COL_LEFTBRACE   },   // 15: Left brace
- {L"RIGHTBRACE"  , COL_RIGHTBRACE  },   // 16: Right ...
- {L"SPACE"       , COL_SPACE       },   // 17: White space (' ' or '\t')
- {L"QUOTE1"      , COL_QUOTE1      },   // 18: Single quote symbol
- {L"QUOTE2"      , COL_QUOTE2      },   // 19: Double ...
- {L"DIAMOND"     , COL_DIAMOND     },   // 1A: Diamond symbol
- {L"LAMP"        , COL_LAMP        },   // 1B: Comment symbol
- {L"EOL"         , COL_EOL         },   // 1C: End-Of-Line
- {L"UNK"         , COL_UNK         },   // 1D: Unknown symbols
+{{L"DIGIT"       , TKCOL_DIGIT       }, // 00: Digit
+ {L"DOT"         , TKCOL_DOT         }, // 01: Decimal number, inner & outer product separator
+ {L"ALPHA"       , TKCOL_ALPHA       }, // 02: Alphabetic
+ {L"OVERBAR"     , TKCOL_OVERBAR     }, // 03: Overbar
+ {L"DIRIDENT"    , TKCOL_DIRIDENT    }, // 04: Alpha or Omega
+ {L"Q_QQ"        , TKCOL_Q_QQ        }, // 05: Quad
+ {L"UNDERBAR"    , TKCOL_UNDERBAR    }, // 06: Underbar
+ {L"INFINITY"    , TKCOL_INFINITY    }, // 07: Infinity
+ {L"ASSIGN"      , TKCOL_ASSIGN      }, // 08: Assignment symbol
+ {L"SEMICOLON"   , TKCOL_SEMICOLON   }, // 09: Semicolon symbol
+ {L"COLON"       , TKCOL_COLON       }, // 0A: Colon symbol
+ {L"CTRLSTRUC"   , TKCOL_CTRLSTRUC   }, // 0B: Control Structure
+ {L"PRIM_FN"     , TKCOL_PRIM_FN     }, // 0C: Primitive monadic or dyadic function
+ {L"PRIM_FN0"    , TKCOL_PRIM_FN0    }, // 0D: ...       niladic function
+ {L"PRIM_OP1"    , TKCOL_PRIM_OP1    }, // 0E: ...       monadic operator
+ {L"PRIM_OP2"    , TKCOL_PRIM_OP2    }, // 0F: ...       dyadic  ...
+ {L"JOT"         , TKCOL_JOT         }, // 10: Jot symbol
+ {L"LEFTPAREN"   , TKCOL_LEFTPAREN   }, // 11: Left paren
+ {L"RIGHTPAREN"  , TKCOL_RIGHTPAREN  }, // 12: Right ...
+ {L"LEFTBRACKET" , TKCOL_LEFTBRACKET }, // 13: Left bracket
+ {L"RIGHTBRACKET", TKCOL_RIGHTBRACKET}, // 14: Right ...
+ {L"LEFTBRACE"   , TKCOL_LEFTBRACE   }, // 15: Left brace
+ {L"RIGHTBRACE"  , TKCOL_RIGHTBRACE  }, // 16: Right ...
+ {L"SPACE"       , TKCOL_SPACE       }, // 17: White space (' ' or '\t')
+ {L"QUOTE1"      , TKCOL_QUOTE1      }, // 18: Single quote symbol
+ {L"QUOTE2"      , TKCOL_QUOTE2      }, // 19: Double ...
+ {L"DIAMOND"     , TKCOL_DIAMOND     }, // 1A: Diamond symbol
+ {L"LAMP"        , TKCOL_LAMP        }, // 1B: Comment symbol
+ {L"EOL"         , TKCOL_EOL         }, // 1C: End-Of-Line
+ {L"UNK"         , TKCOL_UNK         }, // 1D: Unknown symbols
 };
-    if (COL_LENGTH > uType)
-        return colNames[uType].lpwsz;
+    if (TKCOL_LENGTH > colIndex)
+        return colNames[colIndex].lpwsz;
     else
     {
         static WCHAR wszTemp[64];
 
         wsprintfW (wszTemp,
                    L"GetColName:  *** Unknown Column Number:  %d",
-                   uType);
+                   colIndex);
         return wszTemp;
     } // End IF/ELSE
 } // End GetColName
@@ -4707,20 +4681,37 @@ void InitFsaTabs
 
 {
     // Ensure we calculated the lengths properly
-    Assert (sizeof (fsaColTable) EQ (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH));
+    InitFsaTabTK ();
 } // End InitFsaTabs
 #endif
 
 
+#ifdef DEBUG
 //***************************************************************************
-//  $SetTokenStates
+//  $InitFsaTabTK
+//
+//  Ensure the TK FSA table has been properly setup
+//***************************************************************************
+
+void InitFsaTabTK
+    (void)
+
+{
+    // Ensure we calculated the lengths properly
+    Assert (sizeof (fsaActTableTK) EQ (TKCOL_LENGTH * sizeof (TKACTSTR) * TKROW_LENGTH));
+} // End InitFsaTabTK
+#endif
+
+
+//***************************************************************************
+//  $SetTokenStatesTK
 //
 //  Set tkLocalVars.State[0 1 2] based upon curState
 //***************************************************************************
 
-void SetTokenStates
-    (LPTKLOCALVARS lptkLocalVars,       // Ptr to local vars
-     FSATOKENS     curState)            // Incoming state
+void SetTokenStatesTK
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     TKROWINDICES  curState)            // Incoming state
 
 {
     // If the previous and current states differ, ...
@@ -4733,7 +4724,7 @@ void SetTokenStates
 
     // Save the current state
     lptkLocalVars->State[0] = curState;
-} // End SetTokenStates
+} // End SetTokenStatesTK
 
 
 //***************************************************************************

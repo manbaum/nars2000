@@ -27,69 +27,72 @@
 
 
 // The order of the values of these constants *MUST* match the
-//   column order in fsaColTable.
+//   column order in fsaActTableTK.
 
-typedef enum tagCOL_INDICES
-{COL_DIGIT = 0   ,                  // 00:  Digit
- COL_DOT         ,                  // 01:  Decimal number, inner & outer product separator
- COL_ALPHA       ,                  // 02:  Alphabetic
- COL_OVERBAR     ,                  // 03:  Overbar
- COL_DIRIDENT    ,                  // 04:  Alpha or Omega
- COL_Q_QQ        ,                  // 05:  Quad
- COL_UNDERBAR    ,                  // 06:  Underbar
- COL_INFINITY    ,                  // 07:  Infinity
- COL_ASSIGN      ,                  // 08:  Assignment symbol
- COL_SEMICOLON   ,                  // 09:  Semicolon symbol
- COL_COLON       ,                  // 0A:  Colon symbol
- COL_CTRLSTRUC   ,                  // 0B:  Control Structure
- COL_PRIM_FN     ,                  // 0C:  Primitive monadic or dyadic function
- COL_PRIM_FN0    ,                  // 0D:  ...       niladic function
- COL_PRIM_OP1    ,                  // 0E:  ...       monadic/ambiguous operator
- COL_PRIM_OP2    ,                  // 0F:  ...       dyadic  ...
- COL_JOT         ,                  // 10:  Jot symbol
- COL_LEFTPAREN   ,                  // 11:  Left paren
- COL_RIGHTPAREN  ,                  // 12:  Right ...
- COL_LEFTBRACKET ,                  // 13:  Left bracket
- COL_RIGHTBRACKET,                  // 14:  Right ...
- COL_LEFTBRACE   ,                  // 15:  Left brace
- COL_RIGHTBRACE  ,                  // 16:  Right ...
- COL_SPACE       ,                  // 17:  White space (' ' or '\t')
- COL_QUOTE1      ,                  // 18:  Single quote symbol
- COL_QUOTE2      ,                  // 19:  Double ...
- COL_DIAMOND     ,                  // 1A:  Diamond symbol
- COL_LAMP        ,                  // 1B:  Comment symbol
- COL_EOL         ,                  // 1C:  End-Of-Line
- COL_UNK         ,      // 1D:  Unknown symbols
+typedef enum tagTKCOL_INDICES       // FSA column indices for Tokenize
+{TKCOL_DIGIT = 0    ,               // 00:  Digit
+ TKCOL_DOT          ,               // 01:  Decimal number, inner & outer product separator
+ TKCOL_ALPHA        ,               // 02:  Alphabetic
+ TKCOL_OVERBAR      ,               // 03:  Overbar
+ TKCOL_DIRIDENT     ,               // 04:  Alpha or Omega
+ TKCOL_Q_QQ         ,               // 05:  Quad
+ TKCOL_UNDERBAR     ,               // 06:  Underbar
+ TKCOL_INFINITY     ,               // 07:  Infinity
+ TKCOL_ASSIGN       ,               // 08:  Assignment symbol
+ TKCOL_SEMICOLON    ,               // 09:  Semicolon symbol
+ TKCOL_COLON        ,               // 0A:  Colon symbol
+ TKCOL_CTRLSTRUC    ,               // 0B:  Control Structure
+ TKCOL_PRIM_FN      ,               // 0C:  Primitive monadic or dyadic function
+ TKCOL_PRIM_FN0     ,               // 0D:  ...       niladic function
+ TKCOL_PRIM_OP1     ,               // 0E:  ...       monadic/ambiguous operator
+ TKCOL_PRIM_OP2     ,               // 0F:  ...       dyadic  ...
+ TKCOL_JOT          ,               // 10:  Jot symbol
+ TKCOL_LEFTPAREN    ,               // 11:  Left paren
+ TKCOL_RIGHTPAREN   ,               // 12:  Right ...
+ TKCOL_LEFTBRACKET  ,               // 13:  Left bracket
+ TKCOL_RIGHTBRACKET ,               // 14:  Right ...
+ TKCOL_LEFTBRACE    ,               // 15:  Left brace
+ TKCOL_RIGHTBRACE   ,               // 16:  Right ...
+ TKCOL_SPACE        ,               // 17:  White space (' ' or '\t')
+ TKCOL_QUOTE1       ,               // 18:  Single quote symbol
+ TKCOL_QUOTE2       ,               // 19:  Double ...
+ TKCOL_DIAMOND      ,               // 1A:  Diamond symbol
+ TKCOL_LAMP         ,               // 1B:  Comment symbol
+ TKCOL_EOL          ,               // 1C:  End-Of-Line
+ TKCOL_UNK          ,               // 1D:  Unknown symbols
 
- COL_LENGTH      ,      // 1E: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
-                                    //     Because this enum is origin-0, this value is the # valid columns.
-} COLINDICES, *LPCOLINDICES;
+ TKCOL_LENGTH       ,               // 1E:  # column indices (cols in fsaActTableTK)
+                                    //      Because this enum is origin-0, this value is the # valid columns.
+} TKCOLINDICES, *LPTKCOLINDICES;
 
-// Whenever you add a new COL_*** entry,
+// Whenever you add a new TKCOL_*** entry,
 //   be sure to put code into <CharTrans> in <tokenize.c>
 //   to return the newly defined value,
 //   and insert a new entry into <GetColName> in <tokenize.c>.
 
 
 // The order of the values of these constants *MUST* match the
-//   row order in fsaColTable.
-typedef enum tagFSA_TOKENS
-{FSA_SOS = 0 ,                      // 00:  Start of stmt
- FSA_INIT    ,                      // 01:  Initial state
- FSA_POINTNOT,                      // 02:  Point Notation
- FSA_ALPHA   ,                      // 03:  Alphabetic char
- FSA_SYSNAME ,                      // 04:  System name
- FSA_QUOTE1A ,                      // 05:  Start of or within single quoted char or char vector
- FSA_QUOTE1Z ,                      // 06:  End of   ...
- FSA_QUOTE2A ,                      // 07:  Start of or within double quoted char or char vector
- FSA_QUOTE2Z ,                      // 08:  End of   ...
- FSA_DOTAMBIG,                      // 09:  Ambiguous dot:  either FSA_POINTNOT or FSA_INIT w/fnOp2Done
- FSA_JOTAMBIG,                      // 0A:  Ambiguous jot:  either FSA_INIT w/fnOp2Done or FSA_OUTAMBIG
- FSA_OUTAMBIG,                      // 0B:  Ambiguous outer product:  either FSA_INIT w/fnOutDone or FSA_POINTNOT w/fnOp2Done
+//   row order in fsaActTableTK.
+typedef enum tagTKROW_INDICES       // FSA row indices for Tokenize
+{TKROW_SOS = 0    ,                 // 00:  Start of stmt
+ TKROW_INIT       ,                 // 01:  Initial state
+ TKROW_POINTNOT   ,                 // 02:  Point Notation
+ TKROW_ALPHA      ,                 // 03:  Alphabetic char
+ TKROW_SYSNAME    ,                 // 04:  System name
+ TKROW_QUOTE1A    ,                 // 05:  Start of or within single quoted char or char vector
+ TKROW_QUOTE1Z    ,                 // 06:  End of   ...
+ TKROW_QUOTE2A    ,                 // 07:  Start of or within double quoted char or char vector
+ TKROW_QUOTE2Z    ,                 // 08:  End of   ...
+ TKROW_DOTAMBIG   ,                 // 09:  Ambiguous dot:  either TKROW_POINTNOT or TKROW_INIT w/fnOp2Done
+ TKROW_JOTAMBIG   ,                 // 0A:  Ambiguous jot:  either TKROW_INIT w/fnOp2Done or TKROW_OUTAMBIG
+ TKROW_OUTAMBIG   ,                 // 0B:  Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOp2Done
 
- FSA_LENGTH                         // 0C:  # FSA terminal states (rows in fsaColTable) ***MUST*** BE THE LAST ENTRY
-                                    // Because this enum is origin-0, this value is the # valid columns.
-} FSATOKENS, *LPFSATOKENS;
+ TKROW_LENGTH     ,                 // 0C:  # FSA terminal states (rows in fsaActTableTK)
+                                    //      Because this enum is origin-0, this value is the # valid rows.
+ TKROW_EXIT  = -1 ,                 // FSA is done
+ TKROW_NONCE = -2 ,                 // State not specified as yet
+
+} TKROWINDICES, *LPTKROWINDICES;
 
 typedef struct tagSC_INDICES
 {
@@ -116,57 +119,60 @@ typedef enum tagSC_NAMETYPE
 typedef struct tagCLR_COL
 {
     SYNTAXCOLORS syntClr;           // 00:  Foreground and background colors (8 bytes)
-    COLINDICES   colIndex;          // 08:  Column index (see COL_INDICES)
+    TKCOLINDICES colIndex;          // 08:  Column index (see TKCOL_INDICES)
+                                    // 0C:  Length
 } CLRCOL, *LPCLRCOL;
 
 typedef struct tagTKLOCALVARS
 {
-    HGLOBAL     hGlbToken;          // 00:  Global memory handle
-    UNION_TOKEN t2;                 // 04:  Locked base of hGlbToken
-    LPTOKEN     lpStart,            // 08:  First available entry after the header
-                lpNext,             // 0C:  Next  ...
-                lpLastEOS;          // 10:  Ptr to last EOS token
-    FSATOKENS   State[3];           // 14:  Current state (FSA_xxx) (12 bytes)
-    UINT        uChar,              // 20:  ...     index into lpwszLine
-                uCharStart,         // 24:  Initial ...                  (static)
-                uCharIni,           // 28:  ...                          (dynamic)
-                uActLen;            // 2C:  Actual length of lpwszLine (may be shorter than lstrlenW)
-    LPWCHAR     lpwszOrig,          // 30:  Ptr to original lpwszLine
-                lpwszCur;           // 34:  ...    current WCHAR in ...
-    TOKEN_TYPES CtrlStrucTknType;   // 38:  Control Structure token type
-    UINT        CtrlStrucStrLen;    // 3C:  ...               string length
+    HGLOBAL      hGlbToken;         // 00:  Global memory handle
+    UNION_TOKEN  t2;                // 04:  Locked base of hGlbToken
+    LPTOKEN      lpStart,           // 08:  First available entry after the header
+                 lpNext,            // 0C:  Next  ...
+                 lpLastEOS;         // 10:  Ptr to last EOS token
+    TKROWINDICES State[3];          // 14:  Current state (TKROW__xxx) (12 bytes)
+    UINT         uChar,             // 20:  ...     index into lpwszLine
+                 uCharStart,        // 24:  Initial ...                  (static)
+                 uCharIni,          // 28:  ...                          (dynamic)
+                 uActLen;           // 2C:  Actual length of lpwszLine (may be shorter than lstrlenW)
+    LPWCHAR      lpwszOrig,         // 30:  Ptr to original lpwszLine
+                 lpwszCur;          // 34:  ...    current WCHAR in ...
+    TOKEN_TYPES  CtrlStrucTknType;  // 38:  Control Structure token type
+    UINT         CtrlStrucStrLen;   // 3C:  ...               string length
     ANON_CTRL_STRUC;                // 40:  Ctrl Struc data (8 bytes)
-    LPCLRCOL    lpMemClrIni,        // 48:  Ptr to initial array of Syntax Colors (NULL = not coloring) (static)
-                lpMemClrNxt;        // 4C:  Ptr to next    ...                                          (dynamic)
-    LPSCINDICES lpGrpSeqIni,        // 50:  Ptr to initial syntax coloring grouping sequence (static)
-                lpGrpSeqNxt;        // 54:  Ptr to next    ...                               (dynamic)
-    UINT        PrevGroup,          // 58:  Current index in lpGrpSeq of the previous grouping symbol
+    LPCLRCOL     lpMemClrIni,       // 48:  Ptr to initial array of Syntax Colors (NULL = not coloring) (static)
+                 lpMemClrNxt;       // 4C:  Ptr to next    ...                                          (dynamic)
+    LPSCINDICES  lpGrpSeqIni,       // 50:  Ptr to initial syntax coloring grouping sequence (static)
+                 lpGrpSeqNxt;       // 54:  Ptr to next    ...                               (dynamic)
+    UINT         PrevGroup,         // 58:  Current index in lpGrpSeq of the previous grouping symbol
                                     //      (NO_PREVIOUS_GROUPING_SYMBOL = none)
-                NameInit;           // 5C:  Index in lpMemClrIni of Start of name (including sysnames)
+                 NameInit;          // 5C:  Index in lpMemClrIni of Start of name (including sysnames)
                                     //      (NO_PREVIOUS_NAME = none)
-    SCNAMETYPE  scNameType;         // 60:  Type of name starting at NameInit
-    HWND        hWndEC;             // 64:  Window handle of Edit Ctrl (parent is SM or FE)
-    COLINDICES  colIndex;           // 68:  Current COL_xxx value
-    UINT        uSyntClrLen;        // 6C:  # Syntax Color entries
-    HGLOBAL     hGlbNum,            // 70:  NumAlp global memory handle
-                hGlbStr;            // 74:  NumAlp global memory handle
-    int         iNumLen,            // 78:  # chars in lpszNumAlp
-                iStrLen,            // 7C:  ...        lpwszString
-                iNumLim,            // 80:  Current limit for lpszNumAlp
-                iStrLim;            // 84:  ...               lpwszString
-    UINT        bMF:1,              // 88:  00000001:  TRUE iff this is a Magic Function
-                :31;                //      FFFFFFFE:  Available bits
-                                    // 8C:  Length
+    SCNAMETYPE   scNameType;        // 60:  Type of name starting at NameInit
+    HWND         hWndEC;            // 64:  Window handle of Edit Ctrl (parent is SM or FE)
+    TKCOLINDICES colIndex;          // 68:  Current TKCOL_xxx value
+    UINT         uSyntClrLen;       // 6C:  # Syntax Color entries
+    HGLOBAL      hGlbNum,           // 70:  NumAlp global memory handle
+                 hGlbStr;           // 74:  NumAlp global memory handle
+    int          iNumLen,           // 78:  # chars in lpszNumAlp
+                 iStrLen,           // 7C:  ...        lpwszString
+                 iNumLim,           // 80:  Current limit for lpszNumAlp
+                 iStrLim;           // 84:  ...               lpwszString
+    UINT         bMF:1,             // 88:  00000001:  TRUE iff this is a Magic Function
+                 :31;               //      FFFFFFFE:  Available bits
+    struct tagPERTABDATA *lpMemPTD; // 8C:  Ptr to PerTabData global memory
+                                    // 90:  Length
 } TKLOCALVARS, *LPTKLOCALVARS;
 
-typedef UBOOL (*FNACTION) (LPTKLOCALVARS);
+typedef UBOOL (*TK_ACTION) (LPTKLOCALVARS);
 
-typedef struct tagFSA_ACTION
+typedef struct tagTK_ACTSTR
 {
-    FSATOKENS iNewState;            // 00:  New state (see FSA_TOKENS)
-    FNACTION  fnAction1;            // 04:  Primary action
-    FNACTION  fnAction2;            // 08:  Secondary action
-} FSA_ACTION;
+    TKROWINDICES iNewState;         // 00:  New state (see TKROW_INDICES)
+    TK_ACTION    fnAction1;         // 04:  Primary action
+    TK_ACTION    fnAction2;         // 08:  Secondary action
+                                    // 0C:  Length
+} TKACTSTR;
 
 
 //***************************************************************************

@@ -38,7 +38,7 @@
 
  */
 
-extern FSA_ACTION fsaColTable [][COL_LENGTH];
+extern TKACTSTR fsaActTableTK [][TKCOL_LENGTH];
 char szCloseMessage[] = "You have changed the body of this function;"
                         " save the changes?";
 
@@ -843,11 +843,11 @@ UBOOL SyntaxColor
     UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     UINT         uChar,             // Loop counter
                  uCharIni;          // Initial counter
-    FNACTION     fnAction1_EM,      // Ptr to 1st action
+    TK_ACTION    fnAction1_EM,      // Ptr to 1st action
                  fnAction2_EM;      // ...    2nd ...
     TKLOCALVARS  tkLocalVars = {0}; // Local vars
     WCHAR        wchOrig;           // The original char
-    COLINDICES   chColNum;          // The COL_* of the translated char
+    TKCOLINDICES tkColInd;          // The TKCOL_* of the translated char
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
@@ -865,7 +865,7 @@ UBOOL SyntaxColor
     // Save local vars in struct which we pass to each FSA action routine
     tkLocalVars.State[2]         =
     tkLocalVars.State[1]         =
-    tkLocalVars.State[0]         = FSA_SOS;         // Initialize the FSA state
+    tkLocalVars.State[0]         = TKROW_SOS;       // Initialize the FSA state
     tkLocalVars.lpwszOrig        = lpwszLine;       // Save ptr to start of input line
     tkLocalVars.CtrlStrucTknType = 0;               // No initial token type
     tkLocalVars.CtrlStrucStrLen  = 0;               // ...
@@ -908,7 +908,7 @@ UBOOL SyntaxColor
     if (IsWhiteW (lpwszLine[uChar]))
     {
         // Save the column index
-        tkLocalVars.lpMemClrNxt->colIndex = COL_SPACE;
+        tkLocalVars.lpMemClrNxt->colIndex = TKCOL_SPACE;
 
         // Save the color
         tkLocalVars.lpMemClrNxt++->syntClr =
@@ -944,20 +944,20 @@ UBOOL SyntaxColor
         if (uChar EQ uLen)
         {
             wchOrig = L'\0';
-            chColNum = COL_EOL;
+            tkColInd = TKCOL_EOL;
         } else
         {
             wchOrig = lpwszLine[uChar];
-            chColNum = CharTrans (wchOrig, &tkLocalVars);
+            tkColInd = CharTransTK (wchOrig, &tkLocalVars);
         } // End IF/ELSE
 
-        // Save the COL_xxx value
-        tkLocalVars.colIndex = chColNum;
+        // Save the TKCOL_xxx value
+        tkLocalVars.colIndex = tkColInd;
 
         // Get primary action and new state
-        fnAction1_EM = fsaColTable[tkLocalVars.State[0]][chColNum].fnAction1;
-        fnAction2_EM = fsaColTable[tkLocalVars.State[0]][chColNum].fnAction2;
-        SetTokenStates (&tkLocalVars, fsaColTable[tkLocalVars.State[0]][chColNum].iNewState);
+        fnAction1_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].fnAction1;
+        fnAction2_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].fnAction2;
+        SetTokenStatesTK (&tkLocalVars, fsaActTableTK[tkLocalVars.State[0]][tkColInd].iNewState);
 
         // Check for primary action
         if (fnAction1_EM
@@ -972,10 +972,10 @@ UBOOL SyntaxColor
         // Split cases based upon the return code
         switch (tkLocalVars.State[0])
         {
-            case FSA_NONCE:
+            case TKROW_NONCE:
                 goto NONCE_EXIT;
 
-            case FSA_EXIT:
+            case TKROW_EXIT:
                 goto NORMAL_EXIT;
         } // End SWITCH
 
@@ -985,7 +985,7 @@ UBOOL SyntaxColor
 
     // We should never get here as we process the
     //   trailing zero in the input line which should
-    //   exit from one of the actions with FSA_EXIT.
+    //   exit from one of the actions with TKROW_EXIT.
     DbgStop ();
 
 FREEGLB_EXIT:

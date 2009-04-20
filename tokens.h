@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -229,10 +229,6 @@ typedef union tagUNION_TOKEN
     LPTOKEN_HEADER lpHeader;        // 00:  Token header
                                     // 04:  Length
 } UNION_TOKEN, *LPUNION_TOKEN;
-
-
-#define FSA_EXIT       -1       // FSA is done
-#define FSA_NONCE      -2       // State not specified as yet
 
 
 //***************************************************************************

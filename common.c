@@ -106,6 +106,27 @@ void MoveWindowPosSize
 
 
 //************************************************************************
+//  $EnumCallbackMonitors
+//
+//  Callback routine for EnumDisplayMonitors
+//************************************************************************
+
+UBOOL CALLBACK EnumCallbackMonitors
+    (HMONITOR hMonitor,             // Handle to display monitor
+     HDC      hdcMonitor,           // Handle to monitor DC
+     LPRECT   lprcMonitor,          // Monitor intersection rectangle
+     LPARAM   dwData)               // Data
+
+{
+    // Save the monitor coordinates
+    ((LPRECT) dwData) = lprcMonitor;
+
+    // Tell W to stop enumerating
+    return FALSE;
+} // End EnumCallbackMonitors
+
+
+//************************************************************************
 //  $CenterWindow
 //
 //  Center the window on the desktop
@@ -118,11 +139,21 @@ void CenterWindow
     RECT  rcWnd;
     POINT PosCtr;
 
-    GetWindowRect (GetDesktopWindow (), &rcWnd);    // Get the desktop's RECT
+    // Get the window rect of the Master Frame
+    GetWindowRect (hWndMF, &rcWnd);
+
+    // Define a 1x1 rectangle in the center of the Master Frame
+    rcWnd.top    = (rcWnd.top  + rcWnd.bottom) / 2;
+    rcWnd.bottom =  rcWnd.top  + 1;
+    rcWnd.left   = (rcWnd.left + rcWnd.right ) / 2;
+    rcWnd.right  =  rcWnd.left + 1;
+
+    // Enumerate the monitors which intersect the above rect
+    EnumDisplayMonitors (NULL, &rcWnd, &EnumCallbackMonitors, (LPARAM) (HANDLE_PTR) &rcWnd);
+
     PosCtr.x = (rcWnd.right  + rcWnd.left) / 2;     // Center horizontally
     PosCtr.y = (rcWnd.bottom + rcWnd.top ) / 2;     // Center vertically
     MoveWindowPos (hWnd, PosCtr);
-
 } // End CenterWindow
 
 

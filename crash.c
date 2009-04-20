@@ -206,8 +206,11 @@ LRESULT WINAPI LclCCListboxWndProc
     // Split cases
     switch (message)
     {
+#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
+#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
+#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
         case WM_COMMAND:
-            switch (GET_WM_COMMAND_ID (wParam, lParam))
+            switch (idCtl)
             {
                 case IDM_COPY:
                     // Get the # selected items
@@ -278,6 +281,9 @@ LRESULT WINAPI LclCCListboxWndProc
             } // End SWITCH
 
             break;
+#undef  hwndCtl
+#undef  cmdCtl
+#undef  idCtl
 
         case WM_CONTEXTMENU:                // xPos = LOSHORT (lParam); // Horizontal position of cursor
                                             // yPos = HISHORT (lParam); // Vertical position of cursor

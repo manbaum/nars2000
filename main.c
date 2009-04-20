@@ -1680,6 +1680,9 @@ LRESULT APIENTRY MFWndProc
 ////////    } // End IF
 ////////    return FALSE;           // We handled the message
 
+#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
+#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
+#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
         case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // notification code
                                     // wID = LOWORD (wParam);         // item, control, or accelerator identifier
                                     // hwndCtrl = (HWND) lParam;      // handle of control
@@ -1689,7 +1692,7 @@ LRESULT APIENTRY MFWndProc
             // Get the handle of the active MDI window
             hWndActive = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
 
-            switch (GET_WM_COMMAND_ID (wParam, lParam))
+            switch (idCtl)
             {
                 case IDM_EXIT:
                     PostMessageW (hWnd, WM_CLOSE, 0, 0);
@@ -2116,6 +2119,9 @@ LRESULT APIENTRY MFWndProc
             } // End SWITCH
 
             break;                  // Continue with next handler ***MUST***
+#undef  hwndCtl
+#undef  cmdCtl
+#undef  idCtl
 
         case WM_ERASEBKGND:
             // In order to reduce screen flicker, we handle erase background
@@ -2584,9 +2590,12 @@ UBOOL CALLBACK UpdatesDlgProc
 
             return TRUE;            // We handled the msg
 
+#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
+#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
+#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
         case WM_COMMAND:
             // If the user pressed one of our buttons, ...
-            switch (GET_WM_COMMAND_ID (wParam, lParam))
+            switch (idCtl)
             {
                 case IDOK:
                     PostMessageW (hDlg, WM_CLOSE, 0, 0);
@@ -2595,6 +2604,9 @@ UBOOL CALLBACK UpdatesDlgProc
             } // End switch (wParam)
 
             break;
+#undef  hwndCtl
+#undef  cmdCtl
+#undef  idCtl
     } // End SWITCH
 
     return FALSE;           // We didn't handle the msg

@@ -225,9 +225,12 @@ APLU3264 CALLBACK AboutDlgProc
 
             return TRUE;            // We handled the msg
 
+#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
+#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
+#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
         case WM_COMMAND:
             // If the user pressed one of our buttons, ...
-            switch (GET_WM_COMMAND_ID (wParam, lParam))
+            switch (idCtl)
             {
                 case IDOK:
                     PostMessageW (hDlg, WM_CLOSE, 0, 0);
@@ -236,6 +239,9 @@ APLU3264 CALLBACK AboutDlgProc
             } // End switch (wParam)
 
             break;
+#undef  hwndCtl
+#undef  cmdCtl
+#undef  idCtl
     } // End SWITCH
 
     return FALSE;           // We didn't handle the msg

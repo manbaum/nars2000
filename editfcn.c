@@ -230,8 +230,6 @@ LRESULT APIENTRY FEWndProc
 
 {
     HWND         hWndEC;            // Handle of Edit Ctrl window
-    VKSTATE      vkState;           // Virtual key state (Shift, Alt, Ctrl)
-    long         lvkState;          // Temporary var for vkState
     LPUNDO_BUF   lpUndoBeg,         // Ptr to start of Undo Buffer
                  lpUndoNxt;         // ...    next available slot in the Undo Buffer
     LPMEMVIRTSTR lpLclMemVirtStr;   // Ptr to local MemVirtStr
@@ -259,11 +257,6 @@ LRESULT APIENTRY FEWndProc
 
             // Initialize variables
             cfFE.hwndOwner = hWnd;
-            ZeroMemory (&vkState, sizeof (vkState));
-
-            // Save in window extra bytes
-            vkState.Ins = TRUE;     // Initially inserting ***FIXME*** Make it an option
-            SetWindowLongW (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
 
             // See if there is an existing function
             lpSymName = ParseFunctionName (hWnd, (*(LPFE_CREATESTRUCTW *) &lpMDIcs->lParam)->lpwszLine);
@@ -567,24 +560,16 @@ LRESULT APIENTRY FEWndProc
             else
                 break;
 
+#define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
-#define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
-
             // Ensure it's from our Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
-            {
-                // Get the current vkState
-                lvkState = GetWindowLongW (hWnd, GWLSF_VKSTATE);
-                vkState = *(LPVKSTATE) &lvkState;
-
-                *lpnmEC->lpCaretWidth =
-                  vkState.Ins ? DEF_CURWID_INS : DEF_CURWID_REP;
-            } // End IF
+                // Pass on to LclEditCtrlWndProc
+                SendMessage (hWndEC, MYWM_NOTIFY, wParam, lParam);
 
             return FALSE;           // We handled the msg
 #undef  lpnmEC
-
 
 #define fwSizeType  wParam
 #define nWidth      (LOWORD (lParam))
@@ -1424,6 +1409,23 @@ UBOOL IzitNameChar
 
 
 //***************************************************************************
+//  $GetVkState
+//
+//  Return the current vkState
+//***************************************************************************
+
+VKSTATE GetVkState
+    (HWND hWndEC)                           // Edit Ctrl window handle
+
+{
+    long lvkState;                          // Temporary var for vkState
+
+    lvkState = GetWindowLongW (hWndEC, GWLEC_VKSTATE);
+    return *(LPVKSTATE) &lvkState;
+} // End GetVkState
+
+
+//***************************************************************************
 //  $LclEditCtrlWndProc
 //
 //  Local window procedure for the Edit Ctrl (superclass)
@@ -1439,7 +1441,6 @@ LRESULT WINAPI LclEditCtrlWndProc
 #define TABSTOP     8                       // Length of each tab
 
     VKSTATE      vkState;                   // Virtual key state (Shift, Alt, Ctrl)
-    long         lvkState;                  // Temporary var for vkState
     HWND         hWndParent;                // Handle of parent (SM/FE) window
     LRESULT      lResult;                   // Result from calling original handler
     LPUNDO_BUF   lpUndoNxt,                 // Ptr to next available slot in the Undo Buffer
@@ -1496,6 +1497,20 @@ LRESULT WINAPI LclEditCtrlWndProc
     // Split cases
     switch (message)
     {
+        case WM_NCCREATE:               // 0 = (int) wParam
+                                        // lpcs = (LPCREATESTRUCTW) lParam
+            // Initialize the key state
+            ZeroMemory (&vkState, sizeof (vkState));
+            vkState.Ins = OptionFlags.bInsState;
+
+            // Tell the Status Window about this
+            SetStatusIns (vkState.Ins);
+
+            // Save in window extra bytes
+            SetWindowLongW (hWnd, GWLEC_VKSTATE, *(long *) &vkState);
+
+            break;
+
         case WM_CREATE:
             // In order to avoid displaying a spurious Context Menu, set the
             //   double-click tick count window property to the current tick count
@@ -1892,9 +1907,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                     break;
 
                 case VK_INSERT:         // Insert
-                {
-                    long cyAveChar;
-
                     // Ins      toggles the key state
                     // Shft-Ins WM_PASTEs
                     // Ctrl-Ins WM_COPYs
@@ -1908,24 +1920,17 @@ LRESULT WINAPI LclEditCtrlWndProc
                     if (ksCtrl || ksShft)
                         break;
 
-                    // Set the cursor height
-                    if (IzitSM (hWndParent))
-                        cyAveChar = GetFSIndAveCharSize (FONTENUM_SM)->cy;
-                    else
-////////////////////if (IzitFE (hWndParent))    // ***FIXME*** -- Handle other Edit Ctrl parents
-                        cyAveChar = GetFSIndAveCharSize (FONTENUM_FE)->cy;
-
                     // Get the current vkState
-                    lvkState = GetWindowLongW (hWndParent, GWLSF_VKSTATE);
-                    vkState = *(LPVKSTATE) &lvkState;
+                    vkState = GetVkState (hWnd);
 
+                    // Toggle the insert state
                     vkState.Ins = !vkState.Ins;
 
                     // Tell the Status Window about it
                     SetStatusIns (vkState.Ins);
 
                     // Save in window extra bytes
-                    SetWindowLongW (hWndParent, GWLSF_VKSTATE, *(long *) &vkState);
+                    SetWindowLongW (hWnd, GWLEC_VKSTATE, *(long *) &vkState);
 
                     // Get the char position of the caret
                     uCharPos = GetCurCharPos (hWnd);
@@ -1939,7 +1944,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                                 UNDO_NOGROUP,               // Group index
                                 0);                         // Character
                     break;
-                } // End VK_INSERT
 
                 case VK_RETURN:
                 {
@@ -2025,7 +2029,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     wChar[uChar] = L'\0';
 
                     // Insert/replace the char string
-                    InsRepCharStr (hWnd, GWLSF_VKSTATE, wChar, hGlbPTD EQ NULL);
+                    InsRepCharStr (hWnd, wChar, hGlbPTD EQ NULL);
 
                     return FALSE;       // We handled the msg
             } // End SWITCH
@@ -2047,7 +2051,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     if (uAltNum)
                     {
                         // Insert/replace the corresponding Unicode char
-                        InsRepCharStr (hWnd, GWLSF_VKSTATE, (LPWCHAR) &uAltNum, hGlbPTD EQ NULL);
+                        InsRepCharStr (hWnd, (LPWCHAR) &uAltNum, hGlbPTD EQ NULL);
 
                         // Clear the number
                         uAltNum = 0;
@@ -2282,7 +2286,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 if (wChar[0])
                 {
                     // Insert/replace the char string
-                    InsRepCharStr (hWnd, GWLSF_VKSTATE, wChar, hGlbPTD EQ NULL);
+                    InsRepCharStr (hWnd, wChar, hGlbPTD EQ NULL);
 
                     return FALSE;       // We handled the msg
                 } else
@@ -2354,7 +2358,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 if (wChar[0])
                 {
                     // Insert/replace the char string
-                    InsRepCharStr (hWnd, GWLSF_VKSTATE, wChar, hGlbPTD EQ NULL);
+                    InsRepCharStr (hWnd, wChar, hGlbPTD EQ NULL);
 
                     return FALSE;       // We handled the msg
                 } else
@@ -2491,13 +2495,16 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     case undoInsToggle:
                         // Get the current vkState
-                        lvkState = GetWindowLongW (hWndParent, GWLSF_VKSTATE);
-                        vkState = *(LPVKSTATE) &lvkState;
+                        vkState = GetVkState (hWnd);
 
+                        // Toggle the insert state
                         vkState.Ins = !vkState.Ins;
 
+                        // Tell the Status Window about it
+                        SetStatusIns (vkState.Ins);
+
                         // Save in window extra bytes
-                        SetWindowLongW (hWndParent, GWLSF_VKSTATE, *(long *) &vkState);
+                        SetWindowLongW (hWnd, GWLEC_VKSTATE, *(long *) &vkState);
 
                         break;
 
@@ -2802,6 +2809,101 @@ LRESULT WINAPI LclEditCtrlWndProc
             return FALSE;           // We handled the msg
         } // End MYWM_(UN)LOCALIZE
 
+        case WM_SETFONT:
+        {
+            HBITMAP hBitMap;        // Handle of the replace caret bitmap
+            USHORT  bits[28];       // We need cxAveCharXX by cyAveCharXX bits
+            UINT    fontEnum;       // FONTENUM_xx value
+            HWND    hWndParent;     // Handle of parent window
+            SIZE    sizeChar;       // cx & cy of the average char
+
+            // Get the caret replace bitmap handle (if any)
+            hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
+
+            // If it's defined, ...
+            if (hBitMap)
+            {
+                // Delete any existing replace caret bitmap
+                DeleteObject (hBitMap); hBitMap = NULL;
+            } // End IF
+
+            // Get the parent window handle
+            hWndParent = GetParent (hWnd);
+
+            // Use the appropriate FONTENUM_xx value
+            if (IzitSM (hWndParent))
+                fontEnum = FONTENUM_SM;
+            else
+            if (IzitFE (hWndParent))
+                fontEnum = FONTENUM_FE;
+            else
+                DbgStop ();
+
+            // Get the caret width and height
+            sizeChar = *GetFSIndAveCharSize (fontEnum);
+
+            // Set the bits
+            // ***FIXME*** -- If cx is more than 16, we need to use two words
+            //                in bits to specify the caret line
+            ZeroMemory (bits, sizeof (bits));
+
+            // Use a caret two lines tall
+            bits[sizeChar.cy - 2] = -1;
+            bits[sizeChar.cy - 1] = -1;
+
+            // Create a bitmap for replace mode
+            hBitMap = CreateBitmap (sizeChar.cx, sizeChar.cy, 1, 1, &bits);
+
+            // Save the handle
+            SetWindowLongPtr (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+
+            break;                  // Pass on to the Edit Ctrl
+        } // End WM_SETFONT
+
+#define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
+        case MYWM_NOTIFY:
+            // Split cases based upon the notification code
+            switch (lpnmEC->nmHdr.code)
+            {
+                HBITMAP hBitMap;        // Caret bitmap for replace mode
+
+                case EN_KILLFOCUS:
+                    // Delete the replace mode bitmap (if any)
+                    hBitMap = (HBITMAP) GetWindowLongPtr (hWnd, GWLEC_HBITMAP);
+
+                    // If it's valid
+                    if (hBitMap)
+                    {
+                        // Delete it
+                        DeleteObject (hBitMap); hBitMap = NULL;
+
+                        // Save the handle
+                        SetWindowLongPtr (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+                    } // End IF
+
+                    break;
+
+                case NM_LAST:
+                    // Get the current vkState
+                    vkState = GetVkState (hWnd);
+
+                    // If it's insert mode, ...
+                    if (vkState.Ins)
+                        // Mark as no bitmap
+                        lpnmEC->hBitMap = NULL;
+                    else
+                    // It's replace mode
+                        // Return the handle
+                        lpnmEC->hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            return FALSE;           // We handled the msg
+#undef  lpnmEC
 
 #define wNotifyCode     (HIWORD (wParam))
 #define wID             (LOWORD (wParam))
@@ -2957,10 +3059,27 @@ LRESULT WINAPI LclEditCtrlWndProc
             return FALSE;           // We handled the msg
 
         case WM_DESTROY:
+        {
+            HBITMAP hBitMap;        // Handle of the replace caret bitmap
+
             // Remove all saved window properties
             EnumProps (hWnd, EnumCallbackRemoveProp);
 
+            // Get the replace caret bitmap handle (if any)
+            hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
+
+            // Delete any replace caret bitmap
+            if (hBitMap)
+            {
+                // Delete it
+                DeleteObject (hBitMap); hBitMap = NULL;
+
+////////////////// Save the handle
+////////////////SetWindowLongPtr (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+            } // End IF
+
             break;
+        } // End WM_DESTROY
     } // End SWITCH
 
 ////LCLODSAPI ("FEC:", hWnd, message, wParam, lParam);
@@ -2983,16 +3102,16 @@ LRESULT WINAPI LclEditCtrlWndProc
 //***************************************************************************
 
 UBOOL LclSetCursor
-    (HWND    hWndEC,                    // Edit Ctrl window handle
+    (HWND         hWndEC,               // Edit Ctrl window handle
      HGLOBAL hGlbPTD,                   // PerTabData global memory handle
-     UINT    hitTest)                   // Hit-test code
+     UINT         hitTest)              // Hit-test code
 
 {
     // If the mouse is in the client area, ...
     if (hitTest EQ HTCLIENT)
     {
         LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-        UBOOL        bExecuting;        // TRUE iff we're waiting for an execution to complete
+        UBOOL bExecuting;               // TRUE iff we're waiting for an execution to complete
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -3727,13 +3846,11 @@ void AppendUndo
 
 void InsRepCharStr
     (HWND    hWnd,          // EC window handle
-     UINT    uGWL,          // The GetWindowLongPtrW offset
      LPWCHAR lpwch,         // The incoming char string
      UBOOL   bParentMF)     // TRUE iff the window's parent is MF
 
 {
     VKSTATE vkState;        // Virtual key state (Shift, Alt, Ctrl)
-    long    lvkState;       // Temporary var for vkState
     HWND    hWndParent;     // Handle of parent (SM/FE) window
     UINT    uCharPosBeg,
             uCharPosEnd,
@@ -3751,8 +3868,7 @@ void InsRepCharStr
         hWndParent = GetParent (hWnd);
 
         // Get the current vkState
-        lvkState = GetWindowLongW (hWndParent, uGWL);
-        vkState = *(LPVKSTATE) &lvkState;
+        vkState = GetVkState (hWnd);
 
         // Get the indices of the selected text (if any)
         SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
@@ -4077,14 +4193,14 @@ void ErrorHandler
 #endif
 
 LPSYMENTRY ParseFunctionName
-    (HWND      hWndFE,          // Window handle to Function Editor
-     LPAPLCHAR lpaplChar)       // Ptr to header text
+    (HWND      hWndFE,                  // Window handle to Function Editor
+     LPAPLCHAR lpaplChar)               // Ptr to header text
 
 {
-    HWND        hWndEC;             // Window handle to Edit Ctrl
-    HGLOBAL     hGlbTknHdr = NULL;  // Tokenized header global memory handle
+    HWND        hWndEC;                 // Window handle to Edit Ctrl
+    HGLOBAL     hGlbTknHdr = NULL;      // Tokenized header global memory handle
     FHLOCALVARS fhLocalVars = {0};  // Re-entrant vars
-    LPSYMENTRY  lpSymName = NULL;   // Ptr to SYMENTRY for the function name
+    LPSYMENTRY  lpSymName = NULL;       // Ptr to SYMENTRY for the function name
     MEMVIRTSTR  lclMemVirtStr[1] = {0};// Room for one GuardAlloc
 
     Assert (IzitFE (hWndFE));

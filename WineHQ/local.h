@@ -1,5 +1,6 @@
 
-#define GCL_HBRBACKGROUND   (-10)
+#define GCL_HBRBACKGROUND       (-10)
+#define NM_LAST                 (0U- 99U)
 
 #define strlenW         (UINT_PTR) lstrlenW
 #define strcpyW         lstrcpyW

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -81,8 +81,7 @@ default:        \
 #define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (HANDLE_PTR)    // ...                next
 #define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (HANDLE_PTR)    // ...                last
 #define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (HANDLE_PTR)    // Value of next Undo group index
-#define GWLSF_VKSTATE   GWLSF_UNDO_GRP + 1 * sizeof (long)          // Virtal Key state (VKSTATE struc)
-#define GWLSF_LASTKEY   GWLSF_VKSTATE  + 1 * sizeof (long)          // Value of last WM_KEYDOWN key
+#define GWLSF_LASTKEY   GWLSF_UNDO_GRP + 1 * sizeof (long)          // Value of last WM_KEYDOWN key
 #define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)          // Boolean of whether or not the text has changed
 #define GWLSF_LPMVS     GWLSF_CHANGED  + 1 * sizeof (long)          // Ptr to LPMEMVIRTSTR
 
@@ -123,6 +122,7 @@ default:        \
 #define MYWM_SAVE_WS        (WM_APP +10)    // SM (Save workspace)
 #define MYWM_DISPMB         (WM_APP +11)    // CC (Display MessageBox)
 #define MYWM_RESIZE         (WM_APP +12)    // MF (Resize to display Status Bar)
+#define MYWM_NOTIFY         (WM_APP +13)    // EC (Pass on of WM_NOTIFY from EC)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB

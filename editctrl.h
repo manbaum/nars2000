@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,8 +23,10 @@
 #define EM_SETPAINTHOOK     0x00BF
 
 #define GWLEC_ES            0
-#define GWLEC_PAINTHOOK     GWLEC_ES        + 1 * sizeof(HANDLE_PTR)
-#define GWLEC_EXTRA         GWLEC_PAINTHOOK + 1 * sizeof(HANDLE_PTR)
+#define GWLEC_PAINTHOOK     GWLEC_ES        + 1 * sizeof (HANDLE_PTR)   // Ptr to LclECPaintHook proc
+#define GWLEC_HBITMAP       GWLEC_PAINTHOOK + 1 * sizeof (HANDLE_PTR)   // Handle of the matching caret bitmap
+#define GWLEC_VKSTATE       GWLEC_HBITMAP   + 1 * sizeof (HANDLE_PTR)   // Virtal Key state (VKSTATE struc)
+#define GWLEC_EXTRA         GWLEC_VKSTATE   + 1 * sizeof (long)         // Total # extra bytes
 
 
 typedef int PAINTHOOK (HWND, HDC, int, int, LPWSTR, int, int, long, int, int, UBOOL);
@@ -47,9 +49,9 @@ typedef PAINTHOOK *LPPAINTHOOK;
 
 typedef struct tagNMEDITCTRL
 {
-    NMHDR  nmHdr;           // 00:  Initial struc
-    UINT   cbSize;          // 0C:  Byte size of NMCARETWIDTH struc
-    UINT  *lpCaretWidth;    // 10:  Ptr to default caret width
+    NMHDR   nmHdr;          // 00:  Initial struc
+    UINT    cbSize;         // 0C:  Byte size of NMCARETWIDTH struc
+    HBITMAP hBitMap;        // 10:  Bitmap handle for replace mode (NULL = insert mode)
                             // 14:  Length
 } NMEDITCTRL, *LPNMEDITCTRL;
 

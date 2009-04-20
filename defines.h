@@ -58,8 +58,6 @@
 
 #define DEF_INDENT          6           // Prompt indent
 #define DEF_TABS            4           // Tab insertion
-#define DEF_CURWID_INS      5           // Cursor width for insert mode
-#define DEF_CURWID_REP      2           // ...              replace ...
 #define DEF_HISTLINES    3000           // # lines in history buffer
 
 // Size of storage areas

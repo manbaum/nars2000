@@ -693,8 +693,6 @@ LRESULT APIENTRY SMWndProc
 
 {
     HWND         hWndEC;                // Window handle to Edit Ctrl
-    VKSTATE      vkState;
-    long         lvkState;
     HGLOBAL      hGlbPTD;               // Handle to this window's PerTabData
     LPPERTABDATA lpMemPTD;              // Ptr to ...
     LPWCHAR      lpwCurLine;            // Ptr to current line global memory
@@ -813,14 +811,6 @@ WM_NCCREATE_FAIL:
 
             // Initialize variables
             cfSM.hwndOwner = hWnd;
-            ZeroMemory (&vkState, sizeof (vkState));
-            vkState.Ins = OptionFlags.bInsState;
-
-            // Tell the Status Window about this
-            SetStatusIns (vkState.Ins);
-
-            // Save in window extra bytes
-            SetWindowLongW (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
 
             // Initialize window-specific resources
             SM_Create (hWnd);
@@ -1957,20 +1947,13 @@ NORMAL_EXIT:
             else
                 break;
 
+#define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
-#define lpnmEC  (*(LPNMEDITCTRL *) &lParam)
-
             // Ensure it's from our Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
-            {
-                // Get the current vkState
-                lvkState = GetWindowLongW (hWnd, GWLSF_VKSTATE);
-                vkState = *(LPVKSTATE) &lvkState;
-
-                *lpnmEC->lpCaretWidth =
-                  vkState.Ins ? DEF_CURWID_INS : DEF_CURWID_REP;
-            } // End IF
+                // Pass on to LclEditCtrlWndProc
+                SendMessage (hWndEC, MYWM_NOTIFY, wParam, lParam);
 
             return FALSE;           // We handled the msg
 #undef  lpnmEC
@@ -2134,9 +2117,9 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void MoveToLine
-    (UINT    uLineNum,                  // The given line #
+    (UINT         uLineNum,             // The given line #
      HGLOBAL hGlbPTD,                   // PerTabData global memory handle
-     HWND    hWndEC)                    // Edit Ctrl window handle
+     HWND         hWndEC)               // Edit Ctrl window handle
 
 {
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData

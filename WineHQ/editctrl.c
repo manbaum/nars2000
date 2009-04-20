@@ -5521,15 +5521,16 @@ static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
     NMEDITCTRL nmEC = {0};
 
     nmEC.nmHdr.hwndFrom = hWnd;
-    nmEC.cbSize         = sizeof (nmEC);
     nmEC.nmHdr.idFrom   = GetWindowLongW (hWnd, GWL_ID);
-    nmEC.nmHdr.code     = 0;                    // ***FIXME*** -- replace with our own code
-    nmEC.lpCaretWidth   = &nWidth;
+    nmEC.nmHdr.code     = NM_LAST;
+    nmEC.cbSize         = sizeof (nmEC);
+    nmEC.hBitMap        = NULL;
 
-    // Ask the parent how wide the caret should be
-    SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) (HANDLE_PTR) &nmEC);
+    // Ask the superclass window to return a bitmap handle (or NULL)
+    //   depending upon what mode (REP vs. INS) were in
+    SendMessageW (hWnd, MYWM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) (HANDLE_PTR) &nmEC);
 
-    return CreateCaret (hWnd, hBitMap, nWidth, nHeight);
+    return CreateCaret (hWnd, nmEC.hBitMap, nWidth, nHeight);
 } // End MyCreateCaret
 
 

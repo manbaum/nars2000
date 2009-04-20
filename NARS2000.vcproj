@@ -62,7 +62,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;.\Debug;.\qdebug"
-				PreprocessorDefinitions="DEBUG;RESDEBUG=1;_CRT_SECURE_NO_WARNINGS;_X86_"
+				PreprocessorDefinitions="DEBUG;RESDEBUG=1;_CRT_SECURE_NO_WARNINGS;_X86_;WINVER=0x0501;_WIN32_WINNT=0x0501"
 				StringPooling="true"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -97,7 +97,8 @@
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				SubSystem="2"
-				LargeAddressAware="0"
+				LargeAddressAware="2"
+				OptimizeReferences="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="2"
 				TargetMachine="1"
@@ -716,6 +717,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\qf_a.c"
+				>
+			</File>
+			<File
 				RelativePath=".\qf_av.c"
 				>
 			</File>
@@ -813,6 +818,10 @@
 			</File>
 			<File
 				RelativePath=".\qf_ucs.c"
+				>
+			</File>
+			<File
+				RelativePath=".\qf_wa.c"
 				>
 			</File>
 			<File

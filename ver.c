@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 ***************************************************************************/
 
 #define STRICT
-#define WINVER       0x0500 // Needed for WINUSER.H definitions
 #include <windows.h>
 #include <windowsx.h>
 #include <stdlib.h>

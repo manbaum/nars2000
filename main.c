@@ -21,8 +21,6 @@
 ***************************************************************************/
 
 #define COMPILE_MULTIMON_STUBS
-#define WINVER       0x0500 // Needed for WINUSER.H definitions
-#define _WIN32_WINNT 0x0500 // ...
 
 #define STRICT
 #define OEMRESOURCE         // To get OBM_CHECK define

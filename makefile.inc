@@ -19,11 +19,12 @@
 ## Load all source file names
 !include makefile.src
 
-CFLAGS_WEXE = /nologo /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
+CFLAGS_WEXE = /nologo /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG)
+CFLAGS_WEXE = $(CFLAGS_WEXE) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS /D "WINVER=0x0501" /D "_WIN32_WINNT=0x0501"
 !if "$(WP)" == "64"
 CFLAGS_WEXE=$(CFLAGS_WEXE) /Wp64 /GS-
 !endif
-LFLAGS_WEXE = /NOLOGO /MAP
+LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF
 LIBS_WEXE = gdi32.lib           \
             kernel32.lib        \
             user32.lib          \

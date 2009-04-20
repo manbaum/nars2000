@@ -20,9 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-#define WINVER       0x0501 // Needed for WINUSER.H definitions
-#define _WIN32_WINNT 0x0501 // ...
-
 #define STRICT
 #include <windows.h>
 #include "headers.h"
@@ -1544,7 +1541,7 @@ UBOOL IsCurTabActive
 {
     // Compare hGlbPTD from the Tab Index and from the thread
     return (GetPerTabHandle (TranslateTabIDToIndex (gCurTabID))
-                          EQ TlsGetValue (dwTlsPerTabData));
+                       EQ TlsGetValue (dwTlsPerTabData));
 } // End IsCurTabActive
 
 

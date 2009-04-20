@@ -21,7 +21,6 @@
 ***************************************************************************/
 
 #define STRICT
-#define _WIN32_WINNT   0x0500   // Needed for RegisterWaitForSingleObject
 #include <windows.h>
 #include "headers.h"
 

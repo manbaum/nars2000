@@ -21,7 +21,6 @@
 ***************************************************************************/
 
 #define STRICT
-#define _WIN32_WINNT    0x0400          // Needed for TryEnterCriticalSection
 #include <windows.h>
 #include <math.h>
 #include "headers.h"

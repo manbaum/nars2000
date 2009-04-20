@@ -628,9 +628,9 @@ void ReadIniFileGlb
             // Convert the numbers
             swscanf (wszTemp,
                      FMTSTR_SYNTAXCOLOR,
-                    &gSyntaxColors  [uCnt].crFore,
-                    &gSyntaxColors  [uCnt].crBack,
-                    &gSyntClrBGTrans[uCnt]);
+                    &gSyntaxColorName[uCnt].syntClr.crFore,
+                    &gSyntaxColorName[uCnt].syntClr.crBack,
+                    &gSyntClrBGTrans [uCnt]);
     } // End FOR
 
     // Read in the CustomColors
@@ -1662,9 +1662,9 @@ void SaveIniFile
     {
          wsprintfW (wszTemp,
                     FMTSTR_SYNTAXCOLOR,
-                    gSyntaxColors  [uCnt].crFore,
-                    gSyntaxColors  [uCnt].crBack,
-                    gSyntClrBGTrans[uCnt]);
+                    gSyntaxColorName[uCnt].syntClr.crFore,
+                    gSyntaxColorName[uCnt].syntClr.crBack,
+                    gSyntClrBGTrans [uCnt]);
         // Write out the entry
         WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
                                     aColorKeyNames[uCnt],       // Ptr to the key name

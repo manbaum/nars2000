@@ -1088,30 +1088,36 @@ APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 EXTERN
 SYNTAXCOLORS defSyntaxColors[SC_LENGTH];
 
-// Syntax Coloring global colors
+typedef struct tagSYNTAXCOLORNAME
+{
+    SYNTAXCOLORS syntClr;
+    LPWCHAR      lpwSCName;
+} SYNTAXCOLORNAME, *LPSYNTAXCOLORNAME;
+
+// Syntax Coloring global colors and names
 EXTERN
-SYNTAXCOLORS gSyntaxColors[SC_LENGTH]
+SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
 #ifdef DEFINE_VALUES
-= {{DEF_SC_GLBNAME    },        // 00:  Global Name
-   {DEF_SC_LCLNAME    },        // 01:  Local  ...
-   {DEF_SC_LABEL      },        // 02:  Label
-   {DEF_SC_PRIMITIVE  },        // 03:  Primitive Function/Operator
-   {DEF_SC_SYSFCN     },        // 04:  System Function
-   {DEF_SC_GLBSYSVAR  },        // 05:  Global System Variable
-   {DEF_SC_LCLSYSVAR  },        // 06:  Local  ...
-   {DEF_SC_CTRLSTRUC  },        // 07:  Control Structure
-   {DEF_SC_NUMCONST   },        // 08:  Numeric constant
-   {DEF_SC_CHRCONST   },        // 09:  Character constant
-   {DEF_SC_COMMENT    },        // 0A:  Comment
-   {DEF_SC_LINEDRAWING},        // 0B:  Line drawing chars
-   {DEF_SC_FCNLINES   },        // 0C:  Function lines
-   {DEF_SC_MATCHGRP1  },        // 0D:  Matched Grouping Symbols [] () {}
-   {DEF_SC_MATCHGRP2  },        // 0E:  Matched Grouping Symbols [] () {}
-   {DEF_SC_MATCHGRP3  },        // 0F:  Matched Grouping Symbols [] () {}
-   {DEF_SC_MATCHGRP4  },        // 10:  Matched Grouping Symbols [] () {}
-   {DEF_SC_UNMATCHGRP },        // 11:  Unmatched Grouping Symbols [] () {} ' "
-   {DEF_SC_UNNESTED   },        // 12:  Improperly Nested Grouping Symbols [] () {}
-   {DEF_SC_UNK        },        // 13:  Unknown symbol
+= {{{DEF_SC_GLBNAME    }, L"Global Name"            },  // 00:  Global Name
+   {{DEF_SC_LCLNAME    }, L"Local Name"             },  // 01:  Local  ...
+   {{DEF_SC_LABEL      }, L"Label"                  },  // 02:  Label
+   {{DEF_SC_PRIMITIVE  }, L"Primitive"              },  // 03:  Primitive Function/Operator
+   {{DEF_SC_SYSFCN     }, L"System Fcn"             },  // 04:  System Function
+   {{DEF_SC_GLBSYSVAR  }, L"Global System Var"      },  // 05:  Global System Variable
+   {{DEF_SC_LCLSYSVAR  }, L"Local System Var"       },  // 06:  Local  ...
+   {{DEF_SC_CTRLSTRUC  }, L"Control Structure"      },  // 07:  Control Structure
+   {{DEF_SC_NUMCONST   }, L"Numeric Constant"       },  // 08:  Numeric constant
+   {{DEF_SC_CHRCONST   }, L"Character Constant"     },  // 09:  Character constant
+   {{DEF_SC_COMMENT    }, L"Comment"                },  // 0A:  Comment
+   {{DEF_SC_LINEDRAWING}, L"Line Drawing Chars"     },  // 0B:  Line drawing chars
+   {{DEF_SC_FCNLINES   }, L"Function Lines"         },  // 0C:  Function lines
+   {{DEF_SC_MATCHGRP1  }, L"Matched Group Level 1"  },  // 0D:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP2  }, L"Matched Group Level 2"  },  // 0E:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP3  }, L"Matched Group Level 3"  },  // 0F:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP4  }, L"Matched Group Level 4"  },  // 10:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"        },  // 11:  Unmatched Grouping Symbols [] () {} ' "
+   {{DEF_SC_UNNESTED   }, L"Improper Nesting"       },  // 12:  Improperly Nested Grouping Symbols [] () {}
+   {{DEF_SC_UNK        }, L"Unknown Symbols"        },  // 13:  Unknown symbol
   }
 #endif
 ;
@@ -1190,146 +1196,146 @@ EXTERN
 COLORNAMES aColorNames[]
 #ifdef DEFINE_VALUES
 = {
-   {DEF_SCN_BLACK               , L"Black"               },
-   {DEF_SCN_DIMGRAY             , L"Dimgray"             },
-   {DEF_SCN_GRAY                , L"Gray"                },
-   {DEF_SCN_DARKGRAY            , L"Darkgray"            },
-   {DEF_SCN_SILVER              , L"Silver"              },
-   {DEF_SCN_LIGHTGRAY           , L"Lightgray"           },
-   {DEF_SCN_GAINSBORO           , L"Gainsboro"           },
-   {DEF_SCN_WHITESMOKE          , L"Whitesmoke"          },
-   {DEF_SCN_WHITE               , L"White"               },
-   {DEF_SCN_SNOW                , L"Snow"                },
-   {DEF_SCN_ROSYBROWN           , L"Rosybrown"           },
-   {DEF_SCN_LIGHTCORAL          , L"Lightcoral"          },
-   {DEF_SCN_INDIANRED           , L"Indianred"           },
-   {DEF_SCN_BROWN               , L"Brown"               },
-   {DEF_SCN_FIREBRICK           , L"Firebrick"           },
-   {DEF_SCN_MAROON              , L"Maroon"              },
-   {DEF_SCN_DARKRED             , L"Darkred"             },
-   {DEF_SCN_RED                 , L"Red"                 },
-   {DEF_SCN_MISTYROSE           , L"Mistyrose"           },
-   {DEF_SCN_SALMON              , L"Salmon"              },
-   {DEF_SCN_TOMATO              , L"Tomato"              },
-   {DEF_SCN_DARKSALMON          , L"Darksalmon"          },
-   {DEF_SCN_CORAL               , L"Coral"               },
-   {DEF_SCN_LIGHTSALMON         , L"Lightsalmon"         },
-   {DEF_SCN_ORANGERED           , L"Orangered"           },
-   {DEF_SCN_SIENNA              , L"Sienna"              },
-   {DEF_SCN_SEASHELL            , L"Seashell"            },
-   {DEF_SCN_CHOCOLATE           , L"Chocolate"           },
-   {DEF_SCN_SADDLEBROWN         , L"Saddlebrown"         },
-   {DEF_SCN_PEACHPUFF           , L"Peachpuff"           },
-   {DEF_SCN_SANDYBROWN          , L"Sandybrown"          },
-   {DEF_SCN_LINEN               , L"Linen"               },
-   {DEF_SCN_PERU                , L"Peru"                },
-   {DEF_SCN_BISQUE              , L"Bisque"              },
-   {DEF_SCN_DARKORANGE          , L"Darkorange"          },
-   {DEF_SCN_ANTIQUEWHITE        , L"Antiquewhite"        },
-   {DEF_SCN_TAN                 , L"Tan"                 },
-   {DEF_SCN_BURLYWOOD           , L"Burlywood"           },
-   {DEF_SCN_NAVAJOWHITE         , L"Navajowhite"         },
-   {DEF_SCN_PAPAYAWHIP          , L"Papayawhip"          },
-   {DEF_SCN_BLANCHEDALMOND      , L"Blanchedalmond"      },
-   {DEF_SCN_MOCCASIN            , L"Moccasin"            },
-   {DEF_SCN_FLORALWHITE         , L"Floralwhite"         },
-   {DEF_SCN_OLDLACE             , L"Oldlace"             },
-   {DEF_SCN_WHEAT               , L"Wheat"               },
-   {DEF_SCN_ORANGE              , L"Orange"              },
-   {DEF_SCN_GOLDENROD           , L"Goldenrod"           },
-   {DEF_SCN_DARKGOLDENROD       , L"Darkgoldenrod"       },
-   {DEF_SCN_CORNSILK            , L"Cornsilk"            },
-   {DEF_SCN_GOLD                , L"Gold"                },
-   {DEF_SCN_LEMONCHIFFON        , L"Lemonchiffon"        },
-   {DEF_SCN_KHAKI               , L"Khaki"               },
-   {DEF_SCN_PALEGOLDENROD       , L"Palegoldenrod"       },
-   {DEF_SCN_DARKKHAKI           , L"Darkkhaki"           },
-   {DEF_SCN_IVORY               , L"Ivory"               },
-   {DEF_SCN_BEIGE               , L"Beige"               },
-   {DEF_SCN_LIGHTYELLOW         , L"Lightyellow"         },
-   {DEF_SCN_LIGHTGOLDENRODYELLOW, L"Lightgoldenrodyellow"},
-   {DEF_SCN_OLIVE               , L"Olive"               },
-   {DEF_SCN_YELLOW              , L"Yellow"              },
-   {DEF_SCN_OLIVEDRAB           , L"Olivedrab"           },
-   {DEF_SCN_YELLOWGREEN         , L"Yellowgreen"         },
-   {DEF_SCN_DARKOLIVEGREEN      , L"Darkolivegreen"      },
-   {DEF_SCN_GREENYELLOW         , L"Greenyellow"         },
-   {DEF_SCN_LAWNGREEN           , L"Lawngreen"           },
-   {DEF_SCN_CHARTREUSE          , L"Chartreuse"          },
-   {DEF_SCN_HONEYDEW            , L"Honeydew"            },
-   {DEF_SCN_DARKSEAGREEN        , L"Darkseagreen"        },
-   {DEF_SCN_LIGHTGREEN          , L"Lightgreen"          },
-   {DEF_SCN_PALEGREEN           , L"Palegreen"           },
-   {DEF_SCN_FORESTGREEN         , L"Forestgreen"         },
-   {DEF_SCN_LIMEGREEN           , L"Limegreen"           },
-   {DEF_SCN_DARKGREEN           , L"Darkgreen"           },
-   {DEF_SCN_GREEN               , L"Green"               },
-   {DEF_SCN_LIME                , L"Lime"                },
-   {DEF_SCN_MEDIUMSEAGREEN      , L"Mediumseagreen"      },
-   {DEF_SCN_SEAGREEN            , L"Seagreen"            },
-   {DEF_SCN_MINTCREAM           , L"Mintcream"           },
-   {DEF_SCN_SPRINGGREEN         , L"Springgreen"         },
-   {DEF_SCN_MEDIUMSPRINGGREEN   , L"Mediumspringgreen"   },
-   {DEF_SCN_MEDIUMAQUAMARINE    , L"Mediumaquamarine"    },
-   {DEF_SCN_AQUAMARINE          , L"Aquamarine"          },
-   {DEF_SCN_TURQUOISE           , L"Turquoise"           },
-   {DEF_SCN_LIGHTSEAGREEN       , L"Lightseagreen"       },
-   {DEF_SCN_MEDIUMTURQUOISE     , L"Mediumturquoise"     },
-   {DEF_SCN_AZURE               , L"Azure"               },
-   {DEF_SCN_LIGHTCYAN           , L"Lightcyan"           },
-   {DEF_SCN_PALETURQUOISE       , L"Paleturquoise"       },
-   {DEF_SCN_DARKSLATEGRAY       , L"Darkslategray"       },
-   {DEF_SCN_TEAL                , L"Teal"                },
-   {DEF_SCN_DARKCYAN            , L"Darkcyan"            },
-   {DEF_SCN_DARKTURQUOISE       , L"Darkturquoise"       },
-   {DEF_SCN_CYAN                , L"Cyan"                },
-   {DEF_SCN_AQUA                , L"Aqua"                },
-   {DEF_SCN_CADETBLUE           , L"Cadetblue"           },
-   {DEF_SCN_POWDERBLUE          , L"Powderblue"          },
-   {DEF_SCN_LIGHTBLUE           , L"Lightblue"           },
-   {DEF_SCN_DEEPSKYBLUE         , L"Deepskyblue"         },
-   {DEF_SCN_SKYBLUE             , L"Skyblue"             },
-   {DEF_SCN_LIGHTSKYBLUE        , L"Lightskyblue"        },
-   {DEF_SCN_ALICEBLUE           , L"Aliceblue"           },
-   {DEF_SCN_STEELBLUE           , L"Steelblue"           },
-   {DEF_SCN_DODGERBLUE          , L"Dodgerblue"          },
-   {DEF_SCN_SLATEGRAY           , L"Slategray"           },
-   {DEF_SCN_LIGHTSLATEGRAY      , L"Lightslategray"      },
-   {DEF_SCN_LIGHTSTEELBLUE      , L"Lightsteelblue"      },
-   {DEF_SCN_CORNFLOWERBLUE      , L"Cornflowerblue"      },
-   {DEF_SCN_ROYALBLUE           , L"Royalblue"           },
-   {DEF_SCN_GHOSTWHITE          , L"Ghostwhite"          },
-   {DEF_SCN_LAVENDER            , L"Lavender"            },
-   {DEF_SCN_MIDNIGHTBLUE        , L"Midnightblue"        },
-   {DEF_SCN_NAVY                , L"Navy"                },
-   {DEF_SCN_DARKBLUE            , L"Darkblue"            },
-   {DEF_SCN_MEDIUMBLUE          , L"Mediumblue"          },
-   {DEF_SCN_BLUE                , L"Blue"                },
-   {DEF_SCN_DARKSLATEBLUE       , L"Darkslateblue"       },
-   {DEF_SCN_SLATEBLUE           , L"Slateblue"           },
-   {DEF_SCN_MEDIUMSLATEBLUE     , L"Mediumslateblue"     },
-   {DEF_SCN_MEDIUMPURPLE        , L"Mediumpurple"        },
-   {DEF_SCN_BLUEVIOLET          , L"Blueviolet"          },
-   {DEF_SCN_INDIGO              , L"Indigo"              },
-   {DEF_SCN_DARKORCHID          , L"Darkorchid"          },
-   {DEF_SCN_DARKVIOLET          , L"Darkviolet"          },
-   {DEF_SCN_MEDIUMORCHID        , L"Mediumorchid"        },
-   {DEF_SCN_THISTLE             , L"Thistle"             },
-   {DEF_SCN_PLUM                , L"Plum"                },
-   {DEF_SCN_VIOLET              , L"Violet"              },
-   {DEF_SCN_PURPLE              , L"Purple"              },
-   {DEF_SCN_DARKMAGENTA         , L"Darkmagenta"         },
-   {DEF_SCN_FUCHSIA             , L"Fuchsia"             },
-   {DEF_SCN_MAGENTA             , L"Magenta"             },
-   {DEF_SCN_ORCHID              , L"Orchid"              },
-   {DEF_SCN_MEDIUMVIOLETRED     , L"Mediumvioletred"     },
-   {DEF_SCN_DEEPPINK            , L"Deeppink"            },
-   {DEF_SCN_HOTPINK             , L"Hotpink"             },
-   {DEF_SCN_LAVENDERBLUSH       , L"Lavenderblush"       },
-   {DEF_SCN_PALEVIOLETRED       , L"Palevioletred"       },
-   {DEF_SCN_CRIMSON             , L"Crimson"             },
-   {DEF_SCN_PINK                , L"Pink"                },
-   {DEF_SCN_LIGHTPINK           , L"Lightpink"           },
+   {DEF_SCN_BLACK               , L"Black"               },     //   1
+   {DEF_SCN_DIMGRAY             , L"Dimgray"             },     //   2
+   {DEF_SCN_GRAY                , L"Gray"                },     //   3
+   {DEF_SCN_DARKGRAY            , L"Darkgray"            },     //   4
+   {DEF_SCN_SILVER              , L"Silver"              },     //   5
+   {DEF_SCN_LIGHTGRAY           , L"Lightgray"           },     //   6
+   {DEF_SCN_GAINSBORO           , L"Gainsboro"           },     //   7
+   {DEF_SCN_WHITESMOKE          , L"Whitesmoke"          },     //   8
+   {DEF_SCN_WHITE               , L"White"               },     //   9
+   {DEF_SCN_SNOW                , L"Snow"                },     //  10
+   {DEF_SCN_ROSYBROWN           , L"Rosybrown"           },     //  11
+   {DEF_SCN_LIGHTCORAL          , L"Lightcoral"          },     //  12
+   {DEF_SCN_INDIANRED           , L"Indianred"           },     //  13
+   {DEF_SCN_BROWN               , L"Brown"               },     //  14
+   {DEF_SCN_FIREBRICK           , L"Firebrick"           },     //  15
+   {DEF_SCN_MAROON              , L"Maroon"              },     //  16
+   {DEF_SCN_DARKRED             , L"Darkred"             },     //  17
+   {DEF_SCN_RED                 , L"Red"                 },     //  18
+   {DEF_SCN_MISTYROSE           , L"Mistyrose"           },     //  19
+   {DEF_SCN_SALMON              , L"Salmon"              },     //  20
+   {DEF_SCN_TOMATO              , L"Tomato"              },     //  21
+   {DEF_SCN_DARKSALMON          , L"Darksalmon"          },     //  22
+   {DEF_SCN_CORAL               , L"Coral"               },     //  23
+   {DEF_SCN_LIGHTSALMON         , L"Lightsalmon"         },     //  24
+   {DEF_SCN_ORANGERED           , L"Orangered"           },     //  25
+   {DEF_SCN_SIENNA              , L"Sienna"              },     //  26
+   {DEF_SCN_SEASHELL            , L"Seashell"            },     //  27
+   {DEF_SCN_CHOCOLATE           , L"Chocolate"           },     //  28
+   {DEF_SCN_SADDLEBROWN         , L"Saddlebrown"         },     //  29
+   {DEF_SCN_PEACHPUFF           , L"Peachpuff"           },     //  30
+   {DEF_SCN_SANDYBROWN          , L"Sandybrown"          },     //  31
+   {DEF_SCN_LINEN               , L"Linen"               },     //  32
+   {DEF_SCN_PERU                , L"Peru"                },     //  33
+   {DEF_SCN_BISQUE              , L"Bisque"              },     //  34
+   {DEF_SCN_DARKORANGE          , L"Darkorange"          },     //  35
+   {DEF_SCN_ANTIQUEWHITE        , L"Antiquewhite"        },     //  36
+   {DEF_SCN_TAN                 , L"Tan"                 },     //  37
+   {DEF_SCN_BURLYWOOD           , L"Burlywood"           },     //  38
+   {DEF_SCN_NAVAJOWHITE         , L"Navajowhite"         },     //  39
+   {DEF_SCN_PAPAYAWHIP          , L"Papayawhip"          },     //  40
+   {DEF_SCN_BLANCHEDALMOND      , L"Blanchedalmond"      },     //  41
+   {DEF_SCN_MOCCASIN            , L"Moccasin"            },     //  42
+   {DEF_SCN_FLORALWHITE         , L"Floralwhite"         },     //  43
+   {DEF_SCN_OLDLACE             , L"Oldlace"             },     //  44
+   {DEF_SCN_WHEAT               , L"Wheat"               },     //  45
+   {DEF_SCN_ORANGE              , L"Orange"              },     //  46
+   {DEF_SCN_GOLDENROD           , L"Goldenrod"           },     //  47
+   {DEF_SCN_DARKGOLDENROD       , L"Darkgoldenrod"       },     //  48
+   {DEF_SCN_CORNSILK            , L"Cornsilk"            },     //  49
+   {DEF_SCN_GOLD                , L"Gold"                },     //  50
+   {DEF_SCN_LEMONCHIFFON        , L"Lemonchiffon"        },     //  51
+   {DEF_SCN_KHAKI               , L"Khaki"               },     //  52
+   {DEF_SCN_PALEGOLDENROD       , L"Palegoldenrod"       },     //  53
+   {DEF_SCN_DARKKHAKI           , L"Darkkhaki"           },     //  54
+   {DEF_SCN_IVORY               , L"Ivory"               },     //  55
+   {DEF_SCN_BEIGE               , L"Beige"               },     //  56
+   {DEF_SCN_LIGHTYELLOW         , L"Lightyellow"         },     //  57
+   {DEF_SCN_LIGHTGOLDENRODYELLOW, L"Lightgoldenrodyellow"},     //  58
+   {DEF_SCN_OLIVE               , L"Olive"               },     //  59
+   {DEF_SCN_YELLOW              , L"Yellow"              },     //  60
+   {DEF_SCN_OLIVEDRAB           , L"Olivedrab"           },     //  61
+   {DEF_SCN_YELLOWGREEN         , L"Yellowgreen"         },     //  62
+   {DEF_SCN_DARKOLIVEGREEN      , L"Darkolivegreen"      },     //  63
+   {DEF_SCN_GREENYELLOW         , L"Greenyellow"         },     //  64
+   {DEF_SCN_LAWNGREEN           , L"Lawngreen"           },     //  65
+   {DEF_SCN_CHARTREUSE          , L"Chartreuse"          },     //  66
+   {DEF_SCN_HONEYDEW            , L"Honeydew"            },     //  67
+   {DEF_SCN_DARKSEAGREEN        , L"Darkseagreen"        },     //  68
+   {DEF_SCN_LIGHTGREEN          , L"Lightgreen"          },     //  69
+   {DEF_SCN_PALEGREEN           , L"Palegreen"           },     //  70
+   {DEF_SCN_FORESTGREEN         , L"Forestgreen"         },     //  71
+   {DEF_SCN_LIMEGREEN           , L"Limegreen"           },     //  72
+   {DEF_SCN_DARKGREEN           , L"Darkgreen"           },     //  73
+   {DEF_SCN_GREEN               , L"Green"               },     //  74
+   {DEF_SCN_LIME                , L"Lime"                },     //  75
+   {DEF_SCN_MEDIUMSEAGREEN      , L"Mediumseagreen"      },     //  76
+   {DEF_SCN_SEAGREEN            , L"Seagreen"            },     //  77
+   {DEF_SCN_MINTCREAM           , L"Mintcream"           },     //  78
+   {DEF_SCN_SPRINGGREEN         , L"Springgreen"         },     //  79
+   {DEF_SCN_MEDIUMSPRINGGREEN   , L"Mediumspringgreen"   },     //  80
+   {DEF_SCN_MEDIUMAQUAMARINE    , L"Mediumaquamarine"    },     //  81
+   {DEF_SCN_AQUAMARINE          , L"Aquamarine"          },     //  82
+   {DEF_SCN_TURQUOISE           , L"Turquoise"           },     //  83
+   {DEF_SCN_LIGHTSEAGREEN       , L"Lightseagreen"       },     //  84
+   {DEF_SCN_MEDIUMTURQUOISE     , L"Mediumturquoise"     },     //  85
+   {DEF_SCN_AZURE               , L"Azure"               },     //  86
+   {DEF_SCN_LIGHTCYAN           , L"Lightcyan"           },     //  87
+   {DEF_SCN_PALETURQUOISE       , L"Paleturquoise"       },     //  88
+   {DEF_SCN_DARKSLATEGRAY       , L"Darkslategray"       },     //  89
+   {DEF_SCN_TEAL                , L"Teal"                },     //  90
+   {DEF_SCN_DARKCYAN            , L"Darkcyan"            },     //  91
+   {DEF_SCN_DARKTURQUOISE       , L"Darkturquoise"       },     //  92
+   {DEF_SCN_CYAN                , L"Cyan"                },     //  93
+   {DEF_SCN_AQUA                , L"Aqua"                },     //  94
+   {DEF_SCN_CADETBLUE           , L"Cadetblue"           },     //  95
+   {DEF_SCN_POWDERBLUE          , L"Powderblue"          },     //  96
+   {DEF_SCN_LIGHTBLUE           , L"Lightblue"           },     //  97
+   {DEF_SCN_DEEPSKYBLUE         , L"Deepskyblue"         },     //  98
+   {DEF_SCN_SKYBLUE             , L"Skyblue"             },     //  99
+   {DEF_SCN_LIGHTSKYBLUE        , L"Lightskyblue"        },     // 100
+   {DEF_SCN_ALICEBLUE           , L"Aliceblue"           },     // 101
+   {DEF_SCN_STEELBLUE           , L"Steelblue"           },     // 102
+   {DEF_SCN_DODGERBLUE          , L"Dodgerblue"          },     // 103
+   {DEF_SCN_SLATEGRAY           , L"Slategray"           },     // 104
+   {DEF_SCN_LIGHTSLATEGRAY      , L"Lightslategray"      },     // 105
+   {DEF_SCN_LIGHTSTEELBLUE      , L"Lightsteelblue"      },     // 106
+   {DEF_SCN_CORNFLOWERBLUE      , L"Cornflowerblue"      },     // 107
+   {DEF_SCN_ROYALBLUE           , L"Royalblue"           },     // 108
+   {DEF_SCN_GHOSTWHITE          , L"Ghostwhite"          },     // 109
+   {DEF_SCN_LAVENDER            , L"Lavender"            },     // 110
+   {DEF_SCN_MIDNIGHTBLUE        , L"Midnightblue"        },     // 111
+   {DEF_SCN_NAVY                , L"Navy"                },     // 112
+   {DEF_SCN_DARKBLUE            , L"Darkblue"            },     // 113
+   {DEF_SCN_MEDIUMBLUE          , L"Mediumblue"          },     // 114
+   {DEF_SCN_BLUE                , L"Blue"                },     // 115
+   {DEF_SCN_DARKSLATEBLUE       , L"Darkslateblue"       },     // 116
+   {DEF_SCN_SLATEBLUE           , L"Slateblue"           },     // 117
+   {DEF_SCN_MEDIUMSLATEBLUE     , L"Mediumslateblue"     },     // 118
+   {DEF_SCN_MEDIUMPURPLE        , L"Mediumpurple"        },     // 119
+   {DEF_SCN_BLUEVIOLET          , L"Blueviolet"          },     // 120
+   {DEF_SCN_INDIGO              , L"Indigo"              },     // 121
+   {DEF_SCN_DARKORCHID          , L"Darkorchid"          },     // 122
+   {DEF_SCN_DARKVIOLET          , L"Darkviolet"          },     // 123
+   {DEF_SCN_MEDIUMORCHID        , L"Mediumorchid"        },     // 124
+   {DEF_SCN_THISTLE             , L"Thistle"             },     // 125
+   {DEF_SCN_PLUM                , L"Plum"                },     // 126
+   {DEF_SCN_VIOLET              , L"Violet"              },     // 127
+   {DEF_SCN_PURPLE              , L"Purple"              },     // 128
+   {DEF_SCN_DARKMAGENTA         , L"Darkmagenta"         },     // 129
+   {DEF_SCN_FUCHSIA             , L"Fuchsia"             },     // 130
+   {DEF_SCN_MAGENTA             , L"Magenta"             },     // 131
+   {DEF_SCN_ORCHID              , L"Orchid"              },     // 132
+   {DEF_SCN_MEDIUMVIOLETRED     , L"Mediumvioletred"     },     // 133
+   {DEF_SCN_DEEPPINK            , L"Deeppink"            },     // 134
+   {DEF_SCN_HOTPINK             , L"Hotpink"             },     // 135
+   {DEF_SCN_LAVENDERBLUSH       , L"Lavenderblush"       },     // 136
+   {DEF_SCN_PALEVIOLETRED       , L"Palevioletred"       },     // 137
+   {DEF_SCN_CRIMSON             , L"Crimson"             },     // 138
+   {DEF_SCN_PINK                , L"Pink"                },     // 139
+   {DEF_SCN_LIGHTPINK           , L"Lightpink"           },     // 140
 }
 #endif
 ;

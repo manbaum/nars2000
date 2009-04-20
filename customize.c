@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ LPWCHAR icIndexValues[ICVAL_LENGTH]
    WS_UTF16_OVERBAR WS_UTF16_INFINITY,
   };
 
-// Local copy of gSyntaxColors
+// Local copy of gSyntaxColorName[].syntClr
 SYNTAXCOLORS lclSyntaxColors[SC_LENGTH];
 
 char pszNoCreateWCWnd[]     = "Unable to create Web Color Names window";
@@ -155,24 +155,28 @@ APLU3264 CALLBACK CustomizeDlgProc
 
     static COLORNAMES scMenuItems[] =
     {
-        {DEF_SCN_BLACK    , L"Black"  },    // 00
-        {DEF_SCN_WHITE    , L"White"  },    // 01
-        {DEF_SCN_GREEN    , L"Green"  },    // 02
-        {DEF_SCN_MAROON   , L"Maroon" },    // 03
-        {DEF_SCN_OLIVE    , L"Olive"  },    // 04
-        {DEF_SCN_NAVY     , L"Navy"   },    // 05
-        {DEF_SCN_PURPLE   , L"Purple" },    // 06
-        {DEF_SCN_GRAY     , L"Gray"   },    // 07
-        {DEF_SCN_YELLOW   , L"Yellow" },    // 08
-        {DEF_SCN_LIME     , L"Lime"   },    // 09
-        {DEF_SCN_AQUA     , L"Aqua"   },    // 0A
-        {DEF_SCN_FUCHSIA  , L"Fuchsia"},    // 0B
-        {DEF_SCN_SILVER   , L"Silver" },    // 0C
-        {DEF_SCN_RED      , L"Red"    },    // 0D
-        {DEF_SCN_BLUE     , L"Blue"   },    // 0E
-        {DEF_SCN_TEAL     , L"Teal"   },    // 0F
-        {DEF_SCN_BLACK    , L"Custom" },    // 10
+        {DEF_SCN_BLACK    , L"Black"      },    // 00
+        {DEF_SCN_WHITE    , L"White"      },    // 01
+        {DEF_SCN_GREEN    , L"Green"      },    // 02
+        {DEF_SCN_MAROON   , L"Maroon"     },    // 03
+        {DEF_SCN_OLIVE    , L"Olive"      },    // 04
+        {DEF_SCN_NAVY     , L"Navy"       },    // 05
+        {DEF_SCN_PURPLE   , L"Purple"     },    // 06
+        {DEF_SCN_GRAY     , L"Gray"       },    // 07
+        {DEF_SCN_YELLOW   , L"Yellow"     },    // 08
+        {DEF_SCN_LIME     , L"Lime"       },    // 09
+        {DEF_SCN_AQUA     , L"Aqua"       },    // 0A
+        {DEF_SCN_FUCHSIA  , L"Fuchsia"    },    // 0B
+        {DEF_SCN_SILVER   , L"Silver"     },    // 0C
+        {DEF_SCN_RED      , L"Red"        },    // 0D
+        {DEF_SCN_BLUE     , L"Blue"       },    // 0E
+        {DEF_SCN_TEAL     , L"Teal"       },    // 0F
+        {DEF_SCN_BLACK    , L"Custom"     },    // 10
+        {DEF_SCN_BLACK    , L"Web Colors" },    // 11
     };
+
+#define MI_CUSTOM       (countof (scMenuItems) - 2)
+#define MI_WEBCOLORS    (countof (scMenuItems) - 1)
 
     typedef struct tagUNITRANS_STR
     {
@@ -338,7 +342,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hFontBold_ST = MyCreateFontIndirectW (&lf_ST);
 
                         //***************************************************************
-                        // []ALX
+                        // []ALX -- CLEAR WS Values
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
@@ -364,7 +368,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_ALX_EC, lpwszGlbTemp);
 
                         //***************************************************************
-                        // []CT
+                        // []CT -- CLEAR WS Values
                         //***************************************************************
 
                         // Format the value
@@ -382,7 +386,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_CT_EC,  lpwszGlbTemp);
 
                         //***************************************************************
-                        // []ELX
+                        // []ELX -- CLEAR WS Values
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
@@ -408,7 +412,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_ELX_EC, lpwszGlbTemp);
 
                         //***************************************************************
-                        // []FC
+                        // []FC -- CLEAR WS Values
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
@@ -434,7 +438,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_FC_EC,  lpwszGlbTemp);
 
                         //***************************************************************
-                        // []IO
+                        // []IO -- CLEAR WS Values
                         //***************************************************************
 
                         // Get the []IO UpDown Control window handle
@@ -447,7 +451,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (bQuadIO_CWS, 0));
 
                         //***************************************************************
-                        // []IC
+                        // []IC -- CLEAR WS Values
                         //***************************************************************
 
                         // Get the window handle to the ComboBox of index names & values
@@ -488,7 +492,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         MyGlobalUnlock (hGlbQuadIC_CWS); lpMemInt = NULL;
 
                         //***************************************************************
-                        // []LX
+                        // []LX -- CLEAR WS Values
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
@@ -514,7 +518,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_LX_EC,  lpwszGlbTemp);
 
                         //***************************************************************
-                        // []MF
+                        // []MF -- CLEAR WS Values
                         //***************************************************************
 
                         // Format the value
@@ -535,7 +539,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SendMessageW (hWndProp1, CB_SETCURSEL, (APLU3264) uQuadMF_CWS - 1, 0);
 
                         //***************************************************************
-                        // []PP
+                        // []PP -- CLEAR WS Values
                         //***************************************************************
 
                         // Get the []PP UpDown Control window handle
@@ -548,7 +552,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadPP_CWS, 0));
 
                         //***************************************************************
-                        // []PW
+                        // []PW -- CLEAR WS Values
                         //***************************************************************
 
                         // Get the []PW UpDown Control window handle
@@ -561,7 +565,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadPW_CWS, 0));
 
                         //***************************************************************
-                        // []RL
+                        // []RL -- CLEAR WS Values
                         //***************************************************************
 
                         // Format the value
@@ -632,7 +636,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // Copy the global Foreground and Background colors to the local var
                         for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
-                            lclSyntaxColors[uCnt] = gSyntaxColors[uCnt];
+                            lclSyntaxColors[uCnt] = gSyntaxColorName[uCnt].syntClr;
 
                         // Fill in constant fields
                         ti.cbSize   = sizeof (TOOLINFO);
@@ -645,10 +649,16 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Loop through the Foreground and Background buttons
                         for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
                         {
+                            // Write out the static text
+                            SendDlgItemMessageW (hWndProp,
+                                                 IDC_SYNTCLR_LT1 + uCnt,
+                                                 WM_SETTEXT,
+                                                 0,
+                                                 (LPARAM) (HANDLE_PTR) gSyntaxColorName[uCnt].lpwSCName);
                             // Fill in the dynamic field
                             ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
 
-                            // Register a tooltip for the Syntax Color Foreground button
+                            // Register a tooltip for the Syntax Coloring Foreground button
                             SendMessageW (hWndTT,
                                           TTM_ADDTOOL,
                                           0,
@@ -656,7 +666,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                             // Fill in the dynamic field
                             ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt);
 
-                            // Register a tooltip for the Syntax Color Background button
+                            // Register a tooltip for the Syntax Coloring Background button
                             SendMessageW (hWndTT,
                                           TTM_ADDTOOL,
                                           0,
@@ -689,10 +699,9 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
 ////////////////////////cc.rgbResult      =                         // Filled in by the WM_COMMAND handler
                         cc.lpCustColors   = aCustomColors;
-////////////////////////cc.Flags          = CC_RGBINIT | CC_FULLOPEN | CC_ENABLEHOOK; // ***FINISHME*** -- Web Color names
                         cc.Flags          = CC_RGBINIT | CC_FULLOPEN;
 ////////////////////////cc.lCustData      = 0;                      // Already zero from = {0}
-////////////////////////cc.lpfnHook       = ccHookProc;             // ***FINISHME*** -- Web Color names
+////////////////////////cc.lpfnHook       = NULL;                   // Already zero from = {0}
 ////////////////////////cc.lpfnHook       = NULL;                   // Already zero from = {0}
 ////////////////////////cc.lpTemplateName = NULL;                   // Already zero from = {0}
 
@@ -997,7 +1006,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         break;
                 } // End SWITCH
             } else
-            // Check to see if this is one of our Syntax Color Foreground/Background Color buttons
+            // Check to see if this is one of our Syntax Coloring Foreground/Background Color buttons
             if ((IDC_SYNTCLR_BN_FGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST)
              || (IDC_SYNTCLR_BN_BGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_BGCLR_LAST))
             {
@@ -1121,8 +1130,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                             DeleteDC (hDCMem);
                         } // End IF
 
-                        // If this is not the Custom Color item, ...
-                        if (itemIndex NE (countof (scMenuItems) - 1))
+                        // If this is not a special item, ...
+                        if (itemIndex NE MI_CUSTOM
+                         && itemIndex NE MI_WEBCOLORS)
                         {
                             // Get a brush for the swatch color
                             hBrush = MyCreateSolidBrush (scMenuItems[itemIndex].clrRef);
@@ -1188,17 +1198,28 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Get the ID of the calling window
                     idCtl = GetDlgCtrlID ((HWND) lpttt->hdr.idFrom);
 
-                    // Convert to an index
+                    // Check to see if this is one of our Syntax Coloring Foreground/Background Color buttons
                     if (IDC_SYNTCLR_BN_FGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST)
                     {
+                        // Convert to an index
                         idCtl -= IDC_SYNTCLR_BN_FGCLR1;
+
+                        // Mark as foreground
                         bFore = TRUE;
+
+                        // Get the foreground color
                         clrRef = lclSyntaxColors[idCtl].crFore;
                     } else
+                    // If it's a Syntax Coloring background ID, ...
                     if (IDC_SYNTCLR_BN_BGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_BGCLR_LAST)
                     {
+                        // Convert to an index
                         idCtl -= IDC_SYNTCLR_BN_BGCLR1;
+
+                        // Mark as background
                         bFore = FALSE;
+
+                        // Get the background color
                         clrRef = lclSyntaxColors[idCtl].crBack;
                     } // End IF/ELSE
 
@@ -1278,6 +1299,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     return TRUE;    // We handled the msg
 
                 case IDC_APPLY:
+                {
                     // Apply changes
 
                     //***************************************************************
@@ -1539,11 +1561,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                             gSyntClrBGTrans[uCnt] = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt);
 
                             // Copy the local Foreground/Background Colors to the global var
-                            gSyntaxColors[uCnt] = lclSyntaxColors[uCnt];
+                            gSyntaxColorName[uCnt].syntClr = lclSyntaxColors[uCnt];
 
                             // If the background is transparent, change it
                             if (gSyntClrBGTrans[uCnt])
-                                gSyntaxColors[uCnt].crBack = gSyntaxColorBG.crBack;
+                                gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorBG.crBack;
                         } // End IF
 
                         // Copy the state of the "Enable ... Coloring" checkboxes to the OptionFlags
@@ -1632,6 +1654,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     EnableWindow (hWndApply, FALSE);
 
                     return TRUE;    // We handled the msg
+                } // End IDC_APPLY
 
                 case IDC_CUST_LB:
                     // Split cases based upon the notification code
@@ -2062,45 +2085,6 @@ APLU3264 CALLBACK CustomizeDlgProc
                 // SYNTAX COLORING -- WM_COMMAND
                 //***************************************************************
 
-                case IDC_SYNTCLR_XB_TRANS1:
-                case IDC_SYNTCLR_XB_TRANS2:
-                case IDC_SYNTCLR_XB_TRANS3:
-                case IDC_SYNTCLR_XB_TRANS4:
-                case IDC_SYNTCLR_XB_TRANS5:
-                case IDC_SYNTCLR_XB_TRANS6:
-                case IDC_SYNTCLR_XB_TRANS7:
-                case IDC_SYNTCLR_XB_TRANS8:
-                case IDC_SYNTCLR_XB_TRANS9:
-                case IDC_SYNTCLR_XB_TRANS10:
-                case IDC_SYNTCLR_XB_TRANS11:
-                case IDC_SYNTCLR_XB_TRANS12:
-                case IDC_SYNTCLR_XB_TRANS13:
-                case IDC_SYNTCLR_XB_TRANS14:
-                case IDC_SYNTCLR_XB_TRANS15:
-                case IDC_SYNTCLR_XB_TRANS16:
-                case IDC_SYNTCLR_XB_TRANS17:
-                case IDC_SYNTCLR_XB_TRANS18:
-                    // We care about BN_CLICKED only
-                    if (BN_CLICKED EQ cmdCtl)
-                    {
-                        // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
-
-                        // Get the index of the Background color button
-                        uCnt = idCtl - IDC_SYNTCLR_XB_TRANS1;
-
-                        // Get the show/hide state
-                        uShow = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt) ? SW_HIDE : SW_SHOWNORMAL;
-
-                        // Show/hide the Background color button as appropriate
-                        ShowWindow (GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt), uShow);
-
-                        // Enable the Apply button
-                        EnableWindow (hWndApply, TRUE);
-                    } // End IF
-
-                    return TRUE;    // We handled the msg
-
                 case IDC_SYNTCLR_XB_CLRFCNS:
                 case IDC_SYNTCLR_XB_CLRSESS:
                     // We care about BN_CLICKED only
@@ -2110,169 +2094,198 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                     return TRUE;    // We handled the msg
 
-                case IDC_SYNTCLR_BN_FGCLR1:
-                case IDC_SYNTCLR_BN_FGCLR2:
-                case IDC_SYNTCLR_BN_FGCLR3:
-                case IDC_SYNTCLR_BN_FGCLR4:
-                case IDC_SYNTCLR_BN_FGCLR5:
-                case IDC_SYNTCLR_BN_FGCLR6:
-                case IDC_SYNTCLR_BN_FGCLR7:
-                case IDC_SYNTCLR_BN_FGCLR8:
-                case IDC_SYNTCLR_BN_FGCLR9:
-                case IDC_SYNTCLR_BN_FGCLR10:
-                case IDC_SYNTCLR_BN_FGCLR11:
-                case IDC_SYNTCLR_BN_FGCLR12:
-                case IDC_SYNTCLR_BN_FGCLR13:
-                case IDC_SYNTCLR_BN_FGCLR14:
-                case IDC_SYNTCLR_BN_FGCLR15:
-                case IDC_SYNTCLR_BN_FGCLR16:
-                case IDC_SYNTCLR_BN_FGCLR17:
-                case IDC_SYNTCLR_BN_FGCLR18:
-
-                case IDC_SYNTCLR_BN_BGCLR1:
-                case IDC_SYNTCLR_BN_BGCLR2:
-                case IDC_SYNTCLR_BN_BGCLR3:
-                case IDC_SYNTCLR_BN_BGCLR4:
-                case IDC_SYNTCLR_BN_BGCLR5:
-                case IDC_SYNTCLR_BN_BGCLR6:
-                case IDC_SYNTCLR_BN_BGCLR7:
-                case IDC_SYNTCLR_BN_BGCLR8:
-                case IDC_SYNTCLR_BN_BGCLR9:
-                case IDC_SYNTCLR_BN_BGCLR10:
-                case IDC_SYNTCLR_BN_BGCLR11:
-                case IDC_SYNTCLR_BN_BGCLR12:
-                case IDC_SYNTCLR_BN_BGCLR13:
-                case IDC_SYNTCLR_BN_BGCLR14:
-                case IDC_SYNTCLR_BN_BGCLR15:
-                case IDC_SYNTCLR_BN_BGCLR16:
-                case IDC_SYNTCLR_BN_BGCLR17:
-                case IDC_SYNTCLR_BN_BGCLR18:
-                {
-                    HMENU        hMenu;                 // Handle to popup menu
-                    MENUITEMINFO mii = {0};             // Menu item info for popup menu
-                    COLORREF     clrCmp;                // Color to compare with the scMenuItems color
-                    POINT        ptScr;                 // Cursor point in screen coords
-                    UINT         uRetCmd;               // Return cmd from TrackPopupMenu
-
-                    // Get the associated item data (window handle of the Property Page)
-                    (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
-
-                    // Determine if this is Foreground or Background
-                    gbFore = (IDC_SYNTCLR_BN_FGCLR1 <= idCtl
-                           &&                          idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST);
-
-                    // Get the index of the Foreground color button
-                    guIndex = idCtl - (gbFore ? IDC_SYNTCLR_BN_FGCLR1 : IDC_SYNTCLR_BN_BGCLR1);
-
-                    // Prepare to display a popup menu with the color choices
-                    hMenu = CreatePopupMenu ();
-                    if (!hMenu)
+                default:
+                    // Check to see if this is one of our Syntax Coloring Transparent checkboxes
+                    if (IDC_SYNTCLR_XB_TRANS1 <= idCtl
+                     &&                          idCtl <= IDC_SYNTCLR_XB_TRANS_LAST)
                     {
-                        MBW (L"Unable to create popup menu");
+                        // We care about BN_CLICKED only
+                        if (BN_CLICKED EQ cmdCtl)
+                        {
+                            // Get the associated item data (window handle of the Property Page)
+                            (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
+
+                            // Get the index of the Background color button
+                            uCnt = idCtl - IDC_SYNTCLR_XB_TRANS1;
+
+                            // Get the show/hide state
+                            uShow = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt) ? SW_HIDE : SW_SHOWNORMAL;
+
+                            // Show/hide the Background color button as appropriate
+                            ShowWindow (GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt), uShow);
+
+                            // Enable the Apply button
+                            EnableWindow (hWndApply, TRUE);
+                        } // End IF
+
                         return TRUE;    // We handled the msg
-                    } // End IF
-
-                    // Fill in static info
-                    mii.cbSize        = sizeof (mii);
-                    mii.fMask         = MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_TYPE;
-                    mii.fType         = MFT_OWNERDRAW;
-                    mii.fState        = 0;
-                    mii.hSubMenu      = NULL;
-                    mii.hbmpChecked   = NULL;
-                    mii.hbmpUnchecked = NULL;
-                    mii.dwTypeData    = 0;
-                    mii.cch           = 0;
-
-                    // Get the color with which to compare
-                    clrCmp = gbFore ? lclSyntaxColors[guIndex].crFore
-                                    : lclSyntaxColors[guIndex].crBack;
-
-                    // Loop through the basic colors
-                    for (uCnt = 0; uCnt < countof (scMenuItems); uCnt++)
+                    } else
+                    // Check to see if this is one of our Syntax Coloring Foreground/Background Color buttons
+                    if ((IDC_SYNTCLR_BN_FGCLR1 <= idCtl
+                      &&                          idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST)
+                     || (IDC_SYNTCLR_BN_BGCLR1 <= idCtl
+                      &&                          idCtl <= IDC_SYNTCLR_BN_BGCLR_LAST))
                     {
-                        // Fill in the dynamic info
-                        mii.wID           = IDC_SYNTCLR_MI1 + uCnt;
-                        mii.dwItemData    = (clrCmp EQ scMenuItems[uCnt].clrRef);
+                        HMENU        hMenu;                 // Handle to popup menu
+                        MENUITEMINFO mii = {0};             // Menu item info for popup menu
+                        COLORREF     clrCmp;                // Color to compare with the scMenuItems color
+                        POINT        ptScr;                 // Cursor point in screen coords
+                        UINT         uRetCmd;               // Return cmd from TrackPopupMenu
 
-                        // Insert the menu item
-                        InsertMenuItem (hMenu, uCnt, TRUE, &mii);
-                    } // End FOR
+                        // Get the associated item data (window handle of the Property Page)
+                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
 
-                    // Get the mouse position in screen coordinates
-                    GetCursorPos (&ptScr);
+                        // Determine if this is Foreground or Background
+                        gbFore = (IDC_SYNTCLR_BN_FGCLR1 <= idCtl
+                               &&                          idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST);
 
-                    // Tell the static text that this is the one
-                    SendDlgItemMessageW (hWndProp,
-                                         (gbFore ? IDC_SYNTCLR_LT_FGMRK1 : IDC_SYNTCLR_LT_BGMRK1) + guIndex,
-                                         STM_SETIMAGE,
-                                         IMAGE_BITMAP,
-                                         (LPARAM) (HANDLE) hBitMapCheck);
-                    // Display the popup menu
-                    uRetCmd =
-                      TrackPopupMenu (hMenu,
-                                      TPM_CENTERALIGN
-                                    | TPM_RETURNCMD
-                                    | TPM_LEFTBUTTON
-                                    | TPM_RIGHTBUTTON,    // Flags
-                                      ptScr.x,    // x-position
-                                      ptScr.y,    // y-position
-                                      0,          // Reserved (must be zero)
-                                      hDlg,       // Handle of owner window
-                                      NULL);      // Dismissal area outside rectangle (none)
-                    // We no longer need this resource
-                    DestroyMenu (hMenu); hMenu = NULL;
+                        // Get the index of the Foreground or Background color button
+                        guIndex = idCtl - (gbFore ? IDC_SYNTCLR_BN_FGCLR1 : IDC_SYNTCLR_BN_BGCLR1);
 
-                    // Split cases based upon the return cmd
-                    switch (uRetCmd)
-                    {
-                        case IDC_SYNTCLR_MI_CUSTOM:
-                            // Fill in the dynamic members of the CHOOSECOLOR struc
-////////////////////////////cc.lStructSize    =                         // Already filled in during initialization
-////////////////////////////cc.hwndOwner      =                         // Already filled in during initialization
-////////////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
-                            cc.rgbResult      = gbFore ? lclSyntaxColors[guIndex].crFore : lclSyntaxColors[guIndex].crBack;
-////////////////////////////cc.lpCustColors   =                         // Already filled in during initialization
-////////////////////////////cc.Flags          =                         // Already filled in during initialization
-////////////////////////////cc.lCustData      = 0;                      // Already zero from = {0}
-////////////////////////////cc.lpfnHook       =                         // Already filled in during initialization
-////////////////////////////cc.lpTemplateName = NULL;                   // Already zero from = {0}
+                        // Prepare to display a popup menu with the color choices
+                        hMenu = CreatePopupMenu ();
+                        if (!hMenu)
+                        {
+                            MBW (L"Unable to create popup menu");
+                            return TRUE;    // We handled the msg
+                        } // End IF
 
-                            // If the user presses OK, ...
-                            if (ChooseColor (&cc))
+                        // Fill in static info
+                        mii.cbSize        = sizeof (mii);
+                        mii.fMask         = MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_TYPE;
+                        mii.fType         = MFT_OWNERDRAW;
+                        mii.fState        = 0;
+                        mii.hSubMenu      = NULL;
+                        mii.hbmpChecked   = NULL;
+                        mii.hbmpUnchecked = NULL;
+                        mii.dwTypeData    = 0;
+                        mii.cch           = 0;
+
+                        // Get the color with which to compare
+                        clrCmp = gbFore ? lclSyntaxColors[guIndex].crFore
+                                        : lclSyntaxColors[guIndex].crBack;
+
+                        // Loop through the basic colors
+                        for (uCnt = 0; uCnt < countof (scMenuItems); uCnt++)
+                        {
+                            // Fill in the dynamic info
+                            mii.wID           = IDC_SYNTCLR_MI1 + uCnt;
+                            mii.dwItemData    = (clrCmp EQ scMenuItems[uCnt].clrRef);
+
+                            // Insert the menu item
+                            InsertMenuItem (hMenu, uCnt, TRUE, &mii);
+                        } // End FOR
+
+                        // Get the mouse position in screen coordinates
+                        GetCursorPos (&ptScr);
+
+                        // Tell the static text that this is the one
+                        SendDlgItemMessageW (hWndProp,
+                                             (gbFore ? IDC_SYNTCLR_LT_FGMRK1 : IDC_SYNTCLR_LT_BGMRK1) + guIndex,
+                                             STM_SETIMAGE,
+                                             IMAGE_BITMAP,
+                                             (LPARAM) (HANDLE) hBitMapCheck);
+                        // Display the popup menu
+                        uRetCmd =
+                          TrackPopupMenu (hMenu,
+                                          TPM_CENTERALIGN
+                                        | TPM_RETURNCMD
+                                        | TPM_LEFTBUTTON
+                                        | TPM_RIGHTBUTTON,    // Flags
+                                          ptScr.x,    // x-position
+                                          ptScr.y,    // y-position
+                                          0,          // Reserved (must be zero)
+                                          hDlg,       // Handle of owner window
+                                          NULL);      // Dismissal area outside rectangle (none)
+                        // We no longer need this resource
+                        DestroyMenu (hMenu); hMenu = NULL;
+
+                        // Get the colorref
+                        cc.rgbResult = gbFore ? lclSyntaxColors[guIndex].crFore : lclSyntaxColors[guIndex].crBack;
+
+                        // Split cases based upon the return cmd
+                        switch (uRetCmd)
+                        {
+                            case IDC_SYNTCLR_MI_CUSTOM:
+                                // Fill in the dynamic members of the CHOOSECOLOR struc
+////////////////////////////////cc.lStructSize    =                         // Already filled in during initialization
+////////////////////////////////cc.hwndOwner      =                         // Already filled in during initialization
+////////////////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
+////////////////////////////////cc.rgbResult      =                         // Already filled in above
+////////////////////////////////cc.lpCustColors   =                         // Already filled in during initialization
+////////////////////////////////cc.Flags          =                         // Already filled in during initialization
+////////////////////////////////cc.lCustData      = 0;                      // Already zero from = {0}
+////////////////////////////////cc.lpfnHook       =                         // Already filled in during initialization
+////////////////////////////////cc.lpTemplateName = NULL;                   // Already zero from = {0}
+
+                                // If the user presses OK, ...
+                                if (ChooseColor (&cc))
+                                    // Handle in separate message
+                                    SendMessageW (hDlg,
+                                                  MYWM_SETCOLOR,
+                                                  MAKEWPARAM (guIndex, gbFore),
+                                                  cc.rgbResult);
+                                // Tell the static text to disappear again
+                                SendDlgItemMessageW (hWndProp,
+                                                     (gbFore ? IDC_SYNTCLR_LT_FGMRK1 : IDC_SYNTCLR_LT_BGMRK1) + guIndex,
+                                                     STM_SETIMAGE,
+                                                     IMAGE_BITMAP,
+                                                     0);
+                                break;
+
+                            case IDC_SYNTCLR_MI_WEBCOLORS:
+                            {
+                                SYNTAXCOLORNAME scnParams;
+
+                                // Initialize the parameters we're passing
+                                scnParams.syntClr.crFore = cc.rgbResult;
+                                scnParams.lpwSCName      = gSyntaxColorName[guIndex].lpwSCName;
+
+                                // Display a separate dialog with the Web Color Names
+                                cc.rgbResult =
+                                  DialogBoxParamW (_hInstance,
+                                                   MAKEINTRESOURCEW (IDD_WEBCOLORS),
+                                                   hWnd,
+                                        (DLGPROC) &WebColorsDlgProc,
+                           (LPARAM) (HANDLE_PTR)  &scnParams);
+                                if (-1 NE cc.rgbResult)
+                                    // Handle in separate message
+                                    SendMessageW (hDlg,
+                                                  MYWM_SETCOLOR,
+                                                  MAKEWPARAM (guIndex, gbFore),
+                                                  cc.rgbResult);
+                                // Tell the static text to disappear again
+                                SendDlgItemMessageW (hWndProp,
+                                                     (gbFore ? IDC_SYNTCLR_LT_FGMRK1 : IDC_SYNTCLR_LT_BGMRK1) + guIndex,
+                                                     STM_SETIMAGE,
+                                                     IMAGE_BITMAP,
+                                                     0);
+                                break;
+                            } // End IDC_SYNTCLR_MI_WEBCOLORS
+
+                            default:                // IDC_SYNTCLR_MI1 to the end-1
                                 // Handle in separate message
                                 SendMessageW (hDlg,
                                               MYWM_SETCOLOR,
                                               MAKEWPARAM (guIndex, gbFore),
-                                              cc.rgbResult);
-                            // Tell the static text to disappear again
-                            SendDlgItemMessageW (hWndProp,
-                                                 (gbFore ? IDC_SYNTCLR_LT_FGMRK1 : IDC_SYNTCLR_LT_BGMRK1) + guIndex,
-                                                 STM_SETIMAGE,
-                                                 IMAGE_BITMAP,
-                                                 0);
-                            break;
+                                              scMenuItems[uRetCmd - IDC_SYNTCLR_MI1].clrRef);
 
-                        default:                // IDC_SYNTCLR_MI1 to the end-1
-                            // Handle in separate message
-                            SendMessageW (hDlg,
-                                          MYWM_SETCOLOR,
-                                          MAKEWPARAM (guIndex, gbFore),
-                                          scMenuItems[uRetCmd - IDC_SYNTCLR_MI1].clrRef);
+                                // Fall through to remove the mark
 
-                            // Fall through to remove the mark
+                            case 0:
+                                // Tell the static text to disappear again
+                                SendDlgItemMessageW (hWndProp,
+                                                     (gbFore ? IDC_SYNTCLR_LT_FGMRK1 : IDC_SYNTCLR_LT_BGMRK1) + guIndex,
+                                                     STM_SETIMAGE,
+                                                     IMAGE_BITMAP,
+                                                     0);
+                                break;
+                        } // End SWITCH
 
-                        case 0:
-                            // Tell the static text to disappear again
-                            SendDlgItemMessageW (hWndProp,
-                                                 (gbFore ? IDC_SYNTCLR_LT_FGMRK1 : IDC_SYNTCLR_LT_BGMRK1) + guIndex,
-                                                 STM_SETIMAGE,
-                                                 IMAGE_BITMAP,
-                                                 0);
-                            break;
-                    } // End SWITCH
+                        return TRUE;    // We handled the msg
+                    } // End IDC_SYNTCLR_BN_[F|B]GCLRnn
 
-                    return TRUE;    // We handled the msg
-                } // End IDC_SYNTCLR_BN_[F|B]GCLRnn
+                    break;
 
                 case IDC_SYNTCLR_BN_RESTORE:
                     // Get the associated item data (window handle of the Property Page)
@@ -2497,120 +2510,6 @@ APLU3264 CALLBACK CustomizeDlgProc
 
     return FALSE;           // We didn't handle the msg
 } // End CustomizeDlgProc
-
-
-//// //***************************************************************************
-//// //  $ccHookProc
-//// //
-//// //  Hook procedure for ChooseColor
-//// //***************************************************************************
-////
-//// UINT APIENTRY ccHookProc
-////     (HWND   hDlg,       // Handle to the dialog box window
-////      UINT   message,    // Message identifier
-////      WPARAM wParam,     // Message parameter
-////      LPARAM lParam)     // Message parameter
-////
-//// {
-////     static HWND  hWndWcnBut,    // Window handle of Web Color Names button
-////                  hWndWcnWin;    // ...                              window
-////            HWND  hWndCancel;    // ...              Cancel button
-////            RECT  rcButton;      // RECT for the button
-////            HFONT hFont;         // FONT for the button
-////
-////     // Split cases based upon the message
-////     switch (message)
-////     {
-////         case WM_INITDIALOG:
-////             // Get the handle of the Cancel button window
-////             hWndCancel = GetDlgItem (hDlg, IDCANCEL);
-////
-////             // Get the size and position of the button
-////             GetWindowRect (hWndCancel, &rcButton);
-////
-////             // Convert the screen coords to client coords
-////             //   relative to the dialog
-////             ScreenToClient (hDlg, &rcButton.left);
-////             ScreenToClient (hDlg, &rcButton.right);
-////
-////             // Extend the top up and the bottom down to accommodate the button text
-////             rcButton.top    -= 3;
-////             rcButton.bottom += 5;
-////
-////             // Define the Web Color Names button
-////             hWndWcnBut =
-////               CreateWindowW (L"BUTTON",
-////                              L"Web Color Names",
-////                              0
-////                            | WS_CHILD
-////                            | WS_TABSTOP
-////                            | BS_PUSHBUTTON
-////                            | BS_MULTILINE
-////                            | BS_VCENTER
-////                              ,                              // Styles
-////                              rcButton.right + 5,            // X-position
-////                              rcButton.top,                  // Y-...
-////                              rcButton.right - rcButton.left,// Width
-////                              rcButton.bottom - rcButton.top,// Height
-////                              hDlg,                          // Parent window
-////                              (HMENU) IDWC_WCN_BN,           // ID
-////                              _hInstance,                    // Instance
-////                              0);                            // lParam
-////             // Use the same font as the Cancel button
-////             hFont = (HFONT) SendMessageW (hWndCancel, WM_GETFONT, 0, 0);
-////             SendMessageW (hWndWcnBut, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (FALSE, 0));
-////
-////             // Show the window
-////             ShowWindow (hWndWcnBut, SW_SHOWNORMAL);
-////
-////             break;
-////
-////         case WM_COMMAND:            // wNotifyCode = HIWORD(wParam); // Notification code
-////                                     // wID = LOWORD(wParam);         // Item, control, or accelerator identifier
-////                                     // hwndCtl = (HWND) lParam;      // Handle of control
-////             // If the user pressed our button, ...
-////             switch (GET_WM_COMMAND_ID (wParam, lParam))
-////             {
-////                 case IDWC_WCN_BN:
-////                     // We care about BN_CLICKED only
-////                     if (BN_CLICKED EQ GET_WM_COMMAND_CMD (wParam, lParam))
-////                     {
-////                         // Create a window to display the Web Color Names
-////                         hWndWcnWin =
-////                           CreateWindowW (LWCWNDCLASS,
-////                                          L"Web Color Names",
-////                                          0
-////                                        | WS_OVERLAPPEDWINDOW
-////                                          ,                              // Styles
-////                                          CW_USEDEFAULT,                 // X-position
-////                                          CW_USEDEFAULT,                 // Y-...
-////                                          CW_USEDEFAULT,                 // Width
-////                                          CW_USEDEFAULT,                 // Height
-////                                          hDlg,                          // Parent window
-////                                          NULL,                          // ID
-////                                          _hInstance,                    // Instance
-////                                          0);                            // lParam
-////                         if (hWndWcnWin EQ NULL)
-////                         {
-////                             MB (pszNoCreateWCWnd);
-////                             return FALSE;
-////                         } // End IF
-////
-////                         // Show the window
-////                         ShowWindow (hWndWcnWin, SW_SHOWNORMAL);
-////                     } // End IF
-////
-////                     return TRUE;        // Tell the dialog box to ignore this message
-////             } // End SWITCH
-////
-////             return FALSE;       // Tell the dialog box to process this message
-////
-////         default:
-////             break;
-////     } // End SWITCH
-////
-////     return FALSE;       // Tell the dialog box to process this message
-//// } // End ccHookProc
 
 
 //***************************************************************************

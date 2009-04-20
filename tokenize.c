@@ -529,9 +529,9 @@ UBOOL CheckResizeNum_EM
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    UBOOL   bRet = FALSE;       // TRUE iff result is valid
-    int     iNumLim;            // Temporary iNumLim
-    HGLOBAL hGlbNum;            // Temporary hGlbNum
+    UBOOL   bRet = FALSE;               // TRUE iff result is valid
+    int     iNumLim;                    // Temporary iNumLim
+    HGLOBAL hGlbNum;                    // Temporary hGlbNum
 
     // Check for need to resize hGlbNum
     //   allowing for one more char and a terminating zero
@@ -597,9 +597,9 @@ UBOOL CheckResizeStr_EM
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    UBOOL   bRet = FALSE;       // TRUE iff result is valid
-    int     iStrLim;            // Temporary iStrLim
-    HGLOBAL hGlbStr;            // Temporary hGlbStr
+    UBOOL   bRet = FALSE;               // TRUE iff result is valid
+    int     iStrLim;                    // Temporary iStrLim
+    HGLOBAL hGlbStr;                    // Temporary hGlbStr
 
     // Check for need to resize hGlbStr
     //   allowing for one more char and a terminating zero
@@ -766,9 +766,9 @@ UBOOL fnAlpha
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet;          // TRUE iff result is valid
-    LPWCHAR      lpwszStr;      // Ptr to Str global memory
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    UBOOL        bRet;                  // TRUE iff result is valid
+    LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnAlpha");
@@ -823,7 +823,7 @@ UBOOL fnAlpha
             {
                 // Save the color
                 lptkLocalVars->lpMemClrNxt++->syntClr =
-                  gSyntaxColors[SC_PRIMITIVE];
+                  gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
                 // Save the name type
                 lptkLocalVars->scNameType = SC_NAMETYPE_PRIMITIVE;
@@ -889,7 +889,7 @@ UBOOL fnAlpha
                 for (uVar = 0; uVar < uLen; uVar++)
                     // Resave the color
                     lptkLocalVars->lpMemClrIni[lptkLocalVars->NameInit + uVar].syntClr =
-                      gSyntaxColors[uClr];
+                      gSyntaxColorName[uClr].syntClr;
                 break;
 
             case SC_NAMETYPE_SYSFCN:
@@ -956,7 +956,7 @@ UBOOL fnAlpha
                 for (uVar = 0; uVar < uLen; uVar++)
                     // Resave the color
                     lptkLocalVars->lpMemClrIni[lptkLocalVars->NameInit + uVar].syntClr =
-                      gSyntaxColors[uClr];
+                      gSyntaxColorName[uClr].syntClr;
                 break;
 
             defstop
@@ -985,13 +985,13 @@ UBOOL fnAlpDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    LPSYMENTRY   lpSymEntry;    // Ptr to the name's STE
-    UBOOL        bRet = TRUE;   // TRUE iff the result is valid
-    APLINT       aplInteger;    // A temporary integer
-    TKFLAGS      tkFlags = {0}; // Token flags
+    LPSYMENTRY   lpSymEntry;            // Ptr to the name's STE
+    UBOOL        bRet = TRUE;           // TRUE iff the result is valid
+    APLINT       aplInteger;            // A temporary integer
+    TKFLAGS      tkFlags = {0};         // Token flags
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPWCHAR      lpwszStr;      // Ptr to Str global memory
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnAlpDone");
@@ -1080,13 +1080,13 @@ UBOOL fnDirIdent
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    LPSYMENTRY   lpSymEntry;        // Ptr to the SYMENTRY for the name
-    UBOOL        bRet;              // TRUE iff the result is valid
+    LPSYMENTRY   lpSymEntry;            // Ptr to the SYMENTRY for the name
+    UBOOL        bRet;                  // TRUE iff the result is valid
     APLINT       aplInteger;
     TKFLAGS      tkFlags = {0};
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPWCHAR      lpwszStr;          // Ptr to Str global memory
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnDirIdent");
@@ -1100,7 +1100,7 @@ UBOOL fnDirIdent
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_GLBNAME];
+          gSyntaxColorName[SC_GLBNAME].syntClr;
 
         // Mark as successful
         bRet = TRUE;
@@ -1182,7 +1182,7 @@ UBOOL fnAsnDone
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         return TRUE;
     } // End IF
@@ -1224,7 +1224,7 @@ UBOOL fnLstDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         return TRUE;
     } // End IF
@@ -1299,13 +1299,13 @@ UBOOL fnClnDone
             for (uVar = uLblIni; uVar < uLen; uVar++)
                 // Save the color (label separator)
                 lptkLocalVars->lpMemClrIni[uVar].syntClr =
-                  gSyntaxColors[SC_LABEL];
+                  gSyntaxColorName[SC_LABEL].syntClr;
             // Set the new state to FSA_SOS so we can accept Control Strucures
             SetTokenStates (lptkLocalVars, FSA_SOS);
         } else
             // Save the color (plain old colon)
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColors[SC_PRIMITIVE];
+              gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -1346,7 +1346,7 @@ UBOOL fnClnDone
             for (uVar = 0; uVar < uLen; uVar++)
                 // Save the color
                 lptkLocalVars->lpMemClrNxt++->syntClr =
-                  gSyntaxColors[SC_LABEL];
+                  gSyntaxColorName[SC_LABEL].syntClr;
 
             // Mark as successful
             return TRUE;
@@ -1395,7 +1395,7 @@ UBOOL fnCtrlDone
         for (uCnt = 0; uCnt < lptkLocalVars->CtrlStrucStrLen; uCnt++)
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColors[SC_CTRLSTRUC];
+              gSyntaxColorName[SC_CTRLSTRUC].syntClr;
         goto NORMAL_EXIT;
     } // End IF
 
@@ -1541,7 +1541,7 @@ UBOOL fnPrmDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         return TRUE;
     } // End IF
@@ -1641,12 +1641,12 @@ ERROR_EXIT:
 
 UBOOL fnPointSub
     (LPTKLOCALVARS lptkLocalVars,   // Ptr to TK Local Vars
-     LPPERTABDATA  lpMemPTD,        // Ptr to PerTabData global memory
-     WCHAR         wchCur)          // The char to accumulate
+     LPPERTABDATA  lpMemPTD,            // Ptr to PerTabData global memory
+     WCHAR         wchCur)              // The char to accumulate
 
 {
-    LPCHAR       lpszNum;           // Ptr to Num global memory
-    UBOOL        bRet;              // TRUE iff result is valid
+    LPCHAR       lpszNum;               // Ptr to Num global memory
+    UBOOL        bRet;                  // TRUE iff result is valid
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnPointSub");
@@ -1688,13 +1688,13 @@ UBOOL fnPointDone
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet,          // TRUE iff result is valid
-                 bMerge;        // TRUE iff we merged with the previous token
-    LPCHAR       lpszNum;       // Ptr to Num global memory
-    PNLOCALVARS  pnLocalVars;   // PN Local vars
-    TKFLAGS      tkFlags = {0}; // Token flags for AppendNewToken_EM
-    APLLONGEST   aplLongest;    // Temporary var
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    UBOOL        bRet,                  // TRUE iff result is valid
+                 bMerge;                // TRUE iff we merged with the previous token
+    LPCHAR       lpszNum;               // Ptr to Num global memory
+    PNLOCALVARS  pnLocalVars;           // PN Local vars
+    TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
+    APLLONGEST   aplLongest;            // Temporary var
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnPointDone");
@@ -1724,7 +1724,7 @@ UBOOL fnPointDone
         for (uVar = 0; uVar < uLen; uVar++)
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColors[SC_NUMCONST];
+              gSyntaxColorName[SC_NUMCONST].syntClr;
         // Mark as successful
         bRet = TRUE;
 
@@ -1846,7 +1846,7 @@ UBOOL fnOp1Done
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -1902,7 +1902,7 @@ UBOOL fnOp2Done
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -1947,7 +1947,7 @@ UBOOL fnDotDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -2023,7 +2023,7 @@ UBOOL fnJotDoneSub
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -2070,7 +2070,7 @@ UBOOL fnOutDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -2137,7 +2137,7 @@ UBOOL fnComDone
         while (iVar--)
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColors[SC_COMMENT];
+              gSyntaxColorName[SC_COMMENT].syntClr;
         goto NORMAL_EXIT;
     } // End IF
 
@@ -2206,9 +2206,9 @@ UBOOL fnQuoAccumSub
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet;          // TRUE iff result is valid
-    LPWCHAR      lpwszStr;      // Ptr to Str global memory
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    UBOOL        bRet;                  // TRUE iff result is valid
+    LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnQuoAccumSub");
@@ -2230,7 +2230,7 @@ UBOOL fnQuoAccumSub
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[scType];
+          gSyntaxColorName[scType].syntClr;
     } // End IF
 
     // Check for need to resize hGlbStr
@@ -2309,9 +2309,9 @@ UBOOL fnQuoDoneSub
     TKFLAGS      tkFlags = {0};
     APLINT       aplInteger;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet;          // TRUE iff result is valid
-    LPWCHAR      lpwszStr;      // Ptr to Str global memory
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    UBOOL        bRet;                  // TRUE iff result is valid
+    LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnQuoDoneSub");
@@ -2347,7 +2347,8 @@ UBOOL fnQuoDoneSub
             {
                 // Mark as matched
                 lpMemClrCol->colIndex = COL_QUOTE2;
-                lpMemClrCol->syntClr  = gSyntaxColors[SC_CHRCONST];
+                lpMemClrCol->syntClr  =
+                  gSyntaxColorName[SC_CHRCONST].syntClr;
             } // End IF
         } // End IF
 
@@ -2445,7 +2446,7 @@ UBOOL fnQuoDoneSub
 
             *VarArrayBaseToDim (lpwsz) = lptkLocalVars->iStrLen;
             CopyMemory (VarArrayBaseToData (lpwsz, 1),
-                       &lpwszStr[1],       // Skip over the string delimiter
+                        &lpwszStr[1],       // Skip over the string delimiter
                         lptkLocalVars->iStrLen * sizeof (APLCHAR));
             MyGlobalUnlock (hGlb); lpwsz = NULL;
 
@@ -2559,7 +2560,7 @@ UBOOL GroupInitCom
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt->syntClr =
-          gSyntaxColors[SC_UNMATCHGRP];
+          gSyntaxColorName[SC_UNMATCHGRP].syntClr;
 
         // Save the index of the previous grouping symbol
         lptkLocalVars->lpGrpSeqNxt->PrevGroup = lptkLocalVars->PrevGroup;
@@ -2692,14 +2693,14 @@ UBOOL GroupDoneCom
         if (PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
             // Save the color and skip over it
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColors[SC_UNMATCHGRP];
+              gSyntaxColorName[SC_UNMATCHGRP].syntClr;
         else
         {
             // Check for improper nesting
             if (lptkLocalVars->lpGrpSeqIni[PrevGroup].TknType NE uTypePrev)
                 // Save the color and skip over it
                 lptkLocalVars->lpMemClrNxt++->syntClr =
-                  gSyntaxColors[SC_UNNESTED];
+                  gSyntaxColorName[SC_UNNESTED].syntClr;
             else
             {
                 // Initialize the count
@@ -2718,7 +2719,7 @@ UBOOL GroupDoneCom
 
                 // Save the color and skip over it
                 lptkLocalVars->lpMemClrNxt++->syntClr =
-                  gSyntaxColors[uMatchGrp];
+                  gSyntaxColorName[uMatchGrp].syntClr;
 
                 // Get the index in lpGrpSeqIni of the previous grouping symbol
                 PrevGroup = lptkLocalVars->PrevGroup;
@@ -2729,7 +2730,7 @@ UBOOL GroupDoneCom
 
                 // Reset the preceding matching symbol's color
                 lptkLocalVars->lpMemClrIni[lptkLocalVars->lpGrpSeqIni[PrevGroup].clrIndex].syntClr =
-                  gSyntaxColors[uMatchGrp];
+                  gSyntaxColorName[uMatchGrp].syntClr;
 
                 // Save the index of the previous previous grouping symbol
                 lptkLocalVars->PrevGroup = lptkLocalVars->lpGrpSeqIni[PrevGroup].PrevGroup;
@@ -2801,25 +2802,25 @@ NORMAL_EXIT:
 
 UBOOL MergeNumbers
     (LPTKLOCALVARS lptkLocalVars,   // Ptr to local vars
-     LPPNLOCALVARS lppnLocalVars,   // Ptr to PNLOCALVARS global memory
-     LPUBOOL       lpbRet)          // Ptr to TRUE iff the result is valid
+     LPPNLOCALVARS lppnLocalVars,       // Ptr to PNLOCALVARS global memory
+     LPUBOOL       lpbRet)              // Ptr to TRUE iff the result is valid
 
 {
-    LPTOKEN    lptkPrv;             // Ptr to previous token
-    APLSTYPE   aplTypePrv,          // Previous token storage type
-               aplTypeNew,          // New            ...
-               aplTypeRes;          // Result         ...
-    APLNELM    aplNELMPrv;          // Previous token NELM
-    APLRANK    aplRankPrv;          // Previous token rank
-    APLUINT    ByteRes,             // # bytes in the result
-               uPrv;                // Loop counter
-    HGLOBAL    hGlbRes,             // Result global memory handle
-               hGlbPrv;             // Previous token ...
-    LPVOID     lpMemRes,            // Ptr to result global memory
-               lpMemPrv;            // Ptr to previous token ...
-    APLLONGEST aplLongestPrv;       // Previous token immediate value
-    UINT       uBitMask;            // Bit mask for looping through Booleans
-    UBOOL      bMerge = FALSE;      // TRUE iff we merged with the previous token
+    LPTOKEN    lptkPrv;                 // Ptr to previous token
+    APLSTYPE   aplTypePrv,              // Previous token storage type
+               aplTypeNew,              // New            ...
+               aplTypeRes;              // Result         ...
+    APLNELM    aplNELMPrv;              // Previous token NELM
+    APLRANK    aplRankPrv;              // Previous token rank
+    APLUINT    ByteRes,                 // # bytes in the result
+               uPrv;                    // Loop counter
+    HGLOBAL    hGlbRes,                 // Result global memory handle
+               hGlbPrv;                 // Previous token ...
+    LPVOID     lpMemRes,                // Ptr to result global memory
+               lpMemPrv;                // Ptr to previous token ...
+    APLLONGEST aplLongestPrv;           // Previous token immediate value
+    UINT       uBitMask;                // Bit mask for looping through Booleans
+    UBOOL      bMerge = FALSE;          // TRUE iff we merged with the previous token
 
     // Get a ptr to the previous token (if any)
     lptkPrv = &lptkLocalVars->lpNext[-1];
@@ -3103,7 +3104,7 @@ UBOOL fnDiaDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
         goto NORMAL_EXIT;
     } // End IF
@@ -3164,7 +3165,7 @@ UBOOL fnSyntQuote
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_CHRCONST];
+          gSyntaxColorName[SC_CHRCONST].syntClr;
     } // End IF
 
     // Mark as successful
@@ -3207,7 +3208,7 @@ UBOOL fnSyntPrm
     if (lptkLocalVars->lpMemClrNxt)
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColors[SC_PRIMITIVE];
+          gSyntaxColorName[SC_PRIMITIVE].syntClr;
 
     // Mark as successful
     return TRUE;
@@ -3264,7 +3265,7 @@ UBOOL fnUnkDone
 
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColors[scType];
+              gSyntaxColorName[scType].syntClr;
         } // End IF
 
         // Mark as successful
@@ -3870,7 +3871,7 @@ void Untokenize
 #ifdef DEBUG
             {
                 LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-                WCHAR        wszTemp[1024]; // Ptr to temporary output area
+                WCHAR wszTemp[1024];    // Ptr to temporary output area
 
                 // Lock the memory to get a ptr to it
                 lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -3893,7 +3894,7 @@ void Untokenize
     {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-        WCHAR        wszTemp[1024]; // Ptr to temporary output area
+        WCHAR wszTemp[1024];            // Ptr to temporary output area
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -4149,17 +4150,17 @@ UBOOL AppendNewToken_EM
 //***************************************************************************
 
 UBOOL AppendNewCSToken_EM
-    (TOKEN_TYPES TknType,       // CS token type (TKT_CS_xxx)
-     USHORT      uLineNum,      // Line #
-     USHORT      uStmtNum,      // Stmt #
-     USHORT      uTknNum,       // Token #
-     UBOOL       bSOS,          // TRUE iff the matching CS starts a stmt
-     UINT        tkCharIndex)   // Index into the input line of this token
+    (TOKEN_TYPES   TknType,             // CS token type (TKT_CS_xxx)
+     USHORT        uLineNum,            // Line #
+     USHORT        uStmtNum,            // Stmt #
+     USHORT        uTknNum,             // Token #
+     UBOOL         bSOS,                // TRUE iff the matching CS starts a stmt
+     UINT          tkCharIndex)         // Index into the input line of this token
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    TOKEN        tkCS = {0};    // Control Structure token
+    TOKEN tkCS = {0};                   // Control Structure token
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,361 +25,303 @@
 #include <windowsx.h>
 #include "headers.h"
 
+#define MYWM_CLOSE          (WM_APP +  0)
 
-/*************
-
-Web Color Names in Decimal
---------------------------
-
-GIMP Palette
-Name: Web Named Colors
-#
-# ColorZilla Web Named Colors palette
-#
-0 0 0   black
-105 105 105 dimgray
-105 105 105 dimgrey
-128 128 128 grey
-128 128 128 gray
-169 169 169 darkgray
-169 169 169 darkgrey
-192 192 192 silver
-211 211 211 lightgray
-211 211 211 lightgrey
-220 220 220 gainsboro
-245 245 245 whitesmoke
-255 255 255 white
-255 250 250 snow
-188 143 143 rosybrown
-240 128 128 lightcoral
-205 92 92   indianred
-165 42 42   brown
-178 34 34   firebrick
-128 0 0 maroon
-139 0 0 darkred
-255 0 0 red
-255 228 225 mistyrose
-250 128 114 salmon
-255 99 71   tomato
-233 150 122 darksalmon
-255 127 80  coral
-255 160 122 lightsalmon
-255 69 0    orangered
-160 82 45   sienna
-255 245 238 seashell
-210 105 30  chocolate
-139 69 19   saddlebrown
-255 218 185 peachpuff
-244 164 96  sandybrown
-250 240 230 linen
-205 133 63  peru
-255 228 196 bisque
-255 140 0   darkorange
-250 235 215 antiquewhite
-210 180 140 tan
-222 184 135 burlywood
-255 222 173 navajowhite
-255 239 213 papayawhip
-255 235 205 blanchedalmond
-255 228 181 moccasin
-255 250 240 floralwhite
-253 245 230 oldlace
-245 222 179 wheat
-255 165 0   orange
-218 165 32  goldenrod
-184 134 11  darkgoldenrod
-255 248 220 cornsilk
-255 215 0   gold
-255 250 205 lemonchiffon
-240 230 140 khaki
-238 232 170 palegoldenrod
-189 183 107 darkkhaki
-255 255 240 ivory
-245 245 220 beige
-255 255 224 lightyellow
-250 250 210 lightgoldenrodyellow
-128 128 0   olive
-255 255 0   yellow
-107 142 35  olivedrab
-154 205 50  yellowgreen
-85 107 47   darkolivegreen
-173 255 47  greenyellow
-124 252 0   lawngreen
-127 255 0   chartreuse
-240 255 240 honeydew
-143 188 143 darkseagreen
-144 238 144 lightgreen
-152 251 152 palegreen
-34 139 34   forestgreen
-50 205 50   limegreen
-0 100 0 darkgreen
-0 128 0 green
-0 255 0 lime
-60 179 113  mediumseagreen
-46 139 87   seagreen
-245 255 250 mintcream
-0 255 127   springgreen
-0 250 154   mediumspringgreen
-102 205 170 mediumaquamarine
-127 255 212 aquamarine
-64 224 208  turquoise
-32 178 170  lightseagreen
-72 209 204  mediumturquoise
-240 255 255 azure
-224 255 255 lightcyan
-175 238 238 paleturquoise
-47 79 79    darkslategrey
-47 79 79    darkslategray
-0 128 128   teal
-0 139 139   darkcyan
-0 206 209   darkturquoise
-0 255 255   cyan
-0 255 255   aqua
-95 158 160  cadetblue
-176 224 230 powderblue
-173 216 230 lightblue
-0 191 255   deepskyblue
-135 206 235 skyblue
-135 206 250 lightskyblue
-240 248 255 aliceblue
-70 130 180  steelblue
-30 144 255  dodgerblue
-112 128 144 slategrey
-112 128 144 slategray
-119 136 153 lightslategrey
-119 136 153 lightslategray
-176 196 222 lightsteelblue
-100 149 237 cornflowerblue
-65 105 225  royalblue
-248 248 255 ghostwhite
-230 230 250 lavender
-25 25 112   midnightblue
-0 0 128 navy
-0 0 139 darkblue
-0 0 205 mediumblue
-0 0 255 blue
-72 61 139   darkslateblue
-106 90 205  slateblue
-123 104 238 mediumslateblue
-147 112 219 mediumpurple
-138 43 226  blueviolet
-75 0 130    indigo
-153 50 204  darkorchid
-148 0 211   darkviolet
-186 85 211  mediumorchid
-216 191 216 thistle
-221 160 221 plum
-238 130 238 violet
-128 0 128   purple
-139 0 139   darkmagenta
-255 0 255   fuchsia
-255 0 255   magenta
-218 112 214 orchid
-199 21 133  mediumvioletred
-255 20 147  deeppink
-255 105 180 hotpink
-255 240 245 lavenderblush
-219 112 147 palevioletred
-220 20 60   crimson
-255 192 203 pink
-255 182 193 lightpink
-
-Web Color Names in Hex
------------------------
-
-AliceBlue   #F0F8FF
-AntiqueWhite    #FAEBD7
-Aqua    #00FFFF
-Aquamarine      #7FFFD4
-Azure   #F0FFFF
-Beige   #F5F5DC
-Bisque      #FFE4C4
-Black   #000000
-BlanchedAlmond      #FFEBCD
-Blue    #0000FF
-BlueViolet      #8A2BE2
-Brown   #A52A2A
-BurlyWood   #DEB887
-CadetBlue   #5F9EA0
-Chartreuse      #7FFF00
-Chocolate   #D2691E
-Coral   #FF7F50
-CornflowerBlue      #6495ED
-Cornsilk    #FFF8DC
-Crimson     #DC143C
-Cyan    #00FFFF
-DarkBlue    #00008B
-DarkCyan    #008B8B
-DarkGoldenRod   #B8860B
-DarkGray    #A9A9A9
-DarkGrey    #A9A9A9
-DarkGreen   #006400
-DarkKhaki   #BDB76B
-DarkMagenta     #8B008B
-DarkOliveGreen      #556B2F
-Darkorange      #FF8C00
-DarkOrchid      #9932CC
-DarkRed     #8B0000
-DarkSalmon      #E9967A
-DarkSeaGreen    #8FBC8F
-DarkSlateBlue   #483D8B
-DarkSlateGray   #2F4F4F
-DarkSlateGrey   #2F4F4F
-DarkTurquoise   #00CED1
-DarkViolet      #9400D3
-DeepPink    #FF1493
-DeepSkyBlue     #00BFFF
-DimGray     #696969
-DimGrey     #696969
-DodgerBlue      #1E90FF
-FireBrick   #B22222
-FloralWhite     #FFFAF0
-ForestGreen     #228B22
-Fuchsia     #FF00FF
-Gainsboro   #DCDCDC
-GhostWhite      #F8F8FF
-Gold    #FFD700
-GoldenRod   #DAA520
-Gray    #808080
-Grey    #808080
-Green   #008000
-GreenYellow     #ADFF2F
-HoneyDew    #F0FFF0
-HotPink     #FF69B4
-IndianRed       #CD5C5C
-Indigo      #4B0082
-Ivory   #FFFFF0
-Khaki   #F0E68C
-Lavender    #E6E6FA
-LavenderBlush   #FFF0F5
-LawnGreen   #7CFC00
-LemonChiffon    #FFFACD
-LightBlue   #ADD8E6
-LightCoral      #F08080
-LightCyan   #E0FFFF
-LightGoldenRodYellow    #FAFAD2
-LightGray   #D3D3D3
-LightGrey   #D3D3D3
-LightGreen      #90EE90
-LightPink   #FFB6C1
-LightSalmon     #FFA07A
-LightSeaGreen   #20B2AA
-LightSkyBlue    #87CEFA
-LightSlateGray      #778899
-LightSlateGrey      #778899
-LightSteelBlue      #B0C4DE
-LightYellow     #FFFFE0
-Lime    #00FF00
-LimeGreen   #32CD32
-Linen   #FAF0E6
-Magenta     #FF00FF
-Maroon      #800000
-MediumAquaMarine    #66CDAA
-MediumBlue      #0000CD
-MediumOrchid    #BA55D3
-MediumPurple    #9370D8
-MediumSeaGreen      #3CB371
-MediumSlateBlue     #7B68EE
-MediumSpringGreen   #00FA9A
-MediumTurquoise     #48D1CC
-MediumVioletRed     #C71585
-MidnightBlue    #191970
-MintCream   #F5FFFA
-MistyRose   #FFE4E1
-Moccasin    #FFE4B5
-NavajoWhite     #FFDEAD
-Navy    #000080
-OldLace     #FDF5E6
-Olive   #808000
-OliveDrab   #6B8E23
-Orange      #FFA500
-OrangeRed   #FF4500
-Orchid      #DA70D6
-PaleGoldenRod   #EEE8AA
-PaleGreen   #98FB98
-PaleTurquoise   #AFEEEE
-PaleVioletRed   #D87093
-PapayaWhip      #FFEFD5
-PeachPuff   #FFDAB9
-Peru    #CD853F
-Pink    #FFC0CB
-Plum    #DDA0DD
-PowderBlue      #B0E0E6
-Purple      #800080
-Red     #FF0000
-RosyBrown   #BC8F8F
-RoyalBlue   #4169E1
-SaddleBrown     #8B4513
-Salmon      #FA8072
-SandyBrown      #F4A460
-SeaGreen    #2E8B57
-SeaShell    #FFF5EE
-Sienna      #A0522D
-Silver      #C0C0C0
-SkyBlue     #87CEEB
-SlateBlue   #6A5ACD
-SlateGray   #708090
-SlateGrey   #708090
-Snow    #FFFAFA
-SpringGreen     #00FF7F
-SteelBlue   #4682B4
-Tan     #D2B48C
-Teal    #008080
-Thistle     #D8BFD8
-Tomato      #FF6347
-Turquoise   #40E0D0
-Violet      #EE82EE
-Wheat   #F5DEB3
-White   #FFFFFF
-WhiteSmoke      #F5F5F5
-Yellow      #FFFF00
-YellowGreen     #9ACD32
-
-*******************************/
+extern HICON hIconWC_Large;
 
 
 //***************************************************************************
-//  $WCWndProc
+//  $WebColorsDlgProc
 //
-//  Message processing routine for the Web Color Names window
+//  Message processing routine for the Web Color Names dialog
 //***************************************************************************
 
-LRESULT APIENTRY WCWndProc
-    (HWND hWnd,         // Window handle
-     UINT message,      // Type of message
-     UINT wParam,       // Additional information
-     LONG lParam)       // ...
+APLU3264 CALLBACK WebColorsDlgProc
+    (HWND   hDlg,
+     UINT   message,
+     WPARAM wParam,
+     LPARAM lParam)
 
 {
-////LCLODSAPI ("WC:", hWnd, message, wParam, lParam);
+    static SYNTAXCOLORNAME scnMatch;        // Incoming color to match
+           UINT            idCtl;           // ID of the control
+           WCHAR           wszTemp[256];    // Temporary storage for IDC_WEBCLR_REP text
+__try
+{
+    // Split cases
     switch (message)
     {
-        case WM_CREATE:
-            DbgBrk ();
+#define lInitParam      ((LPSYNTAXCOLORNAME) lParam)
+        case WM_INITDIALOG:                 // hwndFocus = (HWND) wParam; // Handle of control to receive focus
+                                            // lInitParam = lParam;       // Initialization parameter
+        {
+            TOOLINFO ti = {0};              // Tooltip Info struc
+            UINT     uCnt;                  // Loop counter
+            LPWCHAR  lpwName = NULL;        // Ptr to Web Color Name (if any)
 
-            // Create
+            // Save the incoming values
+            scnMatch = *lInitParam;
 
+            // Change the icon to our own
+            SendMessageW (hDlg, WM_SETICON, ICON_BIG, (LPARAM) (HANDLE_PTR) hIconWC_Large);
 
+            // Fill in constant fields
+            ti.cbSize   = sizeof (TOOLINFO);
+            ti.uFlags   = TTF_IDISHWND | TTF_SUBCLASS;
+            ti.hwnd     = hDlg;
+////////////ti.hinst    =                       // Not used except with string resources
+            ti.lpszText = LPSTR_TEXTCALLBACK;
+////////////ti.rect     =                       // Not used with TTF_IDISHWND
 
+            // Loop through the Web Color Names buttons
+            for (uCnt = 0; uCnt < uColorNames; uCnt++)
+            {
+                // If the incoming color matches this one, ...
+                if (scnMatch.syntClr.crFore EQ aColorNames[uCnt].clrRef)
+                    // Save a ptr to the name
+                    lpwName = aColorNames[uCnt].lpwName;
 
-            break;                  // Continue with next handler
+                // Fill in the Web Color Names text
+                SendDlgItemMessageW (hDlg,
+                                     IDC_WEBCLR_LT001 + uCnt,
+                                     WM_SETTEXT,
+                                     0,
+                                     (APLU3264) (HANDLE_PTR) aColorNames[uCnt].lpwName);
+                // Fill in the dynamic field
+                ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hDlg, IDC_WEBCLR_BN001 + uCnt);
+
+                // Register a tooltip for the Web Color Names button
+                SendMessageW (hWndTT,
+                              TTM_ADDTOOL,
+                              0,
+                              (LPARAM) (LPTOOLINFO) &ti);
+            } // End FOR
+
+            // The color buttons are initialized in WM_DRAWITEM
+            // The Tooltip text is filled in by WM_NOTIFY/TTN_NEEDTEXTW
+
+            // If we didn't match the name (some non-Web Color), ...
+            if (lpwName EQ NULL)
+                wsprintfW (wszTemp,
+                           L" The color you are replacing is %u, %u, %u (#%02X%02X%02X) for category \"%s\".",
+                           GetRValue (scnMatch.syntClr.crFore), GetGValue (scnMatch.syntClr.crFore), GetBValue (scnMatch.syntClr.crFore),
+                           GetRValue (scnMatch.syntClr.crFore), GetGValue (scnMatch.syntClr.crFore), GetBValue (scnMatch.syntClr.crFore),
+                           scnMatch.lpwSCName);
+            else
+                wsprintfW (wszTemp,
+                           L" The color you are replacing is \"%s\" for category \"%s\".",
+                           lpwName,
+                           scnMatch.lpwSCName);
+            // Append common text
+            lstrcatW (wszTemp, L"\n Click on a new color to replace and exit, or click on Cancel to exit without replacing.");
+
+            // Insert the text about what color we're replacing
+            SendDlgItemMessageW (hDlg,
+                                 IDC_WEBCLR_LT_REP,
+                                 WM_SETTEXT,
+                                 0,
+                                 (APLU3264) (HANDLE_PTR) wszTemp);
+            // Reposition the window to the center of the screen
+            CenterWindow (hDlg);
+
+            return TRUE;            // Use the focus in wParam
+        } // End WM_INITDIALOG
+#undef  lInitParam
+
+#define hdcStatic       ((HDC) wParam)
+#define hwndStatic      ((HWND) lParam)
+        case WM_CTLCOLORSTATIC:             // hdcStatic = (HDC) wParam;   // handle of display context
+                                            // hwndStatic = (HWND) lParam; // handle of static control
+            // Get the control's ID
+            idCtl = GetDlgCtrlID (hwndStatic);
+
+            // If it's a Web Color Name static text ID, ...
+            if (IDC_WEBCLR_LT001 <= idCtl
+             &&                     idCtl <= IDC_WEBCLR_LT_LAST)
+            {
+                // If this matches the incoming color ref, ...
+                if (scnMatch.syntClr.crFore EQ aColorNames[idCtl - IDC_WEBCLR_LT001].clrRef)
+                {
+                    // Change the text color to a highlight
+                    SetTextColor (hdcStatic, DEF_SCN_WHITE);
+
+                    // and the background color, too.
+                    SetBkColor (hdcStatic, DEF_SCN_NAVY);
+
+                    // Return a NULL brush so the normal background is used
+                    return (APLU3264) GetStockObject (NULL_BRUSH);
+                } // End IF
+            } else
+            // Check to see if this is our OwnerDraw static text control
+            if (IDC_WEBCLR_LT_REP EQ idCtl)
+                return (APLU3264) GetStockObject (WHITE_BRUSH);
+            break;
+#undef  hwndStatic
+#undef  hdcStatic
+
+        case WM_NOTIFY:             // idCtrl = (int) wParam;
+                                    // pnmh = (LPNMHDR) lParam;
+#define lpnmh   (*(LPNMHDR *) &lParam)
+
+            // Split cases based upon the notification code
+            switch (lpnmh->code)
+            {
+                case TTN_NEEDTEXTW:     // idTT = (int) wParam;
+                                        // lpttt = (LPTOOLTIPTEXTW) lParam;
+                {
+                    static WCHAR    TooltipText[_MAX_PATH];
+                           COLORREF clrRef;
+
+#define lpttt   (*(LPTOOLTIPTEXTW *) &lParam)
+
+                    // Get the ID of the calling window
+                    idCtl = GetDlgCtrlID ((HWND) lpttt->hdr.idFrom);
+
+                    // If it's a Web Color Name button ID, ...
+                    if (IDC_WEBCLR_BN001 <= idCtl && idCtl <= IDC_WEBCLR_BN_LAST)
+                    {
+                        // Convert to an index
+                        idCtl -= IDC_WEBCLR_BN001;
+
+                        // Get the color
+                        clrRef = aColorNames[idCtl].clrRef;
+
+                        // Format the tooltip text
+                        wsprintfW (TooltipText,
+                                   L"%s %u, %u, %u (#%02X%02X%02X)",
+                                   aColorNames[idCtl].lpwName,
+                                   GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef),
+                                   GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef));
+                        // Return the ptr to the caller
+                        lpttt->lpszText = TooltipText;
+#undef  lpttt
+                        return FALSE;
+                    } // End IF
+
+                    break;
+                } // End TTN_NEEDTEXTW
+
+                default:
+                    break;
+            } // End SWITCH
+
+            break;
+
+#define idCtl       ((UINT) wParam)
+#define lpdis       ((LPDRAWITEMSTRUCT) lParam)
+        case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // Control identifier
+                                    // lpdis = (LPDRAWITEMSTRUCT) lParam; // Item-drawing information
+            // Check to see if this is one of our Web Color Names buttons
+            if (IDC_WEBCLR_BN001 <= idCtl && idCtl <= IDC_WEBCLR_BN_LAST)
+            {
+                Assert (lpdis->CtlType EQ ODT_BUTTON);
+
+                // Split cases based upon the item action
+                switch (lpdis->itemAction)
+                {
+                    case ODA_DRAWENTIRE:
+                    case ODA_SELECT:
+                        // Draw the edge, fill with the color
+                        FillSyntaxColor (lpdis, aColorNames[idCtl - IDC_WEBCLR_BN001].clrRef);
+
+                        break;
+
+                    case ODA_FOCUS:     // Ignore changes in focus
+                        break;
+                } // End SWITCH
+            } else
+            // Check to see if this is our OwnerDraw static text control
+            if (IDC_WEBCLR_LT_REP EQ idCtl)
+            {
+                Assert (lpdis->CtlType EQ ODT_STATIC);
+
+                // Split cases based upon the item action
+                switch (lpdis->itemAction)
+                {
+                    case ODA_DRAWENTIRE:
+                    case ODA_SELECT:
+                        // Get the text from the static control
+                        SendDlgItemMessageW (hDlg,
+                                             IDC_WEBCLR_LT_REP,
+                                             WM_GETTEXT,
+                                             countof (wszTemp),
+                                             (APLU3264) (HANDLE_PTR) wszTemp);
+                        // Fill in the background
+                        FillRect (lpdis->hDC, &lpdis->rcItem, GetStockObject (WHITE_BRUSH));
+
+                        // Draw the text
+                        DrawTextW (lpdis->hDC,
+                                   wszTemp,
+                                   lstrlenW (wszTemp),
+                                  &lpdis->rcItem,
+                                   0);
+                        break;
+
+                    case ODA_FOCUS:     // Ignore changes in focus
+                        break;
+                } // End SWITCH
+            } // End IF/ELSE
+
+            return TRUE;            // We handled the msg
+#undef  lpdis
+#undef  idCtl
 
         case WM_CLOSE:
-            // This also tells the child windows to close
-            DestroyWindow (hWnd);
+            PostMessage (hDlg, MYWM_CLOSE, FALSE, 0);
 
-            break;                  // Continue with next handler
+            return TRUE;            // We handled the msg
 
-        case WM_DESTROY:
-            break;                  // Continue with next handler
+        case MYWM_CLOSE:                    // bSuccess = (UBOOL) wParam
+                                            // clrRef = (COLORREF) lParam
+            // Quit this dialog
+            EndDialog (hDlg, ((UBOOL) lParam) ? (COLORREF) lParam : -1);
 
+            return TRUE;            // We handled the msg
+
+#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
+#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
+#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
+        case WM_COMMAND:            // wNotifyCode = HIWORD(wParam); // Notification code
+                                    // wID = LOWORD(wParam);         // Item, control, or accelerator identifier
+                                    // hwndCtl = (HWND) lParam;      // Handle of control
+            // If the user pressed one of our buttons, ...
+            switch (idCtl)
+            {
+                case IDCANCEL:
+                    PostMessageW (hDlg, MYWM_CLOSE, FALSE, 0);
+
+                    return TRUE;    // We handled the msg
+
+                default:
+                    // Check to see if this is one of our Web Color Names buttons
+                    if (IDC_WEBCLR_BN001 <= idCtl
+                     &&                     idCtl <= IDC_WEBCLR_BN_LAST)
+                    {
+                        // Tell 'em to quit and use this color
+                        PostMessageW (hDlg, MYWM_CLOSE, TRUE, aColorNames[idCtl - IDC_WEBCLR_BN001].clrRef);
+
+                        return TRUE;    // We handled the msg
+                    } // End IF
+
+                    break;
+            } // End SWITCH
+
+            break;
+#undef  hwndCtl
+#undef  cmdCtl
+#undef  idCtl
     } // End SWITCH
 
-////LCLODSAPI ("WCZ:", hWnd, message, wParam, lParam);
-    return DefWindowProcW (hWnd, message, wParam, lParam);
-} // End WCWndProc
+} __except (CheckException (GetExceptionInformation (), L"WebColorsDlgProc"))
+{
+    // Display message for unhandled exception
+    DisplayException ();
+} // End __try/__except
+
+    return FALSE;           // We didn't handle the msg
+} // End WebColorsDlgProc
 
 
 //***************************************************************************
-//  End of File: webcolornames.c
+//  End of File: webcolors.c
 //***************************************************************************

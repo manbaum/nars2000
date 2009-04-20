@@ -75,7 +75,7 @@ typedef enum tagSC_TYPE
 
 // N.B.:  Whenever changing the above enum (SC_TYPE),
 //   be sure to make a corresponding change to
-//   <gSyntaxColors> and <gSyntClrBGTrans> in <externs.h>,
+//   <gSyntaxColorName> and <gSyntClrBGTrans> in <externs.h>,
 //   <KEYNAME_SC_xxx> and <aColorKeyNames> in <inifile.c>,
 //   <#define IDC_SYNTCLR_XB_TRANSxx>,
 //   <#define IDC_SYNTCLR_BN_FGCLRxx>,

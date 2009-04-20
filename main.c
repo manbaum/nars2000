@@ -99,7 +99,6 @@ WCHAR wszMFTitle[]          = WS_APPNAME WS_APPEND_DEBUG,                   // M
 
 char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.",
      pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS ">.",
-     pszNoRegWCWndClass[]   = "Unable to register window class <" WCWNDCLASS ">.",
      pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS ">.",
      pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
      pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.",
@@ -2262,7 +2261,7 @@ HWND GetActiveMC
 //***************************************************************************
 
 HWND GetWndMC
-    (int iCurTab)           // Index of the tab of interest (-1 = none)
+    (int iCurTab)                       // Index of the tab of interest (-1 = none)
 
 {
     HGLOBAL      hGlbPTD;
@@ -2802,27 +2801,6 @@ UBOOL InitApplication
         return FALSE;
     } // End IF
 #endif
-    // Fill in Web Color Names window class structure
-    wcw.style           = CS_DBLCLKS;
-    wcw.lpfnWndProc     = (WNDPROC) WCWndProc;
-    wcw.cbClsExtra      = 0;
-    wcw.cbWndExtra      = GWLWC_EXTRA;
-    wcw.hInstance       = _hInstance;
-    wcw.hIcon           = hIconWC_Large;
-    wcw.hIconSm         = hIconWC_Small;
-    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
-    wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_WCMENU);
-    wcw.lpszMenuName    = NULL;
-    wcw.lpszClassName   = LWCWNDCLASS;
-
-    // Register the Web Color Names window class
-    if (!RegisterClassExW (&wcw))
-    {
-        MB (pszNoRegWCWndClass);
-        return FALSE;
-    } // End IF
-
     return TRUE;
 } // End InitApplication
 
@@ -3204,8 +3182,8 @@ int PASCAL WinMain
     // Copy initial Syntax Colors as default
     for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
     {
-        defSyntaxColors  [uCnt] = gSyntaxColors  [uCnt];
-        defSyntClrBGTrans[uCnt] = gSyntClrBGTrans[uCnt];
+        defSyntaxColors  [uCnt] = gSyntaxColorName[uCnt].syntClr;
+        defSyntClrBGTrans[uCnt] = gSyntClrBGTrans [uCnt];
     } // End IF
 
     // This is needed by Wine's EDITCTRL.C

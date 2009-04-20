@@ -4044,8 +4044,8 @@ void DrawLineNumsFE
     // Set our DC attributes
     SetAttrs (hDC,
               GetFSIndFontHandle (FONTENUM_FE),
-              gSyntaxColors[SC_FCNLINES].crFore,
-              gSyntaxColors[SC_FCNLINES].crBack);
+              gSyntaxColorName[SC_FCNLINES].syntClr.crFore,
+              gSyntaxColorName[SC_FCNLINES].syntClr.crBack);
     // Get the # lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
@@ -4104,7 +4104,7 @@ void DrawLineNumsFE
     rcClient.top = rcPaint.top + GetFSIndAveCharSize (FONTENUM_FE)->cy;
 
     // Create a brush for the function lines background
-    hBrush = MyCreateSolidBrush (gSyntaxColors[SC_FCNLINES].crBack);
+    hBrush = MyCreateSolidBrush (gSyntaxColorName[SC_FCNLINES].syntClr.crBack);
 
     // Pour on the white out
     FillRect (hDC, &rcClient, hBrush);

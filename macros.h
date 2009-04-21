@@ -61,7 +61,7 @@
     DbgGlobalAllocSub ((uFlags), (ByteRes), L"##GlobalAlloc in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
     #define DbgGlobalFree(hGlbToken) \
-    dprintfW (L"**GlobalFree  in " APPEND_NAME L": %p (%S#%d)", (hGlbToken), FNLN); \
+    dprintfWL9 (L"**GlobalFree  in " APPEND_NAME L": %p (%S#%d)", (hGlbToken), FNLN); \
     MyGlobalFree (hGlbToken)
   #else
     #define DbgGlobalAlloc(uFlags,ByteRes) \
@@ -73,19 +73,19 @@
 
   #ifdef DEBUG_REFCNT
     #define DbgIncrRefCntDir(hGlbData) \
-    dprintfW9 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     IncrRefCntDir (hGlbData)
 
     #define DbgIncrRefCntInd(hGlbData) \
-    dprintfW9 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     IncrRefCntInd (hGlbData)
 
     #define DbgDecrRefCntDir(hGlbData) \
-    dprintfW9 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntDir (hGlbData)
 
     #define DbgDecrRefCntInd(hGlbData) \
-    dprintfW9 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntInd (hGlbData)
   #else
     #define DbgIncrRefCntDir(hGlbData) \

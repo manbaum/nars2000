@@ -122,7 +122,7 @@ void FreeResultSub
                 if (FreeResultGlobalDFLV (hGlbData))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
+                    dprintfWL9 (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
                               lptkRes,
                               ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
                               FNLN);
@@ -177,7 +177,7 @@ void FreeResultSub
                 if (FreeResultGlobalDFLV (hGlbData))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
+                    dprintfWL9 (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
                               lptkRes,
                               ClrPtrTypeDir (hGlbData),
                               FNLN);
@@ -230,7 +230,7 @@ void FreeResultSub
                 if (FreeResultGlobalDFLV (hGlbData))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
+                    dprintfWL9 (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
                               lptkRes,
                               ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
                               FNLN);
@@ -355,7 +355,7 @@ UBOOL FreeResultGlobalLst
             if (FreeResultGlobalVar (lpMemLst->tkData.tkGlbData))
             {
 #ifdef DEBUG_ZAP
-                dprintfW (L"**Zapping in FreeResultGlobalLst: Global=%p, Value=%p (%S#%d)",
+                dprintfWL9 (L"**Zapping in FreeResultGlobalLst: Global=%p, Value=%p (%S#%d)",
                           hGlbData,
                           ClrPtrTypeDir (lpMemLst->tkData.tkGlbData),
                           FNLN);
@@ -467,7 +467,7 @@ UBOOL FreeResultGlobalVar
                             if (FreeResultGlobalVar (ClrPtrTypeIndAsGlb (lpMem)))
                             {
 #ifdef DEBUG_ZAP
-                                dprintfW (L"**Zapping in FreeResultGlobalVar: Global=%p, Value=%p (%S#%d)",
+                                dprintfWL9 (L"**Zapping in FreeResultGlobalVar: Global=%p, Value=%p (%S#%d)",
                                           hGlbData,
                                           ClrPtrTypeInd (lpMem),
                                           FNLN);
@@ -607,7 +607,7 @@ UBOOL FreeResultGlobalFcn
                 if (FreeResultGlobalDFLV (hGlbLcl))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                    dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
                               hGlbData,
                               hGlbLcl,
                               FNLN);
@@ -633,7 +633,7 @@ UBOOL FreeResultGlobalFcn
                 if (FreeResultGlobalDFLV (hGlbLcl))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                    dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
                               hGlbData,
                               hGlbLcl,
                               FNLN);
@@ -658,7 +658,7 @@ UBOOL FreeResultGlobalFcn
                 if (FreeResultGlobalVar (hGlbLcl))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                    dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
                               hGlbData,
                               hGlbLcl,
                               FNLN);
@@ -688,7 +688,7 @@ UBOOL FreeResultGlobalFcn
                     if (FreeResultGlobalVar (hGlbLcl))
                     {
 #ifdef DEBUG_ZAP
-                        dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                        dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
                                   hGlbData,
                                   hGlbLcl,
                                   FNLN);
@@ -770,80 +770,80 @@ UBOOL FreeResultGlobalDfn
 
         // If the RefCnt is zero, free the globals
         if (RefCnt EQ 0)
-        {
-            // Should we clear the STE flags?
-            if (!lpMemDfnHdr->SaveSTEFlags)
-            {
+    {
+    // Should we clear the STE flags?
+    if (!lpMemDfnHdr->SaveSTEFlags)
+    {
                 STFLAGS stFlags = {0};
 
-                // Set the flags we'll leave alone
+        // Set the flags we'll leave alone
                 stFlags.Perm        =
                 stFlags.Inuse       = TRUE;
                 stFlags.ObjName     =
                 stFlags.SysVarValid = NEG1U;
 
-                // Clear the symbol table flags for the function name
+        // Clear the symbol table flags for the function name
                 *(UINT *) &lpMemDfnHdr->steFcnName->stFlags &= *(UINT *) &stFlags;
 
-                // Clear the flag for next time
-                lpMemDfnHdr->SaveSTEFlags = FALSE;
-            } // End IF
+        // Clear the flag for next time
+        lpMemDfnHdr->SaveSTEFlags = FALSE;
+    } // End IF
 
-            // Check the static HGLOBALs
-            if (lpMemDfnHdr->hGlbTxtHdr)
-            {
-                // We no longer need this storage
-                DbgGlobalFree (lpMemDfnHdr->hGlbTxtHdr); lpMemDfnHdr->hGlbTxtHdr = NULL;
-            } // End IF
+    // Check the static HGLOBALs
+    if (lpMemDfnHdr->hGlbTxtHdr)
+    {
+        // We no longer need this storage
+        DbgGlobalFree (lpMemDfnHdr->hGlbTxtHdr); lpMemDfnHdr->hGlbTxtHdr = NULL;
+    } // End IF
 
-            if (lpMemDfnHdr->hGlbTknHdr)
-            {
-                // Free the tokens
-                Untokenize (lpMemDfnHdr->hGlbTknHdr);
+    if (lpMemDfnHdr->hGlbTknHdr)
+    {
+        // Free the tokens
+        Untokenize (lpMemDfnHdr->hGlbTknHdr);
 
-                // We no longer need this storage
-                DbgGlobalFree (lpMemDfnHdr->hGlbTknHdr); lpMemDfnHdr->hGlbTknHdr = NULL;
-            } // End IF
+        // We no longer need this storage
+        DbgGlobalFree (lpMemDfnHdr->hGlbTknHdr); lpMemDfnHdr->hGlbTknHdr = NULL;
+    } // End IF
 
-            if (lpMemDfnHdr->hGlbUndoBuff)
-            {
-                // We no longer need this storage
-                DbgGlobalFree (lpMemDfnHdr->hGlbUndoBuff); lpMemDfnHdr->hGlbUndoBuff = NULL;
-            } // End IF
+    if (lpMemDfnHdr->hGlbUndoBuff)
+    {
+        // We no longer need this storage
+        DbgGlobalFree (lpMemDfnHdr->hGlbUndoBuff); lpMemDfnHdr->hGlbUndoBuff = NULL;
+    } // End IF
 
-            if (lpMemDfnHdr->hGlbMonInfo)
-            {
-                // We no longer need this storage
-                DbgGlobalFree (lpMemDfnHdr->hGlbMonInfo); lpMemDfnHdr->hGlbMonInfo = NULL;
-            } // End IF
+    if (lpMemDfnHdr->hGlbMonInfo)
+    {
+        // We no longer need this storage
+        DbgGlobalFree (lpMemDfnHdr->hGlbMonInfo); lpMemDfnHdr->hGlbMonInfo = NULL;
+    } // End IF
 
-            // Get the # lines in the function
-            numFcnLines = lpMemDfnHdr->numFcnLines;
+    // Get the # lines in the function
+    numFcnLines = lpMemDfnHdr->numFcnLines;
 
-            // Get a ptr to the start of the function line structs (FCNLINE[numFcnLines])
-            lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+    // Get a ptr to the start of the function line structs (FCNLINE[numFcnLines])
+    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-            // Loop through the lines
-            while (numFcnLines--)
-            {
-                if (lpFcnLines->hGlbTxtLine)
-                {
-                    // We no longer need this storage
-                    DbgGlobalFree (lpFcnLines->hGlbTxtLine); lpFcnLines->hGlbTxtLine = NULL;
-                } // End IF
+    // Loop through the lines
+    while (numFcnLines--)
+    {
+        if (lpFcnLines->hGlbTxtLine)
+        {
+            // We no longer need this storage
+            DbgGlobalFree (lpFcnLines->hGlbTxtLine); lpFcnLines->hGlbTxtLine = NULL;
+        } // End IF
 
-                if (lpFcnLines->hGlbTknLine)
-                {
-                    // Free the tokens
-                    Untokenize (lpFcnLines->hGlbTknLine);
+        if (lpFcnLines->hGlbTknLine)
+        {
+            // Free the tokens
+            Untokenize (lpFcnLines->hGlbTknLine);
 
-                    // We no longer need this storage
-                    DbgGlobalFree (lpFcnLines->hGlbTknLine); lpFcnLines->hGlbTknLine = NULL;
-                } // End IF
+            // We no longer need this storage
+            DbgGlobalFree (lpFcnLines->hGlbTknLine); lpFcnLines->hGlbTknLine = NULL;
+        } // End IF
 
-                // Skip to the next struct
-                lpFcnLines++;
-            } // End WHILE
+        // Skip to the next struct
+        lpFcnLines++;
+    } // End WHILE
         } // End IF
     } else
         RefCnt = 1;     // Any non-zero value to prevent erasure

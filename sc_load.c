@@ -350,7 +350,7 @@ UBOOL LoadWorkspace_EM
                     lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
 ////////////////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
 #ifdef DEBUG
-                    dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"LoadWorkspace_EM");
+                    dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"LoadWorkspace_EM");
 #endif
                     lpMemPTD->lpSISCur               = lpMemPTD->lpSISNxt;
 

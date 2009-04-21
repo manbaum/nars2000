@@ -287,7 +287,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
 ////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
 #ifdef DEBUG
-    dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
+    dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
 #endif
 
     //***************************************************************
@@ -850,13 +850,13 @@ RESTART_AFTER_ERROR:
             // Display the default prompt
             DisplayPrompt (hWndEC, 2);
 #ifdef DEBUG
-            dprintfW (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
+            dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
 #endif
             // Wait for the semaphore to trigger
             WaitForSingleObject (hSemaphore,            // Ptr to handle to wait for
                                  INFINITE);             // Timeout value in milliseconds
 #ifdef DEBUG
-            dprintfW (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
+            dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
 #endif
             // Get the exit type from the semaphore restart
             exitType = lpMemPTD->ImmExecExitType;
@@ -1340,7 +1340,7 @@ void UnlocalizeSTEs
 
         Assert (lpSISCur NE NULL);
 #ifdef DEBUG
-        dprintfW (L"~~Unlocalize:  %p to %p", lpSISCur, lpSISCur->lpSISPrv);
+        dprintfWL9 (L"~~Unlocalize:  %p to %p", lpSISCur, lpSISCur->lpSISPrv);
 #endif
         // Save the reset flag
         resetFlag = lpSISCur->ResetFlag;

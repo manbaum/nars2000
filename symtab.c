@@ -454,7 +454,7 @@ UBOOL HshTabResize_EM
     Assert (HshTabFrisk (lpHTS));
 #ifdef DEBUG
     if (TlsGetValue (dwTlsPerTabData))
-        dprintfW (L"||| Resizing the hash table from %u to %u (%S#%d)",
+        dprintfWL9 (L"||| Resizing the hash table from %u to %u (%S#%d)",
                   lpHTS->iHshTabTotalNelm,
                   lpHTS->iHshTabTotalNelm + iResize,
                   FNLN);
@@ -613,7 +613,7 @@ UBOOL HshTabSplitNextEntry_EM
     Assert (HshTabFrisk (lpHTS));
 #ifdef DEBUG
     if (TlsGetValue (dwTlsPerTabData))
-        dprintfW (L"||| Splitting Hash Table entry %u to %u (%S#%d)",
+        dprintfWL9 (L"||| Splitting Hash Table entry %u to %u (%S#%d)",
                   lpHTS->lpHshTabSplitNext,
                  &lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm],
                   FNLN);
@@ -777,7 +777,7 @@ UBOOL HshTabSplitNextEntry_EM
         Assert (lpHTS->iHshTabBaseNelm <= lpHTS->iHshTabTotalNelm);
 #ifdef DEBUG
         if (TlsGetValue (dwTlsPerTabData))
-            dprintfW (L"||| Shifting uHashMask from %04X to %04X (%S#%d)",
+            dprintfWL9 (L"||| Shifting uHashMask from %04X to %04X (%S#%d)",
                       lpHTS->uHashMask,
                       uHashMaskNext,
                       FNLN);

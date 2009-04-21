@@ -96,7 +96,8 @@ typedef struct tagSTART_ADDRESSES
     "DbgMsgW"                   , (LPUCHAR) &DbgMsgW                    ,
     "DbgClr"                    , (LPUCHAR) &DbgClr                     ,
     "dprintf"                   , (LPUCHAR) &dprintf                    ,
-    "dprintfW"                  , (LPUCHAR) &dprintfW                   ,
+    "dprintfWL0"                , (LPUCHAR) &dprintfWL0                 ,
+    "dprintfWL9"                , (LPUCHAR) &dprintfWL9                 ,
     "DbgGlobalAllocSub"         , (LPUCHAR) &DbgGlobalAllocSub          ,
     "FileNameOnly"              , (LPUCHAR) &FileNameOnly               ,
   #endif

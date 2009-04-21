@@ -506,7 +506,7 @@ RESTART_EXCEPTION:
                             {
                                 aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
-                                dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                                dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                                 // We no longer need these ptrs
                                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

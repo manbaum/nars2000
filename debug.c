@@ -806,12 +806,12 @@ int dprintf
 
 #ifdef DEBUG
 //***************************************************************************
-//  $dprintfW9
+//  $dprintfWL0
 //
 //  Display a debug message a la printfW
 //***************************************************************************
 
-int dprintfW9
+int dprintfWL0
     (LPWCHAR lpwszFmt,
      ...)
 
@@ -845,18 +845,18 @@ int dprintfW9
     DbgMsgW (wszTemp);
 
     return iRet;
-} // End dprintfW9
+} // End dprintfWL0
 #endif
 
 
 #ifdef DEBUG
 //***************************************************************************
-//  $dprintfW
+//  $dprintfWL9
 //
 //  Display a debug message a la printfW
 //***************************************************************************
 
-int dprintfW
+int dprintfWL9
     (LPWCHAR lpwszFmt,
      ...)
 
@@ -893,7 +893,7 @@ int dprintfW
     DbgMsgW (wszTemp);
 
     return iRet;
-} // End dprintfW
+} // End dprintfWL9
 #endif
 
 
@@ -919,7 +919,7 @@ HGLOBAL DbgGlobalAllocSub
     if (hGlbRes)
     {
 #ifdef DEBUG
-        dprintfW (lpFmtStr, hGlbRes, lpFileName, uLineNum);
+        dprintfWL9 (lpFmtStr, hGlbRes, lpFileName, uLineNum);
 #endif
     } // End IF
 

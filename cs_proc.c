@@ -134,7 +134,7 @@ void CS_ChainTokens
     lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
 #ifdef DEBUG
-    dprintfW (L"!!Chaining %s to %s (%S#%d)",
+    dprintfWL9 (L"!!Chaining %s to %s (%S#%d)",
               GetTokenTypeName (lpMemTknLine[lptdArg1->uTknNum].tkFlags.TknType),
               GetTokenTypeName (lptkArg2->tkFlags.TknType),
               FNLN);

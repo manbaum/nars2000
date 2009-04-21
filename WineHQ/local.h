@@ -25,7 +25,8 @@ INT         WINAPI WideCharToMultiByte(UINT,DWORD,LPCWSTR,INT,LPSTR,INT,LPCSTR,L
 
 void DbgBrk (void);
 BOOL IzitFE (HWND);
-extern int __cdecl dprintfW(unsigned short *lpwszFmt,...);
+extern int __cdecl dprintfWL0 (unsigned short *lpwszFmt,...);
+extern int __cdecl dprintfWL9 (unsigned short *lpwszFmt,...);
 #ifdef DEBUG
 extern int gDbgLvl;
 #endif

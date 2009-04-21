@@ -573,39 +573,39 @@ UBOOL ParseHeader
     UBOOL bRet = FALSE,             // TRUE iff result is valid
           OldDisplayErr;            // Save area for old DisplayErr
 
-    // Save the window handle
-    lpfhLocalVars->hWndEC = hWndEC;
+        // Save the window handle
+        lpfhLocalVars->hWndEC = hWndEC;
 
-    // Save the error display flag
-    OldDisplayErr = lpfhLocalVars->DisplayErr;
-    lpfhLocalVars->DisplayErr = bDisplayErr;
+        // Save the error display flag
+        OldDisplayErr = lpfhLocalVars->DisplayErr;
+        lpfhLocalVars->DisplayErr = bDisplayErr;
 
     // Save the thread's ptr to local vars
-    TlsSetValue (dwTlsFhLocalVars, (LPVOID) lpfhLocalVars);
+        TlsSetValue (dwTlsFhLocalVars, (LPVOID) lpfhLocalVars);
 
-    // Save the token header global memory handle
-    lpfhLocalVars->hGlbTknHdr = hGlbTknHdr;
+        // Save the token header global memory handle
+        lpfhLocalVars->hGlbTknHdr = hGlbTknHdr;
 
-    // Lock the handle to get a ptr to it, and set the variables
-    UTLockAndSet (lpfhLocalVars->hGlbTknHdr, &lpfhLocalVars->t2);
+        // Lock the handle to get a ptr to it, and set the variables
+        UTLockAndSet (lpfhLocalVars->hGlbTknHdr, &lpfhLocalVars->t2);
 
-    // Initialize the base & next strand ptrs
-    lpfhLocalVars->lpYYStrandBase =
-    lpfhLocalVars->lpYYStrandNext = lpfhLocalVars->lpYYStrandStart;
+        // Initialize the base & next strand ptrs
+        lpfhLocalVars->lpYYStrandBase =
+        lpfhLocalVars->lpYYStrandNext = lpfhLocalVars->lpYYStrandStart;
 
-    // Skip over TOKEN_HEADER
-    lpfhLocalVars->lptkStart = TokenBaseToStart (lpfhLocalVars->t2.lpBase);
+        // Skip over TOKEN_HEADER
+        lpfhLocalVars->lptkStart = TokenBaseToStart (lpfhLocalVars->t2.lpBase);
 
-    // Skip over the starting EOL
-    lpfhLocalVars->lptkNext  = &lpfhLocalVars->lptkStart[1];
+        // Skip over the starting EOL
+        lpfhLocalVars->lptkNext  = &lpfhLocalVars->lptkStart[1];
 
-    // Mark the stopping point
-    lpfhLocalVars->lptkStop  = &lpfhLocalVars->lptkStart[lpfhLocalVars->lptkStart->tkData.tkChar];
+        // Mark the stopping point
+        lpfhLocalVars->lptkStop  = &lpfhLocalVars->lptkStart[lpfhLocalVars->lptkStart->tkData.tkChar];
 
-    // Start off with no error
-    lpfhLocalVars->tkErrorCharIndex = NEG1U;
+        // Start off with no error
+        lpfhLocalVars->tkErrorCharIndex = NEG1U;
 
-    // ***FIXME*** -- Use VirtualAlloc for the parser stack
+        // ***FIXME*** -- Use VirtualAlloc for the parser stack
 
 
 
@@ -621,19 +621,19 @@ UBOOL ParseHeader
 
 
 #if YYDEBUG
-    // Enable debugging
-    yydebug = TRUE;
+        // Enable debugging
+        yydebug = TRUE;
 #endif
 
-    // Parse the header, check for errors
-    //   0 = success
-    //   1 = YYABORT or APL error
-    //   2 = memory exhausted
-    bRet = fh_yyparse (lpfhLocalVars) EQ 0;
+        // Parse the header, check for errors
+        //   0 = success
+        //   1 = YYABORT or APL error
+        //   2 = memory exhausted
+        bRet = fh_yyparse (lpfhLocalVars) EQ 0;
 
 #if YYDEBUG
-    // Disable debugging
-    yydebug = FALSE;
+        // Disable debugging
+        yydebug = FALSE;
 #endif
 
     // Restore the error display flag
@@ -686,9 +686,9 @@ int fh_yylex
     } // End IF
 
 #if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
-    dprintfW (L"==fh_yylex:  TknType = %S, CharIndex = %d",
-              GetTokenTypeName (lpfhLocalVars->lptkNext->tkFlags.TknType),
-              lpfhLocalVars->lptkNext->tkCharIndex);
+    dprintfWL9 (L"==fh_yylex:  TknType = %S, CharIndex = %d",
+                GetTokenTypeName (lpfhLocalVars->lptkNext->tkFlags.TknType),
+                lpfhLocalVars->lptkNext->tkCharIndex);
 #endif
 
     // Return the current token
@@ -760,9 +760,9 @@ int fh_yylex
 #define APPEND_NAME
 #endif
 
-void fh_yyerror                     // Called for Bison syntax error
+void fh_yyerror                         // Called for Bison syntax error
     (LPFHLOCALVARS lpfhLocalVars,   // Ptr to local fhLocalVars
-     LPCHAR        s)               // Ptr to error msg
+     LPCHAR        s)                   // Ptr to error msg
 
 {
     char  szTemp[1024];
@@ -867,9 +867,9 @@ DISPLAY:
 //***************************************************************************
 
 void fh_yyfprintf
-    (FILE  *hfile,          // Ignore this
-     LPCHAR lpszFmt,        // Format string
-     ...)                   // Zero or more arguments
+    (FILE  *hfile,                      // Ignore this
+     LPCHAR lpszFmt,                    // Format string
+     ...)                               // Zero or more arguments
 
 {
 #if (defined (DEBUG)) && (defined (YYFPRINTF_DEBUG))
@@ -923,10 +923,10 @@ void fh_yyfprintf
 //***************************************************************************
 
 void InitHdrStrand
-    (LPFH_YYSTYPE lpYYArg)          // Ptr to the incoming argument
+    (LPFH_YYSTYPE lpYYArg)              // Ptr to the incoming argument
 
 {
-    LPFHLOCALVARS lpfhLocalVars;    // Ptr to local fhLocalVars
+    LPFHLOCALVARS lpfhLocalVars;        // Ptr to local fhLocalVars
 
     // Get this thread's LocalVars ptr
     lpfhLocalVars = (LPFHLOCALVARS) TlsGetValue (dwTlsFhLocalVars);
@@ -944,10 +944,10 @@ void InitHdrStrand
 //***************************************************************************
 
 LPFH_YYSTYPE PushHdrStrand_YY
-    (LPFH_YYSTYPE lpYYArg)          // Ptr to the incoming argument
+    (LPFH_YYSTYPE lpYYArg)              // Ptr to the incoming argument
 
 {
-    LPFHLOCALVARS lpfhLocalVars;    // Ptr to local plLocalVars
+    LPFHLOCALVARS lpfhLocalVars;        // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
     lpfhLocalVars = (LPFHLOCALVARS) TlsGetValue (dwTlsFhLocalVars);
@@ -981,10 +981,10 @@ LPFH_YYSTYPE PushHdrStrand_YY
 #endif
 
 LPFH_YYSTYPE MakeHdrStrand_YY
-    (LPFH_YYSTYPE lpYYArg)          // Ptr to incoming token
+    (LPFH_YYSTYPE lpYYArg)              // Ptr to incoming token
 
 {
-    LPFHLOCALVARS lpfhLocalVars;    // Ptr to local fhLocalVars
+    LPFHLOCALVARS lpfhLocalVars;        // Ptr to local fhLocalVars
 
     // Get this thread's LocalVars ptr
     lpfhLocalVars = (LPFHLOCALVARS) TlsGetValue (dwTlsFhLocalVars);

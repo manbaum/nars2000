@@ -1604,7 +1604,7 @@ HGLOBAL CopyArray_EM
 
         // Set the reference count in case it was a TKT_VARNAMED
 #ifdef DEBUG_REFCNT
-        dprintfW9 (L"##RefCnt=1 in " APPEND_NAME L":        %p(res=1) (%S#%d)", hGlbDst, FNLN);
+        dprintfWL0 (L"##RefCnt=1 in " APPEND_NAME L":        %p(res=1) (%S#%d)", hGlbDst, FNLN);
 #endif
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
         // Clear the PermNdx flags
@@ -2771,7 +2771,7 @@ void FillSISNxt
         lpMemPTD->lpSISNxt->lpForStmtBase =
         lpMemPTD->lpSISNxt->lpForStmtNext = lpMemPTD->lpForStmtBase;
 #ifdef DEBUG
-    dprintfW (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
+    dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
 #endif
     // Link this SIS into the chain, if requested
     if (LinkIntoChain)

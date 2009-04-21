@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ int ChangeRefCntDir
                     if (lpHeader->PermNdx NE PERMNDX_NONE)
                     {
 #ifdef DEBUG_REFCNT
-                        dprintfW9 (L"  RefCntNC in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt, FNLN);
+                        dprintfWL0 (L"  RefCntNC in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt, FNLN);
 #endif
                         RefCnt = NEG1U;
 
@@ -90,10 +90,10 @@ int ChangeRefCntDir
                     // Change the reference count
 #ifdef DEBUG_REFCNT
                     if (iIncr EQ 1)
-                        dprintfW9 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                        dprintfWL0 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
                     if (iIncr EQ -1)
-                        dprintfW9 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                        dprintfWL0 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
                         DbgStop ();
 #endif
@@ -108,10 +108,10 @@ int ChangeRefCntDir
                     // Change the reference count
 #ifdef DEBUG_REFCNT
                     if (iIncr EQ 1)
-                        dprintfW9 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                        dprintfWL0 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
                     if (iIncr EQ -1)
-                        dprintfW9 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                        dprintfWL0 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
                         DbgStop ();
 #endif
@@ -128,7 +128,7 @@ int ChangeRefCntDir
                     if (lpHeader->PermFn)
                     {
 #ifdef DEBUG_REFCNT
-                        dprintfW9 (L"  RefCntNC in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt, FNLN);
+                        dprintfWL0 (L"  RefCntNC in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt, FNLN);
 #endif
                         RefCnt = NEG1U;
 
@@ -138,10 +138,10 @@ int ChangeRefCntDir
                     // Change the reference count
 #ifdef DEBUG_REFCNT
                     if (iIncr EQ 1)
-                        dprintfW9 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                        dprintfWL0 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
                     if (iIncr EQ -1)
-                        dprintfW9 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                        dprintfWL0 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
                         DbgStop ();
 #endif

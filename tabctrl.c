@@ -209,7 +209,7 @@ UBOOL CreateNewTab
 
 #ifdef DEBUG
     // Can't call Debugger as it hasn't been created as yet.
-////dprintfW (L"--Starting thread in <CreateNewTab>.");
+////dprintfWL9 (L"--Starting thread in <CreateNewTab>.");
 #endif
 
     // Create a new thread

@@ -3688,7 +3688,7 @@ void Untokenize
                 if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
                 {
 #ifdef DEBUG_ZAP
-                    dprintfW (L"**Zapping in Untokenize: %p (%d) (%S#%d)",
+                    dprintfWL9 (L"**Zapping in Untokenize: %p (%d) (%S#%d)",
                               ClrPtrTypeDir (lpToken->tkData.tkGlbData),
                               FNLN);
 #endif

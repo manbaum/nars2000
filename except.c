@@ -224,7 +224,7 @@ int CheckPTDVirtStr
              &&              lpInvalidAddr <  (lpIniAddr + PAGESIZE))
             {
 #ifdef DEBUG
-                dprintfW9 (L"Exceeded LIMIT of %08X @ %S", lpLstMVS->MaxSize, lpLstMVS->lpText);
+                dprintfWL0 (L"Exceeded LIMIT of %08X @ %S", lpLstMVS->MaxSize, lpLstMVS->lpText);
 #endif
                 MySetExceptionCode (EXCEPTION_LIMIT_ERROR);
 

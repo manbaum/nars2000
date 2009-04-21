@@ -578,22 +578,22 @@ void DisplayGlobals
             // We no longer need this ptr
             MyGlobalUnlock (hGlb); lpMemDfnHdr = NULL;
 
-            // Copy the name to local storage
-            lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (APLU3264) min (MAX_VAL_LEN, uNameLen));
-            aplArrChar[min (MAX_VAL_LEN, uNameLen)] = L'\0';
+                // Copy the name to local storage
+                lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (APLU3264) min (MAX_VAL_LEN, uNameLen));
+                aplArrChar[min (MAX_VAL_LEN, uNameLen)] = L'\0';
 
-            wsprintfW (wszTemp,
-                       L"hGlb=%p DType=%c  NELM=%3d RC=%1d%c                Lck=%d (%S#%4d) (%s)",
-                       hGlb,
-                       cDfnTypeStr[lpHeader->DfnType],
-                       lpHeader->numFcnLines,
-                       lpHeader->RefCnt,
-                       L" *"[lpHeader->RefCnt > 1],
-                       (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                       lpaFileNameGLBALLOC[i],
-                       auLinNumGLBALLOC[i],
-                       aplArrChar);
-            DbgMsgW (wszTemp);
+                wsprintfW (wszTemp,
+                           L"hGlb=%p DType=%c  NELM=%3d RC=%1d%c                Lck=%d (%S#%4d) (%s)",
+                           hGlb,
+                           cDfnTypeStr[lpHeader->DfnType],
+                           lpHeader->numFcnLines,
+                           lpHeader->RefCnt,
+                           L" *"[lpHeader->RefCnt > 1],
+                           (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                           lpaFileNameGLBALLOC[i],
+                           auLinNumGLBALLOC[i],
+                           aplArrChar);
+                DbgMsgW (wszTemp);
         } else
 #undef  lpHeader
         if (uDispGlb EQ 2)
@@ -1604,7 +1604,7 @@ void DisplayUndo
     (HANDLE_PTR) hGlbEC = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
 
     // Display it
-    dprintfW (L"Caret position = %d, # lines = %d, hGlbEC = %p (%S#%d)",
+    dprintfWL9 (L"Caret position = %d, # lines = %d, hGlbEC = %p (%S#%d)",
               uCharPos,
               uLineCount,
               hGlbEC,
@@ -1629,7 +1629,7 @@ void DisplayUndo
         *p = VIS_HT;
 
     // Display it
-    dprintfW (L"Text = <%s>",
+    dprintfWL9 (L"Text = <%s>",
               lpwsz);
 
     // Restore L'\t'

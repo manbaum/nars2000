@@ -161,7 +161,7 @@ void AppendLine
     // Scroll the caret into view
     SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
 #ifdef DEBUG
-    dprintfW (L"AppendLine: <%s> (%S#%d)", lpwszLine, FNLN);
+    dprintfWL9 (L"AppendLine: <%s> (%S#%d)", lpwszLine, FNLN);
 #endif
     // Replace the selection (none) with the new line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
@@ -208,7 +208,7 @@ void ReplaceLine
     // Set the selection to this line
     SendMessageW (hWndEC, EM_SETSEL, uLinePos, uLinePos + uLineLen);
 #ifdef DEBUG
-    dprintfW (L"ReplaceLine: %d:<%s> (%S#%d)", uLineNum, lpwszLine, FNLN);
+    dprintfWL9 (L"ReplaceLine: %d:<%s> (%S#%d)", uLineNum, lpwszLine, FNLN);
 #endif
     // Replace the selection with the given line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
@@ -241,7 +241,7 @@ void ReplaceLastLineCR
     // Move the text caret to the end of the buffer
     MoveCaretEOB (hWndEC);
 #ifdef DEBUG
-    dprintfW (L"ReplaceLastLineCR: <%s> (%S#%d)", lpwszLine, FNLN);
+    dprintfWL9 (L"ReplaceLastLineCR: <%s> (%S#%d)", lpwszLine, FNLN);
 #endif
     // Replace the current (now last) line
     ReplaceLine (hWndEC, lpwszLine, NEG1U);
@@ -265,7 +265,7 @@ void ReplaceLastLineCRPmt
 
 {
 #ifdef DEBUG
-    dprintfW (L"ReplaceLastLineCRPmt: <%s> (%S#%d)", lpwszLine, FNLN);
+    dprintfWL9 (L"ReplaceLastLineCRPmt: <%s> (%S#%d)", lpwszLine, FNLN);
 #endif
     // Replace the last line
     ReplaceLastLineCR (lpwszLine);
@@ -457,9 +457,9 @@ void DisplayPrompt
 
 #ifdef DEBUG
     if (gPrompt)
-        dprintfW9 (L"~~DisplayPrompt (%d)", uCaller);
+        dprintfWL0 (L"~~DisplayPrompt (%d)", uCaller);
     else
-        dprintfW  (L"~~DisplayPrompt (%d)", uCaller);
+        dprintfWL9 (L"~~DisplayPrompt (%d)", uCaller);
 #endif
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
@@ -617,7 +617,7 @@ void FormatQQuadInput
     if (lpMemPTD->lpSISCur->hSemaphore)
     {
 #ifdef DEBUG
-        dprintfW (L"~~Releasing semaphore:  %p (%S#%d)", lpMemPTD->lpSISCur->hSemaphore, FNLN);
+        dprintfWL9 (L"~~Releasing semaphore:  %p (%S#%d)", lpMemPTD->lpSISCur->hSemaphore, FNLN);
 #endif
         // Signal WaitForInput that we have a result
         ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);

@@ -6840,8 +6840,8 @@ NORMAL_EXIT:
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
 
-    // Restore the cursor
-    SendCursorMsg (hWndEC);
+        // Restore the cursor
+        SendCursorMsg (hWndEC);
 
     DBGLEAVE;
 
@@ -6980,7 +6980,7 @@ char LookaheadSurround
     else
         cRes = NAMETYPE_STRING[plLocalVars.plNameType];
 #ifdef DEBUG
-    dprintfW (L"==Exiting  LookaheadSurround:  %c", cRes);
+    dprintfWL9 (L"==Exiting  LookaheadSurround:  %c", cRes);
 #endif
     return cRes;
 } // End LookaheadSurround
@@ -7195,7 +7195,7 @@ char LookaheadAdjacent
     } // End WHILE/SWITCH
 NORMAL_EXIT:
 #ifdef DEBUG
-    dprintfW (L"==Exiting  LookaheadAdjacent:  %c", cRes);
+    dprintfWL9 (L"==Exiting  LookaheadAdjacent:  %c", cRes);
 #endif
     return cRes;
 } // LookaheadAdjacent
@@ -7325,7 +7325,7 @@ BOOL LookaheadDyadicOp
     } // End WHILE/SWITCH
 NORMAL_EXIT:
 #ifdef DEBUG
-    dprintfW (L"==Exiting  LookaheadDyadicOp:  %d", bRet);
+    dprintfWL9 (L"==Exiting  LookaheadDyadicOp:  %d", bRet);
 #endif
     return bRet;
 } // End LookaheadDyadicOp
@@ -7358,7 +7358,7 @@ PL_YYLEX_START:
     lpplLocalVars->lptkNext--;
 
 #if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
-    dprintfW (L"==pl_yylex:  TknType = %S, CharIndex = %d",
+    dprintfWL9 (L"==pl_yylex:  TknType = %S, CharIndex = %d",
               GetTokenTypeName (lpplLocalVars->lptkNext->tkFlags.TknType),
               lpplLocalVars->lptkNext->tkCharIndex);
 #endif
@@ -8150,13 +8150,13 @@ LPPL_YYSTYPE WaitForInput
     // Tell the Session Manager to display the appropriate prompt
     PostMessageW (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 14);
 #ifdef DEBUG
-    dprintfW (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"WaitForInput", FNLN);
+    dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"WaitForInput", FNLN);
 #endif
     // Wait for the semaphore to trigger
     WaitForSingleObject (hSemaphore,    // Handle to wait for
                          INFINITE);     // Timeout value in milliseconds
 #ifdef DEBUG
-    dprintfW (L"~~WaitForSingleObject (EXIT):   %s (%S#%d)", L"WaitForInput", FNLN);
+    dprintfWL9 (L"~~WaitForSingleObject (EXIT):   %s (%S#%d)", L"WaitForInput", FNLN);
 #endif
     // Close the semaphore handle as it is no longer needed
     CloseHandle (hSemaphore); hSemaphore = NULL;

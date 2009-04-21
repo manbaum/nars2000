@@ -376,7 +376,7 @@ void TypeDemote
                 CopyMemory (lpMemRes, lpMemRht, dwSize);
 
 #ifdef DEBUG_REFCNT
-                dprintfW9 (L"##RefCnt=1 in " APPEND_NAME L": %p(res=1) (%S#%d)", hGlbRes, FNLN);
+                dprintfWL0 (L"##RefCnt=1 in " APPEND_NAME L": %p(res=1) (%S#%d)", hGlbRes, FNLN);
 #endif
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
                 // Set the reference count and array type

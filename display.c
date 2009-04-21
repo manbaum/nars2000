@@ -596,7 +596,9 @@ UBOOL DisplayGlbArr_EM
                 //   we need to create one
                 wch = lpwsz[uOffset + aplDimTmp];       // Save the ending char
                 lpwsz[uOffset + aplDimTmp] = L'\0';     // Terminate the line
-                AppendLine (lpwsz + uOffset, bLineCont, TRUE);// Display the line
+                AppendLine (lpwsz + uOffset,
+                            bLineCont,
+                            bEndingCR || (uFmtRow NE (lpFmtHeader->uFmtRows - 1))); // Display the line
                 lpwsz[uOffset + aplDimTmp] = wch;       // Restore the ending char
             } // End FOR
         } // End IF

@@ -401,14 +401,6 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
         defstop
             break;
     } // End SWITCH
-
-    goto NORMAL_EXIT;
-
-WSFULL_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                               lptkFunc);
-    goto ERROR_EXIT;
-
 NORMAL_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -419,8 +411,27 @@ NORMAL_EXIT:
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-IMMED_EXIT:
+
+    goto IMMED_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+IMMED_EXIT:
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
@@ -965,6 +976,7 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    // Mark as in error
     bRet = FALSE;
 
     if (hGlbRes)
@@ -976,7 +988,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRot)

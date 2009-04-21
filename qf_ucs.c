@@ -415,9 +415,15 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // We no longer need this ptr
+    if (hGlbRes && lpMemRes)
+    {
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
     // We no longer need this ptr
     if (hGlbRht && lpMemRht)
     {

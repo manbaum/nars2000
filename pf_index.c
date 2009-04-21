@@ -577,7 +577,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbSub && lpMemSub)
@@ -1025,7 +1025,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbLst && lpMemLst)
@@ -1215,7 +1215,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     return lpYYRes;
@@ -1791,7 +1791,7 @@ ERROR_EXIT:
     if (hGlbRes)
     {
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     return bRet;
@@ -2053,7 +2053,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
@@ -2278,7 +2278,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
@@ -3464,7 +3464,7 @@ ERROR_EXIT:
     if (hGlbRes)
     {
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbAxis)

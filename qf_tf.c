@@ -287,8 +287,8 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
     LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
     APLUINT           uCnt;                     // Loop counter
     APLUINT           ByteRes;                  // # bytes in the result
-    HGLOBAL           hGlbRes;                  // Result global memory handle
-    LPVOID            lpMemRes;                 // Ptr to result global memory
+    HGLOBAL           hGlbRes = NULL;           // Result global memory handle
+    LPVOID            lpMemRes = NULL;          // Ptr to result global memory
     HGLOBAL           hGlbItm = NULL;           // Right arg item global memory handle
     LPVOID            lpMemItm = NULL;          // Ptr to right arg item global memory
     APLSTYPE          aplTypeItm;               // Right arg item storage type
@@ -793,7 +793,24 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
         // We no longer need this ptr
@@ -836,8 +853,8 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
     LPWCHAR       lpwTemp;                  // Ptr to temporary
     WCHAR         wch;                      // Temporary char
     LPPL_YYSTYPE  lpYYRes = NULL;           // Ptr to the result
-    HGLOBAL       hGlbRes;                  // Result global memory handle
-    LPVOID        lpMemRes;                 // Ptr to result global memory
+    HGLOBAL       hGlbRes = NULL;           // Result global memory handle
+    LPVOID        lpMemRes = NULL;          // Ptr to result global memory
     APLNELM       aplNELMRes;               // Result NELM
     STFLAGS       stFlags;                  // ST flags for name lookup
     LPSYMENTRY    lpSymEntry;               // Ptr to SYMENTRY for name lookup
@@ -1082,7 +1099,24 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
     return lpYYRes;
 } // End SysFnDydTF2_EM_YY
 #undef  APPEND_NAME

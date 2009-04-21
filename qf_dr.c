@@ -339,7 +339,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } else
     {
         // Fill in the result token
@@ -1083,7 +1083,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     // We no longer need this ptr
@@ -1313,6 +1313,17 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {

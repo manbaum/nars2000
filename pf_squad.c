@@ -1129,7 +1129,7 @@ ERROR_EXIT:
             *lphGlbRes = NULL;
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 
     if (hGlbRht2)
@@ -1145,7 +1145,7 @@ ERROR_EXIT:
             *lphGlbRes = NULL;
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRht2); *lphGlbRht = hGlbRht2 = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRht2); *lphGlbRht = hGlbRht2 = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbLft && lpMemLft)

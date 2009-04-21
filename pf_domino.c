@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -506,7 +506,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 
     if (lpGslVectorI)
@@ -614,7 +614,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                  *lpGslVectorW = NULL,
                  *lpGslVectorX = NULL,
                  *lpGslVectorB = NULL;
-    int          ErrCode;
+    int           ErrCode;
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
 
@@ -1112,7 +1112,7 @@ NORMAL_EXIT:
         if (!bRet)
         {
             // We no longer need this storage
-            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
         } // End IF
     } // End IF
 

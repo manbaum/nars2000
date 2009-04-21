@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -212,12 +212,12 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     APLNELM       aplNELMRht,       // Right arg NELM
                   aplNELMRes;       // Result    ...
     APLRANK       aplRankRht;       // Right arg rank
-    HGLOBAL       hGlbRht,          // Right arg global memory handle
-                  hGlbRes;          // Result    ...
+    HGLOBAL       hGlbRht = NULL,   // Right arg global memory handle
+                  hGlbRes = NULL;   // Result    ...
     APLUINT       ByteRes,          // # bytes in the result
                   uRes;             // Loop counter
-    LPVOID        lpMemRht,         // Ptr to right arg global memory
-                  lpMemRes;         // Ptr to result    ...
+    LPVOID        lpMemRht = NULL,  // Ptr to right arg global memory
+                  lpMemRes = NULL;  // Ptr to result    ...
     LPAPLDIM      lpMemDimRht;      // Ptr to right arg dimensions
     UBOOL         bRet = TRUE;      // TRUE iff result is valid
     LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
@@ -376,6 +376,17 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {
@@ -891,6 +902,17 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (hGlbLft && lpMemLft)
     {

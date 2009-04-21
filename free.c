@@ -385,14 +385,43 @@ UBOOL FreeResultGlobalLst
 //  Free a global variable, recursively
 //***************************************************************************
 
+UBOOL FreeResultGlobalVar
+    (HGLOBAL hGlbData)          // Global memory handle to free
+
+{
+    return FreeResultGlobalVarSub (hGlbData, TRUE);
+} // End FreeResultGlobalVar
+
+
+//***************************************************************************
+//  $FreeResultGlobalIncompleteVar
+//
+//  Free a global variable, recursively
+//***************************************************************************
+
+UBOOL FreeResultGlobalIncompleteVar
+    (HGLOBAL hGlbData)          // Global memory handle to free
+
+{
+    return FreeResultGlobalVarSub (hGlbData, FALSE);
+} // End FreeResultGlobalIncompleteVar
+
+
+//***************************************************************************
+//  $FreeResultGlobalVarSub
+//
+//  Subroutine to FreeResultGlobalVar/FreeResultGlobalIncompleteVar
+//***************************************************************************
+
 #ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultGlobalVar"
+#define APPEND_NAME     L" -- FreeResultGlobalVarSub"
 #else
 #define APPEND_NAME
 #endif
 
-UBOOL FreeResultGlobalVar
-    (HGLOBAL hGlbData)
+UBOOL FreeResultGlobalVarSub
+    (HGLOBAL hGlbData,          // Global memory handle to free
+     UBOOL   bReqComplete)      // TRUE iff we require a complete var
 
 {
     LPVOID    lpMem;            // Ptr to the array global memory
@@ -456,6 +485,8 @@ UBOOL FreeResultGlobalVar
                 // Loop through the LPSYMENTRYs and/or HGLOBALs
                 for (u = 0; u < aplNELM; u++, ((LPAPLNESTED) lpMem)++)
                 {
+                    // Check for required complete vars
+                    if (bReqComplete || *(LPAPLNESTED) lpMem)
                     // Check for reused ptrs
                     if (!PtrReusedInd (lpMem))
                     switch (GetPtrTypeInd (lpMem))
@@ -464,7 +495,7 @@ UBOOL FreeResultGlobalVar
                             break;
 
                         case PTRTYPE_HGLOBAL:
-                            if (FreeResultGlobalVar (ClrPtrTypeIndAsGlb (lpMem)))
+                            if (FreeResultGlobalVarSub (ClrPtrTypeIndAsGlb (lpMem), bReqComplete))
                             {
 #ifdef DEBUG_ZAP
                                 dprintfWL9 (L"**Zapping in FreeResultGlobalVar: Global=%p, Value=%p (%S#%d)",
@@ -505,7 +536,7 @@ UBOOL FreeResultGlobalVar
     DBGLEAVE;
 
     return bRet;
-} // End FreeResultGlobalVar
+} // End FreeResultGlobalVarSub
 #undef  APPEND_NAME
 
 

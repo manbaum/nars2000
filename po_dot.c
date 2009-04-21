@@ -847,7 +847,7 @@ RESTART_INNERPROD_RES:
                         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
                         // We no longer need this resource
-                        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
 
                         if (hGlbLft && lpMemLft)
                         {
@@ -917,7 +917,7 @@ RESTART_INNERPROD_RES:
                             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
                             // We no longer need this resource
-                            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
 
                             if (hGlbLft && lpMemLft)
                             {
@@ -1241,7 +1241,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)

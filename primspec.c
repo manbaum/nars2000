@@ -178,7 +178,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
 
 {
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    HGLOBAL      hGlbRes,           // Result global memory handle
+    HGLOBAL      hGlbTmp,           // Temporary global memory handle
                  hGlbProto;         // Prototype ...
 
     // Call the original function
@@ -204,11 +204,11 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
             break;
 
         case TKT_VARARRAY:
-            hGlbRes = ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData);
+            hGlbTmp = ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData);
 
             // Make the prototype
             hGlbProto =
-              MakeMonPrototype_EM (hGlbRes,     // Proto arg handle
+              MakeMonPrototype_EM (hGlbTmp,     // Proto arg handle
                                    lptkFunc,    // Ptr to function token
                                    MP_CHARS);   // CHARs allowed
             if (!hGlbProto)
@@ -219,7 +219,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
                 lpYYRes->tkToken.tkData.tkGlbData =
                   MakePtrTypeGlb (hGlbProto);
             // We no longer need this storage
-            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+            FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
 
             break;
 
@@ -918,7 +918,7 @@ HGLOBAL PrimFnMonGlb_EM
                             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
                             // We no longer need this storage
-                            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
                         } // End IF
 #ifdef DEBUG
                         dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -1438,7 +1438,7 @@ RESTART_EXCEPTION:
                     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
                     // We no longer need this storage
-                    FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+                    FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
 #ifdef DEBUG
                     dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
@@ -1473,16 +1473,16 @@ WSFULL_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 
+    if (hGlbRes)
+    {
         if (lpMemRes)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
         } // End IF
 
-    if (hGlbRes)
-    {
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (lpMemRht)
@@ -1750,7 +1750,7 @@ ERROR_EXIT:
     if (hGlbRes)
     {
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbLft && lpMemLft)
@@ -2095,6 +2095,18 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
     bRet = FALSE;
+
+    if (*lphGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (*lphGlbRes && lpMemRes)
     {
@@ -2444,6 +2456,18 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
     bRet = FALSE;
+
+    if (*lphGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (*lphGlbRes && lpMemRes)
     {
@@ -2508,7 +2532,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     HGLOBAL           hGlbLft = NULL,
                       hGlbRes = NULL,
                       hGlbSub;
-    LPVOID            lpMemLft,
+    LPVOID            lpMemLft = NULL,
                       lpMemRes = NULL;
     LPVARARRAY_HEADER lpMemHdrRes,
                       lpMemHdrLft;
@@ -2719,7 +2743,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (lpMemRes)
@@ -4877,7 +4901,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     HGLOBAL           hGlbRht = NULL,
                       hGlbRes = NULL,
                       hGlbSub;
-    LPVOID            lpMemRht,
+    LPVOID            lpMemRht = NULL,
                       lpMemRes = NULL;
     LPVARARRAY_HEADER lpMemHdrRes,
                       lpMemHdrRht;
@@ -5084,7 +5108,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (lpMemRes)
@@ -6950,6 +6974,18 @@ WSFULL_EXIT:
 ERROR_EXIT:
     // Mark as in error
     bRet = FALSE;
+
+    if (*lphGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (*lphGlbRes && lpMemRes)
     {

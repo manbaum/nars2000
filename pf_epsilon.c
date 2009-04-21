@@ -395,7 +395,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 
     return NULL;
@@ -1255,12 +1255,12 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
                   aplNELMRht;       // Right ...
     APLRANK       aplRankLft,       // Left arg rank
                   aplRankRht;       // Right ...
-    HGLOBAL       hGlbLft,          // Left arg global memory handle
-                  hGlbRht,          // Right ...
-                  hGlbRes;          // Result   ...
+    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
+                  hGlbRht = NULL,   // Right ...
+                  hGlbRes = NULL;   // Result   ...
     LPVARARRAY_HEADER lpHeaderRht;  // Ptr to right arg header
-    LPVOID        lpMemLft,         // Ptr to left arg global memory
-                  lpMemRht;         // Ptr to right ...
+    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
+                  lpMemRht = NULL;  // Ptr to right ...
     LPAPLBOOL     lpMemRes = NULL;  // Ptr to result   ...
     APLUINT       ByteRes;          // # bytes in the result
     APLLONGEST    aplLongestLft,    // Left arg immediate value
@@ -1456,7 +1456,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbLft && lpMemLft)

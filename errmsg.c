@@ -104,7 +104,7 @@ void BreakMessage
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the function name[line #] to the result
-    CopyMemory (lpMemRes, lpMemPTD->lpwszTemp, (APLU3264) aplNELMRes * sizeof (APLCHAR));
+    CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, (APLU3264) aplNELMRes);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -292,18 +292,18 @@ void ErrorMessageDirect
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the error message to the result
-    CopyMemory (lpMemRes, lpwszMsg, uErrMsgLen * sizeof (APLCHAR));
+    CopyMemoryW (lpMemRes, lpwszMsg, uErrMsgLen);
     lpMemRes += uErrMsgLen;
 
     // Copy a line terminator to the result
     *lpMemRes++ = L'\r'; *lpMemRes++ = L'\n';
 
     // Copy the function name[line #] to the result
-    CopyMemory (lpMemRes, lpMemPTD->lpwszTemp, uNameLen * sizeof (APLCHAR));
+    CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
     lpMemRes += uNameLen;
 
     // Copy the function line to the result
-    CopyMemory (lpMemRes, lpwszLine, uErrLinLen * sizeof (APLCHAR));
+    CopyMemoryW (lpMemRes, lpwszLine, uErrLinLen);
     lpMemRes += uErrLinLen;
 
     // If the caret is not -1, display a caret
@@ -385,17 +385,17 @@ void ErrorMessageDirect
             // lpMemRes now points to the data
 
             // Copy the error message text to the result
-            CopyMemory (lpMemRes, lpwszMsg, uErrMsgLen * sizeof (APLCHAR));
+            CopyMemoryW (lpMemRes, lpwszMsg, uErrMsgLen);
             lpMemRes += uErrMsgLen;
             uTailLen = uMaxLen - uErrMsgLen;
             lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
 
             // Copy the function name[line #] to the result
-            CopyMemory (lpMemRes, lpMemPTD->lpwszTemp, uNameLen * sizeof (APLCHAR));
+            CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
             lpMemRes += uNameLen;
 
             // Copy the function line to the result
-            CopyMemory (lpMemRes, lpwszLine, uErrLinLen * sizeof (APLCHAR));
+            CopyMemoryW (lpMemRes, lpwszLine, uErrLinLen);
             lpMemRes += uErrLinLen;
             uTailLen = uMaxLen - (uNameLen + uErrLinLen);
             lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');

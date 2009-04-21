@@ -224,7 +224,7 @@ HGLOBAL Init1MagicFunction
         lpMemTxtLine->W = (WORD) uLineLen;
 
         // Copy the line text to global memory
-        CopyMemory (&lpMemTxtLine->C, lpMagicFunction->Header, uLineLen * sizeof (APLCHAR));
+        CopyMemoryW (&lpMemTxtLine->C, lpMagicFunction->Header, uLineLen);
 
         // Tokenize the line
         hGlbTknHdr =
@@ -507,7 +507,7 @@ HGLOBAL Init1MagicFunction
                 lpMemTxtLine->W = (WORD) uLineLen;
 
                 // Copy the line text to global memory
-                CopyMemory (&lpMemTxtLine->C, lpMagicFunction->Body[uLineNum], uLineLen * sizeof (APLCHAR));
+                CopyMemoryW (&lpMemTxtLine->C, lpMagicFunction->Body[uLineNum], uLineLen);
 
                 // Tokenize the line
                 lpFcnLines->hGlbTknLine =

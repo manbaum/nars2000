@@ -678,7 +678,7 @@ UBOOL IsLocalName
         Assert (iStrLen < countof (sysName));       // ***FIXME*** -- may overflow
 
         // Copy the sysname to local storage
-        CopyMemory (sysName, lpwszStr, iStrLen * sizeof (lpwszStr[0]));
+        CopyMemoryW (sysName, lpwszStr, iStrLen);
 
         // Convert it to lowercase
         CharLowerBuffW (sysName, iStrLen);
@@ -2400,9 +2400,9 @@ UBOOL fnQuoDoneSub
 #undef  lpHeader
 
             *VarArrayBaseToDim (lpwsz) = lptkLocalVars->iStrLen;
-            CopyMemory (VarArrayBaseToData (lpwsz, 1),
+            CopyMemoryW (VarArrayBaseToData (lpwsz, 1),
                         &lpwszStr[1],       // Skip over the string delimiter
-                        lptkLocalVars->iStrLen * sizeof (APLCHAR));
+                         lptkLocalVars->iStrLen);
             MyGlobalUnlock (hGlb); lpwsz = NULL;
 
             // Mark the data as a character strand in a global memory handle

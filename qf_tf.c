@@ -208,7 +208,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
 
     // Copy the data to temporary storage so we can terminate it properly
     //   as well as translate it to/from APL2 charset
-    CopyMemory (lpwszTemp, lpMemRht, (APLU3264) aplNELMRht * sizeof (lpMemRht[0]));
+    CopyMemoryW (lpwszTemp, lpMemRht, (APLU3264) aplNELMRht);
     lpwszTemp[aplNELMRht] = L'\0';
 
     if (hGlbRht && lpMemRht)
@@ -380,7 +380,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
         *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
         // Copy the name to the result
-        CopyMemory (lpMemRes, &lpwszTemp[1], (APLU3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemoryW (lpMemRes, &lpwszTemp[1], (APLU3264) aplNELMRes);
 
         // Translate the name from NARS to APL2 charset
         if (bTranslateAPL2)
@@ -584,7 +584,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                                   *((LPAPLDIM) lpMemItm)++,     // The value to format
                                                   UTF16_OVERBAR);               // Char to use as overbar
                             // Copy the values to temp storage
-                            CopyMemory (lpwszTemp, lpMemItm, (APLU3264) aplNELMItm * sizeof (APLCHAR));
+                            CopyMemoryW (lpwszTemp, lpMemItm, (APLU3264) aplNELMItm);
 
                             // Skip over the copied values
                             lpwszTemp += aplNELMItm;
@@ -759,7 +759,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
         *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
         // Copy the memory to the result
-        CopyMemory (lpMemRes, lpwName, (APLU3264) aplNELMRes * sizeof (lpwName[0]));
+        CopyMemoryW (lpMemRes, lpwName, (APLU3264) aplNELMRes);
 
         // Translate the data from NARS to APL2 charset
         if (bTranslateAPL2)
@@ -1048,7 +1048,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
     *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
     // Copy the name to the result
-    CopyMemory (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes * sizeof (APLCHAR));
+    CopyMemoryW (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes);
 
     // Translate the name/data from NARS to APL2 charset
     if (bTranslateAPL2)

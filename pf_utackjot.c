@@ -294,7 +294,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
 
     // Copy the chars into the line
     Assert (aplNELMRht EQ (APLU3264) aplNELMRht);
-    CopyMemory (lpwszCompLine, lpMemRht, (APLU3264) aplNELMRht * sizeof (APLCHAR));
+    CopyMemoryW (lpwszCompLine, lpMemRht, (APLU3264) aplNELMRht);
     lpwszCompLine[aplNELMRht] = L'\0';
 
     // We no longer need this ptr

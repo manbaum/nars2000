@@ -1458,7 +1458,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
             lpMemTxtLine->U = uLineLen;
 
             // Copy the line text to global memory
-            CopyMemory (&lpMemTxtLine->C, lpMemTxtSrc, uLineLen * sizeof (lpMemTxtLine->C));
+            CopyMemoryW (&lpMemTxtLine->C, lpMemTxtSrc, uLineLen);
 
             // We no longer need this ptr
             MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;

@@ -1001,8 +1001,8 @@ LPAPLCHAR FormatFloatFC
         // Check for no leading 0 with .123
         if (*p EQ L'.')
         {
-            // Use MoveMemory as the source and destin blocks overlap
-            MoveMemory (p + 1, p, (1 + lstrlenW (p)) * sizeof (APLCHAR));
+            // Use MoveMemoryW as the source and destin blocks overlap
+            MoveMemoryW (p + 1, p, 1 + lstrlenW (p));
             *p = L'0';
             dp++;
         } else
@@ -1014,8 +1014,8 @@ LPAPLCHAR FormatFloatFC
          && ep EQ NULL)                 // Not already E-notation
         {
             // Move data to the right to make room for a decimal point
-            // Use MoveMemory as the source and destin blocks overlap
-            MoveMemory (p + 2, p + 1, (lstrlenW (p)) * sizeof (APLCHAR));
+            // Use MoveMemoryW as the source and destin blocks overlap
+            MoveMemoryW (p + 2, p + 1, lstrlenW (p));
             p[1] = L'.';        // Insert a decimal point
             dp = p + 1;         // Save location of decimal point
 
@@ -1036,8 +1036,8 @@ LPAPLCHAR FormatFloatFC
             {
                 // Trailing decimal point present:  append "0"
 
-                // Use MoveMemory as the source and destin blocks overlap
-                MoveMemory (ep + 1, ep, (1 + p - ep) * sizeof (APLCHAR));
+                // Use MoveMemoryW as the source and destin blocks overlap
+                MoveMemoryW (ep + 1, ep, 1 + p - ep);
                 p += 1;         // Add to length # chars we're inserting
                 *ep++ = L'0';   // Change to zero and skip over so it ends with ".0"
             } else
@@ -1045,8 +1045,8 @@ LPAPLCHAR FormatFloatFC
             {
                 // No trailing decimal point:  append ".0"
 
-                // Use MoveMemory as the source and destin blocks overlap
-                MoveMemory (ep + 2, ep, (1 + p - ep) * sizeof (APLCHAR));
+                // Use MoveMemoryW as the source and destin blocks overlap
+                MoveMemoryW (ep + 2, ep, 1 + p - ep);
                 p += 2;         // Add to length # chars we're inserting
                 dp = ep;        // Save location of decimal point
                 *ep++ = L'.';   // Insert a decimal point
@@ -1062,12 +1062,12 @@ LPAPLCHAR FormatFloatFC
             // Check for plus sign in the exponent
             if (ep[0] EQ L'+')
                 // Delete by copying over
-                CopyMemory (ep, ep + 1, (1 + p-- - (ep + 1)) * sizeof (APLCHAR));
+                CopyMemoryW (ep, ep + 1, 1 + p-- - (ep + 1));
 
             // Check for leading 0s in the exponent
             while (ep[0] EQ L'0')
                 // Delete by copying over
-                CopyMemory (ep, ep + 1, (1 + p-- - (ep + 1)) * sizeof (APLCHAR));
+                CopyMemoryW (ep, ep + 1, 1 + p-- - (ep + 1));
         } else
         // Check for trailing decimal point in the mantissa
         if (p[-1] EQ '.')

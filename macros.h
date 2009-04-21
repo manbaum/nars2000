@@ -306,6 +306,10 @@
 #define countof(a)                  (sizeof (a) / sizeof ((a)[0]))
 #define strcountof(a)               (countof (a) - 1)
 
+// Wide char versions
+#define CopyMemoryW(dst,src,len)    CopyMemory (dst, src, (len) * sizeof (WCHAR))
+#define MoveMemoryW(dst,src,len)    MoveMemory (dst, src, (len) * sizeof (WCHAR))
+
 
 //***************************************************************************
 //  End of File: macros.h

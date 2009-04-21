@@ -356,7 +356,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         lpMemChr = VarArrayBaseToData (lpMemChr, 1);
 
                         // Copy to temp string so we can zero-terminate it
-                        CopyMemory (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM * sizeof (APLCHAR));
+                        CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbQuadALX_CWS); lpMemChr = NULL;
@@ -400,7 +400,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         lpMemChr = VarArrayBaseToData (lpMemChr, 1);
 
                         // Copy to temp string so we can zero-terminate it
-                        CopyMemory (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM * sizeof (APLCHAR));
+                        CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbQuadELX_CWS); lpMemChr = NULL;
@@ -426,7 +426,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         lpMemChr = VarArrayBaseToData (lpMemChr, 1);
 
                         // Copy to temp string so we can zero-terminate it
-                        CopyMemory (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM * sizeof (APLCHAR));
+                        CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbQuadFC_CWS); lpMemChr = NULL;
@@ -506,7 +506,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         lpMemChr = VarArrayBaseToData (lpMemChr, 1);
 
                         // Copy to temp string so we can zero-terminate it
-                        CopyMemory (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM * sizeof (APLCHAR));
+                        CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbQuadLX_CWS); lpMemChr = NULL;
@@ -2684,7 +2684,7 @@ void GetCLEARWSValue
         lpMemChr = VarArrayBaseToData (lpMemChr, 1);
 
         // Copy the values
-        CopyMemory (lpMemChr, lpwszGlbTemp, uLen * sizeof (lpwszGlbTemp[0]));
+        CopyMemoryW (lpMemChr, lpwszGlbTemp, uLen);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbChr); lpMemChr = NULL;

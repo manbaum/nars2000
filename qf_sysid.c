@@ -93,7 +93,7 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the SYSID to the result
-    CopyMemory (lpMemRes, SYSID, SYSID_NELM * sizeof (APLCHAR));
+    CopyMemoryW (lpMemRes, SYSID, SYSID_NELM);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

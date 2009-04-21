@@ -328,9 +328,9 @@ void SF_ReadLineLW
     (void) ConvertNameInPlace (lpLW_Params->lpwBuffer);
 
     // Copy the buffer to the caller's save area
-    CopyMemory (lpMemLine,
+    CopyMemoryW (lpMemLine,
                  lpLW_Params->lpwBuffer,
-                lstrlenW (lpLW_Params->lpwBuffer) * sizeof (lpLW_Params->lpwBuffer[0]));
+                 lstrlenW (lpLW_Params->lpwBuffer));
 } // End SF_ReadLineLW
 
 
@@ -433,7 +433,7 @@ void SF_ReadLineN
 #undef  lpHeader
 
             // Copy the data to the result
-            CopyMemory (lpMemLine, lpMemItmRht, uLineLen * sizeof (APLCHAR));
+            CopyMemoryW (lpMemLine, lpMemItmRht, uLineLen);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
@@ -504,9 +504,9 @@ void SF_ReadLineTF1
 
 {
     // Copy the line to global memory
-    CopyMemory (lpMemLine,
+    CopyMemoryW (lpMemLine,
                  lpTF1_Params->lpMemRht + uLineNum * lpTF1_Params->aplColsRht,
-                (APLU3264) lpTF1_Params->aplColsRht * sizeof (APLCHAR));
+                 (APLU3264) lpTF1_Params->aplColsRht);
 } // End SF_ReadLineTF1
 
 
@@ -544,9 +544,9 @@ void SF_ReadLineAA
     } // End WHILE
 
     // Copy the line to global memory
-    CopyMemory (lpMemLine,
+    CopyMemoryW (lpMemLine,
                  lpw,
-                lstrlenW (lpw) * sizeof (APLCHAR));
+                 lstrlenW (lpw));
 } // End SF_ReadLineAA
 
 

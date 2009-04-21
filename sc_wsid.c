@@ -119,7 +119,7 @@ UBOOL CmdWsid_EM
         lpMemWSID = VarArrayBaseToData (lpMemWSID, 1);
 
         // Copy data to the []WSID
-        CopyMemory (lpMemWSID, wszTailDPFE, uLen * sizeof (wszTailDPFE[0]));
+        CopyMemoryW (lpMemWSID, wszTailDPFE, uLen);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbWSID); lpMemWSID = NULL;

@@ -198,7 +198,7 @@ void MakePermVars
     lpHeader = VarArrayBaseToData (lpHeader, 1);
 
     // Copy the data to the result
-    CopyMemory (lpHeader, ALPHABET, ALPHANELM * sizeof (WCHAR));
+    CopyMemoryW (lpHeader, ALPHABET, ALPHANELM);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadA); lpHeader = NULL;
@@ -1504,7 +1504,7 @@ ALLOC_VECTOR:
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     if (bWSID)
-        CopyMemory (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemoryW (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes);
     else
         *((LPAPLCHAR) lpMemRes) = aplChar;
 

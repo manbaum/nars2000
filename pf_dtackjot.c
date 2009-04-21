@@ -2415,7 +2415,7 @@ LPAPLCHAR FormatArrSimple
 ////////////////} // End SWITCH
 
                 // Copy the next value
-                CopyMemory (lpwszOut, lpaplChar, uActLen * sizeof (APLCHAR));
+                CopyMemoryW (lpwszOut, lpaplChar, uActLen);
                 lpwszOut += uActLen;    // Skip over the formatted string
                 uCol     += uActLen;    // ...
 
@@ -3246,7 +3246,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         lpMemItmRht = VarArrayBaseToData (lpMemItmRht, aplRankItmRht);
 
                         // Copy the data to the format area
-                        CopyMemory (lpaplChar, lpMemItmRht, (APLU3264) aplNELMItmRht * sizeof (APLCHAR));
+                        CopyMemoryW (lpaplChar, lpMemItmRht, (APLU3264) aplNELMItmRht);
 
                         // Skip over the copied data
                         lpaplChar += aplNELMItmRht;
@@ -3433,9 +3433,9 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
             // Copy the next formatted value to the result,
             //   right-justifying it in the process
-            CopyMemory (&lpMemRes[aplDimRow * uTotWid + uAccWid + Auto + (uWid - uLen)],
+            CopyMemoryW (&lpMemRes[aplDimRow * uTotWid + uAccWid + Auto + (uWid - uLen)],
                           lpaplChar,
-                         uLen * sizeof (APLCHAR));
+                          uLen);
             // Skip over the formatted value and the trailing zero
             lpaplChar += uLen + 1;
         } // End FOR

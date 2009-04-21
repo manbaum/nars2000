@@ -1732,7 +1732,7 @@ LPSYMENTRY SymTabLookupNameLength
     if (IsSysName (lpwszString))
     {
         // Copy the sysname to local storage
-        CopyMemory (sysName, lpwszString, iLen * sizeof (lpwszString[0]));
+        CopyMemoryW (sysName, lpwszString, iLen);
 
         // Convert it to lowercase
         CharLowerBuffW (sysName, iLen);

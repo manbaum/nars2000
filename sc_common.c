@@ -319,7 +319,7 @@ UBOOL SaveNewWsid_EM
         lpMemNewWSID = VarArrayBaseToData (lpMemNewWSID, 1);
 
         // Copy data to the new []WSID
-        CopyMemory (lpMemNewWSID, lpMemSaveWSID, iLen2 * sizeof (lpMemSaveWSID[0]));
+        CopyMemoryW (lpMemNewWSID, lpMemSaveWSID, iLen2);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbWSID); lpMemNewWSID = NULL;

@@ -255,7 +255,7 @@ UBOOL CmdFNOV_EM
         } // End IF
 
         // Copy the name to the output area
-        CopyMemory (&lpwszFormat[uLineChar], lpMemName, uNameLen * sizeof (APLCHAR));
+        CopyMemoryW (&lpwszFormat[uLineChar], lpMemName, uNameLen);
 
         // If it's )NMS, append the name class
         if (bNMS)

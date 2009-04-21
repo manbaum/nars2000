@@ -810,7 +810,7 @@ UBOOL TransferInverseChr1_EM
         } // End FOR
 
         // Copy the data to the result
-        CopyMemory (lpMemRes, lpwData, (APLU3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemoryW (lpMemRes, lpwData, (APLU3264) aplNELMRes);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

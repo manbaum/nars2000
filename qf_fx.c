@@ -314,7 +314,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
         // Copy the function name to the result
-        CopyMemory (lpMemRes, lpMemName, uNameLen * sizeof (APLCHAR));
+        CopyMemoryW (lpMemRes, lpMemName, uNameLen);
 
         // We no longer need this ptr
         MyGlobalUnlock (htGlbName); lpMemName = NULL;

@@ -3233,7 +3233,7 @@ void CopyAPLChars_EM
 
         if (bUnicode)
             // Make a copy of the clipboard data
-            CopyMemory (lpwszGlbTemp, lpMemClip, dwChars * sizeof (WCHAR));
+            CopyMemoryW (lpwszGlbTemp, lpMemClip, dwChars);
         else
         for (uText = 0; uText < dwChars; uText++)
             lpwszGlbTemp[uText] = (WCHAR) ((LPUCHAR) lpMemClip)[uText];
@@ -3275,7 +3275,7 @@ void CopyAPLChars_EM
         lpMemText = GlobalLock (hGlbText); Assert (lpMemText NE NULL);
 
         // Copy the converted data
-        CopyMemory (lpMemText, lpwszTemp, dwChars * sizeof (WCHAR));
+        CopyMemoryW (lpMemText, lpwszTemp, dwChars);
     } else
     {
         // Allocate space for that many Unicode chars
@@ -3300,7 +3300,7 @@ void CopyAPLChars_EM
 
         if (bUnicode)
             // Make a copy of the clipboard data
-            CopyMemory (lpMemText, lpMemClip, dwChars * sizeof (WCHAR));
+            CopyMemoryW (lpMemText, lpMemClip, dwChars);
         else
         for (uText = 0; uText < dwChars; uText++)
             lpMemText[uText] = (WCHAR) ((LPUCHAR) lpMemClip)[uText];

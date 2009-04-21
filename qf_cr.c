@@ -246,7 +246,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     aplNELMRes = lpMemTxtLine->U;
 
                     // Copy the function line text to global memory
-                    CopyMemory (lpwszTemp, &lpMemTxtLine->C, (APLU3264) aplNELMRes * sizeof (lpMemTxtLine->C));
+                    CopyMemoryW (lpwszTemp, &lpMemTxtLine->C, (APLU3264) aplNELMRes);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -534,7 +534,7 @@ LPVOID SysFnCR_Copy_EM
         lpMemCpy = VarArrayBaseToData (lpMemCpy, 1);
 
         // Copy the text
-        CopyMemory (lpMemCpy, &lpMemTxtLine->C, lpMemTxtLine->U * sizeof (APLCHAR));
+        CopyMemoryW (lpMemCpy, &lpMemTxtLine->C, lpMemTxtLine->U);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbCpy); lpMemCpy = NULL;
@@ -547,7 +547,7 @@ LPVOID SysFnCR_Copy_EM
         uLineLen = lpMemTxtLine->U;
 #define lpMemResChar        ((LPAPLCHAR) lpMemRes)
         // Copy the function header text to the result
-        CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
+        CopyMemoryW (lpMemResChar, &lpMemTxtLine->C, uLineLen);
 
         // Fill the remainder of the line with blanks
         // Could use FillMemoryW ??
@@ -645,7 +645,7 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     if (lpw)
     {
         // Copy the function text to the result
-        CopyMemory (lpMemRes, lpw, (APLU3264) aplNELMRes * sizeof (APLCHAR));
+        CopyMemoryW (lpMemRes, lpw, (APLU3264) aplNELMRes);
     } // End IF
 
     // We no longer need this ptr
@@ -683,7 +683,7 @@ LPAPLCHAR CopySteName
     uNameLen = lstrlenW (lpMemName);
 
     // Copy the name to the output area
-    CopyMemory (lpMemRes, lpMemName, uNameLen * sizeof (APLCHAR));
+    CopyMemoryW (lpMemRes, lpMemName, uNameLen);
 
     // Skip over the name
     lpMemRes += uNameLen;

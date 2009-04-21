@@ -196,7 +196,7 @@ UBOOL CreateNewTab
     lpwszDPFE = MyGlobalLock (hGlbDPFE);
 
     // Copy the workspace name to global memory
-    CopyMemory (lpwszDPFE, lpwsz, uLen * sizeof (lpwsz[0]));
+    CopyMemoryW (lpwszDPFE, lpwsz, uLen);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;

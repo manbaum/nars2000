@@ -459,6 +459,8 @@ void DisplayGlobals
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
         if (lpHeader->Sig.nature EQ VARARRAY_HEADER_SIGNATURE)
         {
+            // If we're to display all globals or
+            //   this one is not a sysvar, ...
             if (uDispGlb EQ 2
              || !lpHeader->SysVar)
             {
@@ -578,6 +580,11 @@ void DisplayGlobals
             // We no longer need this ptr
             MyGlobalUnlock (hGlb); lpMemDfnHdr = NULL;
 
+            // If we're to display all globals or
+            //   this one is not a Magic Function, ...
+            if (uDispGlb EQ 2
+             || lpMemPTD->lpwszTemp[0] NE L'#')
+            {
                 // Copy the name to local storage
                 lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (APLU3264) min (MAX_VAL_LEN, uNameLen));
                 aplArrChar[min (MAX_VAL_LEN, uNameLen)] = L'\0';
@@ -594,6 +601,7 @@ void DisplayGlobals
                            auLinNumGLBALLOC[i],
                            aplArrChar);
                 DbgMsgW (wszTemp);
+            } // End IF
         } else
 #undef  lpHeader
         if (uDispGlb EQ 2)

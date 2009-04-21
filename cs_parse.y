@@ -2149,11 +2149,13 @@ WhileStmt:
 //***************************************************************************
 
 UBOOL ParseCtrlStruc_EM
-    (LPCSLOCALVARS lpcsLocalVars)           // Ptr to CS Local vars
+    (LPCSLOCALVARS lpcsLocalVars)       // Ptr to Ctrl Struc Local vars
 
 {
     UBOOL bRet;                         // TRUE iff result is valid
 
+    __try
+    {
         // Clear the error token
         ZeroMemory (&lpcsLocalVars->tkCSErr, sizeof (lpcsLocalVars->tkCSErr));
 
@@ -2196,6 +2198,14 @@ UBOOL ParseCtrlStruc_EM
         // Disable debugging
         yydebug = FALSE;
 #endif
+    } __except (CheckException (GetExceptionInformation (), L"ParseCtrlStruc"))
+    {
+        // Display message for unhandled exception
+        DisplayException ();
+
+        // Mark as in error
+        bRet = FALSE;
+    } // End __try/__except
 
     return bRet;
 } // End ParseCtrlStruc_EM
@@ -2209,7 +2219,7 @@ UBOOL ParseCtrlStruc_EM
 
 int cs_yylex
     (LPCS_YYSTYPE  lpYYLval,            // Ptr to yylval
-     LPCSLOCALVARS lpcsLocalVars)       // Ptr to local csLocalVars
+     LPCSLOCALVARS lpcsLocalVars)       // Ptr to Ctrl Struc Local vars
 
 {
     LPTOKEN     lptkCSCur;              // Ptr to current token (the one we return)
@@ -2412,7 +2422,7 @@ CS_YYLEX_START:
 #endif
 
 void cs_yyerror                         // Called for Bison syntax error
-    (LPCSLOCALVARS lpcsLocalVars,   // Ptr to local csLocalVars
+    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc Local vars
      LPCHAR        s)                   // Ptr to error msg
 
 {

@@ -193,6 +193,11 @@ UBOOL CmdFNOV_EM
              lpGlbEntry = lpGlbEntry->stPrvEntry)
             ;
 
+        // Check for Permanent item (Magic Function, etc)
+        //   and skip if so
+        if (lpGlbEntry->stFlags.Perm)
+            continue;
+
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (lpGlbEntry->stHshEntry->htGlbName);
 

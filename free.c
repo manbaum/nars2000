@@ -92,8 +92,8 @@ void FreeResultSub
      UBOOL   bFreeName)
 
 {
-    STFLAGS stFlags = {0};
-    HGLOBAL hGlbData;
+    STFLAGS stMaskFlags = {0};              // STE mask flags
+    HGLOBAL hGlbData;                       // Temporary global memory handle
 
     // Split cases based upon the token type
     switch (lptkRes->tkFlags.TknType)
@@ -135,13 +135,13 @@ void FreeResultSub
             if (bFreeName)
             {
                 // Set the flags we'll leave alone
-                stFlags.Perm        =
-                stFlags.Inuse       = TRUE;
-                stFlags.ObjName     =
-                stFlags.SysVarValid = NEG1U;
+                stMaskFlags.Perm        =
+                stMaskFlags.Inuse       = TRUE;
+                stMaskFlags.ObjName     =
+                stMaskFlags.SysVarValid = NEG1U;
 
                 // Clear the symbol table flags
-                *(UINT *) &lptkRes->tkData.tkSym->stFlags &= *(UINT *) &stFlags;
+                *(UINT *) &lptkRes->tkData.tkSym->stFlags &= *(UINT *) &stMaskFlags;
             } // End IF
 
             break;
@@ -190,13 +190,13 @@ void FreeResultSub
             if (bFreeName)
             {
                 // Set the flags we'll leave alone
-                stFlags.Perm        =
-                stFlags.Inuse       = TRUE;
-                stFlags.ObjName     =
-                stFlags.SysVarValid = NEG1U;
+                stMaskFlags.Perm        =
+                stMaskFlags.Inuse       = TRUE;
+                stMaskFlags.ObjName     =
+                stMaskFlags.SysVarValid = NEG1U;
 
                 // Clear the symbol table flags
-                *(UINT *) &lptkRes->tkData.tkSym->stFlags &= *(UINT *) &stFlags;
+                *(UINT *) &lptkRes->tkData.tkSym->stFlags &= *(UINT *) &stMaskFlags;
             } // End IF
 
             return;
@@ -736,14 +736,12 @@ UBOOL FreeResultGlobalFcn
 #endif
 
 UBOOL FreeResultGlobalDfn
-    (HGLOBAL hGlbData)
+    (HGLOBAL hGlbData)              // Incoming global memory handle
 
 {
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
-    UINT         numFcnLines,       // # lines in the function
-                 RefCnt;            // Reference count
+    UINT         RefCnt;            // Reference count
     UBOOL        bRet;              // TRUE iff result is valid
-    LPFCNLINE    lpFcnLines;        // Ptr to the array of structs (FCNLINE[numFcnLine])
 
     DBGENTER;
 
@@ -770,20 +768,56 @@ UBOOL FreeResultGlobalDfn
 
         // If the RefCnt is zero, free the globals
         if (RefCnt EQ 0)
+            // Free the globals in the struc
+            FreeResultGlobalDfnStruc (lpMemDfnHdr);
+    } else
+        RefCnt = 1;     // Any non-zero value to prevent erasure
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+
+    // If the RefCnt is zero, free the global
+    bRet = (RefCnt EQ 0);
+
+    if (bRet)
     {
+        // We no longer need this storage
+        DbgGlobalFree (hGlbData); hGlbData = NULL;
+    } // End IF
+
+    DBGLEAVE;
+
+    return bRet;
+} // End FreeResultGlobalDfn
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $FreeResultGlobalDfnStruc
+//
+//  Free the globals in the DFN_HEADER struc
+//***************************************************************************
+
+void FreeResultGlobalDfnStruc
+    (LPDFN_HEADER lpMemDfnHdr)      // Ptr to DFN_HEADER struc
+
+{
+    UINT      numFcnLines;          // # lines in the function
+    LPFCNLINE lpFcnLines;           // Ptr to the array of structs (FCNLINE[numFcnLine])
+
     // Should we clear the STE flags?
     if (!lpMemDfnHdr->SaveSTEFlags)
     {
-                STFLAGS stFlags = {0};
+        STFLAGS stMaskFlags = {0};
 
         // Set the flags we'll leave alone
-                stFlags.Perm        =
-                stFlags.Inuse       = TRUE;
-                stFlags.ObjName     =
-                stFlags.SysVarValid = NEG1U;
+        stMaskFlags.Perm        =
+        stMaskFlags.Inuse       = TRUE;
+        stMaskFlags.ObjName     =
+        stMaskFlags.SysVarValid = NEG1U;
 
         // Clear the symbol table flags for the function name
-                *(UINT *) &lpMemDfnHdr->steFcnName->stFlags &= *(UINT *) &stFlags;
+        *(UINT *) &lpMemDfnHdr->steFcnName->stFlags &= *(UINT *) &stMaskFlags;
 
         // Clear the flag for next time
         lpMemDfnHdr->SaveSTEFlags = FALSE;
@@ -844,27 +878,7 @@ UBOOL FreeResultGlobalDfn
         // Skip to the next struct
         lpFcnLines++;
     } // End WHILE
-        } // End IF
-    } else
-        RefCnt = 1;     // Any non-zero value to prevent erasure
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
-
-    // If the RefCnt is zero, free the global
-    bRet = (RefCnt EQ 0);
-
-    if (bRet)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbData); hGlbData = NULL;
-    } // End IF
-
-    DBGLEAVE;
-
-    return bRet;
-} // End FreeResultGlobalDfn
-#undef  APPEND_NAME
+} // End FreeResultGlobalDfnStruc
 
 
 //// //***************************************************************************

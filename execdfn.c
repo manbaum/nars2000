@@ -491,8 +491,10 @@ NORMAL_EXIT:
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
 
-    // Restore the previous cursor
-    SendCursorMsg (hWndEC);
+    // If we're not exiting via semaphore, ...
+    if (lpMemPTD->hExitphore EQ NULL)
+        // Restore the previous cursor
+        SendCursorMsg (hWndEC);
 
     if (hGlbDfnHdr && lpMemDfnHdr)
     {

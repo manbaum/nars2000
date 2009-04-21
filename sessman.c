@@ -467,6 +467,15 @@ void DisplayPrompt
     // Mark as no longer executing
     lpMemPTD->bExecuting = FALSE;
 
+    // Check for exiting semaphore
+    if (lpMemPTD->hExitphore)
+    {
+        // Start executing at the Tab Delete code
+        ReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
+
+        return;
+    } // End IF
+
     // Move the text caret to the end of the buffer
     MoveCaretEOB (hWndEC);
 

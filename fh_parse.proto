@@ -1,5 +1,5 @@
 int fh_yyparse (LPFHLOCALVARS lpfhLocalVars);
-UBOOL ParseHeader (HWND hWndEC, HGLOBAL hGlbTknHdr, LPFHLOCALVARS lpfhLocalVars, UBOOL bDisplayErr);
+UBOOL ParseFcnHeader (HWND hWndEC, HGLOBAL hGlbTknHdr, LPFHLOCALVARS lpfhLocalVars, UBOOL bDisplayErr);
 BOOL ValidSysName (LPTOKEN lptkName);
 void InitHdrStrand (LPFH_YYSTYPE lpYYArg);
 LPFH_YYSTYPE PushHdrStrand_YY (LPFH_YYSTYPE lpYYArg);

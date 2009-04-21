@@ -1168,8 +1168,8 @@ UBOOL SaveFunctionCom
                     DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
-    // Parse the header
-    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, lpSF_Fcns->bDisplayErr))
+    // Parse the function header
+    if (ParseFcnHeader (hWndEC, hGlbTknHdr, &fhLocalVars, lpSF_Fcns->bDisplayErr))
     {
         UINT         uLineNum,          // Current line # in the Edit Ctrl
                      uOffset,           // Cumulative offset

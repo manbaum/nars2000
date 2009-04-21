@@ -558,21 +558,23 @@ HeaderComm:
 //***************************************************************************
 
 //***************************************************************************
-//  $ParseHeader
+//  $ParseFcnHeader
 //
 //  Parse a function header
 //***************************************************************************
 
-UBOOL ParseHeader
+UBOOL ParseFcnHeader
     (HWND          hWndEC,          // Window handle of Edit Ctrl
      HGLOBAL       hGlbTknHdr,      // Tokenized header global memory handle
-     LPFHLOCALVARS lpfhLocalVars,   // Ptr to Local vars
+     LPFHLOCALVARS lpfhLocalVars,   // Ptr to Function Header local vars
      UBOOL         bDisplayErr)     // TRUE iff want error messages displayed
 
 {
     UBOOL bRet = FALSE,             // TRUE iff result is valid
           OldDisplayErr;            // Save area for old DisplayErr
 
+    __try
+    {
         // Save the window handle
         lpfhLocalVars->hWndEC = hWndEC;
 
@@ -580,7 +582,7 @@ UBOOL ParseHeader
         OldDisplayErr = lpfhLocalVars->DisplayErr;
         lpfhLocalVars->DisplayErr = bDisplayErr;
 
-    // Save the thread's ptr to local vars
+        // Save ptr to Function Header local vars
         TlsSetValue (dwTlsFhLocalVars, (LPVOID) lpfhLocalVars);
 
         // Save the token header global memory handle
@@ -635,6 +637,14 @@ UBOOL ParseHeader
         // Disable debugging
         yydebug = FALSE;
 #endif
+    } __except (CheckException (GetExceptionInformation (), L"ParseFcnHeader"))
+    {
+        // Display message for unhandled exception
+        DisplayException ();
+
+        // Mark as in error
+        bRet = FALSE;
+    } // End __try/__except
 
     // Restore the error display flag
     lpfhLocalVars->DisplayErr = OldDisplayErr;
@@ -643,7 +653,7 @@ UBOOL ParseHeader
     MyGlobalUnlock (lpfhLocalVars->hGlbTknHdr); lpfhLocalVars->t2.lpBase = NULL;
 
     return bRet;
-} // End ParseHeader
+} // End ParseFcnHeader
 
 
 //***************************************************************************
@@ -668,7 +678,7 @@ BOOL ValidSysName
 
 int fh_yylex
     (LPFH_YYSTYPE  lpYYLval,            // Ptr to lval
-     LPFHLOCALVARS lpfhLocalVars)       // Ptr to local fhLocalVars
+     LPFHLOCALVARS lpfhLocalVars)       // Ptr to Function Header local vars
 
 {
     // Check for stopping point
@@ -761,7 +771,7 @@ int fh_yylex
 #endif
 
 void fh_yyerror                         // Called for Bison syntax error
-    (LPFHLOCALVARS lpfhLocalVars,   // Ptr to local fhLocalVars
+    (LPFHLOCALVARS lpfhLocalVars,       // Ptr to Function Header local vars
      LPCHAR        s)                   // Ptr to error msg
 
 {
@@ -1012,7 +1022,7 @@ BOOL GetOprName_EM
     (LPFH_YYSTYPE lpYYArg)
 
 {
-    LPFHLOCALVARS lpfhLocalVars;    // Ptr to local fhLocalVars
+    LPFHLOCALVARS lpfhLocalVars;        // Ptr to Function Header local vars
 
     // Get this thread's LocalVars ptr
     lpfhLocalVars = (LPFHLOCALVARS) TlsGetValue (dwTlsFhLocalVars);

@@ -4182,8 +4182,8 @@ LPSYMENTRY ParseFunctionName
     // Mark as parsing the function name (generate fewer errors)
     fhLocalVars.ParseFcnName = TRUE;
 
-    // Parse the header
-    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, FALSE)
+    // Parse the function header
+    if (ParseFcnHeader (hWndEC, hGlbTknHdr, &fhLocalVars, FALSE)
      && fhLocalVars.lpYYFcnName)
         // Get the Name's symbol table entry
         lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;

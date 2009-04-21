@@ -186,17 +186,13 @@ HGLOBAL Init1MagicFunction
     //   as our beginning
     lptkCSBeg = lpMemPTD->lptkCSNxt;
 
-    // Throughout this function, we use GlobalAlloc
-    //   instead of MyGlobalAlloc because we never intend to
-    //   free the global memory
-
     // Get the length of the header line
     uLineLen  = lstrlenW (lpMagicFunction->Header);
 
     // Allocate space for the text
     //   (the "sizeof (uLineLen)" is for the leading line length
-    //    and the " + 1" is for the terminating zero)
-    hGlbTxtHdr = GlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
+    //    and the "+ 1" is for the terminating zero)
+    hGlbTxtHdr = MyGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (!hGlbTxtHdr)
     {
         MessageBox (hWndEC,
@@ -290,8 +286,8 @@ HGLOBAL Init1MagicFunction
                     DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
-    // Parse the header
-    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
+    // Parse the function header
+    if (ParseFcnHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
     {
         UINT         uLineNum,          // Current line # in the Edit Ctrl
                      uOffset,           // Cumulative offset
@@ -338,7 +334,8 @@ HGLOBAL Init1MagicFunction
         numFcnLines = lpMagicFunction->numFcnLines;
 
         // Allocate global memory for the function header
-        hGlbDfnHdr = GlobalAlloc (GHND, sizeof (DFN_HEADER)
+        hGlbDfnHdr =
+          MyGlobalAlloc (GHND, sizeof (DFN_HEADER)
                              + sizeof (LPSYMENTRY) * (numResultSTE
                                                     + numLftArgSTE
                                                     + numRhtArgSTE
@@ -476,7 +473,7 @@ HGLOBAL Init1MagicFunction
             //   and the "+ 1" is for the terminating zero
             //   as well as to handle GlobalLock's aversion to locking
             //   zero-length arrays
-            hGlbTxtLine = GlobalAlloc (GHND, sizeof (uLineLen) + (uLineLen + 1) * sizeof (APLCHAR));
+            hGlbTxtLine = MyGlobalAlloc (GHND, sizeof (uLineLen) + (uLineLen + 1) * sizeof (APLCHAR));
             if (!hGlbTxtLine)
             {
                 MessageBox (hWndEC,

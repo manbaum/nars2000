@@ -58,18 +58,18 @@ LPPL_YYSTYPE ExecuteFn0
         {
             case FCNARRAY_HEADER_SIGNATURE:
                 // Execute a function array global memory handle
-                return ExecFcnGlb_EM_YY (NULL,                              // Ptr to left arg token (may be NULL if monadic or niladic)
-                                         ClrPtrTypeDirAsGlb (lpNameFcn),    // Function array global memory handle
-                                         NULL,                              // Ptr to right arg token (may be NULL if niladic)
-                                         NULL);                             // Ptr to axis token (may be NULL)
+                return ExecFcnGlb_EM_YY (NULL,          // Ptr to left arg token (may be NULL if monadic or niladic)
+                                         lpNameFcn,     // Function array global memory handle
+                                         NULL,          // Ptr to right arg token (may be NULL if niladic)
+                                         NULL);         // Ptr to axis token (may be NULL)
             case DFN_HEADER_SIGNATURE:
                 // Execute a user-defined function/operator global memory handle
-                return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (lpNameFcn),    // User-defined function/operator global memory handle
-                                         NULL,                              // Ptr to left arg token (may be NULL if monadic)
-                                         lpYYFcn0,                          // Ptr to function strand
-                                         NULL,                              // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                         NULL,                              // Ptr to right arg token
-                                         LINENUM_ONE);                      // Starting line # (see LINE_NUMS)
+                return ExecDfnGlb_EM_YY (lpNameFcn,     // User-defined function/operator global memory handle
+                                         NULL,          // Ptr to left arg token (may be NULL if monadic)
+                                         lpYYFcn0,      // Ptr to function strand
+                                         NULL,          // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                         NULL,          // Ptr to right arg token
+                                         LINENUM_ONE);  // Starting line # (see LINE_NUMS)
             defstop
                 return NULL;
         } // End SWITCH
@@ -157,18 +157,18 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
                 // If it's a user-defined function/operator, ...
                 if (stFlags.UsrDfn)
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbFcn),  // User-defined function/operator global memory handle
-                                             lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
-                                             lpYYFcnStr,                    // Ptr to function strand
-                                             lptkAxis,                      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                             lptkRhtArg,                    // Ptr to right arg token
-                                             LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
+                    return ExecDfnGlb_EM_YY (hGlbFcn,       // User-defined function/operator global memory handle
+                                             lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
+                                             lpYYFcnStr,    // Ptr to function strand
+                                             lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             LINENUM_ONE);  // Starting line # (see LINE_NUMS)
                 else
                     // Execute a function array global memory handle
-                    return ExecFcnGlb_EM_YY (lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic or niladic)
-                                             ClrPtrTypeDirAsGlb (hGlbFcn),  // Function array global memory handle
-                                             lptkRhtArg,                    // Ptr to right arg token (may be NULL if niladic)
-                                             NULL);                         // Ptr to axis token (may be NULL)
+                    return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
+                                             hGlbFcn,       // Function array global memory handle
+                                             lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
+                                             NULL);         // Ptr to axis token (may be NULL)
             } // End IF
 
             // Handle the immediate case
@@ -212,18 +212,18 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Execute a function array global memory handle
-                    return ExecFcnGlb_EM_YY (lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
-                                             ClrPtrTypeDirAsGlb (hGlbFcn),  // Function array global memory handle
-                                             lptkRhtArg,                    // Ptr to right arg token
-                                             lptkAxis);                     // Ptr to axis token (may be NULL)
+                    return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
+                                             hGlbFcn,       // Function array global memory handle
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             lptkAxis);     // Ptr to axis token (may be NULL)
                 case DFN_HEADER_SIGNATURE:
                     // Execute a user-defined function/operator global memory handle
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbFcn),  // User-defined function/operator global memory handle
-                                             lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
-                                             lpYYFcnStr,                    // Ptr to function strand
-                                             lptkAxis,                      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                             lptkRhtArg,                    // Ptr to right arg token
-                                             LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
+                    return ExecDfnGlb_EM_YY (hGlbFcn,       // User-defined function/operator global memory handle
+                                             lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
+                                             lpYYFcnStr,    // Ptr to function strand
+                                             lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             LINENUM_ONE);  // Starting line # (see LINE_NUMS)
                 defstop
                     break;
             } // End SWITCH
@@ -273,6 +273,9 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
     LPPL_YYSTYPE      lpYYFcnStr,   // Ptr to function strand
                       lpYYRes;      // Ptr to the result
     LPTOKEN           lptkAxis2;    // Ptr to secondary axis token (may be NULL)
+
+    // Clear the ptr type bits
+    hGlbFcn = ClrPtrTypeDirAsGlb (hGlbFcn);
 
     // Lock the memory to get a ptr to it
     lpHeader = MyGlobalLock (hGlbFcn);
@@ -621,18 +624,18 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                     lptkAxis = CheckAxisOper (lpYYFcnStr);
 
                     // Execute a function array global memory handle
-                    return ExecFcnGlb_EM_YY (lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
-                                              ClrPtrTypeDirAsGlb (hGlbFcn), // Function array global memory handle
-                                              lptkRhtArg,                   // Ptr to right arg token
-                                              lptkAxis);                    // Ptr to axis token (may be NULL)
+                    return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
+                                             hGlbFcn,       // Function array global memory handle
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             lptkAxis);     // Ptr to axis token (may be NULL)
                 case DFN_HEADER_SIGNATURE:
                     // Execute a user-defined function/operator global memory handle
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbFcn),  // User-defined function/operator global memory handle
-                                             lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
-                                             lpYYFcnStr,                    // Ptr to function strand
-                                             lptkAxis,                      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                             lptkRhtArg,                    // Ptr to right arg token
-                                             LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
+                    return ExecDfnGlb_EM_YY (hGlbFcn,       // User-defined function/operator global memory handle
+                                             lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
+                                             lpYYFcnStr,    // Ptr to function strand
+                                             lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             LINENUM_ONE);  // Starting line # (see LINE_NUMS)
                 defstop
                     break;
             } // End SWITCH
@@ -667,18 +670,18 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Execute a function array global memory handle
-                    return ExecFcnGlb_EM_YY (lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
-                                              ClrPtrTypeDirAsGlb (hGlbFcn), // Function array global memory handle
-                                              lptkRhtArg,                   // Ptr to right arg token
-                                              lptkAxis);                    // Ptr to axis token (may be NULL)
+                    return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
+                                             hGlbFcn,       // Function array global memory handle
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             lptkAxis);     // Ptr to axis token (may be NULL)
                 case DFN_HEADER_SIGNATURE:
                     // Execute a user-defined function/operator global memory handle
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbFcn),  // User-defined function/operator global memory handle
-                                             lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
-                                             lpYYFcnStr,                    // Ptr to function strand
-                                             lptkAxis,                      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                             lptkRhtArg,                    // Ptr to right arg token
-                                             LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
+                    return ExecDfnGlb_EM_YY (hGlbFcn,       // User-defined function/operator global memory handle
+                                             lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
+                                             lpYYFcnStr,    // Ptr to function strand
+                                             lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             LINENUM_ONE);  // Starting line # (see LINE_NUMS)
                 defstop
                     break;
             } // End SWITCH

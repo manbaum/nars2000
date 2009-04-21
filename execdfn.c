@@ -45,7 +45,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
     Assert (GetSignatureGlb (hGlbProto) EQ DFN_HEADER_SIGNATURE);
 
     // Execute the user-defined function/operator on the arg using the []PROTOTYPE entry point
-    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbProto),// User-defined function/operator global memory handle
+    return ExecDfnGlb_EM_YY (hGlbProto,             // User-defined function/operator global memory handle
                              lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
               (LPPL_YYSTYPE) lptkFcnStr,            // Ptr to function strand
                              NULL,                  // Ptr to axis token (may be NULL -- used only if function strand is NULL)
@@ -77,6 +77,9 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
 {
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
                  lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
+
+    // Clear the ptr type bits
+    hGlbDfnHdr = ClrPtrTypeDirAsGlb (hGlbDfnHdr);
 
     // If there's a function strand, ...
     if (lpYYFcnStr NE NULL)
@@ -488,8 +491,8 @@ NORMAL_EXIT:
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
 
-        // Restore the previous cursor
-        SendCursorMsg (hWndEC);
+    // Restore the previous cursor
+    SendCursorMsg (hWndEC);
 
     if (hGlbDfnHdr && lpMemDfnHdr)
     {

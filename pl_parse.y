@@ -160,8 +160,8 @@ StmtMult:
 
                                              Assert (YYResIsEmpty ());
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              // If we're resetting via {goto}, ...
                                              if (lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_ONE
@@ -178,9 +178,6 @@ StmtMult:
                                              // If we're resetting, ...
                                              if (lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
                                                  lpplLocalVars->ExitType = TranslateResetFlagToExitType (lpMemPTD->lpSISCur->ResetFlag);
-
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              // Set the exit type to error unless already set
                                              if (lpplLocalVars->ExitType EQ EXITTYPE_NONE)
@@ -210,8 +207,8 @@ StmtMult:
 
                                              Assert (YYResIsEmpty ());
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              // If we're resetting via {goto}, ...
                                              if (lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_ONE
@@ -228,9 +225,6 @@ StmtMult:
                                              // If we're resetting, ...
                                              if (lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
                                                  lpplLocalVars->ExitType = TranslateResetFlagToExitType (lpMemPTD->lpSISCur->ResetFlag);
-
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              // Set the exit type to error unless already set
                                              if (lpplLocalVars->ExitType EQ EXITTYPE_NONE)
@@ -713,14 +707,11 @@ StmtSing:
                                                  lpplLocalVars->bRet = FALSE;
                                              else
                                              {
-                                                 // Lock the memory to get a ptr to it
-                                                 lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                                 // Get ptr to PerTabData global memory
+                                                 lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                                  // Get the ptr to the current SIS header
                                                  lpSISCur = lpMemPTD->lpSISCur;
-
-                                                 // We no longer need this ptr
-                                                 MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                                  // Do not display if caller is Execute or Quad
                                                  //   and the current statement is the last one on the line
@@ -773,17 +764,14 @@ StmtSing:
                                              lpplLocalVars->ExitType = GotoLine_EM (&$1.tkToken, &$2.tkToken);
                                              FreeResult (&$1.tkToken);
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              // Make a PL_YYSTYPE NoValue entry
                                              lpplLocalVars->lpYYMak =
                                                MakeNoValue_YY (&$2.tkToken);
                                              lpMemPTD->YYResExec = *lpplLocalVars->lpYYMak;
                                              YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              // Split cases based upon the Exit Type
                                              switch (lpplLocalVars->ExitType)
@@ -828,8 +816,8 @@ StmtSing:
                                                  YYERROR3
                                              } // End IF
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              // Get a ptr to the current SIS layer
                                              lpSISCur = lpMemPTD->lpSISCur;
@@ -852,9 +840,6 @@ StmtSing:
                                                  lpplLocalVars->ExitType = EXITTYPE_RESET_ONE_INIT;
                                              } // End IF/ELSE
 
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
-
                                              YYACCEPT;              // Stop executing this line
                                          } // End IF
                                         }
@@ -876,14 +861,11 @@ StmtSing:
                                                  YYERROR3
                                              } // End IF
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              // Get the ptr to the current SIS header
                                              lpSISCur = lpMemPTD->lpSISCur;
-
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              // Do not free if caller is Execute or Quad
                                              //   and the current statement is the last one on the line
@@ -964,15 +946,13 @@ StmtSing:
                                              // Free the result as the arg to the name was passed on
                                              FreeResult (&$1.tkToken);
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_IMM
                                               || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_EXEC
                                               || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                                                  lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              $$ = $1;
                                          } // End IF
@@ -985,15 +965,13 @@ StmtSing:
                                              // Free the result as the arg to the name was passed on
                                              FreeResult (&$1.tkToken);
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_IMM
                                               || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_EXEC
                                               || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                                                  lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              $$ = $1;
                                          } // End IF
@@ -1006,15 +984,13 @@ StmtSing:
                                              // Free the result as the arg to the name was passed on
                                              FreeResult (&$1.tkToken);
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_IMM
                                               || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_EXEC
                                               || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                                                  lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              $$ = $1;
                                          } // End IF
@@ -1027,15 +1003,13 @@ StmtSing:
                                              // Free the result as the arg to the name was passed on
                                              FreeResult (&$1.tkToken);
 
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_IMM
                                               || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_EXEC
                                               || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                                                  lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                              $$ = $1;
                                          } // End IF
@@ -2404,7 +2378,6 @@ SingVar:
     |     QUAD                          {DbgMsgWP (L"%%SingVar:  QUAD");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             HGLOBAL      hGlbPTD;               // PerTabData global memory handle
                                              LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
                                              RESET_FLAGS  resetFlag;             // The current Reset Flag
 
@@ -2415,11 +2388,8 @@ SingVar:
                                                WaitForInput (lpplLocalVars->hWndSM, FALSE, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
 
-                                             // Get the PerTabData global memory handle
-                                             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              // Get the Reset Flag
                                              resetFlag = lpMemPTD->lpSISCur->ResetFlag;
@@ -2427,9 +2397,6 @@ SingVar:
                                              // If we're resetting, ...
                                              if (resetFlag NE RESETFLAG_NONE)
                                                  lpplLocalVars->ExitType = TranslateResetFlagToExitType (resetFlag);
-
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                                              // If we're resetting, ...
                                              if (resetFlag NE RESETFLAG_NONE)
@@ -2678,24 +2645,17 @@ StrandInst:
     | CONSTANT   ':'                    {DbgMsgWP (L"%%StrandInst:  :CONSTANT");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             HGLOBAL            hGlbPTD,                 // PerTabData global memory handle
-                                                                hGlbObj;                 // Object global memory handle
+                                             HGLOBAL            hGlbObj;                 // Object global memory handle
                                              LPPERTABDATA       lpMemPTD;                // Ptr to PerTabData global memory
                                              LPLOADWSGLBVARCONV lpLoadWsGlbVarConv;      // Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
                                              LPLOADWSGLBVARPARM lpLoadWsGlbVarParm;      // Extra parms for LoadWsGlbVarConv
 
-                                             // Get the PerTabData global memory handle
-                                             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-                                             // Lock the memory to get a ptr to it
-                                             lpMemPTD = MyGlobalLock (hGlbPTD);
+                                             // Get ptr to PerTabData global memory
+                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                                              // Get the LoadWsGlbVarXXX ptrs
                                              lpLoadWsGlbVarConv = lpMemPTD->lpLoadWsGlbVarConv;
                                              lpLoadWsGlbVarParm = lpMemPTD->lpLoadWsGlbVarParm;
-
-                                             // We no longer need this ptr
-                                             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                                              // If we're converting, ...
                                              if (lpLoadWsGlbVarConv)
@@ -6320,20 +6280,19 @@ IndexListWE2:
 #endif
 
 EXIT_TYPES ParseLine
-    (HWND    hWndSM,                // Session Manager window handle
-     HGLOBAL hGlbTknLine,           // Tokenized line global memory handle (may be NULL)
-     HGLOBAL hGlbTxtLine,           // Text      ...
-     LPWCHAR lpwszLine,             // Ptr to the line text (may be NULL)
-     HGLOBAL hGlbPTD,               // PerTabData global memory handle
-     UINT    uLineNum,              // Function line #
-     UINT    uTknNum,               // Starting token # in the above function line
-     HGLOBAL hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
-     UBOOL   bActOnErrors,          // TRUE iff errors are acted upon
-     UBOOL   bExec1Stmt)            // TRUE iff executing only one stmt
+    (HWND         hWndSM,           // Session Manager window handle
+     HGLOBAL      hGlbTknLine,      // Tokenized line global memory handle (may be NULL)
+     HGLOBAL      hGlbTxtLine,      // Text      ...
+     LPWCHAR      lpwszLine,        // Ptr to the line text (may be NULL)
+     LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
+     UINT         uLineNum,         // Function line #
+     UINT         uTknNum,          // Starting token # in the above function line
+     HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle (NULL = execute/immexec)
+     UBOOL        bActOnErrors,     // TRUE iff errors are acted upon
+     UBOOL        bExec1Stmt)       // TRUE iff executing only one stmt
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    PLLOCALVARS  plLocalVars = {0}; // Re-entrant vars
+    PLLOCALVARS  plLocalVars = {0}; // ParseLine local vars
     UINT         oldTlsPlLocalVars, // Ptr to previous value of dwTlsPlLocalVars
                  oldTlsType,        // Previous value of dwTlsType
                  uError,            // Error code
@@ -6353,16 +6312,13 @@ EXIT_TYPES ParseLine
     // Save the previous value of dwTlsPlLocalVars
     oldTlsPlLocalVars = PtrToUlong (TlsGetValue (dwTlsPlLocalVars));
 
-    // Save the thread's ptr to local vars
+    // Save ptr to ParseLine local vars
     TlsSetValue (dwTlsPlLocalVars, (LPVOID) &plLocalVars);
 
-    // Save the thread's PerTabData global memory handle
-    TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
+    // Save ptr to PerTabData global memory
+    TlsSetValue (dwTlsPerTabData, (LPVOID) lpMemPTD);
 
-    DBGENTER;           // Must be placed after the TlsSetValue for hGlbPTD
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    DBGENTER;           // Must be placed after the TlsSetValue for lpMemPTD
 
     // Get the Edit Ctrl window handle
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
@@ -6387,9 +6343,6 @@ EXIT_TYPES ParseLine
 
     LeaveCriticalSection (&CSOPL);
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     // Initialize the error code
     uError = ERRORCODE_NONE;
 
@@ -6406,7 +6359,7 @@ EXIT_TYPES ParseLine
 #endif
 
     // Save values in the LocalVars
-    plLocalVars.hGlbPTD     = hGlbPTD;
+    plLocalVars.lpMemPTD    = lpMemPTD;
     plLocalVars.hWndSM      = hWndSM;
     plLocalVars.hGlbTxtLine = hGlbTxtLine;
     plLocalVars.hGlbTknLine = hGlbTknLine;
@@ -6550,7 +6503,7 @@ EXIT_TYPES ParseLine
             uRet = pl_yyparse (&plLocalVars);
         } __except (CheckVirtAlloc (GetExceptionInformation (),
                                     L"ParseLine"))
-        {} // End __try/__Except
+        {} // End __try/__except
     } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
     {
         // Display message for unhandled exception
@@ -6561,15 +6514,12 @@ EXIT_TYPES ParseLine
         uError = ERRORCODE_ELX;
 
         goto NORMAL_EXIT;
-    } // End __try/__Except
+    } // End __try/__except
 
 #if YYDEBUG
     // Disable debugging
     yydebug = FALSE;
 #endif
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     if (!plLocalVars.bCtrlBreak
      && !plLocalVars.bLookAhead)
@@ -6667,16 +6617,10 @@ EXIT_TYPES ParseLine
             break;
     } // End IF/SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     // If Ctrl-Break was pressed, ...
     if (plLocalVars.bCtrlBreak)
     {
         LPSIS_HEADER lpSISCur;
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
 
         // Mark as in error
         uError = ERRORCODE_ALX;
@@ -6697,16 +6641,10 @@ EXIT_TYPES ParseLine
         if (lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt)
             // Signal an error
             BreakMessage (hWndSM, lpSISCur);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
 
     if (uRet EQ 0 || uError EQ ERRORCODE_ALX)
         goto NORMAL_EXIT;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // If we're not resetting, ...
     if (lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE)
@@ -6738,26 +6676,17 @@ EXIT_TYPES ParseLine
         uError = ERRORCODE_ELX;
     } // End IF
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
     // Set the stop in motion
     plLocalVars.ExitType = EXITTYPE_STOP;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Set the reset flag
     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_STOP;
 
     // Set the result
     ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 NORMAL_EXIT:
     for (uCnt = 0; uCnt < MVS_CNT; uCnt++)
     if (lclMemVirtStr[uCnt].IniAddr)
@@ -6772,9 +6701,6 @@ NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (plLocalVars.hGlbTknLine); plLocalVars.t2.lpBase   = NULL;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     EnterCriticalSection (&CSOPL);
 
     // Unlink this plLocalVars from the chain of such objects
@@ -6785,9 +6711,6 @@ NORMAL_EXIT:
         lpMemPTD->lpPLCur->bCtrlBreak = plLocalVars.bCtrlBreak;
 
     LeaveCriticalSection (&CSOPL);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Restore the previous value of dwTlsPlLocalVars
     TlsSetValue (dwTlsPlLocalVars, ULongToPtr (oldTlsPlLocalVars));
@@ -6864,15 +6787,9 @@ NORMAL_EXIT:
             case EXITTYPE_DISPLAY:      // ...
             case EXITTYPE_NODISPLAY:    // ...
             case EXITTYPE_NOVALUE:      // ...
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
                 // Get the ptr to the current SIS header
                 lpSISPrv =
                 lpSISCur = lpMemPTD->lpSISCur;
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                 // If this level is Immediate Execution Mode, peel back
                 while (lpSISPrv
@@ -6920,17 +6837,11 @@ NORMAL_EXIT:
         } // End SWITCH
     } // End IF
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
 
     // Restore the cursor
     SendCursorMsg (hWndEC);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     DBGLEAVE;
 
@@ -7463,17 +7374,14 @@ PL_YYLEX_START:
     lpYYLval->lpYYFcnBase    = NULL;
     lpYYLval->lpYYStrandBase = NULL;
 #ifdef DEBUG
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     lpYYLval->YYIndex        = ++YYIndex;
     lpYYLval->YYFlag         = TRUE;      // Mark as a pl_yylex Index
     lpYYLval->SILevel        = lpMemPTD->SILevel;
     lpYYLval->lpFileName     = FileNameOnly (__FILE__);
     lpYYLval->uLineNum       = __LINE__;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 #endif
 
     // Split cases based upon the token type
@@ -8202,24 +8110,20 @@ LPPL_YYSTYPE WaitForInput
 {
     HANDLE         hSemaphore;      // Semaphore handle
     LPPL_YYSTYPE   lpYYRes;         // Ptr to the result
-    HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
     UINT           uLinePos,        // Char position of start of line
                    uCharPos;        // Current char position
     HWND           hWndEC;          // Edit Ctrl window handle
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Create a semaphore
     hSemaphore =
-    CreateSemaphore (NULL,              // No security attrs
-                     0,                 // Initial count (non-signalled)
-                     64*1024,           // Maximum count
-                     NULL);             // No name
+      CreateSemaphore (NULL,            // No security attrs
+                       0,               // Initial count (non-signalled)
+                       64*1024,         // Maximum count
+                       NULL);           // No name
     // Fill in the SIS header for Quote-Quad/Quad Input Mode
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 hSemaphore,             // Semaphore handle
@@ -8243,9 +8147,6 @@ LPPL_YYSTYPE WaitForInput
     // Save the Quote-Quad input prompt length
     lpMemPTD->lpSISCur->QQPromptLen = uCharPos - uLinePos;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     // Tell the Session Manager to display the appropriate prompt
     PostMessageW (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 14);
 #ifdef DEBUG
@@ -8259,9 +8160,6 @@ LPPL_YYSTYPE WaitForInput
 #endif
     // Close the semaphore handle as it is no longer needed
     CloseHandle (hSemaphore); hSemaphore = NULL;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
@@ -8287,9 +8185,6 @@ LPPL_YYSTYPE WaitForInput
 
     // We no longer need these values
     ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpYYRes;
 } // End WaitForInput
@@ -8499,8 +8394,8 @@ void ArrExprCheckCaller
     // Mark as not in error
     lpplLocalVars->bRet = TRUE;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // If it's NoValue, ...
     if (IsTokenNoValue (&lpYYArg->tkToken))
@@ -8523,9 +8418,6 @@ void ArrExprCheckCaller
     {
         YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
     } // End IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 } // End ArrExprCheckCaller
 
 

@@ -43,8 +43,7 @@ UBOOL CmdSave_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
-    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
-                 hGlbName,              // STE name global memory handle
+    HGLOBAL      hGlbName,              // STE name global memory handle
                  hGlbCnt = NULL,        // Vars/Fcns/Oprs counters global memory handle
                  stGlbData;             // SYMENTRY's stGlbData
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
@@ -81,11 +80,8 @@ UBOOL CmdSave_EM
     // Zap it in case there are trailing blanks
     *lpw = L'\0';
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area & temporary storage
     lpwszFormat = lpMemPTD->lpwszFormat;
@@ -606,9 +602,6 @@ NORMAL_EXIT:
         // We no longer need this storage
         MyGlobalFree (hGlbCnt); hGlbCnt = NULL;
     } // End IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End CmdSave_EM
@@ -1178,7 +1171,6 @@ LPAPLCHAR SavedWsFormGlbVar
     LPAPLCHAR    lpMemProKeyName,       // Ptr to profile keyname
                  lpaplCharStart;        // Ptr to start of buffer
     UINT         uBitIndex;             // Bit index when marching through Booleans
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     PERM_NDX     permNdx;               // Permanent object index
     STFLAGS      stFlags;               // Object SymTab flags
@@ -1186,11 +1178,8 @@ LPAPLCHAR SavedWsFormGlbVar
                  wszGlbCnt[8 + 1];      // Save area for formatted *lpGlbCnt
     LPSYMENTRY   lpSymLink;             // Ptr to SYMENTRY temp for *lplpSymLink
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // stData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbObj));
@@ -1577,9 +1566,6 @@ NORMAL_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
     } // End IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Return a ptr to the profile keyname's terminating zero
     return &lpaplChar[lstrlenW (lpaplChar)];

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,7 +67,6 @@ UBOOL CmdSiSinlCom_EM
      LPAPLCHAR lpMemSaveWSID)   // Ptr to the file name (NULL = not called from CmdSave_EM)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS_HEADER srtuc
     UINT         SILevel;       // SI level (for CmdSave_EM)
@@ -75,11 +74,8 @@ UBOOL CmdSiSinlCom_EM
     LPWCHAR      lpwszFormat,   // Ptr to formatting save area
                  lpwszTemp;     // Ptr to temporary storage
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area & temporary storage
     lpwszFormat = lpMemPTD->lpwszFormat;
@@ -239,9 +235,6 @@ UBOOL CmdSiSinlCom_EM
                 break;
         } // End SWITCH
     } // End IF/FOR
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return TRUE;
 } // End CmdSiSinlCom_EM

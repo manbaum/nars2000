@@ -443,7 +443,6 @@ UBOOL InitSystemNames_EM
 
 {
     int          i;                 // Loop counter
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 #ifdef DEBUG
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
@@ -451,11 +450,8 @@ UBOOL InitSystemNames_EM
     UBOOL        bRet = TRUE;       // TRUE iff result is valid
     LPSYMENTRY  *ptdSysVarSym[SYSVAR_LENGTH];
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     ptdSysVarSym[SYSVAR_UNK ] = NULL                    ;
     ptdSysVarSym[SYSVAR_ALX ] = &lpMemPTD->lpSymQuadALX ;
@@ -487,9 +483,6 @@ UBOOL InitSystemNames_EM
     } // End FOR/IF
 
     Assert (HshTabFrisk (lpHTS));
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End InitSystemNames_EM
@@ -1290,21 +1283,14 @@ UBOOL ValidateCharVector_EM
                  aplNELMRes;        // Result    ...
     APLRANK      aplRankRht;        // Right arg rank
     APLUINT      ByteRes;           // # bytes in the result
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -2530,14 +2516,10 @@ UBOOL ValidSetPR_EM
     HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
     LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
     UBOOL        bRet = FALSE;      // TRUE iff result is valid
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Ensure the argument is a character scalar, or
     //   one-element vector (demoted to a scalar), or
@@ -2688,9 +2670,6 @@ DOMAIN_EXIT:
 
 ERROR_EXIT:
 UNLOCK_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
@@ -2876,14 +2855,10 @@ UBOOL ValidSetSA_EM
                  hGlbRes;           // Result    ...
     LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
     UBOOL        bRet = FALSE;      // TRUE iff result is valid
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector, and a valid Stop Action value
@@ -3044,9 +3019,6 @@ SYNTAX_EXIT:
 
 ERROR_EXIT:
 UNLOCK_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
@@ -3110,14 +3082,10 @@ UBOOL InitSystemVars
     (void)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Set the array set validation routines
     aSysVarValidSet[SYSVAR_ALX ] = ValidSetALX_EM ;
@@ -3172,9 +3140,6 @@ UBOOL InitSystemVars
 
     // Save the index value
     lpMemPTD->cQuadxSA = cQuadxSA_CWS;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return TRUE;
 } // End InitSystemVars

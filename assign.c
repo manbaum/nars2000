@@ -351,23 +351,16 @@ UBOOL AssignName_EM
 
 #ifdef DEBUG
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
 
     Assert (HshTabFrisk (lpHTS));
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     if (bFcnOpr)
         DisplayFcnStrand (lptkSrc, TRUE);

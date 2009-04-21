@@ -464,7 +464,6 @@ APLBOOL IzitSusPendent
     (LPSYMENTRY lpSymEntry)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     APLBOOL      bRet = FALSE;  // TRUE iff name is suspended or pendent
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS layer
@@ -472,17 +471,11 @@ APLBOOL IzitSusPendent
     LPAPLCHAR    lpMemName,     // Ptr to name global memory
                  lpFcnName;     // Ptr to function name global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the innermost SIS layer
     lpSISCur = lpMemPTD->lpSISCur;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the name global memory handle
     htGlbName = lpSymEntry->stHshEntry->htGlbName;

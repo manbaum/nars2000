@@ -180,21 +180,14 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    HGLOBAL       hGlbPTD;              // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
     LPWCHAR       lpwszFormat;          // Ptr to formatting save area
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -424,7 +417,7 @@ __try
         defstop
             break;
     } // End SWITCH
-} // End __try/__Except
+} // End __try/__except
 
     // Propagate the row & col count up the line
     PropagateRowColCount (lpFmtHeader);
@@ -2908,21 +2901,14 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     UBOOL        bRet = TRUE,       // TRUE iff result is valid
                  Auto;              // TRUE iff the col is automatic width
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -3448,7 +3434,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             // Copy the next formatted value to the result,
             //   right-justifying it in the process
             CopyMemory (&lpMemRes[aplDimRow * uTotWid + uAccWid + Auto + (uWid - uLen)],
-                         lpaplChar,
+                          lpaplChar,
                          uLen * sizeof (APLCHAR));
             // Skip over the formatted value and the trailing zero
             lpaplChar += uLen + 1;

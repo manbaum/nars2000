@@ -544,21 +544,15 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
         else
         {
-            HGLOBAL      hGlbPTD;           // PerTabData global memory handle
             LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
-            // Get the per tab global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
+            // Get ptr to PerTabData global memory
+            lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
             // Make & save a prototype of the right arg
             *((LPAPLNESTED) lpMemRes) =
               (IsSimpleNum (aplTypeRht)) ? lpMemPTD->steZero
                                          : lpMemPTD->steBlank;
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
         } // End IF
     } else
     // If this is +/APA

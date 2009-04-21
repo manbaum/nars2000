@@ -180,8 +180,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
-    HGLOBAL       hGlbPTD,              // PerTabData global memory handle
-                  hGlbMF1,              // Magic function #1 global memory handle
+    HGLOBAL       hGlbMF1,              // Magic function #1 global memory handle
                   hGlbMF2,              // Magic function #2 global memory handle
                   hGlbOprRht;           // Right operand global memory handle
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
@@ -207,19 +206,13 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
     if (IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
         goto RIGHT_SYNTAX_EXIT;
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the magic function global memory handles
     hGlbMF1 = (lptkLftArg EQ NULL) ? lpMemPTD->hGlbMF_MonRank
                                    : lpMemPTD->hGlbMF_DydRank;
     hGlbMF2 = lpMemPTD->hGlbMF_Conform;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get right operand global ptrs
     hGlbOprRht = GetGlbHandle (&lpYYFcnStrRht->tkToken);

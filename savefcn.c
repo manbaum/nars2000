@@ -329,7 +329,7 @@ void SF_ReadLineLW
 
     // Copy the buffer to the caller's save area
     CopyMemory (lpMemLine,
-                lpLW_Params->lpwBuffer,
+                 lpLW_Params->lpwBuffer,
                 lstrlenW (lpLW_Params->lpwBuffer) * sizeof (lpLW_Params->lpwBuffer[0]));
 } // End SF_ReadLineLW
 
@@ -505,7 +505,7 @@ void SF_ReadLineTF1
 {
     // Copy the line to global memory
     CopyMemory (lpMemLine,
-                lpTF1_Params->lpMemRht + uLineNum * lpTF1_Params->aplColsRht,
+                 lpTF1_Params->lpMemRht + uLineNum * lpTF1_Params->aplColsRht,
                 (APLU3264) lpTF1_Params->aplColsRht * sizeof (APLCHAR));
 } // End SF_ReadLineTF1
 
@@ -545,7 +545,7 @@ void SF_ReadLineAA
 
     // Copy the line to global memory
     CopyMemory (lpMemLine,
-                lpw,
+                 lpw,
                 lstrlenW (lpw) * sizeof (APLCHAR));
 } // End SF_ReadLineAA
 
@@ -1030,9 +1030,8 @@ UBOOL SaveFunctionCom
                    hGlbDfnHdr = NULL;       // User-defined function/operator header ...
     LPDFN_HEADER   lpMemDfnHdr = NULL;      // Ptr to user-defined function/operator header ...
     LPMEMTXT_UNION lpMemTxtLine;            // Ptr to header/line text global memory
-    FHLOCALVARS    fhLocalVars = {0};       // Re-entrant vars
-    HGLOBAL        hGlbPTD,                 // PerTabData global memory handle
-                   hGlbOldDfn = NULL;       // Old Dfn global memory handle
+    FHLOCALVARS    fhLocalVars = {0};       // Function Header local vars
+    HGLOBAL        hGlbOldDfn = NULL;       // Old Dfn global memory handle
     LPPERTABDATA   lpMemPTD;                // Ptr to PerTabData global memory
     WCHAR          wszTemp[1024];           // Save area for error message text
     MEMVIRTSTR     lclMemVirtStr[1] = {0};  // Room for one GuardAlloc
@@ -1044,18 +1043,12 @@ UBOOL SaveFunctionCom
 
     Assert ((hWndFE EQ NULL) ? TRUE : IzitFE (hWndFE));
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Save the ptr to the next token on the CS stack
     //   as our beginning
     lptkCSBeg = lpMemPTD->lptkCSNxt;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the handle to the Edit Ctrl
     if (hWndFE)
@@ -1066,7 +1059,7 @@ UBOOL SaveFunctionCom
 
     // Allocate space for the text
     //   (the "sizeof (uLineLen)" is for the leading line length
-    //    and the " + 1" is for the terminating zero)
+    //    and the "+ 1" is for the terminating zero)
     // Note, we can't use DbgGlobalAlloc here as we
     //   might have been called from the Master Frame
     //   via a system command, in which case there is
@@ -1127,9 +1120,6 @@ UBOOL SaveFunctionCom
 
         if (hWndFE)
         {
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // Format the error message
             wsprintfW (wszTemp,
                        ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
@@ -1139,8 +1129,6 @@ UBOOL SaveFunctionCom
                         wszTemp,
                         lpwszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
         } else
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
                                        lpSF_Fcns->lptkFunc);
@@ -1225,14 +1213,8 @@ UBOOL SaveFunctionCom
             // Clear the ptr type bits
             hGlbOldDfn = ClrPtrTypeDirAsGlb (hGlbOldDfn);
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // Get a ptr to the current SI stack
             lpSISCur = lpMemPTD->lpSISCur;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Check for already on the SI stack
             for (;
@@ -1516,9 +1498,6 @@ UBOOL SaveFunctionCom
             {
                 if (hWndFE)
                 {
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
                     // Format the error message
                     wsprintfW (wszTemp,
                                L"SYNTAX ERROR on line # %d, position %d -- function not saved",
@@ -1529,8 +1508,6 @@ UBOOL SaveFunctionCom
                                 wszTemp,
                                 lpwszAppName,
                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
                 } else
                     // Save the line # in error (origin-0)
                     lpSF_Fcns->uErrLine = uLineNum + 1;
@@ -1548,7 +1525,7 @@ UBOOL SaveFunctionCom
 
         // Fill in the CS local vars struc
         csLocalVars.hWndEC      = hWndEC;
-        csLocalVars.hGlbPTD     = hGlbPTD;
+        csLocalVars.lpMemPTD    = lpMemPTD;
         csLocalVars.lptkCSBeg   =
         csLocalVars.lptkCSNxt   = lptkCSBeg;
         csLocalVars.lptkCSLink  = NULL;
@@ -1560,18 +1537,12 @@ UBOOL SaveFunctionCom
         {
             if (hWndFE)
             {
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
                 // Format the error message
                 wsprintfW (wszTemp,
                            L"SYNTAX ERROR on line # %d, statement #%d, position %d -- function not saved",
                            csLocalVars.tkCSErr.tkData.uLineNum,
                            csLocalVars.tkCSErr.tkData.uStmtNum + 1,
                            lpMemPTD->uCaret);
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
                 // Display the error message
                 MessageBoxW (hWndEC,
                             wszTemp,
@@ -1699,14 +1670,8 @@ ERROR_EXIT:
         MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
     } // End IF
 NORMAL_EXIT:
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // If we allocated virtual storage, ...
     if (lclMemVirtStr[0].IniAddr)

@@ -90,7 +90,7 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 30:  Strand stack start (static) (8 bytes)
                  lpYYStrandBase [STRAND_LEN],   // 38:  ...          base (dynamic) ...
                  lpYYStrandNext [STRAND_LEN];   // 40:  ...          next token (dynamic)
-    HGLOBAL      hGlbPTD;           // 48:  Handle to PerTabData
+    struct tagPERTABDATA *lpMemPTD; // 48:  Ptr to PerTabData global memory
     HWND         hWndSM;            // 50:  Window handle to Session Manager
     LPPL_YYSTYPE lpYYStr,           // 54:  Ptr to PL_YYSTYPE strand
                  lpYYStrL,          // 58:  ...               left strand

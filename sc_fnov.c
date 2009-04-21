@@ -151,7 +151,6 @@ UBOOL CmdFNOV_EM
      UBOOL   bNMS)                  // TRUE iff the command is )NMS
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
@@ -165,11 +164,8 @@ UBOOL CmdFNOV_EM
                  uMaxNameLen = 0;   // Length of longest name
     UBOOL        bLineCont;         // TRUE iff this line is a continuation
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
@@ -215,9 +211,6 @@ UBOOL CmdFNOV_EM
         // Count in another matching name
         uSymCnt++;
     } // End FOR/IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Sort the HGLOBALs
     ShellSort (lpSymSort, uSymCnt, CmpLPSYMENTRY);

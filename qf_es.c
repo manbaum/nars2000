@@ -124,7 +124,6 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                  aplLongestRht2;    // ...                             2nd
     HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
     LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
 
@@ -156,11 +155,8 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
         lpYYRes = MakeNoValue_YY (lptkFunc);
     else
     {
-        // Get the thread's PerTabData global memory handle
-        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Get ptr to PerTabData global memory
+        lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Get right arg's global ptrs
         aplLongestRht1 = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -361,9 +357,6 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
 
         // Set the reset flag
         lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
 
     goto NORMAL_EXIT;

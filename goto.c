@@ -47,8 +47,7 @@ EXIT_TYPES GotoLine_EM
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL        hGlbPTD,         // PerTabData global memory handle
-                   hGlbTknLine;     // Tokenized line global memory handle
+    HGLOBAL        hGlbTknLine;     // Tokenized line global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
     EXIT_TYPES     exitType;        // Return value
     APLSTYPE       aplTypeRht;      // Right arg storage type
@@ -65,11 +64,8 @@ EXIT_TYPES GotoLine_EM
     TOKEN          tkNxt;           // Token of next stmt
     UINT           uTknNum = 0;     // Starting token #
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -297,9 +293,6 @@ ERROR_EXIT:
     // Mark as in error
     exitType = EXITTYPE_ERROR;
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return exitType;
 } // End GotoLine_EM
 #undef  APPEND_NAME

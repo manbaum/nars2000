@@ -280,8 +280,7 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
     APLNELM      aplNELMRht;        // Right arg NELM
     APLUINT      ByteRes;           // # bytes in the result
     LPVOID       lpMemRes;          // Ptr to result global memory
-    HGLOBAL      hGlbPTD,           // PerTabData global memory handle
-                 hGlbRes,           // Result     ...
+    HGLOBAL      hGlbRes,           // Result     ...
                  hGlbMF;            // Magic function ...
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
@@ -331,17 +330,11 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
         goto YYALLOC_EXIT;
     } else
     {
-        // Get the PerTabData global memory handle
-        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Get ptr to PerTabData global memory
+        lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Get the magic function global memory handle
         hGlbMF = lpMemPTD->hGlbMF_MonIota;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         //  Return the matrix of indices
         //  Use an internal magic function.
@@ -468,21 +461,14 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     // Check for extended dyadic iota
     if (IsMultiRank (aplRankLft))
     {
-        HGLOBAL      hGlbPTD,           // PerTabData global memory handle
-                     hGlbMF;            // Magic function global memory handle
+        HGLOBAL      hGlbMF;            // Magic function global memory handle
         LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
-        // Get the PerTabData global memory handle
-        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Get ptr to PerTabData global memory
+        lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Get the magic function global memory handle
         hGlbMF = lpMemPTD->hGlbMF_DydIota;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         //  Extend to aplRankLft > 1 args by returning
         //    an array of index vectors where the length

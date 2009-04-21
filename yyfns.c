@@ -47,7 +47,6 @@ LPPL_YYSTYPE _YYAlloc
 
 {
     UINT         u;             // Loop counter
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;// Ptr to the result
 
@@ -55,11 +54,8 @@ LPPL_YYSTYPE _YYAlloc
     static UINT YYIndex = 0;
 #endif
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Search for an empty YYRes slot,
     //   zero it,
@@ -109,9 +105,6 @@ LPPL_YYSTYPE _YYAlloc
     lpYYRes->YYIndex = ++YYIndex;
 #endif
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lpYYRes;
 } // End _YYAlloc
 #undef  APPEND_NAME
@@ -186,21 +179,14 @@ void YYFree
 {
 #ifdef DEBUG
     UINT         u;             // Index into lpMemPTD->YYRes
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     u = (APLU3264) (lpYYRes - lpMemPTD->lpYYRes);
     Assert (u < lpMemPTD->numYYRes);
     Assert (lpYYRes->YYInuse);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
     ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 } // End YYFree
@@ -218,17 +204,13 @@ UBOOL YYResIsEmpty
 
 {
     UINT         u;             // Loop counter
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     UBOOL        bRet = TRUE;   // TRUE iff result is valid
 
     CheckMemStat ();
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Loop through the YYRes entries looking for
     //   entries in use at this SI Level
@@ -253,9 +235,6 @@ UBOOL YYResIsEmpty
 
         break;
     } // End FOR/IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End YYResIsEmpty
@@ -731,26 +710,17 @@ UBOOL YYCheckInuse
     (LPPL_YYSTYPE lpYYRes)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    UBOOL        bRet;          // Return value
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // If it's within the allocated range, ...
     if (lpMemPTD->lpYYRes <= lpYYRes
      &&                      lpYYRes < &lpMemPTD->lpYYRes[lpMemPTD->numYYRes])
-        bRet = lpYYRes->YYInuse;
+        return lpYYRes->YYInuse;
     else
-        bRet = TRUE;
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return bRet;
+        return TRUE;
 } // End YYCheckInuse
 #endif
 

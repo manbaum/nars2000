@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -352,15 +352,11 @@ LPPL_YYSTYPE SysFnMonMF_Numeric_EM
     LPPL_YYSTYPE  lpYYRes = NULL;           // Ptr to the result
     APLINT        aplIntegerRes;            // Result as an immediate integer
     APLFLOAT      aplFloatRes;              // ...                    float
-    HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
     LARGE_INTEGER aplTicksPerSec;           // # ticks per second
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Split cases based upon the numeric value
     switch (aplIntegerRht)
@@ -443,9 +439,6 @@ DOMAIN_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lpYYRes;
 } // End SysFnMonMF_Numeric_EM
 #undef  APPEND_NAME
@@ -907,14 +900,10 @@ void GetPerformanceCount
     (LARGE_INTEGER *lpaplTickCnt)           // Ptr to current tick count
 
 {
-    HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Split cases based upon the timer source
     switch (lpMemPTD->uQuadMF)
@@ -934,9 +923,6 @@ void GetPerformanceCount
         defstop
             break;
     } // End SWITCH
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End GetPerformanceCount
 
 

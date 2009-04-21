@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,6 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
     APLLONGEST   aplLongestRht;     // Right arg longest if immediate
     HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
     LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
 
@@ -115,11 +114,8 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
         lpYYRes = MakeNoValue_YY (lptkFunc);
     else
     {
-        // Get the thread's PerTabData global memory handle
-        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Get ptr to PerTabData global memory
+        lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Get right arg's global ptrs
         aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -147,9 +143,6 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
 
         // Set the reset flag
         lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
 
     goto NORMAL_EXIT;

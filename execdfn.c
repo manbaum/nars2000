@@ -46,11 +46,11 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
 
     // Execute the user-defined function/operator on the arg using the []PROTOTYPE entry point
     return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbProto),// User-defined function/operator global memory handle
-                             lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
-              (LPPL_YYSTYPE) lptkFcnStr,                    // Ptr to function strand
-                             NULL,                          // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                             lptkRhtArg,                    // Ptr to right arg token
-                             LINENUM_PROTOTYPE);            // Starting line # (see LINE_NUMS)
+                             lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+              (LPPL_YYSTYPE) lptkFcnStr,            // Ptr to function strand
+                             NULL,                  // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                             lptkRhtArg,            // Ptr to right arg token
+                             LINENUM_PROTOTYPE);    // Starting line # (see LINE_NUMS)
 } // End ExecDfnGlbProto_EM_YY
 
 
@@ -146,7 +146,6 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  aplRankRht;        // Right ...
     LPSYMENTRY   lpSymLftFcn = NULL,// Ptr to original tkSym in the named left operand
                  lpSymRhtFcn = NULL;// ...                                right ...
-    HGLOBAL      hGlbPTD = NULL;    // PerTabData global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYFcnTmpLft,     // Ptr to temp left operand function strand (may be NULL if not an operator)
                  lpYYFcnTmpRht;     // Ptr to temp right operand function strand (may be NULL if monadic operator or not an operator)
@@ -163,11 +162,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     UBOOL        bOldExecuting;     // Old value of bExecuting
     HWND         hWndEC;            // Edit Ctrl window handle
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the Edit Ctrl window handle
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
@@ -413,16 +409,14 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     InitVarSTEs (lptkRhtTmp,
                  lpMemDfnHdr->numRhtArgSTE,
                  (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE));
-    // We no longer need these ptrs
+    // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Execute the user-defined function/operator
     lpYYRes =
       ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
 
     // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
     // If we incremented the RefCnt for the right operand,
@@ -494,19 +488,13 @@ NORMAL_EXIT:
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
 
-    // Restore the previous cursor
-    SendCursorMsg (hWndEC);
+        // Restore the previous cursor
+        SendCursorMsg (hWndEC);
 
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-    } // End IF
-
-    if (hGlbPTD && lpMemPTD)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
 
     // Restore named left operand tkSym
@@ -619,20 +607,18 @@ void _CheckSymEntries
      UINT    uLineNum)              // Caller's line #
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
     LPSYMENTRY   lpSymEntryNxt;     // Ptr to next localized LPSYMENTRY on the SIS
     UINT         numSymEntries,     // # LPSYMENTRYs localized
                  numSym;            // Loop counter
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); // Assert (hGlbPTD NE NULL);
-    if (hGlbPTD EQ NULL)
-        return;
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // If lpMemPTD isn't set, just exit
+    if (lpMemPTD EQ NULL)
+        return;
 
     // Get a ptr to the current SIS header
     lpSISCur = lpMemPTD->lpSISCur;
@@ -680,9 +666,6 @@ void _CheckSymEntries
         // Get a ptr to the previous (if any) entry
         lpSISCur = lpSISCur->lpSISPrv;
     } // End WHILE
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End _CheckSymEntries
 
 
@@ -707,8 +690,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header
     HGLOBAL        hGlbDfnHdr,      // User-defined function/operator global memory handle
                    hGlbTxtLine,     // Line text global memory handle
-                   hGlbTknLine,     // Tokenized line global memory handle
-                   hGlbPTD;         // PerTabData global memory handle
+                   hGlbTknLine;     // Tokenized line global memory handle
     LPPERTABDATA   lpMemPTD = NULL; // Ptr to PerTabData global memory
     LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
     HWND           hWndSM;          // Session Manager window handle
@@ -723,11 +705,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     EXIT_TYPES     exitType;        // Return code from ParseLine
     LPTOKEN_HEADER lpMemTknLine;    // Ptr to tokenized line global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the user-defined function/operator header global memory handle
     hGlbDfnHdr = lpMemPTD->lpSISCur->hGlbDfnHdr;
@@ -807,9 +786,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         if (lpMemDfnHdr->MonOn)
             StartStopMonInfo (lpMemDfnHdr, uLineNum, TRUE);
 
-        // We no longer need these ptrs
+        // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Execute the line
         exitType =
@@ -817,15 +795,12 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                      hGlbTknLine,           // Tokenized line global memory handle
                      hGlbTxtLine,           // Text      ...
                      NULL,                  // Ptr to line text global memory
-                     hGlbPTD,               // PerTabData global memory handle
+                     lpMemPTD,              // Ptr to PerTabData global memory
                      uLineNum,              // Function line # (1 for execute or immexec)
                      uTknNum,               // Starting token # in the above function line
                      hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
                      TRUE,                  // TRUE iff errors are acted upon
                      FALSE);                // TRUE iff executing only one stmt
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
@@ -874,9 +849,6 @@ RESTART_AFTER_ERROR:
 
             // Display the default prompt
             DisplayPrompt (hWndEC, 2);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #ifdef DEBUG
             dprintfW (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
 #endif
@@ -886,9 +858,6 @@ RESTART_AFTER_ERROR:
 #ifdef DEBUG
             dprintfW (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
 #endif
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // Get the exit type from the semaphore restart
             exitType = lpMemPTD->ImmExecExitType;
         } // End IF
@@ -962,7 +931,7 @@ NEXTLINE:
                              hGlbTkn,                   // Tokenized line global memory handle
                              lpMemDfnHdr->hGlbTxtHdr,   // Text      ...
                              NULL,                      // Ptr to line text global memory
-                             hGlbPTD,                   // PerTabData global memory handle
+                             lpMemPTD,                  // Ptr to PerTabData global memory
                              1,                         // Function line # (1 for execute or immexec)
                              0,                         // Starting token # in the above function line
                              hGlbDfnHdr,                // User-defined function/operator global memory handle (NULL = execute/immexec)
@@ -1141,9 +1110,8 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    // We no longer need these ptrs
+    // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpYYRes;
 } // End ExecuteFunction_EM_YY
@@ -1352,8 +1320,7 @@ void UnlocalizeSTEs
     (void)
 
 {
-    HGLOBAL      hGlbPTD,           // PerTabData global memory handle
-                 hGlbData;          // STE global memory handle
+    HGLOBAL      hGlbData;          // STE global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     UINT         numSymEntries,     // # LPSYMENTRYs localized
                  numSym;            // Loop counter
@@ -1362,11 +1329,8 @@ void UnlocalizeSTEs
     LPFORSTMT    lpForStmtNext;     // Ptr to next entry on the FOR/FORLCL stmt stack
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS level
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // If the SI is non-empty, ...
     if (lpMemPTD->SILevel)
@@ -1489,9 +1453,6 @@ void UnlocalizeSTEs
         // Back off the SI Level
         lpMemPTD->SILevel--;
     } // End IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End UnlocalizeSTEs
 
 

@@ -46,15 +46,11 @@ void BreakMessage
     APLNELM      aplNELMRes;    // Length of function name[line #]
     APLUINT      ByteRes;       // # bytes in the result
     LPAPLCHAR    lpMemRes;      // Ptr to result global memory
-    HGLOBAL      hGlbRes,       // Result global memory handle
-                 hGlbPTD;       // PerTabData global memory handle
+    HGLOBAL      hGlbRes;       // Result global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Mark as suspended
     lpMemPTD->lpSISCur->Suspended = TRUE;
@@ -118,9 +114,6 @@ void BreakMessage
 
     // Save the new value in the STE
     lpMemPTD->hGlbQuadDM = hGlbRes;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End BreakMessage
 #undef  APPEND_NAME
 
@@ -148,7 +141,6 @@ void ErrorMessageDirect
     APLUINT       ByteRes;      // # bytes in the result
     HGLOBAL       hGlbRes;      // Result global memory handle
     LPAPLCHAR     lpMemRes;     // Ptr to result global memory
-    HGLOBAL       hGlbPTD;      // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory
     LPSIS_HEADER  lpSISCur;     // Ptr to current SIS header
     UINT          uErrMsgLen,   // Error message length
@@ -161,11 +153,8 @@ void ErrorMessageDirect
 
 #define ERROR_CARET     UTF16_UPCARET   // UTF16_CIRCUMFLEX
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to current SI stack
     lpSISCur = lpMemPTD->lpSISCur;
@@ -438,9 +427,6 @@ void ErrorMessageDirect
         // We no longer need this ptr
         MyGlobalUnlock (GlobalHandle (lpMemTxtLine));
     } // End IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End ErrorMessageDirect
 #undef  ERROR_CARET
 #undef  APPEND_NAME
@@ -456,20 +442,13 @@ void ErrorMessageIndirect
     (LPWCHAR lpwszMsg)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Save in global for later reference
     lpMemPTD->lpwszErrorMessage = lpwszMsg;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End ErrorMessageIndirect
 
 

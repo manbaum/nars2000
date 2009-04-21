@@ -47,7 +47,6 @@ LPPL_YYSTYPE SysFnEM_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
     HGLOBAL      hGlbRes = NULL;    // Result ...
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // This function is niladic
@@ -56,11 +55,8 @@ LPPL_YYSTYPE SysFnEM_EM_YY
     // Niladic functions cannot have axis operator
     Assert (lptkAxis EQ NULL);
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to current SIS header
     lpSISCur = lpMemPTD->lpSISCur;

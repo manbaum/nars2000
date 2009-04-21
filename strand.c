@@ -1425,24 +1425,17 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     if (bSaveTxtLine)
     {
-        HGLOBAL        hGlbPTD;         // PerTabData global memory handle
         LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
         UINT           uLineLen;        // Line length
         LPMEMTXT_UNION lpMemTxtLine;    // Ptr to line text global memory
         LPAPLCHAR      lpMemTxtSrc,     // Ptr to start of WCHARs
                        lpMemTxtEnd;     // ...    end   ...
 
-        // Get the PerTabData global memory handle
-        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Get ptr to PerTabData global memory
+        lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Use a temp var
         lpMemTxtSrc = lpMemPTD->lpwszTemp;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Convert the tokens to WCHARs
         lpMemTxtEnd =

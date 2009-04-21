@@ -86,7 +86,6 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     HGLOBAL      hGlbRes = NULL;    // Result global memory handle
     LPVOID       lpMemRes = NULL;   // Ptr to result global memory
@@ -103,17 +102,11 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
     SF_FCNS      SF_Fcns = {0};     // Common struc for SaveFunctionCom
     FX_PARAMS    FX_Params = {0};   // Local struc for  ...
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // In case we're called by )IN, zap the error line #
     lpMemPTD->uErrLine = NEG1U;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -355,14 +348,8 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         lpYYRes->tkToken.tkData.tkInteger  = GetQuadIO () + SF_Fcns.uErrLine;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
         // In case we're called by )IN, save the error line # for later use
         lpMemPTD->uErrLine = SF_Fcns.uErrLine;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
 
     goto NORMAL_EXIT;

@@ -595,7 +595,7 @@ int TranslateTabIDToIndex
     // Get the # tabs
     iTabCount = TabCtrl_GetItemCount (hWndTC);
 
-    // Loop through each tab looking for a match between the hGlbPTD
+    // Loop through each tab looking for a match between the lpMemPTD
     while (--iTabCount >= 0)
     if (iTabID EQ TranslateTabIndexToID (iTabCount))
         return iTabCount;
@@ -616,27 +616,17 @@ int TranslateTabIndexToID
     (int iTabIndex)
 
 {
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    int          iTabID;                // The result
 
-    // Get the matching PerTabHandle
-    hGlbPTD = GetPerTabHandle (iTabIndex);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetPerTabPtr (iTabIndex); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // If the incoming index is invalid or there's no hGlbPTD, ...
-    if (iTabIndex EQ -1 || hGlbPTD EQ NULL)
+    // If the incoming index is invalid or there's no lpMemPTD, ...
+    if (iTabIndex EQ -1 || !IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
         return -1;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the matching tab ID
-    iTabID = lpMemPTD->CurTabID;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return iTabID;
+    // Return the matching tab ID
+    return lpMemPTD->CurTabID;
 } // End TranslateTabIndexToID
 
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,7 +46,6 @@ LPPL_YYSTYPE SysFnDM_EM_YY
 {
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
     HGLOBAL      hGlbRes;       // Result global memory handle
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // This function is niladic
@@ -59,17 +58,11 @@ LPPL_YYSTYPE SysFnDM_EM_YY
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the global memory handle for quad-DM
     hGlbRes = CopySymGlbDir (MakePtrTypeGlb (lpMemPTD->hGlbQuadDM));
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Allocate a YYRes
     lpYYRes = YYAlloc ();

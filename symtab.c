@@ -525,7 +525,7 @@ UBOOL SymTabResize_EM
     (LPHSHTABSTR lpHTS)                 // Ptr to HshTab struc
 
 {
-    LPSYMENTRY   lpSymTabNew;
+    LPSYMENTRY   lpSymTabNew;           // Ptr to the re-allocated Symbol Table
     int          iResize,               // Resize value (in # STEs)
                  i,                     // Loop counter
                  iSymTabNewNelm;        // New # STEs in SymTab
@@ -1422,15 +1422,11 @@ LPSYMENTRY SymTabLookupChar
     STFLAGS      stMaskFlags = {0};
     UINT         uHashMasked;
     LPSYMENTRY   lpSymEntry = NULL;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
@@ -1479,9 +1475,6 @@ LPSYMENTRY SymTabLookupChar
         lpHTS = lpHTS->lpHshTabPrv;
     } // End WHILE
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lpSymEntry;
 } // End SymTabLookupChar
 
@@ -1502,24 +1495,20 @@ LPSYMENTRY SymTabLookupNumber
     STFLAGS      stMaskFlags = {0};
     UINT         uHashMasked;
     LPSYMENTRY   lpSymEntry = NULL;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
 
     // Set mask flags
     stMaskFlags.Imm   =
-    stMaskFlags.Perm  =
-    stMaskFlags.Value =
-    stMaskFlags.Inuse = TRUE;
+    stMaskFlags.Perm    =
+    stMaskFlags.Value   =
+    stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
 
     // Save common value
@@ -1562,9 +1551,6 @@ LPSYMENTRY SymTabLookupNumber
         lpHTS = lpHTS->lpHshTabPrv;
     } // End WHILE
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lpSymEntry;
 } // End SymTabLookupNumber
 
@@ -1585,24 +1571,20 @@ LPSYMENTRY SymTabLookupFloat
     STFLAGS      stMaskFlags = {0};
     UINT         uHashMasked;
     LPSYMENTRY   lpSymEntry = NULL;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
 
     // Set mask flags
     stMaskFlags.Imm   =
-    stMaskFlags.Perm  =
-    stMaskFlags.Value =
-    stMaskFlags.Inuse = TRUE;
+    stMaskFlags.Perm    =
+    stMaskFlags.Value   =
+    stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
 
     // Save common value
@@ -1641,9 +1623,6 @@ LPSYMENTRY SymTabLookupFloat
         // Search through the previous HshTab
         lpHTS = lpHTS->lpHshTabPrv;
     } // End WHILE
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpSymEntry;
 } // End SymTabLookupFloat
@@ -1731,17 +1710,13 @@ LPSYMENTRY SymTabLookupNameLength
     STFLAGS      stMaskFlags = {0};
     UINT         uHash;
     LPSYMENTRY   lpSymEntry = NULL;
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        sysName[32];       // Temp storage for sysnames in lowercase
     LPWCHAR      lpwszName;         // Ptr to name
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
@@ -1851,9 +1826,6 @@ LPSYMENTRY SymTabLookupNameLength
         lpHTS = lpHTS->lpHshTabPrv;
     } // End WHILE
 ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lpSymEntry;
 } // End SymTabLookupNameLength
 
@@ -2023,7 +1995,7 @@ LPSYMENTRY CopyImmSymEntry_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendInteger_EM
-    (APLINT aplInteger)
+    (APLINT aplInteger)             // The integer to append
 
 {
     return SymTabAppendIntegerCommon_EM (aplInteger, FALSE);
@@ -2037,7 +2009,7 @@ LPSYMENTRY SymTabAppendInteger_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendPermInteger_EM
-    (APLINT aplInteger)
+    (APLINT aplInteger)             // The integer to append
 
 {
     return SymTabAppendIntegerCommon_EM (aplInteger, TRUE);
@@ -2051,23 +2023,19 @@ LPSYMENTRY SymTabAppendPermInteger_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendIntegerCommon_EM
-    (APLINT aplInteger,
-     UBOOL  bPerm)
+    (APLINT aplInteger,             // The integer to append
+     UBOOL  bPerm)                  // TRUE iff this STE is permanent
 
 {
-    LPSYMENTRY   lpSymEntryDest;    // Ptr to dest SYMENTRY
-    LPHSHENTRY   lpHshEntryDest;    // Ptr to dest HSHENTRY
-    UINT         uHash;             // The hased value
+    LPSYMENTRY   lpSymEntryDest;    // Ptr to destin STE
+    LPHSHENTRY   lpHshEntryDest;    // Ptr to destin HTE
+    UINT         uHash;             // The hash of the value to append
     STFLAGS      stNeedFlags = {0}; // The flags we require
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
@@ -2163,9 +2131,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     Assert (HshTabFrisk (lpHTS));
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lpSymEntryDest;
 } // End SymTabAppendIntegerCommon_EM
 
@@ -2177,7 +2142,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendFloat_EM
-    (APLFLOAT aplFloat)
+    (APLFLOAT aplFloat)             // The float to append
 
 {
     return SymTabAppendFloatCommon_EM (aplFloat, FALSE);
@@ -2191,7 +2156,7 @@ LPSYMENTRY SymTabAppendFloat_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendPermFloat_EM
-    (APLFLOAT aplFloat)
+    (APLFLOAT aplFloat)             // The float to append
 
 {
     return SymTabAppendFloatCommon_EM (aplFloat, TRUE);
@@ -2205,23 +2170,19 @@ LPSYMENTRY SymTabAppendPermFloat_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendFloatCommon_EM
-    (APLFLOAT aplFloat,
-     UBOOL    bPerm)
+    (APLFLOAT aplFloat,             // The float to append
+     UBOOL    bPerm)                // TRUE iff this STE is permanent
 
 {
-    LPSYMENTRY   lpSymEntryDest;
-    LPHSHENTRY   lpHshEntryDest;
-    UINT         uHash;
-    STFLAGS      stFlags = {0};
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPSYMENTRY   lpSymEntryDest;    // Ptr to destin STE
+    LPHSHENTRY   lpHshEntryDest;    // Ptr to destin HTE
+    UINT         uHash;             // The hash of the value to append
+    STFLAGS      stNeedFlags = {0}; // The flags we require
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
@@ -2232,14 +2193,14 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
              sizeof (aplFloat),             // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    stFlags.Perm    = bPerm;
-    stFlags.Imm     =
-    stFlags.Value   =
-    stFlags.Inuse   = TRUE;
-    stFlags.ImmType = IMMTYPE_FLOAT;
+    stNeedFlags.Perm    = bPerm;
+    stNeedFlags.Imm     =
+    stNeedFlags.Value   =
+    stNeedFlags.Inuse   = TRUE;
+    stNeedFlags.ImmType = IMMTYPE_FLOAT;
 
     // Lookup the number in the symbol table
-    lpSymEntryDest = SymTabLookupFloat (uHash, aplFloat, &stFlags);
+    lpSymEntryDest = SymTabLookupFloat (uHash, aplFloat, &stNeedFlags);
     if (!lpSymEntryDest)
     {
         LPHSHENTRY lpHshEntryHash;
@@ -2275,8 +2236,8 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
         lpSymEntryDest->stData.stFloat = aplFloat;
 
         // Save the symbol table flags
-        stFlags.Perm = bPerm;
-        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
+        stNeedFlags.Perm = bPerm;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stNeedFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
@@ -2297,9 +2258,6 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
 ERROR_EXIT:
     Assert (HshTabFrisk (lpHTS));
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lpSymEntryDest;
 } // End SymTabAppendFloatCommon_EM
 
@@ -2311,7 +2269,7 @@ ERROR_EXIT:
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendChar_EM
-    (APLCHAR aplChar)
+    (APLCHAR aplChar)               // The char to append
 
 {
     return SymTabAppendCharCommon_EM (aplChar, FALSE);
@@ -2325,7 +2283,7 @@ LPSYMENTRY SymTabAppendChar_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendPermChar_EM
-    (APLCHAR aplChar)
+    (APLCHAR aplChar)               // The char to append
 
 {
     return SymTabAppendCharCommon_EM (aplChar, TRUE);
@@ -2339,23 +2297,19 @@ LPSYMENTRY SymTabAppendPermChar_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendCharCommon_EM
-    (APLCHAR aplChar,
-     UBOOL   bPerm)
+    (APLCHAR aplChar,               // The char to append
+     UBOOL   bPerm)                 // TRUE iff this STE is permanent
 
 {
-    LPSYMENTRY   lpSymEntryDest;
-    LPHSHENTRY   lpHshEntryDest;
-    UINT         uHash;
-    STFLAGS      stFlags = {0};
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPSYMENTRY   lpSymEntryDest;    // Ptr to destin STE
+    LPHSHENTRY   lpHshEntryDest;    // Ptr to destin HTE
+    UINT         uHash;             // The hash of the value to append
+    STFLAGS      stNeedFlags = {0}; // The flags we require
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
@@ -2366,14 +2320,14 @@ LPSYMENTRY SymTabAppendCharCommon_EM
              sizeof (aplChar),              // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    stFlags.Perm    = bPerm;
-    stFlags.Imm     =
-    stFlags.Value   =
-    stFlags.Inuse   = TRUE;
-    stFlags.ImmType = IMMTYPE_CHAR;
+    stNeedFlags.Perm    = bPerm;
+    stNeedFlags.Imm     =
+    stNeedFlags.Value   =
+    stNeedFlags.Inuse   = TRUE;
+    stNeedFlags.ImmType = IMMTYPE_CHAR;
 
     // Lookup the char in the symbol table
-    lpSymEntryDest = SymTabLookupChar (uHash, aplChar, &stFlags);
+    lpSymEntryDest = SymTabLookupChar (uHash, aplChar, &stNeedFlags);
     if (!lpSymEntryDest)
     {
         LPHSHENTRY lpHshEntryHash;
@@ -2409,8 +2363,8 @@ LPSYMENTRY SymTabAppendCharCommon_EM
         lpSymEntryDest->stData.stChar = aplChar;
 
         // Save the symbol table flags
-        stFlags.Perm = bPerm;
-        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
+        stNeedFlags.Perm = bPerm;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stNeedFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
@@ -2430,9 +2384,6 @@ LPSYMENTRY SymTabAppendCharCommon_EM
     } // End IF
 ERROR_EXIT:
     Assert (HshTabFrisk (lpHTS));
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpSymEntryDest;
 } // End SymTabAppendCharCommon_EM
@@ -2516,15 +2467,11 @@ LPSYMENTRY SymTabAppendNewName_EM
     LPSYMENTRY   lpSymEntryDest = NULL;
     LPHSHENTRY   lpHshEntryDest,
                  lpHshEntryHash;
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
@@ -2568,7 +2515,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
     Assert (lpHshEntryHash->htFlags.PrinHash);
 
-    // Allocate global memory for the name ("+1" for the terminating zero)
+    // Allocate global memory for the name (" + 1" for the terminating zero)
     lpHshEntryDest->htGlbName = DbgGlobalAlloc (GHND, (iLen + 1) * sizeof (WCHAR));
     if (!lpHshEntryDest->htGlbName)
         goto WSFULL_EXIT;
@@ -2614,9 +2561,6 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lpSymEntryDest;
 } // End SymTabAppendNewName_EM
 #undef  APPEND_NAME
@@ -2716,7 +2660,7 @@ UBOOL AllocHshTab
 
 UBOOL AllocSymTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr
-     HGLOBAL      hGlbPTD,          // PerTabData global memory handle
+     LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
      LPHSHTABSTR  lpHTS,            // Ptr to HshTab Struc
      UBOOL        bInitSTEs,        // TRUE iff we shoudl initialize STEs
      UINT         uSymTabInitNelm,  // Initial # STEs in SymTab
@@ -2724,8 +2668,7 @@ UBOOL AllocSymTab
      UINT         uSymTabMaxNelm)   // Maximum # STEs
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    UBOOL        bRet = TRUE;       // TRUE iff the result is valid
+    UBOOL bRet = TRUE;              // TRUE iff the result is valid
 
     // Validate the incoming constants
 
@@ -2767,9 +2710,6 @@ UBOOL AllocSymTab
     // If we should initialize the STEs, ...
     if (bInitSTEs)
     {
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
         // Initialize the Symbol Table Entry for the constants zero, one, blank, and No Value
         lpMemPTD->steZero    = SymTabAppendPermInteger_EM (0);
         lpMemPTD->steOne     = SymTabAppendPermInteger_EM (1);
@@ -2792,9 +2732,6 @@ UBOOL AllocSymTab
 
             Assert (IsSymNoValue (lpMemPTD->steNoValue));
         } // End IF
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
 
     return bRet;

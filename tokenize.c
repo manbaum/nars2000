@@ -766,7 +766,6 @@ UBOOL fnAlpha
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet;                  // TRUE iff result is valid
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
@@ -775,11 +774,8 @@ UBOOL fnAlpha
     DbgMsgW (L"fnAlpha");
 #endif
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Check for need to resize hGlbStr
     bRet = CheckResizeStr_EM (lptkLocalVars);
@@ -968,9 +964,6 @@ NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
 ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return bRet;
 } // End fnAlpha
 #undef  APPEND_NAME
@@ -990,7 +983,6 @@ UBOOL fnAlpDone
     UBOOL        bRet = TRUE;           // TRUE iff the result is valid
     APLINT       aplInteger;            // A temporary integer
     TKFLAGS      tkFlags = {0};         // Token flags
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
@@ -998,11 +990,8 @@ UBOOL fnAlpDone
     DbgMsgW (L"fnAlpDone");
 #endif
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
@@ -1064,9 +1053,6 @@ NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return bRet;
 } // End fnAlpDone
 
@@ -1085,7 +1071,6 @@ UBOOL fnDirIdent
     UBOOL        bRet;                  // TRUE iff the result is valid
     APLINT       aplInteger;            // Temporary integer
     TKFLAGS      tkFlags = {0};         // Token flags
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
@@ -1109,11 +1094,8 @@ UBOOL fnDirIdent
         goto NORMAL_EXIT;
     } // End IF
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
@@ -1147,9 +1129,6 @@ UBOOL fnDirIdent
                               -lptkLocalVars->iStrLen);
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
     InitAccumVars (lptkLocalVars);
@@ -1585,7 +1564,6 @@ UBOOL fnPointAcc
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     UBOOL        bRet;          // TRUE iff result is valid
     WCHAR        wchCur;        // The current WCHAR
@@ -1596,11 +1574,8 @@ UBOOL fnPointAcc
 
 ////LCLODS ("fnPointAcc\r\n");
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Check for need to resize hGlbNum
     bRet = CheckResizeNum_EM (lptkLocalVars);
@@ -1621,9 +1596,6 @@ UBOOL fnPointAcc
     // Use subroutine
     bRet = fnPointSub (lptkLocalVars, lpMemPTD, wchCur);
 ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return bRet;
 } // End fnPointAcc
 
@@ -1688,7 +1660,6 @@ UBOOL fnPointDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet,                  // TRUE iff result is valid
                  bMerge;                // TRUE iff we merged with the previous token
@@ -1703,11 +1674,8 @@ UBOOL fnPointDone
 
 ////LCLODS ("fnPointDone\r\n");
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpszNum = MyGlobalLock (lptkLocalVars->hGlbNum);
@@ -1816,9 +1784,6 @@ NORMAL_EXIT:
 
     //  Initialize the accumulation variables for the next constant
     InitAccumVars (lptkLocalVars);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End fnPointDone
@@ -2206,7 +2171,6 @@ UBOOL fnQuoAccumSub
      SCTYPE        scType)              // Syntax Color type (see SCTYPE)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet;                  // TRUE iff result is valid
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
@@ -2215,11 +2179,8 @@ UBOOL fnQuoAccumSub
     DbgMsgW (L"fnQuoAccumSub");
 #endif
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
@@ -2253,9 +2214,6 @@ UBOOL fnQuoAccumSub
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
 ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return bRet;
 } // End fnQuoAccumSub
 #undef  APPEND_NAME
@@ -2309,7 +2267,6 @@ UBOOL fnQuoDoneSub
     HGLOBAL      hGlb;                  // Temporary global memory handle
     TKFLAGS      tkFlags = {0};         // Token flags
     APLINT       aplInteger;            // Temporary integer
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet;                  // TRUE iff result is valid
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
@@ -2318,11 +2275,8 @@ UBOOL fnQuoDoneSub
     DbgMsgW (L"fnQuoDoneSub");
 #endif
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
@@ -2471,9 +2425,6 @@ NORMAL_EXIT:
 
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End fnQuoDoneSub
@@ -3297,7 +3248,6 @@ HGLOBAL Tokenize_EM
     TK_ACTION    fnAction1_EM,      // Ptr to 1st action
                  fnAction2_EM;      // ...    2nd ...
     TKLOCALVARS  tkLocalVars = {0}; // Local vars
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPTOKEN      lptkCSNxt;         // Ptr to next token on the CS stack
 
@@ -3312,8 +3262,8 @@ HGLOBAL Tokenize_EM
     else
         bInUse = TRUE;
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Save local vars in struct which we pass to each FSA action routine
     tkLocalVars.State[2] =
@@ -3322,22 +3272,15 @@ HGLOBAL Tokenize_EM
     tkLocalVars.uLineNum = uLineNum;
     tkLocalVars.uStmtNum = 0;
     tkLocalVars.bMF      = bMF;             // TRUE iff this is a Magic Function
+    tkLocalVars.lpMemPTD = lpMemPTD;        // Ptr to PerTabData global memory
 
     // If this is the function header (uLineNum EQ 0)
     //   save and restore the ptr to the next token
     //   on the CS stack as there are no CSs in the
     //   function header
     if (uLineNum EQ 0)
-    {
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
         // Save the ptr to the next token on the CS stack
         lptkCSNxt = lpMemPTD->lptkCSNxt;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-    } // End IF
 
     // Allocate some memory for the tokens
     // If we need more, we'll GlobalRealloc
@@ -3581,15 +3524,9 @@ NONCE_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Signal an error
     if (lpErrHandFn)
         (*lpErrHandFn) (lpMemPTD->lpwszErrorMessage, lpwszLine, tkLocalVars.uChar, hWndEC);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     if (tkLocalVars.hGlbToken)
     {
@@ -3631,27 +3568,12 @@ FREED_EXIT:
 
     // If this is the function header, ...
     if (uLineNum EQ 0)
-    {
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
         // Restore the ptr to the next token on the CS stack
         lpMemPTD->lptkCSNxt = lptkCSNxt;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-    } // End IF
-
 #ifdef DEBUG
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Ensure numeric length has been reset
     if (tkLocalVars.iNumLen NE 0)
         DbgBrk ();
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
     // Mark as no longer in use
     bInUse = FALSE;
@@ -3714,10 +3636,6 @@ void Untokenize
 {
     LPTOKEN lpToken;
     int     i, iLen;
-    HGLOBAL hGlbPTD;        // PerTabData global memory handle
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     if (hGlbToken && (lpToken = MyGlobalLock (hGlbToken)))
@@ -3843,19 +3761,12 @@ void Untokenize
             defstop
 #ifdef DEBUG
             {
-                LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
                 WCHAR wszTemp[1024];    // Ptr to temporary output area
-
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
 
                 wsprintfW (wszTemp,
                            L"Untokenize:  *** Unknown Token Value:  %d",
                            lpToken->tkFlags.TknType);
                 DbgMsgW (wszTemp);
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             }
 #endif
                 break;
@@ -3866,19 +3777,12 @@ void Untokenize
     } else
     {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-        LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
         WCHAR wszTemp[1024];            // Ptr to temporary output area
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
 
         wsprintfW (wszTemp,
                    L"Untokenize:  hGlobToken (%p) is invalid.",
                    hGlbToken);
         DbgMsgW (wszTemp);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
     } // End IF/ELSE
 } // End Untokenize
@@ -4035,6 +3939,7 @@ UBOOL AppendNewToken_EM
             // Append the NEC token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (TKT_CS_NEC,
+                                 lptkLocalVars->lpMemPTD,
                                  lptkLocalVars->uLineNum,
                                  lptkLocalVars->uStmtNum,
                        (USHORT) (lptkLocalVars->lpNext - lptkLocalVars->lpStart),
@@ -4052,6 +3957,7 @@ UBOOL AppendNewToken_EM
             // Append the EOS token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (lptkFlags->TknType,
+                                 lptkLocalVars->lpMemPTD,
                                  lptkLocalVars->uLineNum,
                                  lptkLocalVars->uStmtNum,
                        (USHORT) (lptkLocalVars->lpNext - lptkLocalVars->lpStart),
@@ -4093,6 +3999,7 @@ UBOOL AppendNewToken_EM
             // Append the Ctrl Struc token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (lptkFlags->TknType,
+                                 lptkLocalVars->lpMemPTD,
                                  lptdAnon->uLineNum,
                                  lptdAnon->uStmtNum,
                                  lptdAnon->uTknNum,
@@ -4124,6 +4031,7 @@ UBOOL AppendNewToken_EM
 
 UBOOL AppendNewCSToken_EM
     (TOKEN_TYPES   TknType,             // CS token type (TKT_CS_xxx)
+     LPPERTABDATA  lpMemPTD,            // Ptr to PerTabData global memory
      USHORT        uLineNum,            // Line #
      USHORT        uStmtNum,            // Stmt #
      USHORT        uTknNum,             // Token #
@@ -4131,15 +4039,7 @@ UBOOL AppendNewCSToken_EM
      UINT          tkCharIndex)         // Index into the input line of this token
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     TOKEN tkCS = {0};                   // Control Structure token
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // If there's a preceding token, ...
     if (lpMemPTD->lptkCSNxt >= &lpMemPTD->lptkCSIni[1])
@@ -4185,9 +4085,6 @@ UBOOL AppendNewCSToken_EM
     // Save the token on the CS stack
     *lpMemPTD->lptkCSNxt++ = tkCS;
 SKIP_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return TRUE;
 } // End AppendNewCSToken_EM
 

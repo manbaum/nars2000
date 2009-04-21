@@ -113,7 +113,6 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
     HGLOBAL           hGlbLft = NULL;   // Left arg global memory handle
     APLLONGEST        aplLongestLft;    // Left arg immediate value
     UBOOL             bRet = TRUE;      // TRUE iff result is valid
-    HGLOBAL           hGlbPTD;          // PerTabData global memory handle
     LPPERTABDATA      lpMemPTD;         // Ptr to PerTabData global memory
     HGLOBAL           hGlbRht = NULL;   // Right arg global memory handle
     LPAPLCHAR         lpMemRht = NULL;  // Ptr to right arg global memory
@@ -169,17 +168,11 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
             break;
     } // End SWITCH
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary format save area
     lpwszTemp = lpMemPTD->lpwszTemp;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -1115,13 +1108,12 @@ UBOOL TransferInverseFcn1_EM
      UBOOL   bSysCmd)                       // TRUE iff called from a system command
 
 {
-////HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
 ////LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
     LPWCHAR       lpwName,                  // Ptr to name portion of array
                   lpwNameEnd = NULL,        // Ptr to end of name
                   lpwData;                  // Ptr to data ...
     WCHAR         wch;                      // Temporary character
-////              lpwszFormat;              // Ptr to format area
+////LPWCHAR       lpwszFormat;              // Ptr to format area
     UBOOL         bRet = FALSE;             // TRUE iff result is valid
     STFLAGS       stFlags;                  // ST flags for name lookup
     LPSYMENTRY    lpSymEntry;               // Ptr to SYMENTRY for name lookup
@@ -1131,17 +1123,11 @@ UBOOL TransferInverseFcn1_EM
 
     Assert (lptkFunc NE NULL);
 
-////// Get the PerTabData global memory handle
-////hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-////
-////// Lock the memory to get a ptr to it
-////lpMemPTD = MyGlobalLock (hGlbPTD);
+////// Get ptr to PerTabData global memory
+////lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 ////
 ////// Get ptr to temporary format save area
 ////lpwszFormat = lpMemPTD->lpwszFormat;
-////
-////// We no longer need this ptr
-////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Point to the name, skipping over the type char
     lpwName = &lpwszTemp[1];

@@ -32,7 +32,7 @@
 //***************************************************************************
 
 void CS_ChangeTokenType
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to PL local vars
+    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc local vars
      LPTOKEN       lptkArg1,            // Ptr to 1st argument
      TOKEN_TYPES   TknType)             // New token type
 
@@ -91,7 +91,7 @@ void CS_ChangeTokenType
 //***************************************************************************
 
 void CS_ChainTokens
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to PL local vars
+    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc local vars
      LPTOKEN_DATA  lptdArg1,            // Ptr to 1st argument TOKEN_DATA
      LPTOKEN       lptkArg2)            // Ptr to 2nd argument TOKEN
 
@@ -162,7 +162,7 @@ void CS_ChainTokens
 //***************************************************************************
 
 void CS_LinkStmt
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to local csLocalVars
+    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc local vars
      LPCS_YYSTYPE  lpYYLval)            // Ptr to yylval
 
 {
@@ -190,7 +190,7 @@ void CS_LinkStmt
 //***************************************************************************
 
 void CS_UnlinkStmt
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to local csLocalVars
+    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc Local vars
      LPCS_YYSTYPE  lpYYLval)            // Ptr to yylval
 
 {
@@ -233,7 +233,7 @@ void CS_SetCLIndex
 //***************************************************************************
 
 void CS_SetTokenCLIndex
-    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to local csLocalVars
+    (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc Local vars
      LPTOKEN_DATA  lptdArg,             // Ptr to arg TOKEN_DATA
      UINT          uCLIndex)            // The CLIndex to use
 
@@ -308,8 +308,8 @@ UBOOL CS_CASE_Stmt
 {
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Copy the result
     lpMemPTD->YYCaseExec = *lpYYRhtArg;
@@ -318,9 +318,6 @@ UBOOL CS_CASE_Stmt
     if (lpMemPTD->YYCaseExec.tkToken.tkFlags.TknType NE TKT_VARIMMED)
         lpMemPTD->YYCaseExec.tkToken.tkData.tkGlbData =
           CopySymGlbDirAsGlb (lpMemPTD->YYCaseExec.tkToken.tkData.tkGlbData);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
     return TRUE;
 } // End CS_CASE_Stmt
@@ -404,16 +401,13 @@ LPFORSTMT FindMatchingForStmt
 {
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPSIS_HEADER lpSISCur;              // Ptr to current SIS header
-    LPFORSTMT lpForStmtNext;            // Ptr to next available entry on FORSTMT stack
+    LPFORSTMT    lpForStmtNext;         // Ptr to next available entry on FORSTMT stack
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Copy ptr to current SI level
     lpSISCur = lpMemPTD->lpSISCur;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
     // Check for uninitialized FORSTMT/FORLCLSTMT stack
     if (lpSISCur->lpForStmtBase EQ lpSISCur->lpForStmtNext)
@@ -494,15 +488,12 @@ void CS_DoneFOR
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPFORSTMT    lpForStmtNext;         // Ptr to next available entry on FORSTMT/FORLCLSTMT stack
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to current entry on FORSTMT/FORLCLSTMT stack
     //   and delete this entry
     lpForStmtNext = --lpMemPTD->lpSISCur->lpForStmtNext;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
     // We're done -- free the global in the token (if any)
     FreeResult (&lpForStmtNext->tkForArr);
@@ -601,15 +592,12 @@ UBOOL CS_FOR_Stmt_EM
         // We're done with this FOR/FORLCL stmt
         CS_DoneFOR (lpplLocalVars, bFORLCL);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Save ptr to next available entry on FORSTMT/FORLCLSTMT stack
     //   and skip over this to the next entry
     lpForStmtNext = lpMemPTD->lpSISCur->lpForStmtNext++;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -968,14 +956,13 @@ UBOOL CS_SELECT_Stmt_EM
                  tdSOS;                 // ...               SOS  ...
     TOKEN        tkNxt;                 // TOKEN of next stmt
     HGLOBAL      hGlbTknLine,           // Tokenized line global memory handle
-                 hGlbTxtLine,           // Text      ...
-                 hGlbPTD;               // PerTabData global memory handle
+                 hGlbTxtLine;           // Text      ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYTmp;               // Ptr to right arg
     UBOOL        bCmp;                  // TRUE iff the comparison is TRUE
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Copy the token data
     tkNxt.tkData = lpYYSelectArg->tkToken.tkData;
@@ -1007,7 +994,7 @@ UBOOL CS_SELECT_Stmt_EM
 
                 // Fill the SIS struc, execute the line via ParseLine, and cleanup
                 exitType =
-                  PrimFnMonUpTackJotPLParse (hGlbPTD,           // PerTabData global memory handle
+                  PrimFnMonUpTackJotPLParse (lpMemPTD,          // Ptr to PerTabData global memory
                                              hGlbTknLine,       // Tokenized line global memory handle
                                              hGlbTxtLine,       // Text      ...
                                              NULL,              // Ptr to text of line to execute
@@ -1020,9 +1007,6 @@ UBOOL CS_SELECT_Stmt_EM
                 {
                     case EXITTYPE_NONE:
                         // Match the SELECT arg against the CASE arg
-
-                        // Lock the memory to get a ptr to it
-                        lpMemPTD = MyGlobalLock (hGlbPTD);
 
                         // If it's CASE, ...
                         if (tkNxt.tkFlags.TknType EQ TKT_CS_CASE)
@@ -1068,9 +1052,6 @@ UBOOL CS_SELECT_Stmt_EM
                                 YYFree (lpYYTmp); lpYYTmp = NULL;
                             } // End FOR
                         } // End IF/ELSE
-
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                         // If the two are equal, ...
                         if (bCmp)
@@ -1325,14 +1306,11 @@ HGLOBAL GetDfnHdrHandle
     if (lpplLocalVars->hGlbDfnHdr)
         return lpplLocalVars->hGlbDfnHdr;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Copy ptr to current SI level
     lpSISCur = lpMemPTD->lpSISCur;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
     // Peel back to non-ImmExec, non-Execute, non-Quad layer
     while (lpSISCur
@@ -1486,14 +1464,10 @@ void CS_SetNextToken
      LPTOKEN_DATA  lptdArg1)            // Ptr to arg TOKEN_DATA
 
 {
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // If the stmts are on the same line, ...
     if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
@@ -1509,9 +1483,6 @@ void CS_SetNextToken
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
     } // End IF/ELSE
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End CS_SetNextToken
 
 

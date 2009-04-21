@@ -82,13 +82,13 @@ UBOOL _CheckCtrlBreak
 //***************************************************************************
 
 void CreateDebuggerWindow
-    (HGLOBAL hGlbPTD)       // PerTabData global memory handle
+    (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
     DWORD dwThreadId;       // Thread ID
 
     // Pass parameters to thread
-    cdbThread.hGlbPTD = hGlbPTD;
+    cdbThread.lpMemPTD = lpMemPTD;
 
     // Create the thread
     CreateThread (NULL,                         // No security attrs
@@ -112,7 +112,6 @@ UBOOL WINAPI CreateDebuggerInThread
     (LPCDB_THREAD lpcdbThread)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     HWND         hWndMC,        // MDI Client window handle
                  hWndDB;        // Debugger window handle
@@ -124,19 +123,13 @@ UBOOL WINAPI CreateDebuggerInThread
         TlsSetValue (dwTlsType, TLSTYPE_DB);
 
         // Extract values from the arg struc
-        hGlbPTD = lpcdbThread->hGlbPTD;
+        lpMemPTD = lpcdbThread->lpMemPTD;
 
-        // Save the thread's PerTabData global memory handle
-        TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Save ptr to PerTabData global memory
+        TlsSetValue (dwTlsPerTabData, lpMemPTD);
 
         // Get the MDI Client window handle
         hWndMC = lpMemPTD->hWndMC;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Create the debugger window
         hWndDB =
@@ -151,14 +144,8 @@ UBOOL WINAPI CreateDebuggerInThread
                             hWndMC,             // Parent
                             _hInstance,         // Instance
                             0);                 // Extra data
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
         // Save in PerTabData
         lpMemPTD->hWndDB = hWndDB;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // If it didn't succeed, ...
         if (hWndDB EQ NULL)
@@ -172,14 +159,8 @@ UBOOL WINAPI CreateDebuggerInThread
             // Make sure we can communicate between windows
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // Tell the SM we're active
             PostMessageW (lpMemPTD->hWndSM, WM_PARENTNOTIFY, MAKEWPARAM (WM_CREATE, IDWC_SM_DB), (LPARAM) hWndDB);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Main message loop
             while (GetMessageW (&Msg, NULL, 0, 0))
@@ -257,7 +238,6 @@ LRESULT APIENTRY DBWndProc
                  iHeight;
     RECT         rcClient;
     HWND         hWndLB;            // ListBox window handle
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LRESULT      lResult = FALSE;   // Result from DefMDIChildProcW
 
@@ -301,11 +281,8 @@ LRESULT APIENTRY DBWndProc
             ShowWindow (hWndLB, SW_SHOWNORMAL);
             ShowWindow (hWnd,   SW_SHOWNORMAL);
 
-            // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
+            // Get ptr to PerTabData global memory
+            lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
             // Subclass the List Box so we can pass
             //   certain WM_KEYDOWN messages to the
@@ -314,9 +291,6 @@ LRESULT APIENTRY DBWndProc
               SetWindowLongPtrW (hWndLB,
                                  GWL_WNDPROC,
                                  (APLU3264) (LONG_PTR) (WNDPROC) &LclListboxWndProc);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             // Initialize window-specific resources
             DB_Create (hWnd);
 
@@ -445,9 +419,6 @@ LRESULT APIENTRY DBWndProc
             goto NORMAL_EXIT;       // We handled the msg
 
         case WM_CLOSE:
-////        // Unhook our hooks
-////        SendMessageW (hWnd, MYWM_UNHOOK, 0, 0);
-////
             // Remove saved window properties
             RemovePropW (hWnd, PROP_LINENUM);
 
@@ -455,30 +426,7 @@ LRESULT APIENTRY DBWndProc
 
             goto NORMAL_EXIT;       // We handled the msg
 
-////    case MYWM_UNHOOK:
-////        // Get the thread's PerTabData global memory handle
-////        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-////
-////        // In case hGlbPTD has already been freed, ...
-////        if (IsValidHandle (hGlbPTD))
-////        {
-////            // Lock the memory to get a ptr to it
-////            lpMemPTD = MyGlobalLock (hGlbPTD);
-////
-////            // Unhook the LclListboxWndProc
-////            SetWindowLongPtrW (hWndLB,
-////                               GWL_WNDPROC,
-////                               (HANDLE_PTR) lpMemPTD->lpfnOldListboxWndProc);
-////            // We no longer need this ptr
-////            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-////        } // End IF
-////
-////        goto NORMAL_EXIT;       // We handled the msg
-
         case WM_DESTROY:
-////        // Unhook our hooks
-////        SendMessageW (hWnd, MYWM_UNHOOK, 0, 0);
-
             // Uninitialize window-specific resources
             DB_Delete (hWnd);
 
@@ -526,23 +474,16 @@ LRESULT WINAPI LclListboxWndProc
     LPWCHAR      lpSel,
                  p;
     LRESULT      lResult;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     WNDPROC      lpfnOldListboxWndProc;
 
 ////LCLODSAPI ("LLB: ", hWnd, message, wParam, lParam);
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the address of the old WNDPROC handler
     lpfnOldListboxWndProc = lpMemPTD->lpfnOldListboxWndProc;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Split cases
     switch (message)
@@ -709,16 +650,10 @@ LRESULT WINAPI LclListboxWndProc
                 case VK_F10:
                 case VK_F11:
                 case VK_F12:
-                    // Get the thread's PerTabData global memory handle
-                    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
+                    // Get ptr to PerTabData global memory
+                    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                     PostMessageW (lpMemPTD->hWndSM, message, wParam, lParam);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     return FALSE;   // We handled the msg
             } // End SWITCH
@@ -750,28 +685,24 @@ void DbgMsg
     (LPCHAR szTemp)
 
 {
-    WCHAR        wszTemp[1024];
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-    if (hGlbPTD EQ NULL)
-        return;
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Ensure it's a valid ptr
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+        return;
 
     if (lpMemPTD->hWndDB)
     {
+        WCHAR wszTemp[1024];        // Temporary storage for the message in wide form
+
         // Convert the string from A to W
         A2W (wszTemp, szTemp, sizeof (wszTemp) - 1);
 
         DbgMsgW (wszTemp);
     } // End IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DbgMsg
 #endif
 
@@ -787,23 +718,18 @@ void DbgMsgW
     (LPWCHAR wszTemp)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     HWND         hWndDB;        // Debugger window handle
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-    if (hGlbPTD EQ NULL)
-        return;
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Ensure it's a valid ptr
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+        return;
 
     // Get the debugger window handle
     hWndDB = lpMemPTD->hWndDB;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     if (hWndDB)
         SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
@@ -822,20 +748,13 @@ void DbgClr
     (void)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     if (lpMemPTD->hWndDB)
         PostMessageW (lpMemPTD->hWndDB, MYWM_DBGMSG_CLR, 0, 0);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DbgClr
 #endif
 

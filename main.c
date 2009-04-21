@@ -1266,7 +1266,6 @@ LRESULT APIENTRY MFWndProc
     HWND         hWndActive,
                  hWndMC,
                  hWndSM;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -1350,13 +1349,6 @@ LRESULT APIENTRY MFWndProc
 
             // Initialize window-specific resources
             MF_Create (hWnd);
-
-////////////// Allocate per tab data as a dummy holder
-//////////////   so that the first call to SaveWsData
-//////////////   has something to save into.
-////////////hGlbPTD = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
-////////////if (!hGlbPTD)
-////////////    return -1;          // Stop the whole process
 
             // Load a CLEAR WS or the worksapce named on the command line
             if (!CreateNewTab (hWnd,
@@ -1548,11 +1540,8 @@ LRESULT APIENTRY MFWndProc
                     // Get a ptr to the ws name
                     lpMemWSID = PointToWsName ((APLU3264) (HANDLE_PTR) lpttt->hdr.idFrom);
 
-                    // Get the PerTabData global memory handle
-                    hGlbPTD = GetPerTabHandle ((APLU3264) (HANDLE_PTR) lpttt->hdr.idFrom); Assert (hGlbPTD NE NULL);
-
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
+                    // Get ptr to PerTabData global memory
+                    lpMemPTD = GetPerTabPtr ((APLU3264) (HANDLE_PTR) lpttt->hdr.idFrom); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 #ifndef DEBUG
                     // Return a ptr to the stored tooltip text
                     lstrcpyW (TooltipText, lpMemWSID);
@@ -1566,9 +1555,6 @@ LRESULT APIENTRY MFWndProc
                     // If the tab is still executing, say so
                     if (lpMemPTD->bExecuting)
                         lstrcatW (TooltipText, L" (RUNNING)");
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     // Return the ptr to the caller
                     lpttt->lpszText = TooltipText;
@@ -1903,17 +1889,11 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVE_WS:
-                    // Get the per tab global memory handle
-                    hGlbPTD = GetPerTabHandle (gOverTabIndex); Assert (hGlbPTD NE NULL);
-
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
+                    // Get ptr to PerTabData global memory
+                    lpMemPTD = GetPerTabPtr (gOverTabIndex); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                     // Get this tab's SM window handle
                     hWndSM = lpMemPTD->hWndSM;
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     // Tell the SM to save the ws
                     return SendMessageW (hWndSM, MYWM_SAVE_WS, 0, (LPARAM) L"");
@@ -2268,9 +2248,7 @@ HWND GetWndMC
     (int iCurTab)                       // Index of the tab of interest (-1 = none)
 
 {
-    HGLOBAL      hGlbPTD;
-    LPPERTABDATA lpMemPTD;
-    HWND         hWndMC;
+    LPPERTABDATA lpMemPTD;              // Ptr to PertabData global memory
 
     // If the Tab Control is not defined, quit
     if (hWndTC EQ NULL)
@@ -2280,23 +2258,15 @@ HWND GetWndMC
     if (iCurTab EQ -1)
         return NULL;
 
-    // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iCurTab);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetPerTabPtr (iCurTab); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Ensure it's a valid ptr
-    if (!IsValidHandle (hGlbPTD))
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
         return NULL;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get window handle of MDI Client
-    hWndMC = lpMemPTD->hWndMC;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return hWndMC;
+    // Return window handle of MDI Client
+    return lpMemPTD->hWndMC;
 } // End GetWndMC
 
 
@@ -3221,10 +3191,9 @@ int PASCAL WinMain
 
     // Allocate TLS indices
     dwTlsType        = TlsAlloc ();     // Thread type ('MF', 'TC', 'PL', etc.)
-////dwTlsSemaphore   = TlsAlloc ();     // Thread semaphore (for 'PL' only)
     dwTlsPlLocalVars = TlsAlloc ();     // lpplLocalVars (for 'PL' only)
     dwTlsFhLocalVars = TlsAlloc ();     // lpfhLocalVars (for 'PL' or 'SM' only)
-    dwTlsPerTabData  = TlsAlloc ();     // PerTabData    (for 'PL' or 'SM' only)
+    dwTlsPerTabData  = TlsAlloc ();     // lpMemPTD      (for 'PL' or 'SM' only)
 
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, TLSTYPE_MF);

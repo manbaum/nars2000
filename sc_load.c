@@ -72,7 +72,6 @@ UBOOL CmdLoadCom_EM
      UBOOL   bExecLX)                   // TRUE iff execute []LX after successful load
 
 {
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     WCHAR        wszTailDPFE[_MAX_PATH];// Save area for canonical form of given ws name
     LPWCHAR      lpw;                   // Temporary ptr
@@ -99,17 +98,11 @@ UBOOL CmdLoadCom_EM
     // Append the common workspace extension
     lstrcatW (wszTailDPFE, WS_WKSEXT);
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the tab index from which this command was issued
     iTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Handle WS NOT FOUND messages here
     // Attempt to open the workspace
@@ -167,7 +160,6 @@ UBOOL LoadWorkspace_EM
     UBOOL        bRet = FALSE,          // TRUE iff the result is valid
                  bImmed,                // TRUE iff the result of ParseSavedWsVar_EM is immediate
                  bSuspended;            // TRUE iff the function is suspended
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     APLSTYPE     aplTypeObj;            // Object storage type
     STFLAGS      stFlags = {0};         // SymTab flags
@@ -178,8 +170,8 @@ UBOOL LoadWorkspace_EM
     LPSYMENTRY   lpSymLink = NULL;      // Ptr to anchor of SYMENTRY links for [Globals] values
                                         //   so we may delete them easily
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Check for CLEAR WS
     if (hGlbDPFE EQ NULL)
@@ -248,9 +240,6 @@ UBOOL LoadWorkspace_EM
                 HGLOBAL      hGlbDfnHdr;            // Defined function global memory handle
                 LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
 
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
 ////////////////__try
 ////////////////{
 ////////////////    uMaxSize = 1 / (uSID - 1);
@@ -258,7 +247,7 @@ UBOOL LoadWorkspace_EM
 ////////////////{
 ////////////////    // Display message for unhandled exception
 ////////////////    DisplayException ();
-////////////////} // End __try/__Except
+////////////////} // End __try/__except
 
                 // If there are more SI levels and the previous level was suspended,
                 //   create a new SIS struc for immediate execution mode
@@ -371,9 +360,6 @@ UBOOL LoadWorkspace_EM
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
                 } // End IF
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             } // End IF
 
             //***************************************************************
@@ -396,15 +382,9 @@ UBOOL LoadWorkspace_EM
                         lpwSrcStart;        // Ptr to starting point
                 UINT    uMaxSize;           // Maximum size of lpwSrc
 
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
                 // Save ptr & maximum size
                 lpwSrc   = lpMemPTD->lpwszTemp;
                 uMaxSize = lpMemPTD->uTempMaxSize;
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                 // Save the starting point
                 lpwSrcStart = lpwSrc;
@@ -495,17 +475,11 @@ UBOOL LoadWorkspace_EM
                     Assert (!bImmed);
                     Assert (IsSimpleChar (aplTypeObj));
 
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
                     // Out with the old
                     FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
 
                     // In with the new
                     lpMemPTD->hGlbQuadDM = ClrPtrTypeDirAsGlb ((HGLOBAL) aplLongestObj);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
                 } else
                 {
                     // Out with the old
@@ -552,15 +526,9 @@ UBOOL LoadWorkspace_EM
                 UINT    uMaxSize;           // Maximum size of lpwSrc
                 NAME_TYPES nameType;
 
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
                 // Save ptr & maximum size
                 lpwSrc   = lpMemPTD->lpwszTemp;
                 uMaxSize = lpMemPTD->uTempMaxSize;
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                 // Save the starting point
                 lpwSrcStart = lpwSrc;
@@ -660,13 +628,13 @@ WSID_EXIT:
 
 WSNOTFOUND_EXIT:
     // Send this (constant) error message to the previously outgoing tab
-    SendMessageLastTab (ERRMSG_WS_NOT_FOUND APPEND_NAME, hGlbPTD);
+    SendMessageLastTab (ERRMSG_WS_NOT_FOUND APPEND_NAME, lpMemPTD);
 
     goto ERROR_EXIT;
 
 ERRMSG_EXIT:
     // Send this (constant) error message to the previously outgoing tab
-    SendMessageLastTab (lpwErrMsg, hGlbPTD);
+    SendMessageLastTab (lpwErrMsg, lpMemPTD);
 
     goto ERROR_EXIT;
 
@@ -706,25 +674,25 @@ UBOOL ParseSavedWsFcn_EM
      LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant) error message text
 
 {
-    WCHAR      wcTmp;                   // Temporary char
+    WCHAR wcTmp;                        // Temporary char
     LPWCHAR    lpwCharEnd,              // Temporary ptr
                lpwDataEnd;              // ...
     STFLAGS    stFlags = {0};           // SymTab flags
-    LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
-    HGLOBAL    hGlbObj,                 // Object global memory handle
-               hGlbOld;                 // Old ...
+        LPSYMENTRY lpSymEntry;          // Ptr to STE for HGLOBAL
+        HGLOBAL    hGlbObj,             // Object global memory handle
+                   hGlbOld;             // Old    ...
     UBOOL      bRet = FALSE;            // TRUE iff result is valid
 
-    // Tell 'em we're looking for )LOAD objects
+        // Tell 'em we're looking for )LOAD objects
 ////ZeroMemory (&stFlags, sizeof (stFlags));
-    stFlags.Inuse   = TRUE;
-    stFlags.ObjName = OBJNAME_LOD;
+        stFlags.Inuse   = TRUE;
+        stFlags.ObjName = OBJNAME_LOD;
 
     // Mark as a function/operator
     lpSymObj->stFlags.stNameType = nameType;
 
-    // Copy the old value
-    hGlbOld = lpSymObj->stData.stGlbData;
+        // Copy the old value
+        hGlbOld = lpSymObj->stData.stGlbData;
 
     if (*lpwSrc EQ FMTCHR_LEAD)
     {
@@ -845,21 +813,14 @@ LPWCHAR ParseSavedWsVar_EM
     APLINT       aplInteger;            // Temporary integer
     APLSTYPE     aplTypeObj;            // Object storage type
     HGLOBAL      hGlbObj;               // Object global memory handle
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Tell 'em we're looking for )LOAD objects
 ////ZeroMemory (&stFlags, sizeof (stFlags));
@@ -1128,22 +1089,15 @@ HGLOBAL LoadWorkspaceGlobal_EM
     UBOOL        bUserDefined = FALSE;      // TRUE iff the durrent function is User-Defined
     LPVOID       lpMemObj;                  // Ptr to object global memory
     APLINT       aplInteger;                // Temporary integer
-    HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat,               // Ptr to formatting save area
                  lpwszOldTemp;              // Ptr to temporary save area
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Save the starting ptr
     lpwSrcStart = lpwSrc;
@@ -1485,13 +1439,13 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 SF_Fcns.SF_UndoBuffer   = SF_UndoBufferLW;  // Ptr to get function last modification time
 
                 // Fill in local values
-                LW_Params.lpwSectName  = lpwSectName;    // Ptr to section name
-                LW_Params.lpwszDPFE    = lpwszDPFE;      // Ptr to workspace DPFE
-                LW_Params.lpwBuffer    = lpwSrc;         // Ptr to buffer
-                LW_Params.lpMemUndoTxt = lpMemUndoTxt;   // Ptr to Undo Buffer in text format
-                LW_Params.uMaxSize     = uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
-                LW_Params.ftCreation   = ftCreation;     // Function Creation Time
-                LW_Params.ftLastMod    = ftLastMod;      // Function Last Modification Time
+                LW_Params.lpwSectName   = lpwSectName;      // Ptr to section name
+                LW_Params.lpwszDPFE     = lpwszDPFE;        // Ptr to workspace DPFE
+                LW_Params.lpwBuffer     = lpwSrc;           // Ptr to buffer
+                LW_Params.lpMemUndoTxt  = lpMemUndoTxt;     // Ptr to Undo Buffer in text format
+                LW_Params.uMaxSize      = uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
+                LW_Params.ftCreation    = ftCreation;       // Function Creation Time
+                LW_Params.ftLastMod     = ftLastMod;        // Function Last Modification Time
 
                 // Save ptr to local parameters
                 SF_Fcns.LclParams   = &LW_Params;
@@ -1564,7 +1518,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // It's a function array
             {
                 LPWCHAR          lpwLine;           // Ptr to line to execute
-                HGLOBAL          hGlbPTD;           // PerTabData global memory handle
                 LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
                 LOADWSGLBVARPARM LoadWsGlbVarParm;  // Extra parms for LoadWsGlbVarConv
 #ifdef DEBUG
@@ -1597,11 +1550,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LoadWsGlbVarParm.lpwszDPFE     = lpwszDPFE;
                 LoadWsGlbVarParm.lplpwErrMsg   = lplpwErrMsg;
 
-                // Get the PerTabData global memory handle
-                hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
+                // Get ptr to PerTabData global memory
+                lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                 // Save in PerTabData struc
                 lpMemPTD->lpLoadWsGlbVarParm = &LoadWsGlbVarParm;
@@ -1610,9 +1560,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 // Protect lpMemPTD->lpwszTemp
                 lpwszOldTemp = lpMemPTD->lpwszTemp;
                 lpMemPTD->lpwszTemp = &lpwSrc[lstrlenW (lpwSrc)];
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                 // Execute the statement
 #ifdef DEBUG
@@ -1626,18 +1573,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                FALSE);              // TRUE iff errors are acted upon
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
                 // Restore lpMemPTD->lpwszTemp
                 lpMemPTD->lpwszTemp = lpwszOldTemp;
 
                 // Save in PerTabData struc
                 lpMemPTD->lpLoadWsGlbVarParm = NULL;
                 lpMemPTD->lpLoadWsGlbVarConv = NULL;
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             } // End IF/ELSE
 
             // Lookup the STE and get its HGLOBAL

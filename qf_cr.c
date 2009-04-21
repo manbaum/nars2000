@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -115,7 +115,6 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL        hGlbPTD;             // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;            // Ptr to PerTabData global memory
     LPWCHAR        lpwszTemp;           // Ptr to temporary storage
     APLSTYPE       aplTypeRht,          // Right arg storage type
@@ -139,17 +138,11 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     LPAPLCHAR      lpw;                 // Ptr to wide chars
     UBOOL          bMF;                 // TRUE iff we're displaying a Magic Function
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // See if we're to display a Magic Function
     bMF = 1 EQ SIGN_APLRANK (aplRankRes);

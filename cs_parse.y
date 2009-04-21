@@ -2152,20 +2152,21 @@ UBOOL ParseCtrlStruc_EM
     (LPCSLOCALVARS lpcsLocalVars)           // Ptr to CS Local vars
 
 {
-    UBOOL bRet;                             // TRUE iff result is valid
+    UBOOL bRet;                         // TRUE iff result is valid
 
-    // Clear the error token
-    ZeroMemory (&lpcsLocalVars->tkCSErr, sizeof (lpcsLocalVars->tkCSErr));
+        // Clear the error token
+        ZeroMemory (&lpcsLocalVars->tkCSErr, sizeof (lpcsLocalVars->tkCSErr));
 
-    // Append the CS_EOL token to the CS stack
-    //   to allow for later parsing for SYNTAX ERRORs
-    AppendNewCSToken_EM (TKT_CS_EOL,
-                         0,
-                         0,
-                         0,
-                         TRUE,
-                         NEG1U);
-    // ***FIXME*** -- Use VirtualAlloc for the parser stack
+        // Append the CS_EOL token to the CS stack
+        //   to allow for later parsing for SYNTAX ERRORs
+        AppendNewCSToken_EM (TKT_CS_EOL,
+                             lpcsLocalVars->lpMemPTD,
+                             0,
+                             0,
+                             0,
+                             TRUE,
+                             NEG1U);
+        // ***FIXME*** -- Use VirtualAlloc for the parser stack
 
 
 
@@ -2181,19 +2182,19 @@ UBOOL ParseCtrlStruc_EM
 
 
 #if YYDEBUG
-    // Enable debugging
-    yydebug = TRUE;
+        // Enable debugging
+        yydebug = TRUE;
 #endif
 
-    // Parse the CS stack, check for errors
-    //   0 = success
-    //   1 = YYABORT or APL error
-    //   2 = memory exhausted
-    bRet = cs_yyparse (lpcsLocalVars) EQ 0;
+        // Parse the CS stack, check for errors
+        //   0 = success
+        //   1 = YYABORT or APL error
+        //   2 = memory exhausted
+        bRet = cs_yyparse (lpcsLocalVars) EQ 0;
 
 #if YYDEBUG
-    // Disable debugging
-    yydebug = FALSE;
+        // Disable debugging
+        yydebug = FALSE;
 #endif
 
     return bRet;
@@ -2410,9 +2411,9 @@ CS_YYLEX_START:
 #define APPEND_NAME
 #endif
 
-void cs_yyerror                     // Called for Bison syntax error
+void cs_yyerror                         // Called for Bison syntax error
     (LPCSLOCALVARS lpcsLocalVars,   // Ptr to local csLocalVars
-     LPCHAR        s)               // Ptr to error msg
+     LPCHAR        s)                   // Ptr to error msg
 
 {
     char szTemp[1024], *p;
@@ -2521,9 +2522,9 @@ DISPLAY:
 //***************************************************************************
 
 void cs_yyfprintf
-    (FILE  *hfile,          // Ignore this
-     LPCHAR lpszFmt,        // Format string
-     ...)                   // Zero or more arguments
+    (FILE  *hfile,                      // Ignore this
+     LPCHAR lpszFmt,                    // Format string
+     ...)                               // Zero or more arguments
 
 {
 #if (defined (DEBUG)) && (defined (YYFPRINTF_DEBUG))

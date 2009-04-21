@@ -44,22 +44,15 @@ UBOOL ArrayDisplay_EM
      LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPAPLCHAR    lpaplChar;         // Ptr to output save area
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Split cases based upon the token type
     switch (lptkRes->tkFlags.TknType)
@@ -188,7 +181,6 @@ UBOOL DisplayGlbArr_EM
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPVOID       lpMem = NULL;      // Ptr to incoming global memory
     LPAPLCHAR    lpaplCharIni = NULL,
@@ -217,17 +209,11 @@ UBOOL DisplayGlbArr_EM
     MEMVIRTSTR   lclMemVirtStr[1] = {0};// Room for one GuardAlloc
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the current value of []PP & PW
     uQuadPP = GetQuadPP ();
@@ -1592,7 +1578,6 @@ APLCHAR GetQuadFCValue
     (UINT uIndex)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     HGLOBAL      hGlbQuadFC;    // []FC global memory handle
     LPAPLCHAR    lpMemQuadFC;   // Ptr to []FC global memory
@@ -1602,17 +1587,11 @@ APLCHAR GetQuadFCValue
 
     Assert (uIndex < FCNDX_LENGTH);
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the []FC global memory handle
     hGlbQuadFC = ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadFC->stData.stGlbData);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Lock the memory to get a ptr to it
     lpMemQuadFC = MyGlobalLock (hGlbQuadFC);
@@ -1649,7 +1628,6 @@ APLINT GetQuadICValue
     (IC_INDICES uIndex)
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     HGLOBAL      hGlbQuadIC;        // []IC global memory handle
     LPAPLINT     lpMemQuadIC;       // Ptr to []IC global memory
@@ -1660,17 +1638,11 @@ APLINT GetQuadICValue
 
     Assert (uIndex < ICNDX_LENGTH);
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the []IC global memory handle
     hGlbQuadIC = ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadIC->stData.stGlbData);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Lock the memory to get a ptr to it
     lpMemQuadIC = MyGlobalLock (hGlbQuadIC);

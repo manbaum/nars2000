@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,6 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
     APLFLOAT     aplFloatRht;       // Right arg float value
     DWORD        dwTickCount;       // The current tick count (time in millseconds since W was started)
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get the attributes (Type, NELM, and Rank)
@@ -120,11 +119,8 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
                         NULL,               // Ptr to lpSym/Glb ...
                         NULL,               // Ptr to ...immediate type ...
                         NULL);              // Ptr to array type ...
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Create a semaphore so we can be interrupted
     lpMemPTD->hSemaDelay =
@@ -144,9 +140,6 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
 
     // Close the semaphore handle as it is no longer needed
     CloseHandle (lpMemPTD->hSemaDelay); lpMemPTD->hSemaDelay = NULL;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Convert from DWORD milliseconds to float seconds
     aplFloatRht = ((APLFLOAT) dwTickCount) / 1000;

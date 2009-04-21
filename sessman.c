@@ -51,18 +51,18 @@ In any case,
 // MDI WM_NCCREATE & WM_CREATE parameter passing convention
 //
 // When calling CreateMDIWindowW with an extra data parameter
-//   of (say) &hGlbPTD, the window procedure receives the data
+//   of (say) &lpMemPTD, the window procedure receives the data
 //   in the following struc:
 //
 //      typedef struct tagSM_CREATESTRUCTW
 //      {
-//          HGLOBAL hGlbPTD;
+//          LPPERTABDATA lpMemPTD;
 //      } SM_CREATESTRUCTW, UNALIGNED *LPSM_CREATESTRUCTW;
 //
 //   which is used as follows:
 //
 //      #define lpMDIcs     ((LPMDICREATESTRUCTW) (((LPCREATESTRUCTW) lParam)->lpCreateParams))
-//      hGlbPTD = ((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->hGlbPTD;
+//      lpMemPTD = ((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 //      #undef  lpMDIcs
 
 APLCHAR wszQuadInput[] = WS_UTF16_QUAD L":";
@@ -128,23 +128,13 @@ HWND GetThreadSMEC
     (void)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    HWND         hWndEC;        // Window handle to Edit Ctrl
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the handle to the Edit Ctrl
-    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return hWndEC;
+    // Return the handle to the Edit Ctrl
+    return (HWND) GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 } // End GetThreadSMEC
 
 
@@ -463,7 +453,6 @@ void DisplayPrompt
      UINT uCaller)      // ***DEBUG***
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
 #ifdef DEBUG
@@ -472,23 +461,17 @@ void DisplayPrompt
     else
         dprintfW  (L"~~DisplayPrompt (%d)", uCaller);
 #endif
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+    // Mark as no longer executing
+    lpMemPTD->bExecuting = FALSE;
+
     // Move the text caret to the end of the buffer
     MoveCaretEOB (hWndEC);
 
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
-
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Mark as no longer executing
-    lpMemPTD->bExecuting = FALSE;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     PERFMON
 ////PERFMONSHOW
@@ -692,8 +675,7 @@ LRESULT APIENTRY SMWndProc
 
 {
     HWND         hWndEC;                // Window handle to Edit Ctrl
-    HGLOBAL      hGlbPTD;               // Handle to this window's PerTabData
-    LPPERTABDATA lpMemPTD;              // Ptr to ...
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwCurLine;            // Ptr to current line global memory
     UINT         uCnt;                  // Loop counter
 ////RECT         rcFmtEC;               // Formatting rectangle for the Edit Ctrl
@@ -707,8 +689,8 @@ LRESULT APIENTRY SMWndProc
     // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
 ////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
@@ -718,9 +700,6 @@ LRESULT APIENTRY SMWndProc
                                         // lpcs = (LPCREATESTRUCTW) lParam
         {
             PERFMON
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 #ifndef UNISCRIBE
             // Initialize the OLE libraries
             CoInitialize (NULL);
@@ -766,9 +745,6 @@ LRESULT APIENTRY SMWndProc
                           lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -790,7 +766,7 @@ LRESULT APIENTRY SMWndProc
             break;                  // Continue with next handler
 WM_NCCREATE_FAIL:
             // Send a constant message to the previous tab
-            SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, hGlbPTD);
+            SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, lpMemPTD);
 
             return -1;              // Mark as failed
         } // End WM_NCCREATE
@@ -870,18 +846,12 @@ WM_NCCREATE_FAIL:
 
 ////////////// *************** lptkStackBase ***************************
 ////////////
-////////////// Lock the memory to get a ptr to it
-////////////lpMemPTD = MyGlobalLock (hGlbPTD);
-////////////
 ////////////// Allocate virtual memory for the token stack used in parsing
 ////////////lpMemPTD->lptkStackBase =
 ////////////  GuardAlloc (NULL,         // Any address
 ////////////              DEF_TOKENSTACK_MAXNELM * sizeof (TOKEN),
 ////////////              MEM_RESERVE,
 ////////////              PAGE_READWRITE);
-////////////// We no longer need this ptr
-////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-////////////
 ////////////if (!???)
 ////////////{
 ////////////    // ***FIXME*** -- WS FULL before we got started???
@@ -898,8 +868,6 @@ WM_NCCREATE_FAIL:
 
             // *************** htsPTD.lpHshTab *************************
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].lpText = "lpMemPTD->htsPTD.lpHshTab in <SMWndProc>";
 #endif
@@ -909,9 +877,6 @@ WM_NCCREATE_FAIL:
                                  DEF_HSHTAB_NBLKS,                      // Initial # blocks in HshTab
                                  DEF_HSHTAB_INCRNELM,                   // # HTEs by which to resize when low
                                  DEF_HSHTAB_MAXNELM);                   // Maximum # HTEs
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -922,22 +887,17 @@ WM_NCCREATE_FAIL:
 
             // *************** htsPTD.lpSymTab *************************
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].lpText = "lpMemPTD->htsPTD.lpSymTab in <SMWndProc>";
 #endif
             // Allocate virtual memory for the symbol table
             bRet = AllocSymTab (&lpLclMemVirtStr[PTDMEMVIRT_SYMTAB],    // Ptr to this entry in MemVirtStr
-                                 hGlbPTD,                               // PerTabData global memory handle
+                                 lpMemPTD,                              // Ptr to PerTabData global memory
                                 &lpMemPTD->htsPTD,                      // Ptr to this HSHTABSTR
                                  TRUE,                                  // TRUE iff we're to initialize the constant STEs
                                  DEF_SYMTAB_INITNELM,                   // Initial # STEs in SymTab
                                  DEF_SYMTAB_INCRNELM,                   // # STEs by which to resize when low
                                  DEF_SYMTAB_MAXNELM);                   // Maximum # STEs
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -947,9 +907,6 @@ WM_NCCREATE_FAIL:
             } // End IF
 
             // *************** State Indicator Stack *******************
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the State Indicator Stack
 #ifdef DEBUG
@@ -963,9 +920,6 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_SIS].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -984,8 +938,6 @@ WM_NCCREATE_FAIL:
                             PAGE_READWRITE);
 
             // *************** Control Structure Stack *****************
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the Control Structure Stack
 #ifdef DEBUG
@@ -999,9 +951,6 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_CS].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -1020,8 +969,6 @@ WM_NCCREATE_FAIL:
                             PAGE_READWRITE);
 
             // *************** YYRes Buffer ****************************
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the YYRes buffer
 #ifdef DEBUG
@@ -1035,9 +982,6 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_YYRES].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -1056,8 +1000,6 @@ WM_NCCREATE_FAIL:
                             PAGE_READWRITE);
 
             // *************** Strand Accumulators *********************
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the VAR strand accumulator
 #ifdef DEBUG
@@ -1071,9 +1013,6 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -1090,9 +1029,6 @@ WM_NCCREATE_FAIL:
                             DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                             MEM_COMMIT,
                             PAGE_READWRITE);
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // Allocate virtual memory for the FCN strand accumulator
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].lpText   = "lpMemPTD->lpStrand[STRAND_FCN] in <SMWndProc>";
@@ -1105,9 +1041,6 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -1126,8 +1059,6 @@ WM_NCCREATE_FAIL:
                             PAGE_READWRITE);
 
             // *************** lpwszFormat *****************************
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the WCHAR Formatting storage
 #ifdef DEBUG
@@ -1141,9 +1072,6 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -1162,8 +1090,6 @@ WM_NCCREATE_FAIL:
                             PAGE_READWRITE);
 
             // *************** lpwszTemp *******************************
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the WCHAR Formatting storage
 #ifdef DEBUG
@@ -1180,9 +1106,6 @@ WM_NCCREATE_FAIL:
                           PAGE_READWRITE);
             // Save the maximum size
             lpMemPTD->uTempMaxSize = lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             if (!lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr)
             {
@@ -1202,8 +1125,6 @@ WM_NCCREATE_FAIL:
                             PAGE_READWRITE);
 
             // *************** lpForStmt *******************************
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the WCHAR Formatting storage
 #ifdef DEBUG
@@ -1217,9 +1138,6 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             if (!lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -1303,15 +1221,12 @@ WM_NCCREATE_FAIL:
             // *************** Magic Functions *************************
 
             // Initialize all magic functions
-            if (!InitMagicFunctions (hGlbPTD, hWndEC, lpLclMemVirtStr, PTDMEMVIRT_MF1, PTDMEMVIRT_LENGTH))
+            if (!InitMagicFunctions (lpMemPTD, hWndEC, lpLclMemVirtStr, PTDMEMVIRT_MF1, PTDMEMVIRT_LENGTH))
             {
                 DbgMsgW (L"WM_CREATE:  InitMagicFunctions failed");
 
                 goto WM_CREATE_FAIL_UNHOOK;
             } // End IF
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // ***FIXME*** -- For some reason, the
             //                background of the MC window
@@ -1321,9 +1236,6 @@ WM_NCCREATE_FAIL:
 
             // Save the bExecLX flag
             lpMemPTD->bExecLX = (*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->bExecLX;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Display the )LOAD message once and only once
             if (!bLoadMsgDisp && !OptionFlags.bNoCopyrightMsg)
@@ -1364,7 +1276,7 @@ WM_NCCREATE_FAIL:
 WM_CREATE_FAIL_UNHOOK:
 WM_CREATE_FAIL:
             // Send a constant message to the previous tab
-            SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, hGlbPTD);
+            SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, lpMemPTD);
 LOAD_WORKSPACE_FAIL:
 NORMAL_EXIT:
             // Free the workspace global
@@ -1411,7 +1323,7 @@ NORMAL_EXIT:
                     if (uCharPos NE NEG1U)
                         // Move to that line
                         MoveToLine (HIWORD (uCharPos),
-                                    hGlbPTD,
+                                    lpMemPTD,
                                     hWndEC);
                     break;
                 } // End WM_LBUTTONDOWN
@@ -1427,17 +1339,11 @@ NORMAL_EXIT:
 
 #ifdef DEBUG
         case MYWM_INIT_SMDB:
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // If the Debugger window handle is active, ...
             if (lpMemPTD->hWndDB)
                 PostMessageW (hWnd, MYWM_KEYDOWN, VK_F9, 0);
             else
                 PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             break;
 #endif
         case MYWM_INIT_EC:
@@ -1478,9 +1384,6 @@ NORMAL_EXIT:
 #ifdef DEBUG
             PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
 #endif
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // If requested, execute []LX
             if (lpMemPTD->bExecLX)
             {
@@ -1507,9 +1410,6 @@ NORMAL_EXIT:
                 // Set the default cursor
                 SendCursorMsg (hWndEC);
             } // End IF/ELSE
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Ensure the SM has the focus
             SetFocus (hWnd);
@@ -1637,9 +1537,6 @@ NORMAL_EXIT:
             {
                 case VK_CANCEL:
                 {
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
                     EnterCriticalSection (&CSOPL);
 
                     // Mark as Ctrl-Break
@@ -1654,16 +1551,10 @@ NORMAL_EXIT:
 
                     LeaveCriticalSection (&CSOPL);
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
                     break;
                 } // End VK_CANCEL
 
                 case VK_RETURN:
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
                     // If there's an active program, ignore this key
                     bRet = (lpMemPTD->lpSISCur && !lpMemPTD->lpSISCur->Suspended);
                     if (!bRet)
@@ -1730,9 +1621,6 @@ NORMAL_EXIT:
                         bRet = TRUE;        // Mark as not ImmExecLine material
                     } // End IF
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
                     // Execute the line if no other program is active
                     if (!bRet)
                         ImmExecLine (uLineNum, hWndEC);
@@ -1744,7 +1632,7 @@ NORMAL_EXIT:
                         break;
 
                     // Set (new) current line
-                    MoveToLine (--uLineNum, hGlbPTD, hWndEC);
+                    MoveToLine (--uLineNum, lpMemPTD, hWndEC);
 
                     break;
 
@@ -1757,7 +1645,7 @@ NORMAL_EXIT:
                         break;
 
                     // Set (new) current line
-                    MoveToLine (++uLineNum, hGlbPTD, hWndEC);
+                    MoveToLine (++uLineNum, lpMemPTD, hWndEC);
 
                     break;
 #ifdef DEBUG
@@ -1770,14 +1658,8 @@ NORMAL_EXIT:
 #endif
 #ifdef DEBUG
                 case VK_F2:             // Display hash table entries
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
                     DisplayHshTab (&lpMemPTD->htsPTD);
                     DisplayHshTab (&htsGLB);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     return FALSE;
 #endif
@@ -1790,17 +1672,11 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F4:             // Display symbol table entries
                                         //   with non-zero reference counts
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
                     // If it's Shift-, then display all
                     if (GetKeyState (VK_SHIFT) & 0x8000)
                         DisplaySymTab (&lpMemPTD->htsPTD, TRUE);
                     else
                         DisplaySymTab (&lpMemPTD->htsPTD, FALSE);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     return FALSE;
 #endif
@@ -1826,9 +1702,6 @@ NORMAL_EXIT:
                     int  nWidthMC,  nHeightMC,
                          nHeightDB, nHeightSM;
                     HWND hWndMC;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
 
                     // Get the window handle to the MDI Client (our parent)
                     hWndMC = GetParent (hWnd);
@@ -1881,9 +1754,6 @@ NORMAL_EXIT:
                     // Tell the debugger window to scroll the last line into view
                     SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSG_SCROLL, (WPARAM) -1, 0);
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
                     return FALSE;
                 } // End VK_F9
 #endif
@@ -1892,13 +1762,11 @@ NORMAL_EXIT:
                 {
                     LPSYMENTRY lpSym = NULL;
 
-                    DbgBrk ();      // ***FIXME*** -- Check on lock count of hGlbPTD
+                    // Get ptr to PerTabData global memory
+                    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+                    // Signal a breakpoint to invoke the debugger
+                    DbgBrk ();
 
                     return FALSE;
                 } // End VK_F11
@@ -2016,9 +1884,6 @@ NORMAL_EXIT:
         case WM_DESTROY:
             // Remove all saved window properties
             EnumProps (hWnd, EnumCallbackRemoveProp);
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 #ifdef DEBUG
             // If the debugger is still active, close it
             if (lpMemPTD->hWndDB)
@@ -2090,9 +1955,6 @@ NORMAL_EXIT:
                 IMLangFontLink_Release (lpMemPTD->lpFontLink); lpMemPTD->lpFontLink = NULL;
             } // End IF
 #endif
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             // Tell the thread to quit, too
             PostQuitMessage (0);
 
@@ -2117,16 +1979,12 @@ NORMAL_EXIT:
 
 void MoveToLine
     (UINT         uLineNum,             // The given line #
-     HGLOBAL hGlbPTD,                   // PerTabData global memory handle
+     LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      HWND         hWndEC)               // Edit Ctrl window handle
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData
     UINT         uLineLen;              // Line length
     LPWCHAR      lpwCurLine;            // Ptr to current line global memory
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the length of the (new) current line
     uLineLen = GetLineLength (hWndEC, uLineNum);
@@ -2156,9 +2014,6 @@ void MoveToLine
 
     // Reset the changed line flag
     SetWindowLongW (lpMemPTD->hWndSM, GWLSF_CHANGED, FALSE);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End MoveToLine
 
 

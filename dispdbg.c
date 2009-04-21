@@ -200,15 +200,11 @@ void DisplaySymTab
 {
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
     int          i;                 // Loop counter
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     if (bDispAll)
     {
@@ -241,9 +237,6 @@ void DisplaySymTab
     DbgMsgW (L"********** End Symbol Table ****************************");
 
     UpdateDBWindow ();
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplaySymTab
 #endif
 
@@ -406,19 +399,12 @@ void UpdateDBWindow
     (void)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     UpdateWindow (lpMemPTD->hWndDB);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End UpdateDBWindow
 #endif
 
@@ -443,17 +429,11 @@ void DisplayGlobals
     LPVOID       lpData;
     APLCHAR      aplArrChar[19];
     LPAPLCHAR    lpwsz;
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    // Because we're inside DisplayGlobals, don't use
-    //   MyGlobalLock/Unlock so as not to pollute the result
-    lpMemPTD = GlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     DbgMsgW (L"********** Globals *************************************");
 
@@ -632,9 +612,6 @@ void DisplayGlobals
     DbgMsgW (L"********** End Globals *********************************");
 
     UpdateDBWindow ();
-
-    // We no longer need this ptr
-    GlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayGlobals
 #endif
 
@@ -653,7 +630,6 @@ void DisplayTokens
     LPTOKEN      lpToken;           // Ptr to temporary token
     int          i,                 // Loop counter
                  iLen;              // Token count
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
@@ -673,11 +649,8 @@ void DisplayTokens
     // Lock the memory to get a ptr to it
     lpToken = MyGlobalLock (hGlbToken);
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
 #define lpHeader    ((LPTOKEN_HEADER) lpToken)
     wsprintfW (wszTemp,
@@ -708,9 +681,6 @@ void DisplayTokens
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbToken); lpToken = NULL;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayTokens
 #endif
 
@@ -842,7 +812,6 @@ void DisplayFcnStrand
     HGLOBAL      hGlbData;          // Function array global memory handle
     LPWCHAR      lpaplChar,         // Ptr to output save area
                  lpaplCharIni;      // Initial ptr to output save area
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Check debug level
@@ -853,11 +822,8 @@ void DisplayFcnStrand
      )
         return;
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to a temporary save area
     lpaplChar = lpaplCharIni = lpMemPTD->lpwszTemp;
@@ -874,7 +840,7 @@ void DisplayFcnStrand
 
 
 
-            goto NORMAL_EXIT;
+            break;
 
         case TKT_FCNIMMED:
         case TKT_OP1IMMED:
@@ -973,9 +939,6 @@ void DisplayFcnStrand
     else
         // Display the line in the Session Manager window
         AppendLine (lpaplCharIni, FALSE, TRUE);
-NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayFcnStrand
 #endif
 
@@ -1510,7 +1473,6 @@ void DisplayStrand
     LPPL_YYSTYPE  lp,
                   lpLast;
     LPPLLOCALVARS lpplLocalVars;
-    HGLOBAL       hGlbPTD;          // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;         // Ptr to PerTabData global memory
     WCHAR         wszTemp[1024];    // Ptr to temporary output area
 
@@ -1534,11 +1496,8 @@ void DisplayStrand
             break;
     } // End SWITCH
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get this thread's LocalVars ptr
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
@@ -1590,9 +1549,6 @@ void DisplayStrand
     } // End FOR
 
     DbgMsgW (L"********** End Strands *********************************");
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayStrand
 #endif
 
@@ -1616,7 +1572,6 @@ void DisplayUndo
     LPUNDO_BUF   lpUndoBeg,             // Ptr to start of Undo Buffer
                  lpUndoNxt;             // ...    next available slot in the Undo Buffer
     UBOOL        bShift;
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];         // Ptr to temporary output area
     static LPWCHAR Actions[]={L"None",
@@ -1631,11 +1586,8 @@ void DisplayUndo
     if (gDbgLvl < 3)
         return;
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     DbgMsgW (L"********** Undo Buffer *********************************");
 
@@ -1719,9 +1671,6 @@ void DisplayUndo
     } // End FOR
 
     DbgMsgW (L"********** End Undo Buffer *****************************");
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayUndo
 #endif
 
@@ -1734,7 +1683,7 @@ void DisplayUndo
 //***************************************************************************
 
 void DisplayFnHdr
-    (LPFHLOCALVARS lpfhLocalVars)
+    (LPFHLOCALVARS lpfhLocalVars)       // Ptr to Function Header local vars
 
 {
     WCHAR     wszTemp[1024];            // Ptr to temporary output area

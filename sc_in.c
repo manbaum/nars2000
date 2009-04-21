@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,7 +44,6 @@ UBOOL CmdIn_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
 
 {
-    HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
     WCHAR         wszDrive[_MAX_DRIVE],
                   wszDir  [_MAX_DIR],
@@ -70,20 +69,14 @@ UBOOL CmdIn_EM
     HWND          hWndSM,                   // Session Manager Window handle
                   hWndEC;                   // Edit Ctrl    ...
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary storage & maximum size
     lpwszTemp   = lpMemPTD->lpwszTemp;
     uMaxSize    = lpMemPTD->uTempMaxSize;
     hWndSM      = lpMemPTD->hWndSM;
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the Edit Ctrl window handle
     hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
@@ -303,7 +296,6 @@ UBOOL TransferInverseArr2_EM
      UBOOL      bSysCmd)                    // TRUE iff called from a system command
 
 {
-    HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
     LPWCHAR       lpwNameEnd = NULL,        // Ptr to end of name
                   lpwszFormat;              // Ptr to format area
@@ -315,20 +307,14 @@ UBOOL TransferInverseArr2_EM
     LPSYMENTRY    lpSymEntry;               // Ptr to SYMENTRY for name lookup
     UBOOL         bRet = FALSE;             // TRUE iff result is valid
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get window handle of the Session Manager
     hWndSM = lpMemPTD->hWndSM;
 
     // Get ptr to temporary format save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the Edit Ctrl window handle
     hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
@@ -412,14 +398,8 @@ UBOOL TransferInverseArr2_EM
     {
         if (!lptkFunc)
         {
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // Display the leading part of the error message
             AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Ensure the name is properly terminated
             *lpwNameEnd = L'\0';
@@ -495,7 +475,6 @@ UBOOL TransferInverseFcn2_EM
      UBOOL      bSysCmd)                    // TRUE iff called from a system command
 
 {
-    HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
     LPWCHAR       lpwNameEnd = NULL,        // Ptr to end of name
                   lpwData,                  // Ptr to data ...
@@ -506,20 +485,14 @@ UBOOL TransferInverseFcn2_EM
     WCHAR         wch;                      // Temporary char
     UBOOL         bRet = FALSE;             // TRUE iff the result is valid
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get window handle of the Session Manager
     hWndSM = lpMemPTD->hWndSM;
 
     // Get ptr to temporary format save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the Edit Ctrl window handle
     hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
@@ -547,9 +520,6 @@ UBOOL TransferInverseFcn2_EM
                    FALSE);              // TRUE iff errors are acted upon
     Assert (exitType EQ EXITTYPE_NODISPLAY
          || exitType EQ EXITTYPE_ERROR);
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Copy the ptr to the name end
     //   and skip over it
     lpwNameEnd = lpwData++;
@@ -646,9 +616,6 @@ UBOOL TransferInverseFcn2_EM
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     // Restore the char at the name end
     if (lpwNameEnd)
         *lpwNameEnd = wch;
@@ -678,7 +645,6 @@ UBOOL TransferInverseChr1_EM
      UBOOL   bSysCmd)                       // TRUE iff called from a system command
 
 {
-    HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
     LPWCHAR       lpwName,                  // Ptr to name portion of array
                   lpwNameEnd = NULL,        // Ptr to end of name
@@ -697,17 +663,11 @@ UBOOL TransferInverseChr1_EM
     UINT          uCnt;                     // Loop counter
     WCHAR         wch;                      // Temporary char
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary format save area
     lpwszFormat = lpMemPTD->lpwszFormat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Point to the name, skipping over the type char
     lpwName = &lpwszTemp[1];
@@ -930,7 +890,6 @@ UBOOL TransferInverseNum1_EM
      UBOOL   bSysCmd)                       // TRUE iff called from a system command
 
 {
-    HGLOBAL       hGlbPTD;                  // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
     LPWCHAR       lpwName,                  // Ptr to name portion of array
                   lpwNameEnd = NULL,        // Ptr to end of name
@@ -950,18 +909,12 @@ UBOOL TransferInverseNum1_EM
                   hWndEC;                   // Edit Ctrl    ...
     WCHAR         wch;                      // Temporary char
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary format save area
     lpwszFormat = lpMemPTD->lpwszFormat;
     hWndSM      = lpMemPTD->hWndSM;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the Edit Ctrl window handle
     hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
@@ -1132,14 +1085,8 @@ STFULL_EXIT:
 IMMEXEC_EXIT:
     if (!lptkFunc)
     {
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
         // Display the leading part of the error message
         AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Ensure the name is properly terminated
         *lpwNameEnd = L'\0';

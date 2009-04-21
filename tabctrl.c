@@ -248,8 +248,7 @@ UBOOL WINAPI CreateNewTabInThread
 {
     int          iCurTabIndex = -1; // Index of the current tab
     TC_ITEMW     tcItem = {0};      // TabCtrl item struc
-    HGLOBAL      hGlbPTD,           // PerTabData global memory handle
-                 hGlbDPFE = NULL;   // Workspace DPFE global memory handle
+    HGLOBAL      hGlbDPFE = NULL;   // Workspace DPFE global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     UBOOL        bRet = FALSE;      // TR$UE iff the result is valid
     RECT         rc;                // Rectangle for setting size of window
@@ -281,33 +280,31 @@ UBOOL WINAPI CreateNewTabInThread
 
     if (gCurTabID NE -1)
     {
-        // Get the per tab global memory handle
-        hGlbPTD = GetPerTabHandle (TranslateTabIDToIndex (gCurTabID)); Assert (hGlbPTD NE NULL);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetPerTabPtr (TranslateTabIDToIndex (gCurTabID)); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Hide the child windows of the outgoing tab
         ShowHideChildWindows (lpMemPTD->hWndMC, FALSE);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
 
     // Allocate per tab data
-    hGlbPTD = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
-    if (!hGlbPTD)
+    lpMemPTD =
+      MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
+                      sizeof (PERTABDATA),
+                      MEM_COMMIT | MEM_TOP_DOWN,
+                      PAGE_READWRITE);
+    if (lpMemPTD EQ NULL)
         goto ERROR_EXIT;    // Stop the whole process
 
-    // Save the thread's PerTabData global memory handle
-    TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
+    // Save ptr to PerTabData global memory
+    TlsSetValue (dwTlsPerTabData, (LPVOID) lpMemPTD);
 
     // Initialize the item struc
     tcItem.mask       = TCIF_IMAGE | TCIF_PARAM;
 ////tcItem.pszText    =
 ////tcItem.cchTextMax =
     tcItem.iImage     = 0;
-    tcItem.lParam     = (LPARAM) hGlbPTD;
+    tcItem.lParam     = (LPARAM) lpMemPTD;
 
     // Insert a new tab
     // The new tab is inserted to the left of the index value (iTab)
@@ -318,9 +315,6 @@ UBOOL WINAPI CreateNewTabInThread
 
         goto ERROR_EXIT;
     } // End IF
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Save the thread ID for when we close
     lpMemPTD->dwThreadId = lpcntThread->dwThreadId;
@@ -380,8 +374,8 @@ UBOOL WINAPI CreateNewTabInThread
         goto ERROR_EXIT;
     } // End IF
 
-////// Save the PTD handle with the window
-////SetPropW (lpMemPTD->hWndMC, L"PTD", hGlbPTD);
+////// Save the PerTabData ptr with the window
+////SetPropW (lpMemPTD->hWndMC, L"PTD", lpMemPTD);
 ////
     // Show and paint the window
     ShowWindow (lpMemPTD->hWndMC, SW_SHOWNORMAL);
@@ -390,7 +384,7 @@ UBOOL WINAPI CreateNewTabInThread
 #ifdef DEBUG
     // Create the Debugger window first
     //   so it can be used by subsequent windows
-    CreateDebuggerWindow (hGlbPTD);
+    CreateDebuggerWindow (lpMemPTD);
 #endif
 
     // Fill in the SM WM_CREATE data struct
@@ -400,9 +394,6 @@ UBOOL WINAPI CreateNewTabInThread
     // Save hWndMC for use inside message loop
     //   so we can unlock the per-tab data memory
     hWndMC = lpMemPTD->hWndMC;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Create the Session Manager window
     hWndTmp =
@@ -423,9 +414,6 @@ UBOOL WINAPI CreateNewTabInThread
     if (hWndTmp EQ NULL)
         goto ERROR_EXIT;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Save as the SM window handle
     lpMemPTD->hWndSM = hWndTmp;
 
@@ -442,7 +430,7 @@ UBOOL WINAPI CreateNewTabInThread
     lpMemPTD->hWndActive = lpMemPTD->hWndSM;
 
     // Save the handle
-    SetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_PERTAB, (APLU3264) (LONG_PTR) hGlbPTD);
+    SetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_PERTAB, (APLU3264) (LONG_PTR) lpMemPTD);
 
     // Show the child windows of the incoming tab
     ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
@@ -455,9 +443,6 @@ UBOOL WINAPI CreateNewTabInThread
 
     // Tell the SM we're finished
     PostMessage (lpMemPTD->hWndSM, MYWM_INIT_EC, 0, 0);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     __try
     {
@@ -488,19 +473,10 @@ UBOOL WINAPI CreateNewTabInThread
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    if (hGlbPTD && lpMemPTD)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-    } // End IF
-
     // If there's a current tab index, delete it
     if (iCurTabIndex NE -1)
         TabCtrl_DeleteItem (hWndTC, iCurTabIndex);
 NORMAL_EXIT:
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Destroy any windows we might have created
     if (lpMemPTD && lpMemPTD->hWndMC)
     {
@@ -517,34 +493,25 @@ NORMAL_EXIT:
         DestroyWindow (lpMemPTD->hWndMC); lpMemPTD->hWndMC = NULL;
     } // End IF
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     if (hGlbDPFE)
     {
         // Free the storage for the workspace DPFE global memory
         MyGlobalFree (hGlbDPFE); hGlbDPFE = NULL;
     } // End IF
 
-    if (hGlbPTD)
+    if (lpMemPTD)
     {
         // We no longer need this storage
-        MyGlobalFree (hGlbPTD); hGlbPTD = NULL;
+        MyVirtualFree (lpMemPTD, 0, MEM_RELEASE); lpMemPTD = NULL;
     } // End IF
 
-    // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (TabCtrl_GetCurSel (hWndTC));
-    if (hGlbPTD)
-    {
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC)); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
+    // Ensure it's a valid ptr
+    if (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
         // Ensure the SM has the focus
         PostMessageW (lpMemPTD->hWndSM, MYWM_SETFOCUS, 0, 0);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-    } // End IF
 
     return bRet;
 } // End CreateNewTabInThread
@@ -552,13 +519,13 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $GetPerTabHandle
+//  $GetPerTabPtr
 //
-//  Return the per tab global memory handle
+//  Return ptr to PerTabData global memory
 //***************************************************************************
 
-HGLOBAL GetPerTabHandle
-    (int iTab)
+LPPERTABDATA GetPerTabPtr
+    (int iTab)                  // Tab
 
 {
     TC_ITEMW tcItem = {0};      // TabCtrl item struc
@@ -570,12 +537,12 @@ HGLOBAL GetPerTabHandle
 ////tcItem.iImage     =
 ////tcItem.lParam     =
 
-    // Return the lParam value (hGlbPTD)
+    // Get the lParam value (lpMemPTD)
     SendMessageW (hWndTC, TCM_GETITEMW, iTab, (LPARAM) &tcItem);
 
-    // Return the handle
-    return (HGLOBAL) tcItem.lParam;
-} // End GetPerTabHandle
+    // Return the ptr
+    return (LPPERTABDATA) tcItem.lParam;
+} // End GetPerTabPtr
 
 
 //***************************************************************************
@@ -600,7 +567,6 @@ LRESULT WINAPI LclTabCtrlWndProc
 #if 0
     int            iTmpTabIndex;
 #endif
-    HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
 
 ////LCLODSAPI ("TC: ", hWnd, message, wParam, lParam);
@@ -693,21 +659,14 @@ LRESULT WINAPI LclTabCtrlWndProc
                           ? MF_GRAYED
                           : MF_ENABLED;
 
-            // Get the outgoing per tab global memory handle
-            hGlbPTD = GetPerTabHandle (gOverTabIndex);
+            // Get ptr to outgoing PerTabData global memory
+            lpMemPTD = GetPerTabPtr (gOverTabIndex); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
             // If it's invalid, we're closing out the last tab, so ignore
-            if (hGlbPTD NE NULL)
-            {
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
-
+            if (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
                 // Get the executing state flag
                 bExecuting = lpMemPTD->bExecuting;
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-            } else
+            else
                 bExecuting = FALSE;
 
             // If we're not over a tab or this is the last open tab,
@@ -775,21 +734,15 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Save the tab index to delete
             iDelTabIndex = (int) wParam;
 
-            // Get the outgoing per tab global memory handle
-            hGlbPTD = GetPerTabHandle (iDelTabIndex);
+            // Get ptr to outgoing PerTabData global memory
+            lpMemPTD = GetPerTabPtr (iDelTabIndex); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
             // If it's invalid, we're closing out the last tab, so just quit
-            if (hGlbPTD EQ NULL)
+            if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
                 break;
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Get the execution state
             bExecuting = lpMemPTD->bExecuting;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // If this tab is still executing, ignore this action
             if (bExecuting)
@@ -815,9 +768,6 @@ LRESULT WINAPI LclTabCtrlWndProc
                 else
                     iNewTabIndex++;
             } // End IF
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Reset this tab's color index bit
             ResetTabColorIndex (lpMemPTD->crIndex);
@@ -850,10 +800,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Save the outgoing MDI Child window handle
             dwThreadId = lpMemPTD->dwThreadId;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-            // The storage for hGlbPTD is freed in CreateNewTabInThread
+            // The storage for lpMemPTD is freed in CreateNewTabInThread
 
             // Call the original window proc so it can delete
             //   the tab and we can get the new current selection
@@ -886,17 +833,11 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Continue only if the tab ID is valid
             if (gCurTabID NE -1)
             {
-                // Get the outgoing per tab global memory handle
-                hGlbPTD = GetPerTabHandle (TranslateTabIDToIndex (gCurTabID)); Assert (hGlbPTD NE NULL);
-
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
+                // Get ptr to outgoing PerTabData global memory
+                lpMemPTD = GetPerTabPtr (TranslateTabIDToIndex (gCurTabID)); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                 // Give the new tab the focus
                 PostMessageW (lpMemPTD->hWndSM, MYWM_SETFOCUS, 0, 0);
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             } // End IF
 
             // Tell the thread to quit
@@ -984,20 +925,13 @@ void SetTabTextState
      UBOOL bHighlight)  // TRUE iff to be drawn as highlighted
 
 {
-    HGLOBAL      hGlbPTD;
     LPPERTABDATA lpMemPTD;
 
-    // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iCurTab); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetPerTabPtr (iCurTab); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Save the text state
     lpMemPTD->bTabTextState = bHighlight;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End SetTabTextState
 
 
@@ -1081,26 +1015,16 @@ int GetNextTabColorIndex
 //***************************************************************************
 
 int GetTabColorIndex
-    (int iTab)
+    (int iTab)                          // Tab index
 
 {
-    HGLOBAL      hGlbPTD;
     LPPERTABDATA lpMemPTD;
-    int          crIndex;
 
-    // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iTab); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetPerTabPtr (iTab); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the color index
-    crIndex = lpMemPTD->crIndex;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return crIndex;
+    // Return the color index
+    return lpMemPTD->crIndex;
 } // End GetTabColorIndex
 
 
@@ -1111,7 +1035,7 @@ int GetTabColorIndex
 //***************************************************************************
 
 void ResetTabColorIndex
-    (int crIndex)
+    (int crIndex)                       // Color index
 
 {
     // Reset this tab's color index bit
@@ -1155,7 +1079,6 @@ void DrawTab
      LPRECT   lpRect)               // Ptr to surrounding rectangle
 
 {
-    HGLOBAL      hGlbPTD;           // Handle of PerTabData
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPAPLCHAR    lpMemWSID;         // Ptr to []WSID global memory
     int          crIndex;           // Index into crTab for this tab
@@ -1175,11 +1098,8 @@ void DrawTab
                  hBitmapOld;        // Handle to old bitmap
 #endif
 
-    // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iCurTab); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetPerTabPtr (iCurTab); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the tab's color index
     crIndex = lpMemPTD->crIndex % NUM_CRTABS;
@@ -1338,9 +1258,6 @@ void DrawTab
     lpRect->right -= TABMARGIN_LEFT;
     lpRect->left  -= TABMARGIN_LEFT;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     // If there's only one tab, don't draw the close button
     if (TabCtrl_GetItemCount (hWndTC) NE 1)
     {
@@ -1397,18 +1314,14 @@ LPAPLCHAR PointToWsName
     (int iTabIndex)             // Tab index
 
 {
-    HGLOBAL      hGlbPTD,       // PerTabData global memory handle
-                 hGlbWSID;      // []WSID global memory handle
+    HGLOBAL      hGlbWSID;      // []WSID global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPAPLCHAR    lpMemWSID;     // Ptr to []WSID global memory
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = GetPerTabHandle (iTabIndex); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetPerTabPtr (iTabIndex); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Initialzie with default value
+    // Initialize with default value
     lstrcpyW (lpwszGlbTemp, L"  CLEAR WS");
 
     // If the []WSID STE has been setup, ...
@@ -1462,9 +1375,6 @@ LPAPLCHAR PointToWsName
         MyGlobalUnlock (hGlbWSID); lpMemWSID = NULL;
     } // End IF
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     // Prepend the tab index
     lpwszGlbTemp[0] = TABNUMBER_START + GetTabColorIndex (iTabIndex);
 
@@ -1500,22 +1410,15 @@ void NewTabName
     (void)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     int          iCurTabIndex;  // Index of the current tab
     TC_ITEMW     tcItem = {0};  // TabCtrl item struc
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the tab index
     iCurTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Initialize the item struc
     tcItem.mask       = TCIF_TEXT;
@@ -1539,8 +1442,8 @@ UBOOL IsCurTabActive
     (void)
 
 {
-    // Compare hGlbPTD from the Tab Index and from the thread
-    return (GetPerTabHandle (TranslateTabIDToIndex (gCurTabID))
+    // Compare lpMemPTD from the Tab Index and from the thread
+    return (GetPerTabPtr (TranslateTabIDToIndex (gCurTabID))
                        EQ TlsGetValue (dwTlsPerTabData));
 } // End IsCurTabActive
 

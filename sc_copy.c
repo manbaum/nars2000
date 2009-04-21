@@ -45,7 +45,6 @@ UBOOL CmdCopy_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
 
 {
-    HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
     WCHAR        wszTailDPFE[_MAX_PATH],    // Save area for canonical form of given ws name
                  wcTmp;                     // Temporary char
@@ -64,18 +63,12 @@ UBOOL CmdCopy_EM
     LPSYMENTRY   lpSymLink = NULL;          // Anchor of SYMENTRY links for [Globals] values
                                             //   so we may delete them easily
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary storage & maximum size
     lpwszTemp = lpMemPTD->lpwszTemp;
     uMaxSize  = lpMemPTD->uTempMaxSize;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the Session Manager's hWndEC
     hWndEC = GetThreadSMEC ();
@@ -109,14 +102,8 @@ UBOOL CmdCopy_EM
         if (iSrcTabIndex EQ -1)
             goto TABNOTFOUND_EXIT;
 
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
         // Get the tab ID from which this command was issued
         iCurTabID = lpMemPTD->CurTabID;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         AppendLine (L"NONCE COMMAND", FALSE, TRUE);
 
@@ -487,26 +474,19 @@ int CopyWsVars
             // If it's []DM, handle it specially
             if (lstrcmpiW (lpwNameInWrk, WS_UTF16_QUAD L"dm") EQ 0)
             {
-                HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
                 LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
 
                 Assert (!bImmed);
                 Assert (IsSimpleChar (aplTypeObj));
 
-                // Get the PerTabData global memory handle
-                hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-                // Lock the memory to get a ptr to it
-                lpMemPTD = MyGlobalLock (hGlbPTD);
+                // Get ptr to PerTabData global memory
+                lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                 // Out with the old
                 FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
 
                 // In with the new
                 lpMemPTD->hGlbQuadDM = ClrPtrTypeDirAsGlb ((HGLOBAL) aplLongestObj);
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             } else
             {
                 // Out with the old

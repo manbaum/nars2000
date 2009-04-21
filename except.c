@@ -173,25 +173,19 @@ int CheckPTDVirtStr
     (LPUCHAR lpInvalidAddr)         // Ptr to invalid address
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPMEMVIRTSTR lpLstMVS;          // Ptr to last MEMVIRTSTR (NULL = none)
     LPUCHAR      lpIniAddr;         // Ptr to invalid address
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    if (hGlbPTD EQ NULL)
+    // If lpMemPTD isn't set, just exit
+    if (lpMemPTD EQ NULL)
         return 0;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the ptr to the last MVS
     lpLstMVS = lpMemPTD->lpLstMVS;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Check for global VirtualAlloc memory that needs to be expanded
     while (lpLstMVS)
@@ -447,7 +441,6 @@ void DisplayException
                  uMem,          // Loop counter
                  uCnt,          // ...
                  SILevel;       // The current SI level
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPWCHAR      exceptText;    // Ptr to exception text
     LPUCHAR      exceptAddr;    // Exception address
@@ -462,15 +455,12 @@ void DisplayException
            sizeof (StartAddresses[0]),
           &CompareStartAddresses);
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // If hGlbPTD isn't set, just exit
-    if (hGlbPTD EQ NULL)
+    // If lpMemPTD isn't set, just exit
+    if (lpMemPTD EQ NULL)
         return;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the saved exception code & address, & text
     exceptCode = gExceptionCode;
@@ -479,9 +469,6 @@ void DisplayException
     regEBP     = gContextRecord.Ebp;
     lpSISCur   = lpMemPTD->lpSISCur;
     lpLstMVS   = lpMemPTD->lpLstMVS;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // If the exception is EXCEPTION_BREAKPOINT (from DbgStop),
     //   we need to display the return address as that's from
@@ -1019,14 +1006,10 @@ void LinkMVS
     (LPMEMVIRTSTR lpCurMVS)         // Ptr to current MVS entry
 
 {
-    HGLOBAL         hGlbPTD;        // PerTabData global memory handle
     LPPERTABDATA    lpMemPTD;       // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // There is no next entry for us
     lpCurMVS->lpNxtMVS = NULL;
@@ -1041,9 +1024,6 @@ void LinkMVS
 
     // We are the new last entry
     lpMemPTD->lpLstMVS = lpCurMVS;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End LinkMVS
 
 
@@ -1057,14 +1037,10 @@ void UnlinkMVS
     (LPMEMVIRTSTR lpCurMVS)         // Ptr to current MVS entry
 
 {
-    HGLOBAL         hGlbPTD;        // PerTabData global memory handle
-    LPPERTABDATA    lpMemPTD;       // Ptr to PerTabData global memory
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // If there's a previous entry, ...
     if (lpCurMVS->lpPrvMVS)
@@ -1080,9 +1056,6 @@ void UnlinkMVS
     if (lpMemPTD->lpLstMVS EQ lpCurMVS)
         // Set the new last entry as our previous entry
         lpMemPTD->lpLstMVS = lpCurMVS->lpPrvMVS;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End UnlinkMVS
 
 

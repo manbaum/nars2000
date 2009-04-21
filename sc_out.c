@@ -67,7 +67,6 @@ UBOOL CmdOut_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
 
 {
-    HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
     WCHAR        wszDrive[_MAX_DRIVE],
                  wszDir  [_MAX_DIR],
@@ -88,11 +87,8 @@ UBOOL CmdOut_EM
     UINT         uCnt;                      // Loop counter
     LPCHAR       lpTrees;                   // Ptr to Trees poem
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary format save area
     lpwszTemp = lpMemPTD->lpwszTemp;
@@ -298,9 +294,6 @@ INCORRECT_COMMAND_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     if (fStream)
     {
         // We no longer need this resource

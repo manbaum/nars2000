@@ -1746,7 +1746,6 @@ HGLOBAL CopyGlbAsType_EM
     APLINT       apaOffArg,             // Arg APA offset
                  apaMulArg,             // ...     multiplier
                  aplInteger;            // Temporary integer
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPSYMENTRY   lpSym0,                // LPSYMENTRY for constant zero
                  lpSym1,                // ...                     one
@@ -1953,17 +1952,11 @@ HGLOBAL CopyGlbAsType_EM
             switch (aplTypeArg)
             {
                 case ARRAY_BOOL:
-                    // Get the thread's PerTabData global memory handle
-                    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
+                    // Get ptr to PerTabData global memory
+                    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
                     lpSym0 = lpMemPTD->steZero;
                     lpSym1 = lpMemPTD->steOne;
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     uBitMask = BIT0;
 
@@ -2682,15 +2675,11 @@ LPPL_YYSTYPE MakeNoValue_YY
     (LPTOKEN lptkFunc)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2701,9 +2690,6 @@ LPPL_YYSTYPE MakeNoValue_YY
     lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
     lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->steNoValue;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpYYRes;
 } // End MakeNoValue_YY

@@ -43,7 +43,6 @@ UBOOL CmdWsid_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     APLNELM      aplNELMWSID;           // []WSID NELM
     APLRANK      aplRankWSID;           // ...    rank
@@ -55,11 +54,8 @@ UBOOL CmdWsid_EM
     UINT         uLen;                  // Length of given WSID
     UBOOL        bRet = FALSE;          // TRUE iff result is valid
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpMemWSID = MyGlobalLock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
@@ -183,9 +179,6 @@ UBOOL CmdWsid_EM
     // Mark as successful
     bRet = TRUE;
 ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return bRet;
 } // End CmdWsid_EM
 #undef  APPEND_NAME

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@ LPPL_YYSTYPE SysFnET_EM_YY
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     HGLOBAL      hGlbRes = NULL;    // Result ...
     LPAPLUINT    lpMemRes = NULL;   // Ptr to result global memory
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
     EVENT_TYPES  EventType;         // Event type
@@ -59,17 +58,11 @@ LPPL_YYSTYPE SysFnET_EM_YY
     // Niladic functions cannot have axis operator
     Assert (lptkAxis EQ NULL);
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to current SIS header
     lpSISCur = lpMemPTD->lpSISCur;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     while (lpSISCur
         && lpSISCur->DfnType NE DFNTYPE_FCN
@@ -151,21 +144,14 @@ UBOOL SetEventTypeMessage
      LPTOKEN     lptkFunc)          // Ptr to function token
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to current SIS header
     lpSISCur = lpMemPTD->lpSISCur;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     while (lpSISCur
         && lpSISCur->DfnType NE DFNTYPE_FCN

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ typedef struct tagCS_YYSTYPE        // YYSTYPE for Control Structure parser
 typedef struct tagCSLOCALVARS       // Control Structure Local Vars
 {
     HWND         hWndEC;            // 00:  Window handle for Edit Ctrl
-    HGLOBAL      hGlbPTD;           // 04:  PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // 04:  Ptr to PerTabData global memory
     LPTOKEN      lptkCSBeg,         // 08:  First available entry after the header
                  lptkCSNxt,         // 0C:  Next  ...
                  lptkCSLink;        // 10:  Ptr to CS stack Stmt link (NULL = none)

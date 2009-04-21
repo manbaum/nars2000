@@ -87,19 +87,15 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbPTD,           // PerTabData global memory handle
-                 hGlbMF;            // Magic function ...
+    HGLOBAL      hGlbMF;            // Magic function ...
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 ////HSHTABSTR    htsPTD;            // Old copy of HshTab struc
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     Assert (lptkAxis EQ NULL);
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the magic function global memory handle
     hGlbMF = lpMemPTD->hGlbMF_MonFMT;
@@ -131,9 +127,6 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
 ////
 ////// Restore the old HTS
 ////lpMemPTD->htsPTD = htsPTD;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpYYRes;
 } // End SysFnMonFMT_EM_YY

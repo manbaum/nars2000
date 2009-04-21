@@ -148,34 +148,21 @@ void DisplayWorkspaceStamp
 
 void SendMessageLastTab
     (const LPWCHAR lpwErrMsg,           // Ptr to constant error message text
-     HGLOBAL       hGlbPTD)             // PerTabData global memory handle
+     LPPERTABDATA  lpMemPTD)            // Ptr to PerTabData global memory
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     int iPrvTabIndex;                   // Index of previous tab
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the index of the tab from which we were )LOADed
     iPrvTabIndex = TranslateTabIDToIndex (lpMemPTD->PrvTabID);
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     if (iPrvTabIndex NE -1)
     {
-        // Get the PerTabData global memory handle for the preceding tab
-        hGlbPTD = GetPerTabHandle (iPrvTabIndex);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Get the PerTabData global memory ptr for the preceding tab
+        lpMemPTD = GetPerTabPtr (iPrvTabIndex); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Send this error message to the previous tab's SM
         SendMessageW (lpMemPTD->hWndSM, MYWM_ERRMSG, 0, (LPARAM) lpwErrMsg);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
 } // End SendMessageLastTab
 
@@ -191,7 +178,6 @@ void MakeWorkspaceBackup
      LPWCHAR lpwExtType)                // LOADBAK_EXT or SAVEBAK_EXT
 
 {
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;             // Ptr to temporary storage
     APLUINT      uLen;                  // Temporary length
@@ -205,17 +191,11 @@ void MakeWorkspaceBackup
     if (fStream EQ NULL)
         goto WSNOTFOUND_EXIT;
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get a ptr to a temporary save area
     lpwszTemp = lpMemPTD->lpwszTemp;
-
-    // We no longer need this resource
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // The workspace name is of the form d:\path\to\workspace\filename.ws.nars
     // The backup    ...                 d:\path\to\workspace\filename.bak.ws.nars
@@ -286,8 +266,7 @@ UBOOL SaveNewWsid_EM
     (LPAPLCHAR lpMemSaveWSID)           // Ptr to []WSID to save (includes WS_WKSEXT)
 
 {
-    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
-                 hGlbWSID;              // []WSID global memory handle
+    HGLOBAL      hGlbWSID;              // []WSID global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     int          iLen,                  // Length of []WSID (with WS_WKSEXT)
                  iLen2;                 // ...              (w/o  ...)
@@ -295,11 +274,8 @@ UBOOL SaveNewWsid_EM
     LPAPLCHAR    lpMemNewWSID;          // Ptr to new []WSID global memory
     UBOOL        bRet = FALSE;          // TRUE iff result is valid
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the length of the []WSID (including WS_WKSEXT)
     iLen = lstrlenW (lpMemSaveWSID);
@@ -372,9 +348,6 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     if (iLen)
         // Restore zapped char
         lpMemSaveWSID[iLen2] = L'.';

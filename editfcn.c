@@ -88,11 +88,10 @@ UBOOL CreateFcnWindow
 {
     HWND             hWnd;              // Handle for Function Editor window
     FE_CREATESTRUCTW feCreateStructW;   // CreateStruct for Function Editor window
-    HGLOBAL          hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Skip over the initial UTF16_DEL, if present
     if (lpwszLine[0] EQ UTF16_DEL)
@@ -108,9 +107,6 @@ UBOOL CreateFcnWindow
     // Initialize the return error code
     feCreateStructW.ErrCode   = 0;
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     hWnd =
       CreateMDIWindowW (LFEWNDCLASS,        // Class name
                         NULL,               // Window title
@@ -122,9 +118,6 @@ UBOOL CreateFcnWindow
                         lpMemPTD->hWndMC,   // Parent
                         _hInstance,         // Instance
               (LPARAM) &feCreateStructW);   // Extra data,
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     // If it didn't succeed, ...
     if (hWnd EQ NULL)
     {
@@ -770,7 +763,6 @@ void SetFETitle
     (HWND hWndFE)                   // FE window handle
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
     HWND         hWndEC;            // Edit Ctrl window handle
@@ -778,17 +770,11 @@ void SetFETitle
                  uNameLen;          // Function name length
     LPSYMENTRY   lpSymName;         // Ptr to function name STE
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
@@ -848,7 +834,6 @@ UBOOL SyntaxColor
     TKLOCALVARS  tkLocalVars = {0}; // Local vars
     WCHAR        wchOrig;           // The original char
     TKCOLINDICES tkColInd;          // The TKCOL_* of the translated char
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Avoid re-entrant code
@@ -856,11 +841,8 @@ UBOOL SyntaxColor
 
 ////LCLODS ("Entering <SyntaxColor>\r\n");
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Save local vars in struct which we pass to each FSA action routine
     tkLocalVars.State[2]         =
@@ -877,6 +859,7 @@ UBOOL SyntaxColor
     tkLocalVars.NameInit         = NO_PREVIOUS_NAME;
     tkLocalVars.hWndEC           = hWndEC;
     tkLocalVars.uSyntClrLen      = uLen;            // # Syntax Color entries
+    tkLocalVars.lpMemPTD         = lpMemPTD;        // Ptr to PerTabData global memory
 
     // Skip over the temp storage ptr
     ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
@@ -1013,9 +996,6 @@ NORMAL_EXIT:
     // Restore the temp storage ptr
     ((LPSCINDICES) lpMemPTD->lpwszTemp) -= uLen;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
 ////LCLODS ("Exiting  <SyntaxColor>\r\n");
 
     // Release the Critical Section
@@ -1052,14 +1032,10 @@ int LclECPaintHook
     LPCLRCOL         lpMemClrIni = NULL;    // Ptr to Syntax Colors/Column Indices global memory
     long             cxAveChar;             // Width of average char in given screen
 #ifndef UNISCRIBE
-    HGLOBAL          hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA     lpMemPTD;              // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 #endif
     // Syntax Color the line
     if (!rev
@@ -1145,9 +1121,6 @@ int LclECPaintHook
     if (!lpMemPTD->lpFontLink
      || FAILED (DrawTextFL (lpMemPTD->lpFontLink, hDC, &rcAct, lpwsz, uLen, cxAveChar)))
         OneDrawTextW (hDC, &rcAct, &lpwsz, uLen, cxAveChar);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #else
     // If we're syntax coloring, ...
     if (hGlbClr)
@@ -1463,7 +1436,6 @@ LRESULT WINAPI LclEditCtrlWndProc
     UINT         ksShft,                    // TRUE iff VK_CONTROL is pressed (either Ctrl- key)
                  ksCtrl,                    // ...      VK_SHIFT   ...                Shift-...
                  ksMenu;                    // ...      VK_MENU    ...                Alt-  ...
-    HGLOBAL      hGlbPTD;                   // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;               // Ptr to formatting save area
     static WNDPROC lpfnOldEditCtrlWndProc = // Ptr to preceding Edit Ctrl window procedure
@@ -1475,22 +1447,16 @@ LRESULT WINAPI LclEditCtrlWndProc
     if (TLSTYPE_MF EQ TlsGetValue (dwTlsType))
     {
         // Mark as from MF
-        hGlbPTD = NULL;
+        lpMemPTD = NULL;
         lpwszTemp = NULL;
 ////////LCLODSAPI ("EC: ", hWnd, message, wParam, lParam);
     } else
     {
-        // Get the thread's PerTabData global memory handle
-        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Get ptr to PerTabData global memory
+        lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Get ptr to temporary storage
         lpwszTemp = lpMemPTD->lpwszTemp;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF/ELSE
 
 ////LCLODSAPI ("EC: ", hWnd, message, wParam, lParam);
@@ -1542,10 +1508,10 @@ LRESULT WINAPI LclEditCtrlWndProc
             // If not from MF, and
             //    this is an Edit Ctrl for SM, and
             //    we set the cursor, ...
-            if (hGlbPTD
+            if (lpMemPTD
              && IzitSM (GetParent (hWnd))
              && LclSetCursor (hWnd,
-                              hGlbPTD,
+                              lpMemPTD,
                               LOWORD (lParam)))
                 return TRUE;                // We handled the msg
 
@@ -1607,7 +1573,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             LPSYMENTRY lpSymEntry;      // Ptr to the SYMENTRY under the name
 
             // If from MF, pass on this message
-            if (hGlbPTD EQ NULL)
+            if (lpMemPTD EQ NULL)
                 break;
 
             // It's a right double click, so cancel the timer
@@ -1644,14 +1610,8 @@ LRESULT WINAPI LclEditCtrlWndProc
                         // Lock the memory to get a ptr to it
                         lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 
-                        // Lock the memory to get a ptr to it
-                        lpMemPTD = MyGlobalLock (hGlbPTD);
-
                         // Get ptr to formatting save area
                         lpwszFormat = lpMemPTD->lpwszFormat;
-
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                         // Copy the name (and its trailing zero) to temporary storage
                         //   which won't go away when we unlock the name's global
@@ -1688,7 +1648,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // xPos = LOSHORT(lParam);  // horizontal position of cursor
                                     // yPos = HISHORT(lParam);  // vertical position of cursor
             // If from MF, pass on this message
-            if (hGlbPTD EQ NULL)
+            if (lpMemPTD EQ NULL)
                 break;
 
             // If this message occurs closely on the heels of a WM_RBUTTONDBLCLK,
@@ -1787,7 +1747,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // nWidth = LOWORD(lParam);  // Width of client area
                                     // nHeight = HIWORD(lParam); // Height of client area
             // If from MF, pass on this message
-            if (hGlbPTD EQ NULL)
+            if (lpMemPTD EQ NULL)
                 break;
 
             // If requested to do so, change []PW to track the new width
@@ -1805,16 +1765,8 @@ LRESULT WINAPI LclEditCtrlWndProc
                                           DEF_MIN_QUADPW,   // Low range value (inclusive)
                                           DEF_MAX_QUADPW,   // High ...
                                           bRangeLimit.PW))  // TRUE iff we're range limiting
-                {
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
                     // Save as new []PW
                     lpMemPTD->lpSymQuadPW->stData.stInteger = aplInteger;
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-                } // End IF
             } // End IF
 
             PERFMON
@@ -1841,7 +1793,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             hWndParent = GetParent (hWnd);
 
             // If our parent is not MF, ...
-            if (hGlbPTD)
+            if (lpMemPTD)
                 // Save the key in the parent window's extra bytes
                 SetWindowLongW (hWndParent, GWLSF_LASTKEY, nVirtKey);
 
@@ -1866,14 +1818,14 @@ LRESULT WINAPI LclEditCtrlWndProc
                 case VK_F11:
                 case VK_F12:
                     // If our parent is not MF, ...
-                    if (hGlbPTD)
+                    if (lpMemPTD)
                         PostMessageW (hWndParent, MYWM_KEYDOWN, wParam, lParam);
 
                     return FALSE;
 
                 case VK_F8:             // Display the Undo Buffer
                     // If our parent is not MF, ...
-                    if (hGlbPTD)
+                    if (lpMemPTD)
                         DisplayUndo (hWnd); // Display the Undo Buffer
 
                     return FALSE;
@@ -1881,7 +1833,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 case VK_UP:
                 case VK_DOWN:
                     // If our parent is MF, ...
-                    if (hGlbPTD EQ NULL)
+                    if (lpMemPTD EQ NULL)
                         break;
 
                     if (IzitSM (hWndParent))
@@ -1902,7 +1854,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 case VK_CANCEL:
                     // If our parent is not MF, ...
-                    if (hGlbPTD)
+                    if (lpMemPTD)
                         PostMessageW (hWndParent, MYWM_KEYDOWN, VK_CANCEL, 0);
                     break;
 
@@ -1912,7 +1864,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Ctrl-Ins WM_COPYs
 
                     // If our parent is MF, ...
-                    if (hGlbPTD EQ NULL)
+                    if (lpMemPTD EQ NULL)
                         break;
 
                     // If either VK_SHIFT or VK_CONTROL is pressed,
@@ -1951,7 +1903,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                          rcPaint;
 
                     // If our parent is MF, ...
-                    if (hGlbPTD EQ NULL)
+                    if (lpMemPTD EQ NULL)
                         break;
 
                     // If our parent is SM,
@@ -2007,7 +1959,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Insert a tab -- convert into insert N spaces
 
                     // If our parent is MF, ...
-                    if (hGlbPTD EQ NULL)
+                    if (lpMemPTD EQ NULL)
                         break;
 
                     // Get the indices of the selected text (if any)
@@ -2029,7 +1981,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     wChar[uChar] = L'\0';
 
                     // Insert/replace the char string
-                    InsRepCharStr (hWnd, wChar, hGlbPTD EQ NULL);
+                    InsRepCharStr (hWnd, wChar, lpMemPTD EQ NULL);
 
                     return FALSE;       // We handled the msg
             } // End SWITCH
@@ -2051,7 +2003,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     if (uAltNum)
                     {
                         // Insert/replace the corresponding Unicode char
-                        InsRepCharStr (hWnd, (LPWCHAR) &uAltNum, hGlbPTD EQ NULL);
+                        InsRepCharStr (hWnd, (LPWCHAR) &uAltNum, lpMemPTD EQ NULL);
 
                         // Clear the number
                         uAltNum = 0;
@@ -2197,7 +2149,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             if (wchCharCode EQ L'\t')
             {
                 // If it's from MF, ...
-                if (hGlbPTD EQ NULL)
+                if (lpMemPTD EQ NULL)
                     // Let the caller handle it
                     break;
                 else
@@ -2286,7 +2238,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 if (wChar[0])
                 {
                     // Insert/replace the char string
-                    InsRepCharStr (hWnd, wChar, hGlbPTD EQ NULL);
+                    InsRepCharStr (hWnd, wChar, lpMemPTD EQ NULL);
 
                     return FALSE;       // We handled the msg
                 } else
@@ -2358,7 +2310,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 if (wChar[0])
                 {
                     // Insert/replace the char string
-                    InsRepCharStr (hWnd, wChar, hGlbPTD EQ NULL);
+                    InsRepCharStr (hWnd, wChar, lpMemPTD EQ NULL);
 
                     return FALSE;       // We handled the msg
                 } else
@@ -2395,7 +2347,7 @@ LRESULT WINAPI LclEditCtrlWndProc
         case WM_UNDO:               // 0 = wParam
                                     // 0 = lParam
             // If from MF, pass on this message
-            if (hGlbPTD EQ NULL)
+            if (lpMemPTD EQ NULL)
                 break;
 
             // Get the handle of the parent window
@@ -2432,7 +2384,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) &wChar);
 
                         // Move to the line
-                        MoveToLine (uLineNum, hGlbPTD, hWnd);
+                        MoveToLine (uLineNum, lpMemPTD, hWnd);
 
                         break;
 
@@ -2454,7 +2406,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) &wChar);
 
                         // Move to the line
-                        MoveToLine (uLineNum, hGlbPTD, hWnd);
+                        MoveToLine (uLineNum, lpMemPTD, hWnd);
 
                         break;
 
@@ -2473,7 +2425,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) L"");
 
                         // Move to the line
-                        MoveToLine (uLineNum, hGlbPTD, hWnd);
+                        MoveToLine (uLineNum, lpMemPTD, hWnd);
 
                         break;
 
@@ -2489,7 +2441,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         SendMessageW (hWnd, EM_SETSEL, uCharPosBeg, uCharPosEnd);
 
                         // Move to the line
-                        MoveToLine (uLineNum, hGlbPTD, hWnd);
+                        MoveToLine (uLineNum, lpMemPTD, hWnd);
 
                         break;
 
@@ -2524,7 +2476,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
         case EM_CANUNDO:
             // If from MF, pass on this message
-            if (hGlbPTD EQ NULL)
+            if (lpMemPTD EQ NULL)
                 break;
 
             // Get the ptrs to the next available slot in our Undo Buffer
@@ -2560,7 +2512,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Delete selected chars and (if WM_CUT) copy to clipboard
 
             // If from MF, pass on this message
-            if (hGlbPTD EQ NULL)
+            if (lpMemPTD EQ NULL)
                 break;
 
             // Get the indices of the selected text (if any)
@@ -2612,7 +2564,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 PasteAPLChars_EM (hWnd, OptionFlags.uDefaultPaste);
 
             // If from MF, pass on this message
-            if (hGlbPTD EQ NULL)
+            if (lpMemPTD EQ NULL)
                 break;
 
             // Undo deletes the inserted (pasted) chars
@@ -3016,7 +2968,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
         case WM_PAINT:              // hdc = (HDC) wParam; // the device context to draw in
             // If from MF, pass on this message
-            if (hGlbPTD EQ NULL)
+            if (lpMemPTD EQ NULL)
                 break;
 
             // If this tab isn't active, ignore the msg
@@ -3103,24 +3055,18 @@ LRESULT WINAPI LclEditCtrlWndProc
 
 UBOOL LclSetCursor
     (HWND         hWndEC,               // Edit Ctrl window handle
-     HGLOBAL hGlbPTD,                   // PerTabData global memory handle
+     LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      UINT         hitTest)              // Hit-test code
 
 {
     // If the mouse is in the client area, ...
     if (hitTest EQ HTCLIENT)
     {
-        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
         UBOOL bExecuting;               // TRUE iff we're waiting for an execution to complete
 
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
 
         // Get executing flag
         bExecuting = lpMemPTD->bExecuting;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // If we're executing, ...
         if (bExecuting)
@@ -3237,21 +3183,14 @@ void CopyAPLChars_EM
                  uText,             // Loop counter
                  uCount;            // # formats on the clipboard
     UBOOL        bUnicode;          // TRUE iff the clipboard contains Unicdoe chars
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temp save area
     lpwszTemp = lpMemPTD->lpwszTemp;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Open the clipboard so we can write to it
     OpenClipboard (hWndEC);
@@ -3864,7 +3803,7 @@ void InsRepCharStr
     // If our parent is not MF, ...
     if (!bParentMF)
     {
-        // Get the handle of the parent window
+        // Get the handle of the parent window (SM/FE)
         hWndParent = GetParent (hWnd);
 
         // Get the current vkState
@@ -4161,21 +4100,14 @@ void ErrorHandler
      HWND    hWndEC)            // Window handle to the Edit Ctrl
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Save in global for later reference
     lpMemPTD->lpwszErrorMessage = lpwszMsg;
     lpMemPTD->uCaret = uCaret;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End ErrorHandler
 
 
@@ -4199,9 +4131,9 @@ LPSYMENTRY ParseFunctionName
 {
     HWND        hWndEC;                 // Window handle to Edit Ctrl
     HGLOBAL     hGlbTknHdr = NULL;      // Tokenized header global memory handle
-    FHLOCALVARS fhLocalVars = {0};  // Re-entrant vars
+    FHLOCALVARS fhLocalVars = {0};      // Function Header vars
     LPSYMENTRY  lpSymName = NULL;       // Ptr to SYMENTRY for the function name
-    MEMVIRTSTR  lclMemVirtStr[1] = {0};// Room for one GuardAlloc
+    MEMVIRTSTR  lclMemVirtStr[1] = {0}; // Room for one GuardAlloc
 
     Assert (IzitFE (hWndFE));
 
@@ -4343,15 +4275,11 @@ void ActivateMDIMenu
      UINT  uViewPos)
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     HMENU        hMenuView;         // View menu handle
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     SendMessageW (lpMemPTD->hWndMC,
                   WM_MDISETMENU,
@@ -4361,9 +4289,6 @@ void ActivateMDIMenu
     // Check/uncheck the View | Status Bar menu item as appropriate
     hMenuView = GetSubMenu (hMenuFrame, IDMPOS_SM_VIEW);
     CheckMenuItem (hMenuView, IDM_STATUSBAR, MF_BYCOMMAND | (OptionFlags.bViewStatusBar ? MF_CHECKED : MF_UNCHECKED));
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End ActivateMDIMenu
 
 

@@ -141,14 +141,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                  uSymCnt,           // Count of # matching STEs
                  uSymNum;           // Loop counter
     UBOOL        bRet;              // TRUE iff result is valid
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
     LPAPLCHAR    lpMemName;         // Ptr to name global memory
     LPSYMENTRY  *lpSymSort;         // Ptr to LPSYMENTRYs for sorting
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -322,9 +321,6 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         } // End SWITCH
     } // End IF/ELSE
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Initialize the LPSYMENTRY sort array
     lpSymSort = (LPSYMENTRY *) lpMemPTD->lpwszTemp;
 
@@ -367,9 +363,6 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         // Count in another matching name
         uSymCnt++;
     } // End FOR/IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Sort the HGLOBALs
     ShellSort (lpSymSort, uSymCnt, CmpLPSYMENTRY);

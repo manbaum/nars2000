@@ -170,7 +170,7 @@ typedef struct tagTKFLAGS
          Align:1,           // 00000080:  Alignment bits (available if necessary
          ImmType:4,         // 00000F00:  Type of immediate data (see IMM_TYPES) (if .TknType is TKT_xxxIMMED)
          NoDisplay:1,       // 00001000:  Do not display this token
-         Avail:19;          // FFFFE000:  Available bits
+         :19;               // FFFFE000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 #define ANON_CTRL_STRUC         \

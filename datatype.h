@@ -241,7 +241,7 @@ typedef struct tagVARARRAY_HEADER
                      PV0:1,         //      00000200:  Permutation Vector in origin-0
                      PV1:1,         //      00000400:  ...                          1
                      bSelSpec:1,    //      00000800:  Select Specification array
-                     Avail:20;      //      FFFFF000:  Available bits
+                     :20;           //      FFFFF000:  Available bits
     UINT             RefCnt;        // 08:  Reference count
     APLNELM          NELM;          // 0C:  # elements in the array
     APLRANK          Rank;          // 10:  The rank of the array
@@ -267,7 +267,7 @@ typedef struct tagFCNARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;           // 00:  Array header signature
     UINT             fnNameType:4,  // 04:  0000000F:  The type of the array (see NAME_TYPES)
-                     Avail:28;      //      FFFFFFF0:  Available bits
+                     :28;           //      FFFFFFF0:  Available bits
     UINT             RefCnt,        // 08:  Reference count
                      tknNELM;       // 0C:  # tokens in the array (each of which may point to additional arrays)
     HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)

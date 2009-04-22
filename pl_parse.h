@@ -31,11 +31,11 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
     UINT    YYInuse:1,              // 14:  00000001:  This entry is in use
             YYIndirect:1,           //      00000002:  Arg is indirect
 #ifdef DEBUG
-            Avail:6,                //      000000FC:  Available bits
+            :6,                     //      000000FC:  Available bits
             YYIndex:23,             //      7FFFFF00:  Index #
             YYFlag:1;               //      80000000:  Flag to distinguish YYAlloc from yylex
 #else
-            Avail:30;               //      FFFFFFFC:  Available bits
+            :30;                    //      FFFFFFFC:  Available bits
 #endif
     struct tagPL_YYSTYPE
            *lpYYFcnBase,            // 18:  Ptr to base function/operator
@@ -85,7 +85,7 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                  bYYERROR:1,        //      00004000   TRUE iff there's been a YYERROR
                  bSelSpec:1,        //      00008000   TRUE iff we're inside Selective Specification
                  bIniSpec:1,        //      00010000   TRUE iff we have yet to see the first name inside Selective Specification
-                 Avail:15;          //      FFFE0000:  Available bits
+                 :15;               //      FFFE0000:  Available bits
     UBOOL        bCtrlBreak;        // 2C:  TRUE iff Ctrl-Break pressed
     LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 30:  Strand stack start (static) (8 bytes)
                  lpYYStrandBase [STRAND_LEN],   // 38:  ...          base (dynamic) ...

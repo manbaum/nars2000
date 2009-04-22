@@ -1253,12 +1253,12 @@ APLU3264 CALLBACK CustomizeDlgProc
 
             break;
 
-        case WM_COMMAND:            // wNotifyCode = HIWORD(wParam); // Notification code
-                                    // wID = LOWORD(wParam);         // Item, control, or accelerator identifier
-                                    // hwndCtl = (HWND) lParam;      // Handle of control
 #define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
 #define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
 #define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
+        case WM_COMMAND:            // wNotifyCode = HIWORD(wParam); // Notification code
+                                    // wID = LOWORD(wParam);         // Item, control, or accelerator identifier
+                                    // hwndCtl = (HWND) lParam;      // Handle of control
             // If the user pressed one of our buttons, ...
             switch (idCtl)
             {

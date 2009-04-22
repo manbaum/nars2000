@@ -74,8 +74,8 @@ default:        \
 #define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (long)          // Total # extra bytes
 
 // Define common offset between the Session Manager and Function Editor
-#define GWLSF_PERTAB    0                                           // HGLOBAL of corresponding PERTABDATA struc
-#define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (HANDLE_PTR)    // Handle of the matching Edit control
+#define GWLSF_PERTAB    0                                           // Ptr to PerTabData global memory
+#define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (HANDLE_PTR)    // ...           Edit Control window
 #define GWLSF_UNDO_INI  GWLSF_HWNDEC   + 1 * sizeof (HANDLE_PTR)    // Ptr to Undo stack, initial (as allocated)
 #define GWLSF_UNDO_BEG  GWLSF_UNDO_INI + 1 * sizeof (HANDLE_PTR)    // ...                beginning
 #define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (HANDLE_PTR)    // ...                next
@@ -150,7 +150,7 @@ typedef struct tagGLBHIST
     UINT    First:1,            // 04:  00000001:  This line is the first one in the array
             ContPrev:1,         //      00000002:  This line is connected to the previous line
             ContNext:1,         //      00000004:  ...                           next     ...
-            Avail:29;           //      FFFFFFF8:  Available bits
+            :29;                //      FFFFFFF8:  Available bits
                                 // 08:  Length
 } GLBHIST, *LPGLBHIST;
 
@@ -166,7 +166,7 @@ typedef struct tagVKSTATE
 ////     lCtl:1,
 ////     rCtl:1,
           Ins:1,                // 00000008:  Replace(0) or insert(1)
-          Avail:28;             // FFFFFFF0:  Available bits
+          :28;                  // FFFFFFF0:  Available bits
 } VKSTATE, *LPVKSTATE;
 
 typedef enum tagMAKE_PROTO
@@ -254,6 +254,7 @@ typedef enum tagEXIT_TYPES
 #define strchrW         wcschr
 #define strncmpW        wcsncmp
 #define strpbrkW        wcspbrk
+#define strspnW         wcsspn
 
 // Default DTOA mode    // ***FIXME*** -- use different modes at different points
 #define DEF_DTOA_MODE   2

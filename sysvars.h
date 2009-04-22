@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -97,7 +97,7 @@ typedef enum tagFC_INDICES
     FCNDX_THOUSANDS_SEP,    // 01:  Thousands separator (L',')
     FCNDX_FBE_8_FILL,       // 02:  Format-by-example '8' fill (L'*')
     FCNDX_OVERFLOW_FILL,    // 03:  Format-by-example overflow fill (L'0')
-    FCNDX_BLANK_FILL,       // 04:  Blank fill (L'_')
+    FCNDX_BLANK_FILL,       // 04:  Blank fill (L'_') (cannot be L",.0123456789")
     FCNDX_OVERBAR,          // 05:  Overbar (WS_UTF16_OVERBAR)
     FCNDX_LENGTH,           // 06:  Length
 } FC_INDICES;
@@ -105,7 +105,7 @@ typedef enum tagFC_INDICES
 
 typedef struct tagSYSNAME
 {
-    LPWCHAR     lpwszName;      // The name
+    LPWCHAR     lpwszName;      // Ptr to the name
     UINT        uValence;       // For system functions, Niladic(0), All others (1)
     UBOOL       bSysVar;        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
     LPPRIMFNS   lpNameFcn;      // Ptr to execution routine

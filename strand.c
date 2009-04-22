@@ -1693,8 +1693,7 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
 
     lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcnOpr, FALSE);
     lpYYRes->lpYYFcnBase = NULL;
-    lpYYRes->TknCount    =
-    lpYYRes->Avail       = 0;
+    lpYYRes->TknCount    = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex     = NEG1U;
     lpYYRes->YYFlag      = 0;
@@ -1788,8 +1787,7 @@ LPPL_YYSTYPE MakePrimOp123_YY
 
     lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp123, FALSE);
     lpYYRes->lpYYFcnBase = NULL;
-    lpYYRes->TknCount    =
-    lpYYRes->Avail       = 0;
+    lpYYRes->TknCount    = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex     = NEG1U;
     lpYYRes->YYFlag      = 0;

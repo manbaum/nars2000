@@ -7371,8 +7371,7 @@ PL_YYLEX_START:
     // Initialize the rest of the fields
     lpYYLval->TknCount       =
     lpYYLval->YYInuse        =
-    lpYYLval->YYIndirect     =
-    lpYYLval->Avail          = 0;
+    lpYYLval->YYIndirect     = 0;
     lpYYLval->lpYYFcnBase    = NULL;
     lpYYLval->lpYYStrandBase = NULL;
 #ifdef DEBUG

@@ -41,6 +41,7 @@
 #define IsDirectName(a)     ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA)
 
 #define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
+#define ByteDiff(a,b)       (((LPBYTE) (a)) - (LPBYTE) (b))
 
 #define AplModI(m,a) PrimFnDydStileIisIvI ((m), (a), NULL)
 #define AplModF(m,a) PrimFnDydStileFisFvF ((m), (a), NULL)

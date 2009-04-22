@@ -51,7 +51,7 @@ typedef struct tagSIS_HEADER
                      PermFn:1,      //      00001000:  Permanent function (i.e. Magic Function)
                      Restartable:1, //      00002000:  This SI level is restartable
                      Unwind:1,      //      00004000:  Unwind this level for error message level
-                     Avail:17;      //      FFFF8000:  Available bits
+                     :17;           //      FFFF8000:  Available bits
     UINT             EventType,     // 1C:  Event type (Major, Minor) (see EVENT_TYPES)
                      CurLineNum,    // 20:  Current line # (origin-1)
                      NxtLineNum,    // 24:  Next    ...

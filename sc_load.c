@@ -675,27 +675,32 @@ UBOOL ParseSavedWsFcn_EM
 
 {
     WCHAR wcTmp;                        // Temporary char
-    LPWCHAR    lpwCharEnd,              // Temporary ptr
-               lpwDataEnd;              // ...
-    STFLAGS    stFlags = {0};           // SymTab flags
-        LPSYMENTRY lpSymEntry;          // Ptr to STE for HGLOBAL
-        HGLOBAL    hGlbObj,             // Object global memory handle
-                   hGlbOld;             // Old    ...
-    UBOOL      bRet = FALSE;            // TRUE iff result is valid
-
-        // Tell 'em we're looking for )LOAD objects
-////ZeroMemory (&stFlags, sizeof (stFlags));
-        stFlags.Inuse   = TRUE;
-        stFlags.ObjName = OBJNAME_LOD;
 
     // Mark as a function/operator
     lpSymObj->stFlags.stNameType = nameType;
 
+    if (*lpwSrc EQ FMTCHR_LEAD)
+    {
+        LPSYMENTRY lpSymEntry;          // Ptr to STE for HGLOBAL
+        HGLOBAL    hGlbObj,             // Object global memory handle
+                   hGlbOld;             // Old    ...
+        LPWCHAR    lpwCharEnd,          // Temporary ptr
+                   lpwDataEnd;          // ...
+        STFLAGS    stFlags = {0};       // SymTab flags
+
+        // Tell 'em we're looking for )LOAD objects
+        stFlags.Inuse   = TRUE;
+        stFlags.ObjName = OBJNAME_LOD;
+
         // Copy the old value
         hGlbOld = lpSymObj->stData.stGlbData;
 
-    if (*lpwSrc EQ FMTCHR_LEAD)
-    {
+        // If the old value is valid, ...
+        if (hGlbOld)
+            // Increment its reference count to keep it around
+            //   in case it gets freed by LoadWorkspaceGlobal_EM
+            DbgIncrRefCntDir (hGlbOld);
+
         // Find the trailing L' '
         lpwCharEnd = SkipToCharW (lpwSrc, L' ');
         lpwDataEnd = &lpwSrc[lstrlenW (lpwSrc)] + 1;
@@ -718,10 +723,7 @@ UBOOL ParseSavedWsFcn_EM
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
         else
-        {
             hGlbObj = lpSymEntry->stData.stGlbData;
-            lpSymEntry = NULL;
-        } // End IF/ELSE
 
         if (hGlbObj EQ NULL)
             goto CORRUPTWS_EXIT;
@@ -734,6 +736,27 @@ UBOOL ParseSavedWsFcn_EM
 
         // Increment the reference count
         DbgIncrRefCntDir (hGlbObj);
+
+        // If there's an old value, ...
+        if (hGlbOld)
+        {
+            LPDFN_HEADER lpMemDfnHdr;   // Ptr to DFN_HEADER global memory
+
+            // Clear the ptr type bits
+            hGlbOld = ClrPtrTypeDirAsGlb (hGlbOld);
+
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlbOld);
+
+            // Save the STE flags as the STE is still active
+            lpMemDfnHdr->SaveSTEFlags = TRUE;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbOld); lpMemDfnHdr = NULL;
+
+            // Free the old value
+            FreeResultGlobalDFLV (hGlbOld); hGlbOld = NULL;
+        } // End IF
     } else
     {
         // Convert the single {name} or other char to UTF16_xxx
@@ -757,16 +780,6 @@ UBOOL ParseSavedWsFcn_EM
 
         // Save in the result
         lpSymObj->stData.stChar = wcTmp;
-
-        // Ensure it has a value
-        hGlbObj = NULL;
-    } // End IF
-
-    // If there's an old value and it's different, ...
-    if (hGlbOld && hGlbOld NE hGlbObj)
-    {
-        // Free the old value
-        FreeResultGlobalDFLV (hGlbOld); hGlbOld = NULL;
     } // End IF
 
     return TRUE;
@@ -1437,6 +1450,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 SF_Fcns.SF_CreationTime = SF_CreationTimeLW;// Ptr to get function creation time
                 SF_Fcns.SF_LastModTime  = SF_LastModTimeLW; // Ptr to get function last modification time
                 SF_Fcns.SF_UndoBuffer   = SF_UndoBufferLW;  // Ptr to get function last modification time
+                SF_Fcns.LclParams       = &LW_Params;       // Ptr to local parameters
 
                 // Fill in local values
                 LW_Params.lpwSectName   = lpwSectName;      // Ptr to section name
@@ -1446,9 +1460,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LW_Params.uMaxSize      = uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
                 LW_Params.ftCreation    = ftCreation;       // Function Creation Time
                 LW_Params.ftLastMod     = ftLastMod;        // Function Last Modification Time
-
-                // Save ptr to local parameters
-                SF_Fcns.LclParams   = &LW_Params;
 
                 // Call common routine
                 if (!SaveFunctionCom (NULL, &SF_Fcns))

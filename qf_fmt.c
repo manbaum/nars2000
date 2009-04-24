@@ -201,109 +201,107 @@ static APLCHAR MonLineFMT18[] =
 static APLCHAR MonLineFMT19[] =
   L":if 1" $GE $MATCH L"Z" $IS L"1/R";
 
-static APLCHAR MonLineFMT21[] =
+static APLCHAR MonLineFMT20[] =
   L"  :if 0=" $RHO $RHO L"R";
 
-static APLCHAR MonLineFMT22[] =
+static APLCHAR MonLineFMT21[] =
   L"    Z" $IS $FORMAT L"Z " $DIAMOND L" Z" $IS L"(1," $RHO L"Z)" $RHO L"Z";
 
-static APLCHAR MonLineFMT23[] =
+static APLCHAR MonLineFMT22[] =
   L"    :if Type='" $LDC_LT_HORZ L"'";
 
-static APLCHAR MonLineFMT24[] =
+static APLCHAR MonLineFMT23[] =
   L"      Z" $IS L"Z" $COMMABAR L"'" $NEG L"'";
 
-static APLCHAR MonLineFMT25[] =
+static APLCHAR MonLineFMT24[] =
   L"    :elseif Type='~'";
 
-static APLCHAR MonLineFMT26[] =
+static APLCHAR MonLineFMT25[] =
   L"      Z" $IS L"Z" $COMMABAR L"'~'";
 
-static APLCHAR MonLineFMT27[] =
+static APLCHAR MonLineFMT26[] =
   L"    :endif";
 
-static APLCHAR MonLineFMT28[] =
+static APLCHAR MonLineFMT27[] =
   L"    :return";
 
-static APLCHAR MonLineFMT29[] =
+static APLCHAR MonLineFMT28[] =
   L"  :endif";
 
-static APLCHAR MonLineFMT32[] =
+static APLCHAR MonLineFMT29[] =
   L"  Z" $IS L"((-2" $MAX $RHO $RHO L"Z)" $TAKE L"1," $RHO L"Z)" $RHO L"Z" $IS $FORMAT L"Z";
 
-static APLCHAR MonLineFMT33[] =
-  L"  ";
-
-static APLCHAR MonLineFMT34[] =
+static APLCHAR MonLineFMT30[] =
   L"  :if 0" $EPSILON $RHO L"R";
 
-static APLCHAR MonLineFMT35[] =
+static APLCHAR MonLineFMT31[] =
   L"    Z" $IS L"Z,' " $ZILDE L"'[Type='~']";
 
-static APLCHAR MonLineFMT36[] =
+static APLCHAR MonLineFMT32[] =
   L"  :endif";
 
-static APLCHAR MonLineFMT39[] =
+static APLCHAR MonLineFMT33[] =
   L"  :while 2<" $RHO $RHO L"Z";
 
-static APLCHAR MonLineFMT40[] =
+static APLCHAR MonLineFMT34[] =
   L"    Z" $IS $NEG L"1" $DROP L"[" $NEG L"2],[0 1] Z,[" $NEG L"2]' '";
 
-static APLCHAR MonLineFMT41[] =
+static APLCHAR MonLineFMT35[] =
   L"  :endwhile";
 
-static APLCHAR MonLineFMT44[] =
+static APLCHAR MonLineFMT36[] =
   L"  Z" $IS L"Z #Box R";
 
-static APLCHAR MonLineFMT45[] =
+static APLCHAR MonLineFMT37[] =
   L":else";
 
-static APLCHAR MonLineFMT47[] =
+static APLCHAR MonLineFMT38[] =
   L"  :if 0" $EPSILON $RHO L"R";
 
-static APLCHAR MonLineFMT48[] =
+static APLCHAR MonLineFMT39[] =
   L"    Z" $IS L"#MonFMT " $TAKE L"R";
 
-static APLCHAR MonLineFMT49[] =
+static APLCHAR MonLineFMT40[] =
   L"    Z" $IS L"Z #Box R";
 
-static APLCHAR MonLineFMT50[] =
+static APLCHAR MonLineFMT41[] =
   L"  :else";
 
-static APLCHAR MonLineFMT51[] =
+static APLCHAR MonLineFMT42[] =
   L"    Z" $IS L"''";
 
-static APLCHAR MonLineFMT52[] =
+static APLCHAR MonLineFMT43[] =
   L"    :forlcl I :in R";
 
-static APLCHAR MonLineFMT54[] =
+static APLCHAR MonLineFMT44[] =
   L"      A" $IS L"#MonFMT I";
 
-static APLCHAR MonLineFMT56[] =
+static APLCHAR MonLineFMT45[] =
   L"      D" $IS $MATCH L"I";
 
-static APLCHAR MonLineFMT58[] =
+static APLCHAR MonLineFMT46[] =
   L"      :if 0=D";
 
-static APLCHAR MonLineFMT59[] =
+static APLCHAR MonLineFMT47[] =
   L"        A" $IS L"' '" $COMMABAR L"A";
 
-static APLCHAR MonLineFMT60[] =
+static APLCHAR MonLineFMT48[] =
   L"      :endif";
 
-static APLCHAR MonLineFMT61[] =
+static APLCHAR MonLineFMT49[] =
   L"      Z" $IS L"Z," $ENCLOSE L"A";
 
-static APLCHAR MonLineFMT62[] =
+static APLCHAR MonLineFMT50[] =
   L"    :endforlcl";
 
-static APLCHAR MonLineFMT63[] =
-  L"    Z" $IS L"(" $FORMAT L"(" $RHO L"R)" $RHO L"Z) #Box R";
+static APLCHAR MonLineFMT51[] =
+  L"    Z" $IS L"(' '," $DISCLOSE L",/(0" $DISCLOSE $DISCLOSE $MAX L"/" $RHO L"¨Z)"
+    $TAKE L"[0]¨Z,¨' ') #Box R";
 
-static APLCHAR MonLineFMT64[] =
+static APLCHAR MonLineFMT52[] =
   L"  :endif";
 
-static APLCHAR MonLineFMT65[] =
+static APLCHAR MonLineFMT53[] =
   L":endif";
 
 static LPAPLCHAR MonBodyFMT[] =
@@ -326,6 +324,7 @@ static LPAPLCHAR MonBodyFMT[] =
  MonLineFMT17,
  MonLineFMT18,
  MonLineFMT19,
+ MonLineFMT20,
  MonLineFMT21,
  MonLineFMT22,
  MonLineFMT23,
@@ -335,32 +334,30 @@ static LPAPLCHAR MonBodyFMT[] =
  MonLineFMT27,
  MonLineFMT28,
  MonLineFMT29,
+ MonLineFMT30,
+ MonLineFMT31,
  MonLineFMT32,
  MonLineFMT33,
  MonLineFMT34,
  MonLineFMT35,
  MonLineFMT36,
+ MonLineFMT37,
+ MonLineFMT38,
  MonLineFMT39,
  MonLineFMT40,
  MonLineFMT41,
+ MonLineFMT42,
+ MonLineFMT43,
  MonLineFMT44,
  MonLineFMT45,
+ MonLineFMT46,
  MonLineFMT47,
  MonLineFMT48,
  MonLineFMT49,
  MonLineFMT50,
  MonLineFMT51,
  MonLineFMT52,
- MonLineFMT54,
- MonLineFMT56,
- MonLineFMT58,
- MonLineFMT59,
- MonLineFMT60,
- MonLineFMT61,
- MonLineFMT62,
- MonLineFMT63,
- MonLineFMT64,
- MonLineFMT65,
+ MonLineFMT53,
 };
 
 MAGIC_FUNCTION MF_MonFMT =

@@ -1759,6 +1759,9 @@ LRESULT WINAPI LclEditCtrlWndProc
         case WM_SIZE:               // fwSizeType = wParam;      // Resizing flag
                                     // nWidth = LOWORD(lParam);  // Width of client area
                                     // nHeight = HIWORD(lParam); // Height of client area
+            // Repaint the client area
+            InvalidateRect (hWnd, NULL, TRUE);
+
             // If from MF, pass on this message
             if (lpMemPTD EQ NULL)
                 break;

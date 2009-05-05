@@ -817,7 +817,8 @@ HGLOBAL GetPrivateProfileGlbComW
     WCHAR   wszTemp[1024];                          // Temporary storage for string results
     APLNELM aplNELMRes;                             // Result NELM
     APLUINT ByteRes;                                // # bytes in the result
-    HGLOBAL hGlbRes;                                // Result global memory handle
+    HGLOBAL hGlbRes,                                // Result global memory handle
+            hGlbChk;                                // Result from CheckGlobals
     LPVOID  lpMemRes,                               // Ptr to result global memory
             lpMemInp;                               // Ptr to input global memory
 
@@ -880,6 +881,21 @@ HGLOBAL GetPrivateProfileGlbComW
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Check to see if this value duplicates one of the already
+    //   allocated permanent globals
+    hGlbChk = CheckGlobals (hGlbRes);
+    if (hGlbChk)
+    {
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+
+        // Copy the global memory handle
+        hGlbRes = CopySymGlbDirAsGlb (hGlbChk);
+
+        // Clear the ptr type bits
+        hGlbRes = ClrPtrTypeDir (hGlbRes);
+    } // End IF
 
     return hGlbRes;
 } // End GetPrivateProfileGlbComW

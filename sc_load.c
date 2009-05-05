@@ -240,15 +240,6 @@ UBOOL LoadWorkspace_EM
                 HGLOBAL      hGlbDfnHdr;            // Defined function global memory handle
                 LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
 
-////////////////__try
-////////////////{
-////////////////    uMaxSize = 1 / (uSID - 1);
-////////////////} __except (CheckException (GetExceptionInformation (), L"LoadWorkspace_EM"))
-////////////////{
-////////////////    // Display message for unhandled exception
-////////////////    DisplayException ();
-////////////////} // End __try/__except
-
                 // If there are more SI levels and the previous level was suspended,
                 //   create a new SIS struc for immediate execution mode
                 if (uSID < uSILevel
@@ -483,7 +474,10 @@ UBOOL LoadWorkspace_EM
                 } else
                 {
                     // Out with the old
-                    if (lpSymEntry->stFlags.Value && !lpSymEntry->stFlags.Imm)
+                    // Release the current value of the STE
+                    //   if it's a global and has a value
+                    if (!lpSymEntry->stFlags.Imm
+                     &&  lpSymEntry->stFlags.Value)
                     {
                         FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
                     } // End IF
@@ -1080,7 +1074,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
     APLSTYPE     aplTypeObj;                // Object storage type
     APLNELM      aplNELMObj;                // Object NELM
     APLRANK      aplRankObj;                // Object rank
-    HGLOBAL      hGlbObj;                   // Object global memory handle
+    HGLOBAL      hGlbObj,                   // Object global memory handle
+                 hGlbChk;                   // Result from CheckGlobals
     APLUINT      ByteObj,                   // # bytes needed for the object
                  uObj;                      // Loop counter
     STFLAGS      stFlags = {0};             // SymTab flags
@@ -1135,8 +1130,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
     switch (*lpwSrc++)
     {
         case L'V':
-            // ***FIXME*** -- Do we need to restore the object PermNdx?
-
             Assert (*lpwSrc EQ L' '); lpwSrc++;
 
             // Get the object storage type
@@ -1192,7 +1185,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 ////////////// It will be incremented upon each reference
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeObj;
-////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND ***FIXME*** -- Set correct PERMNDX_xxx
+////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMObj;
@@ -1356,6 +1349,18 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
+
+            // Check to see if this value duplicates one of the already
+            //   allocated permanent globals
+            hGlbChk = CheckGlobals (hGlbObj);
+            if (hGlbChk)
+            {
+                // We no longer need this storage
+                FreeResultGlobalVar (hGlbObj); hGlbObj = NULL;
+
+                // Copy the global memory handle
+                hGlbObj = CopySymGlbDirAsGlb (hGlbChk);
+            } // End IF
 
             // Set the ptr type bits
             hGlbObj = MakePtrTypeGlb (hGlbObj);
@@ -1657,6 +1662,163 @@ ERROR_EXIT:
     return NULL;
 } // End LoadWorkspaceGlobal_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CheckGlobals
+//
+//  Compare a global memory handle against permanent globals
+//    to avoid duplicates
+//***************************************************************************
+
+HGLOBAL CheckGlobals
+    (HGLOBAL hGlbObj)                   // Incoming global memory handle
+
+{
+    // Compare the incoming handle against the permanent globals
+    if (CompareGlobals (hGlbObj, hGlbQuadIC_SYS))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadIC_SYS);
+    else
+    if (CompareGlobals (hGlbObj, hGlbQuadIC_CWS))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadIC_CWS);
+    else
+    if (CompareGlobals (hGlbObj, hGlbQuadFC_SYS))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadFC_SYS);
+    else
+    if (CompareGlobals (hGlbObj, hGlbQuadFC_CWS))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadFC_CWS);
+    else
+    if (CompareGlobals (hGlbObj, hGlbQuadDM))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadDM);
+    else
+    if (CompareGlobals (hGlbObj, hGlbV0Char))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbV0Char);
+    return NULL;
+} // End CheckGlobals
+
+
+//***************************************************************************
+//  $CompareGlobals
+//
+//  Compare the values in two global memory handles
+//***************************************************************************
+
+UBOOL CompareGlobals
+    (HGLOBAL hGlb1,                     // Global memory handle #1
+     HGLOBAL hGlb2)                     // ...                   2
+
+{
+    UBOOL             bRet = FALSE;     // TRUE iff the result is valid
+    LPVARARRAY_HEADER lpMemGlb1,        // Ptr to global memory #1
+                      lpMemGlb2;        // ...                   2
+    APLSTYPE          aplType;          // Common storage type
+    APLNELM           aplNELM;          // ...    NELM
+    APLRANK           aplRank;          // ...    rank
+    UINT              uCnt;             // Loop counter
+
+    // Clear the ptr type bits
+    hGlb1 = ClrPtrTypeDir (hGlb1);
+    hGlb2 = ClrPtrTypeDir (hGlb2);
+
+    if (!IsValidHandle (hGlb1)
+     || !IsValidHandle (hGlb2))
+        return FALSE;
+
+    // Lock the memory to get a ptr to it
+    lpMemGlb1 = MyGlobalLock (hGlb1);
+    lpMemGlb2 = MyGlobalLock (hGlb2);
+
+    // Get the storage type and NELM
+    aplType = lpMemGlb1->ArrType;
+    aplNELM = lpMemGlb1->NELM;
+    aplRank = lpMemGlb1->Rank;
+
+    // Check the signature
+    if (lpMemGlb1->Sig.nature NE lpMemGlb2->Sig.nature)
+        goto ERROR_EXIT;
+
+    // Check the storage type
+    if (aplType NE lpMemGlb2->ArrType)
+        goto ERROR_EXIT;
+
+    // Check the NELM
+    if (aplNELM NE lpMemGlb2->NELM   )
+        goto ERROR_EXIT;
+
+    // Check the rank
+    if (aplRank NE lpMemGlb2->Rank   )
+        goto ERROR_EXIT;
+
+    // Skip over the header to the dimensions
+    (LPVOID) lpMemGlb1 = VarArrayBaseToDim (lpMemGlb1);
+    (LPVOID) lpMemGlb2 = VarArrayBaseToDim (lpMemGlb2);
+
+    // Check the dimensions
+    for (uCnt = 0; uCnt < aplRank; uCnt++)
+    if (*((LPAPLDIM) lpMemGlb1)++ NE *((LPAPLDIM) lpMemGlb2)++)
+        goto ERROR_EXIT;
+
+    // At this point, both lpMemGlb1 & lpMemGlb2 point to
+    //   their respective data -- compare 'em
+    bRet = CompareMemory (lpMemGlb1,
+                          lpMemGlb2,
+                          CalcArraySize (aplType, aplNELM, aplRank) - CalcHeaderSize (aplRank));
+ERROR_EXIT:
+    // We no longer need these ptrs
+    MyGlobalUnlock (hGlb2); lpMemGlb2 = NULL;
+    MyGlobalUnlock (hGlb1); lpMemGlb1 = NULL;
+
+    return bRet;
+} // End CompareGlobals
+
+
+//***************************************************************************
+//  $CompareMemory
+//
+//  Compare two areas of global memory
+//***************************************************************************
+
+UBOOL CompareMemory
+    (LPVOID  lpMemGlb1,                 // Ptr to global memory #1
+     LPVOID  lpMemGlb2,                 // ...                   2
+     APLUINT uByteLen)                  // Byte length to compare
+
+{
+    APLUINT uLen,                       // Current length (DWORDs, WORDs, BYTEs)
+            uCnt;                       // Loop counter
+
+    // Calculate the DWORD length
+    uLen = uByteLen / 4;
+    uByteLen -= uLen * 4;
+
+    for (uCnt = 0; uCnt < uLen; uCnt++)
+    if (*((LPDWORD) lpMemGlb1)++ NE *((LPDWORD) lpMemGlb2)++)
+        return FALSE;
+
+    // Calculate the remaining WORD length
+    uLen = uByteLen / 2;
+    uByteLen -= uLen * 2;
+
+    for (uCnt = 0; uCnt < uLen; uCnt++)
+    if (*((LPWORD) lpMemGlb1)++ NE *((LPWORD) lpMemGlb2)++)
+        return FALSE;
+
+    // Calculate the remaining BYTE length
+    uLen = uByteLen / 1;
+////uByteLen -= uLen * 1;
+
+    for (uCnt = 0; uCnt < uLen; uCnt++)
+    if (*((LPBYTE) lpMemGlb1)++ NE *((LPBYTE) lpMemGlb2)++)
+        return FALSE;
+
+    return TRUE;
+} // End CompareMemory
 
 
 //***************************************************************************

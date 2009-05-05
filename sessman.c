@@ -1298,12 +1298,11 @@ NORMAL_EXIT:
         } // End WM_CREATE
 #undef  lpMDIcs
 
+#define fwEvent     (LOWORD (wParam))
+#define idChild     (HIWORD (wParam))
         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
                                     // idChild = HIWORD(wParam);  // Identifier of child window
                                     // lValue = lParam;           // Child handle, or cursor coordinates
-#define fwEvent     (LOWORD (wParam))
-#define idChild     (HIWORD (wParam))
-
             // Check for WM_CREATE from the Edit Ctrl/Debugger
             switch (fwEvent)
             {
@@ -1342,7 +1341,6 @@ NORMAL_EXIT:
             } // End SWITCH
 
             return FALSE;           // We handled the msg
-
 #undef  idChild
 #undef  fwEvent
 
@@ -1718,18 +1716,6 @@ NORMAL_EXIT:
                     // Calculate its width & height
                     nWidthMC  = rc.right  - rc.left;
                     nHeightMC = rc.bottom - rc.top;
-
-                    // If the Status Bar window is visible, ...
-                    if (OptionFlags.bViewStatusBar)
-                    {
-                        RECT rcStatus;
-
-                        // Get the window rectangle of the Status Bar window
-                        GetWindowRect (hWndStatus, &rcStatus);
-
-                        // Reduce the MC height by the Status Bar window height
-                        nHeightMC -= (rcStatus.bottom - rcStatus.top);
-                    } // End IF
 
                     // Calculate the height of the DB & SM windows
                     nHeightSM = 350;

@@ -1418,14 +1418,18 @@ LRESULT APIENTRY MFWndProc
                 HDWP hdwp;
                 RECT rc;
                 int  rcLeft, rcRight, rcBottom;
+                UINT uTabCnt,                   // # tabs in Tab Ctrl
+                     uCnt;                      // Loop counter
 
                 // Calculate the display rectangle, assuming the
                 // tab control is the size of the client area.
                 SetRect (&rc,
                          0, 0,
                          LOWORD (lParam), HIWORD (lParam));
+                // Run through all tabs (and hence all MDI Client Windows)
+                uTabCnt = TabCtrl_GetItemCount (hWndTC);
 
-                hdwp = BeginDeferWindowPos (2);
+                hdwp = BeginDeferWindowPos (1 + uTabCnt);
 
                 // Size the tab control to fit the client area.
                 DeferWindowPos (hdwp,           // Handle to internal structure
@@ -1463,21 +1467,28 @@ LRESULT APIENTRY MFWndProc
                     rc.bottom -= (rcStatus.bottom - rcStatus.top);
                 } // End IF
 
-                // Get the window handle of the currently active MDI Client
-                hWndMC = GetActiveMC (hWndTC);
+                // Loop through the tabs
+                for (uCnt = 0; uCnt < uTabCnt; uCnt++)
+                {
+                    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData
 
-                // If it's valid, ...
-                if (hWndMC)
-                    // Position and size the MDI Child window to fit the
-                    // tab control's display area
-                    DeferWindowPos (hdwp,               // Handle to internal structure
-                                    hWndMC,             // Handle of window to position
-                                    NULL,               // Placement-order handle
-                                    rc.left,            // X-position
-                                    rc.top,             // Y-position
-                                    rc.right - rc.left, // X-size
-                                    rc.bottom - rc.top, // Y-size
-                                    0);                 // Window-positioning flags
+                    // Get the ptr to this tab's PerTabData global memory
+                    lpMemPTD = GetPerTabPtr (uCnt);
+
+                    // If it and the MDI Client's window handle are both valid, ...
+                    if (lpMemPTD && lpMemPTD->hWndMC)
+                        // Position and size the MDI Child window to fit the
+                        // tab control's display area
+                        DeferWindowPos (hdwp,               // Handle to internal structure
+                                        lpMemPTD->hWndMC,   // Handle of window to position
+                                        NULL,               // Placement-order handle
+                                        rc.left,            // X-position
+                                        rc.top,             // Y-position
+                                        rc.right - rc.left, // X-size
+                                        rc.bottom - rc.top, // Y-size
+                                        0);                 // Window-positioning flags
+                } // End FOR
+
                 // Tell the status window about the new Status Parts right edge
                 SetStatusParts (rc.right - rc.left);
 
@@ -1523,10 +1534,9 @@ LRESULT APIENTRY MFWndProc
 
             break;                  // Continue with next handler
 
+#define lpnmh   (*(LPNMHDR *) &lParam)
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
-#define lpnmh   (*(LPNMHDR *) &lParam)
-
             // Split cases based upon the notification code
             switch (lpnmh->code)
             {
@@ -1607,11 +1617,10 @@ LRESULT APIENTRY MFWndProc
             break;                  // Continue with next handler
 #undef  lpnmh
 
+#define lpdis   (*(LPDRAWITEMSTRUCT *) &lParam)
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // control identifier
                                     // lpdis = (LPDRAWITEMSTRUCT) lParam; // item-drawing information
         {
-#define lpdis   (*(LPDRAWITEMSTRUCT *) &lParam)
-
             // Ensure this message is for our tab control
             if (lpdis->CtlType NE ODT_TAB)
                 break;
@@ -1633,8 +1642,8 @@ LRESULT APIENTRY MFWndProc
             } // End SWITCH
 
             break;
-#undef  lpdis
         } // End WM_DRAWITEM
+#undef  lpdis
 
 ////////case WM_HELP:
 ////////{

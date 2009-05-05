@@ -374,13 +374,12 @@ UBOOL WINAPI CreateNewTabInThread
         goto ERROR_EXIT;
     } // End IF
 
-////// Save the PerTabData ptr with the window
-////SetPropW (lpMemPTD->hWndMC, L"PTD", lpMemPTD);
-////
     // Show and paint the window
     ShowWindow (lpMemPTD->hWndMC, SW_SHOWNORMAL);
     UpdateWindow (lpMemPTD->hWndMC);
 
+    // Resize the Master Frame so as to size this MDI Client window
+    PostMessageW (hWndMF, MYWM_RESIZE, 0, 0);
 #ifdef DEBUG
     // Create the Debugger window first
     //   so it can be used by subsequent windows

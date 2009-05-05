@@ -1374,7 +1374,8 @@ void UnlocalizeSTEs
 
             // Release the current value of the STE
             //   if it's not immediate and has a value
-            if (!lpSymEntryCur->stFlags.Imm && lpSymEntryCur->stFlags.Value)
+            if (!lpSymEntryCur->stFlags.Imm
+             &&  lpSymEntryCur->stFlags.Value)
             {
                 // Get the global memory handle
                 hGlbData = lpSymEntryCur->stData.stGlbData;
@@ -1403,6 +1404,7 @@ void UnlocalizeSTEs
                     case NAMETYPE_FN12:
                     case NAMETYPE_OP1:
                     case NAMETYPE_OP2:
+                    case NAMETYPE_OP3:
                         if (lpSymEntryCur->stFlags.UsrDfn)
                             // Free the global user-defined function/operator
                             FreeResultGlobalDfn (hGlbData);
@@ -2043,8 +2045,17 @@ LPSYMENTRY LocalizeSymEntries
         // Copy the SYMENTRY to the SIS
         *lpSymEntryNxt = **lplpSymEntrySrc;
 
-        // Erase the Symbol Table Entry
-        //   unless it's a []var
+        // If the SYMENTRY is a system var, ...
+        if (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
+        {
+            // If the system var is a global, ...
+            if (!lpSymEntryNxt->stFlags.Imm)
+                // Increment the reference count in global memory
+                //   as we retain the value over localization
+                DbgIncrRefCntDir (lpSymEntryNxt->stData.stGlbData);
+        } else
+            // Erase the Symbol Table Entry
+            //   unless it's a []var
         EraseSTE (*lplpSymEntrySrc);
 
         // Set the ptr to the previous entry to the STE in the shadow chain
@@ -2052,7 +2063,7 @@ LPSYMENTRY LocalizeSymEntries
 
         // Save the SI level for this SYMENTRY
         Assert (lpMemPTD->SILevel);
-        (*lplpSymEntrySrc)->stSILevel  = lpMemPTD->SILevel - 1;
+        (*lplpSymEntrySrc)->stSILevel = lpMemPTD->SILevel - 1;
 
         // Skip to next entries
         lplpSymEntrySrc++;

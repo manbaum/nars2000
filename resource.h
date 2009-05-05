@@ -131,7 +131,8 @@
 #define IDM_REDO                                 701
 #define IDM_CUT                                  702
 #define IDM_DELETE                               703
-#define IDM_SELECTALL                            704
+#define IDM_DELETEALL                            704
+#define IDM_SELECTALL                            705
 
 #define IDM_COPY                                 710
 #define IDM_COPY_APLWIN                          711

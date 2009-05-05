@@ -546,16 +546,36 @@ LRESULT WINAPI LclListboxWndProc
 
                     break;
 
-                case IDM_CUT:
-                    DbgBrk ();
+                case IDM_DELETE:
+                    // Delete selected items
+                    while (TRUE)
+                    {
+                        UINT uNumItems,         // # selected items
+                             uSelItems[128];    // Indices of selected items to delete
 
-
-
-
+                        // Get the indices of the selected items
+                        uNumItems =
+                          SendMessageW (hWnd,
+                                        LB_GETSELITEMS,
+                                        countof (uSelItems),
+                              (LPARAM) &uSelItems);
+                        // If there are any items still selected, ...
+                        if (uNumItems)
+                            // Loop through them all
+                            while (uNumItems--)
+                                // Delete this item
+                                SendMessageW (hWnd,
+                                              LB_DELETESTRING,
+                                              uSelItems[uNumItems],
+                                              0);
+                        else
+                            break;
+                    } // End WHILE
 
                     break;
 
-                case IDM_DELETE:
+                case IDM_DELETEALL:
+                    // Delete all items
                     DbgClr ();
 
                     break;
@@ -597,18 +617,18 @@ LRESULT WINAPI LclListboxWndProc
             AppendMenu (hMenu,                  // Handle
                         mfState
                       | MF_STRING,              // Flags
-                        IDM_CUT,
-                        "C&ut");
+                        IDM_DELETE,
+                        "&Delete");
             AppendMenu (hMenu,                  // Handle
                         MF_ENABLED
                       | MF_STRING,              // Flags
-                        IDM_DELETE,
-                        "&Clear All");
+                        IDM_DELETEALL,
+                        "Delet&e All");
             AppendMenu (hMenu,                  // Handle
                         MF_ENABLED
                       | MF_STRING,              // Flags
                         IDM_SELECTALL,
-                        "Select &All");
+                        "Selec&t All");
 
             TrackPopupMenu (hMenu,              // Handle
                             TPM_CENTERALIGN

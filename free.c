@@ -860,9 +860,6 @@ void FreeResultGlobalDfnStruc
 
     if (lpMemDfnHdr->hGlbTknHdr)
     {
-        // Free the tokens
-        Untokenize (lpMemDfnHdr->hGlbTknHdr);
-
         // We no longer need this storage
         DbgGlobalFree (lpMemDfnHdr->hGlbTknHdr); lpMemDfnHdr->hGlbTknHdr = NULL;
     } // End IF

@@ -198,7 +198,7 @@ BEGIN
                     IDC_VERSION,10,5,115,18,NOT WS_GROUP
     LTEXT           "Copyright © 2006-9 Sudley Place Software\nAll rights reserved.",
                     IDC_STATIC,10,30,150,18,NOT WS_GROUP
-    ICON            IDI_ABOUT,IDC_LOADEDFROM,145,25, 0, 0,SS_NOTIFY | SS_REALSIZEIMAGE
+    ICON            IDI_NARS,IDC_LOADEDFROM,145,25, 0, 0,SS_NOTIFY | SS_REALSIZEIMAGE
     LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see",
                     IDC_STATIC,10,55,170,20
     LTEXT           "http://www.nars2000.org/License.html",
@@ -908,6 +908,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
+IDI_NARS                ICON    DISCARDABLE     "Images\\NARS.ico"
 IDI_CLOSE               ICON    DISCARDABLE     "Images\\Close.ico"
 IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF.ico"
 IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF.ico"

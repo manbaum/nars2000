@@ -33,6 +33,7 @@ WCHAR wszVarFileInfo[] = L"\\VarFileInfo\\Translation",
 
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
+extern HICON hIconAbout;
 
 
 //***************************************************************************
@@ -118,6 +119,9 @@ APLU3264 CALLBACK AboutDlgProc
         case WM_INITDIALOG:
         {
             WCHAR wszTemp[512];
+
+            // Change the icon to our own
+            SendMessageW (hDlg, WM_SETICON, ICON_BIG, (LPARAM) (HANDLE_PTR) hIconAbout);
 
             // Format the version #
             wsprintfW (wszTemp, lpwszVersion, wszFileVer);

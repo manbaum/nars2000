@@ -81,6 +81,7 @@
 #define IDI_WC_SMALL                             119
 #define IDI_ABOUT                                120
 #define IDI_CLOSE                                121
+#define IDI_NARS                                 122
 
 #define IDD_ABOUT                                130
 #define IDD_UPDATES                              131

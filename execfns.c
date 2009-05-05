@@ -1,3 +1,4 @@
+
 //***************************************************************************
 //  NARS2000 -- Execution Functions
 //***************************************************************************
@@ -275,7 +276,7 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
     LPTOKEN           lptkAxis2;    // Ptr to secondary axis token (may be NULL)
 
     // Clear the ptr type bits
-    hGlbFcn = ClrPtrTypeDirAsGlb (hGlbFcn);
+    hGlbFcn = ClrPtrTypeDir (hGlbFcn);
 
     // Lock the memory to get a ptr to it
     lpHeader = MyGlobalLock (hGlbFcn);

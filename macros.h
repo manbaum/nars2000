@@ -253,13 +253,8 @@
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)                     ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeDirAsSym(lpMem)   (LPSYMENTRY) ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeDirAsGlb(lpMem)   (HGLOBAL)    ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeDirAsFcn(lpMem)   (LPPRIMFNS)  ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeInd(lpMem)                     ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
-#define ClrPtrTypeIndAsSym(lpMem)   (LPSYMENTRY) ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
-#define ClrPtrTypeIndAsGlb(lpMem)   (HGLOBAL)    ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
+#define ClrPtrTypeDir(lpMem)        (LPVOID)     ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
+#define ClrPtrTypeInd(lpMem)        (LPVOID)     ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.

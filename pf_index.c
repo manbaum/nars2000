@@ -152,7 +152,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplNELMSub    = aplNELMLst;
             aplRankSub    = aplRankLst;
 
-            hGlbSub  = ClrPtrTypeDirAsGlb (hGlbLst);
+            hGlbSub  = ClrPtrTypeDir (hGlbLst);
             lpMemSub = MyGlobalLock (hGlbSub);
         } // End IF/ELSE
 
@@ -386,7 +386,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                 case PTRTYPE_HGLOBAL:
                     // Get the item global memory handle
-                    hGlbItm = ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemSub)[uSub]);
+                    hGlbItm = ClrPtrTypeDir (((LPAPLNESTED) lpMemSub)[uSub]);
 
                     // Get the attributes (Type, NELM, and Rank) of the list arg item
                     AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, NULL);
@@ -879,9 +879,9 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 
         // Make a prototype for the result
         hGlbProto =
-          MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemNam),   // Proto arg handle
-                               lptkFunc,                        // Ptr to function token
-                               MP_CHARS);                       // CHARs allowed
+          MakeMonPrototype_EM (ClrPtrTypeInd (lpMemNam),    // Proto arg handle
+                               lptkFunc,                    // Ptr to function token
+                               MP_CHARS);                   // CHARs allowed
         // We no longer this ptr
         MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
 
@@ -1160,9 +1160,9 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
                 HGLOBAL hGlbProto;          // Prototype global memory handle
 
                 hGlbProto =
-                  MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemNam),   // Proto arg handle
-                                       lptkFunc,                        // Ptr to function token
-                                       MP_CHARS);                       // CHARs allowed
+                  MakeMonPrototype_EM (ClrPtrTypeInd (lpMemNam),    // Proto arg handle
+                                       lptkFunc,                    // Ptr to function token
+                                       MP_CHARS);                   // CHARs allowed
                 if (!hGlbProto)
                     goto ERROR_EXIT;
                 *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
@@ -2248,7 +2248,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
         goto ERROR_EXIT;
 
     // Get the global memory handle
-    hGlbRes = ClrPtrTypeDirAsGlb (lpYYRes2->tkToken.tkData.tkGlbData);
+    hGlbRes = ClrPtrTypeDir (lpYYRes2->tkToken.tkData.tkGlbData);
 
     // Free the second result
     YYFree (lpYYRes2); lpYYRes2 = NULL;
@@ -2395,7 +2395,7 @@ UBOOL ArrayIndexSetSingLst_EM
         case TKT_LSTARRAY:
         case TKT_VARARRAY:              // To handle Selective Specification
             // Set the vars for an HGLOBAL
-            hGlbSubLst = ClrPtrTypeDirAsGlb (lptkLstArg->tkData.tkGlbData);
+            hGlbSubLst = ClrPtrTypeDir (lptkLstArg->tkData.tkGlbData);
             AttrsOfGlb (hGlbSubLst, &aplTypeSubLst, &aplNELMSubLst, &aplRankSubLst, NULL);
             lpMemSubLst = MyGlobalLock (hGlbSubLst);
 
@@ -2693,7 +2693,7 @@ UBOOL ArrayIndexSetSingLst_EM
           goto ERROR_EXIT;
 
     // Clear the type bits
-    *lphGlbRes = ClrPtrTypeDirAsGlb (*lphGlbRes);
+    *lphGlbRes = ClrPtrTypeDir (*lphGlbRes);
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -2821,7 +2821,7 @@ UBOOL ArrayIndexSetSingLst_EM
                 case PTRTYPE_HGLOBAL:
                     // Get the global memory handle
                     hGlbSubLst2 = ((LPAPLHETERO) lpMemSubLst)[uRes];
-                    hGlbSubLst2 = ClrPtrTypeDirAsGlb (hGlbSubLst2);
+                    hGlbSubLst2 = ClrPtrTypeDir (hGlbSubLst2);
 
                     AttrsOfGlb (hGlbSubLst2, &aplTypeSubLst2, &aplNELMSubLst2, NULL, NULL);
 
@@ -2837,7 +2837,7 @@ UBOOL ArrayIndexSetSingLst_EM
                                                       lptkFunc);            // Ptr to function token
                         // Save just the global memory handle (which we need to free later)
                         hGlbSubLst2 = lpYYItm->tkToken.tkData.tkGlbData;
-                        hGlbSubLst2 = ClrPtrTypeDirAsGlb (hGlbSubLst2);
+                        hGlbSubLst2 = ClrPtrTypeDir (hGlbSubLst2);
 
                         YYFree (lpYYItm); lpYYItm = NULL;
                     } // End IF
@@ -3030,7 +3030,7 @@ UBOOL ArrayIndexSetVector_EM
 
                 case PTRTYPE_HGLOBAL:
                     // Lock the memory to get a ptr to it
-                    lpMemSubLst2 = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbSubLst));
+                    lpMemSubLst2 = MyGlobalLock (ClrPtrTypeDir (hGlbSubLst));
 
                     // Get the type and rank
                     aplTypeSubLst2 = ((LPVARARRAY_HEADER) lpMemSubLst2)->ArrType;
@@ -3098,7 +3098,7 @@ UBOOL ArrayIndexSetVector_EM
             if (GetPtrTypeDir (hGlbSubLst) EQ PTRTYPE_HGLOBAL)
             {
                 // We no longer need this ptr
-                MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbSubLst)); lpMemSubLst2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeDir (hGlbSubLst)); lpMemSubLst2 = NULL;
             } // End IF
 
             if (!bRet)

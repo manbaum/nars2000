@@ -437,7 +437,7 @@ static char tabConvert[][STRAND_LENGTH] =
                     Assert (IsGlbTypeVarDir (hGlbData));
 
                     // Lock the memory to get a ptr to it
-                    lpMemStr = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbData));
+                    lpMemStr = MyGlobalLock (ClrPtrTypeDir (hGlbData));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
                     if (IsScalar (lpHeader->Rank))
@@ -446,7 +446,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         cStrandNxtType = STRAND_NESTED;
 #undef  lpHeader
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbData)); lpMemStr = NULL;
+                    MyGlobalUnlock (ClrPtrTypeDir (hGlbData)); lpMemStr = NULL;
 
                     break;
                 } // End IF
@@ -801,7 +801,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         lpMemNum = VarArrayBaseToData (lpMemNum, 1);
 
                         // Clear the ptr type bits
-                        hGlbNum = ClrPtrTypeDirAsGlb (hGlbNum);
+                        hGlbNum = ClrPtrTypeDir (hGlbNum);
 
                         // Loop through the numeric strand
                         for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -894,7 +894,7 @@ static char tabConvert[][STRAND_LENGTH] =
                     lpMemNum = VarArrayBaseToData (lpMemNum, 1);
 
                     // Clear the ptr type bits
-                    hGlbNum = ClrPtrTypeDirAsGlb (hGlbNum);
+                    hGlbNum = ClrPtrTypeDir (hGlbNum);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1062,7 +1062,7 @@ static char tabConvert[][STRAND_LENGTH] =
                     lpMemNum = VarArrayBaseToData (lpMemNum, 1);
 
                     // Clear the ptr type bits
-                    hGlbNum = ClrPtrTypeDirAsGlb (hGlbNum);
+                    hGlbNum = ClrPtrTypeDir (hGlbNum);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1166,7 +1166,7 @@ static char tabConvert[][STRAND_LENGTH] =
                     immTypeNum = TranslateArrayTypeToImmType (aplTypeNum);
 
                     // Clear the ptr type bits
-                    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+                    hGlbData = ClrPtrTypeDir (hGlbData);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)

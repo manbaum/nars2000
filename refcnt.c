@@ -60,12 +60,12 @@ int ChangeRefCntDir
 
         case PTRTYPE_HGLOBAL:
             // Clear the ptr type bits
-            hGlb = ClrPtrTypeDirAsGlb (hGlb);
+            hGlb = ClrPtrTypeDir (hGlb);
 #ifdef DEBUG
-            if (hGlb EQ ClrPtrTypeDirAsGlb (hGlbRC1))
+            if (hGlb EQ ClrPtrTypeDir (hGlbRC1))
                 DbgBrk ();
 
-            if (hGlb EQ ClrPtrTypeDirAsGlb (hGlbRC2))
+            if (hGlb EQ ClrPtrTypeDir (hGlbRC2))
                 DbgBrk ();
 #endif
             // Lock the memory to get a ptr to it
@@ -240,7 +240,7 @@ UINT GetRefCntGlb
     UINT   uRefCnt;             // The array reference count
 
     // Clear the ptr type bits
-    hGlbArg = ClrPtrTypeDirAsGlb (hGlbArg);
+    hGlbArg = ClrPtrTypeDir (hGlbArg);
 
     // Lock the memory to get a ptr to it
     lpMemHdr = MyGlobalLock (hGlbArg);

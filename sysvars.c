@@ -802,7 +802,7 @@ UBOOL ValidateInteger_EM
     Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Clear the type bits
-    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -1137,7 +1137,7 @@ UBOOL ValidateFloat_EM
     Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Clear the type bits
-    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -1241,7 +1241,7 @@ UNLOCK_EXIT:
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (hGlbRht)); lpMemRht = NULL;
     } // End IF
 
     return bRet;
@@ -1369,7 +1369,7 @@ UBOOL ValidateCharVector_EM
     Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Clear the type bits
-    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -1736,7 +1736,7 @@ UBOOL ValidateIntegerVector_EM
     Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Clear the type bits
-    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemIniRht = lpMemRht = MyGlobalLock (hGlbRht);
@@ -2038,7 +2038,7 @@ UNLOCK_EXIT:
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbRht)); lpMemRht = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (hGlbRht)); lpMemRht = NULL;
     } // End IF
 
     return bRet;
@@ -2597,7 +2597,7 @@ UBOOL ValidSetPR_EM
     Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Clear the type bits
-    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -2908,7 +2908,7 @@ UBOOL ValidSetSA_EM
     Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Clear the type bits
-    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);

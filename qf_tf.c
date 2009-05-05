@@ -450,7 +450,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 if (!lpSymEntry->stFlags.Imm)
                 {
                     // Get the global memory handle
-                    hGlbItm = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+                    hGlbItm = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
 
                     // Lock the memory to get a ptr to it
                     lpMemItm = MyGlobalLock (hGlbItm);
@@ -635,7 +635,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 *lpwszTemp++ = L' ';
 
                 // Get the user-defined function/operator global memory handle
-                hGlbDfnHdr = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+                hGlbDfnHdr = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
 
                 // Lock the memory to get a ptr to it
                 lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);

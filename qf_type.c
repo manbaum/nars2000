@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -194,9 +194,9 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
 
     // Make the prototype
     hGlbRes =
-      MakeMonPrototype_EM (ClrPtrTypeDirAsGlb (hGlbRht),// Proto arg handle
-                           lptkFunc,                    // Ptr to function token
-                           MP_CHARS);                   // CHARs allowed
+      MakeMonPrototype_EM (ClrPtrTypeDir (hGlbRht), // Proto arg handle
+                           lptkFunc,                // Ptr to function token
+                           MP_CHARS);               // CHARs allowed
     if (!hGlbRes)
         return NULL;
 

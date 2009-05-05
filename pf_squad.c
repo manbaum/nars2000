@@ -154,7 +154,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
                 Assert (IsGlbTypeVarDir (hGlbRht));
 
                 // Clear the ptr type bits
-                hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+                hGlbRht = ClrPtrTypeDir (hGlbRht);
 
                 return PrimFnDydSquadGlb_EM_YY
                        (lptkLftArg,         // Ptr to left arg token
@@ -189,7 +189,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
             Assert (IsGlbTypeVarDir (hGlbRht));
 
             // Clear the ptr type bits
-            hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+            hGlbRht = ClrPtrTypeDir (hGlbRht);
 
             return PrimFnDydSquadGlb_EM_YY
                    (lptkLftArg,         // Ptr to left arg token
@@ -467,7 +467,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 if (lptkSetArg && aplRankSub)
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemDimSub = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbSub));
+                    lpMemDimSub = MyGlobalLock (ClrPtrTypeDir (hGlbSub));
 
                     // Skip over the header to the dimensions
                     lpMemDimSub = VarArrayBaseToDim (lpMemDimSub);
@@ -477,7 +477,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                         aplRankN1Res +=  !IsUnitDim (*lpMemDimSub++);
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbSub)); lpMemDimSub = NULL;
+                    MyGlobalUnlock (ClrPtrTypeDir (hGlbSub)); lpMemDimSub = NULL;
                 } // End IF
             } else
             // The left arg item is immediate (in <aplLongestSub> and of type <immTypeSub>)
@@ -640,7 +640,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     AttrsOfGlb (hGlbSub, NULL, &aplNELMSub, &aplRankSub, NULL);
 
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbSub));
+                    lpMemSub = MyGlobalLock (ClrPtrTypeDir (hGlbSub));
 
                     // Skip over the header to the dimensions
                     lpMemSub = VarArrayBaseToDim (lpMemSub);
@@ -677,7 +677,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     } // End IF/ELSE/FOR
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbSub)); lpMemSub = NULL;
+                    MyGlobalUnlock (ClrPtrTypeDir (hGlbSub)); lpMemSub = NULL;
 
                     // Check for error
                     if (!bRet)

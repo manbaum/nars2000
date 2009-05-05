@@ -190,7 +190,7 @@ UINT SF_LineLenN
 
         case PTRTYPE_HGLOBAL:
             // Get the global memory handle w/o ptr bits
-            hGlbItmRht = ClrPtrTypeDirAsGlb (lpMemRht[uLineNum]);
+            hGlbItmRht = ClrPtrTypeDir (lpMemRht[uLineNum]);
 
             // Get the right arg item global attrs
             AttrsOfGlb (hGlbItmRht, NULL, &aplNELMItmRht, NULL, NULL);
@@ -419,7 +419,7 @@ void SF_ReadLineN
 
         case PTRTYPE_HGLOBAL:
             // Get the global memory handle w/o ptr bits
-            hGlbItmRht = ClrPtrTypeDirAsGlb (lpMemRht[uLineNum]);
+            hGlbItmRht = ClrPtrTypeDir (lpMemRht[uLineNum]);
 
             // Lock the memory to get a ptr to it
             lpMemItmRht = MyGlobalLock (hGlbItmRht);
@@ -1211,7 +1211,7 @@ UBOOL SaveFunctionCom
             LPSIS_HEADER lpSISCur;
 
             // Clear the ptr type bits
-            hGlbOldDfn = ClrPtrTypeDirAsGlb (hGlbOldDfn);
+            hGlbOldDfn = ClrPtrTypeDir (hGlbOldDfn);
 
             // Get a ptr to the current SI stack
             lpSISCur = lpMemPTD->lpSISCur;

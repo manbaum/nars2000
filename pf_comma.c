@@ -160,9 +160,9 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
             return NULL;
     } // End SWITCH
 
-    return PrimFnMonCommaGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbRht),   // HGLOBAL
-                                    lptkAxis,                       // Ptr to axis token (may be NULL)
-                                    lptkFunc);                      // Ptr to function token
+    return PrimFnMonCommaGlb_EM_YY (ClrPtrTypeDir (hGlbRht),    // HGLOBAL
+                                    lptkAxis,                   // Ptr to axis token (may be NULL)
+                                    lptkFunc);                  // Ptr to function token
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkFunc);

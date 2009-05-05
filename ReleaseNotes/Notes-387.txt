@@ -11,9 +11,6 @@ VER.RC:
 CUSTOMIZE.C:
   Reorder #defines.
 
-DTOA.C:
-  Insert headings so we can see the individual functions more easily.
-
 MACROS.H:
   Define <ByteDiff> macro to get the difference in bytes between two ptrs.
 

@@ -138,8 +138,8 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonEpsilonGlb_EM_YY
-                       (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),        // HGLOBAL
-                        lptkFunc);                                                              // Ptr to function token
+                       (ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData), // HGLOBAL
+                        lptkFunc);                                                  // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -157,8 +157,8 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonEpsilonGlb_EM_YY
-                   (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),  // HGLOBAL
-                    lptkFunc);                                          // Ptr to function token
+                   (ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),   // HGLOBAL
+                    lptkFunc);                                      // Ptr to function token
         defstop
             return NULL;
     } // End SWITCH
@@ -361,7 +361,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
                                     &lpMemRes,
                                     &uBitIndex,
-                                     ClrPtrTypeDirAsGlb (hGlbRht),
+                                     ClrPtrTypeDir (hGlbRht),
                                      lptkFunc))
         goto ERROR_EXIT;
     // We no longer need this ptr
@@ -477,7 +477,7 @@ void PrimFnMonEpsilonGlbCount
                     // It's a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarInd (lpMemRht));
 
-                    PrimFnMonEpsilonGlbCount (ClrPtrTypeIndAsGlb (lpMemRht),
+                    PrimFnMonEpsilonGlbCount (ClrPtrTypeInd (lpMemRht),
                                               lpaplTypeRes,
                                               lpaplNELMRes,
                                               lpaplTypePro);
@@ -659,7 +659,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
                                                                  lplpMemRes,
                                                                  lpuBitIndex,
-                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 ClrPtrTypeInd (lpMemRht),
                                                                  lptkFunc))
                                     goto ERROR_EXIT;
                                 break;
@@ -774,7 +774,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
                                                                  lplpMemRes,
                                                                  lpuBitIndex,
-                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 ClrPtrTypeInd (lpMemRht),
                                                                  lptkFunc))
                                     goto ERROR_EXIT;
                                 break;
@@ -904,7 +904,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
                                                                  lplpMemRes,
                                                                  lpuBitIndex,
-                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 ClrPtrTypeInd (lpMemRht),
                                                                  lptkFunc))
                                     goto ERROR_EXIT;
                                 break;
@@ -976,7 +976,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
                                                                  lplpMemRes,
                                                                  lpuBitIndex,
-                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 ClrPtrTypeInd (lpMemRht),
                                                                  lptkFunc))
                                     goto ERROR_EXIT;
                                 break;
@@ -1196,7 +1196,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
                                                                  lplpMemRes,
                                                                  lpuBitIndex,
-                                                                 ClrPtrTypeIndAsGlb (lpMemRht),
+                                                                 ClrPtrTypeInd (lpMemRht),
                                                                  lptkFunc))
                                     goto ERROR_EXIT;
                                 break;

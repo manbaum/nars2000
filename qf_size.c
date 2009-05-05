@@ -389,7 +389,7 @@ APLINT CalcSymentrySize
              || IsGlbTypeDfnDir (hGlbDfnHdr));
 
         // Clear the ptr type bits
-        hGlbDfnHdr = ClrPtrTypeDirAsGlb (hGlbDfnHdr);
+        hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
 
         // Split cases based upon the user-defined function/operator bit
         if (lpSymEntry->stFlags.UsrDfn)
@@ -443,7 +443,7 @@ APLINT CalcSymentrySize
         // Otherwise, it's a function array
             // Start with the size of the SYMENTRY
             aplSize = sizeof (SYMENTRY)
-                    + MyGlobalSize (ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData));
+                    + MyGlobalSize (ClrPtrTypeDir (lpSymEntry->stData.stGlbData));
     } else
     // Otherwise, its size is zero
         aplSize = 0;
@@ -472,7 +472,7 @@ APLUINT CalcGlbSize
     // stData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbData));
 
-    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+    hGlbData = ClrPtrTypeDir (hGlbData);
 
     aplSize += MyGlobalSize (hGlbData);
 

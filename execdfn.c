@@ -79,7 +79,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
                  lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
 
     // Clear the ptr type bits
-    hGlbDfnHdr = ClrPtrTypeDirAsGlb (hGlbDfnHdr);
+    hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
 
     // If there's a function strand, ...
     if (lpYYFcnStr NE NULL)
@@ -1676,7 +1676,7 @@ void InitVarSTEs
                      apaMulArg;             // ... multiplier
 
             // Lock the memory to get a ptr to it
-            lpMemArg = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbArg));
+            lpMemArg = MyGlobalLock (ClrPtrTypeDir (hGlbArg));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
             aplTypeArg = lpHeader->ArrType;
@@ -1814,7 +1814,7 @@ void InitVarSTEs
             } // End FOR
 
             // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbArg)); lpMemArg = NULL;
+            MyGlobalUnlock (ClrPtrTypeDir (hGlbArg)); lpMemArg = NULL;
         } // End IF/ELSE
     } // End IF
 } // End InitVarSTEs

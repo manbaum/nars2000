@@ -8308,7 +8308,7 @@ void AmbOpToFcn
 
         case TKT_FCNARRAY:
             // Get the global and clear the type bits
-            hGlbFcn = ClrPtrTypeDirAsGlb (lpYYFcn->tkToken.tkData.tkGlbData);
+            hGlbFcn = ClrPtrTypeDir (lpYYFcn->tkToken.tkData.tkGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemFcn = MyGlobalLock (hGlbFcn);
@@ -8458,7 +8458,7 @@ UBOOL CheckSelSpec_EM
         Assert (IsGlbTypeNamDir (hGlbNameVars));
 
         // Clear the type bits
-        hGlbNameVars = ClrPtrTypeDirAsGlb (lptkNameVars->tkData.tkGlbData);
+        hGlbNameVars = ClrPtrTypeDir (lptkNameVars->tkData.tkGlbData);
 
         // Lock the memory to get a ptr to it
         lpMemNameVars = MyGlobalLock (hGlbNameVars);
@@ -8503,13 +8503,13 @@ UBOOL CheckSelSpec_EM
                         uCharIndex = lptkNameVars->tkCharIndex;
 
                         // Lock the memory to get a ptr to it
-                        lpMemData = MyGlobalLock (ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData));
+                        lpMemData = MyGlobalLock (ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData));
 
                         // Mark as a Selective Specification array
                         lpMemData->bSelSpec = TRUE;
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData)); lpMemData = NULL;
+                        MyGlobalUnlock (ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData)); lpMemData = NULL;
 
                         // Fill in the result token
                         ZeroMemory (lptkNameVars, sizeof (lptkNameVars[0]));
@@ -8569,7 +8569,7 @@ UBOOL IsSelectSpec
         LPVARARRAY_HEADER lpMemHdr;
 
         // Get the global memory handle
-        hGlbArg = ClrPtrTypeDirAsGlb (lptkArg->tkData.tkGlbData);
+        hGlbArg = ClrPtrTypeDir (lptkArg->tkData.tkGlbData);
 
         // Lock the memory to get a ptr to it
         lpMemHdr = MyGlobalLock (hGlbArg);

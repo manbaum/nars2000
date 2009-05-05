@@ -269,7 +269,7 @@ LRESULT APIENTRY FEWndProc
                     hGlbDfnHdr = lpSymName->stData.stGlbData;
 
                     // Clear the ptr type bits
-                    hGlbDfnHdr = ClrPtrTypeDirAsGlb (hGlbDfnHdr);
+                    hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
 
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -355,7 +355,7 @@ LRESULT APIENTRY FEWndProc
                 HGLOBAL    hGlbUndoBuff;
 
                 // Get the handle and clear the ptr type bits
-                hGlbUndoBuff = ClrPtrTypeDirAsGlb (lpMemDfnHdr->hGlbUndoBuff);
+                hGlbUndoBuff = ClrPtrTypeDir (lpMemDfnHdr->hGlbUndoBuff);
 
                 // Get the size in bytes
                 uUndoSize = MyGlobalSize (hGlbUndoBuff);

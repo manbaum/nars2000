@@ -249,7 +249,7 @@ void FreeResultSub
             return;
 
         case TKT_STRNAMED:  // tkData contains an HGLOBAL of a strand of names
-            DbgGlobalFree (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkGlbData));
+            DbgGlobalFree (ClrPtrTypeDir (lptkRes->tkData.tkGlbData));
 
             return;
 
@@ -329,7 +329,7 @@ UBOOL FreeResultGlobalLst
     Assert (IsGlbTypeLstDir (MakePtrTypeGlb (hGlbData)));
 
     // Clear the type bits in case they are set on the way in
-    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+    hGlbData = ClrPtrTypeDir (hGlbData);
 
     // Lock the memory to get a ptr to it
     lpMemLst = MyGlobalLock (hGlbData);
@@ -438,7 +438,7 @@ UBOOL FreeResultGlobalVarSub
     Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlbData)));
 
     // Clear the type bits in case they are set on the way in
-    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+    hGlbData = ClrPtrTypeDir (hGlbData);
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
@@ -495,7 +495,7 @@ UBOOL FreeResultGlobalVarSub
                             break;
 
                         case PTRTYPE_HGLOBAL:
-                            if (FreeResultGlobalVarSub (ClrPtrTypeIndAsGlb (lpMem), bReqComplete))
+                            if (FreeResultGlobalVarSub (ClrPtrTypeInd (lpMem), bReqComplete))
                             {
 #ifdef DEBUG_ZAP
                                 dprintfWL9 (L"**Zapping in FreeResultGlobalVar: Global=%p, Value=%p (%S#%d)",
@@ -571,7 +571,7 @@ UBOOL FreeResultGlobalFcn
     Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbData)));
 
     // Clear the type bits in case they are set on the way in
-    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+    hGlbData = ClrPtrTypeDir (hGlbData);
 
     // Lock the memory to get a ptr to it
     lpMemData = MyGlobalLock (hGlbData);
@@ -632,7 +632,7 @@ UBOOL FreeResultGlobalFcn
                      || IsGlbTypeDfnDir (hGlbLcl));
 
                 // Clear the ptr type bits
-                hGlbLcl = ClrPtrTypeDirAsGlb (hGlbLcl);
+                hGlbLcl = ClrPtrTypeDir (hGlbLcl);
 
                 // Free the function array or user-defined function/operator
                 if (FreeResultGlobalDFLV (hGlbLcl))
@@ -658,7 +658,7 @@ UBOOL FreeResultGlobalFcn
                      || IsGlbTypeDfnDir (hGlbLcl));
 
                 // Clear the ptr type bits
-                hGlbLcl = ClrPtrTypeDirAsGlb (hGlbLcl);
+                hGlbLcl = ClrPtrTypeDir (hGlbLcl);
 
                 // Free the function array or user-defined function/operator
                 if (FreeResultGlobalDFLV (hGlbLcl))
@@ -683,7 +683,7 @@ UBOOL FreeResultGlobalFcn
                 Assert (IsGlbTypeVarDir (hGlbLcl));
 
                 // Clear the ptr type bits
-                hGlbLcl = ClrPtrTypeDirAsGlb (hGlbLcl);
+                hGlbLcl = ClrPtrTypeDir (hGlbLcl);
 
                 // Free the global variable
                 if (FreeResultGlobalVar (hGlbLcl))
@@ -713,7 +713,7 @@ UBOOL FreeResultGlobalFcn
                     Assert (IsGlbTypeVarDir (hGlbLcl));
 
                     // Clear the ptr type bits
-                    hGlbLcl = ClrPtrTypeDirAsGlb (hGlbLcl);
+                    hGlbLcl = ClrPtrTypeDir (hGlbLcl);
 
                     // Free the global variable
                     if (FreeResultGlobalVar (hGlbLcl))
@@ -780,7 +780,7 @@ UBOOL FreeResultGlobalDfn
     Assert (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlbData)));
 
     // Clear the type bits in case they are set on the way in
-    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+    hGlbData = ClrPtrTypeDir (hGlbData);
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbData);

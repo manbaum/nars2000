@@ -58,7 +58,7 @@ UBOOL CmdWsid_EM
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
-    lpMemWSID = MyGlobalLock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
+    lpMemWSID = MyGlobalLock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemWSID)
     // Get the NELM and Rank
@@ -76,7 +76,7 @@ UBOOL CmdWsid_EM
     if (*lpwszTail)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
 
         // Convert the given workspace name into a canonical form
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
@@ -125,7 +125,7 @@ UBOOL CmdWsid_EM
         MyGlobalUnlock (hGlbWSID); lpMemWSID = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemWSID = MyGlobalLock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
+        lpMemWSID = MyGlobalLock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
         // Skip over the header and dimensions to the data
         lpMemWSID = VarArrayBaseToData (lpMemWSID, aplRankWSID);
@@ -143,7 +143,7 @@ UBOOL CmdWsid_EM
             AppendLine (ShortenWSID (lpMemWSID), FALSE, TRUE);
 
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
 
         // Free the old []WSID
         FreeResultGlobalVar (lpMemPTD->lpSymQuadWSID->stData.stGlbData); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
@@ -173,7 +173,7 @@ UBOOL CmdWsid_EM
         } // End IF/ELSE
 
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
     } // End IF/ELSE
 
     // Mark as successful

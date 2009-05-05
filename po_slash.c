@@ -2158,7 +2158,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
     Assert (IsGlbTypeVarDir (hGlbTmp));
 
     // Clear the ptr type bits
-    hGlbTmp = ClrPtrTypeDirAsGlb (hGlbTmp);
+    hGlbTmp = ClrPtrTypeDir (hGlbTmp);
 
     // The result is the same as lpYYRes except we need
     //   to insert a unit dimension between aplAxis and

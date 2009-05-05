@@ -689,7 +689,7 @@ void GetFirstValueGlb
     LPSYMENTRY lpSym;               // Ptr to SYMENTRY in HETERO or NESTED cases
 
     // Clear the type bits in case they are set on the way in
-    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+    hGlbData = ClrPtrTypeDir (hGlbData);
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
@@ -1209,7 +1209,7 @@ void GetNextValueGlb
     LPVOID    lpMemSub;                     // Ptr to item global memory
 
     // Clear the ptr type bits
-    hGlbSub = ClrPtrTypeDirAsGlb (hGlbSub);
+    hGlbSub = ClrPtrTypeDir (hGlbSub);
 
     // Lock the memory to get a ptr to it
     lpMemSub = MyGlobalLock (hGlbSub);
@@ -1401,7 +1401,7 @@ void GetNextValueMemSub
                     if (lpimmTypeRes)
                         *lpimmTypeRes    = IMMTYPE_ERROR;
                     if (lphGlbRes)
-                        *lphGlbRes       = ClrPtrTypeDirAsGlb (lptkList->tkData.tkGlbData);
+                        *lphGlbRes       = ClrPtrTypeDir (lptkList->tkData.tkGlbData);
                     break;
 
                 defstop
@@ -1531,7 +1531,7 @@ APLLONGEST GetGlbPtrs_LOCK
                 Assert (IsGlbTypeVarDir (*lphGlb));
 
                 // Handle the HGLOBAL case
-                *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
+                *lphGlb = ClrPtrTypeDir (*lphGlb);
 
                 // Lock the memory to get a ptr to it
                 lpMem = MyGlobalLock (*lphGlb);
@@ -1572,7 +1572,7 @@ APLLONGEST GetGlbPtrs_LOCK
             Assert (IsGlbTypeVarDir (*lphGlb));
 
             // Handle the HGLOBAL case
-            *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
+            *lphGlb = ClrPtrTypeDir (*lphGlb);
 
             // Lock the memory to get a ptr to it
             lpMem = MyGlobalLock (*lphGlb);
@@ -1591,7 +1591,7 @@ APLLONGEST GetGlbPtrs_LOCK
             Assert (IsGlbTypeLstDir (*lphGlb));
 
             // Handle the HGLOBAL case
-            *lphGlb = ClrPtrTypeDirAsGlb (*lphGlb);
+            *lphGlb = ClrPtrTypeDir (*lphGlb);
 
             // Lock the memory to get a ptr to it
             lpMem = MyGlobalLock (*lphGlb);
@@ -1979,7 +1979,7 @@ UINT GetSignatureGlb
     UINT               Sig;                 // The signature
 
     // Clear the type bits in case they are set on the way in
-    hGlbLcl = ClrPtrTypeDirAsGlb (hGlbLcl);
+    hGlbLcl = ClrPtrTypeDir (hGlbLcl);
 
     // Lock the memory to get a ptr to it
     lpMemLcl = MyGlobalLock (hGlbLcl);

@@ -1564,7 +1564,7 @@ LPAPLCHAR CompileArrNested
 
                 case PTRTYPE_HGLOBAL:
                     lpaplChar =
-                      CompileArrNestedGlb (ClrPtrTypeIndAsGlb (lpMem),      // The HGLOBAL to format
+                      CompileArrNestedGlb (ClrPtrTypeInd (lpMem),           // The HGLOBAL to format
                                            lpFmtHeader,                     // The parent FMTHEADER
                                            lpFmtRowLcl,                     // This row's FMTROWSTR
                                           &lpFmtColStr[aplDimCol],          // This col's FMTCOLSTR
@@ -2569,22 +2569,22 @@ LPAPLCHAR FormatArrNested
                         aplType = TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMem)->stFlags.ImmType);
 
                         lpaplChar =
-                          FormatArrNestedCon (aplType,                      // Storage type of this array
-                                              lpaplChar,                    // Ptr to compiled input
-                                             &lpwszOut,                     // Ptr to ptr to output string
-                                             &lpFmtColStr[aplDimCol],       // Ptr to the FMTCOLSTR for this column
-                                              aplLastDim,                   // Length of the last dimension in the result
-                                              lpbCtrlBreak);                // Ptr to Ctrl-Break flag
+                          FormatArrNestedCon (aplType,                  // Storage type of this array
+                                              lpaplChar,                // Ptr to compiled input
+                                             &lpwszOut,                 // Ptr to ptr to output string
+                                             &lpFmtColStr[aplDimCol],   // Ptr to the FMTCOLSTR for this column
+                                              aplLastDim,               // Length of the last dimension in the result
+                                              lpbCtrlBreak);            // Ptr to Ctrl-Break flag
                         break;
 
                     case PTRTYPE_HGLOBAL:
                         lpaplChar =
-                          FormatArrNestedGlb (ClrPtrTypeIndAsGlb (lpMem),   // The global memory handle whose contents are to be formatted
-                                              lpaplChar,                    // Ptr to compiled input
-                                             &lpwszOut,                     // Ptr to ptr to output string
-                                             &lpFmtColStr[aplDimCol],       // Ptr to the FMTCOLSTR for this column
-                                              aplLastDim,                   // Length of the last dimension in the result
-                                              lpbCtrlBreak);                // Ptr to Ctrl-Break flag
+                          FormatArrNestedGlb (ClrPtrTypeInd (lpMem),    // The global memory handle whose contents are to be formatted
+                                              lpaplChar,                // Ptr to compiled input
+                                             &lpwszOut,                 // Ptr to ptr to output string
+                                             &lpFmtColStr[aplDimCol],   // Ptr to the FMTCOLSTR for this column
+                                              aplLastDim,               // Length of the last dimension in the result
+                                              lpbCtrlBreak);            // Ptr to Ctrl-Break flag
                         break;
 
                     defstop
@@ -3246,7 +3246,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         // The item must be a char vector
 
                         // Lock the memory to get a ptr to it
-                        lpMemItmRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbItmRht));
+                        lpMemItmRht = MyGlobalLock (ClrPtrTypeDir (hGlbItmRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemItmRht)
                         // Get the array parameters
@@ -3266,7 +3266,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         *lpaplChar++ = L'\0';
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbItmRht)); lpMemItmRht = NULL;
+                        MyGlobalUnlock (ClrPtrTypeDir (hGlbItmRht)); lpMemItmRht = NULL;
                     } else
                     // Split cases based upon the immediate type
                     switch (immTypeRht)

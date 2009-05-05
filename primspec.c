@@ -204,7 +204,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
             break;
 
         case TKT_VARARRAY:
-            hGlbTmp = ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData);
+            hGlbTmp = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
 
             // Make the prototype
             hGlbProto =
@@ -416,7 +416,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 SavePrimSpecRL (lpPrimSpec);
 
                 // Handle via subroutine
-                hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirAsGlb (hGlbRes),
+                hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDir (hGlbRes),
                                            lptkFunc,
                                            lpPrimSpec);
                 if (!hGlbRes)
@@ -756,7 +756,7 @@ RESTART_EXCEPTION_VARIMMED:
             SavePrimSpecRL (lpPrimSpec);
 
             // Handle via subroutine
-            hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirAsGlb (hGlbRes),
+            hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDir (hGlbRes),
                                        lptkFunc,
                                        lpPrimSpec);
             if (!hGlbRes)
@@ -1264,7 +1264,7 @@ RESTART_EXCEPTION:
                                        lpSymDst;
 
                             // Get the type of the SYMENTRY
-                            aplTypeRht2 = TranslateImmTypeToArrayType ((ClrPtrTypeIndAsSym (lpMemRht))->stFlags.ImmType);
+                            aplTypeRht2 = TranslateImmTypeToArrayType (((LPSYMENTRY) ClrPtrTypeInd (lpMemRht))->stFlags.ImmType);
 
                             // Get the storage type of the result
                             aplTypeRes2 = (*lpPrimSpec->StorageTypeMon) (1,
@@ -1275,7 +1275,7 @@ RESTART_EXCEPTION:
                                 goto DOMAIN_EXIT;
 
                             // Copy the SYMENTRY as the same type as the result
-                            lpSymSrc = ClrPtrTypeIndAsSym (lpMemRht);
+                            lpSymSrc = ClrPtrTypeInd (lpMemRht);
                             lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
                                                            TranslateArrayTypeToImmType (aplTypeRes2),
                                                            lptkFunc);
@@ -1385,7 +1385,7 @@ RESTART_EXCEPTION:
 
                         case PTRTYPE_HGLOBAL:
                             // Handle via subroutine
-                            hGlbSub = PrimFnMonGlb_EM (ClrPtrTypeIndAsGlb (lpMemRht),
+                            hGlbSub = PrimFnMonGlb_EM (ClrPtrTypeInd (lpMemRht),
                                                        lptkFunc,
                                                        lpPrimSpec);
                             if (hGlbSub)
@@ -2558,7 +2558,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     Assert (IsGlbTypeVarDir (aplNestedLft));
 
     // Clear the identifying bits
-    hGlbLft = ClrPtrTypeDirAsGlb (aplNestedLft);
+    hGlbLft = ClrPtrTypeDir (aplNestedLft);
 
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
@@ -4927,7 +4927,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     Assert (IsGlbTypeVarDir (aplNestedRht));
 
     // Clear the identifying bits
-    hGlbRht = ClrPtrTypeDirAsGlb (aplNestedRht);
+    hGlbRht = ClrPtrTypeDir (aplNestedRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = lpMemHdrRht = MyGlobalLock (hGlbRht);

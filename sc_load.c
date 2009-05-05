@@ -323,7 +323,7 @@ UBOOL LoadWorkspace_EM
 ////////////////////if (!lpSymEntry)            // ***FIXME***
 
                     // Get a ptr to the function header
-                    hGlbDfnHdr = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+                    hGlbDfnHdr = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
 
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -479,7 +479,7 @@ UBOOL LoadWorkspace_EM
                     FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
 
                     // In with the new
-                    lpMemPTD->hGlbQuadDM = ClrPtrTypeDirAsGlb ((HGLOBAL) aplLongestObj);
+                    lpMemPTD->hGlbQuadDM = ClrPtrTypeDir ((HGLOBAL) aplLongestObj);
                 } else
                 {
                     // Out with the old
@@ -743,7 +743,7 @@ UBOOL ParseSavedWsFcn_EM
             LPDFN_HEADER lpMemDfnHdr;   // Ptr to DFN_HEADER global memory
 
             // Clear the ptr type bits
-            hGlbOld = ClrPtrTypeDirAsGlb (hGlbOld);
+            hGlbOld = ClrPtrTypeDir (hGlbOld);
 
             // Lock the memory to get a ptr to it
             lpMemDfnHdr = MyGlobalLock (hGlbOld);
@@ -895,7 +895,7 @@ LPWCHAR ParseSavedWsVar_EM
             Assert (IsGlbTypeVarDir (hGlbObj));
 
             // Clear the type bits
-            hGlbObj = ClrPtrTypeDirAsGlb (hGlbObj);
+            hGlbObj = ClrPtrTypeDir (hGlbObj);
 
             // Lock the memory to get a ptr to it
             lpMemObj = MyGlobalLock (hGlbObj);

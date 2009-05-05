@@ -971,7 +971,7 @@ LPWCHAR DisplayFcnGlb
     NAME_TYPES        fnNameType;               // Function array name type
 
     // Clear the ptr type bits
-    hGlbFcnArr = ClrPtrTypeDirAsGlb (hGlbFcnArr);
+    hGlbFcnArr = ClrPtrTypeDir (hGlbFcnArr);
 
     // Lock the memory to get a ptr to it
     lpHeader = MyGlobalLock (hGlbFcnArr);
@@ -1164,7 +1164,7 @@ LPWCHAR DisplayFcnSub
 
                         case DFN_HEADER_SIGNATURE:
                             // Clear the ptr type bits
-                            hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+                            hGlbData = ClrPtrTypeDir (hGlbData);
 
                             // Lock the memory to get a ptr to it
                             lpMemDfnHdr = MyGlobalLock (hGlbData);
@@ -1235,7 +1235,7 @@ LPWCHAR DisplayFcnSub
             Assert (IsGlbTypeVarDir (hGlbData));
 
             // Clear the ptr type bits
-            hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+            hGlbData = ClrPtrTypeDir (hGlbData);
 
             // If there's a callback function, use it
             if (lpSavedWsGlbVarConv)
@@ -1297,7 +1297,7 @@ LPWCHAR DisplayFcnSub
                  || IsGlbTypeDfnDir (hGlbData));
 
             // Clear the ptr type bits
-            hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+            hGlbData = ClrPtrTypeDir (hGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemData = MyGlobalLock (hGlbData);

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -238,7 +238,7 @@ APLINT PrimFnMonEqualUnderBarGlb
             Assert (IsGlbTypeVarDir (hGlbRht));
 
             // Clear the ptr type bits
-            hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
+            hGlbRht = ClrPtrTypeDir (hGlbRht);
 
             // Lock the memory to get a ptr to it
             lpMemRht = MyGlobalLock (hGlbRht);
@@ -1245,8 +1245,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                     return FALSE;
 
                 // Lock the memory to get a ptr to it
-                lpMemLft2 = MyGlobalLock (ClrPtrTypeIndAsGlb (lpMemLft));
-                lpMemRht2 = MyGlobalLock (ClrPtrTypeIndAsGlb (lpMemRht));
+                lpMemLft2 = MyGlobalLock (ClrPtrTypeInd (lpMemLft));
+                lpMemRht2 = MyGlobalLock (ClrPtrTypeInd (lpMemRht));
 
                 // Split based upon Simple vs. Hetero vs. Nested
                 switch (2 * IsNested (aplTypeLft)
@@ -1285,8 +1285,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                 } // End SWITCH
 
                 // We no longer need these ptrs
-                MyGlobalUnlock (ClrPtrTypeIndAsGlb (lpMemLft)); lpMemLft2 = NULL;
-                MyGlobalUnlock (ClrPtrTypeIndAsGlb (lpMemRht)); lpMemRht2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeInd (lpMemLft)); lpMemLft2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeInd (lpMemRht)); lpMemRht2 = NULL;
 
                 break;
 

@@ -166,7 +166,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             APLNELM   aplNELMItmRht;        // Right arg item NELM
 
                             // Lock the memory to get a ptr to it
-                            lpMemItmRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbItmRht));
+                            lpMemItmRht = MyGlobalLock (ClrPtrTypeDir (hGlbItmRht));
 
                             // Get the array NELM
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemItmRht)
@@ -181,7 +181,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                                 break;
 
                             // We no longer need this ptr
-                            MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbItmRht)); lpMemItmRht = NULL;
+                            MyGlobalUnlock (ClrPtrTypeDir (hGlbItmRht)); lpMemItmRht = NULL;
 
                             if (IsEmpty (aplNELMItmRht))
                                 goto RIGHT_DOMAIN_EXIT;

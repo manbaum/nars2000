@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -147,7 +147,7 @@ UINT SymTrans
 
         case TKT_FCNARRAY:
             // Get the function array global memory handle
-            hGlbFcn = ClrPtrTypeDirAsGlb (lptkFunc->tkData.tkGlbData);
+            hGlbFcn = ClrPtrTypeDir (lptkFunc->tkData.tkGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemFcn = MyGlobalLock (hGlbFcn);

@@ -490,7 +490,7 @@ NAME_TYPES GetNameType
          || IsGlbTypeDfnDir (hGlbData));
 
     // Clear the ptr type bits
-    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+    hGlbData = ClrPtrTypeDir (hGlbData);
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
@@ -592,7 +592,7 @@ UBOOL AssignNamedVars_EM
     Assert (lptkStr->tkFlags.TknType EQ TKT_STRNAMED);
 
     // Get the global handle
-    hGlbStr = ClrPtrTypeDirAsGlb (lptkStr->tkData.tkGlbData);
+    hGlbStr = ClrPtrTypeDir (lptkStr->tkData.tkGlbData);
 
     // Lock the memory to get a ptr to it
     lpMemNam = MyGlobalLock (hGlbStr);
@@ -656,7 +656,7 @@ UBOOL AssignNamedVars_EM
     Assert (IsGlbTypeVarDir (hGlbVal));
 
     // Clear the ptr type bits
-    hGlbVal = ClrPtrTypeDirAsGlb (hGlbVal);
+    hGlbVal = ClrPtrTypeDir (hGlbVal);
 
     // Lock the memory to get a ptr to it
     lpMemVal = MyGlobalLock (hGlbVal);
@@ -951,7 +951,7 @@ UBOOL ModifyAssignNameVals_EM
     Assert (IsGlbTypeNamDir (hGlbName));
 
     // Clear the ptr type bits
-    hGlbName = ClrPtrTypeDirAsGlb (hGlbName);
+    hGlbName = ClrPtrTypeDir (hGlbName);
 
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLock (hGlbName);

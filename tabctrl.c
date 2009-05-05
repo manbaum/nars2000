@@ -833,7 +833,7 @@ LRESULT WINAPI LclTabCtrlWndProc
 
                         // Get the DFN_HEADER global memory ptr, and
                         //   clear the ptr type bits
-                        hGlbData = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+                        hGlbData = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
 
                         // Lock the memory to get a ptr to it
                         lpMemDfnHdr = MyGlobalLock (hGlbData);
@@ -1402,7 +1402,7 @@ LPAPLCHAR PointToWsName
         APLRANK aplRankWSID;    // []WSID rank
 
         // Get the []WSID global memory handle
-        hGlbWSID = ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData);
+        hGlbWSID = ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData);
 
         // If the []WSID STE has been setup, ...
         if (hGlbWSID)

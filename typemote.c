@@ -110,7 +110,7 @@ void TypeDemote
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // Get the global memory handle
-                hGlbRht = ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData);
+                hGlbRht = ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData);
 
                 break;          // Join common global code
             } // End IF
@@ -120,7 +120,7 @@ void TypeDemote
             return;
 
         case TKT_VARARRAY:
-            hGlbRht = ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData);
+            hGlbRht = ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData);
 
             break;
 
@@ -868,7 +868,7 @@ UBOOL TypePromoteGlb_EM
     LPSYMENTRY lpSymTmp;            // Ptr to temporary LPSYMENTRY
 
     // Clear the type bits
-    hGlbArg = ClrPtrTypeDirAsGlb (*lphGlbArg);
+    hGlbArg = ClrPtrTypeDir (*lphGlbArg);
 
     // Lock the memory to get a ptr to it
     lpMemArg = MyGlobalLock (hGlbArg);

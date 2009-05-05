@@ -286,7 +286,7 @@ UINT YYCountFcnStr
              && !lpToken->tkData.tkSym->stFlags.FcnDir) // not an internal function
             {
                 // Get the global memory handle
-                hGlbFcn = ClrPtrTypeDirAsGlb (lpToken->tkData.tkSym->stData.stGlbData);
+                hGlbFcn = ClrPtrTypeDir (lpToken->tkData.tkSym->stData.stGlbData);
 
                 // Lock the memory to get a ptr to it
                 lpMemFcn = MyGlobalLock (hGlbFcn);
@@ -365,7 +365,7 @@ UBOOL YYIsFcnStrAxis
 
         case TKT_FCNARRAY:
             // Get the global memory handle
-            hGlbFcn = ClrPtrTypeDirAsGlb (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
+            hGlbFcn = ClrPtrTypeDir (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemFcn = MyGlobalLock (hGlbFcn);
@@ -540,7 +540,7 @@ LPPL_YYSTYPE YYCopyFcn
                             LPFCNARRAY_HEADER lpMemHdrFcn;
 #endif
                             // Clear the ptr type bits
-                            hGlbFcn = ClrPtrTypeDirAsGlb (hGlbFcn);
+                            hGlbFcn = ClrPtrTypeDir (hGlbFcn);
 #ifdef DEBUG
                             lpMemHdrFcn = (LPVOID)
 #endif
@@ -662,7 +662,7 @@ void IncrFcnMem
                     DbgIncrRefCntDir (hGlbItm);
 
                     // Clear the ptr type bits
-                    hGlbItm = ClrPtrTypeDirAsGlb (hGlbItm);
+                    hGlbItm = ClrPtrTypeDir (hGlbItm);
 
                     // Lock the memory to get a ptr to it
                     lpMemItm = MyGlobalLock (hGlbItm);

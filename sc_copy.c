@@ -486,7 +486,7 @@ int CopyWsVars
                 FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
 
                 // In with the new
-                lpMemPTD->hGlbQuadDM = ClrPtrTypeDirAsGlb ((HGLOBAL) aplLongestObj);
+                lpMemPTD->hGlbQuadDM = ClrPtrTypeDir ((HGLOBAL) aplLongestObj);
             } else
             {
                 // Out with the old

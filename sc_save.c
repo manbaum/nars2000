@@ -88,7 +88,7 @@ UBOOL CmdSave_EM
     lpwszTemp   = lpMemPTD->lpwszTemp;
 
     // Lock the memory to get a ptr to it
-    lpMemOldWSID = MyGlobalLock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
+    lpMemOldWSID = MyGlobalLock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemOldWSID)
     // Get the NELM and Rank
@@ -156,7 +156,7 @@ UBOOL CmdSave_EM
             } // End IF
 
             // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
+            MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
 
             // Set the value of the new []WSID as wszTailDPFE
             if (!SaveNewWsid_EM (wszTailDPFE))
@@ -181,7 +181,7 @@ UBOOL CmdSave_EM
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
     } // End IF
 
     // The full workspace name to save to is in lpMemSaveWSID
@@ -293,7 +293,7 @@ UBOOL CmdSave_EM
                 LPWCHAR lpMemWSID;
 
                 // Get the global memory handle and clear the ptr type bits
-                hGlbWSID = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+                hGlbWSID = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
 
                 // Lock the memory to get a ptr to it
                 lpMemWSID = MyGlobalLock (hGlbWSID);
@@ -588,7 +588,7 @@ NORMAL_EXIT:
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
     } // End IF
 
     if (hGlbCnt)
@@ -749,7 +749,7 @@ LPAPLCHAR SavedWsFormGlbFcn
     lpaplCharStart = lpaplChar;
 
     // Clear the ptr type bits
-    hGlbObj = ClrPtrTypeDirAsGlb (hGlbObj);
+    hGlbObj = ClrPtrTypeDir (hGlbObj);
 
     // Format the hGlbObj
     wsprintfW (wszGlbObj,
@@ -1185,7 +1185,7 @@ LPAPLCHAR SavedWsFormGlbVar
     Assert (IsGlbTypeVarDir (hGlbObj));
 
     // Clear the ptr type bits
-    hGlbObj = ClrPtrTypeDirAsGlb (hGlbObj);
+    hGlbObj = ClrPtrTypeDir (hGlbObj);
 
     // Format the hGlbObj
     wsprintfW (wszGlbObj,

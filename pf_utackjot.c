@@ -188,9 +188,9 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
             return NULL;
     } // End SWITCH
 
-    return PrimFnMonUpTackJotGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbRht),   // HGLOBAL
-                                        lptkAxis,                       // Ptr to axis token (may be NULL)
-                                        lptkFunc);                      // Ptr to function token
+    return PrimFnMonUpTackJotGlb_EM_YY (ClrPtrTypeDir (hGlbRht),    // HGLOBAL
+                                        lptkAxis,                   // Ptr to axis token (may be NULL)
+                                        lptkFunc);                  // Ptr to function token
 RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                lptkFunc);

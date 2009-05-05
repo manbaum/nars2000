@@ -74,7 +74,7 @@ UBOOL ArrayDisplay_EM
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
                     return
-                      DisplayGlbArr_EM (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkSym->stData.stGlbData),
+                      DisplayGlbArr_EM (ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
                                         bEndingCR,          // TRUE iff last line has CR
                                         lpbCtrlBreak,       // Ptr to Ctrl-Break flag
                                         lptkRes);           // Ptr to function token
@@ -126,7 +126,7 @@ UBOOL ArrayDisplay_EM
 
                 case PTRTYPE_HGLOBAL:
                     return
-                      DisplayGlbArr_EM (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkGlbData),
+                      DisplayGlbArr_EM (ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
                                         bEndingCR,          // TRUE iff last line has CR
                                         lpbCtrlBreak,       // Ptr to Ctrl-Break flag
                                         lptkRes);           // Ptr to function token
@@ -1251,7 +1251,7 @@ LPWCHAR DisplayTransferGlb2
     UBOOL    bNeedParens;                   // TRUE iff this level needs surrounding parens
 
     // Clear the type bits
-    hGlbArg = ClrPtrTypeDirAsGlb (hGlbArg),
+    hGlbArg = ClrPtrTypeDir (hGlbArg),
 
     // Lock the memory to get a ptr to it
     lpMemArg = MyGlobalLock (hGlbArg);
@@ -1481,7 +1481,7 @@ LPWCHAR DisplayTransferFcn2
         lpwszTemp = &lpwszTemp[lstrlenW (lpwszTemp)];
 
         // Get the user-defined function/operator global memory handle
-        hGlbDfnHdr = ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData);
+        hGlbDfnHdr = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
 
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -1593,7 +1593,7 @@ APLCHAR GetQuadFCValue
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the []FC global memory handle
-    hGlbQuadFC = ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadFC->stData.stGlbData);
+    hGlbQuadFC = ClrPtrTypeDir (lpMemPTD->lpSymQuadFC->stData.stGlbData);
 
     // Lock the memory to get a ptr to it
     lpMemQuadFC = MyGlobalLock (hGlbQuadFC);
@@ -1644,7 +1644,7 @@ APLINT GetQuadICValue
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the []IC global memory handle
-    hGlbQuadIC = ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadIC->stData.stGlbData);
+    hGlbQuadIC = ClrPtrTypeDir (lpMemPTD->lpSymQuadIC->stData.stGlbData);
 
     // Lock the memory to get a ptr to it
     lpMemQuadIC = MyGlobalLock (hGlbQuadIC);

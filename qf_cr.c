@@ -227,7 +227,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
             hGlbData = lpSymEntry->stData.stGlbData;
 
             // Clear the ptr type bits
-            hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+            hGlbData = ClrPtrTypeDir (hGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemData = MyGlobalLock (hGlbData);

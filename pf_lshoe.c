@@ -123,9 +123,9 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
                 Assert (IsGlbTypeVarDir (hGlbRht));
 
                 return PrimFnMonLeftShoeGlb_EM_YY
-                       (ClrPtrTypeDirAsGlb (hGlbRht),   // Right arg global memory handle
-                        lptkAxis,                       // Ptr to axis token (may be NULL)
-                        lptkFunc);                      // Ptr to function token
+                       (ClrPtrTypeDir (hGlbRht),    // Right arg global memory handle
+                        lptkAxis,                   // Ptr to axis token (may be NULL)
+                        lptkFunc);                  // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -148,9 +148,9 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
             Assert (IsGlbTypeVarDir (hGlbRht));
 
             return PrimFnMonLeftShoeGlb_EM_YY
-                   (ClrPtrTypeDirAsGlb (hGlbRht),   // Right arg global memory handle
-                    lptkAxis,                       // Ptr to axis token (may be NULL)
-                    lptkFunc);                      // Ptr to function token
+                   (ClrPtrTypeDir (hGlbRht),    // Right arg global memory handle
+                    lptkAxis,                   // Ptr to axis token (may be NULL)
+                    lptkFunc);                  // Ptr to function token
         defstop
             return NULL;
     } // End SWITCH
@@ -463,9 +463,9 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     if (IsEmpty (aplNELMSub))
                     {
                         hGlbProto =
-                          MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemRht),   // Proto arg handle
-                                               lptkFunc,                        // Ptr to function token
-                                               MP_CHARS);                       // CHARs allowed
+                          MakeMonPrototype_EM (ClrPtrTypeInd (lpMemRht),    // Proto arg handle
+                                               lptkFunc,                    // Ptr to function token
+                                               MP_CHARS);                   // CHARs allowed
                         if (!hGlbProto)
                             goto WSFULL_EXIT;
                     } else
@@ -1317,7 +1317,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydLeftShoeGlb_EM (lptkLftArg,
-                                                ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                                                ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                                 lptkAxis,
                                                 lptkFunc);
             } // End IF
@@ -1334,7 +1334,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnDydLeftShoeGlb_EM (lptkLftArg,
-                                            ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),
+                                            ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),
                                             lptkAxis,
                                             lptkFunc);
         defstop

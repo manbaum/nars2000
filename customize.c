@@ -211,7 +211,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                      L"are visible only if that choice makes sense.",
                       lpwResetText = L"When one of the following System Variables is assigned a simple empty vector, "
                                      L"the system assigns to it a value which is either the workspace CLEAR WS "
-                                     L"value (user-controlled) or the System Default value (fixed).  This dialog "
+                                     L"value (User-controlled) or the System Default value (Fixed).  This dialog "
                                      L"allows you to choose which value is used.";
 
 #define MYWM_INITDIALOG                 (WM_APP + 100)

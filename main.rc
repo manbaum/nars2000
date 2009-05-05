@@ -526,38 +526,38 @@ IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, 255, 254
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           ""      ,IDC_RESET_TEXT     , 5, 10,200,40
+    LTEXT           ""              ,IDC_RESET_TEXT     , 5, 10,200,40
 
-    LTEXT           "System",IDC_STATIC         ,20, 55, 30,10
-    LTEXT           "User"  ,IDC_STATIC         ,50, 55, 30,10
+    LTEXT           "CLEAR WS"      ,IDC_STATIC         ,20, 55, 60,10
+    LTEXT           "System Default",IDC_STATIC         ,60, 55, 60,10
 
-    LTEXT           "CT"    ,IDC_STATIC         , 5, 70, 10, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_CT_RADIO1,25, 70, 16, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_CT_RADIO2,55, 70, 16, 8
+    LTEXT           "CT"            ,IDC_STATIC         , 5, 70, 10, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO1,35, 70, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO2,75, 70, 16, 8
 
-    LTEXT           "FC"    ,IDC_STATIC         , 5, 85, 10, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_FC_RADIO1,25, 85, 16, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_FC_RADIO2,55, 85, 16, 8
+    LTEXT           "FC"            ,IDC_STATIC         , 5, 85, 10, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO1,35, 85, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO2,75, 85, 16, 8
 
-    LTEXT           "IC"    ,IDC_STATIC         , 5,100,  8, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_IC_RADIO1,25,100, 16, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_IC_RADIO2,55,100, 16, 8
+    LTEXT           "IC"            ,IDC_STATIC         , 5,100,  8, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1,35,100, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2,75,100, 16, 8
 
-    LTEXT           "IO"    ,IDC_STATIC         , 5,115,  8, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_IO_RADIO1,25,115, 16, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_IO_RADIO2,55,115, 16, 8
+    LTEXT           "IO"            ,IDC_STATIC         , 5,115,  8, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1,35,115, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2,75,115, 16, 8
 
-    LTEXT           "PP"    ,IDC_STATIC         , 5,130, 10, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_PP_RADIO1,25,130, 16, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_PP_RADIO2,55,130, 16, 8
+    LTEXT           "PP"            ,IDC_STATIC         , 5,130, 10, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1,35,130, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2,75,130, 16, 8
 
-    LTEXT           "PW"    ,IDC_STATIC         , 5,145, 12, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_PW_RADIO1,25,145, 16, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_PW_RADIO2,55,145, 16, 8
+    LTEXT           "PW"            ,IDC_STATIC         , 5,145, 12, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1,35,145, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2,75,145, 16, 8
 
-    LTEXT           "RL"    ,IDC_STATIC         , 5,160, 10, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_RL_RADIO1,25,160, 16, 8
-    AUTORADIOBUTTON ""      ,IDC_RESET_RL_RADIO2,55,160, 16, 8
+    LTEXT           "RL"            ,IDC_STATIC         , 5,160, 10, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1,35,160, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2,75,160, 16, 8
 END
 
 IDD_PROPPAGE_TAB_COLORS DIALOGEX DISCARDABLE  0, 0, 255, 254

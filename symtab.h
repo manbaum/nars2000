@@ -218,7 +218,8 @@ typedef enum tagOBJ_NAMES
     OBJNAME_SYS,            // 02:  System name (starts with a Quad or Quote-quad)
     OBJNAME_MF,             // 03:  Magic Function
     OBJNAME_LOD,            // 04:  )LOAD and )COPY HGLOBAL
-                            // 05-07:  Available entries (3 bits)
+    OBJNAME_NOVALUE,        // 05:  NoValue object (result from, say, {execute}'')
+                            // 06-07:  Available entries (3 bits)
 } OBJ_NAMES;
 
 #define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MF", L"LOD"}
@@ -228,20 +229,19 @@ typedef struct tagSTFLAGS
 {
     UINT Imm:1,             // 00000001:  The data in .stData is Immediate simple numeric or character scalar
          ImmType:4,         // 0000001E:  ...                    Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
-         Perm:1,            // 00000020:  Permanent entry
-         Inuse:1,           // 00000040:  Inuse entry
-         Value:1,           // 00000080:  Entry has a value
-         ObjName:3,         // 00000700:  The data in .stData is NULL if .stNameType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
+         Inuse:1,           // 00000020:  Inuse entry
+         Value:1,           // 00000040:  Entry has a value
+         ObjName:3,         // 00000380:  The data in .stData is NULL if .stNameType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
                             //            (see OBJ_NAMES)
-         stNameType:4,      // 00007800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
+         stNameType:4,      // 00003C00:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
                             //            (see NAME_TYPES)
-         SysVarValid:5,     // 000F8000:  Index to validation routine for System Vars (see SYS_VARS)
-         UsrDfn:1,          // 00100000:  User-defined function/operator
-         DfnLabel:1,        // 00200000:  User-defined function/operator label        (valid only if .Value is set)
-         DfnSysLabel:1,     // 00400000:  User-defined function/operator system label (valid only if .Value is set)
-         DfnAxis:1,         // 00800000:  User-defined function/operator accepts axis value
-         FcnDir:1,          // 01000000:  Direct function/operator               (stNameFcn is valid)
-         :7;                // FE000000:  Available bits
+         SysVarValid:5,     // 000EC000:  Index to validation routine for System Vars (see SYS_VARS)
+         UsrDfn:1,          // 00080000:  User-defined function/operator
+         DfnLabel:1,        // 00100000:  User-defined function/operator label        (valid only if .Value is set)
+         DfnSysLabel:1,     // 00200000:  User-defined function/operator system label (valid only if .Value is set)
+         DfnAxis:1,         // 00400000:  User-defined function/operator accepts axis value
+         FcnDir:1,          // 00800000:  Direct function/operator               (stNameFcn is valid)
+         :8;                // FF000000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
 // N.B.:  Whenever changing the above struct (STFLAGS),
@@ -253,7 +253,6 @@ typedef struct tagSTFLAGS
 // .Imm     implies one and only one of the IMMTYPE_***s
 // .Imm     = 1 implies that one and only one of aplBoolean, aplInteger, aplChar, or aplFloat is valid.
 // .Imm     = 0 implies that stGlbData is valid.
-// .Perm    is valid for OBJNAME_SYS and OBJNAME_MF only.
 // .Value   is valid for NAMETYPE_VAR only, however .stNameType EQ NAMETYPE_VAR
 //          should never be without a value.
 // .UsrDfn  is set for .UsrType when the function is user-defined.

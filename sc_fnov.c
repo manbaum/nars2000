@@ -193,9 +193,10 @@ UBOOL CmdFNOV_EM
              lpGlbEntry = lpGlbEntry->stPrvEntry)
             ;
 
-        // Check for Permanent item (Magic Function, etc)
+        // Check for System or Magic Functions
         //   and skip if so
-        if (lpGlbEntry->stFlags.Perm)
+        if (lpGlbEntry->stFlags.ObjName EQ OBJNAME_SYS
+         || lpGlbEntry->stFlags.ObjName EQ OBJNAME_MF)
             continue;
 
         // Lock the memory to get a ptr to it

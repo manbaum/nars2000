@@ -135,7 +135,6 @@ void FreeResultSub
             if (bFreeName)
             {
                 // Set the flags we'll leave alone
-                stMaskFlags.Perm        =
                 stMaskFlags.Inuse       = TRUE;
                 stMaskFlags.ObjName     =
                 stMaskFlags.SysVarValid = NEG1U;
@@ -190,7 +189,6 @@ void FreeResultSub
             if (bFreeName)
             {
                 // Set the flags we'll leave alone
-                stMaskFlags.Perm        =
                 stMaskFlags.Inuse       = TRUE;
                 stMaskFlags.ObjName     =
                 stMaskFlags.SysVarValid = NEG1U;
@@ -842,7 +840,6 @@ void FreeResultGlobalDfnStruc
         STFLAGS stMaskFlags = {0};
 
         // Set the flags we'll leave alone
-        stMaskFlags.Perm        =
         stMaskFlags.Inuse       = TRUE;
         stMaskFlags.ObjName     =
         stMaskFlags.SysVarValid = NEG1U;

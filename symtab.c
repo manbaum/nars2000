@@ -1433,7 +1433,6 @@ LPSYMENTRY SymTabLookupChar
 
     // Set mask flags
     stMaskFlags.Imm     =
-    stMaskFlags.Perm    =
     stMaskFlags.Value   =
     stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
@@ -1505,8 +1504,7 @@ LPSYMENTRY SymTabLookupNumber
     lpHTS = &lpMemPTD->htsPTD;
 
     // Set mask flags
-    stMaskFlags.Imm   =
-    stMaskFlags.Perm    =
+    stMaskFlags.Imm     =
     stMaskFlags.Value   =
     stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
@@ -1581,8 +1579,7 @@ LPSYMENTRY SymTabLookupFloat
     lpHTS = &lpMemPTD->htsPTD;
 
     // Set mask flags
-    stMaskFlags.Imm   =
-    stMaskFlags.Perm    =
+    stMaskFlags.Imm     =
     stMaskFlags.Value   =
     stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
@@ -1830,57 +1827,6 @@ ERROR_EXIT:
 } // End SymTabLookupNameLength
 
 
-//// //***************************************************************************
-//// //  $MakePermSymEntry_EM
-//// //
-//// //  Make a permanent SYMENTRY with a given type and value
-//// //***************************************************************************
-////
-//// LPSYMENTRY MakePermSymEntry_EM
-////     (IMM_TYPES    immType,          // ImmType to use (see IMM_TYPES)
-////      LPAPLLONGEST lpVal,            // Value to use
-////      LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
-////
-//// {
-////     LPSYMENTRY lpSymDst;
-////
-////     // Split cases based upon the immediate type
-////     switch (immType)
-////     {
-////         case IMMTYPE_BOOL:
-////             lpSymDst = SymTabAppendPermInteger_EM (*(LPAPLBOOL)  lpVal);
-////
-////             break;
-////
-////         case IMMTYPE_INT:
-////             lpSymDst = SymTabAppendPermInteger_EM (*(LPAPLINT)   lpVal);
-////
-////             break;
-////
-////         case IMMTYPE_CHAR:
-////             lpSymDst = SymTabAppendPermChar_EM    (*(LPAPLCHAR)  lpVal);
-////
-////             break;
-////
-////         case IMMTYPE_FLOAT:
-////             lpSymDst = SymTabAppendPermFloat_EM   (*(LPAPLFLOAT) lpVal);
-////
-////             break;
-////
-////         defstop
-////             lpSymDst = NULL;
-////
-////             break;
-////     } // End SWITCH
-////
-////     // If it failed, set the error token
-////     if (!lpSymDst)
-////         ErrorMessageSetToken (lptkFunc);
-////
-////     return lpSymDst;
-//// } // End MakePermSymEntry_EM
-
-
 //***************************************************************************
 //  $MakeSymEntry_EM
 //
@@ -1998,35 +1944,6 @@ LPSYMENTRY SymTabAppendInteger_EM
     (APLINT aplInteger)             // The integer to append
 
 {
-    return SymTabAppendIntegerCommon_EM (aplInteger, FALSE);
-} // End SymTabAppendInteger_EM
-
-
-//***************************************************************************
-//  $SymTabAppendPermInteger_EM
-//
-//  Append a permanent Boolean or long long integer to the symbol table
-//***************************************************************************
-
-LPSYMENTRY SymTabAppendPermInteger_EM
-    (APLINT aplInteger)             // The integer to append
-
-{
-    return SymTabAppendIntegerCommon_EM (aplInteger, TRUE);
-} // End SymTabAppendPermInteger_EM
-
-
-//***************************************************************************
-//  $SymTabAppendIntegerCommon_EM
-//
-//  Append a Boolean or long long integer to the symbol table
-//***************************************************************************
-
-LPSYMENTRY SymTabAppendIntegerCommon_EM
-    (APLINT aplInteger,             // The integer to append
-     UBOOL  bPerm)                  // TRUE iff this STE is permanent
-
-{
     LPSYMENTRY   lpSymEntryDest;    // Ptr to destin STE
     LPHSHENTRY   lpHshEntryDest;    // Ptr to destin HTE
     UINT         uHash;             // The hash of the value to append
@@ -2061,7 +1978,6 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
             IsBooleanValue (aplInteger) ? sizeof (APLBOOL) : sizeof (APLINT),   // The # bytes pointed to
             0);                             // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    stNeedFlags.Perm  = bPerm;
     stNeedFlags.Imm   =
     stNeedFlags.Value =
     stNeedFlags.Inuse = TRUE;
@@ -2108,7 +2024,6 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
         lpSymEntryDest->stData.stInteger = aplInteger;
 
         // Save the symbol table flags
-        stNeedFlags.Perm = bPerm;
         *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stNeedFlags;
 
         // Save hash value (so we don't have to rehash on split)
@@ -2132,7 +2047,7 @@ NORMAL_EXIT:
     Assert (HshTabFrisk (lpHTS));
 
     return lpSymEntryDest;
-} // End SymTabAppendIntegerCommon_EM
+} // End SymTabAppendInteger_EM
 
 
 //***************************************************************************
@@ -2143,35 +2058,6 @@ NORMAL_EXIT:
 
 LPSYMENTRY SymTabAppendFloat_EM
     (APLFLOAT aplFloat)             // The float to append
-
-{
-    return SymTabAppendFloatCommon_EM (aplFloat, FALSE);
-} // End SymTabAppendFloat_EM
-
-
-//***************************************************************************
-//  $SymTabAppendPermFloat_EM
-//
-//  Append a permanent Floating Point number to the symbol table
-//***************************************************************************
-
-LPSYMENTRY SymTabAppendPermFloat_EM
-    (APLFLOAT aplFloat)             // The float to append
-
-{
-    return SymTabAppendFloatCommon_EM (aplFloat, TRUE);
-} // End SymTabAppendPermFloat_EM
-
-
-//***************************************************************************
-//  $SymTabAppendFloatCommon_EM
-//
-//  Append a Floating Point number to the symbol table
-//***************************************************************************
-
-LPSYMENTRY SymTabAppendFloatCommon_EM
-    (APLFLOAT aplFloat,             // The float to append
-     UBOOL    bPerm)                // TRUE iff this STE is permanent
 
 {
     LPSYMENTRY   lpSymEntryDest;    // Ptr to destin STE
@@ -2193,7 +2079,6 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
              sizeof (aplFloat),             // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    stNeedFlags.Perm    = bPerm;
     stNeedFlags.Imm     =
     stNeedFlags.Value   =
     stNeedFlags.Inuse   = TRUE;
@@ -2236,7 +2121,6 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
         lpSymEntryDest->stData.stFloat = aplFloat;
 
         // Save the symbol table flags
-        stNeedFlags.Perm = bPerm;
         *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stNeedFlags;
 
         // Save hash value (so we don't have to rehash on split)
@@ -2259,7 +2143,7 @@ ERROR_EXIT:
     Assert (HshTabFrisk (lpHTS));
 
     return lpSymEntryDest;
-} // End SymTabAppendFloatCommon_EM
+} // End SymTabAppendFloat_EM
 
 
 //***************************************************************************
@@ -2270,35 +2154,6 @@ ERROR_EXIT:
 
 LPSYMENTRY SymTabAppendChar_EM
     (APLCHAR aplChar)               // The char to append
-
-{
-    return SymTabAppendCharCommon_EM (aplChar, FALSE);
-} // End SymTabAppendChar_EM
-
-
-//***************************************************************************
-//  $SymTabAppendPermChar_EM
-//
-//  Append a permanent character to the symbol table
-//***************************************************************************
-
-LPSYMENTRY SymTabAppendPermChar_EM
-    (APLCHAR aplChar)               // The char to append
-
-{
-    return SymTabAppendCharCommon_EM (aplChar, TRUE);
-} // End SymTabAppendPermChar_EM
-
-
-//***************************************************************************
-//  $SymTabAppendCharCommon_EM
-//
-//  Append a character to the symbol table
-//***************************************************************************
-
-LPSYMENTRY SymTabAppendCharCommon_EM
-    (APLCHAR aplChar,               // The char to append
-     UBOOL   bPerm)                 // TRUE iff this STE is permanent
 
 {
     LPSYMENTRY   lpSymEntryDest;    // Ptr to destin STE
@@ -2320,7 +2175,6 @@ LPSYMENTRY SymTabAppendCharCommon_EM
              sizeof (aplChar),              // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    stNeedFlags.Perm    = bPerm;
     stNeedFlags.Imm     =
     stNeedFlags.Value   =
     stNeedFlags.Inuse   = TRUE;
@@ -2363,7 +2217,6 @@ LPSYMENTRY SymTabAppendCharCommon_EM
         lpSymEntryDest->stData.stChar = aplChar;
 
         // Save the symbol table flags
-        stNeedFlags.Perm = bPerm;
         *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stNeedFlags;
 
         // Save hash value (so we don't have to rehash on split)
@@ -2386,7 +2239,7 @@ ERROR_EXIT:
     Assert (HshTabFrisk (lpHTS));
 
     return lpSymEntryDest;
-} // End SymTabAppendCharCommon_EM
+} // End SymTabAppendChar_EM
 
 
 //***************************************************************************
@@ -2515,7 +2368,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
     Assert (lpHshEntryHash->htFlags.PrinHash);
 
-    // Allocate global memory for the name (" + 1" for the terminating zero)
+    // Allocate global memory for the name ("+ 1" for the terminating zero)
     lpHshEntryDest->htGlbName = DbgGlobalAlloc (GHND, (iLen + 1) * sizeof (WCHAR));
     if (!lpHshEntryDest->htGlbName)
         goto WSFULL_EXIT;
@@ -2711,9 +2564,9 @@ UBOOL AllocSymTab
     if (bInitSTEs)
     {
         // Initialize the Symbol Table Entry for the constants zero, one, blank, and No Value
-        lpMemPTD->steZero    = SymTabAppendPermInteger_EM (0);
-        lpMemPTD->steOne     = SymTabAppendPermInteger_EM (1);
-        lpMemPTD->steBlank   = SymTabAppendPermChar_EM    (L' ');
+        lpMemPTD->steZero    = SymTabAppendInteger_EM (0);
+        lpMemPTD->steOne     = SymTabAppendInteger_EM (1);
+        lpMemPTD->steBlank   = SymTabAppendChar_EM    (L' ');
         lpMemPTD->steNoValue = lpHTS->lpSymTabNext++;
 
         if (lpMemPTD->steZero    EQ NULL
@@ -2726,8 +2579,7 @@ UBOOL AllocSymTab
         if (bRet)
         {
             // Set the flags for the NoValue entry
-            lpMemPTD->steNoValue->stFlags.Perm       = TRUE;
-            lpMemPTD->steNoValue->stFlags.ObjName    = OBJNAME_NONE;
+            lpMemPTD->steNoValue->stFlags.ObjName    = OBJNAME_NOVALUE;
             lpMemPTD->steNoValue->stFlags.stNameType = NAMETYPE_UNK;
 
             Assert (IsSymNoValue (lpMemPTD->steNoValue));

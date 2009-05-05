@@ -409,7 +409,6 @@ UBOOL SymTabAppendSysName_EM
     } // End IF/ELSE
 
     // Set the flags for what we're appending
-    stFlags.Perm    =
     stFlags.Inuse   = TRUE;
     stFlags.ObjName = OBJNAME_SYS;
 
@@ -2057,7 +2056,7 @@ UBOOL ValidSetALX_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Ensure the argument is a character scalar (promoted to a vector)
+    // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
 } // End ValidSetALX_EM
@@ -2108,7 +2107,7 @@ UBOOL ValidSetCT_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Ensure the argument is a real scalar or
+    // Ensure the argument is either a real scalar or
     //   one-element vector (demoted to a scalar)
     //   between DEF_MIN_QUADCT and DEF_MAX_QUADCT inclusive.
     return ValidateFloat_EM (lptkNamArg,            // Ptr to name arg token
@@ -2180,7 +2179,7 @@ UBOOL ValidSetELX_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Ensure the argument is a character scalar (promoted to a vector)
+    // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
 } // End ValidSetELX_EM
@@ -2221,7 +2220,7 @@ UBOOL ValidSetFC_EM
         return TRUE;
     } // End IF
 
-    // Ensure the argument is a character scalar (promoted to a vector)
+    // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
 } // End ValidSetFC_EM
@@ -2265,7 +2264,7 @@ UBOOL ValidSetIC_EM
         return TRUE;
     } // End IF
 
-    // Ensure the argument is an integer scalar (promoted to a vector)
+    // Ensure the argument is either an integer scalar (promoted to a vector)
     //   or an integer vector
     return ValidateIntegerVector_EM (lptkNamArg,
                                      lptkRhtArg,
@@ -2340,7 +2339,7 @@ UBOOL ValidSetIO_EM
      LPTOKEN lptkRhtArg)                // Ptr to right arg token
 
 {
-    // Ensure the argument is a Boolean scalar or
+    // Ensure the argument is either a Boolean scalar or
     //   one-element vector (demoted to a scalar).
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
@@ -2415,7 +2414,7 @@ UBOOL ValidSetLX_EM
      LPTOKEN lptkRhtArg)                // Ptr to right arg token
 
 {
-    // Ensure the argument is a character scalar (promoted to a vector)
+    // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
 } // End ValidSetLX_EM
@@ -2432,7 +2431,7 @@ UBOOL ValidSetPP_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Ensure the argument is an integer scalar or
+    // Ensure the argument is either an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range for []PP.
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
@@ -2521,7 +2520,7 @@ UBOOL ValidSetPR_EM
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Ensure the argument is a character scalar, or
+    // Ensure the argument is either a character scalar, or
     //   one-element vector (demoted to a scalar), or
     //   an empty vector.
 
@@ -2692,7 +2691,7 @@ UBOOL ValidSetPW_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Ensure the argument is an integer scalar or
+    // Ensure the argument is either an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range for []PW.
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
@@ -2767,7 +2766,7 @@ UBOOL ValidSetRL_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Ensure the argument is an integer scalar or
+    // Ensure the argument is either an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range for []RL.
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
@@ -2860,7 +2859,7 @@ UBOOL ValidSetSA_EM
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Ensure the argument is a character scalar (promoted to a vector)
+    // Ensure the argument is either a character scalar (promoted to a vector)
     //   or vector, and a valid Stop Action value
     //   ('', 'EXIT', 'ERROR', 'CLEAR', 'OFF') uppercase only
 
@@ -3047,7 +3046,7 @@ UBOOL ValidSetWSID_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Ensure the argument is a character scalar (promoted to a vector)
+    // Ensure the argument is either a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, TRUE);
 } // End ValidSetWSID_EM

@@ -582,7 +582,6 @@ HGLOBAL Init1MagicFunction
         lpSymEntry = lpMemDfnHdr->steFcnName;
 
         // Set the flags & handle
-        lpSymEntry->stFlags.Perm       =
         lpSymEntry->stFlags.Inuse      =
         lpSymEntry->stFlags.Value      =
         lpSymEntry->stFlags.UsrDfn     = TRUE;

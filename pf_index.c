@@ -1671,13 +1671,11 @@ UBOOL ArrayIndexSet_EM
     // If the name arg is a system var, check for function/operator system labels
     bSysVar = (IsNameTypeVar (lptkNamArg->tkData.tkSym->stFlags.stNameType)
             && lptkNamArg->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS);
-    if (bSysVar)
-    {
-        // If the target is a user-defined function/operator system label, ...
-        if (lptkNamArg->tkData.tkSym->stFlags.DfnSysLabel)
-            // Signal a SYNTAX ERROR
-            goto SYNTAX_EXIT;
-    } // End IF
+    // If the target is a user-defined function/operator system label, ...
+    if (bSysVar
+     && lptkNamArg->tkData.tkSym->stFlags.DfnSysLabel)
+        // Signal a SYNTAX ERROR
+        goto SYNTAX_EXIT;
 
     // Split cases based upon whether or not the name
     //   var is scalar (this also covers immediates)
@@ -1765,7 +1763,6 @@ UBOOL ArrayIndexSet_EM
 
             // Save the new global memory handle in the STE
             lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
-            lptkNamArg->tkData.tkSym->stFlags.Perm     = FALSE; // In case it was a SysVar
         } // End IF
 
         // See if it fits into a lower (but not necessarily smaller) datatype

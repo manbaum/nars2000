@@ -947,8 +947,11 @@ void CopyConvertDataOfType
                     // Get the next char
                     wcTmp = SymbolNameToChar (wszTemp);
 
-                    // If there's a matching UTF16_xxx equivalent, ...
-                    if (wcTmp)
+#define ZEROSTR     L"{\\x0000}"
+
+                    // If there's a matching UTF16_xxx equivalent,
+                    //   or the hex value is zero
+                    if (wcTmp || strncmpW (wszTemp, ZEROSTR, strcountof (ZEROSTR)) EQ 0)
                     {
                         // Save in the result and skip over it
                         *((LPAPLCHAR) lpMemRes)++ = wcTmp;

@@ -27,7 +27,8 @@
 #include "headers.h"
 
 
-CDB_THREAD cdbThread;           // Temporary global
+CDB_THREAD cdbThread;               // Temporary global
+WNDPROC    lpfnOldListboxWndProc;   // Save area for old Listbox window proc
 
 
 #ifdef DEBUG
@@ -287,7 +288,7 @@ LRESULT APIENTRY DBWndProc
             // Subclass the List Box so we can pass
             //   certain WM_KEYDOWN messages to the
             //   session manager.
-            (HANDLE_PTR) lpMemPTD->lpfnOldListboxWndProc =
+            (HANDLE_PTR) lpfnOldListboxWndProc =
               SetWindowLongPtrW (hWndLB,
                                  GWL_WNDPROC,
                                  (APLU3264) (LONG_PTR) (WNDPROC) &LclListboxWndProc);
@@ -474,16 +475,9 @@ LRESULT WINAPI LclListboxWndProc
     LPWCHAR      lpSel,
                  p;
     LRESULT      lResult;
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    WNDPROC      lpfnOldListboxWndProc;
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
 ////LCLODSAPI ("LLB: ", hWnd, message, wParam, lParam);
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-
-    // Get the address of the old WNDPROC handler
-    lpfnOldListboxWndProc = lpMemPTD->lpfnOldListboxWndProc;
 
     // Split cases
     switch (message)

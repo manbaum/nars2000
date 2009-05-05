@@ -1125,9 +1125,13 @@ int LclECPaintHook
     // If we're syntax coloring, ...
     if (hGlbClr)
     {
-        UINT     uClr;                          // Loop counter
-        HDC      hDCClient;                     // Client Area DC
-        COLORREF clrBackDef;                    // Default background color
+        UINT     uClr;                      // Loop counter
+        HDC      hDCClient;                 // Client Area DC
+        COLORREF clrBackDef;                // Default background color
+        HBRUSH   hBrush;                    // Brush to paint the background
+
+        // Create a brush to paint the background
+        hBrush = CreateSolidBrush (GetBkColor (hDC));
 
         // Get the default background color for this DC
         clrBackDef = GetBkColor (hDC);
@@ -1163,6 +1167,15 @@ int LclECPaintHook
             // Advance the left edge of the rectangle
             rcAct.left += cxAveChar;
         } // End FOR
+
+        // Set the right edge
+        rcAct.right = 0xFFFF;
+
+        // Wipe the rest of the line
+        FillRect (hDCClient, &rcAct, hBrush);
+
+        // We no longer need this resource
+        DeleteObject (hBrush); hBrush = NULL;
 
         // We no longer need this resource
         MyReleaseDC (hWndEC, hDCClient);

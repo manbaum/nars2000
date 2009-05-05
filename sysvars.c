@@ -2214,7 +2214,10 @@ UBOOL ValidSetFC_EM
         FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (bResetVars.FC ? hGlbQuadFC_SYS : hGlbQuadFC_CWS);
+        lptkNamArg->tkData.tkSym->stData.stGlbData =
+          CopySymGlbDirAsGlb (MakePtrTypeGlb (bResetVars.FC ? hGlbQuadFC_SYS
+                                                            : hGlbQuadFC_CWS));
+        // Mark as no need to display
         lptkNamArg->tkFlags.NoDisplay = TRUE;
 
         return TRUE;
@@ -2258,7 +2261,10 @@ UBOOL ValidSetIC_EM
         FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
-        lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (bResetVars.IC ? hGlbQuadIC_SYS : hGlbQuadIC_CWS);
+        lptkNamArg->tkData.tkSym->stData.stGlbData =
+          CopySymGlbDirAsGlb (MakePtrTypeGlb (bResetVars.IC ? hGlbQuadIC_SYS
+                                                            : hGlbQuadIC_CWS));
+        // Mark as no need to display
         lptkNamArg->tkFlags.NoDisplay = TRUE;
 
         return TRUE;

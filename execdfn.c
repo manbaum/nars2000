@@ -2056,8 +2056,7 @@ LPSYMENTRY LocalizeSymEntries
         } else
             // Erase the Symbol Table Entry
             //   unless it's a []var
-        EraseSTE (*lplpSymEntrySrc);
-
+            EraseSTE (*lplpSymEntrySrc, FALSE);
         // Set the ptr to the previous entry to the STE in the shadow chain
         (*lplpSymEntrySrc)->stPrvEntry = lpSymEntryNxt;
 

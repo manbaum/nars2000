@@ -369,7 +369,7 @@ APLBOOL ExpungeName
 
     // Erase the Symbol Table Entry
     //   unless it's a []var
-    EraseSTE (lpSymEntry);
+    EraseSTE (lpSymEntry, FALSE);
 
     return 1;
 } // End ExpungeName
@@ -382,11 +382,14 @@ APLBOOL ExpungeName
 //***************************************************************************
 
 void EraseSTE
-    (LPSYMENTRY lpSymEntry)
+    (LPSYMENTRY lpSymEntry,         // Ptr to the STE
+     UBOOL      bEraseSysVar)       // TRUE iff we can erase []vars
 
 {
-    // If the entry is not a system name, mark it as empty (e.g., VALUE ERROR)
-    if (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
+    // If the entry is a system name and we're allowed to erase them,
+    //   or it's not a system var, mark it as empty (e.g., VALUE ERROR)
+    if (bEraseSysVar
+     || lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
     {
         STFLAGS stFlagsMT = {0};        // STE flags for empty entry
 

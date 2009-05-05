@@ -287,7 +287,7 @@ UBOOL WINAPI CreateNewTabInThread
         ShowHideChildWindows (lpMemPTD->hWndMC, FALSE);
     } // End IF
 
-    // Allocate per tab data
+    // Allocate PerTabData
     lpMemPTD =
       MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
                       sizeof (PERTABDATA),
@@ -847,8 +847,11 @@ LRESULT WINAPI LclTabCtrlWndProc
                         // We no longer need this storage
                         DbgGlobalFree (hGlbData); hGlbData = NULL;
                     } else
-                        // Free all global fns and vars in the workspace
-                        FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData);
+                    // Free all global fns and vars in the workspace
+                    if (FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData))
+                        // Erase the Symbol Table Entry
+                        //   even if it's a []var
+                        EraseSTE (lpSymEntry, TRUE);
                 } // End FOR/IF
 
                 // Don't forget []DM

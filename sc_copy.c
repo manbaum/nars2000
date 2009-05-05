@@ -339,7 +339,7 @@ void DeleteGlobalLinks
 
         // Erase the Symbol Table Entry
         //   unless it's a []var
-        EraseSTE (lpSymLink);
+        EraseSTE (lpSymLink, FALSE);
 
         // ***FIXME*** -- What's involved in deleting the STE??
 

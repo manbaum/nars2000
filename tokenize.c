@@ -975,6 +975,12 @@ ERROR_EXIT:
 //  End of name
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- fnAlpDone"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL fnAlpDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
@@ -1008,6 +1014,8 @@ UBOOL fnAlpDone
     //   case-insensitive
     if (IsSysName (lpwszStr))
     {
+        STFLAGS stFlags = {0};              // STE flags
+
         // Handle Quad and QuoteQuad alone via a separate token
         if (lptkLocalVars->iStrLen EQ 1)
         {
@@ -1026,10 +1034,18 @@ UBOOL fnAlpDone
             goto NORMAL_EXIT;
         } else
             CharLowerBuffW (lpwszStr, lptkLocalVars->iStrLen);
-    } // End IF
 
-    // Lookup in or append to the symbol table
-    lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
+        // Lookup in the symbol table
+        lpSymEntry = SymTabLookupNameLength (lpwszStr,
+                                             lptkLocalVars->iStrLen,
+                                            &stFlags);
+        // If it's not found, ...
+        if (!lpSymEntry)
+            goto SYNTAX_EXIT;
+    } else
+        // Lookup in or append to the symbol table
+        lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
+    // If it's not found, ...
     if (!lpSymEntry)
         lpSymEntry = lpMemPTD->steNoValue;
 
@@ -1046,6 +1062,14 @@ UBOOL fnAlpDone
                              &tkFlags,
                              &aplInteger,
                               -lptkLocalVars->iStrLen);
+    goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    // Mark as in error
+    bRet = FALSE;
+
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
     InitAccumVars (lptkLocalVars);
@@ -1055,6 +1079,7 @@ NORMAL_EXIT:
 
     return bRet;
 } // End fnAlpDone
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1492,7 +1517,7 @@ UBOOL fnCtrlDone
     } // End IF
 NORMAL_EXIT:
     // Skip over the name
-    // (" - 1" to account for the ++ at the end of the FOR stmt)
+    // ("- 1" to account for the ++ at the end of the FOR stmt)
     lptkLocalVars->uChar += lptkLocalVars->CtrlStrucStrLen - 1;
 
     return TRUE;

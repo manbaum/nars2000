@@ -58,11 +58,6 @@ UBOOL AssignName_EM
          || lptkNam->tkFlags.TknType EQ TKT_OP2NAMED
          || lptkNam->tkFlags.TknType EQ TKT_OP3NAMED);
 
-    // If the target is a NotValue perm (from assign to unknown sysname)
-    if (!lptkNam->tkData.tkSym->stFlags.Value
-     && lptkNam->tkData.tkSym->stFlags.Perm)
-        goto SYNTAX_EXIT;
-
     // If the target is a system var, validate the assignment
     //   before we free the old value
     if (IsNameTypeVar (lptkNam->tkData.tkSym->stFlags.stNameType)

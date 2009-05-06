@@ -1118,8 +1118,14 @@ UBOOL fnSetQual
             // Scan the text for the width (if present)
             // On return:
             //   lpfsLocalVars->uChar and lpfsLocalVars->lpwszCur are incremented.
-            if (1 < ScanNumberFS (lpfsLocalVars, L"%u", &lpfsCur->fsWid, FALSE, 0))
+            offTxt = ScanNumberFS (lpfsLocalVars, L"%u", &lpfsCur->fsWid, FALSE, 0);
+            if (1 < offTxt)
                 goto FORMAT_EXIT;
+
+            // If no numbers scanned, back off uChar by 1
+            //   because of the ++ in the outer FOR stmt
+            if (offTxt EQ 0)
+                lpfsLocalVars->uChar--;
 
             // Modifiers allowed for T-format:  none
             // ...       not ...             :  all

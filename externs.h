@@ -1853,6 +1853,21 @@ typedef enum tagLINE_NUMS   // Starting line #s
     LINENUM_SINGLETON,      // 04:  Line []SINGLETON
 } LINE_NUMS;
 
+typedef enum tagFLT_DISP_FMT    // Floating Point Display Formats
+{
+    FLTDISPFMT_E = 0,           // 00:  E-format to nDigits significant digits
+    FLTDISPFMT_F,               // 01:  F-format with nDigits to the right of the decimal point
+    FLTDISPFMT_RAWINT,          // 02:  Raw integer format to nDigits significant digits
+    FLTDISPFMT_RAWFLT,          // 03:  Raw float format to nDigits significant digits -- switch
+                                //      to E-format if more than []PP digits required
+    FLTDISPFMT_LENGTH,          // 04:  Length
+} FLTDISPFMT, *LPFLTDISPFMT;
+
+// N.B.:  Whenever changing the above enum (FLT_DISP_FMT),
+//   be sure to make a corresponding change to
+//   <gDTOA_Mode> in <display.c>.
+
+
 #define ENUMS_DEFINED
 #undef  EXTERN
 

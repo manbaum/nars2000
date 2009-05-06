@@ -372,7 +372,7 @@ UBOOL CmdSave_EM
                                                  DEF_MAX_QUADPP,                    // Precision to use
                                                  UTF16_DOT,                         // Char to use as decimal separator
                                                  UTF16_BAR,                         // Char to use as overbar
-                                                 DEF_DTOA_MODE);                    // DTOA mode (Mode 2: max (ndigits, 1))
+                                                 FLTDISPFMT_RAWFLT);                // Float display format
                                 // Delete the last blank in case it matters,
                                 //   and ensure properly terminated
                                 if (lpaplChar[-1] EQ L' ')
@@ -1281,7 +1281,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                  DEF_MAX_QUADPP,                                // Precision to use
                                  UTF16_DOT,                                     // Char to use as decimal separator
                                  UTF16_BAR,                                     // Char to use as overbar
-                                 DEF_DTOA_MODE);                                // DTOA mode (Mode 2: max (ndigits, 1))
+                                 FLTDISPFMT_RAWFLT);                            // Float display format
             break;
 
         case ARRAY_CHAR:
@@ -1379,7 +1379,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                          DEF_MAX_QUADPP,                            // Precision to use
                                          UTF16_DOT,                                 // Char to use as decimal separator
                                          UTF16_BAR,                                 // Char to use as overbar
-                                         DEF_DTOA_MODE);                            // DTOA mode (Mode 2: max (ndigits, 1))
+                                         FLTDISPFMT_RAWFLT);                        // Float display format
                         break;
 
                     defstop
@@ -1433,7 +1433,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                              DEF_MAX_QUADPP,                        // Precision to use
                                              UTF16_DOT,                             // Char to use as decimal separator
                                              UTF16_BAR,                             // Char to use as overbar
-                                             DEF_DTOA_MODE);                        // DTOA mode (Mode 2: max (ndigits, 1))
+                                             FLTDISPFMT_RAWFLT);                    // Float display format
                             // Restore user's precision
                             lpMemPTD->lpSymQuadPP->stData.stInteger = uQuadPP;
 

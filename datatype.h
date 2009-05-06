@@ -49,6 +49,25 @@ typedef UCHAR       APLSTYPE;           // Storage type (see ARRAY_TYPES)
 
 typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMTAB_DATA
 
+#define APL_EXPONENT_LEN    11          // APLFLOAT exponent length (# bits)
+#define APL_MANTISSA_LEN    52          // ...      mantissa ...
+#define APL_EXP_BIAS        1023        // ...      exponent bias
+
+typedef struct tagAPLFLOAT_STR
+{
+    APLUINT uMantissa:APL_MANTISSA_LEN, // 00:  000FFFFFFFFFFFFF:  The mantissa
+            uExp     :APL_EXPONENT_LEN, //      7FF0000000000000:  The exponent + bias
+            bSign    :1;                //      8000000000000000:  The sign
+} APLFLOATSTR, *LPAPLFLOATSTR;
+
+typedef union tagAPLFLOAT_UNION
+{
+    APLFLOAT    aplFloat;               // 00:  The floating point number
+    APLUINT     aplUInt;                // 00:  ... as an unsigned int
+    APLFLOATSTR aplFloatStr;            // 00:  The struct to pick it apart
+} APLFLOATUNION, *LPAPLFLOATUNION;
+
+#define APL_MAN
 #define MAX_APLUINT     0xFFFFFFFFFFFFFFFF                      // Largest  APLINT
 #define MAX_APLINT      0x7FFFFFFFFFFFFFFF                      // ...      APLINT
 #define MAX_APLNELM     MAX_APLINT                              // ...      APLNELM
@@ -89,35 +108,35 @@ typedef APLLONGEST* LPAPLLONGEST;
 // Strand types -- used during strand constuction
 typedef enum tagSTRAND_TYPES
 {
- STRAND_INIT = 0,   // 00:  Initial state
- STRAND_BOOL,       // 01:  Boolean
- STRAND_INT,        // 02:  Integer
- STRAND_FLOAT,      // 03:  Floating point
- STRAND_CHAR,       // 04:  Character
- STRAND_CHARST,     // 05:  Character strand     (two or more character scalars in a row)
- STRAND_STRING,     // 06:  Character vector
- STRAND_HETERO,     // 07:  Simple heterogeneous (mixed numeric and character scalar)
- STRAND_NESTED,     // 08:  Nested
+ STRAND_INIT = 0,                       // 00:  Initial state
+ STRAND_BOOL,                           // 01:  Boolean
+ STRAND_INT,                            // 02:  Integer
+ STRAND_FLOAT,                          // 03:  Floating point
+ STRAND_CHAR,                           // 04:  Character
+ STRAND_CHARST,                         // 05:  Character strand     (two or more character scalars in a row)
+ STRAND_STRING,                         // 06:  Character vector
+ STRAND_HETERO,                         // 07:  Simple heterogeneous (mixed numeric and character scalar)
+ STRAND_NESTED,                         // 08:  Nested
 
- STRAND_LENGTH      // 09:  # elements in this enum
-                    //      *MUST* be the last entry
+ STRAND_LENGTH                          // 09:  # elements in this enum
+                                        //      *MUST* be the last entry
 } STRAND_TYPES;
 
 // Array types -- used to identify array storage type in memory
 typedef enum tagARRAY_TYPES
 {
- ARRAY_BOOL = 0,            // 00:  Boolean
- ARRAY_INT,                 // 01:  Integer
- ARRAY_FLOAT,               // 02:  Floating point
- ARRAY_CHAR,                // 03:  Character
- ARRAY_HETERO,              // 04:  Simple heterogeneous (mixed numeric and character scalars)
- ARRAY_NESTED,              // 05:  Nested
- ARRAY_LIST,                // 06:  List
- ARRAY_APA,                 // 07:  Arithmetic Progression Array
+ ARRAY_BOOL = 0,                        // 00:  Boolean
+ ARRAY_INT,                             // 01:  Integer
+ ARRAY_FLOAT,                           // 02:  Floating point
+ ARRAY_CHAR,                            // 03:  Character
+ ARRAY_HETERO,                          // 04:  Simple heterogeneous (mixed numeric and character scalars)
+ ARRAY_NESTED,                          // 05:  Nested
+ ARRAY_LIST,                            // 06:  List
+ ARRAY_APA,                             // 07:  Arithmetic Progression Array
 
- ARRAY_LENGTH,              // 08:  # elements in this enum
-                            //      *MUST* be the last non-error entry
-                            // 09-0F:  Available entries (4 bits)
+ ARRAY_LENGTH,                          // 08:  # elements in this enum
+                                        //      *MUST* be the last non-error entry
+                                        // 08-0F:  Available entries (4 bits)
  ARRAY_INIT  = ARRAY_LENGTH,
  ARRAY_ERROR = (APLSTYPE) -1,
 
@@ -141,10 +160,11 @@ typedef enum tagARRAY_TYPES
 #define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 64
 
 // Define APA structure
-typedef struct tagAPLAPA    // Offset + Multiplier {times} {iota} Length (origin-0)
+typedef struct tagAPLAPA                // Offset + Multiplier {times} {iota} NELM (origin-0)
 {
-    APLINT  Off,        // Offset
-            Mul;        // Multiplier
+    APLINT  Off,                        // 00:  Offset
+            Mul;                        // 04:  Multiplier
+                                        // 08:  Length
 } APLAPA, * LPAPLAPA;
 
 /*
@@ -195,38 +215,40 @@ ARRAY_NESTED    One value per APLNESTED, stored sequentially.
 ARRAY_LIST      One value per APLLIST, stored sequentially.
                 Values are either VARIMMED, VARARRAY, or LISTSEP tokens.
 
-ARRAY_APA       An APA is a representation of a1 + a2 {times} {iota} a3
+ARRAY_APA       An APA is a representation of Off + Mul {times} {iota} aplNELM
                 in origin-0.
 
-                These three elements are stored in the array in succession:
+                These two elements are stored in the array in succession:
 
-                1.  a1 = Offset
-                2.  a2 = Multiplier
-                3.  a3 = Length
+                1.  Off = Offset
+                2.  Mul = Multiplier
+
+                The NELM comes from the array header.
 
  */
 
 typedef struct tagHEADER_SIGNATURE
 {
-    UINT             nature;    // 00:  Array header signature (common to all types of arrays)
+    UINT             nature;            // 00:  Array header signature (common to all types of arrays)
+                                        // 04:  Length
 } HEADER_SIGNATURE, *LPHEADER_SIGNATURE;
 
 typedef enum tagPERM_NDX
 {
-    PERMNDX_NONE = 0,           // 00:  Not a permanent array
-    PERMNDX_QUADA,              // 01:  []A
-    PERMNDX_QUADAV,             // 02:  []AV
-    PERMNDX_QUADDM,             // 03:  []DM default
-    PERMNDX_QUADEM,             // 04:  []EM default
-    PERMNDX_QUADFC,             // 05:  []FC default
-    PERMNDX_QUADIC,             // 06:  []IC default
-    PERMNDX_SACLEAR,            // 07:  'CLEAR'
-    PERMNDX_SAERROR,            // 08:  'ERROR'
-    PERMNDX_SAEXIT,             // 09:  'EXIT'
-    PERMNDX_SAOFF,              // 0A:  'OFF'
-    PERMNDX_V0CHAR,             // 0B:  ''
-    PERMNDX_ZILDE,              // 0C:  {zilde}
-                                // 0D:  Length
+    PERMNDX_NONE = 0,                   // 00:  Not a permanent array
+    PERMNDX_QUADA,                      // 01:  []A
+    PERMNDX_QUADAV,                     // 02:  []AV
+    PERMNDX_QUADDM,                     // 03:  []DM default
+    PERMNDX_QUADEM,                     // 04:  []EM default
+    PERMNDX_QUADFC,                     // 05:  []FC default
+    PERMNDX_QUADIC,                     // 06:  []IC default
+    PERMNDX_SACLEAR,                    // 07:  'CLEAR'
+    PERMNDX_SAERROR,                    // 08:  'ERROR'
+    PERMNDX_SAEXIT,                     // 09:  'EXIT'
+    PERMNDX_SAOFF,                      // 0A:  'OFF'
+    PERMNDX_V0CHAR,                     // 0B:  ''
+    PERMNDX_ZILDE,                      // 0C:  {zilde}
+                                        // 0D-0F:  Available entries (4 bits)
 } PERM_NDX;
 
 // Variable array header
@@ -234,19 +256,19 @@ typedef enum tagPERM_NDX
 
 typedef struct tagVARARRAY_HEADER
 {
-    HEADER_SIGNATURE Sig;           // 00:  Array header signature
-    UINT             ArrType:4,     // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
-                     PermNdx:4,     //      000000F0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
-                     SysVar:1,      //      00000100:  Izit for a Sysvar (***DEBUG*** only)?
-                     PV0:1,         //      00000200:  Permutation Vector in origin-0
-                     PV1:1,         //      00000400:  ...                          1
-                     bSelSpec:1,    //      00000800:  Select Specification array
-                     :20;           //      FFFFF000:  Available bits
-    UINT             RefCnt;        // 08:  Reference count
-    APLNELM          NELM;          // 0C:  # elements in the array
-    APLRANK          Rank;          // 10:  The rank of the array
-                                    //      followed by the dimensions
-                                    // 14:  Length
+    HEADER_SIGNATURE Sig;               // 00:  Array header signature
+    UINT             ArrType:4,         // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
+                     PermNdx:4,         //      000000F0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
+                     SysVar:1,          //      00000100:  Izit for a Sysvar (***DEBUG*** only)?
+                     PV0:1,             //      00000200:  Permutation Vector in origin-0
+                     PV1:1,             //      00000400:  ...                          1
+                     bSelSpec:1,        //      00000800:  Select Specification array
+                     :20;               //      FFFFF000:  Available bits
+    UINT             RefCnt;            // 08:  Reference count
+    APLNELM          NELM;              // 0C:  # elements in the array
+    APLRANK          Rank;              // 10:  The rank of the array
+                                        //      followed by the dimensions
+                                        // 14:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
 
 // List array header
@@ -254,9 +276,9 @@ typedef struct tagVARARRAY_HEADER
 
 typedef struct tagLSTARRAY_HEADER
 {
-    HEADER_SIGNATURE Sig;       // 00:  Array header signature
-    APLNELM          NELM;      // 04:  # elements in the array (8 bytes)
-                                // 0C:  Length
+    HEADER_SIGNATURE Sig;               // 00:  Array header signature
+    APLNELM          NELM;              // 04:  # elements in the array (8 bytes)
+                                        // 0C:  Length
 } LSTARRAY_HEADER, *LPLSTARRAY_HEADER;
 
 // Function array header signature
@@ -265,15 +287,15 @@ typedef struct tagLSTARRAY_HEADER
 // Function array header
 typedef struct tagFCNARRAY_HEADER
 {
-    HEADER_SIGNATURE Sig;           // 00:  Array header signature
-    UINT             fnNameType:4,  // 04:  0000000F:  The type of the array (see NAME_TYPES)
-                     :28;           //      FFFFFFF0:  Available bits
-    UINT             RefCnt,        // 08:  Reference count
-                     tknNELM;       // 0C:  # tokens in the array (each of which may point to additional arrays)
-    HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)
-    FILETIME         ftCreation,    // 14:  Time of last creation (8 bytes)
-                     ftLastMod;     // 1C:  Time of last modification (8 bytes)
-                                    // 24:  Length
+    HEADER_SIGNATURE Sig;               // 00:  Array header signature
+    UINT             fnNameType:4,      // 04:  0000000F:  The type of the array (see NAME_TYPES)
+                     :28;               //      FFFFFFF0:  Available bits
+    UINT             RefCnt,            // 08:  Reference count
+                     tknNELM;           // 0C:  # tokens in the array (each of which may point to additional arrays)
+    HGLOBAL          hGlbTxtLine;       // 10:  Line text global memory handle (may be NULL)
+    FILETIME         ftCreation,        // 14:  Time of last creation (8 bytes)
+                     ftLastMod;         // 1C:  Time of last modification (8 bytes)
+                                        // 24:  Length
 } FCNARRAY_HEADER, *LPFCNARRAY_HEADER;
 
 // Named strand header
@@ -281,20 +303,21 @@ typedef struct tagFCNARRAY_HEADER
 
 typedef struct tagVARNAMED_HEADER
 {
-    HEADER_SIGNATURE Sig;       // 00:  Array header signature
-    APLNELM          NELM;      // 04:  # elements in the array (8 bytes)
-                                // 0C:  Length
+    HEADER_SIGNATURE Sig;               // 00:  Array header signature
+    APLNELM          NELM;              // 04:  # elements in the array (8 bytes)
+                                        // 0C:  Length
 } VARNAMED_HEADER, *LPVARNAMED_HEADER;
 
 // Distinguish between immediate LPSYMENTRY and HGLOBAL in an array
 typedef enum tagPTR_TYPES
 {
- PTRTYPE_STCONST = 0,   // 00:  *MUST* be first (and thus zero) as we can't afford to clear all the time
- PTRTYPE_HGLOBAL,       // 01:  This ptr is an HGLOBAL
- PTRTYPE_LENGTH         // 02:  # entries in this enum (1 bit)
-} PTR_TYPES;            // No available entries (1 bit)
+ PTRTYPE_STCONST = 0,                   // 00:  *MUST* be first (and thus zero) as we can't afford to clear all the time
+ PTRTYPE_HGLOBAL,                       // 01:  This ptr is an HGLOBAL
+ PTRTYPE_LENGTH                         // 02:  # entries in this enum (1 bit)
+                                        // No available entries (1 bit)
+} PTR_TYPES;
 
-#define PTRTYPE_MASK    1       // This masks the one low-order bit
+#define PTRTYPE_MASK    1               // This masks the one low-order bit
 
 // For LPSYMENTRY and HGLOBAL values in a temporary array, sometimes
 //   those values can be re-used in another array without having

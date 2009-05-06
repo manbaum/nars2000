@@ -22,14 +22,18 @@
 
 #define STRICT
 #include <windows.h>
+#include <float.h>
 #include "headers.h"
 
 
 typedef struct tagWID_PRC
 {
-    APLUINT uWid:31,                // Actual width (if Auto, then this field is initially 0)
-            Auto:1;                 // TRUE iff this width is automatic
-    APLINT  iPrc;                   // Actual precision (0 = none, >0 = decimal notation, <0 = E-notation)
+    APLUINT uWid;                   // 00:  Actual width (if Auto, then this field is initially 0)
+    APLINT  iPrc;                   // 04:  Actual precision (0 = none, >0 = decimal notation, <0 = E-notation)
+    UINT    uMaxExp:30,             // 08:  3FFFFFFF:  If iPrc < 0, length of longest exponent including the E and {neg} (if any)
+            Auto:1,                 //      40000000:  TRUE iff this width is automatic
+            bAllChar:1;             //      80000000:  TRUE iff the column is all character
+                                    // 0C:  Length
 } WIDPRC, *LPWIDPRC;
 
 
@@ -656,9 +660,6 @@ LPAPLCHAR CompileArrBool
 ////////
 ////////// Max the current trailing blanks with this
 ////////lpFmtColStr[aplDimCol].uTrBl = max (lpFmtColStr[aplDimCol].uTrBl, uLen);
-
-////////// Max the current format type with FMT_INT
-////////lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_INT);
     } // End FOR
 
     // Initialize bit mask for all references to lpMem
@@ -813,9 +814,6 @@ LPAPLCHAR CompileArrInteger
 ////////////
 ////////////// Max the current trailing blanks with this
 ////////////lpFmtColStr[aplDimCol].uTrBl = max (lpFmtColStr[aplDimCol].uTrBl, uLen);
-
-////////////// Max the current format type with FMT_INT
-////////////lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_INT);
         } // End FOR
 
         // Save as ptr to next row struc
@@ -901,15 +899,8 @@ LPAPLCHAR CompileArrFloat
             // Count in another item
             lpFmtRowLcl->uItemCount++;
 
-////////////// Check for exponential format
-////////////lpwsz = strchrW (lpwszOut, L'E');
-////////////
-////////////// If present, mark as exponential
-////////////if (lpwsz)
-////////////    lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_EXP);
-////////////
             // Include a leading blank if nested or not scalar/vector or not 1st col
-            uLen = (           IsMultiRank (aplRank) || aplDimCol NE 0);
+            uLen = (IsMultiRank (aplRank) || aplDimCol NE 0);
 
             // Max the current leading blanks with this
             lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
@@ -930,9 +921,6 @@ LPAPLCHAR CompileArrFloat
 
                 // Max the current fractional width with this
                 lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
-
-////////////////// Max the current format type with FMTTYPE_FIX
-////////////////lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_FIX);
             } else  // No decimal point
             {
                 // Calculate the length of the integer part
@@ -2334,96 +2322,82 @@ LPAPLCHAR FormatArrSimple
             // Loop through the cols
             for (aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
             {
-                    LPWCHAR lpw;
+                LPWCHAR lpw;
 
-////////////////// Split cases based upon the format type
-////////////////switch (lpFmtColStr[aplDimCol].uFmtType)
-////////////////{
-////////////////    case FMTTYPE_INT:
-////////////////    case FMTTYPE_FIX:
-////////////////    case FMTTYPE_EXP:
-                        // ***FIXME*** -- handle conversion from fixed point to exponential format
-                        //                and line up the decimal points and the Es
-                        uCmpWid  = InteriorColWidth (&lpFmtColStr[aplDimCol]);  // Compiled width
-                        uActLen  = lstrlenW (lpaplChar);                        // Actual length
+                uCmpWid  = InteriorColWidth (&lpFmtColStr[aplDimCol]);  // Compiled width
+                uActLen  = lstrlenW (lpaplChar);                        // Actual length
 
-                        Assert (uActLen <= uCmpWid);
+                Assert (uActLen <= uCmpWid);
 
-                        // Check for fractional part unless char ***FIXME*** -- Fails on '.' in hetero array??
-                        if (IsSimpleChar (aplType))
-                            lpw = NULL;
-                        else
-                            lpw = strchrW (lpaplChar, L'.');
+                // Check for fractional part unless char ***FIXME*** -- Fails on '.' in hetero array??
+                if (IsSimpleChar (aplType))
+                    lpw = NULL;
+                else
+                    lpw = strchrW (lpaplChar, L'.');
 
-                        if (!lpw)
-                            lpw = lpaplChar + uActLen;              // Place decimal point after integer part
+                if (!lpw)
+                    lpw = lpaplChar + uActLen;              // Place decimal point after integer part
 
-                        // Align the decimal points unless char ***FIXME*** -- Fails on '.' in hetero array??
-                        if (IsSimpleChar (aplType))
-                            uLead = 0;
-                        else
-                        {
-                            uCol = (UINT) (lpw - lpaplChar) + lpFmtColStr[aplDimCol].uFrcs;
-                            uLead = uCmpWid - max (uActLen, uCol);  // # leading blanks to align decimal points
-                        } // End IF/ELSE
+                // Align the decimal points unless char ***FIXME*** -- Fails on '.' in hetero array??
+                if (IsSimpleChar (aplType))
+                    uLead = 0;
+                else
+                {
+                    uCol = (UINT) (lpw - lpaplChar) + lpFmtColStr[aplDimCol].uFrcs;
+                    uLead = uCmpWid - max (uActLen, uCol);  // # leading blanks to align decimal points
+                } // End IF/ELSE
 
-                        // Plus leading blanks
-                        uLeadBefore = lpFmtColStr[aplDimCol].uLdBl;
-                        uLead += uLeadBefore;
+                // Plus leading blanks
+                uLeadBefore = lpFmtColStr[aplDimCol].uLdBl;
+                uLead += uLeadBefore;
 
-                        // If this is raw output,
-                        // break the line if it would exceed []PW
-                        //   and the line is non-empty.
-                        uCol = (UINT) (lpwszOut - lpwszOutStart);
-                        if (bRawOutput
-                         && DEF_INDENT < uCol
-                         && uQuadPW < (uLeadBefore + uCmpWid + uCol))
-                        {
-                            // Ensure properly terminated
-                            *lpwszOut = L'\0';
+                // If this is raw output,
+                // break the line if it would exceed []PW
+                //   and the line is non-empty.
+                uCol = (UINT) (lpwszOut - lpwszOutStart);
+                if (bRawOutput
+                 && DEF_INDENT < uCol
+                 && uQuadPW < (uLeadBefore + uCmpWid + uCol))
+                {
+                    // Ensure properly terminated
+                    *lpwszOut = L'\0';
 
-                            // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
-                                return NULL;
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        return NULL;
 
-                            // Output the line
-                            AppendLine (lpwszOutStart, TRUE, TRUE);
+                    // Output the line
+                    AppendLine (lpwszOutStart, TRUE, TRUE);
 
-                            // Reset the line start
-                            lpwszOut = lpw = *lplpwszOut;
+                    // Reset the line start
+                    lpwszOut = lpw = *lplpwszOut;
 
-                            // Fill the output area with all blanks
-                            uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
-                            FillMemoryW (lpw, uCol, L' ');
+                    // Fill the output area with all blanks
+                    uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
+                    FillMemoryW (lpw, uCol, L' ');
 
-                            // Skip over leading indent
-                            lpwszOut += DEF_INDENT;
+                    // Skip over leading indent
+                    lpwszOut += DEF_INDENT;
 
-                            // Shorten the width to act like this is the first col
-                            //   (which doesn't have a leading blank)
-                            uCmpWid = max (uCmpWid, uActLen + 1) - 1;
-                            uCol = uLeadBefore;
-                        } else
-                        {
-                            // Include this row's col offset
-                            uLead += uColOff;
+                    // Shorten the width to act like this is the first col
+                    //   (which doesn't have a leading blank)
+                    uCmpWid = max (uCmpWid, uActLen + 1) - 1;
+                    uCol = uLeadBefore;
+                } else
+                {
+                    // Include this row's col offset
+                    uLead += uColOff;
 #ifdef PREFILL
-                            // Skip over leading blanks
-                            lpwszOut += uLead;
-                            uCol = uLead;
+                    // Skip over leading blanks
+                    lpwszOut += uLead;
+                    uCol = uLead;
 #else
-                            // Fill with leading blanks
-                            lpwszOut = FillMemoryW (lpwszOut, uLead, L' ');
+                    // Fill with leading blanks
+                    lpwszOut = FillMemoryW (lpwszOut, uLead, L' ');
 #endif
-                            // Subtract out as the col offset isn't in the compiled width
-                            uCol -= uColOff;
-                        } // End IF/ELSE
-////////////////
-////////////////        break;
-////////////////
-////////////////    defstop
-////////////////        break;
-////////////////} // End SWITCH
+                    // Subtract out as the col offset isn't in the compiled width
+                    uCol -= uColOff;
+                } // End IF/ELSE
 
                 // Copy the next value
                 CopyMemoryW (lpwszOut, lpaplChar, uActLen);
@@ -2891,7 +2865,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                  aplLongestRht;     // Right ...
     LPWIDPRC     lpMemWidPrc = NULL;// Ptr to left arg WIDPRC struc
     LPAPLCHAR    lpaplChar,         // Ptr to next available format position
-                 lpaplCharIni;      // Ptr to initial format position
+                 lpaplCharIni,      // Ptr to initial format position
+                 lpaplCharExp;      // Ptr to 'E' in E-format number
     APLINT       apaOffLft,         // Left arg APA offset
                  apaMulLft,         // ...          multiplier
                  aplIntegerLft,     // Left arg temporary integer
@@ -2908,8 +2883,11 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                  aplCharOverflow,   // []FC[FCNDX_OVERFLOW_FILL]
                  aplCharOverbar;    // []FC[FCNDX_OVERBAR]
     UINT         uBitMask,          // Bit mask for looping through Booleans
+                 uMaxExp,           // Width of the maximum exponent (including the 'E')
+                 uOldMaxExp,        // Old ...
                  uLen;              // Length of formatted number
     UBOOL        bRet = TRUE,       // TRUE iff result is valid
+                 bAllChar,          // TRUE iff this column is all character
                  Auto;              // TRUE iff the col is automatic width
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -3005,7 +2983,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                 aplIntegerLft = (uBitMask & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
 ////////////////if ((!uPar) && aplIntegerLft < 0)   // Not needed on Booleans
 ////////////////    goto DOMAIN_EXIT;
-                *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
+                if (!uPar)
+                    lpMemWidPrc  ->uWid = aplIntegerLft;
+                else
+                    lpMemWidPrc++->iPrc = aplIntegerLft;
 
                 // Shift over the left bit mask
                 uBitMask <<= 1;
@@ -3026,7 +3007,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                 aplIntegerLft = *((LPAPLINT) lpMemLft)++;
                 if ((!uPar) && aplIntegerLft < 0)
                     goto DOMAIN_EXIT;
-                *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
+                if (!uPar)
+                    lpMemWidPrc  ->uWid = aplIntegerLft;
+                else
+                    lpMemWidPrc++->iPrc = aplIntegerLft;
             } // End FOR
 
             break;
@@ -3038,7 +3022,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                 aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
                 if ((!bRet) || ((!uPar) && aplIntegerLft < 0))
                     goto DOMAIN_EXIT;
-                *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
+                if (!uPar)
+                    lpMemWidPrc  ->uWid = aplIntegerLft;
+                else
+                    lpMemWidPrc++->iPrc = aplIntegerLft;
             } // End FOR
 
             break;
@@ -3054,7 +3041,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                 aplIntegerLft = apaOffLft + apaMulLft * uDim;
                 if ((!uPar) && aplIntegerLft < 0)
                     goto DOMAIN_EXIT;
-                *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
+                if (!uPar)
+                    lpMemWidPrc  ->uWid = aplIntegerLft;
+                else
+                    lpMemWidPrc++->iPrc = aplIntegerLft;
             } // End FOR
 
             break;
@@ -3215,9 +3205,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
             {
                 // Get the corresponding attributes for this col
-                Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
-                uWid = lpMemWidPrc[aplDimCol].uWid;
-                iPrc = lpMemWidPrc[aplDimCol].iPrc;
+                Auto     = (BOOL) lpMemWidPrc[aplDimCol].Auto;
+                uWid     =        lpMemWidPrc[aplDimCol].uWid;
+                iPrc     =        lpMemWidPrc[aplDimCol].iPrc;
+                bAllChar = TRUE;
 
                 // Loop through all rows (and across planes)
                 for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -3273,7 +3264,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     {
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
-                            // Split cases based upon the sgn of iPrc
+                            // No longer all character
+                            bAllChar = FALSE;
+
+                            // Split cases based upon the sign of iPrc
                             if (iPrc >= 0)
                             {
                                 // Format the number
@@ -3293,12 +3287,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                     *lpaplChar++ = L'\0';
                                 } // End IF
                             } else
-                            if (iPrc < 0)
-                            {
-                                // ***FIXME*** -- We need a way to force the format to E-notation if iPrc < 0
-
-
-
+////////////////////////////if (iPrc < 0)
                                 // Format the number
                                 lpaplChar =
                                   FormatFloatFC (lpaplChar,                         // Ptr to output save area
@@ -3306,32 +3295,43 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                  -iPrc,                             // Precision to use
                                                  aplCharDecimal,                    // Char to use as decimal separator
                                                  aplCharOverbar,                    // Char to use as overbar
-                                                 DEF_DTOA_MODE);                    // DTOA mode (Mode 2: max (ndigits, 1))
-                            } // End IF/ELSE
-
+                                                 FLTDISPFMT_E);                     // Float display format
                             break;
 
                         case IMMTYPE_FLOAT:
-                            // ***FIXME*** -- We need a way to force the format to E-notation if iPrc < 0
+                            // No longer all character
+                            bAllChar = FALSE;
 
-
-
-                            // Format the number
-                            lpaplChar =
-                              FormatFloatFC (lpaplChar,                             // Ptr to output save area
-                                            *(LPAPLFLOAT) &aplLongestRht,           // The value to format
-                                             abs64 (iPrc),                          // Precision to use
-                                             aplCharDecimal,                        // Char to use as decimal separator
-                                             aplCharOverbar,                        // Char to use as overbar
-                                             DEF_DTOA_MODE);                        // DTOA mode (Mode 2: max (ndigits, 1))
-                            // If iPrc is positive, ensure there are at least that many
-                            //   digits to the right of the decimal point -- pad with zeros
-                            //   if not.
-
-
-
-
-
+                            // Split cases based upon the sign of iPrc
+                            if (iPrc > 0)
+                                // Format the number
+                                lpaplChar =
+                                  FormatFloatFC (lpaplChar,                             // Ptr to output save area
+                                                *(LPAPLFLOAT) &aplLongestRht,           // The value to format
+                                                 iPrc,                                  // Precision for F-format, significant digits for E-format
+                                                 aplCharDecimal,                        // Char to use as decimal separator
+                                                 aplCharOverbar,                        // Char to use as overbar
+                                                 FLTDISPFMT_F);                         // Float display format
+                            else
+                            if (iPrc EQ 0)
+                                // Format the number
+                                lpaplChar =
+                                  FormatFloatFC (lpaplChar,                             // Ptr to output save area
+                                                *(LPAPLFLOAT) &aplLongestRht,           // The value to format
+                                                 DBL_MAX_10_EXP + 2,                    // Precision for F-format, significant digits for E-format
+                                                 aplCharDecimal,                        // Char to use as decimal separator
+                                                 aplCharOverbar,                        // Char to use as overbar
+                                                 FLTDISPFMT_RAWINT);                    // Float display format
+                            else
+////////////////////////////if (iPrc < 0)
+                                // Format the number
+                                lpaplChar =
+                                  FormatFloatFC (lpaplChar,                             // Ptr to output save area
+                                                *(LPAPLFLOAT) &aplLongestRht,           // The value to format
+                                                 -iPrc,                                 // Precision for F-format, significant digits for E-format
+                                                 aplCharDecimal,                        // Char to use as decimal separator
+                                                 aplCharOverbar,                        // Char to use as overbar
+                                                 FLTDISPFMT_E);                         // Float display format
                             // Zap the trailing blank
                             lpaplChar[-1] = L'\0';
 
@@ -3350,6 +3350,19 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     // Get the formatted length
                     uLen = (UINT) (lpaplChar - lpaplCharIni) - 1;
 
+                    // If we're using E-format, ...
+                    if (iPrc < 0)
+                    {
+                        // Find the length of the exponent
+                        uMaxExp = uLen - (SkipToCharW (lpaplCharIni, L'E') - lpaplCharIni);
+
+                        // Save the old value in case we overflow
+                        uOldMaxExp = lpMemWidPrc[aplDimCol].uMaxExp;
+
+                        // Save the larger
+                        lpMemWidPrc[aplDimCol].uMaxExp = max (uMaxExp, uOldMaxExp);
+                    } // End IF
+
                     // Check for automatic width
                     if (Auto)
                         lpMemWidPrc[aplDimCol].uWid = uWid = max (uWid, uLen);
@@ -3357,14 +3370,28 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     // Check for width overflow
                     if (uWid < uLen)
                     {
-                        if (aplCharOverflow EQ L'0')
+                        // If the overflow char is the default, ...
+                        if (aplCharOverflow EQ DEF_QUADFC_OVERFLOW)
                             goto DOMAIN_EXIT;
 
+                        // Restore the previous max exponent field as this
+                        //   one has overflowed
+                        if (iPrc < 0)
+                            lpMemWidPrc[aplDimCol].uMaxExp = uOldMaxExp;;
+
+                        // Fill with the overflow char
                         FillMemoryW (lpaplCharIni, (APLU3264) uWid, aplCharOverflow);
+
+                        // Skip over it
                         lpaplChar = lpaplCharIni + uWid;
+
+                        // Ensure properly terminated
                         *lpaplChar++ = L'\0';
                     } // End IF/ELSE/...
                 } // End FOR
+
+                // Save AllChar value
+                lpMemWidPrc[aplDimCol].bAllChar = bAllChar;
             } // End FOR
 
             break;
@@ -3429,9 +3456,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     for (aplDimCol = uAccWid = 0; aplDimCol < aplDimNCols; aplDimCol++, uAccWid += Auto + uWid)
     {
         // Get the corresponding attributes for this col
-        Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
-        uWid = lpMemWidPrc[aplDimCol].uWid;
-////////iPrc = lpMemWidPrc[aplDimCol].iPrc;
+        Auto     = (BOOL) lpMemWidPrc[aplDimCol].Auto;
+        uWid     =        lpMemWidPrc[aplDimCol].uWid;
+        iPrc     =        lpMemWidPrc[aplDimCol].iPrc;
+        bAllChar =        lpMemWidPrc[aplDimCol].bAllChar;
 
         // Loop through all rows (and across planes)
         for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -3439,12 +3467,34 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             // Get the string length
             uLen = lstrlenW (lpaplChar);
 
-            // ***FIXME*** -- Align the decimal points
-            // ***FIXME*** -- If the col is entirely chars, left-justify the items
+            // If the col is all character data, ...
+            if (bAllChar)
+                // Left-adjust the char vector in the col
+                uMaxExp = (UINT) uWid - uLen;
+            else
+            // If this is E-format, ...
+            if (iPrc < 0)
+            {
+                // Find the 'E'
+                lpaplCharExp = SkipToCharW (lpaplChar, L'E');
+
+                // If there's an 'E' (not overflowed)
+                if (lpaplCharExp[0]
+                 && lpaplCharExp NE lpaplChar)      // In case the overflow char is 'E'
+                {
+                    // Find the length of the exponent
+                    uMaxExp = uLen - (lpaplCharExp - lpaplChar);
+
+                    // Calculate the difference between the longest and the current length
+                    uMaxExp = lpMemWidPrc[aplDimCol].uMaxExp - uMaxExp;
+                } else
+                    uMaxExp = 0;
+            } else
+                uMaxExp = 0;
 
             // Copy the next formatted value to the result,
             //   right-justifying it in the process
-            CopyMemoryW (&lpMemRes[aplDimRow * uTotWid + uAccWid + Auto + (uWid - uLen)],
+            CopyMemoryW (&lpMemRes[aplDimRow * uTotWid + uAccWid + Auto + (uWid - uLen) - uMaxExp],
                           lpaplChar,
                           uLen);
             // Skip over the formatted value and the trailing zero

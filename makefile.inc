@@ -236,7 +236,6 @@ $(O)getreent.obj:       $(@B).c         $(GETREENT_DEP)
 
 ## FP-specific files
 $(O)dtoa.obj:           $(@B).c         $(DTOA_DEP)
-$(O)g_fmt.obj:          $(@B).c         $(G_FMT_DEP)
 
 ## Bison-generated files
 $(O)cs_parse.c:         $(@B).y
@@ -272,6 +271,7 @@ $(O)execdfn.obj:        $(@B).c         $(EXECDFN_DEP)
 $(O)execfns.obj:        $(@B).c         $(EXECFNS_DEP)
 $(O)execmfn.obj:        $(@B).c         $(EXECMFN_DEP)
 $(O)fastbool.obj:       $(@B).c         $(FASTBOOL_DEP)
+$(O)fmtspec.obj:        $(@B).c         $(FMTSPEC_DEP)
 $(O)free.obj:           $(@B).c         $(FREE_DEP)
 $(O)getfns.obj:         $(@B).c         $(GETFNS_DEP)
 $(O)goto.obj:           $(@B).c         $(GOTO_DEP)

@@ -56,6 +56,7 @@
 #include "termcode.h"
 #include "eventtypes.h"
 #include "qf.h"
+#include "fmtspec.h"
 
 
 #ifndef __ATTR_SAL

@@ -4604,6 +4604,7 @@ void InitFsaTabs
 {
     // Ensure we calculated the lengths properly
     InitFsaTabTK ();
+    InitFsaTabFS ();
 } // End InitFsaTabs
 #endif
 

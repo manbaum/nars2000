@@ -506,7 +506,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                                  DEF_MAX_QUADPP,                // Precision to use
                                                  L'.',                          // Char to use as decimal separator
                                                  UTF16_OVERBAR,                 // Char to use as overbar
-                                                 DEF_DTOA_MODE);                // DTOA mode (Mode 2: max (ndigits, 1))
+                                                 FLTDISPFMT_RAWFLT);            // Float display format
                         } else
                         {
                             // Format & save the rank
@@ -541,7 +541,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                                      DEF_MAX_QUADPP,                // Precision to use
                                                      L'.',                          // Char to use as decimal separator
                                                      UTF16_OVERBAR,                 // Char to use as overbar
-                                                     DEF_DTOA_MODE);                // DTOA mode (Mode 2: max (ndigits, 1))
+                                                     FLTDISPFMT_RAWFLT);            // Float display format
                             } // End FOR
                         } // End IF/ELSE
 

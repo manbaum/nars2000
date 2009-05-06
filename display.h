@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -87,9 +87,10 @@ typedef struct tagFMTCOLSTR
                 uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
                                         //      including sign
                 uChrs,                  // 0C:  # CHARs
-                uFrcs,                  // 10:  # Fractional digits in Float column
+                uFrcs;                  // 10:  # Fractional digits in Float column
                                         //      including decimal point
-                uTrBl;                  // 14:  # trailing blanks
+    UINT        uTrBl:31,               // 14:  7FFFFFFFF:  # trailing blanks
+                bAllChar:1;             //      800000000:  TRUE iff this col is all character
                                         // 18:  Length
 } FMTCOLSTR, *LPFMTCOLSTR;
 
@@ -109,18 +110,10 @@ typedef struct tagFMTROWSTR
                                         // 18:  Length
 } FMTROWSTR, *LPFMTROWSTR;
 
-////typedef enum tagFMT_TYPES
-////{
-////    FMTTYPE_INT = 0,                    // Integer format, e.g. -1234
-////    FMTTYPE_FIX,                        // Fixed point ...      -1234.56
-////    FMTTYPE_EXP,                        // Exponential ...      -1234.0E-19
-////} FMT_TYPES;
-
 // ***FIXME*** -- Is this any better than filling as needed??
 #define PREFILL         // With blanks
 
 // Define char to display for infinity
-////ine CHR_INFINITY        L'_'
 #define CHR_INFINITY        UTF16_INFINITY
 
 

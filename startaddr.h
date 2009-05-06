@@ -196,8 +196,6 @@ typedef struct tagSTART_ADDRESSES
     // free.c
     "FreeResultName"            , (LPUCHAR) &FreeResultName             ,
 
-    // g_fmt.c
-
     // getfns.c
     "GetFirstItemToken"         , (LPUCHAR) &GetFirstItemToken          ,
     "GetNextValueTokenIntoToken", (LPUCHAR) &GetNextValueTokenIntoToken ,

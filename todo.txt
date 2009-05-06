@@ -22,8 +22,6 @@ TO DO:  General:  Less Important (post-alpha)
 * Need an installation program which also sets up file associations for .ws.nars
 * Implement a toolbar with buttons for common actions.
 * When editing a function, check to see if it's already open for editing
-* When removing a workspace tab, )RESET, terminate all threads, and then delete
-  all globals.
 * User preference to avoid saving Undo buffer with user-defined functions/operators.
 * Convert from ARRAY_CHAR (UCS-2) to ARRAY_CHAR8  for 0x00-0x7F,
                                      ARRAY_CHAR16 for 0x0000-0xFFFF (excluding D800-DFFF), and
@@ -36,6 +34,8 @@ TO DO:  General:  Less Important (post-alpha)
 * Port to Mac/OS
 * Extend <aplchars> to <textarea> in FireFox, too.
 * Use gcov to eliminate unused routines.
+* Use actual individual character width to display Unicode chars instead
+  of a constant width.
 * Implement New Tab On Load off
 * Implement New Tab On Clear off
 * Implement fast 1st coord array catenation via GlobalRealloc if RefCnt = 1
@@ -273,6 +273,8 @@ DONE:  General
 * Implement boxed display function.
 * Allow boxed display (line drawing) chars to be syntax colored separately.
 * Allow function lines to be separately syntax colored.
+* When removing a workspace tab, )RESET to terminate all threads, and then
+  delete all globals.
 *
 
 

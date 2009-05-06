@@ -23,7 +23,15 @@
 #define STRICT
 #include <windows.h>
 #include <float.h>
+#include <math.h>
 #include "headers.h"
+
+
+// DTOA mode for the corresponding FLTDSPFMT_xxx value
+int gDTOA_Mode[FLTDISPFMT_LENGTH] = {2,     // E :  2 = nDigits significant digits
+                                     3,     // F :  3 = nDigits past decimal point
+                                     2,     // RI:  2 = nDigits significant digits
+                                     0};    // RF:  0 = shortest string
 
 
 //***************************************************************************
@@ -735,7 +743,7 @@ LPAPLCHAR FormatImmed
             lpaplChar =
               FormatFloat (lpaplChar,                 // Ptr to output save area
                            *(LPAPLFLOAT) lpaplLongest,// The value to format
-                           0);                        // Use default precision
+                           0);                        // Use default significant digits
             break;
 
         defstop
@@ -756,10 +764,10 @@ LPAPLCHAR FormatImmedFC
     (LPWCHAR      lpaplChar,        // Ptr to input string
      UINT         ImmType,          // Immediate type
      LPAPLLONGEST lpaplLongest,     // Ptr to value to format
-     UINT         uPrecision,       // Precision to use
+     UINT         nDigits,          // # significant digits
      APLCHAR      aplCharDecimal,   // Char to use as decimal separator
      APLCHAR      aplCharOverbar,   // Char to use as overbar
-     UINT         dtoaMode)         // DTOA mode (Mode 2: max (ndigits, 1))
+     FLTDISPFMT   fltDispFmt)       // Float display format
 
 {
     WCHAR wc;
@@ -832,10 +840,10 @@ LPAPLCHAR FormatImmedFC
             lpaplChar =
               FormatFloatFC (lpaplChar,                 // Ptr to output save area
                              *(LPAPLFLOAT) lpaplLongest,// The value to format
-                             uPrecision,                // Precision to use
+                             nDigits,                   // # significant digits
                              aplCharDecimal,            // Char to use as decimal separator
                              aplCharOverbar,            // Char to use as overbar
-                             dtoaMode);                 // DTOA mode (Mode 2: max (ndigits, 1))
+                             fltDispFmt);               // Float display format
             break;
 
         defstop
@@ -935,16 +943,18 @@ NORMAL_EXIT:
 
 LPAPLCHAR FormatFloat
     (LPWCHAR  lpaplChar,        // Ptr to output save area
-     APLFLOAT fFloat,           // The value to format
-     APLUINT  uPrecision)       // Precision to use (0 = default)
+     APLFLOAT aplFloat,         // The value to format
+     APLUINT  nDigits)          // Raw or E-format:  # significant digits
+                                // F-format:  # digits to right of decimal sep
 
 {
-    return FormatFloatFC (lpaplChar,        // Ptr to output save area
-                          fFloat,           // The value to format
-                          (uPrecision EQ 0) ? GetQuadPP () : uPrecision, // Precision to use
-                          L'.',             // Char to use as decimal separator
-                          UTF16_OVERBAR,    // Char to use as overbar
-                          DEF_DTOA_MODE);   // DTOA mode (Mode 2: max (ndigits, 1))
+    return FormatFloatFC (lpaplChar,                // Ptr to output save area
+                          aplFloat,                 // The value to format
+                          (nDigits EQ 0) ? GetQuadPP ()
+                                         : nDigits, // # significant digits
+                          L'.',                     // Char to use as decimal separator
+                          UTF16_OVERBAR,            // Char to use as overbar
+                          FLTDISPFMT_RAWFLT);       // Float display format
 } // End FormatFloat
 
 
@@ -955,135 +965,369 @@ LPAPLCHAR FormatFloat
 //***************************************************************************
 
 LPAPLCHAR FormatFloatFC
-    (LPWCHAR  lpaplChar,        // Ptr to output save area
-     APLFLOAT fFloat,           // The value to format
-     APLUINT  uPrecision,       // Precision to use
-     APLCHAR  aplCharDecimal,   // Char to use as decimal separator
-     APLCHAR  aplCharOverbar,   // Char to use as overbar
-     UINT     dtoaMode)         // DTOA mode (Mode 2: max (ndigits, 1))
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     APLFLOAT   aplFloat,           // The value to format
+     APLINT     nDigits,            // Raw or E-format:  # significant digits
+                                    // F-format:  # digits to right of decimal sep
+     APLCHAR    aplCharDecimal,     // Char to use as decimal separator
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     FLTDISPFMT fltDispFmt)         // Float display format (see FLTDISPFMT)
 
 {
-    char szTemp[1024];          // Ptr to temporary output area
-
-    if (!_finite (fFloat))
+    if (!_finite (aplFloat))
     {
-        if (fFloat < 0)
+        if (aplFloat < 0)
             *lpaplChar++ = aplCharOverbar;
         *lpaplChar++ = CHR_INFINITY;    // Char for infinity
     } else
+    if (aplFloat EQ 0)
     {
-        LPAPLCHAR p, ep, dp;
+        // Split cases based upon the float display format
+        switch (fltDispFmt)
+        {
+            case FLTDISPFMT_E:          // 0E0 or 0.0E0 or 0.0---0E0
+                if (nDigits EQ 1)
+                {
+                    // Fill in the result of "0E0"
+                    *lpaplChar++ = L'0';
+                    *lpaplChar++ = L'E';
+                    *lpaplChar++ = L'0';
+                } else
+                if (nDigits > 1)
+                {
+                    // Start with "0."
+                    *lpaplChar++ = L'0';
+                    nDigits--;
+                    *lpaplChar++ = aplCharDecimal;
 
-        // Convert fFloat to an ASCII string
+                    // While there are more digits, ...
+                    while (nDigits > 0)
+                    {
+                        // Fill with leading zeros
+                        *lpaplChar++ = L'0';
+                        nDigits--;
+                    } // End WHILE
+
+                    // End with "E0"
+                    *lpaplChar++ = L'E';
+                    *lpaplChar++ = L'0';
+                } else
+                    DbgStop ();         // We should never get here
+                break;
+
+            case FLTDISPFMT_F:
+                // Start with a "0"
+                *lpaplChar++ = L'0';
+
+                // If there are any significant digits, ...
+                if (nDigits > 0)
+                {
+                    // Append a decimal point
+                    *lpaplChar++ = aplCharDecimal;
+
+                    // While there are more significant digits, ...
+                    while (nDigits > 0)
+                    {
+                        // Append another zero
+                        *lpaplChar++ = L'0';
+                        nDigits--;
+                    } // End WHILE
+                } // End IF
+
+                break;
+
+            case FLTDISPFMT_RAWINT:
+            case FLTDISPFMT_RAWFLT:
+                // The result is "0"
+                *lpaplChar++ = L'0';
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
+    // Non-zero
+    {
+        UINT   dtoaMode;                // DTOA mode corresponding to fltDispFmt
+        LPCHAR s, s0;                   // Ptr to output from dtoa
+        int    decpt,                   // Exponent from dtoa
+               sign;                    // TRUE iff the number is negative
+        UBOOL  bIntegral;               // TRUE iff the # is integral
+
+        // 0 = shortest string
+        // 2 = nDigits significant digits
+        // 3 = nDigits past decimal point
+
+        // Get the corresponding DTOA mode
+        dtoaMode = gDTOA_Mode[fltDispFmt];
+
+        // If this is RAWINT, ...
+        if (fltDispFmt EQ FLTDISPFMT_RAWINT)
+        {
+            APLFLOATUNION aplFloatUnion;        // Temporary union
+
+            // Save the FP value in the union so we can pick it apart
+            aplFloatUnion.aplFloat = aplFloat;
+
+            // Determine if the value is integral
+            bIntegral = (aplFloatUnion.aplFloatStr.uMantissa EQ 0);
+
+            // If it's not integral, ...
+            if (!bIntegral)
+            {
+                dtoaMode = 3;           // 3 = nDigits past decimal point
+                nDigits = 0;            // No digits (integral)
+
+                // Round aplFloat to the nearest integer
+                //   taking into account the sign (which floor doesn't)
+                if (aplFloat >= 0)
+                    aplFloat =  floor (0.5 + aplFloat);
+                else
+                    aplFloat = -floor (0.5 - aplFloat);
+                // Handle signed zero
+                if (aplFloat EQ 0)
+                    aplFloat = 0;
+            } // End IF
+        } // End IF
+
+        // Convert aplFloat to an ASCII string
         // Use David Gay's routines
-        g_fmt (szTemp,          // Output save area
-               fFloat,          // # to convert to ASCII
-               dtoaMode,        // DTOA mode (Mode 2: max (ndigits, 1))
-         (int) uPrecision);     // ndigits
+        s = s0 = dtoa (aplFloat, dtoaMode, (UINT) nDigits, &decpt, &sign, NULL);
 
-        // Convert from one-byte ASCII to two-byte UTF16
-        // The destin buffer length just needs be long enough
-        //    to handle a FP number
-        A2W (lpaplChar, szTemp, 4096);
+        // Handle the sign
+        if (sign)
+            *lpaplChar++ = aplCharOverbar;
 
-        p  = lpaplChar;
-        ep = strchrW (lpaplChar, L'e');
-        dp = strchrW (lpaplChar, L'.');
-
-        // Convert to normalized form
-        // [s][int][.][frc][E][s][exp]
-
-        // Check for minus sign in the mantissa
-        if (lpaplChar[0] EQ L'-')
+        // Split cases based upon the float display format
+        switch (fltDispFmt)
         {
-            lpaplChar[0] = aplCharOverbar;
-            p++;        // Skip over it
-        } // End IF
+            case FLTDISPFMT_E:
+                // Format the number with exactly nDigits significant digits
+                lpaplChar =
+                  FormatExpFmt (lpaplChar,          // Ptr to output save area
+                         (int) -nDigits,            // # significant digits
+                                s,                  // Ptr to raw formatted number
+                                decpt,              // Exponent
+                                aplCharDecimal,     // Char to use as decimal separator
+                                aplCharOverbar);    // Char to use as overbar
+                break;
 
-        // Check for no leading 0 with .123
-        if (*p EQ L'.')
-        {
-            // Use MoveMemoryW as the source and destin blocks overlap
-            MoveMemoryW (p + 1, p, 1 + lstrlenW (p));
-            *p = L'0';
-            dp++;
-        } else
-        // Check for trailing zeros in integer only because
-        //   of small uQuadPP.  Replace them with E-notation.
-        if (lstrlenW (p) > uPrecision   // Too many digits vs. significant digits
-         && uPrecision NE 0             // Some significant digits
-         && dp EQ NULL                  // No fractional part
-         && ep EQ NULL)                 // Not already E-notation
-        {
-            // Move data to the right to make room for a decimal point
-            // Use MoveMemoryW as the source and destin blocks overlap
-            MoveMemoryW (p + 2, p + 1, lstrlenW (p));
-            p[1] = L'.';        // Insert a decimal point
-            dp = p + 1;         // Save location of decimal point
+            case FLTDISPFMT_F:
+                // Format the number with no more than nDigits
+                //   to the right of the decimal point
 
-            p[uPrecision + 1] = L'E';
-            ep = &p[uPrecision + 1];
-            p = FormatAplintFC (&p[uPrecision + 2], // Ptr to output save area
-                                 lstrlenW (p) - 2,  // The value to format
-                                 aplCharOverbar);   // Char to use as overbar
-            p[-1] = L'\0';
-        } // End IF/ELSE
+                // Handle numbers between 0 and 1
+                if (decpt <= 0)
+                {
+                    // Start with "0."
+                    *lpaplChar++ = L'0';
+                    *lpaplChar++ = aplCharDecimal;
 
-        // p points to the trailing zero
-        p = lpaplChar + lstrlenW (lpaplChar);
-        if (ep)
-        {
-            // Check for trailing decimal point in the mantissa
-            if (ep[-1] EQ L'.')
-            {
-                // Trailing decimal point present:  append "0"
+                    // Then a bunch of 0s
+                    while (nDigits > 0
+                        && decpt < 0)
+                    {
+                        *lpaplChar++ = L'0';
+                        nDigits--;
+                        decpt++;
+                    } // End WHILE
 
-                // Use MoveMemoryW as the source and destin blocks overlap
-                MoveMemoryW (ep + 1, ep, 1 + p - ep);
-                p += 1;         // Add to length # chars we're inserting
-                *ep++ = L'0';   // Change to zero and skip over so it ends with ".0"
-            } else
-            if (!dp)            // If not already present, ...
-            {
-                // No trailing decimal point:  append ".0"
+                    // Copy the remaining digits to the result
+                    //   converting from one-byte ASCII to two-byte UTF16
+                    while (nDigits-- > 0
+                        && *s)
+                        *lpaplChar++ = *s++;
+                } else
+                {
+                    // Copy no more than decpt digits to the result
+                    //   converting from one-byte ASCII to two-byte UTF16
+                    while (decpt > 0
+                        && *s)
+                    {
+                        *lpaplChar++ = *s++;
+                        decpt--;
+                    } // End WHILE
 
-                // Use MoveMemoryW as the source and destin blocks overlap
-                MoveMemoryW (ep + 2, ep, 1 + p - ep);
-                p += 2;         // Add to length # chars we're inserting
-                dp = ep;        // Save location of decimal point
-                *ep++ = L'.';   // Insert a decimal point
-                *ep++ = L'0';   // Insert a trailing zero
-            } // End IF/ELSE
+                    // If there are still more digits in the exponent, ...
+                    if (decpt > 0)
+                    {
+                        // Fill with trailing underflow chars
+                        while (decpt > 0)
+                        {
+                            *lpaplChar++ = L'_';
+                            decpt--;
+                        } // End WHILE
 
-            *ep++ = L'E';       // Change to uppercase and skip over
+                        // Next, the decimal point
+                        *lpaplChar++ = aplCharDecimal;
 
-            // Check for minus sign in the exponent
-            if (ep[0] EQ L'-')
-                *ep++ = aplCharOverbar; // Change to high minus and skip over
-            else
-            // Check for plus sign in the exponent
-            if (ep[0] EQ L'+')
-                // Delete by copying over
-                CopyMemoryW (ep, ep + 1, 1 + p-- - (ep + 1));
+                        // End with "0---0" for nDigits
+                        while (nDigits > 0)
+                        {
+                            *lpaplChar++ = L'0';
+                            nDigits--;
+                        } // End WHILE
+                    } else
+                    {
+                        // Next, the decimal point
+                        *lpaplChar++ = aplCharDecimal;
 
-            // Check for leading 0s in the exponent
-            while (ep[0] EQ L'0')
-                // Delete by copying over
-                CopyMemoryW (ep, ep + 1, 1 + p-- - (ep + 1));
-        } else
-        // Check for trailing decimal point in the mantissa
-        if (p[-1] EQ '.')
-            *--p = L'\0';        // Zap it and back up to the terminating zero
+                        // Fill with trailing digits
+                        while (nDigits > 0
+                            && *s)
+                        {
+                            *lpaplChar++ = *s++;
+                            nDigits--;
+                        } // End WHILE
 
-        // Point to the terminating zero
-        lpaplChar = p;
+                        // End with "0---0" for nDigits
+                        while (nDigits > 0)
+                        {
+                            *lpaplChar++ = L'0';
+                            nDigits--;
+                        } // End WHILE
+                    } // End IF/ELSE
+                } // End IF/ELSE
 
-        // Convert any decimal point to []FC value
-        if (dp)
-        {
-            Assert (*dp EQ L'.');
-            *dp = aplCharDecimal;
-        } // End IF
+                break;
+
+            case FLTDISPFMT_RAWINT:
+                // If the number is integral, ...
+                if (bIntegral)
+                    // Copy the remaining digits to the result
+                    //   converting from one-byte ASCII to two-byte UTF16
+                    while (*s)
+                        *lpaplChar++ = *s++;
+                else
+                {
+                    APLINT nSigDig;             // # significant digits
+
+                    // Copy no more than nDigits
+
+                    // No more than DEF_MAX_QUADPP digits
+                    if (nDigits)
+                        nSigDig = min (nDigits, DEF_MAX_QUADPP);
+                    else
+                        nSigDig = DEF_MAX_QUADPP;
+
+                    // Loop through the digits
+                    while (nSigDig > 0
+                        && decpt > 0
+                        && *s)
+                    {
+                        // Copy the remaining digits to the result
+                        //   converting from one-byte ASCII to two-byte UTF16
+                        *lpaplChar++ = *s++;
+                        nSigDig--;
+                        nDigits--;
+                        decpt--;
+                    } // End WHILE
+
+                    // If there are more digits in the exponent, ...
+                    while (nSigDig > 0
+                        && decpt > 0)
+                    {
+                        // Fill with trailing zeros
+                        *lpaplChar++ = L'0';
+                        nSigDig--;
+                        nDigits--;
+                        decpt--;
+                    } // End WHILE
+
+                    // If there are more digits in the result, ...
+                    while (nDigits > 0)
+                    {
+                        // Fill with trailing underflow chars
+                        *lpaplChar++ = L'_';
+                        nDigits--;
+                    } // End WHILE
+                } // End IF/ELSE
+
+                break;
+
+            case FLTDISPFMT_RAWFLT:
+                // Format the number wth no more than nDigits significant digits
+
+                // If (decpt > nDigits) or (decpt < -5), switch to E-format
+                if (decpt > nDigits
+                 || decpt < -5)
+                    // Format the number with no more than nDigits significant digits
+                    lpaplChar =
+                      FormatExpFmt (lpaplChar,          // Ptr to output save area
+                              (int) nDigits,            // # significant digits
+                                    s,                  // Ptr to raw formatted number
+                                    decpt,              // Exponent
+                                    aplCharDecimal,     // Char to use as decimal separator
+                                    aplCharOverbar);    // Char to use as overbar
+                else
+                // Handle numbers between 0 and 1
+                if (decpt <= 0)
+                {
+                    // Start with "0."
+                    *lpaplChar++ = L'0';
+                    *lpaplChar++ = aplCharDecimal;
+
+                    // Then a bunch of 0s
+                    while (decpt < 0)
+                    {
+                        *lpaplChar++ = L'0';
+                        decpt++;
+                    } // End WHILE
+
+                    // Copy the remaining digits to the result
+                    //   converting from one-byte ASCII to two-byte UTF16
+                    while (*s)
+                        *lpaplChar++ = *s++;
+                } else
+                {
+                    // Copy no more than nDigits digits to the result
+                    //   converting from one-byte ASCII to two-byte UTF16
+                    while (nDigits > 0
+                        && decpt > 0
+                        && *s)
+                    {
+                        *lpaplChar++ = *s++;
+                        nDigits--;
+                        decpt--;
+                    } // End WHILE
+
+                    // If there are still more digits in the exponent, ...
+                    if (decpt > 0)
+                        // Fill with trailing zeros
+                        while (nDigits > 0
+                            && decpt > 0)
+                        {
+                            *lpaplChar++ = L'0';
+                            nDigits--;
+                            decpt--;
+                        } // End WHILE
+                    else
+                    {
+                        // If there are more digits in the result, ...
+                        if (nDigits > 0 && *s)
+                        {
+                            // Next, the decimal point
+                            *lpaplChar++ = aplCharDecimal;
+
+                            // Fill with trailing digits
+                            while (nDigits > 0 && *s)
+                            {
+                                *lpaplChar++ = *s++;
+                                nDigits--;
+                            } // End WHILE
+                        } // End IF
+                    } // End IF/ELSE
+                } // End IF/ELSE
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Free the temporary storage
+        freedtoa (s0);
     } // End IF/ELSE/...
 
     // Append a separator
@@ -1091,6 +1335,98 @@ LPAPLCHAR FormatFloatFC
 
     return lpaplChar;
 } // End FormatFloatFC
+
+
+//***************************************************************************
+//  $FormatExpFmt
+//
+//  Format a number in exponential format
+//***************************************************************************
+
+LPAPLCHAR FormatExpFmt
+    (LPAPLCHAR lpaplChar,                   // Ptr to output save area
+     int       nDigits,                     // # significant digits
+     LPCHAR    s,                           // Ptr to raw formatted number
+     int       decpt,                       // Exponent
+     APLCHAR   aplCharDecimal,              // Char to use as decimal separator
+     APLCHAR   aplCharOverbar)              // Char to use as overbar
+
+{
+    UBOOL     bExact;                       // TRUE iff to be formatted with exactly
+                                            // nDigits significant digits
+
+    // Check for exactly nDigits significant digits
+    bExact = (nDigits < 0);
+
+    // If so, make positive
+    if (bExact)
+        nDigits = -nDigits;
+
+    // If there's only one significant digit, ...
+    if (nDigits EQ 1)
+    {
+        WCHAR wch;
+
+        // Copy the first digit
+        wch = *s;
+
+        // If there's a next digit and we should round up, ...
+        if (s[1] && s[1] >= L'5')
+        {
+            // If the first digit is not at the top, ...
+            if (wch NE L'9')
+                // Round up
+                wch++;
+            else
+                // Otherwise, wrap to '1'
+                wch = L'1';
+        } // End IF
+
+        // Save the one and only digit
+        *lpaplChar++ = wch;
+    } else
+    {
+        // Copy the first digit
+        *lpaplChar++ = *s++;
+        nDigits--;
+
+        if ((*s || bExact) && nDigits > 0)
+            // Then the decimal separator
+            *lpaplChar++ = aplCharDecimal;
+
+        // If there are more digits, ...
+        if (*s)
+        // Then the next nDigits digits
+        while (nDigits > 0
+            && *s)
+        {
+            *lpaplChar++ = *s++;
+            nDigits--;
+        } // End WHILE
+
+        if (bExact)
+        // While there are more digits, ...
+        while (nDigits > 0)
+        {
+            // Fill with trailing zeros
+            *lpaplChar++ = L'0';
+            nDigits--;
+        } // End WHILE
+    } // End IF/ELSE
+
+    // Then the exponent separator
+    *lpaplChar++ = L'E';
+
+    // Finally the exponent
+    lpaplChar =
+      FormatAplintFC (lpaplChar,        // Ptr to output save area
+                      decpt - 1,        // The value to format
+                      aplCharOverbar);  // Char to use as overbar
+    // Ensure properly terminated
+    *--lpaplChar = L'\0';
+
+    return lpaplChar;
+} // End FormatExpFmt
 
 
 //***************************************************************************
@@ -1220,10 +1556,10 @@ LPWCHAR DisplayTransferImm2
           FormatImmedFC (lpwszTemp,                         // Ptr to input string
                          lpSymEntry->stFlags.ImmType,       // Immediate type
                         &lpSymEntry->stData.stLongest,      // Ptr to value to format
-                         DEF_MAX_QUADPP,                    // Precision to use
+                         DEF_MAX_QUADPP,                    // # significant digits
                          UTF16_DOT,                         // Char to use as decimal separator
                          UTF16_OVERBAR,                     // Char to use as overbar
-                         DEF_DTOA_MODE);                    // DTOA mode (Mode 2: max (ndigits, 1))
+                         FLTDISPFMT_RAWFLT);                // Float display format
     return lpwszTemp;
 } // End DisplayTransferImm2
 
@@ -1372,12 +1708,12 @@ LPWCHAR DisplayTransferGlb2
             // Loop through the elements
             for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
                 lpwszTemp =
-                  FormatFloatFC (lpwszTemp,         // Ptr to output save area
+                  FormatFloatFC (lpwszTemp,             // Ptr to output save area
                                  *((LPAPLFLOAT) lpMemArg)++, // Ptr to float value
-                                 DEF_MAX_QUADPP,    // Precision to use
-                                 L'.',              // Char to use as decimal separator
-                                 UTF16_OVERBAR,     // Char to use as overbar
-                                 DEF_DTOA_MODE);    // DTOA mode (Mode 2: max (ndigits, 1))
+                                 DEF_MAX_QUADPP,        // # significant digits
+                                 L'.',                  // Char to use as decimal separator
+                                 UTF16_OVERBAR,         // Char to use as overbar
+                                 FLTDISPFMT_RAWFLT);    // Float display format
             break;
 
         case ARRAY_CHAR:

@@ -167,6 +167,7 @@ Welcome to NARS2000</h1>
         </li>
         <li>System functions:
           <ul>
+            <li><span class="APL">{quad}A</span></li>
             <li><span class="APL">L {quad}CR R</span> for
                 <span class="APL">L={neg}2</span>,
                 <span class="APL">{neg}1</span>,
@@ -179,6 +180,8 @@ Welcome to NARS2000</h1>
                 <span class="APL">1</span>,
                 <span class="APL">2</span>, and higher</li>
             <li><span class="APL">{quad}ERROR R</span></li>
+            <li><span class="APL">{quad}FMT R</span></li>
+            <li><span class="APL">L {quad}FMT R</span></li>
             <li><span class="APL">{quad}MF R</span></li>
             <li><span class="APL">L {quad}MF R</span></li>
             <li><span class="APL">{quad}SIZE R</span></li>

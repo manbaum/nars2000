@@ -378,7 +378,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                          DEF_MAX_QUADPP,                // Precision to use
                                          L'.',                          // Char to use as decimal separator
                                          UTF16_OVERBAR,                 // Char to use as overbar
-                                         DEF_DTOA_MODE);                // DTOA mode (Mode 2: max (ndigits, 1))
+                                         FLTDISPFMT_RAWFLT);            // Float display format
                         // Zap the trailing blank
                         lpMemChr[-1] = L'\0';
 

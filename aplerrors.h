@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #define ERRMSG_CORRUPT_WS                       L"CORRUPT WS"
 #define ERRMSG_DESTINATION_ERROR                L"DESTINATION ERROR"
 #define ERRMSG_DOMAIN_ERROR                     L"DOMAIN ERROR"
+#define ERRMSG_FORMAT_ERROR                     L"FORMAT ERROR"
 #define ERRMSG_HASH_TABLE_FULL                  L"HASH TABLE FULL"
 #define ERRMSG_INCORRECT_COMMAND                L"INCORRECT COMMAND"
 #define ERRMSG_INDEX_ERROR                      L"INDEX ERROR"

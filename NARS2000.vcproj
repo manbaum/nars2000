@@ -397,11 +397,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\free.c"
+				RelativePath=".\fmtspec.c"
 				>
 			</File>
 			<File
-				RelativePath=".\g_fmt.c"
+				RelativePath=".\free.c"
 				>
 			</File>
 			<File

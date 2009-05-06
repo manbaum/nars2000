@@ -529,7 +529,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     UINT           fsRep;                   // Iteration count
     APLUINT        ByteRes;                 // # bytes in the result
     UBOOL          bAbsorb = FALSE;         // TRUE iff there's at least one column-absorbing format spec
-    APLLONGEST     aplLongestRht;           // Right arg as immediate value
+    APLLONGEST     aplLongestLft,           // Left arg as immediate value
+                   aplLongestRht;           // Right ...
     APLDIM         aplCurColRes = 0;        // Current result col
 
     // Get ptr to PerTabData global memory
@@ -541,7 +542,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
 
     // Check for LEFT RANK ERROR
-    if (!IsVector (aplRankLft))
+    if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT DOMAIN ERROR
@@ -549,8 +550,12 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
         goto LEFT_DOMAIN_EXIT;
 
     // Get left & right arg's global ptrs
-                    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // If the left arg is immediate, ...
+    if (hGlbLft EQ NULL)
+        lpMemLft = (LPAPLCHAR) &aplLongestLft;
 
     // If the right arg is immediate, ...
     if (hGlbRht EQ NULL)
@@ -672,6 +677,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     } // End IF
 
     // Skip over the header and dimensions to the data
+    if (hGlbLft)
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
     // At this point, the left arg is a simple char vector, and
@@ -788,7 +794,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
         if (lpfsCur EQ lpfsEnd)
         {
             // If there are more data cols, wrap
-            if (uCnt < aplNumCols)
+            if (bAbsorb && uCnt < aplNumCols)
                 // Restart the ptr
                 lpfsCur = lpfsInit;
             else
@@ -798,7 +804,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     } // End FOR
 
     // Ensure there's at least one column-absorbing format spec
-    if (!bAbsorb)
+    //   or no columns
+    if (!bAbsorb && aplNumCols NE 0)
         goto FORMAT_EXIT;
 
     // Calculate space needed for the result

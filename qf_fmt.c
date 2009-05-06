@@ -606,7 +606,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
         // Loop through the right arg elements
         for (uCnt = aplNumCols = aplNumRows = 0; uCnt < aplNELMNst; uCnt++)
         // Split cases based upon the right arg item
-        switch (GetPtrTypeInd (((LPAPLNESTED) lpMemRht)[uCnt]))
+        switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uCnt]))
         {
             case PTRTYPE_STCONST:
                 // Accumulate the # cols in the right arg
@@ -672,7 +672,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     } // End IF
 
     // Skip over the header and dimensions to the data
-    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
     // At this point, the left arg is a simple char vector, and
     //  the right arg is either a simple array, or a nested vector

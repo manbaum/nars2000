@@ -910,6 +910,7 @@ END
 IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
 IDI_NARS                ICON    DISCARDABLE     "Images\\NARS.ico"
 IDI_CLOSE               ICON    DISCARDABLE     "Images\\Close.ico"
+IDI_CUSTOM              ICON    DISCARDABLE     "Images\\Custom.ico"
 IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF.ico"
 IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF.ico"
 IDI_SM_LARGE            ICON    DISCARDABLE     "Images\\SM.ico"

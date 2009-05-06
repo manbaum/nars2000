@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include "headers.h"
 
+extern HICON hIconCustom;
 
 WCHAR wszCancelMessage[] = L"You have made changes to the Customize settings.  Save the changes?";
 
@@ -233,6 +234,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                 //   original window handle in the static var hDlg, we
                 //   always know the dialog handle.
                 hDlg = hWnd;
+
+                // Change the icon to our own
+                SendMessageW (hDlg, WM_SETICON, ICON_BIG, (LPARAM) (HANDLE_PTR) hIconCustom);
 
                 // Mark as no last window handle
                 hWndLast = NULL;

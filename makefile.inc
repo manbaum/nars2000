@@ -221,10 +221,12 @@ $(OC)dbgbrk.obj:        dbgbrk.asm
 ICONS=$(A)About.ico     \
       $(A)CC.ico        \
       $(A)Close.ico     \
+      $(A)Custom.ico    \
       $(A)DB.ico        \
       $(A)FE.ico        \
       $(A)ME.ico        \
       $(A)MF.ico        \
+      $(A)NARS.ico      \
       $(A)PM.ico        \
       $(A)SM.ico        \
       $(A)VE.ico        \

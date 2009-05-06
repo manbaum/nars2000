@@ -80,7 +80,7 @@ HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconVE_Large, hIconVE_Small,
       hIconCC_Large, hIconCC_Small,
       hIconWC_Large, hIconWC_Small,
-      hIconAbout, hIconClose;
+      hIconAbout, hIconClose, hIconCustom;
 #ifdef DEBUG
 HICON hIconDB_Large, hIconDB_Small;
 #endif
@@ -3065,6 +3065,7 @@ UBOOL InitInstance
 
     hIconAbout    = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_ABOUT   ));
     hIconClose    = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CLOSE   ));
+    hIconCustom   = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CUSTOM  ));
 
     // Get keyboard accelerators
     hAccel = LoadAccelerators (hInstance, MAKEINTRESOURCE (IDR_ACCEL));

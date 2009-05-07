@@ -1,6 +1,15 @@
 Version 0.0.1.14 consists of the following Builds:
 
 
+Build #422 -- Version 0.0.1.14
+------------------------------
+
+Directory trunk:
+
+SYSVARS.C:
+  Delete []AF from system function list as IBM wants to discourage it.
+
+
 Build #421 -- Version 0.0.1.14
 ------------------------------
 

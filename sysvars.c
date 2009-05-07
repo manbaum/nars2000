@@ -109,7 +109,6 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM_YY     , 0          },  // Time Stamp
     {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
 
-    {WS_UTF16_QUAD L"af"       ,      1,      FALSE, SysFnUCS_EM_YY    , 0          },  // Atomic Function
 ////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM_YY   , 0          },  // Call Assembler Code
     {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM_YY     , 0          },  // Canonical Representation
 ////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM_YY    , 0          },  // Canonical Representation, Line

@@ -89,7 +89,9 @@ default:        \
 #define GWLSM_EXTRA     GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
 // Define offsets in FEWNDCLASS window extra bytes
-#define GWLFE_EXTRA     GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
+#define GWLFE_HWNDPRV   GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Next window handle in linked list (NULL = none)
+#define GWLFE_HWNDNXT   GWLFE_HWNDPRV  + 1 * sizeof (HANDLE_PTR)    // Previous ...
+#define GWLFE_EXTRA     GWLFE_HWNDNXT  + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
 // Define offsets in MEWNDCLASS window extra bytes
 #define GWLME_EXTRA     0                                           // Total # extra bytes
@@ -123,6 +125,7 @@ default:        \
 #define MYWM_DISPMB         (WM_APP +11)    // CC (Display MessageBox)
 #define MYWM_RESIZE         (WM_APP +12)    // MF (Resize to display Status Bar)
 #define MYWM_NOTIFY         (WM_APP +13)    // EC (Pass on of WM_NOTIFY from EC)
+#define MYWM_CMPNAME        (WM_APP +14)    // FE (Compare function names)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB

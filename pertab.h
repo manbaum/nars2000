@@ -43,6 +43,8 @@
 #ifndef UNISCRIBE
 ////lpMemPTD->lpFontLink    = NULL;
 #endif
+////lpMemPTD->hExitphore    = NULL;
+////lpMemPTD->hWndFENxt     = NULL;
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -143,7 +145,8 @@ typedef struct tagPERTABDATA
                  cQuadxSA;          //1DE:  []SA     (0)   (in its index form as an integer)
     DWORD        dwThreadId;        //1E0:  Corresponding thread ID
     HANDLE       hExitphore;        //1E4:  Semaphore used to close a tab (may be NULL)
-                                    //1E8:  Length
+    HWND         hWndFENxt;         //1E8:  Next FE window handle (NULL = none)
+                                    //1EC:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

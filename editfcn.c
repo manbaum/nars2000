@@ -86,9 +86,12 @@ UBOOL CreateFcnWindow
     (LPWCHAR lpwszLine)             // Ptr to text after {del}
 
 {
-    HWND             hWnd;              // Handle for Function Editor window
+    HWND             hWnd,              // Handle for Function Editor window
+                     hWndNxt;           // Next window handle in doubly-linked list
+                                        //   of FE window handles
     FE_CREATESTRUCTW feCreateStructW;   // CreateStruct for Function Editor window
     LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
+    UINT             uLen;              // Length of the function name
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
@@ -100,6 +103,35 @@ UBOOL CreateFcnWindow
     // Skip over leading blanks
     while (*lpwszLine EQ L' ')
         lpwszLine++;
+
+    // Calculate the length of the function name
+    uLen = SkipToCharW (lpwszLine, L';') - lpwszLine;
+
+    // If there's a name, ...
+    if (uLen)
+    {
+        // Check to see if this function name is already being edited
+        // If so, switch to that window instead of opening a new one
+        hWndNxt = lpMemPTD->hWndFENxt;
+
+        while (hWndNxt)
+        {
+            // Ask the window if this function name is theirs
+            if (SendMessageW (hWndNxt, MYWM_CMPNAME, uLen, (LPARAM) (HANDLE_PTR) lpwszLine))
+                break;
+            // Get the next FE window handle in sequence
+            hWndNxt = (HWND) GetWindowLongPtrW (hWndNxt, GWLFE_HWNDNXT);
+        } // End WHILE
+
+        // If we found a matching window, ...
+        if (hWndNxt)
+        {
+            // Activate the other window
+            SendMessageW (lpMemPTD->hWndMC, WM_MDIACTIVATE, (WPARAM) hWndNxt, 0);
+
+            return TRUE;
+        } // End IF
+    } // End IF
 
     // Save a ptr to the line
     feCreateStructW.lpwszLine = lpwszLine;
@@ -222,10 +254,13 @@ LRESULT APIENTRY FEWndProc
      LONG lParam)                   // ...
 
 {
-    HWND         hWndEC;            // Handle of Edit Ctrl window
+    HWND         hWndEC,            // Handle of Edit Ctrl window
+                 hWndNxt,           // Next window handle in doubly-linked list
+                 hWndPrv;           // Previous ...
     LPUNDO_BUF   lpUndoBeg,         // Ptr to start of Undo Buffer
                  lpUndoNxt;         // ...    next available slot in the Undo Buffer
     LPMEMVIRTSTR lpLclMemVirtStr;   // Ptr to local MemVirtStr
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -247,6 +282,9 @@ LRESULT APIENTRY FEWndProc
             LPSYMENTRY   lpSymName;         // Ptr to function name STE
             HGLOBAL      hGlbDfnHdr = NULL; // User-defined function/operator header global memory handle
             LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
+
+            // Get ptr to PerTabData global memory
+            lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
             // Initialize variables
             cfFE.hwndOwner = hWnd;
@@ -488,6 +526,27 @@ LRESULT APIENTRY FEWndProc
             //   to be drawn.
             PostMessageW (hWnd, MYWM_INIT_EC, 0, 0);
 
+            // Link this FE window into the doubly-linked list of FE windows
+            hWndNxt = lpMemPTD->hWndFENxt;
+
+            // Save as our next window
+            SetWindowLongPtrW (hWnd, GWLFE_HWNDNXT, (APLU3264) (LONG_PTR) hWndNxt);
+
+            // Clear our prev window
+            SetWindowLongPtrW (hWnd, GWLFE_HWNDPRV, (APLU3264) (LONG_PTR) NULL);
+
+            // If there are other FE windows, ...
+            if (hWndNxt)
+            {
+                Assert ((HWND) GetWindowLongPtrW (hWndNxt, GWLFE_HWNDPRV) EQ NULL);
+
+                // Save our window handle as the next's prev
+                SetWindowLongPtrW (hWndNxt, GWLFE_HWNDPRV, (APLU3264) (LONG_PTR) hWnd);
+            } // End IF
+
+            // Save our window handle as the new next
+            lpMemPTD->hWndFENxt = hWnd;
+
             break;
         } // End WM_CREATE
 #undef  lpMDIcs
@@ -508,6 +567,31 @@ LRESULT APIENTRY FEWndProc
 
             return FALSE;           // We handled the msg
         } // End MYWM_INIT_EC
+
+#define uLen        ((UINT) wParam)
+#define lpwName     ((LPWCHAR) lParam)
+        case MYWM_CMPNAME:          // uLen = (UINT) wParam
+                                    // lpwName = (LPWCHAR) lParam
+        {
+            APLU3264 uNameLen;      // Function name length
+            LPWCHAR  lpwszTemp;     // Ptr to temporary storage
+
+            // Get ptr to PerTabData global memory
+            lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+            // Get ptr to temporary storage
+            lpwszTemp = lpMemPTD->lpwszTemp;
+
+            // Get this window's function name (if any)
+            uNameLen = GetFunctionName (hWnd, lpwszTemp);
+
+            if (uNameLen && uNameLen EQ uLen)
+                return (strncmpW (lpwszTemp, lpwName, uNameLen) EQ 0);
+
+            return FALSE;           // The names are unequal
+        } // End MYWM_CMPNAME
+#undef  lpwName
+#undef  uLen
 
         case MYWM_SAVE_FN:
             // Save the function (if well-formed)
@@ -750,8 +834,17 @@ LRESULT APIENTRY FEWndProc
                 MyVirtualFree (lpLclMemVirtStr, 0, MEM_RELEASE); lpLclMemVirtStr = NULL;
 
                 // Zap it in case we come through again
-                SetWindowLongPtrW (hWnd, GWLSF_LPMVS, 0);
+                SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) NULL);
             } // End IF
+
+            // Unlink this window from the doubly-linked chain of FE windows
+            hWndNxt = (HWND) GetWindowLongPtrW (hWnd, GWLFE_HWNDNXT);
+            hWndPrv = (HWND) GetWindowLongPtrW (hWnd, GWLFE_HWNDPRV);
+
+            if (hWndPrv)
+                SetWindowLongPtrW (hWndPrv, GWLFE_HWNDNXT, (APLU3264) (LONG_PTR) hWndNxt);
+            if (hWndNxt)
+                SetWindowLongPtrW (hWndNxt, GWLFE_HWNDPRV, (APLU3264) (LONG_PTR) hWndPrv);
 
             // Uninitialize window-specific resources
             FE_Delete (hWnd);
@@ -766,27 +859,20 @@ LRESULT APIENTRY FEWndProc
 
 
 //***************************************************************************
-//  $SetFETitle
+//  $GetFunctionName
 //
-//  Write out the FE window title including the function name (if any)
+//  Parse the function name from a FE window and return it
 //***************************************************************************
 
-void SetFETitle
-    (HWND hWndFE)                   // FE window handle
+UINT GetFunctionName
+    (HWND    hWndFE,                // FE window handle
+     LPWCHAR lpwszTemp)             // Ptr to temporary storage
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPWCHAR      lpwszTemp;         // Ptr to temporary storage
     HWND         hWndEC;            // Edit Ctrl window handle
     APLU3264     uLineLen,          // Line length
                  uNameLen;          // Function name length
     LPSYMENTRY   lpSymName;         // Ptr to function name STE
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-
-    // Get ptr to temporary storage
-    lpwszTemp = lpMemPTD->lpwszTemp;
 
     // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
@@ -811,6 +897,33 @@ void SetFETitle
     else
         // Mark as no function name
         uNameLen = 0;
+
+    return uNameLen;
+} // End GetFunctionName
+
+
+//***************************************************************************
+//  $SetFETitle
+//
+//  Write out the FE window title including the function name (if any)
+//***************************************************************************
+
+void SetFETitle
+    (HWND hWndFE)                   // FE window handle
+
+{
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPWCHAR      lpwszTemp;         // Ptr to temporary storage
+    APLU3264     uNameLen;          // Function name length
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+    // Get ptr to temporary storage
+    lpwszTemp = lpMemPTD->lpwszTemp;
+
+    // Get the function name (if any)
+    uNameLen = GetFunctionName (hWndFE, lpwszTemp);
 
     // Ensure properly terminated
     //   and increment the name length to the next position

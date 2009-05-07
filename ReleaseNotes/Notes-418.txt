@@ -1,18 +1,26 @@
-Build #417 -- Version 0.0.1.14
+Build #418 -- Version 0.0.1.14
 ------------------------------
 
 Directory trunk:
 
-EDITFCN.C:
-  Upon a change in the function, write a marker in the window title
-    to indicate that fact.
-  Note in function editor header whether or not a function
-    has been changed.
+COMPRO.H:
+  Include prototype file for new module.
 
-EXTERNS.H:
-  Change the FE title format string to include space for an
-    asterisk indicating that the function has been changed.
+EXECMFN.C:
+  Initialize new Magic Function.
 
-SAVEFCN.C:
-  After saving a function, clear the marker in the window title
-    to indicate that fact.
+EXECMFN.H:
+  Define internal name for new Magic Function.
+  Define internal name for del symbol.
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VSPROJ:
+  Include new module.
+
+PERTAB.H:
+  Define entry for new Magic Function.
+
+SYSVARS.C:
+  Include new Magic Function in System Names table.
+  Use previous entry for []WA instead of new one.

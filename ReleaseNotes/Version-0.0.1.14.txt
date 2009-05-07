@@ -1,6 +1,18 @@
 Version 0.0.1.14 consists of the following Builds:
 
 
+Build #420 -- Version 0.0.1.14
+------------------------------
+
+Directory trunk\htdocs\download:
+
+DOWNLOAD-BODY.PHP:
+  Exclude files starting with "Version-" from display.
+  Use file names starting ith "Version-" as the Notes files.
+    These files consist of all the "Notes-" files which
+    make up this version.
+
+
 Build #419 -- Version 0.0.1.14
 ------------------------------
 

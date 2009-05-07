@@ -92,7 +92,8 @@ Downloads</h1>
             if (!is_dir ($File)
              && strcmp  ($File, "linestat.txt") != 0
              && strcmp  ($File, "nars2000.ver") != 0
-             && strncmp ($File, "Notes-", 6) != 0)
+             && strncmp ($File, "Notes-", 6)    != 0
+             && strncmp ($File, "Version-", 8)  != 0)
             {
                 $Files[] = $File;
             } // End IF
@@ -126,10 +127,7 @@ Downloads</h1>
                     $Ext    = substr ($File, -$ExtPos);    // Extract the extension
                     $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
                     $Class  = $Ext;
-                    $Notes  = "Notes-$Rel.txt";
-
-                    // Get the corresponding release
-                    $CurRel = file_get_contents ('binaries/' . $Notes, false, NULL, 0, strlen ("Build #nnn "));
+                    $Notes  = "Version-$Rel.txt";
                 } // End IF/ELSE
 
                 $Date   = gmdate ("Y F d H:i:s", filemtime ($DirName . $File));
@@ -142,7 +140,7 @@ Downloads</h1>
                    .   "        <td align=\"right\">$Size</td>\n"
                    .   "        <td>$Ext</td>\n"
                    . (($Class == 'zip')
-                   ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$CurRel</a></td>\n"
+                   ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$Rel</a></td>\n"
                    :   "        <td class=\"notes\"></td>\n")
                    .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\" onclick=\"return PageTrack ('binaries/$File');\">Download</a></td>\n"
                    .   "      </tr>\n";

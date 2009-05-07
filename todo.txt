@@ -21,7 +21,6 @@ TO DO:  General:  Less Important (post-alpha)
 * Check for updates from the web:  nars2000.org/CurrentRelease.php
 * Need an installation program which also sets up file associations for .ws.nars
 * Implement a toolbar with buttons for common actions.
-* When editing a function, check to see if it's already open for editing
 * User preference to avoid saving Undo buffer with user-defined functions/operators.
 * Convert from ARRAY_CHAR (UCS-2) to ARRAY_CHAR8  for 0x00-0x7F,
                                      ARRAY_CHAR16 for 0x0000-0xFFFF (excluding D800-DFFF), and
@@ -36,11 +35,11 @@ TO DO:  General:  Less Important (post-alpha)
 * Use gcov to eliminate unused routines.
 * Use actual individual character width to display Unicode chars instead
   of a constant width.
-* Implement New Tab On Load off
-* Implement New Tab On Clear off
-* Implement fast 1st coord array catenation via GlobalRealloc if RefCnt = 1
-* Implement fast non-last coord Boolean functions
 * Implement these features:
+* ...       New Tab On Load off
+* ...       New Tab On Clear off
+* ...       fast 1st coord array catenation via GlobalRealloc if RefCnt = 1
+* ...       fast non-last coord Boolean functions
 * ...       dynamic functions
 * ...       selective assignment
 * ...       user-defined magic functions for primitive functions
@@ -52,21 +51,19 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       rational numbers
 * ...       extended precision
 * ...       array predicates beyond Permutation Vectors
-* ...       []L and []R
+* ...       []Z, []L, and []R
 * ...       expanded set of system functions, to wit:
-* ...         []CALL R
-* ...       L []CALL R
-* ...       L []EA R    (Execute Alternate) (EAS--required)
-* ...         []EC R
-* ...         []FI R
-* ...       L []FMT R
-* ...       L []SS R
-* ...         []STOP R  (Query Stop)  (EAS--Optional)
-* ...       L []STOP R  (Set Stop)    (EAS--Optional)
-* ...         []TRACE R (Query Trace) (EAS--Optional)
-* ...       L []TRACE R (Set Trace)   (EAS--Optional)
-* ...         []VI R
-* ...         []VR R
+* ...       []CALL R
+* ...     L []CALL R
+* ...     L []EA R    (Execute Alternate) (EAS--required)
+* ...       []EC R
+* ...       []FI R
+* ...     L []SS R
+* ...       []STOP R  (Query Stop)  (EAS--Optional)
+* ...     L []STOP R  (Set Stop)    (EAS--Optional)
+* ...       []TRACE R (Query Trace) (EAS--Optional)
+* ...     L []TRACE R (Set Trace)   (EAS--Optional)
+* ...       []VI R
 * ...       extend associativity to derived functions such as {jot}{dot}+ ???
 * ...       component file system
 * ...       native file access
@@ -160,6 +157,7 @@ DONE:  General
 * ...       []LC
 * ...       []DL R
 * ...       []FMT R
+* ...     L []FMT R
 * ...       []NC R
 * ...       []UCS R
 * ...       []NL R
@@ -172,6 +170,7 @@ DONE:  General
 * ...       []ET
 * ...       []ES R
 * ...     L []ES R
+* ...       []VR R
 * ...       monadic right shoe
 * ...       dyadic down arrow
 * ...       dyadic up arrow
@@ -275,6 +274,8 @@ DONE:  General
 * Allow function lines to be separately syntax colored.
 * When removing a workspace tab, )RESET to terminate all threads, and then
   delete all globals.
+* When editing a function, indicate when there are unsaved changes
+* When editing a function, check to see if it's already open for editing
 *
 
 

@@ -1052,6 +1052,7 @@ LPAPLCHAR FormatFloatFC
         UINT   dtoaMode;                // DTOA mode corresponding to fltDispFmt
         LPCHAR s, s0;                   // Ptr to output from dtoa
         int    decpt,                   // Exponent from dtoa
+               iSigDig,                 // # significant digits
                sign;                    // TRUE iff the number is negative
         UBOOL  bIntegral;               // TRUE iff the # is integral
 
@@ -1117,6 +1118,9 @@ LPAPLCHAR FormatFloatFC
                 // Format the number with no more than nDigits
                 //   to the right of the decimal point
 
+                // Get the maximum # significant digits
+                iSigDig = DEF_MAX_QUADPP;
+
                 // Handle numbers between 0 and 1
                 if (decpt <= 0)
                 {
@@ -1133,59 +1137,68 @@ LPAPLCHAR FormatFloatFC
                         decpt++;
                     } // End WHILE
 
-                    // Copy the remaining digits to the result
+                    // Copy the remaining digits (or underflow chars) to the result
                     //   converting from one-byte ASCII to two-byte UTF16
-                    while (nDigits-- > 0
+                    while (nDigits > 0
                         && *s)
-                        *lpaplChar++ = *s++;
+                    {
+                        *lpaplChar++ = (iSigDig > 0) ? *s++ : L'_';
+                        nDigits--;
+                        iSigDig--;
+                    } // End WHILE
                 } else
                 {
                     // Copy no more than decpt digits to the result
                     //   converting from one-byte ASCII to two-byte UTF16
-                    while (decpt > 0
+                    while (min (decpt, iSigDig) > 0
                         && *s)
                     {
                         *lpaplChar++ = *s++;
                         decpt--;
+                        iSigDig--;
                     } // End WHILE
 
                     // If there are still more digits in the exponent, ...
                     if (decpt > 0)
                     {
-                        // Fill with trailing underflow chars
+                        // Fill with trailing zeros or underflow chars
                         while (decpt > 0)
                         {
-                            *lpaplChar++ = L'_';
+                            *lpaplChar++ = (iSigDig > 0) ? L'0' : L'_';
                             decpt--;
+                            iSigDig--;
                         } // End WHILE
 
                         // Next, the decimal point
                         *lpaplChar++ = aplCharDecimal;
 
-                        // End with "0---0" for nDigits
+                        // End with zeros or underflow chars for nDigits
                         while (nDigits > 0)
                         {
-                            *lpaplChar++ = L'0';
+                            *lpaplChar++ = (iSigDig > 0) ? L'0' : L'_';
                             nDigits--;
+                            iSigDig--;
                         } // End WHILE
                     } else
                     {
                         // Next, the decimal point
                         *lpaplChar++ = aplCharDecimal;
 
-                        // Fill with trailing digits
+                        // Fill with trailing digits or underflow chars
                         while (nDigits > 0
                             && *s)
                         {
-                            *lpaplChar++ = *s++;
+                            *lpaplChar++ = (iSigDig > 0) ? *s++ : L'_';
                             nDigits--;
+                            iSigDig--;
                         } // End WHILE
 
-                        // End with "0---0" for nDigits
+                        // End with zeros or underflow chars for nDigits
                         while (nDigits > 0)
                         {
-                            *lpaplChar++ = L'0';
+                            *lpaplChar++ = (iSigDig > 0) ? L'0' : L'_';
                             nDigits--;
+                            iSigDig--;
                         } // End WHILE
                     } // End IF/ELSE
                 } // End IF/ELSE
@@ -1354,6 +1367,7 @@ LPAPLCHAR FormatExpFmt
 {
     UBOOL     bExact;                       // TRUE iff to be formatted with exactly
                                             // nDigits significant digits
+    int       iSigDig;                      // # significant digits
 
     // Check for exactly nDigits significant digits
     bExact = (nDigits < 0);
@@ -1361,6 +1375,9 @@ LPAPLCHAR FormatExpFmt
     // If so, make positive
     if (bExact)
         nDigits = -nDigits;
+
+    // Get the maximum # significant digits
+    iSigDig = DEF_MAX_QUADPP;
 
     // If there's only one significant digit, ...
     if (nDigits EQ 1)
@@ -1389,8 +1406,10 @@ LPAPLCHAR FormatExpFmt
         // Copy the first digit
         *lpaplChar++ = *s++;
         nDigits--;
+        iSigDig--;
 
-        if ((*s || bExact) && nDigits > 0)
+        // If there are more digits or we're being exact
+        if (*s || bExact)
             // Then the decimal separator
             *lpaplChar++ = aplCharDecimal;
 
@@ -1400,17 +1419,19 @@ LPAPLCHAR FormatExpFmt
         while (nDigits > 0
             && *s)
         {
-            *lpaplChar++ = *s++;
+            *lpaplChar++ = (iSigDig > 0) ? *s++ : L'_';
             nDigits--;
+            iSigDig--;
         } // End WHILE
 
         if (bExact)
         // While there are more digits, ...
         while (nDigits > 0)
         {
-            // Fill with trailing zeros
-            *lpaplChar++ = L'0';
+            // Fill with trailing zeros or underflow chars
+            *lpaplChar++ = (iSigDig > 0) ? L'0' : L'_';
             nDigits--;
+            iSigDig--;
         } // End WHILE
     } // End IF/ELSE
 

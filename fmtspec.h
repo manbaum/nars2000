@@ -185,7 +185,7 @@ typedef enum tagSYM_SUB             // Symbol Substitution enum
     SYMSUB_PRECISION_LOSS,          // 04:  _ (loss of precision)
     SYMSUB_Z_CHAR,                  // 05:  Z (G-format pattern char)
     SYMSUB_9_CHAR,                  // 06:  9 (G-format pattern char)
-    SYMSUB_E_CHAR,                  // 07:  E (E-format char)
+    SYMSUB_EXPONENT_SEP,            // 07:  E (Exponent separator)
     SYMSUB_LENGTH,                  // 08:  Length
 } SYMSUB, *LPSYMSUB;
 

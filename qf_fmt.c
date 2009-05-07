@@ -753,16 +753,19 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                 break;
 
             case FMTSPECVAL_X:
+                // Get the repetition factor
+                nCols = lpfsCur->fsRep;
+
                 // If the width is non-negative, ...
                 if (lpfsCur->fsWid >= 0)
                 {
                     // Move the current col forward
-                    aplColsCur += lpfsCur->fsWid;
+                    aplColsCur += lpfsCur->fsWid * nCols;
                     aplColsRes = max (aplColsRes, aplColsCur);
                 } else
-                if (aplColsCur >= -lpfsCur->fsWid)
+                if (aplColsCur >= (-lpfsCur->fsWid * nCols))
                     // Move the current col backward
-                    aplColsCur += lpfsCur->fsWid;
+                    aplColsCur += lpfsCur->fsWid * nCols;
                 else
                     goto FORMAT_EXIT;
                 // Don't use up a column of data
@@ -2007,7 +2010,7 @@ void QFMT_CommonEFI
     } // End SWITCH
 
     // Calculate length of and ptr to negative text to prepend (M-modifier)
-    if (lpfsNxt->bM && aplFltItm < 0)
+    if (lpfsNxt->bM && aplFltItm <  0)
     {
         // Get ptr to M-modifier text
         lpSurrText->lpHead = (LPAPLCHAR) ByteAddr (lpfsNxt, lpfsNxt->offMtxt);
@@ -2017,7 +2020,7 @@ void QFMT_CommonEFI
     } // End IF
 
     // Calculate length of and ptr to negative text to append (N-modifier)
-    if (lpfsNxt->bN && aplFltItm < 0)
+    if (lpfsNxt->bN && aplFltItm <  0)
     {
         // Get ptr to N-modifier text
         lpSurrText->lpTail = (LPAPLCHAR) ByteAddr (lpfsNxt, lpfsNxt->offNtxt);
@@ -2027,7 +2030,7 @@ void QFMT_CommonEFI
     } // End IF
 
     // Calculate length of and ptr to positive text to prepend (P-modifier)
-    if (lpfsNxt->bP && aplFltItm > 0)
+    if (lpfsNxt->bP && aplFltItm >= 0)
     {
         // Get ptr to P-modifier text
         lpSurrText->lpHead = (LPAPLCHAR) ByteAddr (lpfsNxt, lpfsNxt->offPtxt);
@@ -2037,7 +2040,7 @@ void QFMT_CommonEFI
     } // End IF
 
     // Calculate length of and ptr to positive text to append (Q-modifier)
-    if (lpfsNxt->bQ && aplFltItm > 0)
+    if (lpfsNxt->bQ && aplFltItm >= 0)
     {
         // Get ptr to Q-modifier text
         lpSurrText->lpTail = (LPAPLCHAR) ByteAddr (lpfsNxt, lpfsNxt->offQtxt);
@@ -2103,8 +2106,14 @@ void QFMT_CommonEFI
 
             break;
 
+        case L'_':
+            *lpwSymChar++ = lpwSub[SYMSUB_PRECISION_LOSS];
+            bZeroFill = FALSE;
+
+            break;
+
         case L'E':
-            *lpwSymChar++ = lpwSub[SYMSUB_E_CHAR];
+            *lpwSymChar++ = lpwSub[SYMSUB_EXPONENT_SEP];
             bZeroFill = FALSE;
 
             break;
@@ -2122,8 +2131,8 @@ void QFMT_CommonEFI
 
     // Prepend with negative text (M-modifier)
     // Prepend with positive text (P-modifier)
-    if ((lpfsNxt->bM && aplFltItm < 0)
-     || (lpfsNxt->bP && aplFltItm > 0))
+    if ((lpfsNxt->bM && aplFltItm <  0)
+     || (lpfsNxt->bP && aplFltItm >= 0))
     {
         UBOOL bNeg;                         // TRUE iff the formatted number is negative
 
@@ -2142,8 +2151,8 @@ void QFMT_CommonEFI
 
     // Append with negative text (N-modifier)
     // Append with positive text (Q-modifier)
-    if ((lpfsNxt->bN && aplFltItm < 0)
-     || (lpfsNxt->bQ && aplFltItm > 0))
+    if ((lpfsNxt->bN && aplFltItm <  0)
+     || (lpfsNxt->bQ && aplFltItm >= 0))
         lstrcatW (lpwszFormat, lpSurrText->lpTail);
 
     // Get the formatted item length
@@ -2453,10 +2462,10 @@ UBOOL QFMT_SubstValue
                 // If L-modifier is present, ...
                 if (lpfsNxt->bL)
                     // Copy the substitution text, left -justified
-                    CopyMemoryW (lpMemRes, lpwSub, uLen);
+                    CopyMemoryW ( lpMemRes,              lpwSub, uLen);
                 else
                     // Copy the substitution text, right -justified
-                    CopyMemoryW (lpMemRes, &lpwSub[uWid - uLen], uLen);
+                    CopyMemoryW (&lpMemRes[uWid - uLen], lpwSub, uLen);
 
                 return TRUE;
             } else

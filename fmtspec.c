@@ -521,6 +521,10 @@ UINT SaveText
     // Split cases based upon the left hand delimiter
     switch (wchDelim)
     {
+        // These delimiters are all their own
+        //   matching righthand delimiter
+        case L'\'':
+        case L'"':
         case UTF16_QUAD:
         case UTF16_QUOTEQUAD:
         case UTF16_DIERESIS:
@@ -734,7 +738,8 @@ UBOOL fnSetModO
 {
     UINT     offTxt,                        // Offset to saved text
              uScanTxtLenChars;              // Scanned text length in WCHARs
-    LPWCHAR  lpwCur;                        // Ptr to current text
+    LPWCHAR  lpwCur,                        // Ptr to current text
+             lpwDec;                        // Ptr to decimal point (if any)
     LPOCHAIN lpOChain;                      // Ptr to this O-chain
     WCHAR    wch;                           // Temporary char for sign (if any)
     UBOOL    bNeg;                          // TRUE iff the number is negative
@@ -768,6 +773,16 @@ UBOOL fnSetModO
     wch = lpwCur[0];
     bNeg = (wch EQ UTF16_OVERBAR || wch EQ L'-');
 
+    // Get position of decimal point (if any)
+    lpwDec = strchrW (&lpwCur[bNeg], L'.');
+
+    // If there's a decimal point, but it's beyond the consecutive sequence
+    //   of digits and a decimal point, there's no decimal point
+    //   (e.g., 'O1<one>F10.2')
+    if (lpwDec NE NULL
+     && (UINT) (lpwDec - &lpwCur[bNeg]) > strspnW (&lpwCur[bNeg], L"0123456789."))
+        lpwDec = NULL;
+
     // Scan for the number
     // Split cases based upon the # args
     switch (swscanf (&lpwCur[bNeg], L"%lf", &lpOChain->aplFltVal))
@@ -785,8 +800,19 @@ UBOOL fnSetModO
             // Save as integer, too
             lpOChain->aplIntVal = (APLINT) lpOChain->aplFltVal;
 
-            // Find the length of the scanned number in chars
+            // Find the length of the integer part of the scanned number in chars
             uScanTxtLenChars = bNeg + strspnW (&lpwCur[bNeg], L"0123456789");
+
+            // If there's a decimal point
+            if (lpwDec)
+            {
+                // Count in the decimal point
+                uScanTxtLenChars++;
+                lpwDec++;
+
+                // Add in the length of the fractional part
+                uScanTxtLenChars += strspnW (lpwDec, L"0123456789");
+            } // End IF
 
             // Skip over it
             lpfsLocalVars->lpwszCur += uScanTxtLenChars;
@@ -854,24 +880,24 @@ UBOOL fnSetQual
             if (1 NE ScanNumberFS (lpfsLocalVars, L"%u", &lpfsCur->fsWid, FALSE, 1))
                 goto FORMAT_EXIT;
 
-            // Modifiers allowed for A-format:                    R S   Rep
-            // ...       not ...             :  B C K L M N O P Q     Z
+            // Modifiers allowed for A-format:        L           R S   Rep
+            // ...       not ...             :  B C K   M N O P Q     Z
 
             // Check for disallowed modifiers
             if (0
              || lpfsCur->bB
              || lpfsCur->bC
              || lpfsCur->bK
-             || lpfsCur->bL
+//////////// || lpfsCur->bL
              || lpfsCur->bM
              || lpfsCur->bN
              || lpfsCur->bO
              || lpfsCur->bP
              || lpfsCur->bQ
-/////////////|| lpfsCur->bR
-/////////////|| lpfsCur->bS
+//////////// || lpfsCur->bR
+//////////// || lpfsCur->bS
              || lpfsCur->bZ
-/////////////|| lpfsCur->bRep
+//////////// || lpfsCur->bRep
                )
                 goto FORMAT_EXIT;
             break;
@@ -931,19 +957,19 @@ UBOOL fnSetQual
 
             // Check for disallowed modifiers
             if (0
-/////////////|| lpfsCur->bB
+//////////// || lpfsCur->bB
              || lpfsCur->bC
-/////////////|| lpfsCur->bK
-/////////////|| lpfsCur->bL
-/////////////|| lpfsCur->bM
-/////////////|| lpfsCur->bN
-/////////////|| lpfsCur->bO
-/////////////|| lpfsCur->bP
-/////////////|| lpfsCur->bQ
-/////////////|| lpfsCur->bR
-/////////////|| lpfsCur->bS
-/////////////|| lpfsCur->bZ
-/////////////|| lpfsCur->bRep
+//////////// || lpfsCur->bK
+//////////// || lpfsCur->bL
+//////////// || lpfsCur->bM
+//////////// || lpfsCur->bN
+//////////// || lpfsCur->bO
+//////////// || lpfsCur->bP
+//////////// || lpfsCur->bQ
+//////////// || lpfsCur->bR
+//////////// || lpfsCur->bS
+//////////// || lpfsCur->bZ
+//////////// || lpfsCur->bRep
                )
                 goto FORMAT_EXIT;
             break;
@@ -991,7 +1017,7 @@ UBOOL fnSetQual
 //////////// || lpfsCur->bR
 //////////// || lpfsCur->bS
 //////////// || lpfsCur->bZ
-/////////////|| lpfsCur->bRep
+//////////// || lpfsCur->bRep
 ////////////   )
 ////////////    goto FORMAT_EXIT;
             break;
@@ -1037,7 +1063,7 @@ UBOOL fnSetQual
 //////////// || lpfsCur->bR
 //////////// || lpfsCur->bS
              || lpfsCur->bZ
-/////////////|| lpfsCur->bRep
+//////////// || lpfsCur->bRep
                )
                 goto FORMAT_EXIT;
             break;
@@ -1073,7 +1099,7 @@ UBOOL fnSetQual
 //////////// || lpfsCur->bR
 //////////// || lpfsCur->bS
 //////////// || lpfsCur->bZ
-/////////////|| lpfsCur->bRep
+//////////// || lpfsCur->bRep
 ////////////   )
 ////////////    goto FORMAT_EXIT;
             break;
@@ -1163,8 +1189,8 @@ UBOOL fnSetQual
             if (1 NE ScanNumberFS (lpfsLocalVars, L"%u", &lpfsCur->fsWid, TRUE, 1))
                 goto FORMAT_EXIT;
 
-            // Modifiers allowed for X-format:  none
-            // ...       not ...             :  all
+            // Modifiers allowed for X-format:                          Rep
+            // ...       not ...             :  B C K L M N O P Q R S Z
 
             // Check for disallowed modifiers
             if (0
@@ -1180,7 +1206,7 @@ UBOOL fnSetQual
              || lpfsCur->bR
              || lpfsCur->bS
              || lpfsCur->bZ
-             || lpfsCur->bRep
+//////////// || lpfsCur->bRep
                )
                 goto FORMAT_EXIT;
             break;

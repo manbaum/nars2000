@@ -30,12 +30,14 @@
 #define MFN_Conform         L"#Conform"
 #define MFN_MonFMT          L"#MonFMT"
 #define MFN_Box             L"#Box"
+#define MFN_MonVR           L"#MonVR"
 
 // Magic function variables
 #define $COMMABAR       WS_UTF16_COMMABAR
 #define $DECODE         WS_UTF16_UPTACK
 #define $DIAMOND        WS_UTF16_DIAMOND
 #define $DROP           WS_UTF16_DOWNARROW
+#define $DEL            WS_UTF16_DEL
 #define $DISCLOSE       WS_UTF16_RIGHTSHOE
 #define $EACH           WS_UTF16_DIERESIS
 #define $ENCLOSE        WS_UTF16_LEFTSHOE

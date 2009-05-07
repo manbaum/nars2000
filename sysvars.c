@@ -60,6 +60,7 @@
 #define SysFnTS_EM_YY       NULL
 #define SysFnTYPE_EM_YY     NULL
 #define SysFnUCS_EM_YY      NULL
+#define SysFnVR_EM_YY       NULL
 #define SysFnWA_EM_YY       NULL
 #endif
 
@@ -106,7 +107,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM_YY   , 0          },  // Terminal Control Character, New Line
     {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM_YY  , 0          },  // Terminal Control Character, Null
     {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM_YY     , 0          },  // Time Stamp
-////{WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
+    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
 
     {WS_UTF16_QUAD L"af"       ,      1,      FALSE, SysFnUCS_EM_YY    , 0          },  // Atomic Function
 ////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM_YY   , 0          },  // Call Assembler Code
@@ -138,8 +139,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"type"     ,      1,      FALSE, SysFnTYPE_EM_YY   , 0          },  // Manage Trace Points
     {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, SysFnUCS_EM_YY    , 0          },  // Universal Character Set
 ////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, StsFnVI_EM        , 0          },  // Verify Items
-////{WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM_YY     , 0          },  // Vector Representation of a Function
-    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
+    {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM_YY     , 0          },  // Vector Representation of a Function
 };
 
 // The # rows in the above table

@@ -366,6 +366,7 @@ $(O)qf_tf.obj:          $(@B).c         $(QF_TF_DEP)
 $(O)qf_ts.obj:          $(@B).c         $(QF_TS_DEP)
 $(O)qf_type.obj:        $(@B).c         $(QF_TYPE_DEP)
 $(O)qf_ucs.obj:         $(@B).c         $(QF_UCS_DEP)
+$(O)qf_vr.obj:          $(@B).c         $(QF_VR_DEP)
 $(O)qf_wa.obj:          $(@B).c         $(QF_WA_DEP)
 $(O)refcnt.obj:         $(@B).c         $(REFCNT_DEP)
 !if "$(RESDEBUG)" == "1"

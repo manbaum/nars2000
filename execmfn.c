@@ -34,6 +34,7 @@ extern MAGIC_FUNCTION MF_DydRank;
 extern MAGIC_FUNCTION MF_Conform;
 extern MAGIC_FUNCTION MF_MonFMT;
 extern MAGIC_FUNCTION MF_Box;
+extern MAGIC_FUNCTION MF_MonVR;
 
 
 //***************************************************************************
@@ -680,6 +681,7 @@ UBOOL InitMagicFunctions
     lpMemPTD->hGlbMF_MonFMT    = Init1MagicFunction (MFN_MonFMT   , &MF_MonFMT   , lpMemPTD, hWndEC, NULL);
 ////initMF.lpHTS = &lpMemPTD->htsPTD_MonFMT;
     lpMemPTD->hGlbMF_Box       = Init1MagicFunction (MFN_Box      , &MF_Box      , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_MonVR     = Init1MagicFunction (MFN_MonVR    , &MF_MonVR    , lpMemPTD, hWndEC, NULL);
 
     return TRUE;
 } // InitMagicFunctions

@@ -821,6 +821,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\qf_vr.c"
+				>
+			</File>
+			<File
 				RelativePath=".\qf_wa.c"
 				>
 			</File>

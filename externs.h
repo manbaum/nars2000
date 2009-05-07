@@ -976,7 +976,7 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
 ,
       wszFETitle[]                      // Function Editor ...
 #ifdef DEFINE_VALUES
- = WS_APPNAME L" [%s]"
+ = WS_APPNAME L" [%s]%c"
 #endif
 ,
       wszMETitle[]                      // Matrix Editor ...

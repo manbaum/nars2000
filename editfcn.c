@@ -643,6 +643,8 @@ LRESULT APIENTRY FEWndProc
             // Split cases based upon the notify code
             switch (wNotifyCode)
             {
+                UBOOL bChanged;
+
                 case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // identifier of Edit Ctrl
                                                     // hwndEditCtrl = (HWND) lParam;      // handle of Edit Ctrl
                     // Split cases based upon the last key
@@ -657,9 +659,17 @@ LRESULT APIENTRY FEWndProc
                             break;
                     } // End SWITCH
 
+                    // Get the current changed flag
+                    bChanged = GetWindowLongW (hWnd, GWLSF_CHANGED);
+
                     // The contents of the Edit Ctrl have changed,
                     // set the changed flag
                     SetWindowLongW (hWnd, GWLSF_CHANGED, TRUE);
+
+                    // If the Changed flag has changed, ...
+                    if (!bChanged)
+                        // Write out the FE window title
+                        SetFETitle (hWnd);
 
                     // If the cursor is on line #0 (the function header),
                     //   the user might have changed the name of the function,
@@ -670,8 +680,10 @@ LRESULT APIENTRY FEWndProc
                     //   the possible change in syntax colors.
                     if (0 EQ SendMessageW (hWndEC, EM_LINEINDEX, -1, 0))
                     {
-                        // Write out the FE window title
-                        SetFETitle (hWnd);
+                        // If the Chanegd flag didn't change, ...
+                        if (bChanged)
+                            // Write out the FE window title
+                            SetFETitle (hWnd);
 
                         // If we're Syntax Coloring function lines, ...
                         if (OptionFlags.bSyntClrFcns)
@@ -807,7 +819,8 @@ void SetFETitle
     // Format the new title in the memory following the name
     wsprintfW (&lpwszTemp[uNameLen],
                 wszFETitle,
-                lpwszTemp);
+                lpwszTemp,
+                L" *"[GetWindowLongW (hWndFE, GWLSF_CHANGED)]);
     // Rewrite the window title with the (new?) function name
     SetWindowTextW (hWndFE, &lpwszTemp[uNameLen]);
 } // End SetFETitle

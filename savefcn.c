@@ -1620,9 +1620,15 @@ UBOOL SaveFunctionCom
                 break;
         } // End SWITCH
 
-        // Mark as unchanged since the last save
+        // If the caller is the Function Editror, ...
         if (hWndFE)
+        {
+            // Mark as unchanged since the last save
             SetWindowLongW (hWndFE, GWLSF_CHANGED, FALSE);
+
+            // Write out the FE window title to unmark the Changed flag
+            SetFETitle (hWndFE);
+        } // End IF
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;

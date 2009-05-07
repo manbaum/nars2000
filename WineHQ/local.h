@@ -1,6 +1,16 @@
 
 #define GCL_HBRBACKGROUND       (-10)
 #define NM_LAST                 (0U- 99U)
+#if defined (_WIN32)
+  typedef          __int32 APLI3264;    // Widest native signed value
+  typedef unsigned __int32 APLU3264;    // ...           unsigned ...
+#elif defined (_WIN64)
+  typedef          __int64 APLI3264;    // Widest native signed value
+  typedef unsigned __int64 APLU3264;    // ...           unsigned ...
+#else
+  #error Need code for this architecture.
+#endif
+
 
 #define strlenW         (UINT_PTR) lstrlenW
 #define strcpyW         lstrcpyW

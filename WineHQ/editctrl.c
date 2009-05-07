@@ -659,7 +659,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
 
     case EM_SETPAINTHOOK:
         result = GetWindowLongPtrW (hwnd, GWLEC_PAINTHOOK);
-        SetWindowLongPtrW (hwnd, GWLEC_PAINTHOOK, (long) lParam);
+        SetWindowLongPtrW (hwnd, GWLEC_PAINTHOOK, (APLU3264) (LONG_PTR) lParam);
         break;
 
     /* these messages missing from specs */

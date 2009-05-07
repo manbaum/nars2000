@@ -1094,7 +1094,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
     FILETIME     ftCreation,                // Function creation time
                  ftLastMod;                 // ...      last modification time
     SYSTEMTIME   systemTime;                // Current system (UTC) time
-    UBOOL        bUserDefined = FALSE;      // TRUE iff the durrent function is User-Defined
+    UBOOL        bUserDefined = FALSE,      // TRUE iff the durrent function is User-Defined
+                 bPermNdx = FALSE;          // TRUE iff the var is a permenent
     LPVOID       lpMemObj;                  // Ptr to object global memory
     APLINT       aplInteger;                // Temporary integer
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
@@ -1355,11 +1356,25 @@ HGLOBAL LoadWorkspaceGlobal_EM
             hGlbChk = CheckGlobals (hGlbObj);
             if (hGlbChk)
             {
+                LPVARARRAY_HEADER lpMemChk;
+
                 // We no longer need this storage
                 FreeResultGlobalVar (hGlbObj); hGlbObj = NULL;
 
                 // Copy the global memory handle
                 hGlbObj = CopySymGlbDirAsGlb (hGlbChk);
+
+                // Clear the ptr type bits
+                hGlbChk = ClrPtrTypeDir (hGlbChk);
+
+                // Lock the memory to get a ptr to it
+                lpMemChk = MyGlobalLock (hGlbChk);
+
+                // Mark if this is a PERMNDX_xxx value
+                bPermNdx = (lpMemChk->PermNdx NE PERMNDX_NONE);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbChk); lpMemChk = NULL;
             } // End IF
 
             // Set the ptr type bits
@@ -1639,7 +1654,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
     // Link this SYMENTRY into the chain
     //   unless it's already linked
-    if (lpSymEntry->stSymLink EQ NULL)
+    //   or is a Permanent var
+    if (!bPermNdx
+     && lpSymEntry->stSymLink EQ NULL)
     {
         lpSymLink             = *lplpSymLink;
        *lplpSymLink           =  lpSymEntry;

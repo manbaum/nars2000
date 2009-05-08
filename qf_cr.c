@@ -109,7 +109,7 @@ LPPL_YYSTYPE SysFnMonCR_EM_YY
 #endif
 
 LPPL_YYSTYPE SysFnCR_Common_EM_YY
-    (APLRANK aplRankRes,                // Result rank (possibly negative)
+    (APLRANK aplRankRes,                // Result rank
      LPTOKEN lptkFunc,                  // Ptr to function token
      LPTOKEN lptkRhtArg,                // Ptr to right arg token
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
@@ -135,19 +135,12 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY
     STFLAGS        stFlags = {0};       // STE flags
     LPPL_YYSTYPE   lpYYRes = NULL;      // Ptr to the result
-    UBOOL          bMF;                 // TRUE iff we're displaying a Magic Function
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
-
-    // See if we're to display a Magic Function
-    bMF = 1 EQ SIGN_APLRANK (aplRankRes);
-
-    // Calc the absolute value of the result rank
-    aplRankRes = abs64 (aplRankRes);
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -164,34 +157,21 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     // Get right arg's global ptrs
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // If we're looking up a Magic Function, ...
-    if (bMF)
-        // Set the ObjName field
-        stFlags.ObjName = OBJNAME_MF;
-
-    // Split cases based upon the right arg rank
-    if (IsScalar (aplRankRht))
-        // Lookup the name in the symbol table
-        // SymTabLookupName sets the .ObjName enum,
-        //   and the .Inuse flag
-        lpSymEntry =
-          SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
-                                  (APLU3264) aplNELMRht,
-                                 &stFlags);
-    else
-    {
+    // If the right arg is global, ...
+    if (hGlbRht)
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    else
+        // Point to the right arg data
+        lpMemRht = &aplLongestRht;
 
-        // Lookup the name in the symbol table
-        // SymTabLookupName sets the .ObjName enum,
-        //   and the .Inuse flag
-        lpSymEntry =
-          SymTabLookupNameLength ((LPAPLCHAR) lpMemRht,
-                                  (APLU3264) aplNELMRht,
+    // Lookup the name in the symbol table
+    // SymTabLookupName sets the .ObjName enum,
+    //   and the .Inuse flag
+    lpSymEntry =
+      SymTabLookupNameLength ((LPAPLCHAR) lpMemRht,
+                              (APLU3264) aplNELMRht,
                                  &stFlags);
-    } // End IF/ELSE
-
     // Mark the result type & rank
     aplTypeRes = ARRAY_CHAR;
 
@@ -715,8 +695,6 @@ LPAPLCHAR CopySteName
 //  Dyadic []CR -- Canonical Representation (matrix or vector)
 //                 1 = return as vector
 //                 2 = return as matrix
-//                -1 = return as vector a magic function
-//                -2 = return as matrix ...
 //***************************************************************************
 
 #ifdef DEBUG
@@ -736,8 +714,7 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     APLNELM    aplNELMLft;          // Left arg NELM
     APLRANK    aplRankLft;          // Left arg rank
     HGLOBAL    hGlbLft = NULL;      // Left arg global memory handle
-    APLLONGEST aplLongestLft,       // Left arg immediate value
-               aplLongestTmp;       // Temporary immediate value
+    APLLONGEST aplLongestLft;       // Left arg immediate value
     UBOOL      bRet = TRUE;         // TRUE iff result is valid
 
     // Get the attributes (Type, NELM, and Rank)
@@ -771,13 +748,10 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
         case ARRAY_BOOL:
         case ARRAY_INT:
         case ARRAY_APA:
-            // Calc the absolute value so we can compare against valid values
-            aplLongestTmp = abs64 (aplLongestLft);
-
             // Check for LEFT DOMAIN ERROR
             if (!bRet
-             || (aplLongestTmp NE 1
-              && aplLongestTmp NE 2))
+             || (aplLongestLft NE 1
+              && aplLongestLft NE 2))
                 goto LEFT_DOMAIN_EXIT;
             break;
 

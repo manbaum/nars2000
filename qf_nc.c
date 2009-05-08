@@ -433,7 +433,7 @@ UBOOL IsValid2ndCharInName
 //
 //  Note that )NMS in <syscmds.c> assumes that the Name Class
 //    is a single digit.  If you add enough classes to invalidate
-//    that assumptioon, be sure make )NMS work, too.
+//    that assumption, be sure make )NMS work, too.
 //***************************************************************************
 
 APLINT CalcNameClass
@@ -444,11 +444,7 @@ APLINT CalcNameClass
     switch (lpSymEntry->stFlags.stNameType)
     {
         case NAMETYPE_UNK:
-            // Check for Magic Functions
-            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MF)
-                return NAMECLASS_MF;
-            else
-                return NAMECLASS_AVL;
+            return NAMECLASS_AVL;
 
         case NAMETYPE_VAR:
             if (lpSymEntry->stFlags.DfnLabel)
@@ -465,14 +461,23 @@ APLINT CalcNameClass
         case NAMETYPE_FN0:
         case NAMETYPE_FN12:
         case NAMETYPE_TRN:
+            // Check for user-defined functions
             if (lpSymEntry->stFlags.ObjName EQ OBJNAME_USR)
                 return NAMECLASS_USRFCN;
+            else
+            // Check for Magic Functions
+            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MF)
+                return NAMECLASS_MF;
             else
                 return NAMECLASS_SYSFCN;
 
         case NAMETYPE_OP1:
         case NAMETYPE_OP2:
-            return NAMECLASS_USROPR;
+            // Check for Magic Functions
+            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MF)
+                return NAMECLASS_MF;
+            else
+                return NAMECLASS_USROPR;
 
         case NAMETYPE_LST:
         defstop

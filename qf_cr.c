@@ -135,7 +135,6 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY
     STFLAGS        stFlags = {0};       // STE flags
     LPPL_YYSTYPE   lpYYRes = NULL;      // Ptr to the result
-    LPAPLCHAR      lpw;                 // Ptr to wide chars
     UBOOL          bMF;                 // TRUE iff we're displaying a Magic Function
 
     // Get ptr to PerTabData global memory
@@ -204,23 +203,23 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
      ||  lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
      || !lpSymEntry->stFlags.Value)
         // Not the signature of anything we know
-        // Return an empty vector or a 0 x 0 char matrix
-        hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, 0, aplRankRes, NULL, lptkFunc);
+        // Return an empty nested char vector or a 0 x 0 char matrix
+        hGlbRes = SysFnMonCR_ALLOC_EM (0, aplRankRes, NULL, lptkFunc);
     else
     // If it's immediate, ...
     if (lpSymEntry->stFlags.Imm)
         // Finish the job via subroutine
-        hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, 1, aplRankRes, &lpSymEntry->stData.stChar, lptkFunc);
+        hGlbRes = SysFnMonCR_ALLOC_EM (1, aplRankRes, &lpSymEntry->stData.stChar, lptkFunc);
     else
     {
         // Check for internal functions
         if (lpSymEntry->stFlags.FcnDir)
         {
             // Append the function name from the symbol table
-            lpw = CopySteName (lpwszTemp, lpSymEntry, &aplNELMRes);
+            CopySteName (lpwszTemp, lpSymEntry, &aplNELMRes);
 
             // Finish the job via subroutine
-            hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
+            hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
         } else
         {
             // Get the global memory ptr
@@ -252,7 +251,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
                     // Finish the job via subroutine
-                    hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
+                    hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
 
                     break;
 
@@ -385,9 +384,9 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     break;
                 } // End DFN_HEADER_SIGNATURE
 
-                case VARARRAY_HEADER_SIGNATURE: // Return a 0 x 0 char matrix
-                    // Finish the job via subroutine
-                    hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, 0, aplRankRes, NULL, lptkFunc);
+                case VARARRAY_HEADER_SIGNATURE:
+                    // Return an empty nested char vector or a 0 x 0 char matrix
+                    hGlbRes = SysFnMonCR_ALLOC_EM (0, aplRankRes, NULL, lptkFunc);
 
                     break;
 
@@ -589,16 +588,25 @@ NORMAL_EXIT:
 #endif
 
 HGLOBAL SysFnMonCR_ALLOC_EM
-    (APLSTYPE  aplTypeRes,      // Result storage type
-     APLNELM   aplNELMRes,      // Result NELM
+    (APLNELM   aplNELMRes,      // Result NELM
      APLRANK   aplRankRes,      // ...    rank
      LPAPLCHAR lpw,             // Ptr to result text
      LPTOKEN   lptkFunc)        // Ptr to function token
 
 {
+    APLSTYPE   aplTypeRes;      // Result storage type
     HGLOBAL    hGlbRes;         // Result global memory handle
     LPVOID     lpMemRes;        // Ptr to result    ...
     APLUINT    ByteRes;         // # bytes in the result
+
+    // If the result is an empty vector, ...
+    if (IsEmpty (aplNELMRes)
+     && IsVector (aplRankRes))
+        // The result type is nested
+        aplTypeRes = ARRAY_NESTED;
+    else
+        // The result type is simple char
+        aplTypeRes = ARRAY_CHAR;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
@@ -643,10 +651,12 @@ HGLOBAL SysFnMonCR_ALLOC_EM
 
     // Ensure the source is valid
     if (lpw)
-    {
         // Copy the function text to the result
         CopyMemoryW (lpMemRes, lpw, (APLU3264) aplNELMRes);
-    } // End IF
+    else
+    if (IsNested (aplTypeRes))
+        // Fill in the result prototype
+        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbV0Char);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

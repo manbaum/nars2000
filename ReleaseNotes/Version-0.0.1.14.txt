@@ -85,7 +85,7 @@ EXECMFN.C:
   Initialize new Magic Function.
 
 EXECMFN.H:
-  Define internal name for new Magic Function.
+  Define internal name for new Magic Function (#MonVR).
   Define internal name for del symbol.
 
 MAKEFILE.INC:
@@ -131,7 +131,7 @@ DISPLAY.C:
 
 FMTSPEC.C:
   Allow single and double quote marks as text delimiters.
-  In <fnSetModO>, handle specific value with a fractional part/
+  Fix bug:  In <fnSetModO>, handle specific value with a fractional part.
   Allow L Qualifier for A-format (code already there to support it,
     just didn't allow it).
   Allow Repetition Factor on X-format.

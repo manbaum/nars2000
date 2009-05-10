@@ -3554,9 +3554,9 @@ void PasteAPLChars_EM
     {
         uFmtNum = EnumClipboardFormats (uFmtNum);
         if (uFmtNum EQ CF_TEXT
-         && uFmtNum EQ CF_OEMTEXT
-         && uFmtNum EQ CF_UNICODETEXT
-         && uFmtNum EQ CF_DSPTEXT)
+         || uFmtNum EQ CF_OEMTEXT
+         || uFmtNum EQ CF_UNICODETEXT
+         || uFmtNum EQ CF_DSPTEXT)
         {
             // Save the format #
             lpMemFmts[uFmt].uFmtNum = uFmtNum;

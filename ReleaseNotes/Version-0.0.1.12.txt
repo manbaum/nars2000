@@ -1217,7 +1217,7 @@ QF_A.C:
 
 QF_AV.C:
   Update copyright year.
-  Rename <hGlbAV> to <hGlbQuadAV> toreflect its purpose
+  Rename <hGlbAV> to <hGlbQuadAV> to reflect its purpose
     better.
 
 QF_EM.C:

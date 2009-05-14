@@ -460,7 +460,7 @@ BEGIN
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR12,160,130,25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS12,215,130, 8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT13      ,  5,140,75,  9     // "Function Lines"
+    LTEXT           ""                          , IDC_SYNTCLR_LT13      ,  5,140,75,  9     // "Function Line Numbers"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK13, 97,140, 8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR13,105,140,25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK13,152,140, 8,  8, SS_BITMAP

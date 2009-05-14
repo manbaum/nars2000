@@ -34,7 +34,7 @@
 #define DEF_SC_CHRCONST        DEF_SCN_TEAL         , DEF_SCN_TRANSPARENT
 #define DEF_SC_COMMENT         DEF_SCN_GREEN        , DEF_SCN_TRANSPARENT
 #define DEF_SC_LINEDRAWING     DEF_SCN_TEAL         , DEF_SCN_TRANSPARENT
-#define DEF_SC_FCNLINES        DEF_SCN_DARKSEAGREEN , DEF_SCN_TRANSPARENT
+#define DEF_SC_FCNLINENUMS     DEF_SCN_DARKSEAGREEN , DEF_SCN_TRANSPARENT
 #define DEF_SC_MATCHGRP1       DEF_SCN_BLUE         , DEF_SCN_TRANSPARENT
 #define DEF_SC_MATCHGRP2       DEF_SCN_DARKGREEN    , DEF_SCN_TRANSPARENT
 #define DEF_SC_MATCHGRP3       DEF_SCN_DARKCYAN     , DEF_SCN_TRANSPARENT
@@ -59,7 +59,7 @@ typedef enum tagSC_TYPE
     SC_CHRCONST,        // 09:  Character constant (including single- or double-quote marks)
     SC_COMMENT,         // 0A:  Comment (including comment symbol)
     SC_LINEDRAWING,     // 0B:  Line drawing chars
-    SC_FCNLINES,        // 0C:  Function Lines
+    SC_FCNLINENUMS,     // 0C:  Function Line Numbers
     SC_MATCHGRP1,       // 0D:  Matched Grouping Symbols [] () {}
     SC_MATCHGRP2,       // 0E:  Matched Grouping Symbols [] () {}
     SC_MATCHGRP3,       // 0F:  Matched Grouping Symbols [] () {}

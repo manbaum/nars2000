@@ -94,7 +94,7 @@
 #define KEYNAME_SC_CHRCONST             L"ChrConst"
 #define KEYNAME_SC_COMMENT              L"Comment"
 #define KEYNAME_SC_LINEDRAWING          L"LineDrawing"
-#define KEYNAME_SC_FCNLINES             L"FcnLines"
+#define KEYNAME_SC_FCNLINENUMS          L"FcnLineNums"
 #define KEYNAME_SC_MATCHGRP1            L"MatchGrp1"
 #define KEYNAME_SC_MATCHGRP2            L"MatchGrp2"
 #define KEYNAME_SC_MATCHGRP3            L"MatchGrp3"
@@ -130,7 +130,7 @@ LPWCHAR aColorKeyNames[] =
  KEYNAME_SC_CHRCONST    ,       // 09:  Character constant
  KEYNAME_SC_COMMENT     ,       // 0A:  Comment
  KEYNAME_SC_LINEDRAWING ,       // 0B:  Line drawing chars
- KEYNAME_SC_FCNLINES    ,       // 0C:  Function lines
+ KEYNAME_SC_FCNLINENUMS ,       // 0C:  Function line numbers
  KEYNAME_SC_MATCHGRP1   ,       // 0D:  Matched Grouping Symbols [] () {}
  KEYNAME_SC_MATCHGRP2   ,       // 0E:  Matched Grouping Symbols [] () {}
  KEYNAME_SC_MATCHGRP3   ,       // 0F:  Matched Grouping Symbols [] () {}

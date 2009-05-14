@@ -309,7 +309,7 @@
 #define IDC_SYNTCLR_LT10                        1409    // 09:  Character constant
 #define IDC_SYNTCLR_LT11                        1410    // 0A:  Comment
 #define IDC_SYNTCLR_LT12                        1411    // 0B:  Line drawing chars
-#define IDC_SYNTCLR_LT13                        1412    // 0C:  Function lines
+#define IDC_SYNTCLR_LT13                        1412    // 0C:  Function line numbers
 #define IDC_SYNTCLR_LT14                        1413    // 0D:  Matched Grouping Symbols Level 1
 #define IDC_SYNTCLR_LT15                        1414    // 0E:  ...                            2
 #define IDC_SYNTCLR_LT16                        1415    // 0F:  ...                            3
@@ -331,7 +331,7 @@
 #define IDC_SYNTCLR_XB_TRANS10                  1509    // 09:  Character constant
 #define IDC_SYNTCLR_XB_TRANS11                  1510    // 0A:  Comment
 #define IDC_SYNTCLR_XB_TRANS12                  1511    // 0B:  Line drawing chars
-#define IDC_SYNTCLR_XB_TRANS13                  1512    // 0C:  Function lines
+#define IDC_SYNTCLR_XB_TRANS13                  1512    // 0C:  Function line numbers
 #define IDC_SYNTCLR_XB_TRANS14                  1513    // 0D:  Matched Grouping Symbols Level 1
 #define IDC_SYNTCLR_XB_TRANS15                  1514    // 0E:  ...                            2
 #define IDC_SYNTCLR_XB_TRANS16                  1515    // 0F:  ...                            3
@@ -353,7 +353,7 @@
 #define IDC_SYNTCLR_BN_FGCLR10                  1609    // 09:  Character constant
 #define IDC_SYNTCLR_BN_FGCLR11                  1610    // 0A:  Comment
 #define IDC_SYNTCLR_BN_FGCLR12                  1611    // 0B:  Line drawing chars
-#define IDC_SYNTCLR_BN_FGCLR13                  1612    // 0C:  Function lines
+#define IDC_SYNTCLR_BN_FGCLR13                  1612    // 0C:  Function line numbers
 #define IDC_SYNTCLR_BN_FGCLR14                  1613    // 0D:  Matched Grouping Symbols Level 1
 #define IDC_SYNTCLR_BN_FGCLR15                  1614    // 0E:  ...                            2
 #define IDC_SYNTCLR_BN_FGCLR16                  1615    // 0F:  ...                            3
@@ -375,7 +375,7 @@
 #define IDC_SYNTCLR_BN_BGCLR10                  1709    // 09:  Character constant
 #define IDC_SYNTCLR_BN_BGCLR11                  1710    // 0A:  Comment
 #define IDC_SYNTCLR_BN_BGCLR12                  1711    // 0B:  Line drawing chars
-#define IDC_SYNTCLR_BN_BGCLR13                  1712    // 0C:  Function lines
+#define IDC_SYNTCLR_BN_BGCLR13                  1712    // 0C:  Function line numbers
 #define IDC_SYNTCLR_BN_BGCLR14                  1713    // 0D:  Matched Grouping Symbols Level 1
 #define IDC_SYNTCLR_BN_BGCLR15                  1714    // 0E:  ...                            2
 #define IDC_SYNTCLR_BN_BGCLR16                  1715    // 0F:  ...                            3
@@ -397,7 +397,7 @@
 #define IDC_SYNTCLR_LT_FGMRK10                  1809    // 09:  Character constant
 #define IDC_SYNTCLR_LT_FGMRK11                  1810    // 0A:  Comment
 #define IDC_SYNTCLR_LT_FGMRK12                  1811    // 0B:  Line drawing chars
-#define IDC_SYNTCLR_LT_FGMRK13                  1812    // 0C:  Function lines
+#define IDC_SYNTCLR_LT_FGMRK13                  1812    // 0C:  Function line numbers
 #define IDC_SYNTCLR_LT_FGMRK14                  1813    // 0D:  Matched Grouping Symbols Level 1
 #define IDC_SYNTCLR_LT_FGMRK15                  1814    // 0E:  ...                            2
 #define IDC_SYNTCLR_LT_FGMRK16                  1815    // 0F:  ...                            3
@@ -419,7 +419,7 @@
 #define IDC_SYNTCLR_LT_BGMRK10                  1909    // 09:  Character constant
 #define IDC_SYNTCLR_LT_BGMRK11                  1910    // 0A:  Comment
 #define IDC_SYNTCLR_LT_BGMRK12                  1911    // 0B:  Line drawing chars
-#define IDC_SYNTCLR_LT_BGMRK13                  1912    // 0C:  Function lines
+#define IDC_SYNTCLR_LT_BGMRK13                  1912    // 0C:  Function line numbers
 #define IDC_SYNTCLR_LT_BGMRK14                  1913    // 0D:  Matched Grouping Symbols Level 1
 #define IDC_SYNTCLR_LT_BGMRK15                  1914    // 0E:  ...                            2
 #define IDC_SYNTCLR_LT_BGMRK16                  1915    // 0F:  ...                            3

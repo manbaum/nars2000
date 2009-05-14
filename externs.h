@@ -1109,7 +1109,7 @@ SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
    {{DEF_SC_CHRCONST   }, L"Character Constant"     },  // 09:  Character constant
    {{DEF_SC_COMMENT    }, L"Comment"                },  // 0A:  Comment
    {{DEF_SC_LINEDRAWING}, L"Line Drawing Chars"     },  // 0B:  Line drawing chars
-   {{DEF_SC_FCNLINES   }, L"Function Lines"         },  // 0C:  Function lines
+   {{DEF_SC_FCNLINENUMS}, L"Function Line Numbers"  },  // 0C:  Function line numbers
    {{DEF_SC_MATCHGRP1  }, L"Matched Group Level 1"  },  // 0D:  Matched Grouping Symbols [] () {}
    {{DEF_SC_MATCHGRP2  }, L"Matched Group Level 2"  },  // 0E:  Matched Grouping Symbols [] () {}
    {{DEF_SC_MATCHGRP3  }, L"Matched Group Level 3"  },  // 0F:  Matched Grouping Symbols [] () {}
@@ -1151,7 +1151,7 @@ UBOOL gSyntClrBGTrans[SC_LENGTH]
    TRUE,                    // 09:  Character ...
    TRUE,                    // 0A:  Comment
    TRUE,                    // 0B:  Line drawing chars
-   TRUE,                    // 0C:  Function lines
+   TRUE,                    // 0C:  Function line numbers
    TRUE,                    // 0D:  Matched Grouping Symbol, Level 1
    TRUE,                    // 0E:  ...                            2
    TRUE,                    // 0F:  ...                            3

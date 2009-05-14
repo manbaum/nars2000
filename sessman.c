@@ -1220,6 +1220,9 @@ WM_NCCREATE_FAIL:
             // Set the paint hook
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
 
+            // Save the Window Background brush
+            SetClassLongPtrW (hWndEC, GCL_HBRBACKGROUND, (HANDLE_PTR) ghBrushBG);
+
 ////////////// Set the soft-break flag (not supported by WineHQ edit ctrl)
 ////////////SendMessageW (hWndEC, EM_FMTLINES, TRUE, 0);
 

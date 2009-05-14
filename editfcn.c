@@ -1186,6 +1186,9 @@ int LclECPaintHook
 
                 // It's a system command, so we don't color that line
                 DbgGlobalFree (hGlbClr); hGlbClr = NULL;
+
+                // Set the Window background color
+                SetBkColor (hDC, gSyntaxColorName[SC_WINBG].syntClr.crBack);
             } // End IF
         } // End IF
     } // End IF

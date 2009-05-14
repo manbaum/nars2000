@@ -102,6 +102,7 @@
 #define KEYNAME_SC_UNMATCHGRP           L"UnmatchGrp"
 #define KEYNAME_SC_UNNESTED             L"UnnestedGrp"
 #define KEYNAME_SC_UNK                  L"Unk"
+#define KEYNAME_SC_WINBG                L"WinBG"
 
 #define KEYNAME_CUSTOMCOLORS            L"CustomColors"
 
@@ -138,6 +139,7 @@ LPWCHAR aColorKeyNames[] =
  KEYNAME_SC_UNMATCHGRP  ,       // 11:  Unmatched Grouping Symbols [] () {} ' "
  KEYNAME_SC_UNNESTED    ,       // 12:  Improperly Nested Grouping Symbols [] () {}
  KEYNAME_SC_UNK         ,       // 13:  Unknown symbol
+ KEYNAME_SC_WINBG       ,       // 14:  Window background
 };
 
 
@@ -633,6 +635,10 @@ void ReadIniFileGlb
                     &gSyntClrBGTrans [uCnt]);
     } // End FOR
 
+    // Respecify the Window Background brush
+    //   because the Window Background color has changed
+    RedoWinBG ();
+
     // Read in the CustomColors
     GetPrivateProfileStringW (SECTNAME_COLORS,      // Ptr to the section name
                               KEYNAME_CUSTOMCOLORS, // Ptr to the key name
@@ -651,6 +657,36 @@ void ReadIniFileGlb
                 &aCustomColors[12], &aCustomColors[13], &aCustomColors[14], &aCustomColors[15]);
 #undef  TEMPBUFLEN
 } // End ReadIniFileGlb
+
+
+//***************************************************************************
+//  $RedoWinBG
+//
+//  Respecify the Window Background brush
+//    because the Window Background color has changed
+//***************************************************************************
+
+void RedoWinBG
+    (void)
+
+{
+    UINT uCnt;                      // Loop counter
+
+    // Delete the window background brush
+    if (ghBrushBG)
+    {
+        DeleteObject (ghBrushBG); ghBrushBG = NULL;
+    } // End IF
+
+    // Initialize the window background brush
+    ghBrushBG = CreateSolidBrush (gSyntaxColorBG.crBack);
+
+    // Loop through the Syntax Colors
+    for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+    // If the background is transparent, change it
+    if (gSyntClrBGTrans[uCnt])
+        gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorBG.crBack;
+} // End RedoWinBG
 
 
 //***************************************************************************

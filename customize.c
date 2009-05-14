@@ -659,14 +659,18 @@ APLU3264 CALLBACK CustomizeDlgProc
                                                  WM_SETTEXT,
                                                  0,
                                                  (LPARAM) (HANDLE_PTR) gSyntaxColorName[uCnt].lpwSCName);
-                            // Fill in the dynamic field
-                            ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
+                            // Fill in the dynamic text field
+                            if (uCnt NE SC_WINBG)
+                            {
+                                ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
 
-                            // Register a tooltip for the Syntax Coloring Foreground button
-                            SendMessageW (hWndTT,
-                                          TTM_ADDTOOL,
-                                          0,
-                                          (LPARAM) (LPTOOLINFO) &ti);
+                                // Register a tooltip for the Syntax Coloring Foreground button
+                                SendMessageW (hWndTT,
+                                              TTM_ADDTOOL,
+                                              0,
+                                              (LPARAM) (LPTOOLINFO) &ti);
+                            } // End IF
+
                             // Fill in the dynamic field
                             ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt);
 
@@ -1555,8 +1559,14 @@ APLU3264 CALLBACK CustomizeDlgProc
                     uCnt = IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START;
                     if (custStruc[uCnt].bInitialized)
                     {
+                        UBOOL bWinBGDiff;           // TRUE iff the Window background color is changing
+
                         // Get the associated item data (window handle of the Property Page)
                         (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+
+                        // Determine if the Window background changes
+                        bWinBGDiff =
+                          (gSyntaxColorName[SC_WINBG].syntClr.crBack NE lclSyntaxColors[SC_WINBG].crBack);
 
                         // Loop through the Syntax Colors
                         for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
@@ -1576,9 +1586,15 @@ APLU3264 CALLBACK CustomizeDlgProc
                         OptionFlags.bSyntClrFcns = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_CLRFCNS);
                         OptionFlags.bSyntClrSess = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_CLRSESS);
 
+                        // If the Window background color changed, ...
+                        if (bWinBGDiff)
+                            // Respecify the Window Background brush
+                            //   because the Window Background color has changed
+                            RedoWinBG ();
+
                         // Repaint the current Session Manager as well
                         //   as any open Function Editor sessions
-                        EnumChildWindows (hWndMF, &EnumCallbackRepaint, 0);
+                        EnumChildWindows (hWndMF, &EnumCallbackRepaint, bWinBGDiff);
                     } // End IF
 
 
@@ -2542,6 +2558,14 @@ UBOOL CALLBACK EnumCallbackRepaint
 
         // Get the handle to the Edit Ctrl
         (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
+
+#define bWinBGDiff  ((UBOOL) lParam)
+
+        // If the Window background color changed, ...
+        if (bWinBGDiff)
+            SetClassLongPtrW (hWndEC, GCL_HBRBACKGROUND, (HANDLE_PTR) ghBrushBG);
+
+#undef  bWinBGDiff
 
         // Invalidate the Client Area
         InvalidateRect (hWndEC, NULL, FALSE);

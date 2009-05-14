@@ -1117,16 +1117,12 @@ SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
    {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"        },  // 11:  Unmatched Grouping Symbols [] () {} ' "
    {{DEF_SC_UNNESTED   }, L"Improper Nesting"       },  // 12:  Improperly Nested Grouping Symbols [] () {}
    {{DEF_SC_UNK        }, L"Unknown Symbols"        },  // 13:  Unknown symbol
+   {{DEF_SC_WINBG      }, L"Window Background"      },  // 14:  Window background
   }
 #endif
 ;
 
-EXTERN
-SYNTAXCOLORS gSyntaxColorBG
-#ifdef DEFINE_VALUES
- = {CLR_INVALID, DEF_SCN_WHITE}
-#endif
-;
+#define gSyntaxColorBG      gSyntaxColorName[SC_WINBG].syntClr
 
 EXTERN
 HBRUSH ghBrushBG;           // Window background brush
@@ -1159,6 +1155,7 @@ UBOOL gSyntClrBGTrans[SC_LENGTH]
    FALSE,                   // 11:  Unmatched Grouping Symbol
    FALSE,                   // 12:  Improperly Nested Grouping Symbol
    FALSE,                   // 13:  Unknown Symbol
+   FALSE,                   // 14:  Window Background
   }
 #endif
 ;

@@ -2569,10 +2569,12 @@ LPAPLCHAR FormatArrNested
 
                 // Accumulate widths of previous cols
                 if (aplDimCol > 0)
+                {
                     uPrvWid += ExteriorColWidth (&lpFmtColStr[aplDimCol - 1]);
 
                     // Offset lpwszOut from the start by the width of previous cols
                     lpwszOut += uPrvWid;
+                } // End IF
 
                 // Split cases based upon the ptr type
                 switch (GetPtrTypeInd (lpMem))
@@ -2627,7 +2629,7 @@ LPAPLCHAR FormatArrNested
                 lpwszOut = lpwszOutStart
                          + aplLastDim
                          * (((aplLastDim - 1)
-                           + lpwszOut
+                           + *lplpwszOut
                            - lpwszOutStart)
                           / aplLastDim);
             // Use the larger

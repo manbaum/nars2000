@@ -686,18 +686,21 @@ HGLOBAL MakeMonPrototype_EM
             // Calculate # bytes of Boolean data
             uLen = RoundUpBitsToBytes (aplNELM);
 
-            for (u = 0; u < uLen; u++)
-                *((LPAPLBOOL)  lpMemArr)++ = 0x00;
+            // Zero the memory
+            ZeroMemory (lpMemArr, (APLU3264) uLen);
+
             break;
 
         case ARRAY_INT:
-            for (u = 0; u < aplNELM; u++)
-                *((LPAPLINT)   lpMemArr)++ = 0;
+            // Zero the memory
+            ZeroMemory (lpMemArr, (APLU3264) aplNELM * sizeof (APLINT));
+
             break;
 
         case ARRAY_FLOAT:
-            for (u = 0; u < aplNELM; u++)
-                *((LPAPLFLOAT) lpMemArr)++ = 0;
+            // Zero the memory
+            ZeroMemory (lpMemArr, (APLU3264) aplNELM * sizeof (APLFLOAT));
+
             break;
 
         case ARRAY_CHAR:

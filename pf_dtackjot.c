@@ -637,6 +637,9 @@ LPAPLCHAR CompileArrBool
     // Loop through the cols, setting the common widths
     for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
     {
+        // Set column type
+        lpFmtColStr[aplDimCol].colType = COLTYPE_NOTCHAR;
+
         // Include a leading blank if nested or not scalar/vector or not 1st col
         uLen = (IsMultiRank (aplRank) || aplDimCol NE 0);
 
@@ -756,6 +759,11 @@ LPAPLCHAR CompileArrInteger
     LPAPLCHAR   lpwszOut;           // Ptr to output buffer
     LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to local FMTROWSTR
 
+    // Loop through the cols, setting the column type
+    for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        // Set column type
+        lpFmtColStr[aplDimCol].colType = COLTYPE_NOTCHAR;
+
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
     {
@@ -862,6 +870,11 @@ LPAPLCHAR CompileArrFloat
     LPAPLCHAR   lpwszOut;
     LPWCHAR     lpwsz;
     LPFMTROWSTR lpFmtRowLcl = NULL;
+
+    // Loop through the cols, setting the column type
+    for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        // Set column type
+        lpFmtColStr[aplDimCol].colType = COLTYPE_NOTCHAR;
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -991,6 +1004,9 @@ LPAPLCHAR CompileArrChar
                 uMaxWidth,      // Maximum col width
                 uItmWidth,      // Maximum item width
                 uTmp;           // Temporary
+
+    // Set column type
+    lpFmtColStr[0].colType = max (lpFmtColStr[0].colType, COLTYPE_ALLCHAR);
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -1179,6 +1195,11 @@ LPAPLCHAR CompileArrAPA
     LPAPLCHAR   lpwszOut;
     LPFMTROWSTR lpFmtRowLcl = NULL;
 
+    // Loop through the cols, setting the column type
+    for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        // Set column type
+        lpFmtColStr[aplDimCol].colType = COLTYPE_NOTCHAR;
+
     // Get the APA parameters
     apaOff = lpAPA->Off;
     apaMul = lpAPA->Mul;
@@ -1332,6 +1353,10 @@ LPAPLCHAR CompileArrHetero
             // Save the immediate type
             immTypeCur = (*lpSymEntry)->stFlags.ImmType;
 
+            // Set column type
+            lpFmtColStr[aplDimCol].colType =
+              IsImmChr (immTypeCur) ? max (lpFmtColStr[aplDimCol].colType, COLTYPE_ALLCHAR)
+                                    : COLTYPE_NOTCHAR;
             // If we're to handle []TCLF specially, ...
             if (bTCLF                                   // Handle specially, and
              && IsImmChr (immTypeCur)                   //   it's char, and
@@ -2126,10 +2151,29 @@ void PropagateRowColCount
     // Save in col struc
     if (lpFmtHeader->lpFmtColUp)
     {
+        COLTYPES colType;
+
+        // If there's only one column, ...
+        if (lpFmtHeader->uActCols EQ 1)
+            lpFmtHeader->lpFmtColUp->uFrc2 = max (lpFmtHeader->lpFmtColUp->uFrc2, lpFmtHeader->lpFmtCol1st->uFrcs);
+
         lpFmtHeader->lpFmtColUp->uLdBl = max (lpFmtHeader->lpFmtColUp->uLdBl, uLdBl);
         lpFmtHeader->lpFmtColUp->uInts = max (lpFmtHeader->lpFmtColUp->uInts, uInts);
         lpFmtHeader->lpFmtColUp->uFrcs = max (lpFmtHeader->lpFmtColUp->uFrcs, uFrcs);
         lpFmtHeader->lpFmtColUp->uTrBl = max (lpFmtHeader->lpFmtColUp->uTrBl, uTrBl);
+
+        // Loop through all columns in this block
+        for (uCol = 0,
+               colType = COLTYPE_UNK,
+               lpFmtColLcl = lpFmtHeader->lpFmtCol1st;
+             uCol < lpFmtHeader->uActCols;
+             uCol++, lpFmtColLcl++)
+            // Calculate the common column type
+            colType = max (lpFmtColLcl->colType, (UINT) colType);
+
+        // Save in next column up
+        lpFmtHeader->lpFmtColUp->colType =
+          max (lpFmtHeader->lpFmtColUp->colType, (UINT) colType);
     } // End IF
 
     // Save in head struc
@@ -2268,7 +2312,7 @@ LPAPLCHAR FormatArrSimple
     LPWCHAR     lpwszOut,           // Ptr to local output string
                 lpwszOutStart;      // Ptr to starting output string
     LPFMTROWSTR lpFmtRowStr;        // Ptr to this item's FMTROWSTR
-    LPAPLCHAR   lpaplChar = lpaplChar2; // Ptr to moving output string
+    LPAPLCHAR   lpaplChar = lpaplChar2; // Ptr to moving input string
     APLUINT     uQuadPW;            // []PW
 
     // Get the current value of []PW
@@ -2322,27 +2366,28 @@ LPAPLCHAR FormatArrSimple
             // Loop through the cols
             for (aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
             {
-                LPWCHAR lpw;
+                LPWCHAR lpw,
+                        lpwDec,
+                        lpwExp;
 
-                uCmpWid  = InteriorColWidth (&lpFmtColStr[aplDimCol]);  // Compiled width
-                uActLen  = lstrlenW (lpaplChar);                        // Actual length
+                uCmpWid = InteriorColWidth (&lpFmtColStr[aplDimCol]);   // Compiled width
+                uActLen = lstrlenW (lpaplChar);                         // Actual length
 
                 Assert (uActLen <= uCmpWid);
 
-                // Check for fractional part unless char ***FIXME*** -- Fails on '.' in hetero array??
-                if (IsSimpleChar (aplType))
-                    lpw = NULL;
-                else
-                    lpw = strchrW (lpaplChar, L'.');
-
-                if (!lpw)
-                    lpw = lpaplChar + uActLen;              // Place decimal point after integer part
-
-                // Align the decimal points unless char ***FIXME*** -- Fails on '.' in hetero array??
+                // Check for fractional part unless char
+                // ***FIXME*** -- Fails on '.' in hetero array as in 2 1{rho}123.45 '.'
                 if (IsSimpleChar (aplType))
                     uLead = 0;
                 else
                 {
+                    lpwDec = SkipToCharW (lpaplChar, L'.');
+                    lpwExp = SkipToCharW (lpaplChar, L'E');
+
+                    // Use the earlier value
+                    lpw = min (lpwDec, lpwExp);
+
+                    // Align the decimal points and the exponents (if no decimal point)
                     uCol = (UINT) (lpw - lpaplChar) + lpFmtColStr[aplDimCol].uFrcs;
                     uLead = uCmpWid - max (uActLen, uCol);  // # leading blanks to align decimal points
                 } // End IF/ELSE
@@ -2526,8 +2571,8 @@ LPAPLCHAR FormatArrNested
                 if (aplDimCol > 0)
                     uPrvWid += ExteriorColWidth (&lpFmtColStr[aplDimCol - 1]);
 
-                // Offset lpwszOut from the start by the width of previous cols
-                lpwszOut += uPrvWid;
+                    // Offset lpwszOut from the start by the width of previous cols
+                    lpwszOut += uPrvWid;
 
                 // Split cases based upon the ptr type
                 switch (GetPtrTypeInd (lpMem))
@@ -2621,8 +2666,8 @@ LPAPLCHAR FormatArrNestedCon
      LPUBOOL     lpbCtrlBreak)  // Ptr to Ctrl-Break flag
 
 {
-    APLDIM   aplDimNRows,       // # formatted rows
-             aplDimNCols;       // # formatted cols
+    APLDIM      aplDimNRows,    // # formatted rows
+                aplDimNCols;    // # formatted cols
     LPFMTHEADER lpFmtHeader;    // Ptr to this item's FMTHEADER
     LPFMTCOLSTR lpFmtColLcl;    // Ptr to this item's FMTCOLSTR
 
@@ -2642,6 +2687,9 @@ LPAPLCHAR FormatArrNestedCon
     // Point to the FMTCOLSTRs
     lpFmtColLcl = (LPFMTCOLSTR) lpaplChar;
 
+    // Skip over the FMTCOLSTRs to the next available position
+    lpaplChar = (LPAPLCHAR) &lpFmtColLcl[aplDimNCols];
+
 #ifdef DEBUG
     // Validate the FMTCOLSTRs
     {
@@ -2655,8 +2703,47 @@ LPAPLCHAR FormatArrNestedCon
     lpFmtColLcl->uLdBl = lpFmtColStr->uLdBl;
     lpFmtColLcl->uTrBl = lpFmtColStr->uTrBl;
 
-    // Skip over the FMTCOLSTRs to the next available position
-    lpaplChar = (LPAPLCHAR) &lpFmtColLcl[aplDimNCols];
+    // Right justify this constant in its field
+    if (IsSimpleChar (aplType))
+        // Right justify it
+        lpFmtColLcl->uLdBl += InteriorColWidth (lpFmtColStr) - 1;
+    else
+    {
+        LPFMTROWSTR lpFmtRowStr;        // Ptr to this item's FMTROWSTR
+        LPAPLCHAR   lpaplChar2;         // Ptr to compiled input
+        UINT        uCmpWid,            // Compiled width
+                    uActLen,            // Actual length
+                    uTmp;               // Temporary
+
+        // Point to the FMTROWSTR
+        lpFmtRowStr = (LPFMTROWSTR) lpaplChar;
+
+        // Validate the FMTROWSTR
+        Assert (lpFmtRowStr->Sig.nature EQ FMTROWSTR_SIGNATURE);
+
+        // Skip over the FMTROWSTR to the next available position
+        lpaplChar2 = (LPAPLCHAR) &lpFmtRowStr[1];
+
+        uCmpWid = InteriorColWidth (lpFmtColStr);   // Compiled width
+        uActLen = lstrlenW (lpaplChar2);            // Actual length
+
+        Assert (uActLen <= uCmpWid);
+
+        // Get length of integer part
+        uTmp = SkipToCharW (lpaplChar2, L'.') - lpaplChar2;
+
+        // Add in length of longest fraction in this
+        //   column (including decimal point)
+        uTmp += lpFmtColStr->uFrc2;
+
+        // Calculate size of leading blanks in order to
+        //   line up the decimal points
+        uTmp = uCmpWid - max (uActLen, uTmp);
+
+        // Save the extra width as leading blanks,
+        //   in effect right-justifying this item in the col
+        lpFmtColLcl->uLdBl += uTmp;
+    } // End IF
 
     return
       FormatArrSimple (lpFmtHeader,         // Ptr to FMTHEADER
@@ -2738,7 +2825,7 @@ LPAPLCHAR FormatArrNestedGlb
     lpaplChar = (LPAPLCHAR) &lpFmtColLcl[aplDimNCols];
 
     // Distribute this column's FMTCOLSTR (in lpFmtColStr)
-    //   amongst the FMTCOLSTRs for this item (in lpaplChar)
+    //   amongst the FMTCOLSTRs for this item (in lpFmtColLcl)
     if (!IsZeroDim (aplDimNCols))
     {
         UINT uLclWid,           // Local column width
@@ -2760,7 +2847,9 @@ LPAPLCHAR FormatArrNestedGlb
 
         // Save the extra width as leading blanks,
         //   in effect right-justifying this item in the col
-        lpFmtColLcl[0].uLdBl = lpFmtColStr->uLdBl + (uGlbWid - uLclWid);
+        //   unless this column is all char
+        if (lpFmtColStr->colType NE COLTYPE_ALLCHAR)
+            lpFmtColLcl[0].uLdBl = lpFmtColStr->uLdBl + (uGlbWid - uLclWid);
     } // End IF
 
     // Split cases based upon the right arg's storage type

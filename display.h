@@ -77,6 +77,18 @@ typedef struct tagFMTHEADER
                                         // 44:  Length
 } FMTHEADER, *LPFMTHEADER;
 
+typedef enum tagCOL_TYPES
+{
+    COLTYPE_UNK = 0,                    // 00:  Type is unspecified
+    COLTYPE_ALLCHAR,                    // 01:  Column consists of all character data
+    COLTYPE_NOTCHAR,                    // 02:  Column is all numeric or mixed character and numeric
+                                        // 03:  Available entry (2 bits)
+} COLTYPES, *LPCOLTYPES;
+
+// N.B.  The order of the values in the above enum is important such that
+//       COLTYPE_NOTCHAR must have a higher value than COLTYPE_ALLCHAR
+//       so we can use the max macro.
+
 typedef struct tagFMTCOLSTR
 {
 #ifdef DEBUG
@@ -87,11 +99,15 @@ typedef struct tagFMTCOLSTR
                 uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
                                         //      including sign
                 uChrs,                  // 0C:  # CHARs
-                uFrcs;                  // 10:  # Fractional digits in Float column
+                uFrcs,                  // 10:  # Fractional digits in Float column
                                         //      including decimal point
-    UINT        uTrBl:31,               // 14:  7FFFFFFFF:  # trailing blanks
-                bAllChar:1;             //      800000000:  TRUE iff this col is all character
-                                        // 18:  Length
+                uFrc2;                  // 14:  # Fractional digits in Float column
+                                        //      including decimal point, except this
+                                        //      one is propagated up the line if there's
+                                        //      only one column
+    UINT        uTrBl:30,               // 18:  3FFFFFFFF:  # trailing blanks
+                colType:2;              //      C00000000:  column type (see COL_TYPES)
+                                        // 1C:  Length
 } FMTCOLSTR, *LPFMTCOLSTR;
 
 typedef struct tagFMTROWSTR

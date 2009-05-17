@@ -2003,6 +2003,7 @@ UBOOL PrimFnDydSimpNest_EM
             {
                 case ARRAY_BOOL:
                 case ARRAY_INT:
+                case ARRAY_APA:
                     aplIntegerLft = GetNextInteger (lpMemLft, aplTypeLft, uLft);
                     aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
 
@@ -3462,6 +3463,7 @@ RESTART_EXCEPTION:
             {
                 case ARRAY_BOOL:            // Res = INT, Lft = BOOL(S)
                 case ARRAY_INT:             // Res = INT, Lft = INT(S)
+                case ARRAY_APA:             // Res = INT, Lft = APA(S)
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
                     {

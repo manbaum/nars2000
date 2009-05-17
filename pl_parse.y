@@ -6298,7 +6298,7 @@ EXIT_TYPES ParseLine
                  uError,            // Error code
                  uRet,              // The result from pl_yyparse
                  uCnt;              // Loop counter
-#define MVS_CNT     2
+#define MVS_CNT     STRAND_LEN
     MEMVIRTSTR   lclMemVirtStr[MVS_CNT] = {0};// Room for MVS_CNT GuardAllocs
     UBOOL        bOldExecuting;     // Old value of bExecuting
     HWND         hWndEC;            // Edit Ctrl window handle
@@ -6411,65 +6411,137 @@ EXIT_TYPES ParseLine
     plLocalVars.tkErrorCharIndex =
     plLocalVars.tkLACharIndex    = NEG1U;
 
+    //***************************************************************
     // Allocate virtual memory for the Variable Strand accumulator
+    //***************************************************************
 #ifdef DEBUG
-    lclMemVirtStr[0].lpText   = "plLocalVars.lpYYStrandStart[STRAND_VAR] in <ParseLine>";
+    lclMemVirtStr[STRAND_VAR].lpText   = "plLocalVars.lpYYStrArrStart[STRAND_VAR] in <ParseLine>";
 #endif
-    lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
-    lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
-    lclMemVirtStr[0].IniAddr  = (LPUCHAR)
-    plLocalVars.lpYYStrandStart[STRAND_VAR] =
+    lclMemVirtStr[STRAND_VAR].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[STRAND_VAR].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[STRAND_VAR].IniAddr  = (LPUCHAR)
+    plLocalVars.lpYYStrArrStart[STRAND_VAR] =
       GuardAlloc (NULL,             // Any address
-                  lclMemVirtStr[0].MaxSize,
+                  lclMemVirtStr[STRAND_VAR].MaxSize,
                   MEM_RESERVE,
                   PAGE_READWRITE);
-    if (!lclMemVirtStr[0].IniAddr)
+    if (!lclMemVirtStr[STRAND_VAR].IniAddr)
     {
-        DbgMsgW2 (L"ParseLine:  GuardAlloc for <plLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
+        DbgMsgW2 (L"ParseLine:  GuardAlloc for <plLocalVars.lpYYStrArrStart[STRAND_VAR]> failed");
 
         goto ERROR_EXIT;
     } // End IF
 
     // Link this struc into the chain
-    LinkMVS (&lclMemVirtStr[0]);
+    LinkMVS (&lclMemVirtStr[STRAND_VAR]);
 
     // Commit the intial size
-    MyVirtualAlloc (lclMemVirtStr[0].IniAddr,
+    MyVirtualAlloc (lclMemVirtStr[STRAND_VAR].IniAddr,
                     DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
+    //***************************************************************
     // Allocate virtual memory for the Function Strand accumulator
+    //***************************************************************
 #ifdef DEBUG
-    lclMemVirtStr[1].lpText   = "plLocalVars.lpYYStrandStart[STRAND_FCN] in <ParseLine>";
+    lclMemVirtStr[STRAND_FCN].lpText   = "plLocalVars.lpYYStrArrStart[STRAND_FCN] in <ParseLine>";
 #endif
-    lclMemVirtStr[1].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
-    lclMemVirtStr[1].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
-    lclMemVirtStr[1].IniAddr  = (LPUCHAR)
-    plLocalVars.lpYYStrandStart[STRAND_FCN] =
+    lclMemVirtStr[STRAND_FCN].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[STRAND_FCN].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[STRAND_FCN].IniAddr  = (LPUCHAR)
+    plLocalVars.lpYYStrArrStart[STRAND_FCN] =
       GuardAlloc (NULL,             // Any address
-                  lclMemVirtStr[1].MaxSize,
+                  lclMemVirtStr[STRAND_FCN].MaxSize,
                   MEM_RESERVE,
                   PAGE_READWRITE);
-    if (!lclMemVirtStr[1].IniAddr)
+    if (!lclMemVirtStr[STRAND_FCN].IniAddr)
     {
-        DbgMsgW2 (L"ParseLine:  GuardAlloc for <pLocalVars.lpYYStrandStart[STRAND_FCN]> failed");
+        DbgMsgW2 (L"ParseLine:  GuardAlloc for <pLocalVars.lpYYStrArrStart[STRAND_FCN]> failed");
 
         goto ERROR_EXIT;
     } // End IF
 
     // Link this struc into the chain
-    LinkMVS (&lclMemVirtStr[1]);
+    LinkMVS (&lclMemVirtStr[STRAND_FCN]);
 
     // Commit the intial size
-    MyVirtualAlloc (lclMemVirtStr[1].IniAddr,
+    MyVirtualAlloc (lclMemVirtStr[STRAND_FCN].IniAddr,
                     DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                     MEM_COMMIT,
                     PAGE_READWRITE);
+    //***************************************************************
+    // Allocate virtual memory for the List Strand accumulator
+    //***************************************************************
+#ifdef DEBUG
+    lclMemVirtStr[STRAND_LST].lpText   = "plLocalVars.lpYYStrArrStart[STRAND_LST] in <ParseLine>";
+#endif
+    lclMemVirtStr[STRAND_LST].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[STRAND_LST].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[STRAND_LST].IniAddr  = (LPUCHAR)
+    plLocalVars.lpYYStrArrStart[STRAND_LST] =
+      GuardAlloc (NULL,             // Any address
+                  lclMemVirtStr[STRAND_LST].MaxSize,
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lclMemVirtStr[STRAND_LST].IniAddr)
+    {
+        DbgMsgW2 (L"ParseLine:  GuardAlloc for <pLocalVars.lpYYStrArrStart[STRAND_LST]> failed");
+
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Link this struc into the chain
+    LinkMVS (&lclMemVirtStr[STRAND_LST]);
+
+    // Commit the intial size
+    MyVirtualAlloc (lclMemVirtStr[STRAND_LST].IniAddr,
+                    DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
+    //***************************************************************
+    // Allocate virtual memory for the Name Strand accumulator
+    //***************************************************************
+#ifdef DEBUG
+    lclMemVirtStr[STRAND_NAM].lpText   = "plLocalVars.lpYYStrArrStart[STRAND_LST] in <ParseLine>";
+#endif
+    lclMemVirtStr[STRAND_NAM].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[STRAND_NAM].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
+    lclMemVirtStr[STRAND_NAM].IniAddr  = (LPUCHAR)
+    plLocalVars.lpYYStrArrStart[STRAND_NAM] =
+      GuardAlloc (NULL,             // Any address
+                  lclMemVirtStr[STRAND_NAM].MaxSize,
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lclMemVirtStr[STRAND_NAM].IniAddr)
+    {
+        DbgMsgW2 (L"ParseLine:  GuardAlloc for <pLocalVars.lpYYStrArrStart[STRAND_LST]> failed");
+
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Link this struc into the chain
+    LinkMVS (&lclMemVirtStr[STRAND_NAM]);
+
+    // Commit the intial size
+    MyVirtualAlloc (lclMemVirtStr[STRAND_NAM].IniAddr,
+                    DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
+    // Initialize the strand bases
+    plLocalVars.lpYYStrArrStart[STRAND_VAR]->lpYYStrandBase = plLocalVars.lpYYStrArrStart[STRAND_VAR];
+    plLocalVars.lpYYStrArrStart[STRAND_FCN]->lpYYStrandBase = plLocalVars.lpYYStrArrStart[STRAND_FCN];
+    plLocalVars.lpYYStrArrStart[STRAND_LST]->lpYYStrandBase = plLocalVars.lpYYStrArrStart[STRAND_LST];
+    plLocalVars.lpYYStrArrStart[STRAND_NAM]->lpYYStrandBase = plLocalVars.lpYYStrArrStart[STRAND_NAM];
+
     // Initialize the base & next strand ptrs
-    plLocalVars.lpYYStrandBase[STRAND_VAR] =
-    plLocalVars.lpYYStrandNext[STRAND_VAR] = plLocalVars.lpYYStrandStart[STRAND_VAR];
-    plLocalVars.lpYYStrandBase[STRAND_FCN] =
-    plLocalVars.lpYYStrandNext[STRAND_FCN] = plLocalVars.lpYYStrandStart[STRAND_FCN];
+    plLocalVars.lpYYStrArrBase[STRAND_VAR] =
+    plLocalVars.lpYYStrArrNext[STRAND_VAR] = plLocalVars.lpYYStrArrStart[STRAND_VAR];
+    plLocalVars.lpYYStrArrBase[STRAND_FCN] =
+    plLocalVars.lpYYStrArrNext[STRAND_FCN] = plLocalVars.lpYYStrArrStart[STRAND_FCN];
+    plLocalVars.lpYYStrArrBase[STRAND_LST] =
+    plLocalVars.lpYYStrArrNext[STRAND_LST] = plLocalVars.lpYYStrArrStart[STRAND_LST];
+    plLocalVars.lpYYStrArrBase[STRAND_NAM] =
+    plLocalVars.lpYYStrArrNext[STRAND_NAM] = plLocalVars.lpYYStrArrStart[STRAND_NAM];
 
     // Use VirtualAlloc for the stack
     // ***FIXME***

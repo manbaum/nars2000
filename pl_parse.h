@@ -59,7 +59,9 @@ typedef enum tagSTRAND_INDS
 {
     STRAND_VAR = 0,                 // 00:  Index for var strands
     STRAND_FCN,                     // 01:  Index for function strands
-    STRAND_LEN                      // 02:  # elements in this enum
+    STRAND_LST,                     // 02:  Index for list strands
+    STRAND_NAM,                     // 03:  Index for name strands
+    STRAND_LEN                      // 04:  # elements in this enum
 } STRAND_INDS;
 
 typedef struct tagPLLOCALVARS       // ParseLine Local Vars
@@ -87,33 +89,33 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                  bIniSpec:1,        //      00010000   TRUE iff we have yet to see the first name inside Selective Specification
                  :15;               //      FFFE0000:  Available bits
     UBOOL        bCtrlBreak;        // 2C:  TRUE iff Ctrl-Break pressed
-    LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 30:  Strand stack start (static) (8 bytes)
-                 lpYYStrandBase [STRAND_LEN],   // 38:  ...          base (dynamic) ...
-                 lpYYStrandNext [STRAND_LEN];   // 40:  ...          next token (dynamic)
-    struct tagPERTABDATA *lpMemPTD; // 48:  Ptr to PerTabData global memory
-    HWND         hWndSM;            // 50:  Window handle to Session Manager
-    LPPL_YYSTYPE lpYYStr,           // 54:  Ptr to PL_YYSTYPE strand
-                 lpYYStrL,          // 58:  ...               left strand
-                 lpYYStrR,          // 5C:  ...               right strand
-                 lpYYStrN,          // 60:  ...               name strand
-                 lpYYRes,           // 64:  ...               result
-                 lpYYFcn,           // 68:  ...               function strand
-                 lpYYLst,           // 6C:  ...               list
-                 lpYYAxis,          // 70:  ...               axis
-                 lpYYOp1,           // 74:  ...               monadic operator
-                 lpYYOp2,           // 78:  ...               dyadic  ...
-                 lpYYOp3,           // 7C:  ...               ambiguous ...
-                 lpYYLft,           // 80:  ...               left operand
-                 lpYYRht,           // 84:  ...               right operand
-                 lpYYMak;           // 88:  ...               MakeXXX function
+    LPPL_YYSTYPE lpYYStrArrStart[STRAND_LEN],   // 30:  Strand stack start (static) (16 bytes)
+                 lpYYStrArrBase [STRAND_LEN],   // 40:  ...          base (dynamic) ...
+                 lpYYStrArrNext [STRAND_LEN];   // 50:  ...          next token (dynamic)
+    struct tagPERTABDATA *lpMemPTD; // 58:  Ptr to PerTabData global memory
+    HWND         hWndSM;            // 60:  Window handle to Session Manager
+    LPPL_YYSTYPE lpYYStr,           // 64:  Ptr to PL_YYSTYPE strand
+                 lpYYStrL,          // 68:  ...               left strand
+                 lpYYStrR,          // 6C:  ...               right strand
+                 lpYYStrN,          // 70:  ...               name strand
+                 lpYYRes,           // 74:  ...               result
+                 lpYYFcn,           // 78:  ...               function strand
+                 lpYYLst,           // 7C:  ...               list
+                 lpYYAxis,          // 80:  ...               axis
+                 lpYYOp1,           // 84:  ...               monadic operator
+                 lpYYOp2,           // 88:  ...               dyadic  ...
+                 lpYYOp3,           // 8C:  ...               ambiguous ...
+                 lpYYLft,           // 90:  ...               left operand
+                 lpYYRht,           // 94:  ...               right operand
+                 lpYYMak;           // 98:  ...               MakeXXX function
     struct tagPLLOCALVARS
-                *lpPLPrev;          // 8C:  Ptr to previous PLLOCALVARS struct
+                *lpPLPrev;          // 9C:  Ptr to previous PLLOCALVARS struct
                                     //      in thread creation order (NULL = none)
-    UINT         uLineNum,          // 90:  Function line # (1 for execute or immexec)
-                 uTokenCnt;         // 94:  # tokens in the function line
-    HGLOBAL      hGlbDfnHdr;        // 98:  User-defined functio/operator global memory handle (NULL = execute/immexec)
-    TOKEN        tkSelSpec;         // 9C:  TOKEN for Selective Specification (16 bytes)
-                                    // AC:  Length
+    UINT         uLineNum,          // A0:  Function line # (1 for execute or immexec)
+                 uTokenCnt;         // A4:  # tokens in the function line
+    HGLOBAL      hGlbDfnHdr;        // A8:  User-defined functio/operator global memory handle (NULL = execute/immexec)
+    TOKEN        tkSelSpec;         // AC:  TOKEN for Selective Specification (16 bytes)
+                                    // BC:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

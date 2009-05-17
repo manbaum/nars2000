@@ -31,8 +31,10 @@ extern HANDLE ahGLBALLOC[MAXOBJ];
 extern UINT auLinNumGLBALLOC[MAXOBJ];
 extern LPCHAR lpaFileNameGLBALLOC[MAXOBJ];
 
-// Debug level for display of function-related info
-UINT gFcnLvl = 3;
+UINT gVarLvl = 3,   // Debug level for display of variable-related info
+     gFcnLvl = 3,   // ...                        function-related ...
+     gLstLvl = 3,   // ...                        list-related     ...
+     gNamLvl = 3;   // ...                        name-related     ...
 #endif
 
 
@@ -1475,7 +1477,7 @@ void DisplayFcnLine
 //***************************************************************************
 
 void DisplayStrand
-    (int strType)               // Strand type (STRAND_VAR or STRAND_FCN)
+    (int strType)               // Strand type (see STRAND_INDS)
 
 {
     LPPL_YYSTYPE  lp,
@@ -1490,13 +1492,25 @@ void DisplayStrand
     {
         case STRAND_VAR:
             // Check debug level
-            if (gDbgLvl < 3)
+            if (gDbgLvl < gVarLvl)
                 return;
             break;
 
         case STRAND_FCN:
             // Check debug level
             if (gDbgLvl < gFcnLvl)
+                return;
+            break;
+
+        case STRAND_LST:
+            // Check debug level
+            if (gDbgLvl < gLstLvl)
+                return;
+            break;
+
+        case STRAND_NAM:
+            // Check debug level
+            if (gDbgLvl < gNamLvl)
                 return;
             break;
 
@@ -1522,19 +1536,29 @@ void DisplayStrand
 
             break;
 
+        case STRAND_LST:
+            DbgMsgW (L"********** List Strands ********************************");
+
+            break;
+
+        case STRAND_NAM:
+            DbgMsgW (L"********** Name Strands ********************************");
+
+            break;
+
         defstop
             break;
     } // End SWITCH
 
     wsprintfW (wszTemp,
                L"Start=%p Base=%p Next=%p",
-               lpplLocalVars->lpYYStrandStart[strType],
-               lpplLocalVars->lpYYStrandBase[strType],
-               lpplLocalVars->lpYYStrandNext[strType]);
+               lpplLocalVars->lpYYStrArrStart[strType],
+               lpplLocalVars->lpYYStrArrBase[strType],
+               lpplLocalVars->lpYYStrArrNext[strType]);
     DbgMsgW (wszTemp);
 
-    for (lp = lpplLocalVars->lpYYStrandStart[strType], lpLast = NULL;
-         lp NE lpplLocalVars->lpYYStrandNext[strType];
+    for (lp = lpplLocalVars->lpYYStrArrStart[strType], lpLast = NULL;
+         lp NE lpplLocalVars->lpYYStrArrNext[strType];
          lp ++)
     {
         if (lpLast NE lp->lpYYStrandBase)

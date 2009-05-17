@@ -64,7 +64,7 @@ void InitVarStrand
 
     // Set the base of this strand to the next available location
     lpYYArg->lpYYStrandBase                   =
-    lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
+    lpplLocalVars->lpYYStrArrBase[STRAND_VAR] = lpplLocalVars->lpYYStrArrNext[STRAND_VAR];
 } // End InitVarStrand
 
 
@@ -98,11 +98,12 @@ LPPL_YYSTYPE PushVarStrand_YY
 
     // Copy the strand base to the result
     lpYYRes->lpYYStrandBase  =
-    lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
+    lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrArrBase[STRAND_VAR];
 
     // Save this token on the strand stack
     //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_VAR]++, lpYYArg);
+    YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_VAR]++, lpYYArg);
+
 #ifdef DEBUG
     // Display the strand stack
     DisplayStrand (STRAND_VAR);
@@ -136,9 +137,9 @@ LPPL_YYSTYPE PushFcnStrand_YY
     lpYYArg->YYIndirect = bIndirect;
 
     // Copy the strand base to the result
-    lpYYArg->lpYYStrandBase = lpplLocalVars->lpYYStrandBase[STRAND_FCN];
+    lpYYArg->lpYYStrandBase = lpplLocalVars->lpYYStrArrBase[STRAND_FCN];
     if (!lpYYArg->lpYYFcnBase)
-        lpYYArg->lpYYFcnBase = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
+        lpYYArg->lpYYFcnBase = lpplLocalVars->lpYYStrArrNext[STRAND_FCN];
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -148,12 +149,12 @@ LPPL_YYSTYPE PushFcnStrand_YY
 
     // Return our own position so the next user
     //   of this token can refer to it.
-    lpYYRes->lpYYFcnBase = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
+    lpYYRes->lpYYFcnBase = lpplLocalVars->lpYYStrArrNext[STRAND_FCN];
 
     // Save this token on the strand stack
     //   and skip over it
     lpYYCopy = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
-    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_FCN]++, lpYYCopy);
+    YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_FCN]++, lpYYCopy);
     YYFree (lpYYCopy); lpYYCopy = NULL;
 #ifdef DEBUG
     // Display the strand stack
@@ -170,27 +171,23 @@ LPPL_YYSTYPE PushFcnStrand_YY
 //***************************************************************************
 
 void StripStrand
-    (LPPL_YYSTYPE lpYYStrand,       // Ptr to base of strand to strip
-     int          strType)          // Strand type (STRAND_VAR or STRAND_FCN)
+    (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
+     LPPL_YYSTYPE  lpYYStrand,      // Ptr to base of strand to strip
+     int           strType)         // Strand type (see STRAND_INDS)
 
 {
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
-
-    // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
-
     // If we're not back at the beginning, set the new base
     //   to the base of the token previous to the current base
-    if (lpplLocalVars->lpYYStrandBase[strType] NE lpplLocalVars->lpYYStrandStart[strType])
+    if (lpplLocalVars->lpYYStrArrBase[strType] NE lpplLocalVars->lpYYStrArrStart[strType])
     {
-        Assert (lpplLocalVars->lpYYStrandStart[strType] <= lpplLocalVars->lpYYStrandBase[strType - STRAND_LEN]);
-        Assert (                                           lpplLocalVars->lpYYStrandBase[strType - STRAND_LEN] < lpplLocalVars->lpYYStrandNext[strType]);
+        Assert (lpplLocalVars->lpYYStrArrStart[strType] <= lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase);
+        Assert (                                           lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase < lpplLocalVars->lpYYStrArrNext[strType]);
 
-        lpplLocalVars->lpYYStrandBase[strType] =  lpplLocalVars->lpYYStrandBase[strType - STRAND_LEN];
+        lpplLocalVars->lpYYStrArrBase[strType] =  lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase;
     } // End IF
 
     // Set next available slot to this YYtoken's base
-    lpplLocalVars->lpYYStrandNext[strType] = lpYYStrand->lpYYStrandBase;
+    lpplLocalVars->lpYYStrArrNext[strType] = lpYYStrand->lpYYStrandBase;
 
 #ifdef DEBUG
     // Display the strand stack
@@ -385,10 +382,10 @@ static char tabConvert[][STRAND_LENGTH] =
     // Save the base of this strand
     lpYYStrand              =
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
-    lpYYRes->lpYYFcnBase = (LPPL_YYSTYPE) -1;  // For debugging
+    lpYYRes->lpYYFcnBase    = (LPPL_YYSTYPE) -1;    // For debugging
 
     // Get the # elements in the strand
-    iNELM = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand);
+    iNELM = (UINT) (lpplLocalVars->lpYYStrArrNext[STRAND_VAR] - lpYYStrand);
 
     // Initialize the length of the strand
     // This value may be larger than iNELM if there are TKT_NUMSTRAND tokens
@@ -1215,10 +1212,10 @@ static char tabConvert[][STRAND_LENGTH] =
         goto ERROR_EXIT;
 NORMAL_EXIT:
     // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandBase[STRAND_VAR]);
+    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_VAR], lpplLocalVars->lpYYStrArrBase[STRAND_VAR]);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (lpYYRes, STRAND_VAR);
+    StripStrand (lpplLocalVars, lpYYRes, STRAND_VAR);
 
     DBGLEAVE;
 
@@ -1241,7 +1238,7 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
     // Free the entire strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandStart[STRAND_VAR]);
+    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_VAR], lpplLocalVars->lpYYStrArrStart[STRAND_VAR]);
 
     DBGLEAVE;
 
@@ -1301,7 +1298,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // If the arg is a Train, ...
     if (fnNameType EQ NAMETYPE_TRN)
         // Count the # elements in the Train
-        uIniLen = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand);
+        uIniLen = (UINT) (lpplLocalVars->lpYYStrArrNext[STRAND_FCN] - lpYYStrand);
     else
         // Count the # tokens in the strand
         uIniLen = YYCountFcnStr (lpYYArg->lpYYFcnBase);
@@ -1481,7 +1478,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         DisplayFcnArr (hGlbStr);
 #endif
 NORMAL_EXIT:
-    lpYYRes->lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_FCN] = lpYYBase;
+    lpYYRes->lpYYStrandBase  = lpplLocalVars->lpYYStrArrBase[STRAND_FCN] = lpYYBase;
 
     Assert (YYCheckInuse (lpYYRes));
 
@@ -1491,10 +1488,10 @@ NORMAL_EXIT:
 #endif
 
     // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_FCN], lpplLocalVars->lpYYStrandBase[STRAND_FCN]);
+    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_FCN], lpplLocalVars->lpYYStrArrBase[STRAND_FCN]);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (lpYYRes, STRAND_FCN);
+    StripStrand (lpplLocalVars, lpYYRes, STRAND_FCN);
 
     DBGLEAVE;
 
@@ -1507,7 +1504,7 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
     // Free the entire function strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_FCN], lpplLocalVars->lpYYStrandStart[STRAND_FCN]);
+    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_FCN], lpplLocalVars->lpYYStrArrStart[STRAND_FCN]);
 
     DBGLEAVE;
 
@@ -1814,7 +1811,7 @@ void InitNameStrand
 
     // Set the base of this strand to the next available location
     lpYYArg->lpYYStrandBase                   =
-    lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
+    lpplLocalVars->lpYYStrArrBase[STRAND_NAM] = lpplLocalVars->lpYYStrArrNext[STRAND_NAM];
 } // End InitNameStrand
 
 
@@ -1844,16 +1841,17 @@ LPPL_YYSTYPE PushNameStrand_YY
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
+    // Copy the strand base to the result
     lpYYRes->lpYYStrandBase  =
-    lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
+    lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrArrBase[STRAND_NAM];
 
     // Save this token on the strand stack
     //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_VAR]++, lpYYArg);
+    YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_NAM]++, lpYYArg);
 
 #ifdef DEBUG
     // Display the strand stack
-    DisplayStrand (STRAND_VAR);
+    DisplayStrand (STRAND_NAM);
 #endif
     return lpYYRes;
 } // End PushNameStrand_YY
@@ -1896,7 +1894,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
     // Get the # elements in the strand
-    iLen = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand);
+    iLen = (UINT) (lpplLocalVars->lpYYStrArrNext[STRAND_NAM] - lpYYStrand);
 
     // Save these tokens in global memory
 
@@ -1937,10 +1935,10 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     MyGlobalUnlock (hGlbStr); lpMemStr = NULL;
 
     // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandBase[STRAND_VAR]);
+    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_NAM], lpplLocalVars->lpYYStrArrBase[STRAND_NAM]);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (lpYYRes, STRAND_VAR);
+    StripStrand (lpplLocalVars, lpYYRes, STRAND_NAM);
 
     DBGLEAVE;
 
@@ -1953,7 +1951,7 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
     // Free the entire strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandStart[STRAND_VAR]);
+    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_NAM], lpplLocalVars->lpYYStrArrStart[STRAND_NAM]);
 
     DBGLEAVE;
 
@@ -1990,7 +1988,7 @@ LPPL_YYSTYPE InitList0_YY
 
     // Set the base of this strand to the next available location
     lpYYRes->lpYYStrandBase                   =
-    lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
+    lpplLocalVars->lpYYStrArrBase[STRAND_LST] = lpplLocalVars->lpYYStrArrNext[STRAND_LST];
 
     return lpYYRes;
 } // End InitList0_YY
@@ -2059,16 +2057,21 @@ LPPL_YYSTYPE PushList_YY
 ////////YYTmp.YYIndex                   = 0;    // Already zero from = {0}
 ////////YYTmp.YYFlag                    = 0;    // Already zero from = {0}
 ////////YYTmp.lpYYFcnBase               = NULL; // Already zero from = {0]
-        YYTmp.lpYYStrandBase            = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
+        YYTmp.lpYYStrandBase            = lpplLocalVars->lpYYStrArrBase[STRAND_LST];
         lpYYArg = &YYTmp;
     } // End IF
 
+    // Copy the strand base to the result
+    lpYYRes->lpYYStrandBase  =
+    lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrArrBase[STRAND_LST];
+
     // Copy this token to the strand stack
     //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_VAR]++, lpYYArg);
+    YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_LST]++, lpYYArg);
+
 #ifdef DEBUG
     // Display the strand stack
-    DisplayStrand (STRAND_VAR);
+    DisplayStrand (STRAND_LST);
 #endif
     return lpYYRes;
 } // End PushList_YY
@@ -2112,7 +2115,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpYYStrand = lpYYArg->lpYYStrandBase;
 
     // Get the # elements in the strand
-    iLen = (UINT) (lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand);
+    iLen = (UINT) (lpplLocalVars->lpYYStrArrNext[STRAND_LST] - lpYYStrand);
 
     // If it's a single element in brackets (no semicolons), ...
     if (iLen EQ 1 && bBrackets)
@@ -2290,10 +2293,10 @@ ERROR_EXIT:
     } // End IF
 NORMAL_EXIT:
     // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandBase[STRAND_VAR]);
+    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_LST], lpplLocalVars->lpYYStrArrBase[STRAND_LST]);
 
     // Strip from the strand stack
-    StripStrand (lpYYRes, STRAND_VAR);
+    StripStrand (lpplLocalVars, lpYYRes, STRAND_LST);
 
     DBGLEAVE;
 

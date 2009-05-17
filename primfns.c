@@ -1533,34 +1533,6 @@ HGLOBAL CopySymGlbDir
 
 
 //***************************************************************************
-//  $CopySymGlbInd
-//
-//  Copy an indirect LPSYMENTRY or HGLOBAL incrementing the reference count
-//***************************************************************************
-
-HGLOBAL CopySymGlbInd
-    (LPVOID lpSymGlb)
-
-{
-    return CopySymGlbDir (*(LPAPLNESTED) lpSymGlb);
-} // End CopySymGlbInd
-
-
-//***************************************************************************
-//  $CopySymGlbDirAsGlb
-//
-//  Copy a direct HGLOBAL incrementing the reference count
-//***************************************************************************
-
-HGLOBAL CopySymGlbDirAsGlb
-    (HGLOBAL hGlb)
-
-{
-    return CopySymGlbDir (MakePtrTypeGlb (hGlb));
-} // End CopySymGlbDirAsGlb
-
-
-//***************************************************************************
 //  $CopyArray_EM
 //
 //  Make a copy of a global memory ptr array

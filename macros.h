@@ -274,6 +274,10 @@
 // Macro to create a masked HGLOBAL
 #define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
 
+// Macro to copy direct and indirect ptrs, incrementing the reference count
+#define CopySymGlbDirAsGlb(hGlb)    CopySymGlbDir (MakePtrTypeGlb (hGlb))
+#define CopySymGlbInd(lpSymGlb)     CopySymGlbDir (*(LPAPLNESTED) lpSymGlb)
+
 // Macros to check on PTR_REUSED
 #define PtrReusedDir(lpMem)                     ((lpMem) EQ PTR_REUSED)
 #define PtrReusedInd(lpMem)         ((*(LPVOID *) lpMem) EQ PTR_REUSED)

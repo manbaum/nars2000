@@ -361,8 +361,6 @@ typedef struct tagSTART_ADDRESSES
     "MakeDydPrototype_EM"       , (LPUCHAR) &MakeDydPrototype_EM        ,
     "IsFirstSimpleGlb"          , (LPUCHAR) &IsFirstSimpleGlb           ,
     "CopySymGlbDir"             , (LPUCHAR) &CopySymGlbDir              ,
-    "CopySymGlbInd"             , (LPUCHAR) &CopySymGlbInd              ,
-    "CopySymGlbDirAsGlb"        , (LPUCHAR) &CopySymGlbDirAsGlb         ,
     "CopyArray_EM"              , (LPUCHAR) &CopyArray_EM               ,
     "CopyGlbAsType_EM"          , (LPUCHAR) &CopyGlbAsType_EM           ,
     "CheckRankLengthError_EM"   , (LPUCHAR) &CheckRankLengthError_EM    ,

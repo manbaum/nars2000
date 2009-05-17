@@ -1301,8 +1301,6 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnNonceError_EM (lptkFunc);
-
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
     {
@@ -1368,13 +1366,41 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    APLINT       aplAxis;           // The (one and only) axis value
-    APLRANK      aplRankRht;        // The rank of the right arg
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
+    APLUINT      aplAxis;           // The (one and only) axis value
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht,        // Right ...
+                 aplTypeRes;        // Result   ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht,        // Right ...
+                 aplNELMRes,        // Result   ...
+                 aplNELMAxis;       // Axis     ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht,        // Right ...
+                 aplRankRes;        // Result   ...
+    APLDIM       uDimAxRht;         // Right arg axis length
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRes = NULL;    // Result   ...
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL,   // Ptr to right ...
+                 lpMemRes = NULL;   // Ptr to result   ...
+    APLLONGEST   aplLongestLft,     // Left arg immediate value
+                 aplLongestLast;    // Previous left arg immediate value
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    UBOOL        bRet = FALSE,      // TRUE iff the result is valid
+                 bLastValid;        // TRUE iff aplLongestLast is valid
+    APLUINT      ByteRes;           // # bytes in the result
+    UINT         uCnt,              // Loop counter
+                 uStartCnt,         // Starting count for an item
+                 uAxis;             // Loop counter
+    APLUINT      uDimLo,            // Product of dimensions below axis
+                 uDimHi,            // ...                   above ...
+                 uDim;              // Loop counter
 
-    // Get the rank of the right arg
-    aplRankRht = RankOfGlb (hGlbRht);
+    //***************************************************************
+    // Get the attributes (Type, NELM, and Rank) of the left & right args
+    //***************************************************************
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfGlb   (hGlbRht,    &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -1392,30 +1418,672 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                            NULL))           // Return HGLOBAL with APLINT axis values
             return NULL;
     } else
-    {
         // No axis means partition on the last dimension
         aplAxis = max (0, (APLINT) aplRankRht - 1);
+
+    // Check for LEFT RANK ERROR
+    if (IsMultiRank (aplTypeLft))
+        goto LEFT_RANK_EXIT;
+
+    // Check for RIGHT RANK ERROR
+    if (IsScalar (aplRankRht))
+        goto RIGHT_RANK_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRht = MyGlobalLock (hGlbRht);
+
+    // Skip over the header to the dimension
+    lpMemRht = VarArrayBaseToDim (lpMemRht);
+
+    // Check for LENGTH ERROR
+    if (!IsScalar (aplRankLft)
+     && aplNELMLft NE ((LPAPLDIM) lpMemRht)[aplAxis])
+        goto LENGTH_EXIT;
+
+    // Check for LEFT DOMAIN ERROR
+    if (!IsSimpleNum (aplTypeLft))
+        goto LEFT_DOMAIN_EXIT;
+
+    // Calculate the product of the right arg's dimensions below the axis dimension
+    uDimLo = 1;
+    for (uDim = 0; uDim < aplAxis; uDim++)
+        uDimLo *= ((LPAPLDIM) lpMemRht)[uDim];
+
+    // Calculate the product of the right arg's dimensions above the axis dimension
+    uDimHi = 1;
+    for (uDim++; uDim < aplRankRht; uDim++)
+        uDimHi *= ((LPAPLDIM) lpMemRht)[uDim];
+
+    // Get left arg's global ptrs
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+
+    if (IsSimpleFlt (aplTypeLft))
+    {
+        aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+        if (!bRet)
+            goto LEFT_DOMAIN_EXIT;
+    } // End IF
+
+    // If the left arg is global
+    if (hGlbLft)
+    {
+        // Skip over the header to the data
+        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+
+        // Calculate the axis NELM
+        for (uCnt = 0,
+               aplNELMAxis = 0,
+               bLastValid = FALSE;
+             uCnt < aplNELMLft;
+             uCnt++)
+        {
+            // Get the next value from memory
+            GetNextValueMem (lpMemLft,          // Ptr to item global memory data
+                             aplTypeLft,        // Item storage type
+                             uCnt,              // Index into item
+                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestLft,     // Ptr to result immediate value (may be NULL)
+                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+            if (IsSimpleFlt (aplTypeLft))
+            {
+                aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+                if (!bRet)
+                    goto LEFT_DOMAIN_EXIT;
+            } // End IF
+
+            // If the value is non-zero, ...
+            if (aplLongestLft)
+            {
+                if (bLastValid)
+                {
+                    if ((APLINT) aplLongestLast < (APLINT) aplLongestLft)
+                    {
+                        // Count in another item in the result
+                        aplNELMAxis++;
+
+                        // Save the last left arg value
+                        aplLongestLast = aplLongestLft;
+                        bLastValid = TRUE;
+
+                        // Save as the starting index
+                        uStartCnt = uCnt;
+                    } // End IF
+                } else
+                {
+                    // Save the last left arg value
+                    aplLongestLast = aplLongestLft;
+                    bLastValid = TRUE;
+
+                    // Save as the starting index
+                    uStartCnt = uCnt;
+                } // End IF/ELSE
+            } else
+            if (bLastValid
+             && uStartCnt < uCnt)
+            {
+                // Count in another item in the result
+                aplNELMAxis++;
+
+                // Clear the last left arg value
+                bLastValid = FALSE;
+
+                // Save as starting index
+                uStartCnt = uCnt + 1;
+            } else
+            {
+                // Clear the last left arg value
+                bLastValid = FALSE;
+
+                // Save as starting index
+                uStartCnt = uCnt + 1;
+            } // End IF/ELSE/...
+        } // End FOR
+
+        // If there's a leftover item, ...
+        if (bLastValid
+         && uStartCnt < uCnt)
+            // Count in another item in the result
+            aplNELMAxis++;
+    } else
+    {
+        lpMemLft = &aplLongestLft;
+        aplNELMAxis = (aplLongestLft NE 0);
     } // End IF/ELSE
 
-    DbgBrk ();              // ***FINISHME*** -- PrimFnDydLeftShoeGlb_EM
+    // Calculate the result NELM
+    if (IsEmpty (aplNELMAxis))
+        aplNELMRes = 0;
+    else
+    for (uCnt = 0, aplNELMRes = aplNELMAxis; uCnt < aplRankRht; uCnt++)
+    if (uCnt NE aplAxis             // Not the function axis
+     || hGlbLft EQ NULL)            //   or left arg is scalar extended (hence unused)
+        aplNELMRes *= ((LPAPLDIM) lpMemRht)[uCnt];
+
+    // Fill in the result storage type & rank
+    aplTypeRes = ARRAY_NESTED;
+    aplRankRes = aplRankRht;
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
+
+    // Allocate space for the result.
+    // N.B. Conversion from APLUINT to UINT.
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
+
+    // Skip over the header to the dimensions
+    lpMemRes = VarArrayBaseToDim (lpMemRes);
+
+    // Fill in the dimensions
+    for (uCnt = 0; uCnt < aplRankRes; uCnt++)
+    if (uCnt NE aplAxis             // Not the function axis
+     || hGlbLft EQ NULL)            //   or left arg is scalar extended (hence unused)
+        *((LPAPLDIM) lpMemRes)++ = ((LPAPLDIM) lpMemRht)[uCnt];
+    else
+        *((LPAPLDIM) lpMemRes)++ = aplNELMAxis;
+
+    // Save the right arg axis length
+    uDimAxRht = ((LPAPLDIM) lpMemRht)[aplAxis];
+
+    // Skip over the dimensions to the data
+    lpMemRht = VarArrayDimToData (lpMemRht, aplRankRht);
+
+     // lpMemRes and lpMemRht now point to their data
+
+    //***************************************************************
+    // Handle empty results
+    //***************************************************************
+    if (IsEmpty (aplNELMRes))
+    {
+        HGLOBAL hGlbProto;
+
+        // With  L{is}{rho}R
+        //       L[K]{is}0
+        // The result is L{rho}{enclose}0{rho}R
+
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_APA:
+                hGlbProto = hGlbZilde;
+
+                break;
+
+            case ARRAY_CHAR:
+                hGlbProto = hGlbV0Char;
+
+                break;
+
+            case ARRAY_HETERO:
+                if (IsImmChr ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType))
+                    hGlbProto = hGlbV0Char;
+                else
+                    hGlbProto = hGlbZilde;
+                break;
+
+            case ARRAY_NESTED:
+                // Make the prototype
+                hGlbProto =
+                  MakeMonPrototype_EM (ClrPtrTypeInd (lpMemRht),    // Proto arg handle
+                                       lptkFunc,                    // Ptr to function token
+                                       MP_CHARS);                   // CHARs allowed
+                if (!hGlbProto)
+                    goto WSFULL_EXIT;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Save as the nested array prototype
+        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
+
+        goto YYALLOC_EXIT;
+    } // End IF
+
+    //***************************************************************
+    // The result is non-empty
+    //***************************************************************
+
+    // Run through the left arg again
+    for (uCnt = 0,
+           uAxis = 0,
+           bLastValid = FALSE;
+         uCnt < aplNELMLft;
+         uCnt++)
+    {
+        // Get the next value from memory
+        GetNextValueMem (lpMemLft,          // Ptr to item global memory data
+                         aplTypeLft,        // Item storage type
+                         uCnt,              // Index into item
+                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                        &aplLongestLft,     // Ptr to result immediate value (may be NULL)
+                         NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+        if (IsSimpleFlt (aplTypeLft))
+        {
+            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+            if (!bRet)
+                goto LEFT_DOMAIN_EXIT;
+        } // End IF
+
+        // If the value is non-zero, ...
+        if (aplLongestLft)
+        {
+            if (bLastValid)
+            {
+                if ((APLINT) aplLongestLast < (APLINT) aplLongestLft)
+                {
+                    // This element ends the previous item
+                    //   and starts a new one
+                    if (!PrimFnDydLeftShoeAppend_EM (lpMemRht,      // Ptr to right arg global memory
+                                                     aplTypeRht,    // Right arg storage type
+                                                     uDimAxRht,     // Right arg axis length
+                                                     uStartCnt,     // Starting index into right arg along axis dimension
+                                                     uCnt,          // Ending ...
+                                    (LPAPLNESTED *) &lpMemRes,      // Ptr to ptr to result global memory
+                                                     uDimHi,        // Product of length of dimensions above axis
+                                                     aplNELMAxis,   // Length of result axis dimension
+                                                     uDimLo,        // Product of length of dimensions below axis
+                                                     uAxis++,       // Current index into result axis dimension
+                                                     lptkFunc))     // Ptr to function token
+                        goto ERROR_EXIT;
+
+                    // Save the last left arg value
+                    aplLongestLast = aplLongestLft;
+                    bLastValid = TRUE;
+
+                    // Save as the starting index
+                    uStartCnt = uCnt;
+                } // End IF
+            } else
+            {
+                // Save the last left arg value
+                aplLongestLast = aplLongestLft;
+                bLastValid = TRUE;
+
+                // Save as the starting index
+                uStartCnt = uCnt;
+            } // End IF/ELSE
+        } else
+        if (bLastValid
+         && uStartCnt < uCnt)
+        {
+            // This element ends the previous item
+            if (!PrimFnDydLeftShoeAppend_EM (lpMemRht,      // Ptr to right arg global memory
+                                             aplTypeRht,    // Right arg storage type
+                                             uDimAxRht,     // Right arg axis length
+                                             uStartCnt,     // Starting index into right arg along axis dimension
+                                             uCnt,          // Ending ...
+                            (LPAPLNESTED *) &lpMemRes,      // Ptr to ptr to result global memory
+                                             uDimHi,        // Product of length of dimensions above axis
+                                             aplNELMAxis,   // Length of result axis dimension
+                                             uDimLo,        // Product of length of dimensions below axis
+                                             uAxis++,       // Current index into result axis dimension
+                                             lptkFunc))     // Ptr to function token
+                goto ERROR_EXIT;
+
+            // Clear the last left arg value
+            bLastValid = FALSE;
+
+            // Save as starting index
+            uStartCnt = uCnt + 1;
+        } else
+        {
+            // Clear the last left arg value
+            bLastValid = FALSE;
+
+            // Save as starting index
+            uStartCnt = uCnt + 1;
+        } // End IF/ELSE/...
+    } // End FOR
+
+    // Because the empty case has already been handled
+    Assert (bLastValid);
+
+    // If there's a leftover item, ...
+    if (uStartCnt < uCnt)
+        // One last case
+        if (!PrimFnDydLeftShoeAppend_EM (lpMemRht,      // Ptr to right arg global memory
+                                         aplTypeRht,    // Right arg storage type
+                                         uDimAxRht,     // Right arg axis length
+                                         uStartCnt,     // Starting index into right arg along axis dimension
+                                         uCnt,          // Ending ...
+                        (LPAPLNESTED *) &lpMemRes,      // Ptr to ptr to result global memory
+                                         uDimHi,        // Product of length of dimensions above axis
+                                         aplNELMAxis,   // Length of result axis dimension
+                                         uDimLo,        // Product of length of dimensions below axis
+                                         uAxis++,       // Current index into result axis dimension
+                                         lptkFunc))     // Ptr to function token
+            goto ERROR_EXIT;
+YYALLOC_EXIT:
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    // Split cases based upon the
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&lpYYRes->tkToken);
 
+    goto NORMAL_EXIT;
 
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
 
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbLft && lpMemLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
 
-////ERROR_EXIT:
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
     return lpYYRes;
 } // End PrimFnDydLeftShoeGlb_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydLeftShoeAppend_EM
+//
+//  Append an item to the result
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydLeftShoeAppend_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL PrimFnDydLeftShoeAppend_EM
+    (LPVOID       lpMemRht,             // Ptr to right arg global memory
+     APLSTYPE     aplTypeRht,           // Right arg storage type
+     APLDIM       uDimAxRht,            // Right arg axis length
+     UINT         uStartCnt,            // Starting index into right arg along axis dimension
+     UINT         uEndCnt,              // Ending ...
+     LPAPLNESTED *lplpMemRes,           // Ptr to ptr to result global memory
+     APLUINT      uDimHi,               // Product of length of dimensions above axis
+     APLNELM      aplNELMAxis,          // Length of result axis dimension
+     APLUINT      uDimLo,               // Product of length of dimensions below axis
+     UINT         uAxis,                // Current index into result axis dimension
+     LPTOKEN      lptkFunc)             // Ptr to function token
+
+{
+    UBOOL      bRet = FALSE;            // TRUE iff the result is valid
+    APLUINT    uLo,                     // uDimLo loop counter
+               uHi,                     // uDimHi ...
+               uSub,                    // Loop counter
+               uRht,                    // ...
+               uRes;                    // ...
+    APLUINT    ByteItm;                 // # bytes in the item
+    APLNELM    aplNELMItm;              // Item NELM
+    APLRANK    aplRankItm;              // Item rank
+    APLSTYPE   aplTypeItm;              // Item storage type
+    APLLONGEST aplLongestRht;           // Right arg immediate value
+    HGLOBAL    hGlbItm = NULL,          // Item global memory handle
+               hGlbSub;                 // Subitem ...
+    LPVOID     lpMemItm;                // Ptr to item global memory
+    UINT       uBitIndex;               // Bit index for looping through Booleans
+    TOKEN      tkItmArg = {0};          // Temporary token for TypeDemote
+
+    // Calculate the item NELM, rank, & storage type
+    aplNELMItm = uEndCnt - uStartCnt;
+    aplRankItm = 1;
+    if (IsSimpleAPA (aplTypeRht))
+        aplTypeItm = ARRAY_INT;
+    else
+        aplTypeItm = aplTypeRht;
+
+    // Loop through the high and low items of the right arg
+    for (uLo = 0; uLo < uDimLo; uLo++)
+    for (uHi = 0; uHi < uDimHi; uHi++)
+    {
+        // Calculate space needed for the item
+        ByteItm = CalcArraySize (aplTypeItm, aplNELMItm, aplRankItm);
+
+        //***************************************************************
+        // Now we can allocate the storage for the item.
+        // N.B.:  Conversion from APLUINT to UINT.
+        //***************************************************************
+        Assert (ByteItm EQ (APLU3264) ByteItm);
+        hGlbItm = DbgGlobalAlloc (GHND, (APLU3264) ByteItm);
+        if (!hGlbItm)
+            goto WSFULL_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemItm = MyGlobalLock (hGlbItm);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemItm)
+        // Fill in the header
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = aplTypeItm;
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplNELMItm;
+        lpHeader->Rank       = aplRankItm;
+#undef  lpHeader
+
+        // Point to the item's dimension
+        lpMemItm = VarArrayBaseToDim (lpMemItm);
+
+        // Save the item dimension
+        *((LPAPLDIM) lpMemItm)++ = aplNELMItm;
+
+        // lpMemItm now points to the item data
+
+        // Initiliaze in case Boolean
+        uBitIndex = 0;
+
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_APA:
+            case ARRAY_CHAR:
+                // Loop through the subitems
+                for (uSub = uStartCnt; uSub < uEndCnt; uSub++)
+                {
+                    // Calculate the starting index in the right arg of this item
+                    uRht = 1 * uHi + uDimHi * (uSub + uDimAxRht * uLo);
+
+                    // Get the next value from right arg global memory
+                    GetNextValueMem (lpMemRht,          // Ptr to item global memory data
+                                     aplTypeRht,        // Item storage type
+                                     uRht,              // Index into item
+                                     NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                    &aplLongestRht,     // Ptr to result immediate value (may be NULL)
+                                     NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                    // Split cases based upon the right arg storage type
+                    switch (aplTypeItm)
+                    {
+                        case ARRAY_BOOL:
+                            // Save the next element in the item
+                            *((LPAPLBOOL)  lpMemItm) |= (BIT0 & aplLongestRht) << uBitIndex;
+
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;              // Start over
+                                ((LPAPLBOOL) lpMemItm)++;   // Skip to next byte
+                            } // End IF
+
+                            break;
+
+                        case ARRAY_INT:
+                            // Save the next element in the item
+                            *((LPAPLINT)   lpMemItm)++ = (APLINT)  aplLongestRht;
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Save the next element in the item
+                            *((LPAPLFLOAT) lpMemItm)++ = *(LPAPLFLOAT) &aplLongestRht;
+
+                            break;
+
+                        case ARRAY_CHAR:
+                            // Save the next element in the item
+                            *((LPAPLCHAR)  lpMemItm)++ = (APLCHAR) aplLongestRht;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+                } // End FOR
+
+                break;
+
+            case ARRAY_HETERO:
+            case ARRAY_NESTED:
+                // Loop through the subitems
+                for (uSub = uStartCnt; uSub < uEndCnt; uSub++)
+                {
+                    // Calculate the index in the right arg of this item
+                    uRht = 1 * uHi + uDimHi * (uSub + uDimAxRht * uLo);
+
+                    // Extract the next subitem from the right arg
+                    hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
+
+                    // Save the subitem in the item
+                    *((LPAPLNESTED) lpMemItm)++ =
+                      CopySymGlbDir (hGlbSub);
+                } // End FOR
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
+
+        // Save in token so we can call TypeDemote
+        tkItmArg.tkFlags.TknType   = TKT_VARARRAY;
+////////tkItmArg.tkFlags.ImmType   = ImmType;   // Already zero from = {0}
+////////tkItmArg.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+        tkItmArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbItm);
+        tkItmArg.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // See if it fits into a lower (but not necessarily smaller) datatype
+        TypeDemote (&tkItmArg);
+
+        // Calculate the index in the result of this item
+        uRes = 1 * uHi + uDimHi * (uAxis + aplNELMAxis * uLo);
+
+        // Save the item in the result
+        (*lplpMemRes)[uRes] = tkItmArg.tkData.tkGlbData;
+
+        // Mark as available
+        hGlbItm = NULL;
+    } // End FOR/FOR
+
+    // Mark as successful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (hGlbItm)
+    {
+        if (lpMemItm)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbItm); hGlbItm = NULL;
+    } // End IF
+
+    return bRet;
+} // End PrimFnDydLeftShoeAppend_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -142,7 +142,7 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
 //***************************************************************************
 
 static APLCHAR MonHeaderFMT[] =
-  L"Z" $IS MFN_MonFMT L" R;" $QUAD L"io;Type;Lft;Top;Proto;A;D";
+  L"Z" $IS MFN_MonFMT L" R;" $QUAD L"io;Type;Lft;Top;Proto;A";
 
 static APLCHAR MonLineFMT1[] =
   $QUAD L"io" $IS L"0";
@@ -172,10 +172,11 @@ static APLCHAR MonLineFMT9[] =
   L"  :endif";
 
 static APLCHAR MonLineFMT10[] =
-  L"  Type" $IS L"(0 ' '" $EPSILON $QUAD L"type Proto)/'~" $LDC_LT_HORZ $NEG L"'[0,1+0" $EPSILON $RHO L"R]";
+  L"  Type" $IS L"(0 ' '" $EPSILON $QUAD L"type Proto)/'~" $LDC_LT_HORZ $NEG L"'[0,1+0"
+  $EPSILON $RHO L"R]";
 
 static APLCHAR MonLineFMT11[] =
-  L"  :select ×/" $RHO L"Type";
+  L"  :select " $TIMES L"/" $RHO L"Type";
 
 static APLCHAR MonLineFMT12[] =
   L"  :case 1";
@@ -241,67 +242,57 @@ static APLCHAR MonLineFMT32[] =
   L"  :endif";
 
 static APLCHAR MonLineFMT33[] =
-  L"  :while 2<" $RHO $RHO L"Z";
+  L"  Z" $IS L"Z " MFN_Box L" R";
 
 static APLCHAR MonLineFMT34[] =
-  L"    Z" $IS $NEG L"1" $DROP L"[" $NEG L"2],[0 1] Z,[" $NEG L"2]' '";
-
-static APLCHAR MonLineFMT35[] =
-  L"  :endwhile";
-
-static APLCHAR MonLineFMT36[] =
-  L"  Z" $IS L"Z #Box R";
-
-static APLCHAR MonLineFMT37[] =
   L":else";
 
-static APLCHAR MonLineFMT38[] =
+static APLCHAR MonLineFMT35[] =
   L"  :if 0" $EPSILON $RHO L"R";
 
-static APLCHAR MonLineFMT39[] =
-  L"    Z" $IS L"#MonFMT " $TAKE L"R";
+static APLCHAR MonLineFMT36[] =
+  L"    Z" $IS MFN_MonFMT $TAKE L"R";
 
-static APLCHAR MonLineFMT40[] =
-  L"    Z" $IS L"Z #Box R";
+static APLCHAR MonLineFMT37[] =
+  L"    Z" $IS L"Z " MFN_Box L" R";
 
-static APLCHAR MonLineFMT41[] =
+static APLCHAR MonLineFMT38[] =
   L"  :else";
 
-static APLCHAR MonLineFMT42[] =
+static APLCHAR MonLineFMT39[] =
   L"    Z" $IS L"''";
 
-static APLCHAR MonLineFMT43[] =
+static APLCHAR MonLineFMT40[] =
   L"    :forlcl I :in R";
 
-static APLCHAR MonLineFMT44[] =
-  L"      A" $IS L"#MonFMT I";
+static APLCHAR MonLineFMT41[] =
+  L"      A" $IS MFN_MonFMT L" I";
 
-static APLCHAR MonLineFMT45[] =
-  L"      D" $IS $MATCH L"I";
+static APLCHAR MonLineFMT42[] =
+  L"      :if 0=" $MATCH L"I";
 
-static APLCHAR MonLineFMT46[] =
-  L"      :if 0=D";
-
-static APLCHAR MonLineFMT47[] =
+static APLCHAR MonLineFMT43[] =
   L"        A" $IS L"' '" $COMMABAR L"A";
 
-static APLCHAR MonLineFMT48[] =
+static APLCHAR MonLineFMT44[] =
   L"      :endif";
 
-static APLCHAR MonLineFMT49[] =
+static APLCHAR MonLineFMT45[] =
   L"      Z" $IS L"Z," $ENCLOSE L"A";
 
-static APLCHAR MonLineFMT50[] =
+static APLCHAR MonLineFMT46[] =
   L"    :endforlcl";
 
-static APLCHAR MonLineFMT51[] =
-  L"    Z" $IS L"(' '," $DISCLOSE L",/(0" $DISCLOSE $DISCLOSE $MAX L"/" $RHO L"¨Z)"
-    $TAKE L"[0]¨Z,¨' ') #Box R";
+static APLCHAR MonLineFMT47[] =
+  L"    Z" $IS L",[0 " $NEG L"1 +" $RHO $RHO L"R]" $DISCLOSE L"(" $RHO L"R)" $RHO L"Z";
 
-static APLCHAR MonLineFMT52[] =
+static APLCHAR MonLineFMT48[] =
+  L"    Z" $IS L"(((" $RHO L"R),(" $TIMES L"/" $RHO L"Z)" $DIVIDE $TIMES L"/" $RHO L"R)" $RHO L"Z) " MFN_Box L" R";
+
+static APLCHAR MonLineFMT49[] =
   L"  :endif";
 
-static APLCHAR MonLineFMT53[] =
+static APLCHAR MonLineFMT50[] =
   L":endif";
 
 static LPAPLCHAR MonBodyFMT[] =
@@ -355,9 +346,6 @@ static LPAPLCHAR MonBodyFMT[] =
  MonLineFMT48,
  MonLineFMT49,
  MonLineFMT50,
- MonLineFMT51,
- MonLineFMT52,
- MonLineFMT53,
 };
 
 MAGIC_FUNCTION MF_MonFMT =
@@ -365,6 +353,7 @@ MAGIC_FUNCTION MF_MonFMT =
  MonBodyFMT,
  countof (MonBodyFMT),
 };
+
 
 //***************************************************************************
 //  Magic function for Box
@@ -387,60 +376,69 @@ static APLCHAR MonLineBox3[] =
   L"RD" $IS L"(+/RD=' ')" $ROTATE L"RD";
 
 static APLCHAR MonLineBox4[] =
-  L"Z" $IS L"(" $NEG L"2" $TAKE L"1," $RHO L"Z)" $RHO L"Z " $DIAMOND L" Z" $IS L"((" $RHO L"Z)"
-       $MAX L"(" $NEG L"1" $TAKE $RHO L"RD)," $RHO L"LD)" $TAKE L"Z";
+  L":while 2<" $RHO $RHO L"Z";
 
 static APLCHAR MonLineBox5[] =
-  L":if 1" $GE $RHO $RHO L"R";
+  L"  Z" $IS $NEG L"1" $DROP L"[" $NEG L"2],[0 1] Z,[" $NEG L"2]' '";
 
 static APLCHAR MonLineBox6[] =
-  L"  RD" $IS L"((1" $TAKE $RHO L"Z),1)" $RHO L"'" $LDC_LT_VERT L"'";
+  L":endwhile";
 
 static APLCHAR MonLineBox7[] =
-  L":else";
+  L"Z" $IS L"(" $NEG L"2" $TAKE L"1," $RHO L"Z)" $RHO L"Z " $DIAMOND L" Z" $IS L"((" $RHO
+  L"Z)" $MAX L"(" $NEG L"1" $TAKE $RHO L"RD)," $RHO L"LD)" $TAKE L"Z";
 
 static APLCHAR MonLineBox8[] =
-  L"  RD" $IS $TRANSPOSE L"(1" $TAKE $RHO L"Z)" $TAKE L"[1] RD "
-  $DIAMOND L" RD[(,RD=' ')/," $IOTA $RHO L"RD]" $IS L"'" $LDC_LT_VERT L"'";
+  L":if 1" $GE $RHO $RHO L"R";
 
 static APLCHAR MonLineBox9[] =
-  L":endif";
+  L"  RD" $IS L"((1" $TAKE $RHO L"Z),1)" $RHO L"'" $LDC_LT_VERT L"'";
 
 static APLCHAR MonLineBox10[] =
-  L"RD" $IS L"'" $LDC_LT_HORZ_D L"'" $COMMABAR L"RD" $COMMABAR L"'" $LDC_LT_HORZ_U L"' "
-  $DIAMOND L" RD[0 " $NEG L"1;0]" $IS L"'" $LDC_LT_UL $LDC_LT_LL L"'";
+  L":else";
 
 static APLCHAR MonLineBox11[] =
-  L"Z" $IS L"Z,'" $LDC_LT_VERT L"'";
+  L"  RD" $IS $TRANSPOSE L"(1" $TAKE $RHO L"Z)" $TAKE L"[1] RD " $DIAMOND
+  L" RD[(,RD=' ')/," $IOTA $RHO L"RD]" $IS L"'" $LDC_LT_VERT L"'";
 
 static APLCHAR MonLineBox12[] =
-  L"D" $IS $MATCH L"R";
-
-static APLCHAR MonLineBox13[] =
-  L":if 1<D";
-
-static APLCHAR MonLineBox14[] =
-  L"  D" $IS $FORMAT L"D";
-
-static APLCHAR MonLineBox15[] =
-  L"  Z[" $IOTA L"-" $RHO L"D;" $NEG L"1]" $IS $ROTATE L"D";
-
-static APLCHAR MonLineBox16[] =
   L":endif";
 
+static APLCHAR MonLineBox13[] =
+  L"RD" $IS L"'" $LDC_LT_HORZ_D L"'" $COMMABAR L"RD" $COMMABAR L"'" $LDC_LT_HORZ_U L"' "
+       $DIAMOND L" RD[0 " $NEG L"1;0]" $IS L"'" $LDC_LT_UL $LDC_LT_LL L"'";
+
+static APLCHAR MonLineBox14[] =
+  L"Z" $IS L"Z,'" $LDC_LT_VERT L"'";
+
+static APLCHAR MonLineBox15[] =
+  L"D" $IS $MATCH L"R";
+
+static APLCHAR MonLineBox16[] =
+  L":if 1<D";
+
 static APLCHAR MonLineBox17[] =
-  L"Z" $IS L"'" $LDC_LT_HORZ L"'" $COMMABAR L"Z" $COMMABAR L"'" $LDC_LT_HORZ L"'";
+  L"  D" $IS $FORMAT L"D";
 
 static APLCHAR MonLineBox18[] =
-  L"Z[0 " $NEG L"1;" $NEG L"1]" $IS L"'" $LDC_LT_UR $LDC_LT_LR L"'";
+  L"  Z[" $IOTA L"-" $RHO L"D;" $NEG L"1]" $IS $ROTATE L"D";
 
 static APLCHAR MonLineBox19[] =
-  L"Z[0;" $IOTA $RHO L"LD]" $IS L"LD";
+  L":endif";
 
 static APLCHAR MonLineBox20[] =
-  L"Z[" $NEG L"1;0]" $IS L"Type";
+  L"Z" $IS L"'" $LDC_LT_HORZ L"'" $COMMABAR L"Z" $COMMABAR L"'" $LDC_LT_HORZ L"'";
 
 static APLCHAR MonLineBox21[] =
+  L"Z[0 " $NEG L"1;" $NEG L"1]" $IS L"'" $LDC_LT_UR $LDC_LT_LR L"'";
+
+static APLCHAR MonLineBox22[] =
+  L"Z[0;" $IOTA $RHO L"LD]" $IS L"LD";
+
+static APLCHAR MonLineBox23[] =
+  L"Z[" $NEG L"1;0]" $IS L"Type";
+
+static APLCHAR MonLineBox24[] =
   L"Z" $IS L"RD,Z";
 
 static LPAPLCHAR MonBodyBox[] =
@@ -465,6 +463,9 @@ static LPAPLCHAR MonBodyBox[] =
  MonLineBox19,
  MonLineBox20,
  MonLineBox21,
+ MonLineBox22,
+ MonLineBox23,
+ MonLineBox24,
 };
 
 MAGIC_FUNCTION MF_Box =

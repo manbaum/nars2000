@@ -39,6 +39,7 @@
 #define $DROP           WS_UTF16_DOWNARROW
 #define $DEL            WS_UTF16_DEL
 #define $DISCLOSE       WS_UTF16_RIGHTSHOE
+#define $DIVIDE         WS_UTF16_COLONBAR
 #define $EACH           WS_UTF16_DIERESIS
 #define $ENCLOSE        WS_UTF16_LEFTSHOE
 #define $ENCODE         WS_UTF16_DOWNTACK
@@ -76,6 +77,7 @@
 #define $RHO            WS_UTF16_RHO
 #define $TAKE           WS_UTF16_UPARROW
 #define $TILDE          WS_UTF16_TILDE
+#define $TIMES          WS_UTF16_TIMES
 #define $TRANSPOSE      WS_UTF16_CIRCLESLOPE
 #define $ZILDE          WS_UTF16_ZILDE
 

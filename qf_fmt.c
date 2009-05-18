@@ -284,10 +284,11 @@ static APLCHAR MonLineFMT46[] =
   L"    :endforlcl";
 
 static APLCHAR MonLineFMT47[] =
-  L"    Z" $IS L",[0 " $NEG L"1 +" $RHO $RHO L"R]" $DISCLOSE L"(" $RHO L"R)" $RHO L"Z";
+  L"    Z" $IS $DISCLOSE L"(" $RHO L"R)" $RHO L"Z";
 
 static APLCHAR MonLineFMT48[] =
-  L"    Z" $IS L"(((" $RHO L"R),(" $TIMES L"/" $RHO L"Z)" $DIVIDE $TIMES L"/" $RHO L"R)" $RHO L"Z) " MFN_Box L" R";
+  L"    Z" $IS L"(((" $NEG L"3" $DROP $RHO L"Z),(" $RHO L"Z)[" $NEG L"2],×/(" $RHO L"Z)[" $NEG L"3 " $NEG L"1])"
+  $RHO L",[" $NEG L"2 " $NEG L"3] Z) " MFN_Box L" R";
 
 static APLCHAR MonLineFMT49[] =
   L"  :endif";

@@ -2007,7 +2007,10 @@ LPAPLCHAR CompileArrNestedGlb
     NotCharPlus = ((UINT) aplRank) + !IsSimpleChar (aplType);
 
     // Increment leading blanks as per NotCharPlus
-    if (*lpNotCharPlus NE NEG1U)
+    //   unless it's empty
+    if (*lpNotCharPlus NE NEG1U
+     && aplDimNCols NE 0
+     && aplDimNRows NE 0)
         lpFmtColStr->uLdBl += max (*lpNotCharPlus, NotCharPlus);
 
     // Set parent's NOTCHAR+ var
@@ -2114,12 +2117,14 @@ void PropagateRowColCount
     for (lpFmtRowLcl = lpFmtHeader->lpFmtRow1st,
            uActRows = uFmtRows = 0;
          lpFmtRowLcl NE NULL;
-         lpFmtRowLcl = lpFmtRowLcl->lpFmtRowNxt, uActRows++)
+         lpFmtRowLcl = lpFmtRowLcl->lpFmtRowNxt,
+           uActRows++)
         uFmtRows += lpFmtRowLcl->uFmtRows;
 
     // Save in head struc
     if (lpFmtHeader->lpFmtRowUp)
         lpFmtHeader->lpFmtRowUp->uFmtRows = max (lpFmtHeader->lpFmtRowUp->uFmtRows, uFmtRows);
+
     lpFmtHeader->uActRows = uActRows;
     lpFmtHeader->uFmtRows = max (lpFmtHeader->uFmtRows, uFmtRows);
 

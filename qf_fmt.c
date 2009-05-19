@@ -284,16 +284,31 @@ static APLCHAR MonLineFMT46[] =
   L"    :endforlcl";
 
 static APLCHAR MonLineFMT47[] =
-  L"    Z" $IS $DISCLOSE L"(" $RHO L"R)" $RHO L"Z";
+  L"    :if 1=" $RHO $RHO L"R";
 
 static APLCHAR MonLineFMT48[] =
+  L"      Z" $IS L"0 " $NEG L"1" $DROP $DISCLOSE L",/(" $EPSILON $MAX L"/" $RHO $EACH L"Z)[0]" $TAKE L"[0]" $EACH L"Z," $EACH L"' '";
+
+static APLCHAR MonLineFMT49[] =
+  L"    :else";
+
+static APLCHAR MonLineFMT50[] =
+  L"      Z" $IS $DISCLOSE L"(" $RHO L"R)" $RHO L"Z";
+
+static APLCHAR MonLineFMT51[] =
+  L"    :endif";
+
+static APLCHAR MonLineFMT52[] =
+  L"    Z" $IS L"((-3" $MAX $RHO $RHO L"Z)" $TAKE L"1," $RHO L"Z)" $RHO L"Z";
+
+static APLCHAR MonLineFMT53[] =
   L"    Z" $IS L"(((" $NEG L"3" $DROP $RHO L"Z),(" $RHO L"Z)[" $NEG L"2],×/(" $RHO L"Z)[" $NEG L"3 " $NEG L"1])"
   $RHO L",[" $NEG L"2 " $NEG L"3] Z) " MFN_Box L" R";
 
-static APLCHAR MonLineFMT49[] =
+static APLCHAR MonLineFMT54[] =
   L"  :endif";
 
-static APLCHAR MonLineFMT50[] =
+static APLCHAR MonLineFMT55[] =
   L":endif";
 
 static LPAPLCHAR MonBodyFMT[] =
@@ -347,6 +362,11 @@ static LPAPLCHAR MonBodyFMT[] =
  MonLineFMT48,
  MonLineFMT49,
  MonLineFMT50,
+ MonLineFMT51,
+ MonLineFMT52,
+ MonLineFMT53,
+ MonLineFMT54,
+ MonLineFMT55,
 };
 
 MAGIC_FUNCTION MF_MonFMT =

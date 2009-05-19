@@ -35,6 +35,9 @@ TO DO:  General:  Less Important (post-alpha)
 * Use gcov to eliminate unused routines.
 * Use actual individual character width to display Unicode chars instead
   of a constant width.
+* Handle display of directly assigned functions better than to use
+  UTF16_HORIZELLIPSIS.
+* User preference to hide workspace tabs if only one tab open.
 * Implement these features:
 * ...       New Tab On Load off
 * ...       New Tab On Clear off
@@ -68,7 +71,6 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       component file system
 * ...       native file access
 * ...       dyadic down tack jot        (format by example)
-* ...       dyadic left shoe            (partitioned enclose)
 * ...       dyadic epsilon underbar     (find)
 * ...       dieresis-del                (dual operator)
 * ...       dieresis-downtack           (convolution operator)
@@ -209,6 +211,7 @@ DONE:  General
 * ...         []MF R
 * ...       L []MF R
 * ...       syntax coloring
+* ...       dyadic left shoe            (partitioned enclose)
 * []SysVar indexed assignment with range limiting validation
 * []SysVar {is} '' assigns the system default to the system var
 * When adding two empty vectors whose prototypes are

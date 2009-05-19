@@ -81,12 +81,14 @@ typedef enum tagPTDMEMVIRTENUM
     PTDMEMVIRT_YYRES,                   // 06:  lpYYRes
     PTDMEMVIRT_STRAND_VAR,              // 07:  lpStrand[STRAND_VAR]
     PTDMEMVIRT_STRAND_FCN,              // 08:  lpStrand[STRAND_FCN]
-    PTDMEMVIRT_WSZFORMAT,               // 09:  Temporary formatting
-    PTDMEMVIRT_WSZTEMP,                 // 0A:  Temporary save area
-    PTDMEMVIRT_FORSTMT,                 // 0B:  FOR ... IN stmts
-    PTDMEMVIRT_MF1,                     // 0C:  Magic functions
-    PTDMEMVIRT_MF2,                     // 0D:  ...
-    PTDMEMVIRT_LENGTH                   // 0E:  # entries
+    PTDMEMVIRT_STRAND_LST,              // 09:  lpStrand[STRAND_LST]
+    PTDMEMVIRT_STRAND_NAM,              // 0A:  lpStrand[STRAND_NAM]
+    PTDMEMVIRT_WSZFORMAT,               // 0B:  Temporary formatting
+    PTDMEMVIRT_WSZTEMP,                 // 0C:  Temporary save area
+    PTDMEMVIRT_FORSTMT,                 // 0D:  FOR ... IN stmts
+    PTDMEMVIRT_MF1,                     // 0E:  Magic functions
+    PTDMEMVIRT_MF2,                     // 0F:  ...
+    PTDMEMVIRT_LENGTH                   // 10:  # entries
 } PTDMEMVIRTENUM;
 
 
@@ -1008,9 +1010,13 @@ WM_NCCREATE_FAIL:
                             MEM_COMMIT,
                             PAGE_READWRITE);
 
+            //***************************************************************
             // *************** Strand Accumulators *********************
+            //***************************************************************
 
+            //***************************************************************
             // Allocate virtual memory for the VAR strand accumulator
+            //***************************************************************
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].lpText   = "lpMemPTD->lpStrand[STRAND_VAR] in <SMWndProc>";
 #endif
@@ -1025,7 +1031,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandVar> failed");
+                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrand[STRAND_VAR]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1038,7 +1044,9 @@ WM_NCCREATE_FAIL:
                             DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                             MEM_COMMIT,
                             PAGE_READWRITE);
+            //***************************************************************
             // Allocate virtual memory for the FCN strand accumulator
+            //***************************************************************
 #ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].lpText   = "lpMemPTD->lpStrand[STRAND_FCN] in <SMWndProc>";
 #endif
@@ -1053,7 +1061,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandFcn> failed");
+                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrand[STRAND_FCN]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1063,6 +1071,68 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr,
+                            DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
+
+            //***************************************************************
+            // Allocate virtual memory for the LST strand accumulator
+            //***************************************************************
+#ifdef DEBUG
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].lpText   = "lpMemPTD->lpStrand[STRAND_LST] in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IniAddr  = (LPVOID)
+            lpMemPTD->lpStrand[STRAND_LST] =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrand[STRAND_LST]> failed");
+
+                return FALSE;           // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IniAddr,
+                            DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
+
+            //***************************************************************
+            // Allocate virtual memory for the NAM strand accumulator
+            //***************************************************************
+#ifdef DEBUG
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].lpText   = "lpMemPTD->lpStrand[STRAND_NAM] in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
+            lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IniAddr  = (LPVOID)
+            lpMemPTD->lpStrand[STRAND_NAM] =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrand[STRAND_NAM]> failed");
+
+                return FALSE;           // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IniAddr,
                             DEF_STRAND_INITNELM * sizeof (PL_YYSTYPE),
                             MEM_COMMIT,
                             PAGE_READWRITE);
@@ -1936,6 +2006,8 @@ NORMAL_EXIT:
                 lpMemPTD->lpYYRes              = NULL;
                 lpMemPTD->lpStrand[STRAND_VAR] = NULL;
                 lpMemPTD->lpStrand[STRAND_FCN] = NULL;
+                lpMemPTD->lpStrand[STRAND_LST] = NULL;
+                lpMemPTD->lpStrand[STRAND_NAM] = NULL;
                 lpMemPTD->lpwszFormat          = NULL;
                 lpMemPTD->lpwszBaseTemp        = NULL;
             } // End IF

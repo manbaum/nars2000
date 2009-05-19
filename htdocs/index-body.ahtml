@@ -113,8 +113,7 @@ Welcome to NARS2000</h1>
           Z{is}FOO (R<sub>1</sub> R<sub>2</sub> R<sub>3</sub> R<sub>4</sub>)</span> or, more fully, <span class="APL">{del}
           (Z<sub>1</sub> Z<sub>2</sub>){is}{L<sub>1</sub> L<sub>2</sub> L<sub>3</sub>} (LO OP2[X] RO) (R<sub>1</sub> R<sub>2</sub> R<sub>3</sub> R<sub>4</sub>)</span>)</li>
         <li>Note that braces are <b>required</b> to surround the left
-          argument of an ambivalent function as in <span class="APL">{del} Z{is}{L} FOO R</span>
-          &mdash; Is this an <b>inconsistent</b> extension?</li>
+          argument of an ambivalent function as in <span class="APL">{del} Z{is}{L} FOO R</span></li>
         <li>The result of a user-defined function/operator may be marked as non-displayable
           by enclosing it in braces, as in <span class="APL">{del} {Z}{is}FOO R</span>.
           If the result part of the header consists of multiple names, either
@@ -135,13 +134,14 @@ Welcome to NARS2000</h1>
           (via an internal magic function)</li>
         <li>Dyadic iota (<span class="APL">{iota}</span>) extended to rank &gt; 1 left arguments returns an array
           of vector indices to the left argument (via an internal magic function)</li>
-        <li>Index reference, assignment, modify assignment, squad, and pick
+        <li>Index reference, assignment, modify assignment, squad, transpose, and pick
              (<span class="APL">R[L]</span>,
               <span class="APL">R[L]{is}A</span>,
               <span class="APL">R[L]<i>f</i>{is}A</span>,
               <span class="APL">L{squad}R</span>,
+              <span class="APL">L{transpose}R</span>,
           and <span class="APL">L{pick}R</span>)
-          are each extended to negative values in the same way the axis operator is (see above).
+          are each extended to negative values for <span class="APL">L</span> in the same way the axis operator is (see above).
           For example,
           <span class="APL">A</span>,
           <span class="APL">A[{iota}{rho}A]</span>, and
@@ -169,9 +169,7 @@ Welcome to NARS2000</h1>
           <ul>
             <li><span class="APL">{quad}A</span></li>
             <li><span class="APL">L {quad}CR R</span> for
-                <span class="APL">L={neg}2</span>,
-                <span class="APL">{neg}1</span>,
-                <span class="APL">1</span>, and
+                <span class="APL">L=1</span> and
                 <span class="APL">2</span></li>
             <li><span class="APL">{quad}DM</span></li>
             <li><span class="APL">{quad}DR R</span></li>
@@ -195,6 +193,8 @@ Welcome to NARS2000</h1>
                 <span class="APL">2</span></li>
             <li><span class="APL">{quad}TYPE R</span></li>
             <li><span class="APL">{quad}UCS R</span></li>
+            <li><span class="APL">{quad}VR R</span></li>
+            <li><span class="APL">{quad}WA</span></li>
           </ul>
         </li>
         <li>System commands:

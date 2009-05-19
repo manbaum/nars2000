@@ -123,30 +123,30 @@ typedef struct tagPERTABDATA
                                     //      Size = 2Ch for DEBUG, 20h otherwise
     LPPL_YYSTYPE lpStrand[STRAND_LEN];//1A4:  Ptrs to strand accumulators in parser (4 bytes each)
     LPLOADWSGLBVARCONV
-                 lpLoadWsGlbVarConv;//1A8:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
+                 lpLoadWsGlbVarConv;//1B4:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
     LPLOADWSGLBVARPARM
-                 lpLoadWsGlbVarParm;//1AC:  Ptr to extra parms for LoadWsGlbVarConv
-    LPMEMVIRTSTR lpLstMVS;          //1B0:  Ptr to last MEMVIRTSTR (NULL = none)
-    LPWCHAR      lpwszFormat,       //1B4:  Ptr to formatting save area
-                 lpwszBaseTemp,     //1B8:  Ptr to base of lpwszTemp
-                 lpwszTemp;         //1BC:  Ptr to temporary  ...
-    UINT         uTempMaxSize,      //1C0:  Maximum size of lpwszTemp
-                 RegisterEBP,       //1C4:  Register EBP from an exception
-                 uErrLine;          //1C8:  Error line # from []FX for )IN
-    LPTOKEN      lptkCSIni,         //1CC:  Ptr to start of CtrlStruc token stack (static)
-                 lptkCSNxt;         //1D0:  Ptr to next available slot in CS ...  (dynamic)
+                 lpLoadWsGlbVarParm;//1B8:  Ptr to extra parms for LoadWsGlbVarConv
+    LPMEMVIRTSTR lpLstMVS;          //1BC:  Ptr to last MEMVIRTSTR (NULL = none)
+    LPWCHAR      lpwszFormat,       //1C0:  Ptr to formatting save area
+                 lpwszBaseTemp,     //1C4:  Ptr to base of lpwszTemp
+                 lpwszTemp;         //1C8:  Ptr to temporary  ...
+    UINT         uTempMaxSize,      //1CC:  Maximum size of lpwszTemp
+                 RegisterEBP,       //1D0:  Register EBP from an exception
+                 uErrLine;          //1D4:  Error line # from []FX for )IN
+    LPTOKEN      lptkCSIni,         //1D8:  Ptr to start of CtrlStruc token stack (static)
+                 lptkCSNxt;         //1DC:  Ptr to next available slot in CS ...  (dynamic)
     struct tagFORSTMT *
-                 lpForStmtBase;     //1D4:  Ptr to base of FORSTMT stack
+                 lpForStmtBase;     //1E0:  Ptr to base of FORSTMT stack
 #ifndef UNISCRIBE
     IMLangFontLink
-                *lpFontLink;        //1D8:  Ptr to FontLink struc
+                *lpFontLink;        //1E4:  Ptr to FontLink struc
 #endif
-    APLCHAR      cQuadPR,           //1DC:  []PR     (' ') (When a char scalar)
-                 cQuadxSA;          //1DE:  []SA     (0)   (in its index form as an integer)
-    DWORD        dwThreadId;        //1E0:  Corresponding thread ID
-    HANDLE       hExitphore;        //1E4:  Semaphore used to close a tab (may be NULL)
-    HWND         hWndFENxt;         //1E8:  Next FE window handle (NULL = none)
-                                    //1EC:  Length
+    APLCHAR      cQuadPR,           //1E8:  []PR     (' ') (When a char scalar)
+                 cQuadxSA;          //1EA:  []SA     (0)   (in its index form as an integer)
+    DWORD        dwThreadId;        //1EC:  Corresponding thread ID
+    HANDLE       hExitphore;        //1F0:  Semaphore used to close a tab (may be NULL)
+    HWND         hWndFENxt;         //1F4:  Next FE window handle (NULL = none)
+                                    //1F8:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

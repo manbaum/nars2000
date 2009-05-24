@@ -70,6 +70,14 @@ typedef struct tagKEYDATA
 } KEYDATA, *LPKEYDATA;
 
 
+typedef enum tagFCNMEMVIRTENUM
+{
+    FCNMEMVIRT_UNDOBEG,                 // 00:  lpUndoBeg
+    FCNMEMVIRT_LENGTH                   // 01:  # entries
+} FCNMEMVIRTENUM;
+
+
+
 //***************************************************************************
 //  $CreateFcnWindow
 //
@@ -277,6 +285,29 @@ LRESULT APIENTRY FEWndProc
     switch (message)
     {
 #define lpMDIcs     ((LPMDICREATESTRUCTW) ((*(LPCREATESTRUCTW *) &lParam)->lpCreateParams))
+        case WM_NCCREATE:
+            // Allocate room for FCNMEMVIRT_LENGTH MemVirtStrs
+            //  (see FCNMEMVIRTENUM)
+            lpLclMemVirtStr =
+              MyVirtualAlloc (NULL,                     // Any address (FIXED SIZE)
+                              FCNMEMVIRT_LENGTH * sizeof (MEMVIRTSTR),
+                              MEM_COMMIT | MEM_TOP_DOWN,
+                              PAGE_READWRITE);
+            if (!lpLclMemVirtStr)
+            {
+                // ***FIXME*** -- Display error msg
+                DbgMsgW (L"FEWndProc/WM_NCCREATE:  MyVirtualAlloc for <lpLclMemVirtStr> failed");
+
+                return -1;
+            } // End IF
+
+            // Save in window extra bytes
+            SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) lpLclMemVirtStr);
+
+            break;
+#undef  lpMDIcs
+
+#define lpMDIcs     ((LPMDICREATESTRUCTW) ((*(LPCREATESTRUCTW *) &lParam)->lpCreateParams))
         case WM_CREATE:             // lpcs = (LPCREATESTRUCTW) lParam; // Structure with creation data
         {
             LPSYMENTRY   lpSymName;         // Ptr to function name STE
@@ -314,66 +345,49 @@ LRESULT APIENTRY FEWndProc
                 } // End IF/ELSE
             } // End IF
 
-            // At some point, we'll read in the undo buffer from
-            //   the saved function and copy it to virtual memory
-            //   also setting the _BEG, _NXT, and _LST ptrs.
+            // Get the ptr to the local virtual memory struc
+            (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
 
+            // *************** Undo Buffer *****************************
             // _BEG is the (static) ptr to the beginning of the virtual memory.
             // _NXT is the (dynamic) ptr to the next available entry.
             //    Undo entries are between _NXT[-1] and _BEG, inclusive.
             // _LST is the (dynamic) ptr to the last available entry.
             //    Redo entries are between _NXT and _LST[-1], inclusive.
 
-            // Allocate room for one MemVirtStr
-            lpLclMemVirtStr =
-              MyVirtualAlloc (NULL,                     // Any address (FIXED SIZE)
-                              1 * sizeof (MEMVIRTSTR),
-                              MEM_COMMIT | MEM_TOP_DOWN,
-                              PAGE_READWRITE);
-            if (!lpLclMemVirtStr)
-            {
-                // ***FIXME*** -- Display error msg
-
-                return -1;
-            } // End IF
-
             // Allocate virtual memory for the Undo Buffer
 #ifdef DEBUG
-            lpLclMemVirtStr[0].lpText   = "lpUndoBeg in <FEWndProc>";
+            lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].lpText   = "lpUndoBeg in <FEWndProc>";
 #endif
-            lpLclMemVirtStr[0].IncrSize = DEF_UNDOBUF_INCRNELM * sizeof (UNDO_BUF);
-            lpLclMemVirtStr[0].MaxSize  = DEF_UNDOBUF_MAXNELM  * sizeof (UNDO_BUF);
-            lpLclMemVirtStr[0].IniAddr  = (LPUCHAR)
+            lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].IncrSize = DEF_UNDOBUF_INCRNELM * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].MaxSize  = DEF_UNDOBUF_MAXNELM  * sizeof (UNDO_BUF);
+            lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].IniAddr  = (LPUCHAR)
             lpUndoBeg =
               GuardAlloc (NULL,             // Any address
-                          lpLclMemVirtStr[0].MaxSize,
+                          lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[0].IniAddr)
+            if (!lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].IniAddr)
             {
-                // ***FIXME*** -- Display error msg
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"FEWndProc/WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
 
                 return -1;
             } // End IF
 
-            // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) lpLclMemVirtStr);
-
             // Link this struc into the chain
-            LinkMVS (&lpLclMemVirtStr[0]);
+            LinkMVS (&lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG]);
 
             // Commit the intial size
-            MyVirtualAlloc (lpLclMemVirtStr[0].IniAddr,
+            MyVirtualAlloc (lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].IniAddr,
                             DEF_UNDOBUF_INITNELM * sizeof (UNDO_BUF),
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_INI, (APLU3264) (LONG_PTR) lpUndoBeg);
-////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
-
-            // Save in window extra bytes
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (APLU3264) (LONG_PTR) lpUndoBeg);
             SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoBeg);
             SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (APLU3264) (LONG_PTR) lpUndoBeg);
+////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
             // Start with an initial action of nothing
             AppendUndo (hWnd,                       // FE Window handle
@@ -383,6 +397,9 @@ LRESULT APIENTRY FEWndProc
                         0,                          // Ending    ...
                         UNDO_NOGROUP,               // Group index
                         0);                         // Character
+            // Save incremented starting ptr in window extra bytes
+            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (APLU3264) (LONG_PTR) ++lpUndoBeg);
+
             // If there's a pre-existing function,
             //   and there's an Undo Buffer
             if (hGlbDfnHdr
@@ -402,7 +419,7 @@ LRESULT APIENTRY FEWndProc
                 lpMemUndo = MyGlobalLock (hGlbUndoBuff);
 
                 // Copy the previous Undo Buffer contents
-                CopyMemory (&lpUndoBeg[1], lpMemUndo, uUndoSize);
+                CopyMemory (lpUndoBeg, lpMemUndo, uUndoSize);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbUndoBuff); lpMemUndo = NULL;
@@ -414,9 +431,6 @@ LRESULT APIENTRY FEWndProc
                 SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoNxt);
                 SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (APLU3264) (LONG_PTR) lpUndoNxt);
             } // End IF
-
-            // Save incremented starting ptr in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (APLU3264) (LONG_PTR) ++lpUndoBeg);
 
             // Create an Edit Ctrl within which we can edit
             hWndEC =
@@ -814,21 +828,24 @@ LRESULT APIENTRY FEWndProc
             // Remove all saved window properties
             EnumProps (hWnd, EnumCallbackRemoveProp);
 
-            // Get the ptr to local MemVirtStr
+            // *************** FCNMEMVIRTENUM Entries ******************
+            // Get the MemVirtStr ptr
             (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
-
-            // If we allocated virtual storage, ...
             if (lpLclMemVirtStr)
             {
+                UINT uCnt;                  // Loop counter
+
+                // Loop through the entries
+                for (uCnt = 0; uCnt < FCNMEMVIRT_LENGTH; uCnt++)
                 // If we allocated virtual storage, ...
-                if (lpLclMemVirtStr[0].IniAddr)
+                if (lpLclMemVirtStr[uCnt].IniAddr)
                 {
                     // Free the virtual storage
-                    MyVirtualFree (lpLclMemVirtStr[0].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[0].IniAddr = NULL;
+                    MyVirtualFree (lpLclMemVirtStr[uCnt].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[uCnt].IniAddr = NULL;
 
                     // Unlink this entry from the chain
-                    UnlinkMVS (&lpLclMemVirtStr[0]);
-                } // End IF
+                    UnlinkMVS (&lpLclMemVirtStr[uCnt]);
+                } // End FOR/IF
 
                 // Free the virtual storage
                 MyVirtualFree (lpLclMemVirtStr, 0, MEM_RELEASE); lpLclMemVirtStr = NULL;

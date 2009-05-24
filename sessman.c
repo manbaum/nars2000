@@ -688,7 +688,6 @@ LRESULT APIENTRY SMWndProc
     HWND         hWndEC;                // Window handle to Edit Ctrl
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwCurLine;            // Ptr to current line global memory
-    UINT         uCnt;                  // Loop counter
 ////RECT         rcFmtEC;               // Formatting rectangle for the Edit Ctrl
     LPUNDO_BUF   lpUndoBeg;             // Ptr to start of Undo Buffer
 ////HDC          hDC;
@@ -709,7 +708,6 @@ LRESULT APIENTRY SMWndProc
 #define lpMDIcs     ((LPMDICREATESTRUCTW) ((*(LPCREATESTRUCTW *) &lParam)->lpCreateParams))
         case WM_NCCREATE:               // 0 = (int) wParam
                                         // lpcs = (LPCREATESTRUCTW) lParam
-        {
             PERFMON
 #ifndef UNISCRIBE
             // Initialize the OLE libraries
@@ -727,8 +725,8 @@ LRESULT APIENTRY SMWndProc
 
             INIT_PERTABVARS
 
-            // Allocate room for MVS_CNT MemVirtStrs
-            //  (QUADERROR, UNDO_BUF, HSHTAB, SYMTAB, SIS, YYRES, STRAND_VAR, STRAND_FCN, WSZFORMAT)
+            // Allocate room for PTDMEMVIRT_LENGTH MemVirtStrs
+            //  (see PTDMEMVIRTENUM)
             lpLclMemVirtStr =
               MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
                               PTDMEMVIRT_LENGTH * sizeof (MEMVIRTSTR),
@@ -737,41 +735,14 @@ LRESULT APIENTRY SMWndProc
             if (!lpLclMemVirtStr)
             {
                 // ***FIXME*** -- Display error msg
+                DbgMsgW (L"SMWndProc/WM_NCCREATE:  MyVirtualAlloc for <lpLclMemVirtStr> failed");
 
-                return -1;
+                goto WM_NCCREATE_FAIL;
             } // End IF
 
             // Save in window extra bytes
             SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) lpLclMemVirtStr);
 
-            // Allocate virtual memory for the []ERROR/[]ES buffer
-#ifdef DEBUG
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].lpText   = "lpMemPTD->lpwszQuadErrorMsg in <SMWndProc>";
-#endif
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IncrSize = DEF_QUADERROR_INCRNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize  = DEF_QUADERROR_MAXNELM  * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr  = (LPVOID)
-            lpMemPTD->lpwszQuadErrorMsg =
-              GuardAlloc (NULL,             // Any address
-                          lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize,
-                          MEM_RESERVE,
-                          PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"WM_NCCREATE:  VirtualAlloc for <lpwszQuadErrorMsg> failed");
-
-                goto WM_NCCREATE_FAIL;  // Mark as failed
-            } // End IF
-
-            // Link this struc into the chain
-            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_QUADERROR]);
-
-            // Commit the intial size
-            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr,
-                            DEF_QUADERROR_INITNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
-                            MEM_COMMIT,
-                            PAGE_READWRITE);
             PERFMON
 
             break;                  // Continue with next handler
@@ -780,7 +751,6 @@ WM_NCCREATE_FAIL:
             SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, lpMemPTD);
 
             return -1;              // Mark as failed
-        } // End WM_NCCREATE
 #undef  lpMDIcs
 
 #define lpMDIcs     ((LPMDICREATESTRUCTW) ((*(LPCREATESTRUCTW *) &lParam)->lpCreateParams))
@@ -801,14 +771,46 @@ WM_NCCREATE_FAIL:
             // Initialize window-specific resources
             SM_Create (hWnd);
 
+            // Get the ptr to the local virtual memory struc
+            (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
+
+            // *************** []ERROR/[]ES ****************************
+
+            // Allocate virtual memory for the []ERROR/[]ES buffer
+#ifdef DEBUG
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].lpText   = "lpMemPTD->lpwszQuadErrorMsg in <SMWndProc>";
+#endif
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IncrSize = DEF_QUADERROR_INCRNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize  = DEF_QUADERROR_MAXNELM  * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr  = (LPVOID)
+            lpMemPTD->lpwszQuadErrorMsg =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            if (!lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszQuadErrorMsg> failed");
+
+                goto WM_CREATE_FAIL;    // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_QUADERROR]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr,
+                            DEF_QUADERROR_INITNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
             // *************** Undo Buffer *****************************
             // _BEG is the (static) ptr to the beginning of the virtual memory.
             // _NXT is the (dynamic) ptr to the next available entry.
             //    Undo entries are between _NXT[-1] and _BEG, inclusive.
             // _LST is the (dynamic) ptr to the last available entry.
             //    Redo entries are between _NXT and _LST[-1], inclusive.
-
-            (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
+            // *********************************************************
 
             // Allocate virtual memory for the Undo Buffer
 #ifdef DEBUG
@@ -825,7 +827,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpUndoBeg> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -866,7 +868,7 @@ WM_NCCREATE_FAIL:
 ////////////if (!???)
 ////////////{
 ////////////    // ***FIXME*** -- WS FULL before we got started???
-////////////    DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
+////////////    DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lptkStackBase> failed");
 ////////////
 ////////////    goto WM_CREATE_FAIL;    // Mark as failed
 ////////////} // End IF
@@ -891,7 +893,7 @@ WM_NCCREATE_FAIL:
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpHshTab> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  AllocHshTab for <lpMemPTD->lpHshTab> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -912,7 +914,7 @@ WM_NCCREATE_FAIL:
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSymTab> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  AllocSymTab for <lpMemPTD->lpSymTab> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -934,7 +936,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSISBeg> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpSISBeg> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -965,7 +967,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lptkCSIni> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lptkCSIni> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -996,7 +998,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"WM_CREATE:  VirtualAlloc for <lpMemPTD->lpYYRes> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpYYRes> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1031,7 +1033,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrand[STRAND_VAR]> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_VAR]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1061,7 +1063,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrand[STRAND_FCN]> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_FCN]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1092,7 +1094,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrand[STRAND_LST]> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_LST]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1123,7 +1125,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  VirtualAlloc for <lpMemPTD->lpStrand[STRAND_NAM]> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_NAM]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1154,7 +1156,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  GuardAlloc for <lpwszFormat> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszFormat> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1189,7 +1191,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  GuardAlloc for <lpwszTemp> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszTemp> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1220,7 +1222,7 @@ WM_NCCREATE_FAIL:
             if (!lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"InitInstance:  GuardAlloc for <lpForStmt> failed");
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpForStmtBase> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1966,21 +1968,16 @@ NORMAL_EXIT:
                 MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
             } // End IF
 
-            // *************** []ERROR/[]ES ****************************
-            // *************** Undo Buffer *****************************
-            // *************** lpHshTab ********************************
-            // *************** lpSymTab ********************************
-            // *************** SIS *************************************
-            // *************** YYRES ***********************************
-            // *************** Strand Accumulator - VAR ****************
-            // *************** Strand Accumulator - FCN ****************
-            // *************** lpwszFormat *****************************
-
+            // *************** PTDMEMVIRTENUM Entries ******************
             // Get the MemVirtStr ptr
             (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
             if (lpLclMemVirtStr)
             {
+                UINT uCnt;                  // Loop counter
+
+                // Loop through the entries
                 for (uCnt = 0; uCnt < PTDMEMVIRT_LENGTH; uCnt++)
+                // If we allocated virtual storage, ...
                 if (lpLclMemVirtStr[uCnt].IniAddr)
                 {
                     // Free the virtual storage
@@ -1993,12 +1990,12 @@ NORMAL_EXIT:
                 // Free the virtual storage
                 MyVirtualFree (lpLclMemVirtStr, 0, MEM_RELEASE); lpLclMemVirtStr = NULL;
 
-                // Zap the window extra in case we're called again???
-                SetWindowLongPtrW (hWnd, GWLSF_LPMVS, 0);
+                // Zap it in case we come through again
+                SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) NULL);
 
                 // Zap the ptrs in lpMemPTD
                 lpMemPTD->lpwszQuadErrorMsg    = NULL;
-                lpUndoBeg                      = NULL;
+////////////////lpUndoBeg                      = NULL;
                 lpMemPTD->htsPTD.lpHshTab      = NULL;
                 lpMemPTD->htsPTD.lpSymTab      = NULL;
                 lpMemPTD->lpSISBeg             = NULL;

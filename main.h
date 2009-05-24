@@ -76,8 +76,7 @@ default:        \
 // Define common offset between the Session Manager and Function Editor
 #define GWLSF_PERTAB    0                                           // Ptr to PerTabData global memory
 #define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (HANDLE_PTR)    // ...           Edit Control window
-#define GWLSF_UNDO_INI  GWLSF_HWNDEC   + 1 * sizeof (HANDLE_PTR)    // Ptr to Undo stack, initial (as allocated)
-#define GWLSF_UNDO_BEG  GWLSF_UNDO_INI + 1 * sizeof (HANDLE_PTR)    // ...                beginning
+#define GWLSF_UNDO_BEG  GWLSF_HWNDEC   + 1 * sizeof (HANDLE_PTR)    // ...                beginning
 #define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (HANDLE_PTR)    // ...                next
 #define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (HANDLE_PTR)    // ...                last
 #define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (HANDLE_PTR)    // Value of next Undo group index

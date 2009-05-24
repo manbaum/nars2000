@@ -2618,7 +2618,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             return (lpUndoBeg NE lpUndoNxt);
 
         case WM_REDO:
-            break;
+                break;
 
             DbgBrk ();              // ***FINISHME*** -- Make Redo work??
 
@@ -2635,7 +2635,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
 
 
-            break;
+                    break;
 
         case WM_CUT:                // 0 = wParam
                                     // 0 = lParam
@@ -2756,13 +2756,13 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // We no longer need this ptr
                 GlobalUnlock (hGlbClip); lpMemClip = NULL;
 
-                // Append the undo action (delete inserted (pasted) chars)
-                AppendUndo (hWndParent,                     // SM/FE Window handle
+                    // Append the undo action (delete inserted (pasted) chars)
+                    AppendUndo (hWndParent,                     // SM/FE Window handle
                             GWLSF_UNDO_NXT,                 // Offset in hWnd extra bytes of lpUndoNxt
-                            undoDel,                        // Action
-                            uCharPosBeg,                    // Beginning char position
+                                undoDel,                        // Action
+                                uCharPosBeg,                    // Beginning char position
                             uCharPosEnd,                    // Ending    ...
-                            uGroupIndex,                    // Group index
+                                uGroupIndex,                    // Group index
                             0);                             // Character
             } // End IF
 
@@ -2920,6 +2920,9 @@ LRESULT WINAPI LclEditCtrlWndProc
             else
             if (IzitFE (hWndParent))
                 fontEnum = FONTENUM_FE;
+            else
+            if (IzitDialog (hWndParent))
+                fontEnum = FONTENUM_SM;
             else
                 DbgStop ();
 
@@ -3879,12 +3882,12 @@ WCHAR GetCharValue
 //***************************************************************************
 
 void AppendUndo
-    (HWND  hWnd,            // SM/FE Window handle
+    (HWND      hWnd,            // SM/FE Window handle
      UINT  GWLxx_UNDO_NXT,  // Offset in hWnd extra bytes of lpUndoNxt
      UINT  Action,          // Action to take
-     UINT  CharPosBeg,      // Beginning character position, -1 = caret
-     UINT  CharPosEnd,      // Ending    ...
-     UINT  Group,           // Group index, 0 = no group
+     UINT      CharPosBeg,      // Beginning character position, -1 = caret
+     UINT      CharPosEnd,      // Ending    ...
+     UINT      Group,           // Group index, 0 = no group
      WCHAR Char)            // Character, 0 = none
 
 {
@@ -4027,12 +4030,12 @@ void InsRepCharStr
                             uGroupIndex,                    // Group index
                             GetCharValue (hWnd, uCharPos)); // Character
             // Undo deletes the inserted char string
-            AppendUndo (hWndParent,                     // SM/FE Window handle
+                AppendUndo (hWndParent,                     // SM/FE Window handle
                         GWLSF_UNDO_NXT,                 // Offset in hWnd extra bytes of lpUndoNxt
-                        undoDel,                        // Action
-                        uCharPosBeg,                    // Beginning char position
+                            undoDel,                        // Action
+                            uCharPosBeg,                    // Beginning char position
                         uCharPosBeg + uStrLen,          // Ending    ...
-                        uGroupIndex,                    // Group index
+                            uGroupIndex,                    // Group index
                         0);                             // Character
         } // End IF/ELSE
     } // End IF
@@ -4079,6 +4082,24 @@ UBOOL IzitSM
 
     return (lstrcmpW (wszClassName, LSMWNDCLASS) EQ 0);
 } // End IzitSM
+
+
+//***************************************************************************
+//  $IzitDialog
+//
+//  Is the window Dialog Class?
+//***************************************************************************
+
+UBOOL IzitDialog
+    (HWND hWnd)
+
+{
+    WCHAR wszClassName[32];
+
+    GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
+
+    return (lstrcmpW (wszClassName, DIALOGCLASS) EQ 0);
+} // End IzitDialog
 
 
 //***************************************************************************

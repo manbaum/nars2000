@@ -206,6 +206,8 @@
 #define  CCWNDCLASS     "CCClass"       // Crash Control ...
 #define LCCWNDCLASS    L"CCClass"       // ...
 
+#define DIALOGCLASS    L"#32770"        // Dialog class
+
 #define CQUADPR_MT      L'\xFFFF'       // cQuadPR value indicating it's empty
 
 //***************************************************************************

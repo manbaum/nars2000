@@ -1388,7 +1388,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         if (hGlbInt)
                         {
                             // Free the current value
-                            DbgGlobalFree (hGlbQuadIC_CWS); hGlbQuadIC_CWS = NULL;
+                            FreeResultGlobalVar (hGlbQuadIC_CWS); hGlbQuadIC_CWS = NULL;
 
                             // Save the new global memory handle
                             hGlbQuadIC_CWS = hGlbInt;
@@ -2686,7 +2686,7 @@ void GetCLEARWSValue
         if (hGlbChr)
         {
             // Free the current value
-            DbgGlobalFree (*lphGlbVal); *lphGlbVal = NULL;
+            FreeResultGlobalVar (*lphGlbVal); *lphGlbVal = NULL;
 
             // Save the new global memory handle
             *lphGlbVal = hGlbChr;

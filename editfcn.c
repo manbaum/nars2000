@@ -1598,8 +1598,10 @@ LRESULT WINAPI LclEditCtrlWndProc
             ZeroMemory (&vkState, sizeof (vkState));
             vkState.Ins = OptionFlags.bInsState;
 
-            // Tell the Status Window about this
-            SetStatusIns (vkState.Ins);
+            // If our parent is not MF, ...
+            if (lpMemPTD NE NULL)
+                // Tell the Status Window about this
+                SetStatusIns (vkState.Ins);
 
             // Save in window extra bytes
             SetWindowLongW (hWnd, GWLEC_VKSTATE, *(long *) &vkState);
@@ -1995,10 +1997,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Shft-Ins WM_PASTEs
                     // Ctrl-Ins WM_COPYs
 
-                    // If our parent is MF, ...
-                    if (lpMemPTD EQ NULL)
-                        break;
-
                     // If either VK_SHIFT or VK_CONTROL is pressed,
                     //   ignore this keystroke
                     if (ksCtrl || ksShft)
@@ -2010,11 +2008,17 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Toggle the insert state
                     vkState.Ins = !vkState.Ins;
 
-                    // Tell the Status Window about it
-                    SetStatusIns (vkState.Ins);
+                    // If our parent is not MF, ...
+                    if (lpMemPTD NE NULL)
+                        // Tell the Status Window about it
+                        SetStatusIns (vkState.Ins);
 
                     // Save in window extra bytes
                     SetWindowLongW (hWnd, GWLEC_VKSTATE, *(long *) &vkState);
+
+                    // If our parent is MF, ...
+                    if (lpMemPTD EQ NULL)
+                        break;
 
                     // Get the char position of the caret
                     uCharPos = GetCurCharPos (hWnd);
@@ -2618,7 +2622,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             return (lpUndoBeg NE lpUndoNxt);
 
         case WM_REDO:
-                break;
+                    break;
 
             DbgBrk ();              // ***FINISHME*** -- Make Redo work??
 
@@ -3935,44 +3939,44 @@ void InsRepCharStr
             uStrLen;        // Incoming string length
     UBOOL   bSelection;     // TRUE iff there is a selection
 
-    // If our parent is not MF, ...
-    if (!bParentMF)
+    // Get the handle of the parent window (SM/FE)
+    hWndParent = GetParent (hWnd);
+
+    // Get the current vkState
+    vkState = GetVkState (hWnd);
+
+    // Get the indices of the selected text (if any)
+    SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
+
+    // Note if there's a selection
+    bSelection = uCharPosBeg NE uCharPosEnd;
+
+    // Get the incoming string length
+    uStrLen = lstrlenW (lpwch);
+
+    // If there's no selection, and we're in Replace mode,
+    //   set the selection to the current character
+    if (!bSelection && !vkState.Ins)
     {
-        // Get the handle of the parent window (SM/FE)
-        hWndParent = GetParent (hWnd);
+        // Get the length of the line with the given char position
+        uLineLen = (UINT) SendMessageW (hWnd, EM_LINELENGTH, uCharPosBeg, 0);
 
-        // Get the current vkState
-        vkState = GetVkState (hWnd);
+        // Get the char position of the start of the current line
+        uLinePos = (UINT) SendMessageW (hWnd, EM_LINEINDEX, (WPARAM) -1, 0);
 
-        // Get the indices of the selected text (if any)
-        SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
+        // Get the next group index, and save it back
+        uGroupIndex = 1 + GetWindowLongW (hWndParent, GWLSF_UNDO_GRP);
+        SetWindowLongW (hWndParent, GWLSF_UNDO_GRP, uGroupIndex);
 
-        // Note if there's a selection
-        bSelection = uCharPosBeg NE uCharPosEnd;
+        // Calculate the ending position of the replacement
+        uCharPosEnd = uCharPosBeg + uStrLen;
 
-        // Get the incoming string length
-        uStrLen = lstrlenW (lpwch);
+        // Set the selection to a corresponding length char string so we replace
+        SendMessageW (hWnd, EM_SETSEL, uCharPosBeg, min (uCharPosEnd, uLineLen + uLinePos));
 
-        // If there's no selection, and we're in Replace mode,
-        //   set the selection to the current character
-        if (!bSelection && !vkState.Ins)
+        // If our parent is not MF, ...
+        if (!bParentMF)
         {
-            // Get the length of the line with the given char position
-            uLineLen = (UINT) SendMessageW (hWnd, EM_LINELENGTH, uCharPosBeg, 0);
-
-            // Get the char position of the start of the current line
-            uLinePos = (UINT) SendMessageW (hWnd, EM_LINEINDEX, (WPARAM) -1, 0);
-
-            // Get the next group index, and save it back
-            uGroupIndex = 1 + GetWindowLongW (hWndParent, GWLSF_UNDO_GRP);
-            SetWindowLongW (hWndParent, GWLSF_UNDO_GRP, uGroupIndex);
-
-            // Calculate the ending position of the replacement
-            uCharPosEnd = uCharPosBeg + uStrLen;
-
-            // Set the selection to a corresponding length char string so we replace
-            SendMessageW (hWnd, EM_SETSEL, uCharPosBeg, min (uCharPosEnd, uLineLen + uLinePos));
-
             // Loop through the incoming char string
             for (; uCharPosBeg < uCharPosEnd; uCharPosBeg++)
             // If we're at the end of the line, insert rather than replace
@@ -3999,9 +4003,13 @@ void InsRepCharStr
                             uCharPosBeg,                        // Beginning char position
                             0,                                  // Ending    ...
                             uGroupIndex,                        // Group index
-                            GetCharValue (hWnd, uCharPosBeg));  // Character
-            } // End IF
-        } else
+                            GetCharValue (hWnd, uCharPosBeg));  // Outgoing char
+            } // End FOR/IF/ELSE
+        } // End IF
+    } else
+    {
+        // If our parent is not MF, ...
+        if (!bParentMF)
         {
             // Insert a char string, deleting selected chars (if any)
 
@@ -4037,14 +4045,16 @@ void InsRepCharStr
                         uCharPosBeg + uStrLen,          // Ending    ...
                             uGroupIndex,                    // Group index
                         0);                             // Character
-        } // End IF/ELSE
-    } // End IF
+        } // End IF
+    } // End IF/ELSE
 
     // Insert/replace the char string into the text
     SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) lpwch);
 
-    // Tell the Status Window about the new positions
-    SetStatusPos (hWnd);
+    // If our parent is not MF, ...
+    if (!bParentMF)
+        // Tell the Status Window about the new positions
+        SetStatusPos (hWnd);
 } // End InsRepCharStr
 
 

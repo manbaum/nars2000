@@ -235,6 +235,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                 //   always know the dialog handle.
                 hDlg = hWnd;
 
+                // Save the dialog handle for use in <ApplyNewFontSM> in case
+                //   the font used for CLEAR WS values (hFontSM) changes so we
+                //   can apply the changes to the Edit Ctrls used there.
+                ghDlgCustomize = hDlg;
+
                 // Change the icon to our own
                 SendMessageW (hDlg, WM_SETICON, ICON_BIG, (LPARAM) (HANDLE_PTR) hIconCustom);
 
@@ -2524,6 +2529,9 @@ APLU3264 CALLBACK CustomizeDlgProc
             {
                 MyDeleteObject (hFontBold_ST); hFontBold_ST = NULL;
             } // End IF
+
+            // Mark as no longer active
+            ghDlgCustomize = NULL;
 
             break;
     } // End SWITCH

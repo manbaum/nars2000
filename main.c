@@ -819,6 +819,22 @@ void ApplyNewFontSM
     // Refont the SM windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
 
+    // Is the Customize dialog active?
+    if (ghDlgCustomize)
+    {
+        // Initialize to the Edit Ctrl class
+        enumSetFontW.lpwClassName = LECWNDCLASS;
+
+        // Refont the Customize windows
+        EnumChildWindows (ghDlgCustomize, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
+
+        // Initialize to the ComboBox class
+        enumSetFontW.lpwClassName = WC_COMBOBOXW;
+
+        // Refont the Customize windows
+        EnumChildWindows (ghDlgCustomize, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
+    } // End IF
+
 #ifndef UNISCRIBE
     // Copy the SM LOGFONTW & TEXTMETRICS
     lfAlt = lfSM;

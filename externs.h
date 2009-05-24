@@ -1744,6 +1744,13 @@ FONTSTRUC fontStruc[FONTENUM_LENGTH]
 //  Customize
 //***************************************************************************
 
+EXTERN
+HWND ghDlgCustomize             // Window handle for Customize dialog (NULL = not active)
+#ifdef DEFINE_VALUES
+ = NULL
+#endif
+;
+
 typedef struct tagCUSTOMIZE
 {
     LPWCHAR lpwTitle;
@@ -1789,13 +1796,13 @@ typedef unsigned char  uint8_t;
 
 typedef enum tagUNDO_ACTS
 {
-    undoNone = 0,       // 0000:  No action
-    undoIns,            // 0001:  Insert a character
-    undoRep,            // 0002:  Replace a character
-    undoDel,            // 0003:  Delete one or more characters
-    undoSel,            // 0004:  Select one or more characters
+    undoNone = 0,           // 0000:  No action
+    undoIns,                // 0001:  Insert a character
+    undoRep,                // 0002:  Replace a character
+    undoDel,                // 0003:  Delete one or more characters
+    undoSel,                // 0004:  Select one or more characters
     undoInsToggle,      // 0005:  Toggle the insert mode
-                        // 0006-FFFF:  Available entries (16 bits)
+                            // 0006-FFFF:  Available entries (16 bits)
 } UNDO_ACTS;
 
 // Define the corresponding one-letter actions
@@ -1805,11 +1812,11 @@ typedef enum tagUNDO_ACTS
 
 typedef struct tagUNDO_BUF
 {
-    UINT  CharPosBeg,   // 00:  Beginning character position (from start of text),
-                        //      -1 = current position
-          CharPosEnd,   // 04:  Ending    ...
+    UINT      CharPosBeg,   // 00:  Beginning character position (from start of text),
+                            //      -1 = current position
+              CharPosEnd,   // 04:  Ending    ...
           Group;        // 08:  Group index identifies actions to be performed together,
-                        //      0 = no grouping
+                            //      0 = no grouping
     short Action;       // 0C:  Action (see UNDO_ACTS)
     WCHAR Char;         // 0E:  The character (if any),
                         //       0 = none

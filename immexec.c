@@ -48,6 +48,7 @@ VOID CALLBACK WaitForImmExecStmt
     LPWFSO       lpMemWFSO;         // Ptr to WFSO global memory
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     EXIT_TYPES   exitType;          // Exit type (see EXIT_TYPES)
+    UBOOL        bValid;            // TRUE iff <lpMemPTD> is valid
 #ifdef DEBUG
     DWORD        dwRet;             // Return code from UnregisterWait
 #endif
@@ -61,15 +62,19 @@ VOID CALLBACK WaitForImmExecStmt
     TlsSetValue (dwTlsPerTabData, lpMemWFSO->lpMemPTD);
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = lpMemWFSO->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = lpMemWFSO->lpMemPTD; // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    bValid = IsValidPtr (lpMemPTD, sizeof (lpMemPTD));
 #ifdef DEBUG
-    dprintfWL9 (L"~~WaitForImmExecStmt (%p)", lpMemWFSO->hThread);
+    if (bValid)
+        dprintfWL9 (L"~~WaitForImmExecStmt (%p)", lpMemWFSO->hThread);
 #endif
     // Get the thread's exit code
     GetExitCodeThread (lpMemWFSO->hThread, (LPDWORD) &exitType);
 
-    // Save in global memory
-    lpMemPTD->ImmExecExitType = exitType;
+    // If <lpMemPTD> is valid, ...
+    if (bValid)
+        // Save in global memory
+        lpMemPTD->ImmExecExitType = exitType;
 
     // Cancel the wait operation
 #ifdef DEBUG

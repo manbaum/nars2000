@@ -84,7 +84,8 @@ typedef struct tagLW_PARAMS
     UINT       uMaxSize;            // 10:  Maximum size of lpwBuffer
     FILETIME   ftCreation,          // 14:  Function Creation Time
                ftLastMod;           // 18:  Function Last Modification Time
-                                    // 1C:  Length
+    LPWCHAR    lpwszVersion;        // 1C:  Ptr to workspace version text
+                                    // 20:  Length
 } LW_PARAMS, *LPLW_PARAMS;
 
 
@@ -101,6 +102,7 @@ typedef struct tagAA_PARAMS
     UINT    NumLines;               // 00:  # lines in the function
     LPWCHAR lpwStart;               // 04:  Ptr to start of function
 } AA_PARAMS, *LPAA_PARAMS;
+
 
 //***************************************************************************
 //  End of File: savefcn.h

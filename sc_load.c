@@ -155,7 +155,7 @@ UBOOL LoadWorkspace_EM
                  uSID,                  // Loop counter
                  uCnt;                  // Loop counter
     WCHAR        wszCount[8],           // Save area for formatted uSymVar/Fcn counter
-////             wszVersion[8],         // ...                     version info
+                 wszVersion[WS_VERLEN], // ...                     version info
                  wszSectName[15];       // ...                     section name (e.g., [Vars.nnn])
     UBOOL        bRet = FALSE,          // TRUE iff the result is valid
                  bImmed,                // TRUE iff the result of ParseSavedWsVar_EM is immediate
@@ -203,13 +203,13 @@ UBOOL LoadWorkspace_EM
     if (OptionFlags.bBackupOnLoad)
         MakeWorkspaceBackup (lpwszDPFE, LOADBAK_EXT);
 
-////// Get the version #
-////GetPrivateProfileStringW (SECTNAME_GENERAL,         // Ptr to the section name
-////                          KEYNAME_VERSION,          // Ptr to the key name
-////                          L"",                      // Ptr to the default value
-////                          wszVersion,               // Ptr to the output buffer
-////                          countof (wszVersion),     // Byte size of the output buffer
-////                          lpwszDPFE);               // Ptr to the file name
+    // Get the version #
+    GetPrivateProfileStringW (SECTNAME_GENERAL,         // Ptr to the section name
+                              KEYNAME_VERSION,          // Ptr to the key name
+                              L"",                      // Ptr to the default value
+                              wszVersion,               // Ptr to the output buffer
+                              countof (wszVersion),     // Byte size of the output buffer
+                              lpwszDPFE);               // Ptr to the file name
     // Get the SI Level
     uSILevel =
       GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
@@ -455,6 +455,7 @@ UBOOL LoadWorkspace_EM
                                       FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
                                       hWndEC,           // Edit Ctrl window handle
                                      &lpSymLink,        // Ptr to ptr to SYMENTRY link
+                                      wszVersion,       // Workspace version text
                                       lpwszDPFE,        // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                      &lpwErrMsg);       // Ptr to ptr to (constant error message text
                 if (lpwSrc EQ NULL)
@@ -591,6 +592,7 @@ UBOOL LoadWorkspace_EM
                                          nameType,      // Function name type (see NAME_TYPES)
                                          hWndEC,        // Edit Ctrl window handle
                                         &lpSymLink,     // Ptr to ptr to SYMENTRY link
+                                         wszVersion,    // Workspace version text
                                          lpwszDPFE,     // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                         &lpwErrMsg))    // Ptr to ptr to (constant) error message text
                     goto ERRMSG_EXIT;
@@ -664,6 +666,7 @@ UBOOL ParseSavedWsFcn_EM
      NAME_TYPES  nameType,              // Function name type (see NAME_TYPES)
      HWND        hWndEC,                // Edit Ctrl window handle
      LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
+     LPWCHAR     lpwszVersion,          // Ptr to workspace version text
      LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
      LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant) error message text
 
@@ -714,6 +717,7 @@ UBOOL ParseSavedWsFcn_EM
                                       uMaxSize - (APLU3264) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
                                       hWndEC,       // Edit Ctrl window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
+                                      lpwszVersion, // Ptr to workspace version text
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
         else
@@ -806,6 +810,7 @@ LPWCHAR ParseSavedWsVar_EM
      UBOOL       bSymTab,               // TRUE iff to save SymTabAppend values, FALSE to save values directly
      HWND        hWndEC,                // Edit Ctrl window handle
      LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
+     LPWCHAR     lpwszVersion,          // Ptr to workspace version text
      LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
      LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant error message text
 
@@ -857,6 +862,7 @@ LPWCHAR ParseSavedWsVar_EM
                                       uMaxSize - (APLU3264) ((LPBYTE) lpwDataEnd - (LPBYTE) lpwSrc), // Maximum size of lpwDataEnd
                                       hWndEC,       // Edit Ctrl window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
+                                      lpwszVersion, // Ptr to workspace version text
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
             if (hGlbObj EQ NULL)
@@ -1067,6 +1073,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
      UINT        uMaxSize,                  // Maximum size of
      HWND        hWndEC,                    // Edit Ctrl window handle
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
+     LPWCHAR     lpwszVersion,              // Ptr to workspace version text
      LPWCHAR     lpwszDPFE,                 // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
      LPWCHAR    *lplpwErrMsg)               // Ptr to ptr to (constant) error message text
 
@@ -1340,6 +1347,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                               TRUE,         // TRUE iff to save SymTabAppend values, FALSE to save values directly
                                               hWndEC,       // Edit Ctrl window handle
                                               lplpSymLink,  // Ptr to ptr to SYMENTRY link
+                                              lpwszVersion, // Ptr to workspace version text
                                               lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                               lplpwErrMsg); // Ptr to ptr to (constant error message text
                     break;
@@ -1578,6 +1586,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LoadWsGlbVarParm.uMaxSize      = uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
                 LoadWsGlbVarParm.hWndEC        = hWndEC;
                 LoadWsGlbVarParm.lplpSymLink   = lplpSymLink;
+                LoadWsGlbVarParm.lpwszVersion  = lpwszVersion;
                 LoadWsGlbVarParm.lpwszDPFE     = lpwszDPFE;
                 LoadWsGlbVarParm.lplpwErrMsg   = lplpwErrMsg;
 
@@ -1874,6 +1883,7 @@ HGLOBAL LoadWsGlbVarConv
                                   lpLoadWsGlbVarParm->uMaxSize,     // Maximum size of lpwSrc
                                   lpLoadWsGlbVarParm->hWndEC,       // Edit Ctrl window handle
                                   lpLoadWsGlbVarParm->lplpSymLink,  // Ptr to ptr to SYMENTRY link
+                                  lpLoadWsGlbVarParm->lpwszVersion, // Ptr to workspace version text
                                   lpLoadWsGlbVarParm->lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                   lpLoadWsGlbVarParm->lplpwErrMsg); // Ptr to ptr to (constant) error message text
     else

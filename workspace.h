@@ -39,6 +39,10 @@
 #define KEYNAME_MONINFO                 L"MonInfo"
 #define KEYNAME_WSID                    L"WSID"
 
+// Workspace Version string
+#define WS_VERSTR               L"0.01"
+#define WS_VERLEN               32      // Length of longest WS_VERSTR
+
 // Format string for [Globals] section keyname
 #define FMTCHR_LEAD             L':'
 #define FMTSTR_LEAD             L":"
@@ -75,6 +79,7 @@ typedef struct tagLOADWSGLBVARPARM
     UINT        uMaxSize;               // Maximum size of lpwSrc
     HWND        hWndEC;                 // Edit Control window handle
     LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
+    LPWCHAR     lpwszVersion;           // Ptr to workspace version text
     LPAPLCHAR   lpwszDPFE;              // Ptr to saved WS file DPFE
     LPWCHAR    *lplpwErrMsg;            // Ptr to ptr to (constant) error message text
 } LOADWSGLBVARPARM, *LPLOADWSGLBVARPARM;

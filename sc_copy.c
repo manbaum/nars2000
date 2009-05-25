@@ -47,6 +47,7 @@ UBOOL CmdCopy_EM
 {
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
     WCHAR        wszTailDPFE[_MAX_PATH],    // Save area for canonical form of given ws name
+                 wszVersion[WS_VERLEN],     // ...                     version info
                  wcTmp;                     // Temporary char
     LPWCHAR      lpwCmd,                    // Ptr to command line
                  lpwErrMsg,                 // Ptr to (constant) error message text
@@ -147,6 +148,13 @@ UBOOL CmdCopy_EM
         // We no longer need this handle
         fclose (fStream); fStream = NULL;
 
+        // Get the version #
+        GetPrivateProfileStringW (SECTNAME_GENERAL,         // Ptr to the section name
+                                  KEYNAME_VERSION,          // Ptr to the key name
+                                  L"",                      // Ptr to the default value
+                                  wszVersion,               // Ptr to the output buffer
+                                  countof (wszVersion),     // Byte size of the output buffer
+                                  wszTailDPFE);             // Ptr to the file name
         // If the replaced char is EOS, copy all names
         if (wcTmp EQ L'\0')
         {
@@ -158,6 +166,7 @@ UBOOL CmdCopy_EM
                            &lpwErrMsg,              // Ptr to ptr to (constant) error message text
                             TRUE,                   // TRUE iff we should process all names
                            &lpSymLink,              // Ptr to ptr to SYMENTRY link
+                            wszVersion,             // Ptr to workspace version text
                             wszTailDPFE,            // Save area for canonical form of given ws name
                             lpwszTemp,              // Ptr to temporary storage
                             uMaxSize)               // Maximum size of lpwszTemp
@@ -171,6 +180,7 @@ UBOOL CmdCopy_EM
                                &lpwErrMsg,              // Ptr to ptr to (constant) error message text
                                 TRUE,                   // TRUE iff we should process all names
                                &lpSymLink,              // Ptr to ptr to SYMENTRY link
+                                wszVersion,             // Ptr to workspace version text
                                 wszTailDPFE,            // Save area for canonical form of given ws name
                                 lpwszTemp,              // Ptr to temporary storage
                                 uMaxSize))              // Maximum size of lpwszTemp
@@ -211,6 +221,7 @@ UBOOL CmdCopy_EM
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
                                     FALSE,          // TRUE iff we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
+                                    wszVersion,     // Ptr to workspace version text
                                     wszTailDPFE,    // Save area for canonical form of given ws name
                                     lpwszTemp,      // Ptr to temporary storage
                                     uMaxSize))      // Maximum size of lpwszTemp
@@ -238,6 +249,7 @@ UBOOL CmdCopy_EM
                                    &lpwErrMsg,      // Ptr to ptr to (constant) error message text
                                     FALSE,          // TRUE iff we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
+                                    wszVersion,     // Ptr to workspace version text
                                     wszTailDPFE,    // Save area for canonical form of given ws name
                                     lpwszTemp,      // Ptr to temporary storage
                                     uMaxSize))      // Maximum size of lpwszTemp
@@ -362,6 +374,7 @@ int CopyWsVars
      LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
      UBOOL       bAllNames,                 // TRUE if we should process all names
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
+     LPWCHAR     lpwszVersion,              // Ptr to workspace version text
      WCHAR       wszTailDPFE[],             // Save area for canonical form of given ws name
      LPWCHAR     lpwszTemp,                 // Ptr to temporary storage
      UINT        uMaxSize)                  // Maximum size of lpwszTemp
@@ -466,6 +479,7 @@ int CopyWsVars
                                   FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
                                   hWndEC,           // Edit Ctrl window handle
                                   lplpSymLink,      // Ptr to ptr to SYMENTRY link
+                                  lpwszVersion,     // Ptr to workspace version text
                                   wszTailDPFE,      // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                   lplpwErrMsg);     // Ptr to ptr to (constant error message text
             if (lpwDataInWrk EQ NULL)
@@ -536,6 +550,7 @@ int CopyWsFcns
      LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
      UBOOL       bAllNames,                 // TRUE if we should process all names
      LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
+     LPWCHAR     lpwszVersion,              // Ptr to workspace version text
      WCHAR       wszTailDPFE[],             // Save area for canonical form of given ws name
      LPWCHAR     lpwszTemp,                 // Ptr to temporary storage
      UINT        uMaxSize)                  // Maximum size of lpwszTemp
@@ -619,6 +634,7 @@ int CopyWsFcns
                                      nameType,          // Function name type (see NAME_TYPES)
                                      hWndEC,            // Edit Ctrl window handle
                                      lplpSymLink,       // Ptr to ptr to SYMENTRY link
+                                     lpwszVersion,      // Ptr to workspace version text
                                      wszTailDPFE,       // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                      lplpwErrMsg))      // Ptr to ptr to (constant) error message text
                 goto ERRMSG_EXIT;

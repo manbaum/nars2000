@@ -248,7 +248,7 @@ UBOOL CmdSave_EM
     // Write out to the [General] section
     WritePrivateProfileStringW (SECTNAME_GENERAL,   // Ptr to the section name
                                 KEYNAME_VERSION,    // Ptr to the key name
-                                L"0.01",            // Ptr to the key value
+                                WS_VERSTR,          // Ptr to the key value
                                 lpMemSaveWSID);     // Ptr to the file name
     __try
     {

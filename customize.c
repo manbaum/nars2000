@@ -1712,7 +1712,13 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 // Tell the dialog to initialize the new page
                                 PostMessageW (hDlg, MYWM_INITDIALOG, uSel, 0);
                             } else
+                            {
+                                // Get the Property Page window handle
                                 hWndProp = *(HWND *) &uIDD;
+
+                                // Set the group box text
+                                SetDlgItemTextW (hDlg, IDC_GROUPBOX, custStruc[uSel].lpwTitle);
+                            } // End IF/ELSE
 
                             // If there's an outgoing window, ...
                             if (hWndLast)

@@ -210,6 +210,18 @@ UBOOL LoadWorkspace_EM
                               wszVersion,               // Ptr to the output buffer
                               countof (wszVersion),     // Byte size of the output buffer
                               lpwszDPFE);               // Ptr to the file name
+    // Compare the version #s
+    if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
+    {
+        // Tell the user the bad news
+        MessageBoxW (NULL,
+                     L"The version of this workspace is later than the interpreter expects.\r\n"
+                     L"Please try loading the workspace with a later version of the interpreter.",
+                     WS_APPNAME,
+                     MB_OK | MB_ICONSTOP);
+        return FALSE;
+    } // End IF
+
     // Get the SI Level
     uSILevel =
       GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
@@ -1450,9 +1462,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // If it's a user-defined function/operator, ...
             if (bUserDefined)
             {
-                SF_FCNS    SF_Fcns = {0};       // Common struc for SaveFunctionCom
-                LW_PARAMS  LW_Params = {0};     // Local  ...
-                LPWCHAR    lpMemUndoTxt;        // Ptr to Undo Buffer in text format
+                SF_FCNS      SF_Fcns = {0};         // Common struc for SaveFunctionCom
+                LW_PARAMS    LW_Params = {0};       // Local  ...
+                LPWCHAR      lpMemUndoTxt;          // Ptr to Undo Buffer in text format
 
                 // Save ptr to undo buffer in text format
                 lpMemUndoTxt = lpwSrc;
@@ -1550,8 +1562,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         lpMemDfnHdr->MonOn = TRUE;
                     } // End IF
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (SF_Fcns.hGlbDfnHdr); lpMemDfnHdr = NULL;
+                // We no longer need this ptr
+                MyGlobalUnlock (SF_Fcns.hGlbDfnHdr); lpMemDfnHdr = NULL;
                 } // End IF
             } else
             // It's a function array

@@ -67,7 +67,13 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
         goto AXIS_SYNTAX_EXIT;
 
     // Define maximum length of []SYSVER
-#define SYSVER  L"000.000.0000.00799  Tue Jan 16 17:43:45 2007  Win/32"
+#ifdef DEBUG
+  #define DEBUGSTR      L" (DEBUG)"
+#else
+  #define DEBUGSTR
+#endif
+
+#define SYSVER  L"000.000.0000.00799  Tue Jan 16 17:43:45 2007  Win/32" DEBUGSTR
 #define SYSVER_NELM    strcountof (SYSVER)
 
     // Calculate space needed for the result
@@ -129,6 +135,9 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
         //   instead of recreating it.
         GetFileTime (hFile, NULL, NULL, &ftLastWrite);
 
+        // We no longer need this handle
+        CloseHandle (hFile); hFile = NULL;
+
         // Convert the file's last write time to system time
         FileTimeToSystemTime (&ftLastWrite, &systemTime);
 
@@ -147,21 +156,18 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
         lpw += lstrlenW (lpw);
         *lpw++ = L' ';    // Blank separators
         *lpw++ = L' ';
+    } // End IF
 
 #ifdef _WIN32
-#define SYSTYPE     L"Win/32"
+#define SYSTYPE     L"Win/32" DEBUGSTR
 #elif defined (_WIN64)
-#define SYSTYPE     L"Win/64"
+#define SYSTYPE     L"Win/64" DEBUGSTR
 #else
 #error Need code for this architecture.
 #endif
 
-        // Copy to the result
-        CopyMemoryW (lpw, SYSTYPE, strcountof (SYSTYPE));
-
-        // We no longer need this handle
-        CloseHandle (hFile); hFile = NULL;
-    } // End IF
+    // Copy to the result
+    CopyMemoryW (lpw, SYSTYPE, strcountof (SYSTYPE));
 
     // Calculate the actual NELM
     aplNELMRes = lstrlenW (lpMemData);

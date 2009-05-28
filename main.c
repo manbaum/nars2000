@@ -129,13 +129,13 @@ void SetStatusParts
     (UINT uWidth)               // Width of the Client Area
 
 {
-    HDC  hDC;
-    int  lclStatusPartsRight[SP_LENGTH];
-    int  iCnt;
-    SIZE sText;
-    HWND hWndMC,                // Active hWndMC
-         hWndAct,               // Active window handle
-         hWndEC;                // Edit Ctrl window handle
+    HDC         hDC;
+    int         lclStatusPartsRight[SP_LENGTH];
+    STATUSPARTS iCnt;           // Loop counter
+    SIZE        sText;
+    HWND        hWndMC,         // Active hWndMC
+                hWndAct,        // Active window handle
+                hWndEC;         // Edit Ctrl window handle
 
     // Get a Client Area DC for the Status Window
     hDC = MyGetDC (hWndStatus);
@@ -145,9 +145,6 @@ void SetStatusParts
 
 #define GRIPPER_WIDTH       20
 #define SP_BORDER_EXTRA      5
-
-    // Back off by size of Gripper
-    uWidth -= GRIPPER_WIDTH;
 
     // Loop backwards through the SetParts enum
     for (iCnt = SP_LENGTH - 1; iCnt >= 0; iCnt--)
@@ -223,6 +220,9 @@ void SetStatusParts
             break;
     } // End SWITCH
 
+    // Back off by size of Gripper
+    uWidth -= GRIPPER_WIDTH;
+
     // Adjust the Status Parts right edges
     for (iCnt = SP_LENGTH - 1; iCnt >= 0; iCnt--)
     if (glbStatusPartsWidth[iCnt] EQ 0)
@@ -237,7 +237,7 @@ void SetStatusParts
     SendMessageW (hWndStatus, SB_SETPARTS, SP_LENGTH, (LPARAM) lclStatusPartsRight);
 
     // We no longer need this resource
-    MyReleaseDC (hWndStatus, hDC);
+    MyReleaseDC (hWndStatus, hDC); hDC = NULL;
 
     // Get the active MDI Child window handle (if any)
     hWndMC  = GetActiveMC (hWndTC);

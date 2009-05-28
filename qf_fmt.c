@@ -236,7 +236,7 @@ static APLCHAR MonLineFMT30[] =
   L"  :if 0" $EPSILON $RHO L"R";
 
 static APLCHAR MonLineFMT31[] =
-  L"    Z" $IS L"Z,' " $ZILDE L"'[Type='~']";
+  L"    Z" $IS L"1 1" $RHO L"' 0'[Type='~']";
 
 static APLCHAR MonLineFMT32[] =
   L"  :endif";

@@ -556,6 +556,11 @@ UBOOL CS_ENDWHILE_Stmt
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
+    // If we're not stopping execution, ...
+    if (!lpplLocalVars->bStopExec)
+        // We're restarting
+        lpplLocalVars->bRestart = TRUE;
+
     return TRUE;
 } // End CS_ENDWHILE_Stmt
 

@@ -1500,6 +1500,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LW_Params.uMaxSize      = uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart); // Maximum size of lpwSrc
                 LW_Params.ftCreation    = ftCreation;       // Function Creation Time
                 LW_Params.ftLastMod     = ftLastMod;        // Function Last Modification Time
+                LW_Params.lpwszVersion  = lpwszVersion;     // Workspace version #
 
                 // Call common routine
                 if (!SaveFunctionCom (NULL, &SF_Fcns))

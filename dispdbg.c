@@ -521,10 +521,10 @@ void DisplayGlobals
                 } // End SWITCH
 
                 // Check for non-permanents
-                if ((uDispGlb EQ 1
-                  || uDispGlb EQ 2
-                  || lpHeader->PermNdx EQ PERMNDX_NONE)
-                 && lpHeader->bMFvar EQ FALSE)
+                if (uDispGlb EQ 1
+                 || uDispGlb EQ 2
+                 || ((lpHeader->PermNdx EQ PERMNDX_NONE)
+                  && (lpHeader->bMFvar EQ FALSE)))
                 {
                     wsprintfW (wszTemp,
                                L"hGlb=%p AType=%c%c NELM=%3d RC=%1d%cRnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
@@ -610,8 +610,9 @@ void DisplayGlobals
         if (uDispGlb EQ 2)
         {
             wsprintfW (wszTemp,
-                       L"hGlb=%p -- No NARS/FCNS Signature",
-                       hGlb);
+                       L"hGlb=%p -- No NARS/FCNS Signature (%u bytes)",
+                       hGlb,
+                       MyGlobalSize (hGlb));
             DbgMsgW (wszTemp);
         } // End IF/ELSE
 

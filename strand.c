@@ -1265,6 +1265,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
      UBOOL        bSaveTxtLine)     // TRUE iff we should save the line text
 
 {
+    NAME_TYPES    actNameType;      // Actual type of the strand
     UINT          uIniLen,          // Initial strand length
                   uActLen,          // Actual  ...
                   uCnt,             // Loop counter
@@ -1282,6 +1283,13 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     SYSTEMTIME    systemTime;       // Current system (UTC) time
 
     DBGENTER;
+
+    // Get the actual name type of the strand
+    actNameType = GetNameType (&lpYYArg->tkToken);
+
+    // If the actual type is a Train, use that
+    if (actNameType EQ NAMETYPE_TRN)
+        fnNameType = NAMETYPE_TRN;
 
     // Get this thread's LocalVars ptr
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);

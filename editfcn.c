@@ -427,7 +427,7 @@ LRESULT APIENTRY FEWndProc
                 // Get the ptr to the next available entry
                 lpUndoNxt = (LPUNDO_BUF) ByteAddr (&lpUndoBeg[1], uUndoSize);
 
-                // Save in window extra bytes
+                    // Save in window extra bytes
                 SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoNxt);
                 SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (APLU3264) (LONG_PTR) lpUndoNxt);
             } // End IF
@@ -992,8 +992,8 @@ UBOOL SyntaxColor
     tkLocalVars.State[1]         =
     tkLocalVars.State[0]         = TKROW_SOS;       // Initialize the FSA state
     tkLocalVars.lpwszOrig        = lpwszLine;       // Save ptr to start of input line
-    tkLocalVars.CtrlStrucTknType = 0;               // No initial token type
-    tkLocalVars.CtrlStrucStrLen  = 0;               // ...
+////tkLocalVars.CtrlStrucTknType = 0;               // No initial token type (already zero from = {0})
+////tkLocalVars.CtrlStrucStrLen  = 0;               // ...
     tkLocalVars.lpMemClrIni      =
     tkLocalVars.lpMemClrNxt      = lpMemClr;        // Save ptr to array of Syntax Colors
     tkLocalVars.lpGrpSeqIni      =
@@ -1003,6 +1003,7 @@ UBOOL SyntaxColor
     tkLocalVars.hWndEC           = hWndEC;
     tkLocalVars.uSyntClrLen      = uLen;            // # Syntax Color entries
     tkLocalVars.lpMemPTD         = lpMemPTD;        // Ptr to PerTabData global memory
+////tkLocalVars.bMF              = FALSE;           // Not a Magic Function (already zero from = {0})
 
     // Skip over the temp storage ptr
     ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
@@ -2639,7 +2640,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             return (lpUndoBeg NE lpUndoNxt);
 
         case WM_REDO:
-                    break;
+                break;
 
             DbgBrk ();              // ***FINISHME*** -- Make Redo work??
 

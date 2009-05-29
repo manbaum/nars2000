@@ -2419,6 +2419,9 @@ UBOOL fnQuoDoneSub
             lpHeader->ArrType    = ARRAY_CHAR;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;
 ////////////lpHeader->SysVar     = FALSE;
+#ifdef DEBUG
+            lpHeader->bMFvar     = lptkLocalVars->bMF;
+#endif
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = lptkLocalVars->iStrLen;
             lpHeader->Rank       = 1;
@@ -2876,6 +2879,9 @@ UBOOL MergeNumbers
                 lpHeader->ArrType    = aplTypeRes;
 ////////////////lpHeader->PermNdx    = PERMNDX_NONE;
 ////////////////lpHeader->SysVar     = FALSE;
+#ifdef DEBUG
+                lpHeader->bMFvar     = lptkLocalVars->bMF;
+#endif
                 lpHeader->RefCnt     = 1;
                 lpHeader->NELM       = aplNELMPrv + 1;
                 lpHeader->Rank       = 1;

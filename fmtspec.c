@@ -53,17 +53,13 @@ FSACTSTR fsaActTableFS [][FSCOL_LENGTH]
   {FSROW_CHKEOS  , fnSetQual },         // 11:  ...            T
   {FSROW_CHKEOS  , fnSetQual },         // 12:  ...            X
   {FSROW_SPEC    , fnSetQual },         // 13:  ...            Z
-  {FSROW_CHKEOS  , fnSetQual },         // 14:  Quad
-  {FSROW_CHKEOS  , fnSetQual },         // 15:  Quote-Quad
-  {FSROW_CHKEOS  , fnSetQual },         // 16:  Dieresis
-  {FSROW_CHKEOS  , fnSetQual },         // 17:  Left caret
-  {FSROW_CHKEOS  , fnSetQual },         // 18:  Left shoe
-  {FSROW_ERROR   , fnError   },         // 19:  Comma
-  {FSROW_INIT    , fnDnLvl   },         // 1A:  Left paren
-  {FSROW_ERROR   , fnError   },         // 1B:  Right ...
-  {FSROW_INIT    , NULL      },         // 1C:  White space
-  {FSROW_ERROR   , fnError   },         // 1D:  All other chars
-  {FSROW_EXIT    , fnFmtExit },         // 1E:  End-Of-Line
+  {FSROW_CHKEOS  , fnSetQual },         // 14:  Text leading delimiter
+  {FSROW_ERROR   , fnError   },         // 15:  Comma
+  {FSROW_INIT    , fnDnLvl   },         // 16:  Left paren
+  {FSROW_ERROR   , fnError   },         // 17:  Right ...
+  {FSROW_INIT    , NULL      },         // 18:  White space
+  {FSROW_ERROR   , fnError   },         // 19:  All other chars
+  {FSROW_EXIT    , fnFmtExit },         // 1A:  End-Of-Line
  },
     // FSROW_SPEC       Within a format specification
  {{FSROW_ERROR   , fnError   },         // 00:  Digit
@@ -86,17 +82,13 @@ FSACTSTR fsaActTableFS [][FSCOL_LENGTH]
   {FSROW_CHKEOS  , fnSetQual },         // 11:  ...            T
   {FSROW_CHKEOS  , fnSetQual },         // 12:  ...            X
   {FSROW_SPEC    , fnSetQual },         // 13:  ...            Z
-  {FSROW_CHKEOS  , fnSetQual },         // 14:  Quad
-  {FSROW_CHKEOS  , fnSetQual },         // 15:  Quote-Quad
-  {FSROW_CHKEOS  , fnSetQual },         // 16:  Dieresis
-  {FSROW_CHKEOS  , fnSetQual },         // 17:  Left caret
-  {FSROW_CHKEOS  , fnSetQual },         // 18:  Left shoe
-  {FSROW_ERROR   , fnError   },         // 19:  Comma
-  {FSROW_ERROR   , fnError   },         // 1A:  Left paren
-  {FSROW_ERROR   , fnError   },         // 1B:  Right ...
-  {FSROW_SPEC    , NULL      },         // 1C:  White space
-  {FSROW_ERROR   , fnError   },         // 1D:  All other chars
-  {FSROW_ERROR   , fnError   },         // 1E:  End-Of-Line
+  {FSROW_CHKEOS  , fnSetQual },         // 14:  Text leading delmiter
+  {FSROW_ERROR   , fnError   },         // 15:  Comma
+  {FSROW_ERROR   , fnError   },         // 16:  Left paren
+  {FSROW_ERROR   , fnError   },         // 17:  Right ...
+  {FSROW_SPEC    , NULL      },         // 18:  White space
+  {FSROW_ERROR   , fnError   },         // 19:  All other chars
+  {FSROW_ERROR   , fnError   },         // 1A:  End-Of-Line
  },
     // FSROW_CHKEOS     Finished with this spec
  {{FSROW_ERROR   , fnError   },         // 00:  Digit
@@ -119,17 +111,13 @@ FSACTSTR fsaActTableFS [][FSCOL_LENGTH]
   {FSROW_ERROR   , fnError   },         // 11:  ...            T
   {FSROW_ERROR   , fnError   },         // 12:  ...            X
   {FSROW_ERROR   , fnError   },         // 13:  ...            Z
-  {FSROW_ERROR   , fnError   },         // 14:  Quad
-  {FSROW_ERROR   , fnError   },         // 15:  Quote-Quad
-  {FSROW_ERROR   , fnError   },         // 16:  Dieresis
-  {FSROW_ERROR   , fnError   },         // 17:  Left caret
-  {FSROW_ERROR   , fnError   },         // 18:  Left shoe
-  {FSROW_INIT    , fnFmtDone },         // 19:  Comma
-  {FSROW_ERROR   , fnError   },         // 1A:  Left paren
-  {FSROW_CHKEOS  , fnUpLvl   },         // 1B:  Right ...
-  {FSROW_CHKEOS  , NULL      },         // 1C:  White space
-  {FSROW_ERROR   , fnError   },         // 1D:  All other chars
-  {FSROW_EXIT    , fnFmtExit },         // 1E:  End-Of-Line
+  {FSROW_ERROR   , fnError   },         // 14:  Text leading delimiter
+  {FSROW_INIT    , fnFmtDone },         // 15:  Comma
+  {FSROW_ERROR   , fnError   },         // 16:  Left paren
+  {FSROW_CHKEOS  , fnUpLvl   },         // 17:  Right ...
+  {FSROW_CHKEOS  , NULL      },         // 18:  White space
+  {FSROW_ERROR   , fnError   },         // 19:  All other chars
+  {FSROW_EXIT    , fnFmtExit },         // 1A:  End-Of-Line
  },
 }
 #endif
@@ -530,8 +518,8 @@ UINT SaveText
         case UTF16_DIERESIS:
             break;
 
-        case L'<':
-            wchDelim = L'>';
+        case UTF16_LEFTCARET:
+            wchDelim = UTF16_RIGHTCARET;
 
             break;
 
@@ -1221,11 +1209,13 @@ UBOOL fnSetQual
 
             break;
 
+        case L'\'':
+        case L'"':
         case UTF16_QUAD:
         case UTF16_QUOTEQUAD:
-        case UTF16_LEFTSHOE:
         case UTF16_DIERESIS:
-        case L'<':
+        case UTF16_LEFTCARET:
+        case UTF16_LEFTSHOE:
             // Save as the format specification
             lpfsCur->fmtSpecVal = FMTSPECVAL_TXT;
 
@@ -1482,20 +1472,14 @@ FSCOLINDICES CharTransFS
         case L' ':
             return FSCOL_SPACE;
 
+        case L'\'':
+        case L'"':
         case UTF16_QUAD:
-            return FSCOL_QUAD;
-
         case UTF16_QUOTEQUAD:
-            return FSCOL_QUOTEQUAD;
-
         case UTF16_DIERESIS:
-            return FSCOL_DIERESIS;
-
         case UTF16_LEFTCARET:
-            return FSCOL_LEFTCARET;
-
         case UTF16_LEFTSHOE:
-            return FSCOL_LEFTSHOE;
+            return FSCOL_TXTDELIM;
 
         case UTF16_COMMA:
             return FSCOL_COMMA;

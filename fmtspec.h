@@ -43,19 +43,16 @@ typedef enum tagFSCOL_INDICES       // FSA column indices for Format Specificati
  FSCOL_T           ,                // 11:  ...            T
  FSCOL_X           ,                // 12:  ...            X
  FSCOL_Z           ,                // 13:  ...            Z
- FSCOL_QUAD        ,                // 14:  Quad
- FSCOL_QUOTEQUAD   ,                // 15:  Quote-Quad
- FSCOL_DIERESIS    ,                // 16:  Dieresis
- FSCOL_LEFTCARET   ,                // 17:  Left caret
- FSCOL_LEFTSHOE    ,                // 18:  Left shoe
- FSCOL_COMMA       ,                // 19:  Comma
- FSCOL_LEFTPAREN   ,                // 1A:  Left paren
- FSCOL_RIGHTPAREN  ,                // 1B:  Right ...
- FSCOL_SPACE       ,                // 1C:  White space
- FSCOL_ALPHA       ,                // 1D:  All other chars
- FSCOL_EOL         ,                // 1E:  End-Of-Line
+ FSCOL_TXTDELIM    ,                // 14:  Text leading delimiter
+                                    //      (SingleQuote, DoubleQuote, Quad, Quote-Quad, Dieresis, LeftCaret, LeftShoe)
+ FSCOL_COMMA       ,                // 15:  Comma
+ FSCOL_LEFTPAREN   ,                // 16:  Left paren
+ FSCOL_RIGHTPAREN  ,                // 17:  Right ...
+ FSCOL_SPACE       ,                // 18:  White space
+ FSCOL_ALPHA       ,                // 19:  All other chars
+ FSCOL_EOL         ,                // 1A:  End-Of-Line
 
- FSCOL_LENGTH      ,                // 1F:  # column indices (cols in fsaActTableFS)
+ FSCOL_LENGTH      ,                // 1B:  # column indices (cols in fsaActTableFS)
                                     //      Because this enum is origin-0, this value is the # valid columns.
 } FSCOLINDICES, *LPFSCOLINDICES;
 

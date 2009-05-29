@@ -378,7 +378,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     if (IsSimple (aplTypeRht))
     {
         // Copy the right arg
-        hGlbRes = CopySymGlbDir (MakePtrTypeGlb (hGlbRht));
+        hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
 
         goto NORMAL_EXIT;
     } // End IF

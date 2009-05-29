@@ -1570,7 +1570,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     // If the absolute value of the left arg is one, the result is
     //   the right arg
     if (aplIntegerLftAbs EQ 1 && hGlbRht)
-        hGlbRes = CopySymGlbDir (MakePtrTypeGlb (hGlbRht));
+        hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
     else
     // If the left arg is uDimAxRht, the result is
     //   ({rho} Result) {rho} LeftOperand /[X] RightArg

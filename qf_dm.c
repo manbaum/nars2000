@@ -62,7 +62,7 @@ LPPL_YYSTYPE SysFnDM_EM_YY
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the global memory handle for quad-DM
-    hGlbRes = CopySymGlbDir (MakePtrTypeGlb (lpMemPTD->hGlbQuadDM));
+    hGlbRes = CopySymGlbDirAsGlb (lpMemPTD->hGlbQuadDM);
 
     // Allocate a YYRes
     lpYYRes = YYAlloc ();

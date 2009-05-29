@@ -142,7 +142,7 @@ UBOOL AssignName_EM
                 FreeResultName (lptkNam);
 
                 // Clear the immediate flag
-                lptkNam->tkData.tkSym->stFlags.Imm = FALSE;
+                lptkNam->tkData.tkSym->stFlags.Imm     = FALSE;
                 lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_ERROR;
 
                 // Copy the "Accepts Axis Operator" flag

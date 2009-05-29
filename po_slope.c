@@ -232,7 +232,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     {
         lpYYRes = PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
                                               hGlbRht,          // Right arg global memory handle
-                                              lpMemRht,         // Ptr to right arg global memory
+                                             &lpMemRht,         // Ptr to ptr to right arg global memory
                                               lpYYFcnStrOpr,    // Ptr to operator function strand
                                               bPrototyping);    // TRUE iff prototyping
         goto NORMAL_EXIT;

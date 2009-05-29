@@ -646,16 +646,16 @@ HGLOBAL MakeMonPrototype_EM
      MAKE_PROTO mpEnum)             // See MAKE_PROTO
 
 {
-    LPVOID      lpMemArr,
-                lpMemRes;
+    HGLOBAL     hGlbTmp,            // Temporary global memory handle
+                hGlbProto;          // Prototype ...
+    LPVOID      lpMemArr = NULL,    // Ptr to array global memory
+                lpMemTmp = NULL;    // Ptr to tmp global memory
     LPVARARRAY_HEADER lpHeader;
     APLSTYPE    aplType;
     APLNELM     aplNELM;
     APLRANK     aplRank;
     UINT        u;
     APLNELM     uLen;
-    HGLOBAL     hGlbTmp,            // Temporary global memory handle
-                hGlbProto;          // Prototype ...
     UBOOL       bRet = TRUE;        // TRUE iff result is valid
     APLUINT     ByteRes;            // # bytes in the result
     LPSYMENTRY  lpSymArr,
@@ -736,9 +736,9 @@ HGLOBAL MakeMonPrototype_EM
                         goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemRes = MyGlobalLock (hGlbTmp);
+                    lpMemTmp = MyGlobalLock (hGlbTmp);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemTmp)
                     // Fill in the header
                     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                     lpHeader->ArrType    = ARRAY_BOOL;
@@ -750,9 +750,12 @@ HGLOBAL MakeMonPrototype_EM
 #undef  lpHeader
 
                     // Copy the dimensions to the result
-                    CopyMemory (VarArrayBaseToDim (lpMemRes),
+                    CopyMemory (VarArrayBaseToDim (lpMemTmp),
                                 VarArrayBaseToDim (lpHeader),
                                 (APLU3264) aplRank * sizeof (APLDIM));
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
@@ -897,8 +900,11 @@ WSFULL_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
+    if (hGlbArr && lpMemArr)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
+    } // End IF
 
     if (!bRet)
     {

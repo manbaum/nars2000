@@ -456,6 +456,7 @@ NAME_TYPES GetNameType
             return -1;
 
         case TKT_FCNIMMED:
+        case TKT_OPJOTDOT:
             return NAMETYPE_FN12;
 
         case TKT_OP1NAMED:

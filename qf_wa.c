@@ -44,8 +44,11 @@ LPPL_YYSTYPE SysFnWA_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    MEMORYSTATUSEX statex;          // Memory status save area
     LPPL_YYSTYPE   lpYYRes;         // Ptr to the result
+    APLU3264       ByteTmpHi,       // # bytes to allocate, high value
+                   ByteTmpMid,      // ...                  mid  ...
+                   ByteTmpLo;       // ...                  low  ...
+    HGLOBAL        hGlbTmp;         // Temporary global memory handle
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -57,11 +60,39 @@ LPPL_YYSTYPE SysFnWA_EM_YY
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
-    // Set the length
-    statex.dwLength = sizeof (statex);
+    // Start with 2GB-1
+    ByteTmpHi  = 0x7FFFFFFF;
+    ByteTmpMid = ByteTmpHi / 2;
+    ByteTmpLo  = 1;
 
-    // Get global memory status
-    GlobalMemoryStatusEx (&statex);
+    // The amount of storage we don't care about
+#define FUDGE_FACTOR    (16*1024)
+
+    while (ByteTmpHi > (ByteTmpLo + FUDGE_FACTOR))
+    {
+        // Coalesce memory by allocating a large contiguous block
+        // We use GlobalAlloc/Free instead of MyGlobalAlloc/Free to
+        //   avove debug messages upon failure.
+        hGlbTmp = GlobalAlloc (GMEM_MOVEABLE, (APLU3264) ByteTmpMid);
+        if (hGlbTmp)
+        {
+            // We no longer need this storage
+            GlobalFree (hGlbTmp); hGlbTmp = NULL;
+
+            // Save as low water mark
+            ByteTmpLo = ByteTmpMid;
+
+            // Split the difference between Hi and Mid
+            ByteTmpMid = (APLU3264) ((APLUINT) ByteTmpHi + (APLUINT) ByteTmpMid) / 2;
+        } else
+        {
+            // Save as high water mark
+            ByteTmpHi = ByteTmpMid;
+
+            // Split the difference between Lo and Mid
+            ByteTmpMid = (APLU3264) ((APLUINT) ByteTmpLo + (APLUINT) ByteTmpMid) / 2;
+        } // End IF/ELSE
+    } // End WHILE
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -70,7 +101,7 @@ LPPL_YYSTYPE SysFnWA_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkInteger  = statex.ullAvailVirtual;
+    lpYYRes->tkToken.tkData.tkInteger  = ByteTmpHi;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;

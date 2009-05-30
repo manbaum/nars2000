@@ -5312,6 +5312,8 @@ RESTART_EXCEPTION_IMMED:
                 if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
                  || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
                 {
+                    DbgBrk ();      // ***TESTME*** -- No such primitive
+
                     lptkRes->tkData.tkInteger  =
                       (*lpPrimSpec->IisFvF) (aplFloatLft,
                                              aplFloatRht,
@@ -5584,7 +5586,7 @@ RESTART_EXCEPTION_SINGLETON:
                     // If both arguments are integer-like (BOOL, INT, or APA),
                     //   use BisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeLft))  // Res = BOOL, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
+                     && IsSimpleInt (aplTypeRht))  // Res = BOOL, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
                     {
                         *((LPAPLBOOL)  lpMemRes) =
                           (*lpPrimSpec->BisIvI) (aplIntegerLft,
@@ -5611,6 +5613,18 @@ RESTART_EXCEPTION_SINGLETON:
                                                  aplFloatRht,
                                                  lpPrimSpec);
                     } else
+                    // If one arg is numeric and the other char, ...
+                    if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = CHAR(S)
+                     || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL, Lft = CHAR(S)              , Rht = BOOL/INT/APA/FLOAT(S)
+                    {
+                        // One arg is numeric, the other char
+                        Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                             || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+
+                        // If the function is not-equal, the result is 1
+                        if (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL)
+                            *((LPAPLBOOL)  lpMemRes) = 1;
+                    } else
                         DbgStop ();         // We should never get here
                     break;
 
@@ -5630,6 +5644,8 @@ RESTART_EXCEPTION_SINGLETON:
                     if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
                      || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
                     {
+                        DbgBrk ();      // ***TESTME*** -- No such primitive
+
                         *((LPAPLINT)   lpMemRes) =
                           (*lpPrimSpec->IisFvF) (aplFloatLft,
                                                  aplFloatRht,
@@ -5988,10 +6004,8 @@ RESTART_EXCEPTION_AXIS:
                     // If both arguments are integer-like (BOOL, INT, or APA),
                     //   use BisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeLft))   // Res = BOOL(Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
+                     && IsSimpleInt (aplTypeRht))   // Res = BOOL(Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
                     {
-                        DbgBrk ();      // ***TESTME*** -- No such primitive
-
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
@@ -6028,8 +6042,6 @@ RESTART_EXCEPTION_AXIS:
                     if (IsSimpleChar (aplTypeLft)
                      && IsSimpleChar (aplTypeRht))  // Res = BOOL(Axis), Lft = CHAR, Rht = CHAR
                     {
-                        DbgBrk ();      // ***TESTME*** -- No such primitive
-
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
@@ -6066,8 +6078,6 @@ RESTART_EXCEPTION_AXIS:
                     if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = BOOL(Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
                      || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = BOOL(Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
-                        DbgBrk ();      // ***TESTME*** -- No such primitive
-
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
@@ -6281,6 +6291,19 @@ RESTART_EXCEPTION_AXIS:
                             } // End IF
                         } // End FOR
                     } else
+                    // If one arg is numeric and the other char, ...
+                    if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = CHAR
+                     || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL(No Axis), Lft = CHAR              , Rht = BOOL/INT/APA/FLOAT
+                    {
+                        // One arg is numeric, the other char
+                        Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                             || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+
+                        // If the function is not-equal, the result is all 1s
+                        if (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL)
+                            // Fill the result with all 1s
+                            FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), 0xFF);
+                    } else
                         DbgStop ();     // We should never get here
                     break;
 
@@ -6348,7 +6371,6 @@ RESTART_EXCEPTION_AXIS:
                         } // End FOR
                     } else
                         DbgStop ();     // We should never get here
-
                     break;
 
                 case ARRAY_FLOAT:                   // Res = FLOAT(Axis)
@@ -6541,7 +6563,7 @@ RESTART_EXCEPTION_NOAXIS:
                     // If both arguments are integer-like (BOOL, INT, or APA),
                     //   use BisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeLft))   // Res = BOOL(No Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
+                     && IsSimpleInt (aplTypeRht))   // Res = BOOL(No Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
                     {
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -6780,8 +6802,20 @@ RESTART_EXCEPTION_NOAXIS:
                             } // End IF
                         } // End FOR
                     } else
-                        DbgStop ();         // We should never get here
+                    // If one arg is numeric and the other char, ...
+                    if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = CHAR
+                     || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL(No Axis), Lft = CHAR, Rht = BOOL/INT/APA/FLOAT
+                    {
+                        // One arg is numeric, the other char
+                        Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                             || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
 
+                        // If the function is not-equal, the result is all 1s
+                        if (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL)
+                            // Fill the result with all 1s
+                            FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), 0xFF);
+                    } else
+                        DbgStop ();         // We should never get here
                     break;
 
                 case ARRAY_INT:                     // Res = INT(No Axis)

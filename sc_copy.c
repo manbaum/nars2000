@@ -155,6 +155,18 @@ UBOOL CmdCopy_EM
                                   wszVersion,               // Ptr to the output buffer
                                   countof (wszVersion),     // Byte size of the output buffer
                                   wszTailDPFE);             // Ptr to the file name
+        // Compare the version #s
+        if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
+        {
+            // Tell the user the bad news
+            MessageBoxW (NULL,
+                         L"The version of this workspace is later than the interpreter expects.\r\n"
+                         L"Please try copying from this workspace with a later version of the interpreter.",
+                         WS_APPNAME,
+                         MB_OK | MB_ICONSTOP);
+            return FALSE;
+        } // End IF
+
         // If the replaced char is EOS, copy all names
         if (wcTmp EQ L'\0')
         {

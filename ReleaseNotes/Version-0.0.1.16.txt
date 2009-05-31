@@ -1,6 +1,25 @@
 Version 0.0.1.16 consists of the following Builds:
 
 
+Build #467 -- Version 0.0.1.16
+------------------------------
+
+Directory trunk:
+
+SC_COPY.C:
+  Disallow copying from a workspace with a later version
+    than this version of the interpreter can handle.
+
+
+Build #466 -- Version 0.0.1.16
+------------------------------
+
+Directory trunk:
+
+ASSIGN.C:
+  Fix Bug:  In <GetNameType>, include <TKT_OPJOTDOT> case.
+
+
 Build #465 -- Version 0.0.1.16
 ------------------------------
 

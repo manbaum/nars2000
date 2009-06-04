@@ -370,7 +370,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
 
     // Determine if two arrays are identical in
     //   rank, length, and value at all levels
-    //   without regarrd to the array representation
+    //   without regard to the array representation
 
     // N.B.  We are relying upon type demotion here
 
@@ -1148,8 +1148,7 @@ UBOOL PrimFnDydEqualUnderbarNested
 
 {
     APLUINT       uDim;
-    APLNELM       aplNELMLft2,
-                  aplNELMRht2;
+    APLNELM       aplNELMLoop;
     LPVOID        lpMemLft2,
                   lpMemRht2;
     APLINT        aplIntegerLft,
@@ -1170,6 +1169,15 @@ UBOOL PrimFnDydEqualUnderbarNested
      || aplNELMLft NE aplNELMRht)
         return FALSE;
 
+    // Save as loop limit
+    aplNELMLoop = aplNELMLft;
+
+    // Handle empty nested cases
+    if (IsNested (aplTypeLft))
+        aplNELMLft = max (aplNELMLft, 1);
+    if (IsNested (aplTypeRht))
+        aplNELMRht = max (aplNELMRht, 1);
+
     // Skip over the headers to the dimensions (data if scalar)
     lpMemLft = VarArrayBaseToDim (lpMemLft);
     lpMemRht = VarArrayBaseToDim (lpMemRht);
@@ -1182,13 +1190,14 @@ UBOOL PrimFnDydEqualUnderbarNested
     // lpMemLft and lpMemRht now point to the data
 
     // Loop through the elements
-    for (uDim = 0; bRet && uDim < aplNELMLft; uDim++, ((LPAPLNESTED) lpMemLft)++, ((LPAPLNESTED) lpMemRht)++)
+    for (uDim = 0; bRet && uDim < aplNELMLoop; uDim++, ((LPAPLNESTED) lpMemLft)++, ((LPAPLNESTED) lpMemRht)++)
     {
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // The ptr types must be the same
+        // ***FIXME*** -- If we ever move simple scalars out of the ST, check this assumption
         ptrType = GetPtrTypeInd (lpMemLft);
         if (ptrType NE GetPtrTypeInd (lpMemRht))
             return FALSE;
@@ -1236,8 +1245,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                 // Get the attrs (Type, NELM, and Rank) of the left and right elements
                 // Note that we overwrite the incoming parameters aplTypeXXX and aplRankXXX
                 //   as we no longer need those variables.
-                AttrsOfGlb (*(LPAPLNESTED) lpMemLft, &aplTypeLft, &aplNELMLft2, &aplRankLft, NULL);
-                AttrsOfGlb (*(LPAPLNESTED) lpMemRht, &aplTypeRht, &aplNELMRht2, &aplRankRht, NULL);
+                AttrsOfGlb (*(LPAPLNESTED) lpMemLft, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+                AttrsOfGlb (*(LPAPLNESTED) lpMemRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
                 // Ensure same rank and # elements
                 if (aplRankLft NE aplRankRht
@@ -1259,12 +1268,12 @@ UBOOL PrimFnDydEqualUnderbarNested
                         //    of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
                         //    and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
                         if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
-                            bRet = PrimFnDydEqualUnderbarSimple (lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
-                                                                 lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
+                            bRet = PrimFnDydEqualUnderbarSimple (lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
+                                                                 lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
                                                                  lpbCtrlBreak);
                         else
-                            bRet = PrimFnDydEqualUnderbarSimple (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
-                                                                 lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
+                            bRet = PrimFnDydEqualUnderbarSimple (lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
+                                                                 lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
                                                                  lpbCtrlBreak);
                         break;
 
@@ -1275,8 +1284,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                         break;
 
                     case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
-                        bRet = PrimFnDydEqualUnderbarNested (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
-                                                             lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
+                        bRet = PrimFnDydEqualUnderbarNested (lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
+                                                             lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
                                                              lpbCtrlBreak);
                         break;
 

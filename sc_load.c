@@ -1342,8 +1342,13 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                     break;
 
-                case ARRAY_HETERO:
                 case ARRAY_NESTED:
+                    // Handle empty case
+                    aplNELMObj = max (aplNELMObj, 1);
+
+                    // Fall through to common code
+
+                case ARRAY_HETERO:
                     // The elements consist of either a simple scalar
                     //   (starts with one of the storage types), or a
                     //   global (starts with a FMTCHR_LEAD)

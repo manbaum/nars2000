@@ -1169,14 +1169,14 @@ UBOOL PrimFnDydEqualUnderbarNested
      || aplNELMLft NE aplNELMRht)
         return FALSE;
 
-    // Save as loop limit
-    aplNELMLoop = aplNELMLft;
-
     // Handle empty nested cases
     if (IsNested (aplTypeLft))
         aplNELMLft = max (aplNELMLft, 1);
-    if (IsNested (aplTypeRht))
-        aplNELMRht = max (aplNELMRht, 1);
+////if (IsNested (aplTypeRht))
+////    aplNELMRht = max (aplNELMRht, 1);
+
+    // Save as loop limit
+    aplNELMLoop = aplNELMLft;
 
     // Skip over the headers to the dimensions (data if scalar)
     lpMemLft = VarArrayBaseToDim (lpMemLft);

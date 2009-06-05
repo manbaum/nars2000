@@ -482,10 +482,10 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     // Handle empty nested array results (prototypes)
     if (IsEmpty (aplNELMRes) && IsNested (aplTypeRht))
     {
-        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (
-          MakeMonPrototype_EM (hGlbRht,     // Proto arg handle
-                               lptkFunc,    // Ptr to function token
-                               MP_CHARS));  // CHARs allowed
+        *((LPAPLNESTED) lpMemRes) =
+          MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                               lptkFunc,                // Ptr to function token
+                               MP_CHARS);               // CHARs allowed
         goto PROTO_EXIT;
     } // End IF
 

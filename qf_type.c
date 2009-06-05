@@ -87,7 +87,7 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
 
 {
     HGLOBAL      hGlbRht,           // Right arg global memory handle
-                 hGlbRes;           // Result    ...
+                 hSymGlbRes;        // Result    ...
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Allocate a new YYRes
@@ -193,18 +193,20 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
     Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Make the prototype
-    hGlbRes =
-      MakeMonPrototype_EM (ClrPtrTypeDir (hGlbRht), // Proto arg handle
-                           lptkFunc,                // Ptr to function token
-                           MP_CHARS);               // CHARs allowed
-    if (!hGlbRes)
+    hSymGlbRes =
+      MakeMonPrototype_EM (hGlbRht,     // Proto arg handle
+                           lptkFunc,    // Ptr to function token
+                           MP_CHARS);   // CHARs allowed
+    if (!hSymGlbRes)
         return NULL;
+
+    Assert (GetPtrTypeDir (hSymGlbRes) EQ PTRTYPE_HGLOBAL);
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = hSymGlbRes;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;

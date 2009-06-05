@@ -179,7 +179,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
 {
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     HGLOBAL      hGlbTmp,           // Temporary global memory handle
-                 hGlbProto;         // Prototype ...
+                 hSymGlbProto;      // Prototype ...
 
     // Call the original function
     lpYYRes = (*lpPrimFn) (lptkLftArg,      // Ptr to left arg token
@@ -204,22 +204,25 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
             break;
 
         case TKT_VARARRAY:
-            hGlbTmp = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+            // Get the global memory handle
+            hGlbTmp = lpYYRes->tkToken.tkData.tkGlbData;
 
             // Make the prototype
-            hGlbProto =
+            hSymGlbProto =
               MakeMonPrototype_EM (hGlbTmp,     // Proto arg handle
                                    lptkFunc,    // Ptr to function token
                                    MP_CHARS);   // CHARs allowed
-            if (!hGlbProto)
+            if (!hSymGlbProto)
             {
                 YYFree (lpYYRes); lpYYRes = NULL;
             } else
+            {
                 // Save back into the result
-                lpYYRes->tkToken.tkData.tkGlbData =
-                  MakePtrTypeGlb (hGlbProto);
-            // We no longer need this storage
-            FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
+                lpYYRes->tkToken.tkData.tkGlbData = hSymGlbProto;
+
+                // We no longer need this storage
+                FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
+            } // End IF/ELSE
 
             break;
 
@@ -253,7 +256,7 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
 {
     HGLOBAL      hGlbLft,           // Left arg global memory handle
                  hGlbRht,           // Right ...
-                 hGlbRes;           // Result   ...
+                 hSymGlbRes;        // Result   ...
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get right arg's global memory handle
@@ -274,9 +277,10 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
         //***************************************************************
 
         // Make the prototype
-        hGlbRes = MakeMonPrototype_EM (hGlbRht,     // Proto arg handle
-                                       lptkFunc,    // Ptr to function token
-                                       MP_NUMONLY); // Numerics only
+        hSymGlbRes =
+          MakeMonPrototype_EM (MakePtrTypeGlb (hGlbRht),    // Proto arg handle
+                               lptkFunc,                    // Ptr to function token
+                               MP_NUMONLY);                 // Numerics only
     } else
     {
         //***************************************************************
@@ -303,17 +307,29 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
             goto NORMAL_EXIT;
         } // End IF
 
+        // If the left arg is global, ...
+        if (hGlbLft)
+            // Set the ptr type bits
+            hGlbLft = MakePtrTypeGlb (hGlbLft);
+        // If the right arg is global, ...
+        if (hGlbRht)
+            // Set the ptr type bits
+            hGlbRht = MakePtrTypeGlb (hGlbRht);
+
         // Handle as dyadic prototype
-        hGlbRes = MakeDydPrototype_EM (hGlbLft,                     // Left arg global memory handle (may be NULL if immediate)
-                                       GetImmedType (lptkLftArg),   // Left arg immediate type
-                                       lptkFunc,                    // Ptr to function token
-                                       hGlbRht,                     // Right arg global memory handle
-                                       GetImmedType (lptkRhtArg),   // Left arg immediate type
-                                       lptkAxis);                   // Ptr to axis value token
+        hSymGlbRes =
+          MakeDydPrototype_EM (hGlbLft,                     // Left arg global memory handle (may be NULL if immediate)
+                               GetImmedType (lptkLftArg),   // Left arg immediate type
+                               lptkFunc,                    // Ptr to function token
+                               hGlbRht,                     // Right arg global memory handle
+                               GetImmedType (lptkRhtArg),   // Left arg immediate type
+                               lptkAxis);                   // Ptr to axis value token (may be NULL)
     } // End IF
 
-    if (!hGlbRes)
+    if (!hSymGlbRes)
         goto ERROR_EXIT;
+
+    Assert (GetPtrTypeDir (hSymGlbRes) EQ PTRTYPE_HGLOBAL);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -322,7 +338,7 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = hSymGlbRes;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;

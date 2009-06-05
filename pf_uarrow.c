@@ -236,6 +236,10 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     APLHETERO     aplProtoSym;          // Right arg prototype if hetero
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -653,13 +657,13 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
                     // Get the appropriate prototype
-                    aplProtoSym = GetSteZero ();
+                    aplProtoSym = lpMemPTD->steZero;
 
                     break;
 
                 case IMMTYPE_CHAR:
                     // Get the appropriate prototype
-                    aplProtoSym = GetSteBlank ();
+                    aplProtoSym = lpMemPTD->steBlank;
 
                     break;
 
@@ -683,13 +687,11 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         case ARRAY_NESTED:
             // Get the right arg prototype
             aplProtoGlb =
-              MakeMonPrototype_EM (ClrPtrTypeInd (lpMemRht),    // Proto arg handle
-                                   lptkFunc,                    // Ptr to function token
-                                   MP_CHARS);                   // CHARS allowed
+              MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                   lptkFunc,                // Ptr to function token
+                                   MP_CHARS);               // CHARS allowed
             if (!aplProtoGlb)
                 goto ERROR_EXIT;
-            // Ensure its Ptr Type is marked as a global
-            aplProtoGlb = MakePtrTypeGlb (aplProtoGlb);
 
             // Loop through the result filling in prototype values
             for (uRes = 0; uRes < aplNELMRes; uRes++)
@@ -702,8 +704,12 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                     ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (aplProtoGlb);
             } // End FOR
 
-            // We no longer need this storage
-            FreeResultGlobalVar (aplProtoGlb); aplProtoGlb = NULL;
+            // If the prototype is a global memory handle, ...
+            if (GetPtrTypeDir (aplProtoGlb) EQ PTRTYPE_HGLOBAL)
+            {
+                // We no longer need this storage
+                FreeResultGlobalVar (aplProtoGlb); aplProtoGlb = NULL;
+            } // End IF/ELSE
 
             break;
 

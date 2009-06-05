@@ -233,7 +233,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     HGLOBAL       hGlbRes = NULL,
                   hGlbAxis = NULL,
                   hGlbSub = NULL,
-                  hGlbProto = NULL,
+                  hSymGlbProto = NULL,
                   hGlbRhtProto = NULL,
                   hGlbOdo = NULL,
                   hGlbWVec = NULL;
@@ -435,25 +435,25 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 case ARRAY_INT:
                 case ARRAY_APA:
                 case ARRAY_FLOAT:
-                    bRet = PrimFnMonLeftShoeProto_EM (&hGlbProto,
-                                                      hGlbZilde,
-                                                      ARRAY_BOOL,
-                                                      aplNELMSub,
-                                                      aplNELMAxis,
-                                                      ARRAY_BOOL,
-                                                      lptkFunc);
+                    bRet = PrimFnMonLeftShoeProto_EM (&hSymGlbProto,
+                                                       hGlbZilde,
+                                                       ARRAY_BOOL,
+                                                       aplNELMSub,
+                                                       aplNELMAxis,
+                                                       ARRAY_BOOL,
+                                                       lptkFunc);
                     if (!bRet)
                         goto ERROR_EXIT;
                     break;
 
                 case ARRAY_CHAR:
-                    bRet = PrimFnMonLeftShoeProto_EM (&hGlbProto,
-                                                      hGlbV0Char,
-                                                      ARRAY_CHAR,
-                                                      aplNELMSub,
-                                                      aplNELMAxis,
-                                                      ARRAY_CHAR,
-                                                      lptkFunc);
+                    bRet = PrimFnMonLeftShoeProto_EM (&hSymGlbProto,
+                                                       hGlbV0Char,
+                                                       ARRAY_CHAR,
+                                                       aplNELMSub,
+                                                       aplNELMAxis,
+                                                       ARRAY_CHAR,
+                                                       lptkFunc);
                     if (!bRet)
                         goto ERROR_EXIT;
                     break;
@@ -462,11 +462,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 case ARRAY_NESTED:
                     if (IsEmpty (aplNELMSub))
                     {
-                        hGlbProto =
-                          MakeMonPrototype_EM (ClrPtrTypeInd (lpMemRht),    // Proto arg handle
-                                               lptkFunc,                    // Ptr to function token
-                                               MP_CHARS);                   // CHARs allowed
-                        if (!hGlbProto)
+                        hSymGlbProto =
+                          MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                               lptkFunc,                // Ptr to function token
+                                               MP_CHARS);               // CHARs allowed
+                        if (!hSymGlbProto)
                             goto WSFULL_EXIT;
                     } else
                     {
@@ -475,12 +475,12 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                         // N.B.:  Conversion from APLUINT to UINT.
                         Assert (ByteRes EQ (APLU3264) ByteRes);
-                        hGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                        if (!hGlbProto)
+                        hSymGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                        if (!hSymGlbProto)
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemProto = MyGlobalLock (hGlbProto);
+                        lpMemProto = MyGlobalLock (hSymGlbProto);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemProto)
                         // Fill in the header
@@ -495,7 +495,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         // Fill in the dimension
                         *VarArrayBaseToDim (lpMemProto) = aplNELMSub;
 
-                        // skip over the header and dimension to the data
+                        // Skip over the header and dimension to the data
                         lpMemProto = VarArrayBaseToData (lpMemProto, aplNELMAxis);
 
                         // Fill in the values
@@ -504,7 +504,10 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                             *((LPAPLNESTED) lpMemProto)++ = CopySymGlbInd (lpMemRht);
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (hGlbProto); lpMemProto = NULL;
+                        MyGlobalUnlock (hSymGlbProto); lpMemProto = NULL;
+
+                        // Set the ptr type bits
+                        hSymGlbProto = MakePtrTypeGlb (hSymGlbProto);
                     } // End IF/ELSE
 
                     break;
@@ -514,7 +517,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             } // End SWITCH
 
             // Save the HGLOBAL in the result
-            *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
+            *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
 
             goto NORMAL_EXIT;
         } // End IF
@@ -1611,7 +1614,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     //***************************************************************
     if (IsEmpty (aplNELMRes))
     {
-        HGLOBAL hGlbProto;
+        HGLOBAL hSymGlbProto;
 
         // With  L{is}{rho}R
         //       L[K]{is}0
@@ -1624,29 +1627,29 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
             case ARRAY_INT:
             case ARRAY_FLOAT:
             case ARRAY_APA:
-                hGlbProto = hGlbZilde;
+                hSymGlbProto = MakePtrTypeGlb (hGlbZilde);
 
                 break;
 
             case ARRAY_CHAR:
-                hGlbProto = hGlbV0Char;
+                hSymGlbProto = MakePtrTypeGlb (hGlbV0Char);
 
                 break;
 
             case ARRAY_HETERO:
                 if (IsImmChr ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType))
-                    hGlbProto = hGlbV0Char;
+                    hSymGlbProto = MakePtrTypeGlb (hGlbV0Char);
                 else
-                    hGlbProto = hGlbZilde;
+                    hSymGlbProto = MakePtrTypeGlb (hGlbZilde);
                 break;
 
             case ARRAY_NESTED:
                 // Make the prototype
-                hGlbProto =
-                  MakeMonPrototype_EM (ClrPtrTypeInd (lpMemRht),    // Proto arg handle
-                                       lptkFunc,                    // Ptr to function token
-                                       MP_CHARS);                   // CHARs allowed
-                if (!hGlbProto)
+                hSymGlbProto =
+                  MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                       lptkFunc,                // Ptr to function token
+                                       MP_CHARS);               // CHARs allowed
+                if (!hSymGlbProto)
                     goto WSFULL_EXIT;
                 break;
 
@@ -1655,7 +1658,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         } // End SWITCH
 
         // Save as the nested array prototype
-        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
+        *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
 
         goto YYALLOC_EXIT;
     } // End IF

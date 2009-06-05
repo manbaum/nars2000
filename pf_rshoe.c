@@ -225,7 +225,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     HGLOBAL       hGlbRes = NULL,       // Result global memory handle
                   hGlbAxis = NULL,      // Axis global memory handle
                   hGlbSub = NULL,       // Right arg item global memory handle
-                  hGlbProto,            // Right arg item prototype as global memory handle
+                  hSymGlbProto,         // Right arg item prototype as global memory handle
                   hGlbDimCom = NULL,    // Right arg common item dimension global memory handle
                   hGlbLft;              // Left arg global memory handle
     LPVOID        lpMemRes = NULL,      // Ptr to result global memory
@@ -1206,25 +1206,19 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 case PTRTYPE_STCONST:
                                     // If the STE is numeric, use lpSym0, otherwise use lpSymB
                                     if (IsImmChr (((LPAPLHETERO) lpMemSub)[0]->stFlags.ImmType))
-                                        hGlbProto = lpSymB;
+                                        hSymGlbProto = lpSymB;
                                     else
-                                        hGlbProto = lpSym0;
+                                        hSymGlbProto = lpSym0;
                                     break;
 
                                 case PTRTYPE_HGLOBAL:
-                                    // Get the right arg item's first element global memory handle
-                                    hGlbProto = ClrPtrTypeInd ((LPAPLNESTED) lpMemSub);
-
-                                    // Calculate its prototype
-                                    hGlbProto =
-                                      MakeMonPrototype_EM (hGlbProto,   // Proto arg handle
-                                                           lptkFunc,    // Ptr to function token
-                                                           MP_CHARS);   // CHARs allowed
-                                    if (!hGlbProto)
+                                    // Calculate the right arg's first element's prototype
+                                    hSymGlbProto =
+                                      MakeMonPrototype_EM (*(LPAPLNESTED) lpMemSub, // Proto arg handle
+                                                           lptkFunc,                // Ptr to function token
+                                                           MP_CHARS);               // CHARs allowed
+                                    if (!hSymGlbProto)
                                         goto WSFULL_EXIT;
-
-                                    // Set the ptr bits
-                                    hGlbProto = MakePtrTypeGlb (hGlbProto);
 
                                     break;
 
@@ -1255,7 +1249,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (hGlbProto);
+                                  CopySymGlbDir (hSymGlbProto);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's rows)
@@ -1268,13 +1262,15 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (hGlbProto);
+                                  CopySymGlbDir (hSymGlbProto);
                             } // End FOR/FOR
 
                             // If the prototype is a global memory handle, ...
-                            if (GetPtrTypeDir (hGlbProto) EQ PTRTYPE_HGLOBAL)
+                            if (GetPtrTypeDir (hSymGlbProto) EQ PTRTYPE_HGLOBAL)
+                            {
                                 // We no longer need this storage
-                                FreeResultGlobalVar (hGlbProto); hGlbProto = NULL;
+                                FreeResultGlobalVar (hSymGlbProto); hSymGlbProto = NULL;
+                            } // End IF
 
                             break;
 

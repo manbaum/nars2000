@@ -326,7 +326,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                  aplNELMRes;        // Result ...
     APLRANK      aplRankRes;        // Result rank
     HGLOBAL      hGlbRes = NULL,    // Handle of result's global memory
-                 hGlbProto;         // ...                prototype
+                 hSymGlbProto;      // ...                prototype
     LPVOID       lpMemRes = NULL;   // Ptr to result's global memory
     UBOOL        bRet = TRUE,       // TRUE iff result is valid
                  bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
@@ -416,13 +416,13 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                         Assert (!lptkRhtArg->tkData.tkSym->stFlags.Imm);
 
                         // Get the HGLOBAL
-                        hGlbProto = lptkRhtArg->tkData.tkSym->stData.stGlbData;
+                        hSymGlbProto = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                         break;
 
                     case TKT_VARARRAY:
                         // Get the HGLOBAL
-                        hGlbProto = lptkRhtArg->tkData.tkGlbData;
+                        hSymGlbProto = lptkRhtArg->tkData.tkGlbData;
 
                         break;
 
@@ -431,12 +431,12 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                 } // End SWITCH
 
                 // st/tkData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbProto));
+                Assert (IsGlbTypeVarDir (hSymGlbProto));
 
                 // Check to see if the first element is simple.
-                // If so, fill in aplTypeRes; if not, fill in hGlbProto
+                // If so, fill in aplTypeRes; if not, fill in hSymGlbProto
                 //   with the HGLOBAL of the first element.
-                if (IsFirstSimpleGlb (&hGlbProto, &aplTypeRes))
+                if (IsFirstSimpleGlb (&hSymGlbProto, &aplTypeRes))
                 {
 ////////////////////ByteRes = 0;
                 } else
@@ -544,11 +544,11 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     if (bPrototype)
     {
         // Make the prototype
-        hGlbProto =
-          MakeMonPrototype_EM (ClrPtrTypeDir (hGlbProto),   // Proto arg handle
-                               lptkFunc,                    // Ptr to function token
-                               FALSE);                      // Allow CHARs
-        if (!hGlbProto)
+        hSymGlbProto =
+          MakeMonPrototype_EM (hSymGlbProto,    // Proto arg handle
+                               lptkFunc,        // Ptr to function token
+                               FALSE);          // Allow CHARs
+        if (!hSymGlbProto)
             bRet = FALSE;
         else
         {
@@ -556,7 +556,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
             lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
             // Save the handle
-            *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
+            *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
         } // End IF
     } else
     if (aplNELMRes)

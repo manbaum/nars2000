@@ -692,7 +692,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            // Get the prototype of the right arg
+            // Get the first value in case it's an STE
             GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
                                &aplIntegerRht,  // Ptr to integer result
                                &aplFloatRht,    // Ptr to float ...
@@ -702,13 +702,11 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
             aplNestProto =
-              MakeMonPrototype_EM (aplNestRht,  // Proto arg handle
-                                   lptkFunc,    // Ptr to function token
-                                   MP_CHARS);   // CHARs allowed
+              MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                   lptkFunc,                // Ptr to function token
+                                   MP_CHARS);               // CHARs allowed
             if (!aplNestProto)
                 goto ERROR_EXIT;
-            // Ensure its Ptr Type is marked as a global
-            aplNestProto = MakePtrTypeGlb (aplNestProto);
 
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
@@ -740,8 +738,12 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 } // End FOR
             } // End FOR/FOR
 
-            // We no longer need this storage
-            FreeResultGlobalVar (aplNestProto); aplNestProto = NULL;
+            // If the prototype is a global memory handle, ...
+            if (GetPtrTypeDir (aplNestProto) EQ PTRTYPE_HGLOBAL)
+            {
+                // We no longer need this storage
+                FreeResultGlobalVar (aplNestProto); aplNestProto = NULL;
+            } // End IF
 
             break;
 

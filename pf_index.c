@@ -869,7 +869,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
      && IsNested (aplTypeRes))
     {
         LPAPLNESTED lpMemNam;           // Ptr to name arg global memory
-        HGLOBAL     hGlbProto;          // Prototype global memory handle
+        HGLOBAL     hSymGlbProto;       // Prototype global memory handle
 
         // Lock the memory to get a ptr to it
         lpMemNam = MyGlobalLock (hGlbNam);
@@ -878,18 +878,18 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
 
         // Make a prototype for the result
-        hGlbProto =
-          MakeMonPrototype_EM (ClrPtrTypeInd (lpMemNam),    // Proto arg handle
-                               lptkFunc,                    // Ptr to function token
-                               MP_CHARS);                   // CHARs allowed
+        hSymGlbProto =
+          MakeMonPrototype_EM (*(LPAPLNESTED) lpMemNam, // Proto arg handle
+                               lptkFunc,                // Ptr to function token
+                               MP_CHARS);               // CHARs allowed
         // We no longer this ptr
         MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
 
-        if (!hGlbProto)
+        if (!hSymGlbProto)
             goto WSFULL_EXIT;
 
         // Save the value in the result
-        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
+        *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
     } else
     // Loop through the list arg elements
     for (uLst = uBitIndex = 0; uLst < aplNELMLst; uLst++)
@@ -1157,15 +1157,15 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
             // If the list arg is empty, copy the name arg prototype to the result
             if (IsEmpty (aplNELMLst))
             {
-                HGLOBAL hGlbProto;          // Prototype global memory handle
+                HGLOBAL hSymGlbProto;       // Prototype global memory handle
 
-                hGlbProto =
-                  MakeMonPrototype_EM (ClrPtrTypeInd (lpMemNam),    // Proto arg handle
-                                       lptkFunc,                    // Ptr to function token
-                                       MP_CHARS);                   // CHARs allowed
-                if (!hGlbProto)
+                hSymGlbProto =
+                  MakeMonPrototype_EM (*(LPAPLNESTED) lpMemNam, // Proto arg handle
+                                       lptkFunc,                // Ptr to function token
+                                       MP_CHARS);               // CHARs allowed
+                if (!hSymGlbProto)
                     goto ERROR_EXIT;
-                *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
+                *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
             } else
             for (uRes = 0; uRes < aplNELMLst; uRes++)
                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemNam);

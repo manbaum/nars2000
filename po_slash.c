@@ -236,7 +236,6 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     {
         lpYYRes = PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
                                               hGlbRht,          // Right arg global memory handle
-                                             &lpMemRht,         // Ptr to ptr to right arg global memory
                                               lpYYFcnStrOpr,    // Ptr to operator function strand
                                               bPrototyping);    // TRUE iff prototyping
         goto NORMAL_EXIT;
@@ -394,7 +393,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (1,
                                                        &aplTypeRht,
                                                        &lpYYFcnStrLft->tkToken,
-                                                        1,
+                                                        aplNELMRht,
                                                        &aplTypeRht);
             if (aplTypeRes EQ ARRAY_ERROR)
                 goto DOMAIN_EXIT;
@@ -1106,7 +1105,6 @@ NORMAL_EXIT:
 LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
     (LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      HGLOBAL      hGlbRht,              // Right arg global memory handle
-     LPVOID      *lplpMemRht,           // Ptr to ptr to right arg global memory
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
@@ -1114,23 +1112,19 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
     // If it's valid, ...
-    if (*lplpMemRht)
+    if (hGlbRht)
     {
         // Make a copy of the right arg
         if (bPrototyping)
         {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); *lplpMemRht = NULL;
-
             hGlbRht =
-              MakeMonPrototype_EM (hGlbRht,                 // Proto arg global memory handle
-                                  &lpYYFcnStrOpr->tkToken,  // Ptr to function token
-                                   MP_NUMONLY);             // Numerics only
+              MakeMonPrototype_EM (MakePtrTypeGlb (hGlbRht),    // Proto arg global memory handle
+                                  &lpYYFcnStrOpr->tkToken,      // Ptr to function token
+                                   MP_NUMONLY);                 // Numerics only
             if (!hGlbRht)
                 goto WSFULL_EXIT;
 
-            // Lock the memory to get a ptr to it
-            *lplpMemRht = MyGlobalLock  (hGlbRht);
+            Assert (GetPtrTypeDir (hGlbRht) EQ PTRTYPE_HGLOBAL);
         } else
             DbgIncrRefCntDir (MakePtrTypeGlb (hGlbRht));
 

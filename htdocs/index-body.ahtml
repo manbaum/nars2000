@@ -89,7 +89,7 @@ Welcome to NARS2000</h1>
               <span class="APL">R[L]</span>,
               <span class="APL">R[L]{is}A</span>,
           and <span class="APL">R[L]<i>f</i>{is}A</span></li>
-        <li>Dyadic operator jot (<span class="APL">{jot}</span>) (composition) (e.g.,
+        <li>Dyadic operator jot (<span class="APL"><i>f</i>{jot}<i>g</i></span>) (composition) (e.g.,
           <span class="APL">f{is},{jot}{gradeup}{jot}{gradeup}{jot},</span>)</li>
         <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
           <span class="APL">1 2+[1] 2 3{rho}R</span>)</li>
@@ -123,16 +123,16 @@ Welcome to NARS2000</h1>
           the result as non-displayable</li>
         <li>User-defined function/operator prototype entry point
           (<span class="APL">{quad}PROTOTYPE:</span>)</li>
-        <li>Monadic operator null (<span class="APL">{circlemiddledot}</span>) to aid in
+        <li>Monadic operator null (<span class="APL"><i>f</i>{circlemiddledot}</span>) to aid in
           resolving ambiguities with slash/slope as function/operator
           (e.g., use <span class="APL">(/{circlemiddledot})/3 4</span>
           instead of <span class="APL">(/)/3 4</span>)</li>
-        <li>Monadic iota (<span class="APL">{iota}</span>) extended to negative values.  For example, in origin-0,
+        <li>Monadic iota (<span class="APL">{iota}R</span>) extended to negative values.  For example, in origin-0,
           <span class="APL">{iota}{neg}3</span> returns <span class="APL">{neg}3 {neg}2 {neg}1</span></li>
-        <li>Monadic iota (<span class="APL">{iota}</span>) extended to length &gt; 1 vector right arguments
+        <li>Monadic iota (<span class="APL">{iota}R</span>) extended to length &gt; 1 vector right arguments
           returns an array of indices whose shape is that of the right argument
           (via an internal magic function)</li>
-        <li>Dyadic iota (<span class="APL">{iota}</span>) extended to rank &gt; 1 left arguments returns an array
+        <li>Dyadic iota (<span class="APL">L{iota}R</span>) extended to rank &gt; 1 left arguments returns an array
           of vector indices to the left argument (via an internal magic function)</li>
         <li>Index reference, assignment, modify assignment, squad, transpose, and pick
              (<span class="APL">R[L]</span>,
@@ -152,13 +152,15 @@ Welcome to NARS2000</h1>
           and <span class="APL">{overbar}{infinity}</span> for negative infinity)
           &mdash; considerable development work needs to be done to this
           feature to handle the many special cases</li>
-        <li>Monadic and dyadic domino (<span class="APL">{domino}</span>) &mdash; matrix inverse/divide extended to
-          use Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
+        <li>Monadic and dyadic domino (<span class="APL">{domino}R</span> and <span class="APL">L{domino}R</span>)
+          &mdash; matrix inverse/divide extended to use Moore-Penrose pseudo-inverse algorithm via Singular Value
+          Decomposition</li>
         <li>Prototypes for all primitive functions and operators</li>
         <li>Control structures on one line or split across multiple lines
           (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>)</li>
         <li>Trains are supported, e.g., <span class="APL">avg{is}(+/ {divide} {rho})</span> creates a
           function that calculates the average of a numeric vector</li>
+        <li>Partitioned Enclose:  dyadic left shoe (<span class="APL">L{leftshoe}R</span>)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
@@ -244,14 +246,13 @@ Welcome to NARS2000</h1>
     <li>Dynamic functions (e.g.,
       <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
     <li>Primitive functions and operators user extensible via user-defined APL functions</li>
-    <li>Primitive dyadic function down tack (<span class="APL">{downtackjot}</span>) with character left argument
+    <li>Primitive dyadic function down tack (<span class="APL">L{downtackjot}R</span>) with character left argument
       (Format By Example)</li>
-    <li>Primitive dyadic function left shoe (<span class="APL">{leftshoe}</span>) (Partitioned Enclose)</li>
-    <li>Primitive dyadic function epsilon underbar (<span class="APL">{epsilon_}</span>) (Find)</li>
-    <li>Primitive dyadic operator dieresis-del (<span class="APL">{deldieresis}</span>) (Dual)</li>
-    <li>Primitive dyadic operator dieresis-star (<span class="APL">{stardieresis}</span>) (Power)</li>
-    <li>Primitive dyadic operator dieresis-downtack (<span class="APL">{downtackdieresis}</span>) (Convolution)</li>
-    <li>Primitive dyadic operator stile-tilde (<span class="APL">{stiletilde}</span>) (Partition)</li>
+    <li>Primitive dyadic function epsilon underbar (<span class="APL">L{epsilon_}R</span>) (Find)</li>
+    <li>Primitive dyadic operator dieresis-del (<span class="APL"><i>f</i>{deldieresis}<i>g</i></span>) (Dual)</li>
+    <li>Primitive dyadic operator dieresis-star (<span class="APL"><i>f</i>{stardieresis}<i>g</i></span>) (Power)</li>
+    <li>Primitive dyadic operator dieresis-downtack (<span class="APL"><i>f</i>{downtackdieresis}<i>g</i></span>) (Convolution)</li>
+    <li>Primitive dyadic operator stile-tilde (<span class="APL"><i>f</i>{stiletilde}</span>) (Partition)</li>
     <li>Selective assignment (e.g., <span class="APL">(1 1{transpose}M){is}0</span>)</li>
   </ul>
 </div>
@@ -297,10 +298,9 @@ Welcome to NARS2000</h1>
 
   <h3>Current Miscellaneous Features</h3>
   <ul>
-    <li>Workspace size limited only by the available virtual memory
-      (disk space) and address space</li>
+    <li>Workspace size limited only by the available address space</li>
     <li>Multiple workspaces may be open at the same time
-      and switched between via Tabs</li>
+      and switched between via with the click of a mouse</li>
     <li>Workspaces saved as plain text ASCII files</li>
     <li>All variable names are two-byte characters
       (Unicode, that is, UCS-2)</li>
@@ -327,6 +327,15 @@ Welcome to NARS2000</h1>
       <span class="APL">{quad}PP</span> is set to <span class="APL">23.7</span>,
       that value is rounded down to <span class="APL">17</span>, the largest value
       that system variable may assume</li>
+    <li>An empty vector assignment to
+      <span class="APL">{quad}CT</span>,
+      <span class="APL">{quad}FC</span>,
+      <span class="APL">{quad}IC</span>,
+      <span class="APL">{quad}IO</span>,
+      <span class="APL">{quad}PP</span>,
+      <span class="APL">{quad}PW</span>, and
+      <span class="APL">{quad}RL</span> is converted to the System or CLEAR WS default value
+      (selected by User Preference)</li>
     <li>Control structures on one line or split across multiple lines
       (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).</li>
     <li>Syntax coloring of lines of APL in Function Editor and Session Manager windows</li>

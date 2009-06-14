@@ -6295,8 +6295,8 @@ EXIT_TYPES ParseLine
     PLLOCALVARS   plLocalVars = {0};    // ParseLine local vars
     LPPLLOCALVARS oldTlsPlLocalVars;    // Ptr to previous value of dwTlsPlLocalVars
     UINT          oldTlsType,           // Previous value of dwTlsType
-                  uError,               // Error code
                   uRet;                 // The result from pl_yyparse
+    ERROR_CODES   uError;               // Error code
     UBOOL         bOldExecuting;        // Old value of bExecuting
     HWND          hWndEC;               // Edit Ctrl window handle
 
@@ -6472,14 +6472,30 @@ EXIT_TYPES ParseLine
         {} // End __try/__except
     } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
     {
-        // Display message for unhandled exception
-        DisplayException ();
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
+        {
+            case EXCEPTION_STACK_OVERFLOW:
+                // Set the exit type
+                plLocalVars.ExitType = EXITTYPE_ERROR;
 
-        // Mark as in error
-        uRet = 1;
-        uError = ERRORCODE_ELX;
+                // Mark as in error
+                uRet = 1;
+                uError = ERRORCODE_ELX;
+                ErrorMessageIndirectToken (ERRMSG_STACK_OVERFLOW APPEND_NAME,
+                                           NULL);
+                break;
 
-        goto NORMAL_EXIT;
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+
+                // Mark as in error
+                uRet = 1;
+                uError = ERRORCODE_ELX;
+
+                goto NORMAL_EXIT;
+        } // End SWITCH
     } // End __try/__except
 
 #if YYDEBUG

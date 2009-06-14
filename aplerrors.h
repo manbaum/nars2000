@@ -34,6 +34,7 @@
 #define ERRMSG_PROGRAM_ERROR                    L"PROGRAM ERROR"
 #define ERRMSG_RANK_ERROR                       L"RANK ERROR"
 #define ERRMSG_SYMBOL_TABLE_FULL                L"SYMBOL TABLE FULL"
+#define ERRMSG_STACK_OVERFLOW                   L"STACK OVERFLOW"
 #define ERRMSG_SYNTAX_ERROR                     L"SYNTAX ERROR"
 #define ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER  L"SYNTAX ERROR in function header, position %d -- function not saved"
 #define ERRMSG_TAB_NOT_FOUND                    L"TAB NOT FOUND"

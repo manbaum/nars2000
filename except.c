@@ -43,14 +43,15 @@ EXCEPT_NAMES ExceptNames[] =
  {"SINGLE_STEP"       , EXCEPTION_SINGLE_STEP       },
  {"BREAKPOINT"        , EXCEPTION_BREAKPOINT        },
  {"LIMIT ERROR"       , EXCEPTION_LIMIT_ERROR       },
+ {"STACK OVERFLOW"    , EXCEPTION_STACK_OVERFLOW    },
 };
 
 #define EXCEPT_NAMES_LENGTH         countof (ExceptNames)
 
 // Save area for exception address if EXCEPTION_BREAKPOINT
 DWORD   gExceptAddr;            // Exception address
-LPWCHAR glpExceptionText;       // Ptr to Exception text
-LPUCHAR glpInvalidAddr;         // Ptr to invalid address
+LPWCHAR         glpExceptionText;       // Ptr to Exception text
+LPUCHAR         glpInvalidAddr;         // Ptr to invalid address
 EXCEPTION_CODES gExceptionCode;
 
 // Save area for crash information
@@ -351,6 +352,7 @@ long CheckException
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
         case EXCEPTION_SINGLE_STEP:
         case EXCEPTION_GUARD_PAGE:
+        case EXCEPTION_STACK_OVERFLOW:
             return EXCEPTION_EXECUTE_HANDLER;
 
         case EXCEPTION_BREAKPOINT:

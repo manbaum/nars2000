@@ -26,12 +26,20 @@
 #include <math.h>
 #include "headers.h"
 
+typedef enum tagDTOA_MODE
+{
+    DTOAMODE_SHORT_RND = 0,             // 0 = shortest string with rounding, e.g., 1e23
+    DTOAMODE_SHORT_NORND,               // 1 = shortest string without rounding. e.g., 9.999999999999999e22
+    DTOAMODE_SIGDIGS,                   // 2 = # significant digits
+    DTOAMODE_FRACTDIGS,                 // 3 = # fractional digits (past decimal point)
+} DTOAMODE;
+
 
 // DTOA mode for the corresponding FLTDSPFMT_xxx value
-int gDTOA_Mode[FLTDISPFMT_LENGTH] = {2,     // E :  2 = nDigits significant digits
-                                     3,     // F :  3 = nDigits past decimal point
-                                     2,     // RI:  2 = nDigits significant digits
-                                     0};    // RF:  0 = shortest string
+DTOAMODE gDTOA_Mode[FLTDISPFMT_LENGTH] = {DTOAMODE_SIGDIGS,     // E :  2 = nDigits significant digits
+                                          DTOAMODE_FRACTDIGS,   // F :  3 = nDigits past decimal point
+                                          DTOAMODE_SIGDIGS,     // RI:  2 = nDigits significant digits
+                                          DTOAMODE_SHORT_RND};  // RF:  0 = shortest string
 
 
 //***************************************************************************
@@ -950,8 +958,7 @@ LPAPLCHAR FormatFloat
 {
     return FormatFloatFC (lpaplChar,                // Ptr to output save area
                           aplFloat,                 // The value to format
-                          (nDigits EQ 0) ? GetQuadPP ()
-                                         : nDigits, // # significant digits
+                          nDigits,                  // # significant digits (0 = default)
                           L'.',                     // Char to use as decimal separator
                           UTF16_OVERBAR,            // Char to use as overbar
                           FLTDISPFMT_RAWFLT);       // Float display format
@@ -1049,12 +1056,12 @@ LPAPLCHAR FormatFloatFC
     } else
     // Non-zero
     {
-        UINT   dtoaMode;                // DTOA mode corresponding to fltDispFmt
-        LPCHAR s, s0;                   // Ptr to output from dtoa
-        int    decpt,                   // Exponent from dtoa
-               iSigDig,                 // # significant digits
-               sign;                    // TRUE iff the number is negative
-        UBOOL  bIntegral;               // TRUE iff the # is integral
+        DTOAMODE dtoaMode;              // DTOA mode corresponding to fltDispFmt
+        LPCHAR   s, s0;                 // Ptr to output from dtoa
+        int      decpt,                 // Exponent from dtoa
+                 iSigDig,               // # significant digits
+                 sign;                  // TRUE iff the number is negative
+        UBOOL    bIntegral;             // TRUE iff the # is integral
 
         // 0 = shortest string
         // 2 = nDigits significant digits
@@ -1077,8 +1084,8 @@ LPAPLCHAR FormatFloatFC
             // If it's not integral, ...
             if (!bIntegral)
             {
-                dtoaMode = 3;           // 3 = nDigits past decimal point
-                nDigits = 0;            // No digits (integral)
+                nDigits = 0;                    // No digits (integral)
+                dtoaMode = DTOAMODE_FRACTDIGS;  // 3 = nDigits past decimal point
 
                 // Round aplFloat to the nearest integer
                 //   taking into account the sign (which floor doesn't)
@@ -1090,7 +1097,12 @@ LPAPLCHAR FormatFloatFC
                 if (aplFloat EQ 0)
                     aplFloat = 0;
             } // End IF
-        } // End IF
+        } else
+        if (fltDispFmt EQ FLTDISPFMT_RAWFLT && nDigits EQ 0)
+        {
+            nDigits = GetQuadPP ();             // Get the default precision
+            dtoaMode = DTOAMODE_SIGDIGS;        // 2 = nDigits significant digits
+        } // End IF/ELSE
 
         // Convert aplFloat to an ASCII string
         // Use David Gay's routines

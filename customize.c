@@ -46,14 +46,16 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
    L"0" WS_UTF16_TIMES WS_UTF16_INFINITY,                                               // 03:  0 {times} _
    L"0" WS_UTF16_TIMES WS_UTF16_OVERBAR WS_UTF16_INFINITY,                              // 04:  0 {times} {neg}_
    L"0" WS_UTF16_COLONBAR L"0",                                                         // 05:  0 {div} 0
-   WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L"(same sign)",                // 06:  _ {div} _   (same sign)
-   WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L"(diff sign)",                // 07:  _ {div} _   (different sign)
-   L"0*0",                                                                              // 08:  0   *   0
-   L"L*" WS_UTF16_INFINITY L"for L" WS_UTF16_LEFTCARETUNDERBAR WS_UTF16_OVERBAR L"1",   // 09:  L   *   _ for L <= -1
-   L"0" WS_UTF16_CIRCLESTAR L"0",                                                       // 0A:  0 {log} 0
-   L"0" WS_UTF16_CIRCLESTAR L"1",                                                       // 0B:  0 {log} 1
-   L"1" WS_UTF16_CIRCLESTAR L"0",                                                       // 0C:  1 {log} 0
-   L"1" WS_UTF16_CIRCLESTAR L"1",                                                       // 0D:  1 {log} 1
+   WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L" (same sign)",               // 06:  _ {div} _   (same sign)
+   WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L" (diff sign)",               // 07:  _ {div} _   (different sign)
+   WS_UTF16_INFINITY L"-"              WS_UTF16_INFINITY L" (and related)",             // 08:  _ - _ or _ + -_ or ...
+   L"L|±" WS_UTF16_INFINITY,                                                            // 09:  L   |   ±Inf
+   L"0*0",                                                                              // 0A:  0   *   0
+   L"L*" WS_UTF16_INFINITY L"for L" WS_UTF16_LEFTCARETUNDERBAR WS_UTF16_OVERBAR L"1",   // 0B:  L   *   _ for L <= -1
+   L"0" WS_UTF16_CIRCLESTAR L"0",                                                       // 0C:  0 {log} 0
+   L"0" WS_UTF16_CIRCLESTAR L"1",                                                       // 0D:  0 {log} 1
+   L"1" WS_UTF16_CIRCLESTAR L"0",                                                       // 0E:  1 {log} 0
+   L"1" WS_UTF16_CIRCLESTAR L"1",                                                       // 0F:  1 {log} 1
   };
 
 // []IC Index Values -- these must be in the same order as the IC_VALUES enum.
@@ -1880,8 +1882,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Display the corresponding selection
                         SendMessageW (hWndIC_CB2, CB_SETCURSEL, (APLU3264) icValues[uSel], 0);
 
-                        // Enable the Apply button
-                        EnableWindow (hWndApply, TRUE);
+                        // Note that the Apply button is enabled (below) only when
+                        //   changing the value associated with this index.
                     } // End IF
 
                     return TRUE;    // We handled the msg

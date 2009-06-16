@@ -870,9 +870,10 @@ HGLOBAL GetPrivateProfileGlbComW
         // Catch short default values of []IC where we inserted a
         //   new value into the middle of the integer vector
         if (lstrcmpW (lpwKeyName, KEYNAME_QUADIC) EQ 0
-         && lstrcmpW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 1") EQ 0)
+         && (lstrcmpW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 1")   EQ 0
+          || lstrcmpW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 2 1") EQ 0))
             // Use the new default value
-            lstrcpyW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 2 1");
+            lstrcpyW (wszTemp, L"3 4 2 2 2 1 2 2 2 2 1 2 2 2 2 1");
         // Use the given (or substituted value)
         lpMemInp = wszTemp;
     } else

@@ -300,9 +300,11 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     // Get a ptr to the Primitive Function Flags
     lpPrimFlags = GetPrimFlagsPtr (lpYYFcnStrLft);
 
-    // If the axis dimension is zero, get the identity
-    //   element for the left operand or signal a DOMAIN ERROR
-    if (IsZeroDim (uDimAxRht))
+    // If the axis dimension is zero and the array is simple,
+    //   get the identity element for the left operand or
+    //   signal a DOMAIN ERROR
+    if (IsZeroDim (uDimAxRht)
+     && IsSimple (aplTypeRht))
     {
 #ifdef EMPTYCAT
         // Split out catenate
@@ -449,8 +451,10 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
     } // End IF
 
-    // If the axis dimension is zero, fill with the identity element
-    if (IsZeroDim (uDimAxRht))
+    // If the axis dimension is zero and the array is simple,
+    //   fill with the identity element
+    if (IsZeroDim (uDimAxRht)
+     && IsSimple (aplTypeRht))
     {
 #ifdef EMPTYCAT
         // Split out catenate
@@ -532,15 +536,22 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                        lpPrimFlags->Index,  // FBFN_INDS value (e.g., index into FastBoolFns[])
                        lpYYFcnStrOpr);      // Ptr to operator function strand
     } else
-    // If this is an empty nested result, ...
-    if (IsEmpty (aplNELMRes)
+    // If this is a nested result from an empty right arg, ...
+    if (IsEmpty (aplNELMRht)
      && IsNested (aplTypeRes))
     {
+        APLNELM aplNELMNst;
+
+        // Calculate the # elements in the result
+        aplNELMNst = max (aplNELMRes, 1);
+
         // If the right arg is nested or simple hetero, ...
         if (IsNested (aplTypeRht)
          || IsSimpleHet (aplTypeRht))
-            // Copy the right arg's prototype
-            *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
+            // Loop through the right arg/result
+            for (uRes = 0; uRes < aplNELMNst; uRes++)
+                // Copy the right arg's prototype
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemRht);
         else
         {
             LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -548,10 +559,12 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             // Get ptr to PerTabData global memory
             lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-            // Make & save a prototype of the right arg
-            *((LPAPLNESTED) lpMemRes) =
-              (IsSimpleNum (aplTypeRht)) ? lpMemPTD->steZero
-                                         : lpMemPTD->steBlank;
+            // Loop through the right arg/result
+            for (uRes = 0; uRes < aplNELMNst; uRes++)
+                // Make & save a prototype of the right arg
+                *((LPAPLNESTED) lpMemRes)++ =
+                  (IsSimpleNum (aplTypeRht)) ? lpMemPTD->steZero
+                                             : lpMemPTD->steBlank;
         } // End IF
     } else
     // If this is +/APA
@@ -680,7 +693,7 @@ RESTART_EXCEPTION_APA:
 ////////tkLftArg.tkData.tkGlbData  =            // To be filled in below
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 RESTART_EXCEPTION:
-        // Initiliaze in case Boolean
+        // Initialize in case Boolean
         uBitIndex = 0;
 
         // Loop through the right arg calling the

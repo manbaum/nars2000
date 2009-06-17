@@ -292,7 +292,7 @@ APLFLOAT PrimFnDydColonBarFisFvF
     if (!_finite (aplFloatLft)
      && !_finite (aplFloatRht))
     {
-        if ((aplFloatLft > 0) EQ (aplFloatRht > 0))
+        if (SIGN_APLFLOAT (aplFloatLft) EQ SIGN_APLFLOAT (aplFloatRht))
             return TranslateQuadICIndex (ICNDX_PiDIVPi);
         else
             return TranslateQuadICIndex (ICNDX_NiDIVPi);

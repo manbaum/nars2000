@@ -144,6 +144,7 @@
 #define SIGN_APLINT(a)      (((APLUINT) (a)) >> 63) // ...      APLINT
 #define SIGN_APLUINT(a)     ((a) >> 63)     // ...            APLUINT
 #define SIGN_APLLONGEST(a)  ((a) >> 63)     // ...            APLLONGEST
+#define SIGN_APLFLOAT(a)    (((LPAPLFLOATSTR) &a)->bSign) // ... APLFLOAT
 
 
 // Define macro for detecting simple array type

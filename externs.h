@@ -74,7 +74,7 @@ typedef enum tagIC_INDICES
     ICNDX_PiDIVPi,          // 06:  _ {div} _   (same sign)
     ICNDX_NiDIVPi,          // 07:  _ {div} _   (different sign)
     ICNDX_InfSUBInf,        // 08:  _ - _ or _ + -_ or ...
-    ICNDX_NREDInf,          // 09:  L   |   ±Inf
+    ICNDX_NMODInf,          // 09:  L   |   ±Inf
     ICNDX_0EXP0,            // 0A:  0   *   0
     ICNDX_NEXPPi,           // 0B:  L   *   _ for L <= -1
     ICNDX_0LOG0,            // 0C:  0 {log} 0

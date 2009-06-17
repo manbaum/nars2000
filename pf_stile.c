@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <math.h>
+#include <float.h>
 #include "headers.h"
 
 
@@ -278,6 +279,10 @@ APLFLOAT PrimFnDydStileFisFvF
      || aplFloatRht EQ 0)
         return aplFloatRht;
 
+    // If the right arg is infinite, ...
+    if (!_finite (aplFloatRht))
+        return TranslateQuadICIndex (ICNDX_NMODInf);
+
     // Ensure both arguments are non-negative
     aplLft = PrimFnMonStileFisF (aplFloatLft, lpPrimSpec);
     aplRht = PrimFnMonStileFisF (aplFloatRht, lpPrimSpec);
@@ -303,7 +308,7 @@ APLFLOAT PrimFnDydStileFisFvF
     //   and the result so far is non-zero,
     //   replace the result with its complement
     //   in the modulus.
-    if ((aplFloatLft > 0) NE (aplFloatRht > 0)
+    if (SIGN_APLFLOAT (aplFloatLft) NE SIGN_APLFLOAT (aplFloatRht)
      && aplTmp NE 0)
         aplTmp = aplLft - aplTmp;
 

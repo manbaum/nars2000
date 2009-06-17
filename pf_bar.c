@@ -22,6 +22,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <float.h>
 #include "headers.h"
 
 
@@ -351,6 +352,12 @@ APLFLOAT PrimFnDydBarFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // If the args are both infinite and of the same signs, ...
+    if (!_finite (aplFloatLft)
+     && !_finite (aplFloatRht)
+     && SIGN_APLFLOAT (aplFloatLft) EQ SIGN_APLFLOAT (aplFloatRht))
+        return TranslateQuadICIndex (ICNDX_InfSUBInf);
+
     return (aplFloatLft - aplFloatRht);
 } // End PrimFnDydBarFisFvF
 

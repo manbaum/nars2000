@@ -47,20 +47,24 @@ typedef struct tagSM_CREATESTRUCTW
 // Indeterminate Control Values
 typedef enum tagIC_VALUES
 {
-    ICVAL_ZERO,             // 00:  Result is 0
-    ICVAL_ONE,              // 01:  ...       1
-    ICVAL_DOMAIN_ERROR,     // 02:  ...       DOMAIN ERROR
-    ICVAL_POS_INFINITY,     // 03:  ...       + infinity
-    ICVAL_NEG_INFINITY,     // 04:  ...       - infinity
-    ICVAL_LENGTH,           // 05:  Length
+    ICVAL_NEG1 = -1,        // -1:  Result is -1
+    ICVAL_ZERO,             // 00:  ...        0
+    ICVAL_ONE,              // 01:  ...        1
+    ICVAL_DOMAIN_ERROR,     // 02:  ...        DOMAIN ERROR
+    ICVAL_POS_INFINITY,     // 03:  ...        + infinity
+    ICVAL_NEG_INFINITY,     // 04:  ...        - infinity
+    ICVAL_LENGTHM1,         // 05:  Length-1
 } IC_VALUES;
+
+#define ICVAL_LENGTH        (ICVAL_LENGTHM1 + 1)
 
 // N.B.:  Whenever changing the above enum (IC_VALUES),
 //   be sure to make a corresponding change to
 //   <icIndexValues> in <customize.c>.
 
-// Define the maximum allowable value for []IC
-#define ICVAL_MAXVAL    (ICVAL_LENGTH - 1)
+// Define the minimum/maximum allowable values for []IC
+#define ICVAL_MINVAL        ICVAL_NEG1
+#define ICVAL_MAXVAL        ICVAL_NEG_INFINITY
 
 // Indeterminate Control Indices
 typedef enum tagIC_INDICES

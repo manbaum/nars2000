@@ -60,7 +60,8 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
 
 // []IC Index Values -- these must be in the same order as the IC_VALUES enum.
 LPWCHAR icIndexValues[ICVAL_LENGTH]
-= {L"0",
+= {WS_UTF16_OVERBAR L"1",
+   L"0",
    L"1",
    L"DOMAIN ERROR",
    WS_UTF16_INFINITY,
@@ -487,17 +488,17 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Skip over the header and dimension to the data
                         lpMemInt = VarArrayBaseToData (lpMemInt, 1);
 
-                        // Set the current selection to the first name
-                        //   and its corresponding value
-                        SendMessageW (hWndIC_CB1, CB_SETCURSEL, 0, 0);
-                        SendMessageW (hWndIC_CB2, CB_SETCURSEL, (APLU3264) lpMemInt[0], 0);
-
                         // Initialize the []IC local values
                         for (uCnt = 0; uCnt < ICNDX_LENGTH; uCnt++)
                         if (uCnt < aplNELM)
                             icValues[uCnt] = lpMemInt[uCnt];
                         else
                             icValues[uCnt] = aplDefaultIC[uCnt];
+
+                        // Set the current selection to the first name
+                        //   and its corresponding value
+                        SendMessageW (hWndIC_CB1, CB_SETCURSEL, 0, 0);
+                        SendMessageW (hWndIC_CB2, CB_SETCURSEL, (APLU3264) (icValues[0] - ICVAL_MINVAL), 0);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbQuadIC_CWS); lpMemInt = NULL;
@@ -1880,7 +1881,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         uSel = (UINT) SendMessageW (hWndIC_CB1, CB_GETCURSEL, 0, 0);
 
                         // Display the corresponding selection
-                        SendMessageW (hWndIC_CB2, CB_SETCURSEL, (APLU3264) icValues[uSel], 0);
+                        SendMessageW (hWndIC_CB2, CB_SETCURSEL, (APLU3264) (icValues[uSel] - ICVAL_MINVAL), 0);
 
                         // Note that the Apply button is enabled (below) only when
                         //   changing the value associated with this index.
@@ -1896,7 +1897,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         uSel = (UINT) SendMessageW (hWndIC_CB1, CB_GETCURSEL, 0, 0);
 
                         // Save as current value
-                        icValues[uSel] = (UINT) SendMessageW (hWndIC_CB2, CB_GETCURSEL, 0, 0);
+                        icValues[uSel] = ((APLINT) SendMessageW (hWndIC_CB2, CB_GETCURSEL, 0, 0)) + ICVAL_MINVAL;
 
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);

@@ -7137,6 +7137,9 @@ APLFLOAT TranslateQuadICIndex
     // Split cases based upon the DIV0 value
     switch (GetQuadICValue (icIndex))
     {
+        case ICVAL_NEG1:
+            return -1;
+
         case ICVAL_ZERO:
             return 0;
 

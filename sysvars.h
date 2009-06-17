@@ -53,7 +53,7 @@
 #define DEF_MIN_QUADCT      0                   // Minimum value for []CT
 #define DEF_MAX_QUADCT      1E-10               // Maximum ...
 
-#define DEF_MIN_QUADIC      0                   // Minimum value for []IC
+#define DEF_MIN_QUADIC      ICVAL_MINVAL        // Minimum value for []IC
 #define DEF_MAX_QUADIC      ICVAL_MAXVAL        // Maximum ...
 
 #define DEF_MIN_QUADIO      0                   // Minimum value for []IO

@@ -157,7 +157,8 @@ Welcome to NARS2000</h1>
           Decomposition</li>
         <li>Prototypes for all primitive functions and operators</li>
         <li>Control structures on one line or split across multiple lines
-          (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>)</li>
+          (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).
+          A one line control structure may be used in immediate execution mode.</li>
         <li>Trains are supported, e.g., <span class="APL">avg{is}(+/ {divide} {rho})</span> creates a
           function that calculates the average of a numeric vector</li>
         <li>Partitioned Enclose:  dyadic left shoe (<span class="APL">L{leftshoe}R</span>)</li>
@@ -382,7 +383,8 @@ Welcome to NARS2000</h1>
 
     <p>However, thanks to a translation layer program such as
       <a class="linkleft" href="http://www.winehq.org">Wine</a>,
-      NARS2000 can run on any operating system that can run Wine.  Note that
+      NARS2000 can run on any operating system that can run Wine (which
+      includes virtually every Linux-based system, among others).  Note that
       Wine is not an emulator, but a layer between the Windows executable
       and the non-Windows operating system.  In fact, the name <b>Wine</b>
       is a recursive acronym for <b>Wine Is Not an Emulator</b>.</p>
@@ -474,7 +476,7 @@ Welcome to NARS2000</h1>
   <h2 id="If_You_Want_To_Help">If You Want To Help</h2>
 
   <p>This project was designed to be extensible by both the end
-  user (via APL magic functions) as well as by developers.  This is
+  user (via APL magic functions) as well as by system developers.  This is
   your chance to add a valuable feature to NARS2000.</p>
 
   <p>The source code is written in a combination of APL (as internal

@@ -56,17 +56,12 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       array predicates beyond Permutation Vectors
 * ...       []Z, []L, and []R
 * ...       expanded set of system functions, to wit:
-* ...       []CALL R
-* ...     L []CALL R
 * ...     L []EA R    (Execute Alternate) (EAS--required)
 * ...       []EC R
-* ...       []FI R
-* ...     L []SS R
 * ...       []STOP R  (Query Stop)  (EAS--Optional)
 * ...     L []STOP R  (Set Stop)    (EAS--Optional)
 * ...       []TRACE R (Query Trace) (EAS--Optional)
 * ...     L []TRACE R (Set Trace)   (EAS--Optional)
-* ...       []VI R
 * ...       extend associativity to derived functions such as {jot}{dot}+ ???
 * ...       component file system
 * ...       native file access
@@ -344,6 +339,7 @@ QUESTIONS
 * Should []TS be a system variable?
 * How to produce )OUT for a variable with non-ASCII chars in its name?
 * Should we store complex #s as floats only or floats and ints?
+* What should be passed on from  a+{is}1 ?  Is it 1 or a+1 ?
 *
 
 ATF File Questions

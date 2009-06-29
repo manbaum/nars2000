@@ -6323,9 +6323,6 @@ EXIT_TYPES ParseLine
     // Indicate that we're executing
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
 
-    // Set the cursor to indicate that we're executing
-    SendCursorMsg (hWndEC);
-
     EnterCriticalSection (&CSOPL);
 
     // Link this plLocalVars into the chain of such objects
@@ -6799,11 +6796,6 @@ NORMAL_EXIT:
 
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
-
-    // If we're not exiting via semaphore, ...
-    if (lpMemPTD->hExitphore EQ NULL)
-        // Restore the cursor
-        SendCursorMsg (hWndEC);
 
     DBGLEAVE;
 
@@ -8082,9 +8074,9 @@ LPPL_YYSTYPE WaitForInput
     // Create a semaphore
     hSemaphore =
       CreateSemaphore (NULL,            // No security attrs
-                       0,               // Initial count (non-signalled)
-                       64*1024,         // Maximum count
-                       NULL);           // No name
+                        0,              // Initial count (non-signalled)
+                        64*1024,        // Maximum count
+                        NULL);          // No name
     // Fill in the SIS header for Quote-Quad/Quad Input Mode
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 hSemaphore,             // Semaphore handle

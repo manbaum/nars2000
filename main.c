@@ -305,10 +305,10 @@ void SetStatusPos
 
 {
     UINT  uCharPos,             // Character position (origin-0), initially from start
-                                //   of buffer then eventually from the start of the line
-          uLineNum,             // Line # (origin-0)
-          uLinePos;             // Line position from start of buffer
-    WCHAR szTemp[32];           // Temp format save area
+                                    //   of buffer then eventually from the start of the line
+             uLineNum,              // Line # (origin-0)
+             uLinePos;              // Line position from start of buffer
+    WCHAR    szTemp[32];            // Temp format save area
 
     // Get the indices of the selected text (if any)
     SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
@@ -347,6 +347,7 @@ void SetStatusMsg
 
 {
     SendMessageW (hWndStatus, SB_SETTEXTW, SP_TEXTMSG, (LPARAM) lpwszMsg);
+    SetPropW (hWndStatus, PROP_STATUSMSG, (HANDLE) lpwszMsg);
 } // End SetStatusMsg
 
 
@@ -1272,8 +1273,8 @@ void MF_Delete
 //***************************************************************************
 
 LRESULT APIENTRY MFWndProc
-    (HWND hWnd,         // Window handle
-     UINT message,      // Type of message
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
      UINT wParam,       // Additional information
      LONG lParam)       // ...
 
@@ -1952,11 +1953,11 @@ LRESULT APIENTRY MFWndProc
                 case IDM_PRINT_WS:
                 {
                     PRINTDLGEX pdex;        // Struc used when printing
-                    HWND       hWndMC,      // Active hWndMC
-                               hWndAct,     // Active window handle
-                               hWndEC;      // Edit Ctrl window handle
-                    DWORD      dwSelBeg,    // Selection beginning
-                               dwSelEnd;    // ...       end
+                    HWND        hWndMC,     // Active hWndMC
+                                hWndAct,    // Active window handle
+                                hWndEC;     // Edit Ctrl window handle
+                    DWORD       dwSelBeg,   // Selection beginning
+                                dwSelEnd;   // ...       end
                     HRESULT    hResult;     // Result from PrintDlgEx
 
                     // Determine whether or not the Edit Ctrl has a selection
@@ -2388,10 +2389,10 @@ void CheckForUpdates
     // Make the connection
     hNetOpen =
       InternetOpen ("NARS2000",                             // Ptr to User Agent
-                    PRE_CONFIG_INTERNET_ACCESS,             // Access type
-                    NULL,                                   // Ptr to proxy name (may be NULL)
-                    NULL,                                   // Ptr to proxy bypass (may be NULL)
-                    0);                                     // Flags
+                     PRE_CONFIG_INTERNET_ACCESS,            // Access type
+                     NULL,                                  // Ptr to proxy name (may be NULL)
+                     NULL,                                  // Ptr to proxy bypass (may be NULL)
+                     0);                                    // Flags
     if (!hNetOpen)
         goto ERROR_EXIT;
 
@@ -2399,12 +2400,12 @@ void CheckForUpdates
     hNetConnect =
       InternetConnect (hNetOpen,                            // Open handle
                        "www.nars2000.org",                  // Ptr to server name
-                       INTERNET_DEFAULT_HTTP_PORT,          // Server port
+                        INTERNET_DEFAULT_HTTP_PORT,         // Server port
                        "guest",                             // Ptr to username
                        "guest",                             // Ptr to password
-                       INTERNET_SERVICE_HTTP,               // Type of service access
-                       0,                                   // Optional flags
-                       0);                                  // Context value
+                        INTERNET_SERVICE_HTTP,              // Type of service access
+                        0,                                  // Optional flags
+                        0);                                 // Context value
     if (!hNetConnect)       // ***FIXME** -- Display error message
     {
         wsprintfW (lpwszGlbTemp,
@@ -2419,18 +2420,18 @@ void CheckForUpdates
     // Make a request
     hNetRequest =
       HttpOpenRequest (hNetConnect,
-                       NULL,                                // "GET"
+                        NULL,                               // "GET"
                        "/download/binaries/nars2000.ver",   // Ptr to /path/filename
-                       NULL,                                // HTTP 1.1
-                       NULL,                                // No referrer
-                       NULL,                                // No ACCEPT types
-                       0
-                     | INTERNET_FLAG_NO_CACHE_WRITE         // Does not add the returned entity to the cache
-                     | INTERNET_FLAG_PRAGMA_NOCACHE         // Forces the request to be resolved by the origin server,
+                        NULL,                               // HTTP 1.1
+                        NULL,                               // No referrer
+                        NULL,                               // No ACCEPT types
+                        0
+                      | INTERNET_FLAG_NO_CACHE_WRITE        // Does not add the returned entity to the cache
+                      | INTERNET_FLAG_PRAGMA_NOCACHE        // Forces the request to be resolved by the origin server,
                                                             //   even if a cached copy exists on the proxy.
-                     | INTERNET_FLAG_RELOAD,                // Forces a download of the requested file, object, or directory
+                      | INTERNET_FLAG_RELOAD,               // Forces a download of the requested file, object, or directory
                                                             //   listing from the origin server, not from the cache.
-                       0);                                  // Context value
+                        0);                                 // Context value
     if (!hNetRequest)
     {
         wsprintfW (lpwszGlbTemp,
@@ -2444,10 +2445,10 @@ void CheckForUpdates
 
     // Send the request
     if (HttpSendRequest (hNetRequest,                       // Request handle
-                         NULL,                              // Ptr to additional headers (may be NULL)
-                         0,                                 // Size of additional headers
-                         NULL,                              // Ptr to optional data (may be NULL)
-                         0))                                // Size of optional data
+                          NULL,                             // Ptr to additional headers (may be NULL)
+                          0,                                // Size of additional headers
+                          NULL,                             // Ptr to optional data (may be NULL)
+                          0))                               // Size of optional data
     {
         // Read the file
         if (InternetReadFile (hNetRequest,
@@ -3176,8 +3177,8 @@ int PASCAL WinMain
      int         nCmdShow)
 
 {
-    MSG  Msg;                       // Message for GetMessageW loop
-    UINT uCnt;                      // Loop counter
+    MSG     Msg;                    // Message for GetMessageW loop
+    UINT    uCnt;                   // Loop counter
 
 #ifdef PERFMONON
     MessageBeep (NEG1U);

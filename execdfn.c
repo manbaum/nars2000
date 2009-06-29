@@ -174,9 +174,6 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     // Indicate that we're executing
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
 
-    // Set the cursor to indicate that we're executing
-    SendCursorMsg (hWndEC);
-
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
@@ -491,11 +488,6 @@ NORMAL_EXIT:
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
 
-    // If we're not exiting via semaphore, ...
-    if (lpMemPTD->hExitphore EQ NULL)
-        // Restore the previous cursor
-        SendCursorMsg (hWndEC);
-
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
         // We no longer need this ptr
@@ -752,9 +744,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     hSemaphore =
     lpMemPTD->lpSISCur->hSemaphore =
       CreateSemaphore (NULL,            // No security attrs
-                       0,               // Initial count (non-signalled)
-                       64*1024,         // Maximum count
-                       NULL);           // No name
+                        0,              // Initial count (non-signalled)
+                        64*1024,        // Maximum count
+                        NULL);          // No name
 #ifdef DEBUG
     DisplayFcnLine (lpMemDfnHdr->hGlbTxtHdr, lpMemPTD, 0);
 #endif

@@ -256,8 +256,8 @@ void FE_Delete
 #endif
 
 LRESULT APIENTRY FEWndProc
-    (HWND hWnd,                     // Window handle
-     UINT message,                  // Type of message
+    (HWND   hWnd,                   // Window handle
+     UINT   message,                // Type of message
      UINT wParam,                   // Additional information
      LONG lParam)                   // ...
 
@@ -3216,50 +3216,63 @@ UBOOL LclSetCursor
      UINT         hitTest)              // Hit-test code
 
 {
+    HCURSOR hCursorNew;                 // New cursor
+    LPWCHAR lpwszStatusMsg;             // Ptr to new Status Window message
+
+    // If we're executing, ...
+    if (lpMemPTD->bExecuting)
+    {
+        // Set the new cursor and message ptr
+        hCursorNew     = hCursorWait;
+        lpwszStatusMsg = wszStatusRunning;
+    } else
+    {
+        // Set the new cursor and message ptr
+        hCursorNew     = hCursorIdle;
+        lpwszStatusMsg = wszStatusIdle;
+    } // End IF/ELSE
+
+    // In order to reduce Status Window flicker,
+    //   compare the statusmsg-to-be with the existing one
+    if (((HANDLE) lpwszStatusMsg) NE GetPropW (hWndStatus, PROP_STATUSMSG))
+        // Set the status message
+        SetStatusMsg (lpwszStatusMsg);
+
+    // Set a new cursor to indicate our new state
+    SetClassLongPtrW (hWndEC, GCLP_HCURSOR, (HANDLE_PTR) hCursorNew);
+
     // If the mouse is in the client area, ...
     if (hitTest EQ HTCLIENT)
-    {
-        UBOOL bExecuting;               // TRUE iff we're waiting for an execution to complete
-
-
-        // Get executing flag
-        bExecuting = lpMemPTD->bExecuting;
-
-        // If we're executing, ...
-        if (bExecuting)
-        {
-            // Set a new cursor to indicate that we're waiting
-            SetClassLongPtrW (hWndEC, GCLP_HCURSOR, (HANDLE_PTR) hCursorWait);
-            SetStatusMsg (wszStatusRunning);
-        } else
-        {
-            // Set a new cursor to indicate that we're idle
-            SetClassLongPtrW (hWndEC, GCLP_HCURSOR, (HANDLE_PTR) hCursorIdle);
-            SetStatusMsg (wszStatusIdle);
-        } // End IF/ELSE
-
         // Set the new cursor
-        SetCursor ((HCURSOR) GetClassLongPtrW (hWndEC, GCLP_HCURSOR));
+        SetCursor (hCursorNew);
 
-        return TRUE;                    // We set the cursor
-    } // End IF
-
-    return FALSE;                       // We didn't set the cursor
+    // Return whether or not the mouse is in the client area, ...
+    return (hitTest EQ HTCLIENT);
 } // End LclSetCursor
 
 
 //***************************************************************************
-//  $SendCursorMsg
+//  $ForceSendCursorMsg
 //
 //  Send WM_SETCURSOR message to the Edit Ctrl window
+//    with a forced executing value
 //***************************************************************************
 
-void SendCursorMsg
-    (HWND hWndEC)               // Edit Ctrl window handle
+void ForceSendCursorMsg
+    (HWND  hWndEC,              // Edit Ctrl window handle
+     UBOOL bExecuting)          // TRUE iff we're executing
 
 {
-    POINT ptCursor;             // Position of the mouse cursor
-    UINT  hitTest;              // Hit test for the mouse cursor
+    POINT        ptCursor;      // Position of the mouse cursor
+    UINT         hitTest;       // Hit test for the mouse cursor
+    LPPERTABDATA lpMemPTD;      // Ptr to this window's PerTabData
+    UBOOL        bOldExecuting; // TRUE iff the old value was executing
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+    // Indicate the new execution state
+    bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = bExecuting;
 
     // Get the cursor position in screen coords
     GetCursorPos (&ptCursor);
@@ -3269,7 +3282,10 @@ void SendCursorMsg
 
     // Set the cursor to indicate that we're executing
     SendMessageW (hWndEC, WM_SETCURSOR, (WPARAM) hWndEC, MAKELPARAM (hitTest, WM_MOUSEMOVE));
-} // End SendCursorMsg
+
+    // Restore the previous executing state
+    lpMemPTD->bExecuting = bOldExecuting;
+} // End ForceSendCursorMsg
 
 
 //***************************************************************************
@@ -3848,15 +3864,15 @@ UINT GetCurCharPos
 //***************************************************************************
 
 WCHAR GetCharValue
-    (HWND hWndEC,               // Window handle of the Edit Ctrl
+    (HWND     hWndEC,               // Window handle of the Edit Ctrl
      UINT uCharPos)             // Char position (-1 = under the caret)
 
 {
-    POINT        ptCaret;       // The caret position
+    POINT    ptCaret;               // The caret position
     UINT         uLineNum,      // The line #
-                 uLinePos,      // The line position (start of line)
-                 uLineLen,      // The line length
-                 uLineOff;      // The line offset
+             uLinePos,              // The line position (start of line)
+             uLineLen,              // The line length
+             uLineOff;              // The line offset
 
     if (uCharPos EQ -1)
     {
@@ -3905,12 +3921,12 @@ WCHAR GetCharValue
 
 void AppendUndo
     (HWND      hWnd,            // SM/FE Window handle
-     UINT  GWLxx_UNDO_NXT,  // Offset in hWnd extra bytes of lpUndoNxt
+     UINT      GWLxx_UNDO_NXT,  // Offset in hWnd extra bytes of lpUndoNxt
      UINT  Action,          // Action to take
      UINT      CharPosBeg,      // Beginning character position, -1 = caret
      UINT      CharPosEnd,      // Ending    ...
      UINT      Group,           // Group index, 0 = no group
-     WCHAR Char)            // Character, 0 = none
+     WCHAR     Char)            // Character, 0 = none
 
 {
     LPUNDO_BUF lpUndoNxt;   // Ptr to next available slot in the Undo Buffer

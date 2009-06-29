@@ -451,7 +451,7 @@ void MoveCaretEOB
 //***************************************************************************
 
 void DisplayPrompt
-    (HWND hWndEC,       // Window handle of the Edit Ctrl
+    (HWND     hWndEC,       // Window handle of the Edit Ctrl
      UINT uCaller)      // ***DEBUG***
 
 {
@@ -468,6 +468,9 @@ void DisplayPrompt
 
     // Mark as no longer executing
     lpMemPTD->bExecuting = FALSE;
+
+    // Set the cursor to indicate the new state
+    ForceSendCursorMsg (hWndEC, FALSE);
 
     // Check for exiting semaphore
     if (lpMemPTD->hExitphore)
@@ -496,11 +499,11 @@ void DisplayPrompt
 //***************************************************************************
 
 UINT GetLineLength
-    (HWND hWndEC,           // Edit Ctrl window handle
+    (HWND     hWndEC,           // Edit Ctrl window handle
      UINT uLineNum)         // The line #
 
 {
-    UINT uLinePos;          // Char position of start of line
+    UINT uLinePos;              // Char position of start of line
 
     // Get the position of the start of the line
     uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
@@ -679,8 +682,8 @@ void SM_Delete
 #endif
 
 LRESULT APIENTRY SMWndProc
-    (HWND hWnd,     // Window handle
-     UINT message,  // Type of message
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
      UINT wParam,   // Additional information
      LONG lParam)   // ...
 
@@ -1490,7 +1493,7 @@ NORMAL_EXIT:
                     DisplayPrompt (hWndEC, 1);
 
                 // Set the default cursor
-                SendCursorMsg (hWndEC);
+                ForceSendCursorMsg (hWndEC, FALSE);
             } // End IF/ELSE
 
             // Ensure the SM has the focus
@@ -2047,8 +2050,8 @@ void MoveToLine
      HWND         hWndEC)               // Edit Ctrl window handle
 
 {
-    UINT         uLineLen;              // Line length
-    LPWCHAR      lpwCurLine;            // Ptr to current line global memory
+    UINT    uLineLen;                   // Line length
+    LPWCHAR lpwCurLine;                 // Ptr to current line global memory
 
     // Get the length of the (new) current line
     uLineLen = GetLineLength (hWndEC, uLineNum);

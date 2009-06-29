@@ -179,6 +179,9 @@
 #define VER_COMPANYNAME_STR         "Sudley Place Software"
 #define VER_COPYRIGHT1_STR          "Copyright © " VER_LEGALCOPYRIGHT_YEARS " " VER_COMPANYNAME_STR
 
+#define PROP_STATUSMSG             L"StatusMsg"
+
+
 //***************************************************************************
 //  Window Classes
 //***************************************************************************

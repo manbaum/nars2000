@@ -473,6 +473,9 @@ DWORD WINAPI ImmExecStmtInThread
                     FALSE,                  // Suspended
                     TRUE,                   // Restartable
                     TRUE);                  // LinkIntoChain
+        // Set the cursor to indicate the new state
+        ForceSendCursorMsg (hWndEC, TRUE);
+
         // Execute the line
         exitType =
           ParseLine (hWndSM,                // Session Manager window handle
@@ -485,6 +488,9 @@ DWORD WINAPI ImmExecStmtInThread
                      NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
                      bActOnErrors,          // TRUE iff errors are acted upon
                      FALSE);                // TRUE iff executing only one stmt
+        // The matching <ForceSendCursorMsg (hWndEC, FALSE)> is
+        //   in <DisplayPrompt>.
+
         // Start with the preceding layer (if any)
         lpSISPrv = lpMemPTD->lpSISCur->lpSISPrv;
 

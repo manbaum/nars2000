@@ -942,7 +942,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  MakeDydPrototype_EM
+//  $MakeDydPrototype_EM
 //
 //  Make a prototype from a dyadic scalar function between
 //    two global memory objects
@@ -1158,6 +1158,12 @@ HGLOBAL MakeDydPrototype_EM
         lpAPA->Off =
         lpAPA->Mul = 0;
 #undef  lpAPA
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+        // Set the ptr type bits
+        hGlbRes = MakePtrTypeGlb (hGlbRes);
 
         goto NORMAL_EXIT;
     } // End IF

@@ -38,6 +38,10 @@ TO DO:  General:  Less Important (post-alpha)
 * Handle display of directly assigned functions better than to use
   UTF16_HORIZELLIPSIS.
 * User preference to hide workspace tabs if only one tab open.
+* When exiting a user-defined function/operator, note whether or not
+  there are unlocalized vars.  Better yet, put the unlocalized var count
+  into the function title bar (along with the asterisk indicating not
+  saved as yet).
 * Implement these features:
 * ...       New Tab On Load off
 * ...       New Tab On Clear off

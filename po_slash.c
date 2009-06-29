@@ -392,7 +392,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             lpPrimSpec = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
             // Calculate the storage type of the result
-            aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (1,
+            aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMRht,
                                                        &aplTypeRht,
                                                        &lpYYFcnStrLft->tkToken,
                                                         aplNELMRht,

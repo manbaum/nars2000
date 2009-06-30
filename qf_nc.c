@@ -350,7 +350,7 @@ NORMAL_EXIT:
 
 UBOOL IsValidName
     (LPAPLCHAR lpaplChar,
-     UINT      uLen)
+     APLU3264  uLen)
 
 {
     UINT uNam;

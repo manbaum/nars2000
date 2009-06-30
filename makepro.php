@@ -220,7 +220,7 @@ function ProcessFile ($FileName, $OutFile)
     $FileNew = preg_replace ('/^#ifdef .*?\r\n#endif\r\n/m', '', $FileNew);
 
     // Strip out '#ifndef PROTO.*?#endif\r\n'
-    $FileNew = preg_replace ('/^#ifndef PROTO.*?#endif\r\n/ms', '', $FileNew);
+    $FileNew = preg_replace ('/^#ifndef PROTO.*?^#endif\r\n/ms', '', $FileNew);
 
     // Strip out '#ifdef __cplusplus.*?#endif\r\n'
     $FileNew = preg_replace ('/^#ifdef __cplusplus.*?#endif\r\n/ms', '', $FileNew);

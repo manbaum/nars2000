@@ -23,6 +23,14 @@
 // Disable stack checking
 #pragma check_stack(off)
 
+#ifdef _WIN64
+  #define WS_WINSTR     L"Win64"
+#elif defined (_WIN32)
+  #define WS_WINSTR     L"Win32"
+#else
+  #error Need code for this architecture.
+#endif
+
 #define EQ ==
 #define NE !=
 
@@ -38,7 +46,7 @@
 
 #define PAGESIZE        (4 * 1024)
 
-#define DbgStop()       _asm int 3 _asm nop
+#define DbgStop()       __debugbreak ()
 
 #define defstop \
 default:        \
@@ -71,7 +79,7 @@ default:        \
 
 // Define offsets in DBWNDCLASS window extra bytes
 #define GWLDB_HWNDLB    0                                           // Window handle of Listbox
-#define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (long)          // Total # extra bytes
+#define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
 // Define common offset between the Session Manager and Function Editor
 #define GWLSF_PERTAB    0                                           // Ptr to PerTabData global memory
@@ -97,7 +105,7 @@ default:        \
 
 // Define offsets in PMWNDCLASS window extra bytes
 #define GWLPM_HWNDLB    0                                           // Window handle of Listbox
-#define GWLPM_EXTRA     GWLPM_HWNDLB   + 1 * sizeof (long)          // Total # extra bytes
+#define GWLPM_EXTRA     GWLPM_HWNDLB   + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
 // Define offsets in VEWNDCLASS window extra bytes
 #define GWLVE_EXTRA     0                                           // Total # extra bytes

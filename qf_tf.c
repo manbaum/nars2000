@@ -1201,7 +1201,7 @@ UBOOL TransferInverseFcn1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, (APLU3264) (lpwData - lpwName));
+        CharLowerBuffW (lpwName, (UINT) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;

@@ -526,13 +526,16 @@ NORMAL_EXIT:
 //***************************************************************************
 
 LPPERTABDATA GetPerTabPtr
-    (int iTab)                  // Tab
+    (APLU3264 iTab)                     // Tab
 
 {
     TC_ITEMW tcItem = {0};              // TabCtrl item struc
 
     // We want lParam only
-    tcItem.mask       = TCIF_PARAM;
+    //   but in order to overcome a problem in WIN64,
+    //   we need to ask for the image index, too.
+    tcItem.mask       = TCIF_IMAGE | TCIF_PARAM;
+////tcItem.mask       = TCIF_PARAM;
 ////tcItem.pszText    =
 ////tcItem.cchTextMax =
 ////tcItem.iImage     =
@@ -553,10 +556,10 @@ LPPERTABDATA GetPerTabPtr
 //***************************************************************************
 
 LRESULT WINAPI LclTabCtrlWndProc
-    (HWND   hWnd,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     TC_HITTESTINFO tcHit;
@@ -1090,7 +1093,7 @@ int GetNextTabColorIndex
 //***************************************************************************
 
 int GetTabColorIndex
-    (int iTab)                          // Tab index
+    (APLU3264 iTab)                     // Tab index
 
 {
     LPPERTABDATA lpMemPTD;
@@ -1386,7 +1389,7 @@ void DrawTab
 //***************************************************************************
 
 LPAPLCHAR PointToWsName
-    (int iTabIndex)             // Tab index
+    (APLU3264 iTabIndex)                // Tab index
 
 {
     HGLOBAL      hGlbWSID;              // []WSID global memory handle
@@ -1434,7 +1437,7 @@ LPAPLCHAR PointToWsName
                     q = p + 1;
 
                 // Copy to global temporary storage
-                lstrcpynW (&lpwszGlbTemp[2], q, (APLU3264) ((lpMemWSID + aplNELMWSID + 1) - q));
+                lstrcpynW (&lpwszGlbTemp[2], q, (UINT) ((lpMemWSID + aplNELMWSID + 1) - q));
 
                 // Include the separator
                 lpwszGlbTemp[1] = L' ';

@@ -1,4 +1,4 @@
-/* include/config.h.  Generated from config.h.in by configure.	*/
+/* include/config.h.  Generated from config.h.in by configure.  */
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
 #define __WINE_CONFIG_H
@@ -630,6 +630,7 @@
 
 /* Define to 1 if the system has the type `size_t'. */
 #define HAVE_SIZE_T 1
+#define _SIZE_T_DEFINED
 
 /* Define to 1 if you have the `snprintf' function. */
 #define HAVE_SNPRINTF 1
@@ -877,7 +878,9 @@
 /* Define to 1 if you have the <ucontext.h> header file. */
 #define HAVE_UCONTEXT_H 1
 
+#ifndef _WIN64
 #define __i386__
+#endif
 #define __WINESRC__
 #define WINE_NO_TRACE_MSGS
 #define WINE_NO_DEBUG_MSGS

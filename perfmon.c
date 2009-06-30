@@ -277,10 +277,10 @@ void PM_Delete
 //***************************************************************************
 
 LRESULT APIENTRY PMWndProc
-    (HWND hWnd,     // Window handle
-     UINT message,  // Type of message
-     UINT wParam,   // Additional information
-     LONG lParam)   // ...
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     HWND         hWndLB;            // ListBox window handle

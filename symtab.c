@@ -131,9 +131,12 @@ UBOOL HshTabFrisk
         // Get hash mask for next higher hash function
         uHashMaskNext = 1 + 2 * lpHTS->uHashMask;
 
+        // Set the ending ptr
+        lpEnd = &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+
         // Ensure that the NextSameHash and PrevSameHash chains are valid
         for (lp = lpHTS->lpHshTab;
-             lp NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+             lp NE lpEnd;
              lp++)
         {
             if (lp->NextSameHash NE LPHSHENTRY_NONE)
@@ -145,7 +148,7 @@ UBOOL HshTabFrisk
 
         // Ensure that all uHashAndMask values are up-to-date
         for (lp = lpHTS->lpHshTab;
-             lp NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+             lp NE lpEnd;
              lp++)
         if (lp->htFlags.Inuse)
             Assert (lp->uHashAndMask EQ MaskTheHash (lp->uHash, lpHTS));
@@ -155,7 +158,7 @@ UBOOL HshTabFrisk
         //   LPHSHENTRY_NONE in the two hash ptrs (unless .PrinHash),
         //   and zero everywhere else
         for (lp = lpHTS->lpHshTab;
-             lp NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+             lp NE lpEnd;
              lp++)
         if (!lp->htFlags.Inuse)
         {
@@ -176,7 +179,7 @@ UBOOL HshTabFrisk
         // Ensure that .PrinHash is set every iHshTabEPB entries
         //   and nowhere else
         for (lp = lpHTS->lpHshTab;
-             lp NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+             lp NE lpEnd;
              lp++)
         {
             if (lp->htFlags.PrinHash)
@@ -189,7 +192,7 @@ UBOOL HshTabFrisk
         // Ensure that every HTE is in some NextSameHash chain starting
         //   from a .PrinHash entry, or is empty
         for (lp = lpHTS->lpHshTab;
-             lp NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+             lp NE lpEnd;
              lp += lpHTS->iHshTabEPB)
         {
             // Ensure that all chains start at .PrinHash
@@ -210,7 +213,7 @@ UBOOL HshTabFrisk
 
         // Check and unset .Temp entries
         for (lp = lpHTS->lpHshTab;
-             lp NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+             lp NE lpEnd;
              lp++)
         {
             Assert ((!lp->htFlags.Inuse)
@@ -240,8 +243,8 @@ UBOOL HshTabFrisk
             } // End IF
         } // End IF
 
+        // Set the base ptr
         lpBase = &lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm];
-        lpEnd  = &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
 
         uMark = (UINT) (lpBase - lpHTS->lpHshTab);
 
@@ -1664,7 +1667,7 @@ uint32_t hashlittleConv
     // Allocate virtual memory to hold the converted name
     lpwConv =
       MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
-                      (APLU3264) length * sizeof (WCHAR),
+                      (DWORD) length * sizeof (WCHAR),
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
     if (lpwConv EQ NULL)        // ***FIXME*** -- Better error handling needed
@@ -1699,7 +1702,7 @@ uint32_t hashlittleConv
 
 LPSYMENTRY SymTabLookupNameLength
     (LPWCHAR   lpwszString,         // Ptr to the name to lookup
-     int       iLen,                // Length of the name
+     APLU3264  iLen,                // Length of the name
      LPSTFLAGS lpstFlags)           // Ptr to flags filter
 
 {
@@ -1732,7 +1735,7 @@ LPSYMENTRY SymTabLookupNameLength
         CopyMemoryW (sysName, lpwszString, iLen);
 
         // Convert it to lowercase
-        CharLowerBuffW (sysName, iLen);
+        CharLowerBuffW (sysName, (UINT) iLen);
 
         lpwszName = sysName;
     } else
@@ -1775,8 +1778,8 @@ LPSYMENTRY SymTabLookupNameLength
              && (((*(UINT *) &lpHshEntry->htSymEntry->stFlags) & *(UINT *) &stMaskFlags)
               EQ ((*(UINT *) lpstFlags)                        & *(UINT *) &stMaskFlags)))
             {
-                LPWCHAR lpwGlbName;
-                int     iCmp, iCnt;
+                LPWCHAR  lpwGlbName;
+                APLU3264 iCmp, iCnt;
 #ifdef DEBUG
 ////////////////DisplayHshTab (lpHTS);
 #endif

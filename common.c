@@ -381,7 +381,7 @@ void A2W
 
 LPWCHAR FillMemoryW
     (LPWCHAR  lpMemDest,
-     UINT    uLen,
+     APLU3264 uLen,
      WCHAR    wc)
 
 {

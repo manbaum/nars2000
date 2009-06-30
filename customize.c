@@ -84,10 +84,10 @@ char pszNoCreateWCWnd[]     = "Unable to create Web Color Names window";
 //***************************************************************************
 
 APLU3264 CALLBACK CustomizeDlgProc
-    (HWND   hWnd,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     static HFONT        hFont = NULL;           //
@@ -311,7 +311,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 custStruc[wParam].bInitialized = TRUE;
 
                 // Get the associated item data
-                (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, wParam, 0);
+                hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, wParam, 0);
 
                 // The techniques used to initialize the Property Pages
                 //   sometimes cause the Apply button to be enabled.
@@ -808,7 +808,7 @@ APLU3264 CALLBACK CustomizeDlgProc
         case MYWM_ENABLECHOOSEFONT:                     // ctrlId  = (UINT) wParam;
                                                         // bEnable = (UBOOL) lParam;
             // Get the associated item data (window handle of the Property Page)
-            (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
+            hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
 
             // Get the SW_xxx flag
             uShow = bEnable ? SW_SHOWNORMAL : SW_HIDE;
@@ -949,7 +949,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 Assert (lpdis->CtlType EQ ODT_BUTTON);
 
                 // Get the associated item data (window handle of the Property Page)
-                (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
+                hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
 
                 // Get the ChooseFontW button window handle
                 hWndFont = GetDlgItem (hWndProp, idCtl);
@@ -1062,7 +1062,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 Assert (lpdis->CtlType EQ ODT_MENU);
 
                 // Get the associated item data (window handle of the Property Page)
-                (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
+                hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
 
                 // Get the item index
                 itemIndex = lpdis->itemID - IDC_SYNTCLR_MI1;
@@ -1329,7 +1329,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         LPWCHAR wp;
 
                         // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+                        hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         //***************************************************************
                         // []ALX
@@ -1469,7 +1469,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////if (custStruc[uCnt].bInitialized)
 ////////////////////{
 ////////////////////    // Get the associated item data (window handle of the Property Page)
-////////////////////    (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+////////////////////    hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 ////////////////////
 ////////////////////    DbgBrk ();      // ***FINISHME***
 ////////////////////
@@ -1489,7 +1489,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     if (custStruc[uCnt].bInitialized)
                     {
                         // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+                        hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         // Loop through the fonts
                         for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
@@ -1548,7 +1548,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     if (custStruc[uCnt].bInitialized)
                     {
                         // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+                        hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         bRangeLimit.CT = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_CT);
                         bRangeLimit.IC = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_IC);
@@ -1570,7 +1570,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         UBOOL bWinBGDiff;           // TRUE iff the Window background color is changing
 
                         // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+                        hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         // Determine if the Window background changes
                         bWinBGDiff =
@@ -1615,7 +1615,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     if (custStruc[uCnt].bInitialized)
                     {
                         // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+                        hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         bResetVars.CT = IsDlgButtonChecked (hWndProp, IDC_RESET_CT_RADIO2);
                         bResetVars.FC = IsDlgButtonChecked (hWndProp, IDC_RESET_FC_RADIO2);
@@ -1636,7 +1636,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////if (custStruc[uCnt].bInitialized)
 ////////////////////{
 ////////////////////    // Get the associated item data (window handle of the Property Page)
-////////////////////    (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+////////////////////    hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 ////////////////////
 ////////////////////    DbgBrk ();      // ***FINISHME***
 ////////////////////
@@ -1656,7 +1656,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     if (custStruc[uCnt].bInitialized)
                     {
                         // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+                        hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         OptionFlags.bAdjustPW            = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_ADJUSTPW           );
                         OptionFlags.bUnderbarToLowercase = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE);
@@ -1778,7 +1778,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 hWnd_ST;
 
                         // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_CLEARWS_VALUES - IDD_PROPPAGE_START, 0);
+                        hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_CLEARWS_VALUES - IDD_PROPPAGE_START, 0);
 
                         // Get the Edit Ctrl ID
                         uID_EC = idCtl;
@@ -1828,7 +1828,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                             //   and complain if not valid.
 
                             // Get the associated item data (window handle of the Property Page)
-                            (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_CLEARWS_VALUES - IDD_PROPPAGE_START, 0);
+                            hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_CLEARWS_VALUES - IDD_PROPPAGE_START, 0);
 
                             // Tell the Edit Ctrl how big our buffer is
                             lpwszGlbTemp[0] = 1024;
@@ -2070,7 +2070,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     if (BN_CLICKED EQ cmdCtl)
                     {
                         // Get the associated item data (window handle of the Property Page)
-                        (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
+                        hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START, 0);
 
                         // Get the index of the font
                         uCnt = idCtl - IDC_FONT1;
@@ -2276,7 +2276,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 scnParams.lpwSCName      = gSyntaxColorName[guIndex].lpwSCName;
 
                                 // Display a separate dialog with the Web Color Names
-                                cc.rgbResult =
+                                cc.rgbResult = (COLORREF)
                                   DialogBoxParamW (_hInstance,
                                                    MAKEINTRESOURCEW (IDD_WEBCOLORS),
                                                    hWnd,
@@ -2323,7 +2323,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                 case IDC_SYNTCLR_BN_RESTORE:
                     // Get the associated item data (window handle of the Property Page)
-                    (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
+                    hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
 
                     // Restore the default colors
                     for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
@@ -2512,7 +2512,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                             // bFore  = HIWORD (wParam);    // TRUE iff Foreground
                                             // clrRef = (COLORREF) lParam;  // Color to set
             // Get the associated item data (window handle of the Property Page)
-            (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
+            hWndProp = (HWND) SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
 
             // Save the color in a local var
             if (bFore)
@@ -2574,13 +2574,13 @@ UBOOL CALLBACK EnumCallbackRepaint
         HWND hWndEC;
 
         // Get the handle to the Edit Ctrl
-        (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
+        hWndEC = (HWND) GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
 
 #define bWinBGDiff  ((UBOOL) lParam)
 
         // If the Window background color changed, ...
         if (bWinBGDiff)
-            SetClassLongPtrW (hWndEC, GCL_HBRBACKGROUND, (HANDLE_PTR) ghBrushBG);
+            SetClassLongPtrW (hWndEC, GCLP_HBRBACKGROUND, (HANDLE_PTR) ghBrushBG);
 
 #undef  bWinBGDiff
 

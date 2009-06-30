@@ -147,7 +147,9 @@ APLFLOAT PrimFnMonCircleFisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-#if TRUE
+#ifdef _WIN64
+    return PrimFnMonCircleFisF ((APLFLOAT) aplIntegerRht, lpPrimSpec);
+#elif defined (_WIN32)
     APLFLOAT aplTmp;
 
     // The following code is slightly more accurate
@@ -163,7 +165,7 @@ APLFLOAT PrimFnMonCircleFisI
     }
     return aplTmp;
 #else
-    return PrimFnMonCircleFisF ((APLFLOAT) aplIntegerRht, lpPrimSpec);
+  #error Need code for this architecture.
 #endif
 } // End PrimFnMonCircleFisI
 
@@ -179,7 +181,9 @@ APLFLOAT PrimFnMonCircleFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-#if TRUE
+#ifdef _WIN64
+    return aplFloatRht * 3.1415926535897932384626433832795028;
+#elif defined (_WIN32)
     APLFLOAT aplTmp;
 
     // The following code is slightly more accurate
@@ -194,7 +198,7 @@ APLFLOAT PrimFnMonCircleFisF
     }
     return aplTmp;
 #else
-    return aplFloatRht * 3.1415926535897932384626433832795028;
+  #error Need code for this architecture.
 #endif
 } // End PrimFnMonCircleFisF
 
@@ -248,8 +252,9 @@ APLFLOAT PrimFnDydCircleFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
+#ifndef _WIN64
     APLFLOAT aplFloatTmp;
-
+#endif
     // I coded these by hand because they are all easy,
     //   however, to be completely accurate, the sin, cos, and tan
     //   functions might need to have their arguments reduced to
@@ -259,7 +264,9 @@ APLFLOAT PrimFnDydCircleFisIvI
     switch (aplIntegerLft)
     {
         case  4:        // (1 + R * 2) * 0.5
-#if TRUE
+#ifdef _WIN64
+            return sqrt ((APLFLOAT) (1 + imul64 (aplIntegerRht, aplIntegerRht)));
+#elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
                 fild    aplIntegerRht;  //  Rht
@@ -276,11 +283,13 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return sqrt ((APLFLOAT) (1 + imul64 (aplIntegerRht, aplIntegerRht)));
+  #error Need code for this architecture.
 #endif
 
         case  3:        // tan (R)
-#if TRUE
+#ifdef _WIN64
+            return tan ((APLFLOAT) aplIntegerRht);
+#elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
                 fild    aplIntegerRht;  //  Rht
@@ -294,11 +303,13 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return tan (aplFloatRht);
+  #error Need code for this architecture.
 #endif
 
         case  2:        // cos (R)
-#if TRUE
+#ifdef _WIN64
+            return cos ((APLFLOAT) aplIntegerRht);
+#elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
                 fild    aplIntegerRht;  //  Rht
@@ -311,11 +322,13 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return cos (aplFloatRht);
+  #error Need code for this architecture.
 #endif
 
         case  1:        // sin (R)
-#if TRUE
+#ifdef _WIN64
+            return sin ((APLFLOAT) aplIntegerRht);
+#elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
                 fild    aplIntegerRht;  //  Rht
@@ -328,11 +341,13 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return sin (aplFloatRht);
+  #error Need code for this architecture.
 #endif
 
         case  0:        // (1 - R * 2) * 0.5
-#if TRUE
+#ifdef _WIN64
+            return sqrt ((APLFLOAT) (1 - imul64 (aplIntegerRht, aplIntegerRht)));
+#elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
                 fild    aplIntegerRht;  //  Rht
@@ -350,11 +365,13 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return sqrt ((APLFLOAT) (1 - imul64 (aplIntegerRht, aplIntegerRht)));
+  #error Need code for this architecture.
 #endif
 
         case -4:        // R x (1 - R * -2) * 0.5 a.k.a. ((-1) + R * 2) * 0.5
-#if TRUE
+#ifdef _WIN64
+            return sqrt ((APLFLOAT) (imul64 (aplIntegerRht, aplIntegerRht) - 1));
+#elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
                 fild    aplIntegerRht;  //  Rht
@@ -372,7 +389,7 @@ APLFLOAT PrimFnDydCircleFisIvI
                 return aplFloatTmp;
             break;
 #else
-            return sqrt ((APLFLOAT) (imul64 (aplIntegerRht, aplIntegerRht) - 1));
+  #error Need code for this architecture.
 #endif
         default:
             return PrimFnDydCircleFisFvF ((APLFLOAT) aplIntegerLft,

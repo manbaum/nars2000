@@ -21,12 +21,14 @@
 
 GSL_LIB = gsl\libgsl$(WIN)-double.lib
 
-CFLAGS_WEXE = /nologo /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG)
-CFLAGS_WEXE = $(CFLAGS_WEXE) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS /D "WINVER=0x0501" /D "_WIN32_WINNT=0x0501"
-!if "$(WP)" == "64"
-CFLAGS_WEXE=$(CFLAGS_WEXE) /Wp64 /GS-
+CFLAGS_WEXE = /nologo /GA /W3 /WX $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
+LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE
+!if "$(WIN)" == "64"
+CFLAGS_WEXE = $(CFLAGS_WEXE) /GS- /D_AMD64_ /D_M_AMD64 /D_WIN64 /Gd
+LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64 /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT
+LFLAGS_WEXE = $(LFLAGS_WEXE) /OPT:REF /DYNAMICBASE:NO /LARGEADDRESSAWARE /MANIFEST:NO
 !endif
-LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF
+
 LIBS_WEXE = gdi32.lib           \
             kernel32.lib        \
             user32.lib          \
@@ -53,8 +55,6 @@ RCFLAGS = /D "DEBUG"
 RCFLAGS =
 !endif
 
-ASMOPTS=/coff
-
 RUNFLAGS =
 DEFFILE = main.def
 OBJS_EXT =
@@ -69,14 +69,14 @@ AFLAGS=/Mu /DDEBUG=$(DEBUG)
 
 !if "$(VS)" == "1"
 O=DEBUG\                        # define output directory for intermediate files
-B=$(BIN)D$(WP)\                 # ...                         binaries
+B=$(BIN)D$(WIN)\                 # ...                         binaries
 !else
 !if "$(DEBUG)" == "1"
-O=RET\D$(WP)\                   # define output directory for intermediate files
-B=$(BIN)D$(WP)\                 # ...                         binaries
+O=RET\D$(WIN)\                  # define output directory for intermediate files
+B=$(BIN)D$(WIN)\                # ...                         binaries
 !else
-O=RET\ND$(WP)\                  # define output directory for intermediate files
-B=$(BIN)ND$(WP)\                # ...                         binaries
+O=RET\ND$(WIN)\                 # define output directory for intermediate files
+B=$(BIN)ND$(WIN)\               # ...                         binaries
 !endif
 !endif
 OC=RET\COM\                     # Define output directory for common intermediate files
@@ -153,7 +153,11 @@ INITIAL_EXE:
 {$(WS)}.c{$(O)}.obj:
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.;$(O);$(SDK)INCLUDE
         @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D "UNICODE" %s
+!if "$(WIN)" == "64"
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D __x86_64__ /D "UNICODE" %s
+!else
+        @$(CC) $(CFLAGS_WEXE) /Fo$@               /D "UNICODE" %s
+!endif
 
 ####################### DEPENDENCY GENERATION #################
 
@@ -212,9 +216,9 @@ PRO:    DIR             \
 
 ########################## UTILITY ROUTINES ##########################
 
-$(OC)dbgbrk.obj:        dbgbrk.asm
+$(O)dbgbrk.obj:         dbgbrk.asm
         @if exist $@ del $@
-        ml /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
+        @$(ML) /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
 
 
 ############################# MAIN APP ROUTINES ######################
@@ -418,7 +422,7 @@ $(WS)local.h:           editctrl.h   resource.h
 
 # Build the Win32 version
 OBJS=   $(SRC:???=obj)          \
-        $(OC)dbgbrk.obj         \
+        $(O)dbgbrk.obj          \
         $(O)main.res
 
 $(O)$(ENAME).exe:       $(OBJS)         \

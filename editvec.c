@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,10 +38,10 @@
 #endif
 
 LRESULT APIENTRY VEWndProc
-    (HWND hWnd,         // Window handle
-     UINT message,      // Type of message
-     UINT wParam,       // Additional information
-     LONG lParam)       // ...
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
 ////static DWORD aHelpIDs[] = {

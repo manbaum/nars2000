@@ -158,18 +158,33 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
             break;
 
         case ARRAY_HETERO:
+#ifdef _WIN64
+            lpYYRes->tkToken.tkData.tkInteger = DR_HETERO64;
+#elif defined (_WIN32)
             lpYYRes->tkToken.tkData.tkInteger = DR_HETERO32;
-
+#else
+  #error Need code for this architecture.
+#endif
             break;
 
         case ARRAY_NESTED:
+#ifdef _WIN64
+            lpYYRes->tkToken.tkData.tkInteger = DR_NESTED64;
+#elif defined (_WIN32)
             lpYYRes->tkToken.tkData.tkInteger = DR_NESTED32;
-
+#else
+  #error Need code for this architecture.
+#endif
             break;
 
         case ARRAY_LIST:
+#ifdef _WIN64
+            lpYYRes->tkToken.tkData.tkInteger = DR_LIST64;
+#elif defined (_WIN32)
             lpYYRes->tkToken.tkData.tkInteger = DR_LIST32;
-
+#else
+  #error Need code for this architecture.
+#endif
             break;
 
         defstop
@@ -306,6 +321,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_QUATERNIONS:
         case DR_OCTONIONS:
         case DR_RATIONAL:
+        case DR_EXTPREC:
             return PrimFnNonceError_EM (lptkFunc);
     } // End SWITCH
 
@@ -773,20 +789,44 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
         case ARRAY_LIST:
             wsprintfW (wszTemp,
+#ifdef _WIN64
+                      L"List (%d):  64 bits per element",
+                      DR_LIST64
+#elif defined (_WIN32)
                       L"List (%d):  32 bits per element",
-                      DR_LIST32);
+                      DR_LIST32
+#else
+  #error Need code for this architecture.
+#endif
+                      );
             break;
 
         case ARRAY_NESTED:
             wsprintfW (wszTemp,
+#ifdef _WIN64
+                      L"Nested Array (%d):  64 bits per element",
+                      DR_NESTED64
+#elif defined (_WIN32)
                       L"Nested Array (%d):  32 bits per element",
-                      DR_NESTED32);
+                      DR_NESTED32
+#else
+  #error Need code for this architecture.
+#endif
+                      );
             break;
 
         case ARRAY_HETERO:
             wsprintfW (wszTemp,
+#ifdef _WIN64
+                      L"Heterogeneous Array (%d):  64 bits per element",
+                      DR_HETERO64
+#elif defined (_WIN32)
                       L"Heterogeneous Array (%d):  32 bits per element",
-                      DR_HETERO32);
+                      DR_HETERO32
+#else
+  #error Need code for this architecture.
+#endif
+                      );
             break;
 
         defstop

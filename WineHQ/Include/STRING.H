@@ -19,8 +19,8 @@
 #ifndef _INC_STRING
 #define _INC_STRING
 
-#if !defined(_WIN32) && !defined(_MAC)
-#error ERROR: Only Mac or Win32 targets supported!
+#if !defined(_WIN32) && !defined(_MAC) && !defined(_WIN64)
+#error ERROR: Only Mac or Win32 or Win64 targets supported!
 #endif
 
 
@@ -75,11 +75,13 @@ extern "C" {
 #endif
 
 
-#ifndef _SIZE_T_DEFINED
-typedef unsigned int size_t;
-#define _SIZE_T_DEFINED
+#ifdef _WIN64
+  #define SIZE_T unsigned __int64
+#elif defined (_WIN32)
+  #define SIZE_T unsigned __int32
+#else
+  #error Need code for this architecture.
 #endif
-
 
 #ifndef _MAC
 #ifndef _WCHAR_T_DEFINED
@@ -107,33 +109,33 @@ typedef unsigned short wchar_t;
 /* Function prototypes */
 
 #ifdef _M_MRX000
-_CRTIMP void *  __cdecl memcpy(void *, const void *, size_t);
-_CRTIMP int     __cdecl memcmp(const void *, const void *, size_t);
-_CRTIMP void *  __cdecl memset(void *, int, size_t);
+_CRTIMP void *  __cdecl memcpy(void *, const void *, SIZE_T);
+_CRTIMP int     __cdecl memcmp(const void *, const void *, SIZE_T);
+_CRTIMP void *  __cdecl memset(void *, int, SIZE_T);
 _CRTIMP char *  __cdecl _strset(char *, int);
 _CRTIMP char *  __cdecl strcpy(char *, const char *);
 _CRTIMP char *  __cdecl strcat(char *, const char *);
 _CRTIMP int     __cdecl strcmp(const char *, const char *);
-_CRTIMP size_t  __cdecl strlen(const char *);
+_CRTIMP SIZE_T  __cdecl strlen(const char *);
 #else
-        void *  __cdecl memcpy(void *, const void *, size_t);
-        int     __cdecl memcmp(const void *, const void *, size_t);
-        void *  __cdecl memset(void *, int, size_t);
+        void *  __cdecl memcpy(void *, const void *, SIZE_T);
+        int     __cdecl memcmp(const void *, const void *, SIZE_T);
+        void *  __cdecl memset(void *, int, SIZE_T);
         char *  __cdecl _strset(char *, int);
         char *  __cdecl strcpy(char *, const char *);
         char *  __cdecl strcat(char *, const char *);
         int     __cdecl strcmp(const char *, const char *);
-        size_t  __cdecl strlen(const char *);
+        SIZE_T  __cdecl strlen(const char *);
 #endif
 _CRTIMP void *  __cdecl _memccpy(void *, const void *, int, unsigned int);
-_CRTIMP void *  __cdecl memchr(const void *, int, size_t);
+_CRTIMP void *  __cdecl memchr(const void *, int, SIZE_T);
 _CRTIMP int     __cdecl _memicmp(const void *, const void *, unsigned int);
 
 #ifdef  _M_ALPHA
         /* memmove is available as an intrinsic in the Alpha compiler */
-        void *  __cdecl memmove(void *, const void *, size_t);
+        void *  __cdecl memmove(void *, const void *, SIZE_T);
 #else
-_CRTIMP void *  __cdecl memmove(void *, const void *, size_t);
+_CRTIMP void *  __cdecl memmove(void *, const void *, SIZE_T);
 #endif
 
 
@@ -142,26 +144,26 @@ _CRTIMP int     __cdecl _strcmpi(const char *, const char *);
 _CRTIMP int     __cdecl _stricmp(const char *, const char *);
 _CRTIMP int     __cdecl strcoll(const char *, const char *);
 _CRTIMP int     __cdecl _stricoll(const char *, const char *);
-_CRTIMP int     __cdecl _strncoll(const char *, const char *, size_t);
-_CRTIMP int     __cdecl _strnicoll(const char *, const char *, size_t);
-_CRTIMP size_t  __cdecl strcspn(const char *, const char *);
+_CRTIMP int     __cdecl _strncoll(const char *, const char *, SIZE_T);
+_CRTIMP int     __cdecl _strnicoll(const char *, const char *, SIZE_T);
+_CRTIMP SIZE_T  __cdecl strcspn(const char *, const char *);
 _CRTIMP char *  __cdecl _strdup(const char *);
 _CRTIMP char *  __cdecl _strerror(const char *);
 _CRTIMP char *  __cdecl strerror(int);
 _CRTIMP char *  __cdecl _strlwr(char *);
-_CRTIMP char *  __cdecl strncat(char *, const char *, size_t);
-_CRTIMP int     __cdecl strncmp(const char *, const char *, size_t);
-_CRTIMP int     __cdecl _strnicmp(const char *, const char *, size_t);
-_CRTIMP char *  __cdecl strncpy(char *, const char *, size_t);
-_CRTIMP char *  __cdecl _strnset(char *, int, size_t);
+_CRTIMP char *  __cdecl strncat(char *, const char *, SIZE_T);
+_CRTIMP int     __cdecl strncmp(const char *, const char *, SIZE_T);
+_CRTIMP int     __cdecl _strnicmp(const char *, const char *, SIZE_T);
+_CRTIMP char *  __cdecl strncpy(char *, const char *, SIZE_T);
+_CRTIMP char *  __cdecl _strnset(char *, int, SIZE_T);
 _CRTIMP char *  __cdecl strpbrk(const char *, const char *);
 _CRTIMP char *  __cdecl strrchr(const char *, int);
 _CRTIMP char *  __cdecl _strrev(char *);
-_CRTIMP size_t  __cdecl strspn(const char *, const char *);
+_CRTIMP SIZE_T  __cdecl strspn(const char *, const char *);
 _CRTIMP char *  __cdecl strstr(const char *, const char *);
 _CRTIMP char *  __cdecl strtok(char *, const char *);
 _CRTIMP char *  __cdecl _strupr(char *);
-_CRTIMP size_t  __cdecl strxfrm (char *, const char *, size_t);
+_CRTIMP SIZE_T  __cdecl strxfrm (char *, const char *, SIZE_T);
 
 #if defined(_M_MPPC) || defined(_M_M68K)
 unsigned char * __cdecl _c2pstr(char *);
@@ -199,8 +201,8 @@ _CRTIMP int __cdecl strcmpi(const char *, const char *);
 _CRTIMP int __cdecl stricmp(const char *, const char *);
 _CRTIMP char * __cdecl strdup(const char *);
 _CRTIMP char * __cdecl strlwr(char *);
-_CRTIMP int __cdecl strnicmp(const char *, const char *, size_t);
-_CRTIMP char * __cdecl strnset(char *, int, size_t);
+_CRTIMP int __cdecl strnicmp(const char *, const char *, SIZE_T);
+_CRTIMP char * __cdecl strnset(char *, int, SIZE_T);
 _CRTIMP char * __cdecl strrev(char *);
         char * __cdecl strset(char *, int);
 _CRTIMP char * __cdecl strupr(char *);
@@ -219,31 +221,31 @@ _CRTIMP wchar_t * __cdecl wcscat(wchar_t *, const wchar_t *);
 _CRTIMP wchar_t * __cdecl wcschr(const wchar_t *, wchar_t);
 _CRTIMP int __cdecl wcscmp(const wchar_t *, const wchar_t *);
 _CRTIMP wchar_t * __cdecl wcscpy(wchar_t *, const wchar_t *);
-_CRTIMP size_t __cdecl wcscspn(const wchar_t *, const wchar_t *);
-_CRTIMP size_t __cdecl wcslen(const wchar_t *);
-_CRTIMP wchar_t * __cdecl wcsncat(wchar_t *, const wchar_t *, size_t);
-_CRTIMP int __cdecl wcsncmp(const wchar_t *, const wchar_t *, size_t);
-_CRTIMP wchar_t * __cdecl wcsncpy(wchar_t *, const wchar_t *, size_t);
+_CRTIMP SIZE_T __cdecl wcscspn(const wchar_t *, const wchar_t *);
+_CRTIMP SIZE_T __cdecl wcslen(const wchar_t *);
+_CRTIMP wchar_t * __cdecl wcsncat(wchar_t *, const wchar_t *, SIZE_T);
+_CRTIMP int __cdecl wcsncmp(const wchar_t *, const wchar_t *, SIZE_T);
+_CRTIMP wchar_t * __cdecl wcsncpy(wchar_t *, const wchar_t *, SIZE_T);
 _CRTIMP wchar_t * __cdecl wcspbrk(const wchar_t *, const wchar_t *);
 _CRTIMP wchar_t * __cdecl wcsrchr(const wchar_t *, wchar_t);
-_CRTIMP size_t __cdecl wcsspn(const wchar_t *, const wchar_t *);
+_CRTIMP SIZE_T __cdecl wcsspn(const wchar_t *, const wchar_t *);
 _CRTIMP wchar_t * __cdecl wcsstr(const wchar_t *, const wchar_t *);
 _CRTIMP wchar_t * __cdecl wcstok(wchar_t *, const wchar_t *);
 
 _CRTIMP wchar_t * __cdecl _wcsdup(const wchar_t *);
 _CRTIMP int __cdecl _wcsicmp(const wchar_t *, const wchar_t *);
-_CRTIMP int __cdecl _wcsnicmp(const wchar_t *, const wchar_t *, size_t);
-_CRTIMP wchar_t * __cdecl _wcsnset(wchar_t *, wchar_t, size_t);
+_CRTIMP int __cdecl _wcsnicmp(const wchar_t *, const wchar_t *, SIZE_T);
+_CRTIMP wchar_t * __cdecl _wcsnset(wchar_t *, wchar_t, SIZE_T);
 _CRTIMP wchar_t * __cdecl _wcsrev(wchar_t *);
 _CRTIMP wchar_t * __cdecl _wcsset(wchar_t *, wchar_t);
 
 _CRTIMP wchar_t * __cdecl _wcslwr(wchar_t *);
 _CRTIMP wchar_t * __cdecl _wcsupr(wchar_t *);
-_CRTIMP size_t __cdecl wcsxfrm(wchar_t *, const wchar_t *, size_t);
+_CRTIMP SIZE_T __cdecl wcsxfrm(wchar_t *, const wchar_t *, SIZE_T);
 _CRTIMP int __cdecl wcscoll(const wchar_t *, const wchar_t *);
 _CRTIMP int __cdecl _wcsicoll(const wchar_t *, const wchar_t *);
-_CRTIMP int __cdecl _wcsncoll(const wchar_t *, const wchar_t *, size_t);
-_CRTIMP int __cdecl _wcsnicoll(const wchar_t *, const wchar_t *, size_t);
+_CRTIMP int __cdecl _wcsncoll(const wchar_t *, const wchar_t *, SIZE_T);
+_CRTIMP int __cdecl _wcsnicoll(const wchar_t *, const wchar_t *, SIZE_T);
 
 #if     !__STDC__
 
@@ -268,8 +270,8 @@ _CRTIMP int __cdecl _wcsnicoll(const wchar_t *, const wchar_t *, size_t);
 /* prototypes for oldnames.lib functions */
 _CRTIMP wchar_t * __cdecl wcsdup(const wchar_t *);
 _CRTIMP int __cdecl wcsicmp(const wchar_t *, const wchar_t *);
-_CRTIMP int __cdecl wcsnicmp(const wchar_t *, const wchar_t *, size_t);
-_CRTIMP wchar_t * __cdecl wcsnset(wchar_t *, wchar_t, size_t);
+_CRTIMP int __cdecl wcsnicmp(const wchar_t *, const wchar_t *, SIZE_T);
+_CRTIMP wchar_t * __cdecl wcsnset(wchar_t *, wchar_t, SIZE_T);
 _CRTIMP wchar_t * __cdecl wcsrev(wchar_t *);
 _CRTIMP wchar_t * __cdecl wcsset(wchar_t *, wchar_t);
 _CRTIMP wchar_t * __cdecl wcslwr(wchar_t *);
@@ -288,5 +290,7 @@ _CRTIMP int __cdecl wcsicoll(const wchar_t *, const wchar_t *);
 #ifdef __cplusplus
 }
 #endif
+
+#undef  SIZE_T
 
 #endif  /* _INC_STRING */

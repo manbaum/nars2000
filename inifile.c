@@ -1539,7 +1539,7 @@ void SaveIniFile
         UINT uLen;
 
         wszTemp[0] = L'\'';
-        uLen =
+        uLen = (UINT)
           ConvertWideToNameLength (&wszTemp[1], &cQuadPR_CWS, 1);
         wszTemp[uLen + 1] = L'\'';
         wszTemp[uLen + 2] = L'\0';

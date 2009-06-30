@@ -60,13 +60,25 @@ LPPL_YYSTYPE SysFnWA_EM_YY
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
-    // Start with 2GB-1
-    ByteTmpHi  = 0x7FFFFFFF;
-    ByteTmpMid = ByteTmpHi / 2;
-    ByteTmpLo  = 1;
+#ifdef _WIN64
+    // Start with 256GB-1
+    ByteTmpHi  = 0x3FFFFFFFFF;
 
     // The amount of storage we don't care about
-#define FUDGE_FACTOR    (16*1024)
+  #define FUDGE_FACTOR    (128*1024)
+
+#elif defined (_WIN32)
+    // Start with 4GB-1
+    ByteTmpHi  = 0xFFFFFFFF;
+
+    // The amount of storage we don't care about
+  #define FUDGE_FACTOR    (16*1024)
+
+#else
+  #error Need code for this architecture.
+#endif
+    ByteTmpMid = ByteTmpHi / 2;
+    ByteTmpLo  = 1;
 
     while (ByteTmpHi > (ByteTmpLo + FUDGE_FACTOR))
     {

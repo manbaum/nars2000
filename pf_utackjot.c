@@ -286,7 +286,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     Assert (aplNELMRht EQ (APLU3264) aplNELMRht);
     lpwszCompLine =
       MyVirtualAlloc (NULL,         // Any address (FIXED SIZE)
-                      ((APLU3264) aplNELMRht + 1) * sizeof (APLCHAR),   // "+ 1" for the terminating zero
+                      (DWORD) (aplNELMRht + 1) * sizeof (APLCHAR),   // "+ 1" for the terminating zero
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
     if (!lpwszCompLine)

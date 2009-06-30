@@ -49,14 +49,24 @@ EXCEPT_NAMES ExceptNames[] =
 #define EXCEPT_NAMES_LENGTH         countof (ExceptNames)
 
 // Save area for exception address if EXCEPTION_BREAKPOINT
-DWORD   gExceptAddr;            // Exception address
+APLU3264        gExceptAddr;            // Exception address
 LPWCHAR         glpExceptionText;       // Ptr to Exception text
 LPUCHAR         glpInvalidAddr;         // Ptr to invalid address
 EXCEPTION_CODES gExceptionCode;
 
 // Save area for crash information
 CONTEXT gContextRecord;
-EXCEPTION_RECORD gExceptionRecord;
+#ifndef PROTO
+  #ifdef _WIN64
+    #define ADDR_MASK     0xFFFFFFFFFFFFF000
+  EXCEPTION_RECORD64 gExceptionRecord;
+  #elif defined (_WIN32)
+    #define ADDR_MASK     0x00000000FFFFF000
+  EXCEPTION_RECORD32 gExceptionRecord;
+  #else
+    #error Need code for this architecture.
+  #endif
+#endif
 
 #define STACKWALK_MAX_NAMELEN       1024
 
@@ -147,8 +157,13 @@ long CheckVirtAlloc
     if (lpExcept->ExceptionRecord->ExceptionCode EQ EXCEPTION_ACCESS_VIOLATION)
     {
         // Get the invalid address
-        lpInvalidAddr = (LPUCHAR) lpExcept->ExceptionRecord->ExceptionInformation[1];
-
+#ifdef _WIN64
+        lpInvalidAddr = (LPUCHAR) ((PEXCEPTION_RECORD64) lpExcept->ExceptionRecord)->ExceptionInformation[1];
+#elif defined (_WIN32)
+        lpInvalidAddr = (LPUCHAR) ((PEXCEPTION_RECORD32) lpExcept->ExceptionRecord)->ExceptionInformation[1];
+#else
+  #error Need code for this architecture.
+#endif
         // Check on virtual allocs from <memVirtStr>
         iRet = CheckMemVirtStr (lpInvalidAddr);
         if (iRet)
@@ -199,7 +214,7 @@ int CheckPTDVirtStr
          &&              lpInvalidAddr < (lpIniAddr + lpLstMVS->MaxSize))
         {
             // Allocate more memory
-            if (VirtualAlloc ((LPVOID) (((HANDLE_PTR) lpInvalidAddr) & 0xFFFFF000),
+            if (VirtualAlloc ((LPVOID) (ADDR_MASK & (HANDLE_PTR) lpInvalidAddr),
                               lpLstMVS->IncrSize,
                               MEM_COMMIT,
                               PAGE_READWRITE) NE NULL)
@@ -318,10 +333,15 @@ long CheckException
 
     // Save in globals
     gContextRecord   = *lpExcept->ContextRecord;
-    gExceptionRecord = *lpExcept->ExceptionRecord;
-
+#ifdef _WIN64
+    gExceptionRecord = *(PEXCEPTION_RECORD64) lpExcept->ExceptionRecord;
+#elif defined (_WIN32)
+    gExceptionRecord = *(PEXCEPTION_RECORD32) lpExcept->ExceptionRecord;
+#else
+  #error Need code for this architecture.
+#endif
     // Get the invalid address
-    glpInvalidAddr = (LPUCHAR) lpExcept->ExceptionRecord->ExceptionInformation[1];   // Save as global
+    glpInvalidAddr = (LPUCHAR) gExceptionRecord.ExceptionInformation[1];    // Save as global
 
     // Save the exception code, address, and text for later use
     MySetExceptionCode (lpExcept->ExceptionRecord->ExceptionCode);      // ***DELETEME***
@@ -360,8 +380,13 @@ long CheckException
             //   so we can report it to the end user
 
             // Save our return address for later use
-            gExceptAddr = *(LPDWORD) ULongToPtr (lpExcept->ContextRecord->Esp);
-
+#ifdef _WIN64
+            gExceptAddr = lpExcept->ContextRecord->Rsp;
+#elif defined (_WIN32)
+            gExceptAddr = lpExcept->ContextRecord->Esp;
+#else
+  #error Need code for this architecture.
+#endif
             return EXCEPTION_EXECUTE_HANDLER;
 
         case EXCEPTION_CTRL_BREAK:
@@ -379,7 +404,7 @@ long CheckException
 //  Compare starting addresses so as to sort them
 //***************************************************************************
 
-APLU3264 __cdecl CompareStartAddresses
+UINT __cdecl CompareStartAddresses
     (const void *elem1,
      const void *elem2)
 
@@ -387,8 +412,8 @@ APLU3264 __cdecl CompareStartAddresses
 #define lpSALft     ((LPSTART_ADDRESSES) elem1)
 #define lpSARht     ((LPSTART_ADDRESSES) elem2)
 
-    return (APLU3264) (lpSALft->StartAddressAddr
-                     - lpSARht->StartAddressAddr);
+    return (UINT) (lpSALft->StartAddressAddr
+                 - lpSARht->StartAddressAddr);
 #undef  lpSARht
 #undef  lpSALft
 } // End CompareStartAddresses
@@ -434,19 +459,19 @@ void DisplayException
     WCHAR        wszTemp[1024]; // Temp output save area
     int          exceptIndex;   // Exception index
     UINT         exceptCode,    // Exception code
-                 nearAddress,   // Offset from closest address
+                 uMem,          // Loop counter
+                 uCnt,          // ...
+                 SILevel;       // The current SI level
+    APLU3264     nearAddress,   // Offset from closest address
                  nearIndex,     // Index into StartAddresses
                  nearAddress0,  // Offset from closest address
                  nearIndex0,    // Index into StartAddresses
                  nearAddress1,  // Offset from closest address
-                 nearIndex1,    // Index into StartAddresses
-                 uMem,          // Loop counter
-                 uCnt,          // ...
-                 SILevel;       // The current SI level
+                 nearIndex1;    // Index into StartAddresses
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPWCHAR      exceptText;    // Ptr to exception text
     LPUCHAR      exceptAddr;    // Exception address
-    DWORD        regEBP,        // Stack trace ptr
+    APLU3264     regEBP,        // Stack trace ptr
                  regEIP;        // Instruction ptr
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS header
     LPMEMVIRTSTR lpLstMVS;      // Ptr to last MEMVIRTSTR (NULL = none)
@@ -466,9 +491,15 @@ void DisplayException
 
     // Get the saved exception code & address, & text
     exceptCode = gExceptionCode;
-    exceptAddr = gExceptionRecord.ExceptionAddress;
+    exceptAddr = (LPUCHAR) gExceptionRecord.ExceptionAddress;
     exceptText = glpExceptionText;
+#ifdef _WIN64
+    regEBP     = gContextRecord.Rbp;
+#elif defined (_WIN32)
     regEBP     = gContextRecord.Ebp;
+#else
+  #error Need code for this architecture.
+#endif
     lpSISCur   = lpMemPTD->lpSISCur;
     lpLstMVS   = lpMemPTD->lpLstMVS;
 
@@ -522,7 +553,16 @@ void DisplayException
 
     // Display the version # of the executable
     wsprintfW (wszTemp,
-               WS_APPNAME L" -- Version %s" WS_APPEND_DEBUG, wszFileVer);
+               WS_APPNAME L" -- Version %s (%s)" WS_APPEND_DEBUG,
+               wszFileVer,
+#ifdef _WIN64
+               L"Win64"
+#elif defined (_WIN32)
+               L"Win32"
+#else
+  #error Need code for this architecture.
+#endif
+               );
     NewMsg (wszTemp);
 
     // Display the exception code
@@ -551,25 +591,53 @@ void DisplayException
     NewMsg (L"");
     NewMsg (L"== REGISTERS ==");
     wsprintfW (wszTemp,
+#ifdef _WIN64
+               L"RAX = %016X RBX = %016X RCX = %016X RDX = %016X RIP = %016X",
+               gContextRecord.Rax,
+               gContextRecord.Rbx,
+               gContextRecord.Rcx,
+               gContextRecord.Rdx,
+               gContextRecord.Rip
+#elif defined (_WIN32)
                L"EAX = %08X EBX = %08X ECX = %08X EDX = %08X EIP = %08X",
                gContextRecord.Eax,
                gContextRecord.Ebx,
                gContextRecord.Ecx,
                gContextRecord.Edx,
-               gContextRecord.Eip);
+               gContextRecord.Eip
+#else
+  #error Need code for this architecture.
+#endif
+               );
     NewMsg (wszTemp);
 
     wsprintfW (wszTemp,
+#ifdef _WIN64
+               L"RSI = %016X RDI = %016X RBP = %016X RSP = %016X EFL = %08X",
+               gContextRecord.Rsi,
+               gContextRecord.Rdi,
+               gContextRecord.Rbp,
+               gContextRecord.Rsp,
+#elif defined (_WIN32)
                L"ESI = %08X EDI = %08X EBP = %08X ESP = %08X EFL = %08X",
                gContextRecord.Esi,
                gContextRecord.Edi,
                gContextRecord.Ebp,
                gContextRecord.Esp,
+#else
+  #error Need code for this architecture.
+#endif
                gContextRecord.EFlags);
     NewMsg (wszTemp);
 
     wsprintfW (wszTemp,
+#ifdef _WIN64
+               L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X CR2 = %016X",
+#elif defined (_WIN32)
                L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X CR2 = %08X",
+#else
+  #error Need code for this architecture.
+#endif
                gContextRecord.SegCs,
                gContextRecord.SegDs,
                gContextRecord.SegEs,
@@ -583,21 +651,38 @@ void DisplayException
     NewMsg (L"");
     NewMsg (L"== INSTRUCTIONS ==");
 
+    // Get the instruction pointer
+    regEIP =
+#ifdef _WIN64
+    gContextRecord.Rip
+#elif defined (_WIN32)
+    gContextRecord.Eip
+#else
+  #error Need code for this architecture.
+#endif
+    ;
+
     // Start instruction display three rows before the actual fault instruction
-    regEIP = gContextRecord.Eip - 3 * 16;
+    regEIP -= 3 * 16;
 
     if (IsGoodReadPtr (*(LPUCHAR *) &regEIP, 48))
     {
         for (uCnt = 0; uCnt < 7; uCnt++, regEIP += 16)
         {
             wsprintfW (wszTemp,
+#ifdef _WIN64
+                       L"%016X: ",
+#elif defined (_WIN32)
                        L"%08X: ",
+#else
+  #error Need code for this architecture.
+#endif
                        regEIP);
 
             for (uMem = 0; uMem < 16; uMem++)
                 wsprintfW (&wszTemp[lstrlenW (wszTemp)],
                            L" %02X",
-                           *(LPBYTE) UlongToPtr (regEIP + uMem));
+                           *(LPBYTE) (regEIP + uMem));
             NewMsg (wszTemp);
         } // End FOR
     } // End IF
@@ -612,7 +697,13 @@ void DisplayException
     // Display the virtual memory ranges
     NewMsg (L"");
     NewMsg (L"== MEMVIRTSTR ==");
+#ifdef _WIN64
+    NewMsg (L"     IniAddr     IncrSize  MaxSize GuardPage");
+#elif defined (_WIN32)
     NewMsg (L" IniAddr IncrSize  MaxSize GuardPage");
+#else
+  #error Need code for this architecture.
+#endif
 
     // Check for global VirtualAlloc memory that needs to be expanded
     for (uMem = 0; uMem < uMemVirtCnt; uMem++)
@@ -637,7 +728,13 @@ void DisplayException
     // Display the local virtual memory ranges
     NewMsg (L"");
     NewMsg (L"== LCLMEMVIRTSTR ==");
+#ifdef _WIN64
+    NewMsg (L"     IniAddr     IncrSize  MaxSize GuardPage");
+#elif defined (_WIN32)
     NewMsg (L" IniAddr IncrSize  MaxSize GuardPage");
+#else
+  #error Need code for this architecture.
+#endif
 
     while (lpLstMVS)
     {
@@ -751,7 +848,7 @@ void DoStackWalk
 ////IMAGEHLP_MODULE64_V2 Module;
 ////IMAGEHLP_LINE64      Line;
     LPBYTE               caller;            // Ptr to caller in stack trace
-    UINT                 nearAddress,       // Offset from closest address
+    APLU3264             nearAddress,       // Offset from closest address
                          nearIndex,         // Index into StartAddresses
                          nearAddress0,      // Offset from closest address
                          nearIndex0,        // Index into StartAddresses
@@ -810,24 +907,32 @@ void DoStackWalk
     context = *lpContextRecord;
 
     // Initialize these fields before the first call to StackWalk64
+#ifdef _WIN64
+    stackFrame.AddrPC.Offset     = lpContextRecord->Rip;    // Starting instruction address
+    stackFrame.AddrFrame.Offset  = lpContextRecord->Rbp;    // Starting frame address
+    stackFrame.AddrStack.Offset  = lpContextRecord->Rsp;    // Starting stack address
+#elif defined (_WIN32)
     stackFrame.AddrPC.Offset     = lpContextRecord->Eip;    // Starting instruction address
+    stackFrame.AddrFrame.Offset  = lpContextRecord->Ebp;    // Starting frame address
+    stackFrame.AddrStack.Offset  = lpContextRecord->Esp;    // Starting stack address
+#else
+  #error Need code for this architecture.
+#endif
     stackFrame.AddrPC.Segment    = 0;                       // Used for 16-bit addressing only
     stackFrame.AddrPC.Mode       = AddrModeFlat;            // Use flat mode addressing
-    stackFrame.AddrFrame.Offset  = lpContextRecord->Ebp;    // Starting frame address
     stackFrame.AddrFrame.Segment = 0;                       // Used for 16-bit addressing only
     stackFrame.AddrFrame.Mode    = AddrModeFlat;            // Use flat mode addressing
-    stackFrame.AddrStack.Offset  = lpContextRecord->Esp;    // Starting stack address
     stackFrame.AddrStack.Segment = 0;                       // Used for 16-bit addressing only
     stackFrame.AddrStack.Mode    = AddrModeFlat;            // Use flat mode addressing
 
     // Walk the stack
     while (StackWalk64 (
-#ifdef _WIN32
-                        IMAGE_FILE_MACHINE_I386,    // Machine architecture type
-#elif defined (_WIN64)
+#ifdef _WIN64
                         IMAGE_FILE_MACHINE_AMD64,   // Machine architecture type
+#elif defined (_WIN32)
+                        IMAGE_FILE_MACHINE_I386,    // Machine architecture type
 #else
-#error Need code for this architecture.
+  #error Need code for this architecture.
 #endif
                         hProcess,                   // Process handle
                         hThread,                    // Thread handle
@@ -903,13 +1008,25 @@ void DoStackWalk
         if (nearAddress > 0x00100000)
             // Format the addresses
             wsprintfW (wszTemp,
+#ifdef _WIN64
+                       L"%p -- EBP = %016X",
+#elif defined (_WIN32)
                        L"%p -- EBP = %08X",
+#else
+  #error Need code for this architecture.
+#endif
                        caller,
                        stackFrame.AddrFrame.Offset);
         else
             // Format the addresses
             wsprintfW (wszTemp,
+#ifdef _WIN64
+                       L"%p (%S + %p) -- EBP = %016X",
+#elif defined (_WIN32)
                        L"%p (%S + %p) -- EBP = %08X",
+#else
+  #error Need code for this architecture.
+#endif
                        caller,
                        StartAddresses[nearIndex].StartAddressName,
                        nearAddress,
@@ -934,8 +1051,8 @@ void DoStackWalk
 
 void FindRoutineAddress
     (LPUCHAR     exceptAddr,        // Exception address
-     UINT_PTR   *lpNearAddress,     // Ptr to offset from closest address
-     LPUINT      lpNearIndex,       // Ptr to index into StartAddresses
+     APLU3264   *lpNearAddress,     // Ptr to offset from closest address
+     APLU3264   *lpNearIndex,       // Ptr to index into StartAddresses
      UBOOL       bDebugger)         // TRUE iff test for running under debugger
 
 {

@@ -62,7 +62,7 @@ UBOOL CmdSave_EM
     APLRANK      aplRankWSID;           // ...    rank
     APLUINT      ByteRes;               // # bytes in the result
     UBOOL        bRet = FALSE;          // TRUE iff result is valid
-    UINT         uNameLen;              // Length of the object name in WCHARs
+    APLU3264     uNameLen;              // Length of the object name in WCHARs
     int          iCmp;                  // Comparison result
     UINT         uGlbCnt=0;             // # entries in [Globals] section
     FILE        *fStream;               // Ptr to file stream
@@ -102,7 +102,7 @@ UBOOL CmdSave_EM
     // Because the global memory doesn't have a zero terminator,
     //   we must copy the data to a temporary location and then
     //   append a zero terminator
-    lstrcpynW (wszTempDPFE, lpMemSaveWSID, (APLU3264) aplNELMWSID + 1);
+    lstrcpynW (wszTempDPFE, lpMemSaveWSID, (UINT) aplNELMWSID + 1);
 ////wszTempDPFE[aplNELMWSID] = L'\0';   // Already done via "+ 1" in lstrcpynW
 
     // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
@@ -146,7 +146,7 @@ UBOOL CmdSave_EM
                     lstrcpyW (lpwszTemp, ERRMSG_NOT_SAVED);
 
                     // Followed by the old []WSID
-                    lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpMemSaveWSID, (APLU3264) aplNELMWSID + 1);
+                    lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpMemSaveWSID, (UINT) aplNELMWSID + 1);
                 } // End IF/ELSE
 
                 // Display the error message

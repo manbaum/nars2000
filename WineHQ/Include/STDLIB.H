@@ -20,8 +20,8 @@
 #ifndef _INC_STDLIB
 #define _INC_STDLIB
 
-#if !defined(_WIN32) && !defined(_MAC)
-#error ERROR: Only Mac or Win32 targets supported!
+#if !defined(_WIN32) && !defined(_MAC) && !defined(_WIN64)
+#error ERROR: Only Mac or Win32 or Win64 targets supported!
 #endif
 
 
@@ -84,11 +84,13 @@ extern "C" {
 #endif
 
 
-#ifndef _SIZE_T_DEFINED
-typedef unsigned int size_t;
-#define _SIZE_T_DEFINED
+#ifdef _WIN64
+  #define SIZE_T unsigned __int64
+#elif defined (_WIN32)
+  #define SIZE_T unsigned __int32
+#else
+  #error Need code for this architecture.
 #endif
-
 
 #ifndef _WCHAR_T_DEFINED
 typedef unsigned short wchar_t;
@@ -406,9 +408,9 @@ _CRTIMP long   __cdecl atol(const char *);
 #ifdef _M_M68K
 _CRTIMP long double __cdecl _atold(const char *);
 #endif
-_CRTIMP void * __cdecl bsearch(const void *, const void *, size_t, size_t,
+_CRTIMP void * __cdecl bsearch(const void *, const void *, SIZE_T, SIZE_T,
         int (__cdecl *)(const void *, const void *));
-_CRTIMP void * __cdecl calloc(size_t, size_t);
+_CRTIMP void * __cdecl calloc (SIZE_T, SIZE_T);
 _CRTIMP div_t  __cdecl div(int, int);
 _CRTIMP void   __cdecl exit(int);
 _CRTIMP void   __cdecl free(void *);
@@ -421,15 +423,15 @@ _CRTIMP long __cdecl labs(long);
 #endif
 _CRTIMP ldiv_t __cdecl ldiv(long, long);
 _CRTIMP char * __cdecl _ltoa(long, char *, int);
-_CRTIMP void * __cdecl malloc(size_t);
-_CRTIMP int    __cdecl mblen(const char *, size_t);
-_CRTIMP size_t __cdecl _mbstrlen(const char *s);
-_CRTIMP int    __cdecl mbtowc(wchar_t *, const char *, size_t);
-_CRTIMP size_t __cdecl mbstowcs(wchar_t *, const char *, size_t);
-_CRTIMP void   __cdecl qsort(void *, size_t, size_t, int (__cdecl *)
+_CRTIMP void * __cdecl malloc (SIZE_T);
+_CRTIMP int    __cdecl mblen(const char *, SIZE_T);
+_CRTIMP SIZE_T __cdecl _mbstrlen(const char *s);
+_CRTIMP int    __cdecl mbtowc(wchar_t *, const char *, SIZE_T);
+_CRTIMP SIZE_T __cdecl mbstowcs(wchar_t *, const char *, SIZE_T);
+_CRTIMP void   __cdecl qsort(void *, SIZE_T, SIZE_T, int (__cdecl *)
         (const void *, const void *));
 _CRTIMP int    __cdecl rand(void);
-_CRTIMP void * __cdecl realloc(void *, size_t);
+_CRTIMP void * __cdecl realloc(void *, SIZE_T);
 _CRTIMP int    __cdecl _set_error_mode(int);
 _CRTIMP void   __cdecl srand(unsigned int);
 _CRTIMP double __cdecl strtod(const char *, char **);
@@ -443,7 +445,7 @@ _CRTIMP int    __cdecl system(const char *);
 #endif
 _CRTIMP char * __cdecl _ultoa(unsigned long, char *, int);
 _CRTIMP int    __cdecl wctomb(char *, wchar_t);
-_CRTIMP size_t __cdecl wcstombs(char *, const wchar_t *, size_t);
+_CRTIMP SIZE_T __cdecl wcstombs(char *, const wchar_t *, SIZE_T);
 
 #ifndef _MAC
 #ifndef _WSTDLIB_DEFINED
@@ -470,7 +472,7 @@ _CRTIMP long __cdecl _wtol(const wchar_t *);
 _CRTIMP char * __cdecl _ecvt(double, int, int *, int *);
 _CRTIMP void   __cdecl _exit(int);
 _CRTIMP char * __cdecl _fcvt(double, int, int *, int *);
-_CRTIMP char * __cdecl _fullpath(char *, const char *, size_t);
+_CRTIMP char * __cdecl _fullpath(char *, const char *, SIZE_T);
 _CRTIMP char * __cdecl _gcvt(double, int, char *);
         unsigned long __cdecl _lrotl(unsigned long, int);
         unsigned long __cdecl _lrotr(unsigned long, int);
@@ -494,7 +496,7 @@ _CRTIMP void   __cdecl _swab(char *, char *, int);
 
 /* wide function prototypes, also declared in wchar.h  */
 
-_CRTIMP wchar_t * __cdecl _wfullpath(wchar_t *, const wchar_t *, size_t);
+_CRTIMP wchar_t * __cdecl _wfullpath(wchar_t *, const wchar_t *, SIZE_T);
 _CRTIMP void   __cdecl _wmakepath(wchar_t *, const wchar_t *, const wchar_t *, const wchar_t *,
         const wchar_t *);
 _CRTIMP void   __cdecl _wperror(const wchar_t *);
@@ -596,5 +598,7 @@ _CRTIMP char * __cdecl ultoa(unsigned long, char *, int);
 #ifdef  _MSC_VER
 #pragma pack(pop)
 #endif  /* _MSC_VER */
+
+#undef  SIZE_T
 
 #endif  /* _INC_STDLIB */

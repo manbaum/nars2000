@@ -194,8 +194,8 @@ CAPTION "About NARS2000"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,130,5,50,14
-    LTEXT           "NARS2000\nVersion %u.%u%u",
-                    IDC_VERSION,10,5,115,18,NOT WS_GROUP
+    LTEXT           "NARS2000 (WinXX)\nVersion %u.%u%u",IDC_VERSION,10,
+                    5,115,18,NOT WS_GROUP
     LTEXT           "Copyright © 2006-9 Sudley Place Software\nAll rights reserved.",
                     IDC_STATIC,10,30,150,18,NOT WS_GROUP
     ICON            IDI_NARS,IDC_LOADEDFROM,145,25, 0, 0,SS_NOTIFY | SS_REALSIZEIMAGE
@@ -963,7 +963,13 @@ IDB_LINECONT    BITMAP  DISCARDABLE "Images\\LineCont.bmp"
 //
 // MANIFEST
 //
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "NARS2000.exe.manifest"
+#ifdef _WIN64
+  CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "NARS2000.exe.manifest64"
+#elif defined (_WIN32)
+  CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "NARS2000.exe.manifest32"
+#else
+  #error Need code for this architecture.
+#endif
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

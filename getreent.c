@@ -11,6 +11,5 @@
 
 void *__getreent (void)
 {
-    _asm int 1;
     return (void *)0;
 }

@@ -37,10 +37,10 @@ extern HICON hIconWC_Large;
 //***************************************************************************
 
 APLU3264 CALLBACK WebColorsDlgProc
-    (HWND   hDlg,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
+    (HWND   hDlg,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     static SYNTAXCOLORNAME scnMatch;        // Incoming color to match

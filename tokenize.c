@@ -2098,9 +2098,9 @@ UBOOL fnComDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    int     iLen;
-    TKFLAGS tkFlags = {0};
-    LPWCHAR wp;
+    APLI3264 iLen;
+    TKFLAGS  tkFlags = {0};
+    LPWCHAR  wp;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnComDone");
@@ -2119,7 +2119,7 @@ UBOOL fnComDone
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
-        int iVar;               // Loop counter
+        APLI3264 iVar;                  // Loop counter
 
         // Copy the length
         iVar = iLen;
@@ -2144,7 +2144,7 @@ NORMAL_EXIT:
     // Skip over the comment in the input stream
     // "-1" because the FOR loop in Tokenize_EM will
     //   increment it, too
-    lptkLocalVars->uChar += iLen - 1;
+    lptkLocalVars->uChar += (UINT) (iLen - 1);
 
     return TRUE;
 } // End fnComDone

@@ -35,6 +35,14 @@
 extern "C" {
 #endif
 
+#ifdef _WIN64
+  #define SIZE_T unsigned __int64
+#elif defined (_WIN32)
+  #define SIZE_T unsigned __int32
+#else
+  #error Need code for this architecture.
+#endif
+
 struct _GUID;
 
 /*
@@ -143,8 +151,8 @@ struct __wine_debug_channel
 
 struct __wine_debug_functions
 {
-    char * (*get_temp_buffer)( size_t n );
-    void   (*release_temp_buffer)( char *buffer, size_t n );
+    char * (*get_temp_buffer)( SIZE_T n );
+    void   (*release_temp_buffer)( char *buffer, SIZE_T n );
     const char * (*dbgstr_an)( const char * s, int n );
     const char * (*dbgstr_wn)( const WCHAR *s, int n );
     int (*dbg_vprintf)( const char *format, va_list args );
@@ -156,7 +164,7 @@ extern unsigned char __wine_dbg_get_channel_flags( struct __wine_debug_channel *
 extern int __wine_dbg_set_channel_flags( struct __wine_debug_channel *channel,
                                          unsigned char set, unsigned char clear );
 extern void __wine_dbg_set_functions( const struct __wine_debug_functions *new_funcs,
-                                      struct __wine_debug_functions *old_funcs, size_t size );
+                                      struct __wine_debug_functions *old_funcs, SIZE_T size );
 
 /*
  * Exported definitions and macros
@@ -280,6 +288,8 @@ inline static const char *debugstr_w( const WCHAR *s ) { return wine_dbgstr_wn( 
 #define MESSAGE                    WINE_MESSAGE
 
 #endif /* __WINESRC__ */
+
+#undef  SIZE_T
 
 #ifdef __cplusplus
 }

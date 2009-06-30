@@ -178,7 +178,7 @@ void YYFree
 
 {
 #ifdef DEBUG
-    UINT         u;             // Index into lpMemPTD->YYRes
+    APLU3264     u;             // Index into lpMemPTD->YYRes
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory

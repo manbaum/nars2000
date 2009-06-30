@@ -1857,7 +1857,7 @@ void QFMT_CommonEFI
     LPAPLCHAR    lpaplChar;                 // Ptr to next available byte
     int          fsWid,                     // Field width
                  iWid;                      // ...
-    UINT         fsDig;                     // Precision for F-format, significant digits for E-format
+    APLU3264     fsDig;                     // Precision for F-format, significant digits for E-format
     UBOOL        bContinue,                 // TRUE iff we're to continue with Symbol Substitution
                  bZeroFill;                 // TRUE iff we're still doing Zero Fill
     LPWCHAR      lpwSrc,                    // Ptr to source text

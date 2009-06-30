@@ -65,8 +65,8 @@ void CC_Delete
 LRESULT APIENTRY CCWndProc
     (HWND   hWnd,       // Window handle
      UINT   message,    // Type of message
-     UINT wParam,   // Additional information
-     LONG lParam)   // ...
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
 
@@ -98,9 +98,9 @@ LRESULT APIENTRY CCWndProc
                                0);                  // lParam
             // Subclass the List Box so we can handle
             //   WM_CONTEXTMENU
-            (HANDLE_PTR) lpfnOldCCListboxWndProc =
+            lpfnOldCCListboxWndProc = (WNDPROC)
               SetWindowLongPtrW (hWndCC_LB,
-                                 GWL_WNDPROC,
+                                 GWLP_WNDPROC,
                                  (APLU3264) (LONG_PTR) (WNDPROC) &LclCCListboxWndProc);
             // Initialize window-specific resources
             CC_Create (hWnd);
@@ -184,10 +184,10 @@ LRESULT APIENTRY CCWndProc
 //***************************************************************************
 
 LRESULT WINAPI LclCCListboxWndProc
-    (HWND   hWnd,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     HMENU        hMenu;

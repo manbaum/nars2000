@@ -35,12 +35,12 @@ typedef struct tagSYMENTRY *APLHETERO;  // ...         ...           a HETERO ar
 typedef struct tagTOKEN APLLIST;        // ...                       a list
 typedef UCHAR       APLSTYPE;           // Storage type (see ARRAY_TYPES)
 
-#if defined (_WIN32)
-  typedef          __int32 APLI3264;    // Widest native signed value
-  typedef unsigned __int32 APLU3264;    // ...           unsigned ...
-#elif defined (_WIN64)
+#if defined (_WIN64)
   typedef          __int64 APLI3264;    // Widest native signed value
   typedef unsigned __int64 APLU3264;    // ...           unsigned ...
+#elif defined (_WIN32)
+  typedef          __int32 APLI3264;    // Widest native signed value
+  typedef unsigned __int32 APLU3264;    // ...           unsigned ...
 #else
   #error Need code for this architecture.
 #endif

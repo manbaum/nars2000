@@ -131,8 +131,8 @@ typedef struct tagPERTABDATA
                  lpwszBaseTemp,     //1C4:  Ptr to base of lpwszTemp
                  lpwszTemp;         //1C8:  Ptr to temporary  ...
     UINT         uTempMaxSize,      //1CC:  Maximum size of lpwszTemp
-                 RegisterEBP,       //1D0:  Register EBP from an exception
-                 uErrLine;          //1D4:  Error line # from []FX for )IN
+                 uErrLine;          //1D0:  Error line # from []FX for )IN
+    APLU3264     RegisterEBP;       //1D4:  Register EBP/RBP from an exception
     LPTOKEN      lptkCSIni,         //1D8:  Ptr to start of CtrlStruc token stack (static)
                  lptkCSNxt;         //1DC:  Ptr to next available slot in CS ...  (dynamic)
     struct tagFORSTMT *

@@ -350,7 +350,7 @@ UBOOL TransferInverseArr2_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, (APLU3264) (lpwNameEnd - lpwName));
+        CharLowerBuffW (lpwName, (UINT) (lpwNameEnd - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;
@@ -573,7 +573,7 @@ UBOOL TransferInverseFcn2_EM
         if (IsSysName (lpwName))
         {
             // Convert the name to lowercase
-            CharLowerBuffW (lpwName, (APLU3264) (lpwData - lpwName));
+            CharLowerBuffW (lpwName, (UINT) (lpwData - lpwName));
 
             // Tell 'em we're looking for system names
             stFlags.ObjName = OBJNAME_SYS;
@@ -707,7 +707,7 @@ UBOOL TransferInverseChr1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, (APLU3264) (lpwData - lpwName));
+        CharLowerBuffW (lpwName, (UINT) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;
@@ -902,7 +902,7 @@ UBOOL TransferInverseNum1_EM
     APLRANK       aplRankRes;               // Result rank
     APLNELM       aplNELMRes,               // ...    NELM
                   aplTemp;                  // Temporary value
-    UINT          uLen,                     // Length of output save area in WCHARs
+    APLU3264      uLen,                     // Length of output save area in WCHARs
                   uCnt;                     // Loop counter
     EXIT_TYPES    exitType;                 // Exit type from ImmExecStmt
     HWND          hWndSM,                   // Session Manager Window handle
@@ -956,7 +956,7 @@ UBOOL TransferInverseNum1_EM
     if (IsSysName (lpwName))
     {
         // Convert the name to lowercase
-        CharLowerBuffW (lpwName, (APLU3264) (lpwData - lpwName));
+        CharLowerBuffW (lpwName, (UINT) (lpwData - lpwName));
 
         // Tell 'em we're looking for system names
         stFlags.ObjName = OBJNAME_SYS;

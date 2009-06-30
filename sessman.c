@@ -57,7 +57,7 @@ In any case,
 //      typedef struct tagSM_CREATESTRUCTW
 //      {
 //          LPPERTABDATA lpMemPTD;
-//      } SM_CREATESTRUCTW, UNALIGNED *LPSM_CREATESTRUCTW;
+//      } UNALIGNED SM_CREATESTRUCTW, *LPSM_CREATESTRUCTW;
 //
 //   which is used as follows:
 //
@@ -452,7 +452,7 @@ void MoveCaretEOB
 
 void DisplayPrompt
     (HWND     hWndEC,       // Window handle of the Edit Ctrl
-     UINT uCaller)      // ***DEBUG***
+     APLU3264 uCaller)      // ***DEBUG***
 
 {
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -500,7 +500,7 @@ void DisplayPrompt
 
 UINT GetLineLength
     (HWND     hWndEC,           // Edit Ctrl window handle
-     UINT uLineNum)         // The line #
+     APLU3264 uLineNum)         // The line #
 
 {
     UINT uLinePos;              // Char position of start of line
@@ -684,18 +684,14 @@ void SM_Delete
 LRESULT APIENTRY SMWndProc
     (HWND   hWnd,       // Window handle
      UINT   message,    // Type of message
-     UINT wParam,   // Additional information
-     LONG lParam)   // ...
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     HWND         hWndEC;                // Window handle to Edit Ctrl
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwCurLine;            // Ptr to current line global memory
-////RECT         rcFmtEC;               // Formatting rectangle for the Edit Ctrl
     LPUNDO_BUF   lpUndoBeg;             // Ptr to start of Undo Buffer
-////HDC          hDC;
-////HFONT        hFontOld;
-////TEXTMETRIC   tm;
     static UBOOL bLoadMsgDisp = FALSE;  // TRUE iff )LOAD message has been displayed
     LPMEMVIRTSTR lpLclMemVirtStr;       // Ptr to local MemVirtStr
 
@@ -1296,7 +1292,7 @@ WM_NCCREATE_FAIL:
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
 
             // Save the Window Background brush
-            SetClassLongPtrW (hWndEC, GCL_HBRBACKGROUND, (HANDLE_PTR) ghBrushBG);
+            SetClassLongPtrW (hWndEC, GCLP_HBRBACKGROUND, (HANDLE_PTR) ghBrushBG);
 
 ////////////// Set the soft-break flag (not supported by WineHQ edit ctrl)
 ////////////SendMessageW (hWndEC, EM_FMTLINES, TRUE, 0);
@@ -2045,7 +2041,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void MoveToLine
-    (UINT         uLineNum,             // The given line #
+    (APLU3264     uLineNum,             // The given line #
      LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      HWND         hWndEC)               // Edit Ctrl window handle
 

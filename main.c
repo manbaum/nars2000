@@ -304,7 +304,7 @@ void SetStatusPos
     (HWND hWndEC)               // Edit Ctrl window handle
 
 {
-    UINT  uCharPos,             // Character position (origin-0), initially from start
+    APLU3264 uCharPos,              // Character position (origin-0), initially from start
                                     //   of buffer then eventually from the start of the line
              uLineNum,              // Line # (origin-0)
              uLinePos;              // Line position from start of buffer
@@ -1178,7 +1178,7 @@ UBOOL CreateChildWindows
     // Subclass the Tab Control so we can handle some of its messages
     (HANDLE_PTR) lpfnOldTabCtrlWndProc =
       SetWindowLongPtrW (hWndTC,
-                         GWL_WNDPROC,
+                         GWLP_WNDPROC,
                          (APLU3264) (HANDLE_PTR) (WNDPROC) &LclTabCtrlWndProc);
     // Show and paint the window
     ShowWindow (hWndTC, SW_SHOWNORMAL);
@@ -1275,8 +1275,8 @@ void MF_Delete
 LRESULT APIENTRY MFWndProc
     (HWND   hWnd,       // Window handle
      UINT   message,    // Type of message
-     UINT wParam,       // Additional information
-     LONG lParam)       // ...
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     RECT         rcDtop;        // Rectangle for desktop
@@ -1515,7 +1515,7 @@ LRESULT APIENTRY MFWndProc
                 EndDeferWindowPos (hdwp);
 
                 // Save the current Maximized or Normal state
-                MFSizeState = wParam;
+                MFSizeState = (UINT) wParam;
 
                 S.cx = LOWORD (lParam);
                 S.cy = HIWORD (lParam);
@@ -2521,10 +2521,10 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL CALLBACK UpdatesDlgProc
-    (HWND   hDlg,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
+    (HWND   hDlg,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     static HFONT hFont = NULL;
@@ -3179,6 +3179,7 @@ int PASCAL WinMain
 {
     MSG     Msg;                    // Message for GetMessageW loop
     UINT    uCnt;                   // Loop counter
+    APLUINT aplPi;                  // Temporary for Pi
 
 #ifdef PERFMONON
     MessageBeep (NEG1U);
@@ -3232,11 +3233,8 @@ int PASCAL WinMain
     control87(PC_64, MCW_PC);
 
     // Get the value of PI
-    _asm
-    {                           // st(0)        st(1)
-        fldpi;                  // pi
-        fstp    FloatPi;
-    }
+    aplPi = 0x400921FB54442D18;
+    FloatPi = *(LPAPLFLOAT) &aplPi;
 
     // Get the value of e
     FloatE = exp (1);

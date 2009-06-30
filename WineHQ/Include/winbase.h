@@ -2351,7 +2351,7 @@ static inline PVOID WINAPI InterlockedCompareExchangePointer( PVOID volatile *de
                           : "=a" (ret) : "r" (dest), "r" (xchg), "0" (compare) : "memory" );
     return ret;
 #else
-    return (PVOID)(HANDLE_PTR)InterlockedCompareExchange( (LONG volatile*)dest, (__int3264) (HANDLE_PTR) xchg, (__int3264) (HANDLE_PTR) compare );
+////return (PVOID)(HANDLE_PTR)InterlockedCompareExchange( (LONG volatile*)dest, (__int3264) (HANDLE_PTR) xchg, (__int3264) (HANDLE_PTR) compare );
 #endif
 }
 

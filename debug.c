@@ -228,8 +228,8 @@ void DB_Delete
 LRESULT APIENTRY DBWndProc
     (HWND   hWnd,       // Window handle
      UINT   message,    // Type of message
-     UINT wParam,   // Additional information
-     LONG lParam)   // ...
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     char         szTemp[1204];
@@ -290,7 +290,7 @@ LRESULT APIENTRY DBWndProc
             //   session manager.
             (HANDLE_PTR) lpfnOldListboxWndProc =
               SetWindowLongPtrW (hWndLB,
-                                 GWL_WNDPROC,
+                                 GWLP_WNDPROC,
                                  (APLU3264) (LONG_PTR) (WNDPROC) &LclListboxWndProc);
             // Initialize window-specific resources
             DB_Create (hWnd);
@@ -457,10 +457,10 @@ NORMAL_EXIT:
 //***************************************************************************
 
 LRESULT WINAPI LclListboxWndProc
-    (HWND   hWnd,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     HMENU        hMenu;
@@ -554,7 +554,7 @@ LRESULT WINAPI LclListboxWndProc
                              uSelItems[128];    // Indices of selected items to delete
 
                         // Get the indices of the selected items
-                        uNumItems =
+                        uNumItems = (UINT)
                           SendMessageW (hWnd,
                                         LB_GETSELITEMS,
                                         countof (uSelItems),

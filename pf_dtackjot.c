@@ -2423,7 +2423,7 @@ LPAPLCHAR FormatArrSimple
                     lpwszOut = lpw = *lplpwszOut;
 
                     // Fill the output area with all blanks
-                    uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
+                    uCol = (UINT) aplLastDim - (UINT) (*lplpwszOut - lpwszOutStart);
                     FillMemoryW (lpw, uCol, L' ');
 
                     // Skip over leading indent
@@ -2503,7 +2503,7 @@ LPAPLCHAR FormatArrSimple
             lpwszOut = *lplpwszOut;
 
             // Fill the output area with all blanks
-            uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
+            uCol = (UINT) aplLastDim - (UINT) (*lplpwszOut - lpwszOutStart);
             FillMemoryW (lpwszOut, uCol, L' ');
         } // End IF
     } // End FOR
@@ -2737,7 +2737,7 @@ LPAPLCHAR FormatArrNestedCon
         Assert (uActLen <= uCmpWid);
 
         // Get length of integer part
-        uTmp = SkipToCharW (lpaplChar2, L'.') - lpaplChar2;
+        uTmp = (UINT) (SkipToCharW (lpaplChar2, L'.') - lpaplChar2);
 
         // Add in length of longest fraction in this
         //   column (including decimal point)
@@ -3450,7 +3450,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     if (iPrc < 0)
                     {
                         // Find the length of the exponent
-                        uMaxExp = uLen - (SkipToCharW (lpaplCharIni, L'E') - lpaplCharIni);
+                        uMaxExp = uLen - (UINT) ((SkipToCharW (lpaplCharIni, L'E') - lpaplCharIni));
 
                         // Save the old value in case we overflow
                         uOldMaxExp = lpMemWidPrc[aplDimCol].uMaxExp;
@@ -3579,7 +3579,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                  && lpaplCharExp NE lpaplChar)      // In case the overflow char is 'E'
                 {
                     // Find the length of the exponent
-                    uMaxExp = uLen - (lpaplCharExp - lpaplChar);
+                    uMaxExp = uLen - (UINT) (lpaplCharExp - lpaplChar);
 
                     // Calculate the difference between the longest and the current length
                     uMaxExp = lpMemWidPrc[aplDimCol].uMaxExp - uMaxExp;

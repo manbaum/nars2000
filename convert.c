@@ -248,7 +248,7 @@ void IntFloatToAplchar
 //  Convert wide chars to ASCII or {name} or {\xXXXX}
 //***************************************************************************
 
-UINT ConvertWideToName
+APLU3264 ConvertWideToName
     (LPWCHAR lpwszOut,              // Ptr to output save buffer
      LPWCHAR lpwszInp)              // Ptr to incoming chars
 
@@ -266,9 +266,9 @@ UINT ConvertWideToName
 //***************************************************************************
 
 APLU3264 ConvertWideToNameLength
-    (LPWCHAR lpwszOut,              // Ptr to output save buffer
-     LPWCHAR lpwszInp,              // Ptr to incoming chars
-     DWORD   uLen)                  // # chars to convert
+    (LPWCHAR  lpwszOut,             // Ptr to output save buffer
+     LPWCHAR  lpwszInp,             // Ptr to incoming chars
+     APLU3264 uLen)                 // # chars to convert
 
 {
     WCHAR   wc;                     // A wide char

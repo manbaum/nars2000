@@ -2431,7 +2431,7 @@ APLINT abs64
     (APLINT aplInt)
 
 {
-    return (aplInt > 0) ? aplInt : -aplInt;
+    return (aplInt >= 0) ? aplInt : -aplInt;
 } // End abs64
 
 
@@ -2455,8 +2455,11 @@ APLINT _iadd64
     // Set rounding precision to 53-bits
     //   as per comments in top of <dtoa.c>
     //   but we need 64 bits because of 64-bit ints
-    control87(PC_64, MCW_PC);
+    control87 (PC_64, MCW_PC);
 
+#ifdef _WIN64
+    iAsmAdd64 (&aplRes, aplLft, aplRht);
+#elif defined (_WIN32)
     _asm
     {
         fild    aplLft;
@@ -2464,7 +2467,9 @@ APLINT _iadd64
         faddp   st(1),st(0);
         fistp   aplRes;
     }
-
+#else
+  #error Need code for this architecture.
+#endif
     // Check for overflow
     bRet = !(_SW_INVALID & _status87 ());
 
@@ -2500,8 +2505,11 @@ APLINT _isub64
     // Set rounding precision to 53-bits
     //   as per comments in top of <dtoa.c>
     //   but we need 64 bits because of 64-bit ints
-    control87(PC_64, MCW_PC);
+    control87 (PC_64, MCW_PC);
 
+#ifdef _WIN64
+    iAsmSub64 (&aplRes, aplLft, aplRht);
+#elif defined (_WIN32)
     _asm
     {
         fild    aplLft;
@@ -2509,7 +2517,9 @@ APLINT _isub64
         fsubp   st(1),st(0);
         fistp   aplRes;
     }
-
+#else
+  #error Need code for this architecture.
+#endif
     // Check for overflow
     bRet = !(_SW_INVALID & _status87 ());
 
@@ -2540,7 +2550,13 @@ APLINT _imul64
     APLINT aplRes;              // The result
     UBOOL  bRet;                // TRUE iff the result is valid
 
-#if TRUE
+#ifdef _WIN64
+    // Start off with a straight multiply
+    aplRes = aplLft * aplRht;
+
+    // Check the high-order 64 bits of the product
+    bRet = (__mulh (aplLft, aplRht) EQ 0);
+#elif defined (_WIN32)
     _clear87 ();
 
     // Set rounding precision to 53-bits
@@ -2558,24 +2574,9 @@ APLINT _imul64
 
     // Check for overflow
     bRet = !(_SW_INVALID & _status87 ());
-
-    // If the caller handles the overflow, tell 'em whether or not it did
-    if (lpbRet)
-        *lpbRet = bRet;
-    else
-    // Otherwise, if it overflowed, ...
-    if (!bRet)
-        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-
 #else
-
-    // Start off with a straight multiply
-    aplRes = aplLft * aplRht;
-
-    // Check for valid result
-    bRet = (aplRes EQ 0
-         || abs64 (aplRes) >= max (abs64 (aplLft), abs64 (aplRht)));
-
+  #error Need code for this architecture.
+#endif
     // If the caller handles the overflow, tell 'em whether or not it did
     if (lpbRet)
         *lpbRet = bRet;
@@ -2583,7 +2584,6 @@ APLINT _imul64
     // Otherwise, if it overflowed, ...
     if (!bRet)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-#endif
     return aplRes;
 } // End _imul64
 

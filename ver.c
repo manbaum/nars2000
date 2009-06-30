@@ -29,7 +29,7 @@
 
 
 WCHAR wszVarFileInfo[] = L"\\VarFileInfo\\Translation",
-      lpwszVersion[]   = WS_APPNAME L"\nVersion %s";
+      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L")\nVersion %s";
 
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
@@ -103,10 +103,10 @@ FREE:
 //***************************************************************************
 
 APLU3264 CALLBACK AboutDlgProc
-    (HWND   hDlg,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
+    (HWND   hDlg,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     static HFONT     hFont = NULL;
@@ -138,7 +138,7 @@ APLU3264 CALLBACK AboutDlgProc
             //   so we can handle WM_LBUTTONDOWN
             (HANDLE_PTR) lpfnOldStaticWndProc =
               SetWindowLongPtrW (hWndStatic,
-                                 GWL_WNDPROC,
+                                 GWLP_WNDPROC,
                                  (APLU3264) (LONG_PTR) (WNDPROC) &LclStaticWndProc);
             // If we haven't done this before, ...
             if (wszLclAppDPFE[0] EQ L'\0')
@@ -216,7 +216,7 @@ APLU3264 CALLBACK AboutDlgProc
 
             // Restore the old WndProc
             SetWindowLongPtrW (hWndStatic,
-                               GWL_WNDPROC,
+                               GWLP_WNDPROC,
                                (APLU3264) (LONG_PTR) (WNDPROC) lpfnOldStaticWndProc);
             lpfnOldStaticWndProc = NULL;
 
@@ -260,10 +260,10 @@ APLU3264 CALLBACK AboutDlgProc
 //***************************************************************************
 
 LRESULT WINAPI LclStaticWndProc
-    (HWND   hWnd,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
 
 {
     // Split cases

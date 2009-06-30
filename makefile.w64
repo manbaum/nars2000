@@ -29,30 +29,33 @@ BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
 OLDPATH=$(PATH)                 # Save the current path
 GSLINC=gsl\include\             # Directory of GSL includes
-GSLLIB=gsl\                     # Directory of GSL libs
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 
 WIN=64
 WDEF=_WIN$(WIN)
-WP=64                           # Target width to check against
-MFEXT=w$(WP)
+MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
-L98=$(SDK)LIB;$(MSVC)LIB;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\;$(QDEBUG)
+I98=.\;$(SDK)Include;$(MSVC)include;$(GSLINC);$(QDEBUG)
+L98=$(SDK)Lib\x64;$(MSVC)lib\amd64;$(QDEBUG)
 
-LD=$(MSVC)BIN\link.exe
-CC=$(MSVC)BIN\cl.exe
-RC=$(SDK)BIN\rc.exe
+LD=$(MSVC)bin\amd64\link.exe
+CC=$(MSVC)bin\amd64\cl.exe
+RC=$(SDK)Bin\x64\rc.exe
+ML=$(MSVC)bin\amd64\ml64.exe
 
 MV=makever
 MP=makepro
 
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
-CFLAGS_DEBUG=/Zi /D "DEBUG" /D "RESDEBUG=$(RESDEBUG)"
+CFLAGS_DEBUG=/Zi /D "DEBUG"
 !else
 RESDEBUG=0
-CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
+CFLAGS_DEBUG=
 !endif
+
+CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"
+
+ASMOPTS=/DIS_64
 
 !include makefile.inc

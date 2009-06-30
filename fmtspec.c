@@ -290,7 +290,7 @@ UBOOL fnUpLvl
         lpfsNxt = (LPFMTSPECSTR) ByteAddr (lpfsLocalVars->lpfsCur, lpfsLocalVars->uFsNxt);
 
         // Get the byte length of the fmt specs to be repeated
-        uLen = ByteDiff (lpfsNxt, &lpfsNestCur[1]);
+        uLen = (UINT) ByteDiff (lpfsNxt, &lpfsNestCur[1]);
 
         // Calculate the # format specs to be repeated
         for (uCnt = 0, lpfsCur = &lpfsNestCur[1];
@@ -538,7 +538,7 @@ UINT SaveText
         goto FORMAT_EXIT;
 
     // Calculate the scanned text length in chars
-    uScanTxtLenChars = lpwNext - *lplpwText;
+    uScanTxtLenChars = (UINT) (lpwNext - *lplpwText);
 
     // Save the offset to the text
     offTxt = lpfsLocalVars->uFsNxt;
@@ -699,7 +699,7 @@ UINT ScanNumberFS
         *lpuVal = -(int) *lpuVal;
 
     // Find the length of the scanned numbers
-    uTxtLenChars = bNeg + strspnW (&lpfsLocalVars->lpwszCur[bNeg], L"0123456789");
+    uTxtLenChars = bNeg + (UINT) strspnW (&lpfsLocalVars->lpwszCur[bNeg], L"0123456789");
 
     // Skip over the # chars we scanned
     // ("- 1" to account for the ++ at the end of the FOR stmt)
@@ -752,7 +752,7 @@ UBOOL fnSetModO
 
     // Link it into the O-chain
     lpOChain->offPrvChain             = lpfsLocalVars->lpfsCur->offOchain;
-    lpfsLocalVars->lpfsCur->offOchain = ByteDiff (lpOChain, lpfsLocalVars->lpfsCur);
+    lpfsLocalVars->lpfsCur->offOchain = (UINT) ByteDiff (lpOChain, lpfsLocalVars->lpfsCur);
 
     // Mark as present
     lpfsLocalVars->lpfsCur->bO = TRUE;
@@ -789,7 +789,7 @@ UBOOL fnSetModO
             lpOChain->aplIntVal = (APLINT) lpOChain->aplFltVal;
 
             // Find the length of the integer part of the scanned number in chars
-            uScanTxtLenChars = bNeg + strspnW (&lpwCur[bNeg], L"0123456789");
+            uScanTxtLenChars = bNeg + (UINT) strspnW (&lpwCur[bNeg], L"0123456789");
 
             // If there's a decimal point
             if (lpwDec)
@@ -799,7 +799,7 @@ UBOOL fnSetModO
                 lpwDec++;
 
                 // Add in the length of the fractional part
-                uScanTxtLenChars += strspnW (lpwDec, L"0123456789");
+                uScanTxtLenChars += (UINT) strspnW (lpwDec, L"0123456789");
             } // End IF
 
             // Skip over it

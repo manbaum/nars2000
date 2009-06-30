@@ -506,7 +506,7 @@ void DisplayGlobals
                         break;
 
                     case ARRAY_CHAR:
-                        lstrcpynW (aplArrChar, lpData, 1 + (APLU3264) min (MAX_VAL_LEN, lpHeader->NELM));
+                        lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (MAX_VAL_LEN, lpHeader->NELM));
                         aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = L'\0';
 
                         break;
@@ -589,7 +589,7 @@ void DisplayGlobals
              || lpMemPTD->lpwszTemp[0] NE L'#')
             {
                 // Copy the name to local storage
-                lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (APLU3264) min (MAX_VAL_LEN, uNameLen));
+                lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
                 aplArrChar[min (MAX_VAL_LEN, uNameLen)] = L'\0';
 
                 wsprintfW (wszTemp,

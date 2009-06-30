@@ -158,12 +158,12 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
         *lpw++ = L' ';
     } // End IF
 
-#ifdef _WIN32
-#define SYSTYPE     L"Win/32" DEBUGSTR
-#elif defined (_WIN64)
-#define SYSTYPE     L"Win/64" DEBUGSTR
+#ifdef _WIN64
+  #define SYSTYPE     L"Win/64" DEBUGSTR
+#elif defined (_WIN32)
+  #define SYSTYPE     L"Win/32" DEBUGSTR
 #else
-#error Need code for this architecture.
+  #error Need code for this architecture.
 #endif
 
     // Copy to the result

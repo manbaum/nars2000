@@ -19,6 +19,8 @@
 ## Load all source file names
 !include makefile.src
 
+GSL_LIB = gsl\libgsl$(WIN)-double.lib
+
 CFLAGS_WEXE = /nologo /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG)
 CFLAGS_WEXE = $(CFLAGS_WEXE) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS /D "WINVER=0x0501" /D "_WIN32_WINNT=0x0501"
 !if "$(WP)" == "64"
@@ -43,8 +45,7 @@ LIBS_WEXE = gdi32.lib           \
             qdebug32.lib        \
 !endif
             libcmt.lib          \
-            libgsl-double.a     \
-            libgslcblas-double.a
+            $(GSL_LIB)
 
 !if "$(DEBUG)" == "1"
 RCFLAGS = /D "DEBUG"
@@ -422,6 +423,7 @@ OBJS=   $(SRC:???=obj)          \
 
 $(O)$(ENAME).exe:       $(OBJS)         \
                         $(DEFFILE)      \
+                        $(GSL_LIB)      \
                         makefile.inc    \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.crf

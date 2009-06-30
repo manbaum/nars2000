@@ -146,6 +146,10 @@ extern PRIMSPEC PrimSpecUpStile;
 #define PrimOpSlopeBar_EM_YY    PrimOpSlope_EM_YY
 
 
+// This var is needed by the GSL routines.
+double __infinity;
+
+
 //***************************************************************************
 //  $InitPrimTabs
 //
@@ -174,6 +178,7 @@ void InitPrimTabs
 
     // Create various floating point constants
     aplInteger = POS_INFINITY; PosInfinity = *(double *) &aplInteger;
+                               __infinity  = PosInfinity;
     aplInteger = NEG_INFINITY; NegInfinity = *(double *) &aplInteger;
     aplInteger = FLOAT2POW53;  Float2Pow53 = *(double *) &aplInteger;
 } // End InitPrimTabs

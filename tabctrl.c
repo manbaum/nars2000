@@ -307,7 +307,7 @@ UBOOL WINAPI CreateNewTabInThread
     tcItem.lParam     = (LPARAM) lpMemPTD;
 
     // Insert a new tab
-    // The new tab is inserted to the left of the index value (iTab)
+    // The new tab is inserted to the left of the index value (iTabIndex)
     iCurTabIndex = (UINT) SendMessageW (hWndTC, TCM_INSERTITEMW, iTabIndex, (LPARAM) &tcItem);
     if (iCurTabIndex EQ -1)
     {
@@ -315,6 +315,8 @@ UBOOL WINAPI CreateNewTabInThread
 
         goto ERROR_EXIT;
     } // End IF
+
+    Assert (lpMemPTD EQ GetPerTabPtr (iCurTabIndex));
 
     // Save the thread ID for when we close
     lpMemPTD->dwThreadId = lpcntThread->dwThreadId;
@@ -441,7 +443,7 @@ UBOOL WINAPI CreateNewTabInThread
     InvalidateRect (hWndTC, NULL, FALSE);
 
     // Tell the SM we're finished
-    PostMessage (lpMemPTD->hWndSM, MYWM_INIT_EC, 0, 0);
+    PostMessageW (lpMemPTD->hWndSM, MYWM_INIT_EC, 0, 0);
 
     __try
     {
@@ -450,7 +452,7 @@ UBOOL WINAPI CreateNewTabInThread
         {
             // Handle MDI messages and accelerators
             if (!TranslateMDISysAccel (hWndMC, &Msg)
-             && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+             && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
             {
                 TranslateMessage (&Msg);
                 DispatchMessageW (&Msg);
@@ -527,7 +529,7 @@ LPPERTABDATA GetPerTabPtr
     (int iTab)                  // Tab
 
 {
-    TC_ITEMW tcItem = {0};      // TabCtrl item struc
+    TC_ITEMW tcItem = {0};              // TabCtrl item struc
 
     // We want lParam only
     tcItem.mask       = TCIF_PARAM;
@@ -677,26 +679,26 @@ LRESULT WINAPI LclTabCtrlWndProc
                         ? MF_GRAYED
                         : MF_ENABLED;
 
-            AppendMenu (hMenu,                  // Handle
-                        uOverTabState
-                      | MF_STRING,              // Flags
-                        IDM_NEW_WS,
-                        "&New WS");
-            AppendMenu (hMenu,                  // Handle
-                        MF_GRAYED
-                      | MF_STRING,              // Flags
-                        IDM_DUP_WS,
-                        "&Duplicate WS");
-            AppendMenu (hMenu,                  // Handle
-                        uCloseState
-                      | MF_STRING,              // Flags
-                        IDM_SAVECLOSE_WS,
-                        "&Save and Close WS");
-            AppendMenu (hMenu,                  // Handle
-                        uCloseState
-                      | MF_STRING,              // Flags
-                        IDM_CLOSE_WS,
-                        "&Close WS");
+            AppendMenuW (hMenu,                 // Handle
+                         uOverTabState
+                       | MF_STRING,             // Flags
+                         IDM_NEW_WS,
+                         L"&New WS");
+            AppendMenuW (hMenu,                 // Handle
+                         MF_GRAYED
+                       | MF_STRING,             // Flags
+                         IDM_DUP_WS,
+                         L"&Duplicate WS");
+            AppendMenuW (hMenu,                 // Handle
+                         uCloseState
+                       | MF_STRING,             // Flags
+                         IDM_SAVECLOSE_WS,
+                         L"&Save and Close WS");
+            AppendMenuW (hMenu,                 // Handle
+                         uCloseState
+                       | MF_STRING,             // Flags
+                         IDM_CLOSE_WS,
+                         L"&Close WS");
 
             TrackPopupMenu (hMenu,              // Handle
                             TPM_CENTERALIGN
@@ -795,10 +797,10 @@ LRESULT WINAPI LclTabCtrlWndProc
 
                     // Create a semaphore for ourselves
                     lpMemPTD->hExitphore =
-                      CreateSemaphore (NULL,            // No security attrs
-                                       0,               // Initial count (non-signalled)
-                                       64*1024,         // Maximum count
-                                       NULL);           // No name
+                      CreateSemaphoreW (NULL,           // No security attrs
+                                        0,              // Initial count (non-signalled)
+                                        64*1024,        // Maximum count
+                                        NULL);          // No name
                     // Call )RESET
                     CmdReset_EM (L"");
 #ifdef DEBUG
@@ -897,7 +899,7 @@ LRESULT WINAPI LclTabCtrlWndProc
                 TabCtrl_SetCurSel (hWndTC, iNewTabIndex);
 
                 // Tell the Master Frame to select the new tab
-                PostMessage (hWndMF, WM_NOTIFY, 0, (LPARAM) &nmHdr);
+                PostMessageW (hWndMF, WM_NOTIFY, 0, (LPARAM) &nmHdr);
             } // End IF
 
             // Save as new tab ID
@@ -914,7 +916,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
             // Tell the thread to quit
-            PostThreadMessage (dwThreadId, WM_QUIT, 0, 0);
+            PostThreadMessageW (dwThreadId, WM_QUIT, 0, 0);
 
             return lResult;
         } // End TCM_DELETEITEM
@@ -1387,9 +1389,9 @@ LPAPLCHAR PointToWsName
     (int iTabIndex)             // Tab index
 
 {
-    HGLOBAL      hGlbWSID;      // []WSID global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPAPLCHAR    lpMemWSID;     // Ptr to []WSID global memory
+    HGLOBAL      hGlbWSID;              // []WSID global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPAPLCHAR    lpMemWSID;             // Ptr to []WSID global memory
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetPerTabPtr (iTabIndex); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));

@@ -554,7 +554,7 @@ void CreateNewFontCom
     (HFONT        *lphFont,             // Ptr to in HFONT to create
      LPLOGFONTW    lplf,                // Ptr to in/out LOGFONTW to set
      LPCHOOSEFONTW lpcf,                // Ptr to in CHOOSEFONTW with iPointSize
-     LPTEXTMETRIC  lptm,                // Ptr to in TEXTMETRICs
+     LPTEXTMETRICW lptm,                // Ptr to in TEXTMETRICWs
      long         *lpcxAveChar,         // Ptr to out avg width (may be NULL)
      long         *lpcyAveChar,         // Ptr to out avg height (may be NULL)
      HDC           hDC)                 // Handle to device context if not default (may be NULL)
@@ -589,7 +589,7 @@ void CreateNewFontCom
     hFontOld = SelectObject (hDCTmp, *lphFont);
 
     // Get the text metrics for this font
-    GetTextMetrics (hDCTmp, lptm);
+    GetTextMetricsW (hDCTmp, lptm);
 
     // Restore the old font
     SelectObject (hDCTmp, hFontOld);
@@ -919,14 +919,14 @@ HDC GetPrinterDC
     (void)
 
 {
-    char  szTemp[1024];         // Buffer for printer name
-    DWORD dwLen = sizeof (szTemp);
+    WCHAR wszTemp[1024];        // Buffer for printer name
+    DWORD dwLen = countof (wszTemp);
 
     // Get info about the default printer
-    GetDefaultPrinter (szTemp, &dwLen);
+    GetDefaultPrinterW (wszTemp, &dwLen);
 
     // Create a printer device context
-    return CreateDC ("WINSPOOL", szTemp, NULL, NULL);
+    return CreateDCW (L"WINSPOOL", wszTemp, NULL, NULL);
 } // End GetPrinterDC
 
 
@@ -1321,14 +1321,14 @@ LRESULT APIENTRY MFWndProc
             hBitMapLineCont = MyLoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
             if (hBitMapLineCont)
             {
-                GetObject (hBitMapLineCont, sizeof (BITMAP), (LPVOID) &bmLineCont);
+                GetObjectW (hBitMapLineCont, sizeof (BITMAP), (LPVOID) &bmLineCont);
 
                 iLCWidth = 2 + bmLineCont.bmWidth + 2;  // Width of line continuation column
             } // End IF
 
             hBitMapCheck  = MyLoadBitmap (NULL, MAKEINTRESOURCE (OBM_CHECK));
             if (hBitMapCheck)
-                GetObject (hBitMapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
+                GetObjectW (hBitMapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
 
             // *************** Image Lists *****************************
             hImageList =
@@ -1952,13 +1952,13 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_PRINT_WS:
                 {
-                    PRINTDLGEX pdex;        // Struc used when printing
+                    PRINTDLGEXW pdex;       // Struc used when printing
                     HWND        hWndMC,     // Active hWndMC
                                 hWndAct,    // Active window handle
                                 hWndEC;     // Edit Ctrl window handle
                     DWORD       dwSelBeg,   // Selection beginning
                                 dwSelEnd;   // ...       end
-                    HRESULT    hResult;     // Result from PrintDlgEx
+                    HRESULT     hResult;    // Result from PrintDlgExW
 
                     // Determine whether or not the Edit Ctrl has a selection
                     hWndMC  = GetActiveMC (hWndTC);
@@ -1966,7 +1966,7 @@ LRESULT APIENTRY MFWndProc
        (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC);
                     SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &dwSelBeg, (LPARAM) &dwSelEnd);
 
-                    // Fill in the PRINTDLG struc
+                    // Fill in the PRINTDLGEXW struc
                     ZeroMemory (&pdex, sizeof (pdex));
                     pdex.lStructSize         = sizeof (pdex);
                     pdex.hwndOwner           = hWndEC;
@@ -1996,7 +1996,7 @@ LRESULT APIENTRY MFWndProc
 ////////////////////pdex.dwResultAction      = 0;       // Output only
 
                     // Ask the user what to do
-                    hResult = PrintDlgEx (&pdex);
+                    hResult = PrintDlgExW (&pdex);
 
                     // Split cases based upon the result code
                     if (hResult EQ S_OK)
@@ -2167,7 +2167,7 @@ LRESULT APIENTRY MFWndProc
 
         case WM_DESTROY:
             // Remove all saved window properties
-            EnumProps (hWnd, EnumCallbackRemoveProp);
+            EnumPropsW (hWnd, EnumCallbackRemoveProp);
 
             // Uninitialize window-specific resources
             MF_Delete (hWnd);
@@ -2388,7 +2388,7 @@ void CheckForUpdates
 
     // Make the connection
     hNetOpen =
-      InternetOpen ("NARS2000",                             // Ptr to User Agent
+      InternetOpenW (L"NARS2000",                           // Ptr to User Agent
                      PRE_CONFIG_INTERNET_ACCESS,            // Access type
                      NULL,                                  // Ptr to proxy name (may be NULL)
                      NULL,                                  // Ptr to proxy bypass (may be NULL)
@@ -2398,11 +2398,11 @@ void CheckForUpdates
 
     // Connect to the server
     hNetConnect =
-      InternetConnect (hNetOpen,                            // Open handle
-                       "www.nars2000.org",                  // Ptr to server name
+      InternetConnectW (hNetOpen,                           // Open handle
+                        L"www.nars2000.org",                // Ptr to server name
                         INTERNET_DEFAULT_HTTP_PORT,         // Server port
-                       "guest",                             // Ptr to username
-                       "guest",                             // Ptr to password
+                        L"guest",                           // Ptr to username
+                        L"guest",                           // Ptr to password
                         INTERNET_SERVICE_HTTP,              // Type of service access
                         0,                                  // Optional flags
                         0);                                 // Context value
@@ -2419,9 +2419,9 @@ void CheckForUpdates
 
     // Make a request
     hNetRequest =
-      HttpOpenRequest (hNetConnect,
+      HttpOpenRequestW (hNetConnect,
                         NULL,                               // "GET"
-                       "/download/binaries/nars2000.ver",   // Ptr to /path/filename
+                        L"/download/binaries/nars2000.ver", // Ptr to /path/filename
                         NULL,                               // HTTP 1.1
                         NULL,                               // No referrer
                         NULL,                               // No ACCEPT types
@@ -2444,7 +2444,7 @@ void CheckForUpdates
     } // End IF
 
     // Send the request
-    if (HttpSendRequest (hNetRequest,                       // Request handle
+    if (HttpSendRequestW (hNetRequest,                      // Request handle
                           NULL,                             // Ptr to additional headers (may be NULL)
                           0,                                // Size of additional headers
                           NULL,                             // Ptr to optional data (may be NULL)
@@ -3359,7 +3359,7 @@ int PASCAL WinMain
 
             // Handle MDI messages and accelerators
             if (!TranslateMDISysAccel (hWndMC, &Msg)
-             && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+             && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
             {
                 TranslateMessage (&Msg);
                 DispatchMessageW (&Msg);

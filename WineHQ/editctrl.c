@@ -783,7 +783,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
             charW = (WCHAR)wParam;
         else
         {
-            CHAR charA = wParam;
+            CHAR charA = (CHAR) wParam;
             MultiByteToWideChar(CP_ACP, 0, &charA, 1, &charW, 1);
         }
 
@@ -950,10 +950,10 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         WCHAR charW;
 
         if(unicode)
-            charW = wParam;
+            charW = (WCHAR) wParam;
         else
         {
-            CHAR charA = wParam;
+            CHAR charA = (CHAR) wParam;
             MultiByteToWideChar(CP_ACP, 0, &charA, 1, &charW, 1);
         }
 
@@ -4419,9 +4419,9 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
 
         bItsaName = SendMessageA (es->hwndSelf, MYWM_IZITNAME, x, y);
 
-        AppendMenuA (popup, MF_SEPARATOR                           , 0             , NULL);
-        AppendMenuA (popup, MF_STRING | (bItsaName ? 0 : MF_GRAYED), IDM_LOCALIZE  , "&Localize");
-        AppendMenuA (popup, MF_STRING | (bItsaName ? 0 : MF_GRAYED), IDM_UNLOCALIZE, "Unl&ocalize");
+        AppendMenuW (popup, MF_SEPARATOR                           , 0             , NULL);
+        AppendMenuW (popup, MF_STRING | (bItsaName ? 0 : MF_GRAYED), IDM_LOCALIZE  , L"&Localize");
+        AppendMenuW (popup, MF_STRING | (bItsaName ? 0 : MF_GRAYED), IDM_UNLOCALIZE, L"Unl&ocalize");
     } // End IF
 
         if (x == -1 && y == -1) /* passed via VK_APPS press/release */
@@ -4573,14 +4573,14 @@ static size_t EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode
     if(unicode)
     {
     lstrcpynW(dst, es->text, count);
-    return strlenW(dst);
+    return lstrlenW(dst);
     }
     else
     {
     LPSTR textA = (LPSTR)dst;
     if (!WideCharToMultiByte(CP_ACP, 0, es->text, -1, textA, count, NULL, NULL))
             textA[count - 1] = 0; /* ensure 0 termination */
-    return strlen(textA);
+    return lstrlenA(textA);
     }
 } // End EDIT_WM_GetText
 

@@ -90,72 +90,72 @@ APLU3264 CALLBACK CustomizeDlgProc
      LPARAM lParam)
 
 {
-    static HFONT      hFont = NULL;             //
-    static HWND       hWndGroupBox,             // Dialog GroupBox window handle
-                      hWndListBox,              // Dialog ListBox  ...
-                      hWndLast,                 // Last (outgoing) ...
-                      hDlg,                     // Dialog          ...
-                      hWndApply,                // Apply button    ...
-                      hWndIC_CB1,               // []IC ComboBox #1 ...
-                      hWndIC_CB2;               // []IC ...      #2 ...
-           UINT       uSel,                     // Index of the current selection
-                      uShow,                    // Show/hide flag
-                      uCnt;                     // Loop counter
-           HANDLE_PTR uIDD;                     // Item data:  IDD_xxx or HWND
-           RECT       rc;                       // Temporary rectangle
-           LPAPLCHAR  lpMemChr,                 // Ptr to global memory
-                      lpaplChar;                // ...
-           LPAPLINT   lpMemInt;                 // ...
-           HGLOBAL    hGlbInt;                  // Global memory handle
-           APLNELM    aplNELM;                  // NELM of object
-           APLUINT    ByteRes;                  // # bytes in the result
-    static POINT      ptGroupBox;               // X- & Y- coordinates (in pixels) of the upper left corner of the GroupBox
-    static SIZE       szGroupBox;               // Size (in pixels) of the GroupBox
-    static FONTENUM   lclSameFontAs[FONTENUM_LENGTH];
+    static HFONT        hFont = NULL;           //
+    static HWND         hWndGroupBox,           // Dialog GroupBox window handle
+                        hWndListBox,            // Dialog ListBox  ...
+                        hWndLast,               // Last (outgoing) ...
+                        hDlg,                   // Dialog          ...
+                        hWndApply,              // Apply button    ...
+                        hWndIC_CB1,             // []IC ComboBox #1 ...
+                        hWndIC_CB2;             // []IC ...      #2 ...
+           UINT         uSel,                   // Index of the current selection
+                        uShow,                  // Show/hide flag
+                        uCnt;                   // Loop counter
+           HANDLE_PTR   uIDD;                   // Item data:  IDD_xxx or HWND
+           RECT         rc;                     // Temporary rectangle
+           LPAPLCHAR    lpMemChr,               // Ptr to global memory
+                        lpaplChar;              // ...
+           LPAPLINT     lpMemInt;               // ...
+           HGLOBAL      hGlbInt;                // Global memory handle
+           APLNELM      aplNELM;                // NELM of object
+           APLUINT      ByteRes;                // # bytes in the result
+    static POINT        ptGroupBox;             // X- & Y- coordinates (in pixels) of the upper left corner of the GroupBox
+    static SIZE         szGroupBox;             // Size (in pixels) of the GroupBox
+    static FONTENUM     lclSameFontAs[FONTENUM_LENGTH];
 
-    static UINT       FontsRadio1[] = {IDC_FONTS_RADIO1A},
-                      FontsRadio2[] = {IDC_FONTS_RADIO2A, IDC_FONTS_RADIO2B},
-                      FontsRadio3[] = {IDC_FONTS_RADIO3A, IDC_FONTS_RADIO3B, IDC_FONTS_RADIO3C},
-                      FontsRadio4[] = {IDC_FONTS_RADIO4A, IDC_FONTS_RADIO4B, IDC_FONTS_RADIO4C, IDC_FONTS_RADIO4D},
-                      FontsRadio5[] = {IDC_FONTS_RADIO5A, IDC_FONTS_RADIO5B, IDC_FONTS_RADIO5C, IDC_FONTS_RADIO5D, IDC_FONTS_RADIO5E},
-                      FontsRadio6[] = {IDC_FONTS_RADIO6A, IDC_FONTS_RADIO6B, IDC_FONTS_RADIO6C, IDC_FONTS_RADIO6D, IDC_FONTS_RADIO6E, IDC_FONTS_RADIO6F},
-                      FontsRadio7[] = {IDC_FONTS_RADIO7A, IDC_FONTS_RADIO7B, IDC_FONTS_RADIO7C, IDC_FONTS_RADIO7D, IDC_FONTS_RADIO7E, IDC_FONTS_RADIO7F, IDC_FONTS_RADIO7G};
-    static LPUINT     FontsRadioPtr[] = {&FontsRadio1[0],
-                                         &FontsRadio2[0],
-                                         &FontsRadio3[0],
-                                         &FontsRadio4[0],
-                                         &FontsRadio5[0],
-                                         &FontsRadio6[0],
-                                         &FontsRadio7[0]};
-    static UINT       ResetRadioCT[] = {IDC_RESET_CT_RADIO1, IDC_RESET_CT_RADIO2},
-                      ResetRadioFC[] = {IDC_RESET_FC_RADIO1, IDC_RESET_FC_RADIO2},
-                      ResetRadioIC[] = {IDC_RESET_IC_RADIO1, IDC_RESET_IC_RADIO2},
-                      ResetRadioIO[] = {IDC_RESET_IO_RADIO1, IDC_RESET_IO_RADIO2},
-                      ResetRadioPP[] = {IDC_RESET_PP_RADIO1, IDC_RESET_PP_RADIO2},
-                      ResetRadioPW[] = {IDC_RESET_PW_RADIO1, IDC_RESET_PW_RADIO2},
-                      ResetRadioRL[] = {IDC_RESET_RL_RADIO1, IDC_RESET_RL_RADIO2};
-    static LPUINT     ResetRadioPtr[] = {&ResetRadioCT[0],
-                                         &ResetRadioFC[0],
-                                         &ResetRadioIC[0],
-                                         &ResetRadioIO[0],
-                                         &ResetRadioPP[0],
-                                         &ResetRadioPW[0],
-                                         &ResetRadioRL[0]};
-           HWND       hWndProp,                 // Property page window handle
-                      hWndProp1,                // ...
-                      hWndProp2,                // ...
-                      hWndFont,                 // Font property page ChooseFontW button window handle
-                      hWnd_UD;                  // []IO/[]PP/[]PW UpDown Control or its Buddy window handle
-           LOGFONTW   lf_ST;                    // Static text LOGFONTW
-    static HFONT      hFontNorm_ST = NULL,      // Normal static text font handle
-                      hFontBold_ST = NULL;      // Bold   ...
-    static APLINT     icValues[ICNDX_LENGTH];   // []IC local values
-    static RESET_VARS lclResetVars;             // Local copy of bResetVars
-           WCHAR      wszTemp[128];             // Temporary WCHAR storage
-           char        szTemp[128];             // Temporary char storage
-    static CHOOSECOLOR cc = {0};                // Struct for ChooseColor
-    static UBOOL      gbFore;                   // TRUE iff the button is FOREGROUND
-    static UINT       guIndex;                  // Index of the button
+    static UINT         FontsRadio1[] = {IDC_FONTS_RADIO1A},
+                        FontsRadio2[] = {IDC_FONTS_RADIO2A, IDC_FONTS_RADIO2B},
+                        FontsRadio3[] = {IDC_FONTS_RADIO3A, IDC_FONTS_RADIO3B, IDC_FONTS_RADIO3C},
+                        FontsRadio4[] = {IDC_FONTS_RADIO4A, IDC_FONTS_RADIO4B, IDC_FONTS_RADIO4C, IDC_FONTS_RADIO4D},
+                        FontsRadio5[] = {IDC_FONTS_RADIO5A, IDC_FONTS_RADIO5B, IDC_FONTS_RADIO5C, IDC_FONTS_RADIO5D, IDC_FONTS_RADIO5E},
+                        FontsRadio6[] = {IDC_FONTS_RADIO6A, IDC_FONTS_RADIO6B, IDC_FONTS_RADIO6C, IDC_FONTS_RADIO6D, IDC_FONTS_RADIO6E, IDC_FONTS_RADIO6F},
+                        FontsRadio7[] = {IDC_FONTS_RADIO7A, IDC_FONTS_RADIO7B, IDC_FONTS_RADIO7C, IDC_FONTS_RADIO7D, IDC_FONTS_RADIO7E, IDC_FONTS_RADIO7F, IDC_FONTS_RADIO7G};
+    static LPUINT       FontsRadioPtr[] = {&FontsRadio1[0],
+                                           &FontsRadio2[0],
+                                           &FontsRadio3[0],
+                                           &FontsRadio4[0],
+                                           &FontsRadio5[0],
+                                           &FontsRadio6[0],
+                                           &FontsRadio7[0]};
+    static UINT         ResetRadioCT[] = {IDC_RESET_CT_RADIO1, IDC_RESET_CT_RADIO2},
+                        ResetRadioFC[] = {IDC_RESET_FC_RADIO1, IDC_RESET_FC_RADIO2},
+                        ResetRadioIC[] = {IDC_RESET_IC_RADIO1, IDC_RESET_IC_RADIO2},
+                        ResetRadioIO[] = {IDC_RESET_IO_RADIO1, IDC_RESET_IO_RADIO2},
+                        ResetRadioPP[] = {IDC_RESET_PP_RADIO1, IDC_RESET_PP_RADIO2},
+                        ResetRadioPW[] = {IDC_RESET_PW_RADIO1, IDC_RESET_PW_RADIO2},
+                        ResetRadioRL[] = {IDC_RESET_RL_RADIO1, IDC_RESET_RL_RADIO2};
+    static LPUINT       ResetRadioPtr[] = {&ResetRadioCT[0],
+                                           &ResetRadioFC[0],
+                                           &ResetRadioIC[0],
+                                           &ResetRadioIO[0],
+                                           &ResetRadioPP[0],
+                                           &ResetRadioPW[0],
+                                           &ResetRadioRL[0]};
+           HWND         hWndProp,               // Property page window handle
+                        hWndProp1,              // ...
+                        hWndProp2,              // ...
+                        hWndFont,               // Font property page ChooseFontW button window handle
+                        hWnd_UD;                // []IO/[]PP/[]PW UpDown Control or its Buddy window handle
+           LOGFONTW     lf_ST;                  // Static text LOGFONTW
+    static HFONT        hFontNorm_ST = NULL,    // Normal static text font handle
+                        hFontBold_ST = NULL;    // Bold   ...
+    static APLINT       icValues[ICNDX_LENGTH]; // []IC local values
+    static RESET_VARS   lclResetVars;           // Local copy of bResetVars
+           WCHAR        wszTemp[128];           // Temporary WCHAR storage
+           char         szTemp[128];            // Temporary char storage
+    static CHOOSECOLORW cc = {0};               // Struct for ChooseColorW
+    static UBOOL        gbFore;                 // TRUE iff the button is FOREGROUND
+    static UINT         guIndex;                // Index of the button
 
     static COLORNAMES scMenuItems[] =
     {
@@ -709,7 +709,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRFCNS, OptionFlags.bSyntClrFcns);
                         CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRSESS, OptionFlags.bSyntClrSess);
 
-                        // Fill in the static members of the CHOOSECOLOR struc
+                        // Fill in the static members of the CHOOSECOLORW struc
                         cc.lStructSize    = sizeof (cc);
                         cc.hwndOwner      = hDlg;
 ////////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
@@ -2160,11 +2160,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                      || (IDC_SYNTCLR_BN_BGCLR1 <= idCtl
                       &&                          idCtl <= IDC_SYNTCLR_BN_BGCLR_LAST))
                     {
-                        HMENU        hMenu;                 // Handle to popup menu
-                        MENUITEMINFO mii = {0};             // Menu item info for popup menu
-                        COLORREF     clrCmp;                // Color to compare with the scMenuItems color
-                        POINT        ptScr;                 // Cursor point in screen coords
-                        UINT         uRetCmd;               // Return cmd from TrackPopupMenu
+                        HMENU         hMenu;                // Handle to popup menu
+                        MENUITEMINFOW mii = {0};            // Menu item info for popup menu
+                        COLORREF      clrCmp;               // Color to compare with the scMenuItems color
+                        POINT         ptScr;                // Cursor point in screen coords
+                        UINT          uRetCmd;              // Return cmd from TrackPopupMenu
 
                         // Get the associated item data (window handle of the Property Page)
                         (HANDLE_PTR) hWndProp = SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START, 0);
@@ -2207,7 +2207,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                             mii.dwItemData    = (clrCmp EQ scMenuItems[uCnt].clrRef);
 
                             // Insert the menu item
-                            InsertMenuItem (hMenu, uCnt, TRUE, &mii);
+                            InsertMenuItemW (hMenu, uCnt, TRUE, &mii);
                         } // End FOR
 
                         // Get the mouse position in screen coordinates
@@ -2241,7 +2241,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         switch (uRetCmd)
                         {
                             case IDC_SYNTCLR_MI_CUSTOM:
-                                // Fill in the dynamic members of the CHOOSECOLOR struc
+                                // Fill in the dynamic members of the CHOOSECOLORW struc
 ////////////////////////////////cc.lStructSize    =                         // Already filled in during initialization
 ////////////////////////////////cc.hwndOwner      =                         // Already filled in during initialization
 ////////////////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
@@ -2253,7 +2253,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////////////////cc.lpTemplateName = NULL;                   // Already zero from = {0}
 
                                 // If the user presses OK, ...
-                                if (ChooseColor (&cc))
+                                if (ChooseColorW (&cc))
                                     // Handle in separate message
                                     SendMessageW (hDlg,
                                                   MYWM_SETCOLOR,

@@ -51,7 +51,7 @@ UBOOL CmdIn_EM
                   wszExt  [_MAX_EXT];
     SECURITY_ATTRIBUTES secAttr = {sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
     HANDLE        hAtfFile = NULL,          // Handle for .atf file
-                  hAtfMap = NULL,           // Handle from CreateFileMapping
+                  hAtfMap = NULL,           // Handle from CreateFileMappingW
                   hAtfView = NULL;          // Handle from MapViewOfFile
     LPUCHAR       lpAtfView;                // Ptr to file contents
     LPWCHAR       lpwszTemp,                // Ptr to temporary storage
@@ -117,12 +117,12 @@ UBOOL CmdIn_EM
 
     // Map the file
     hAtfMap =
-      CreateFileMapping (hAtfFile,              // Handle to file to map
-                         NULL,                  // Optional security attributes
-                         PAGE_WRITECOPY,        // Protection for mapping object
-                         0,                     // High-order 32 bits of object size
-                         dwAtfFileSize,         // Low-order 32 bits of object size
-                         NULL);                 // Name of file-mapping object
+      CreateFileMappingW (hAtfFile,             // Handle to file to map
+                          NULL,                 // Optional security attributes
+                          PAGE_WRITECOPY,       // Protection for mapping object
+                          0,                    // High-order 32 bits of object size
+                          dwAtfFileSize,        // Low-order 32 bits of object size
+                          NULL);                // Name of file-mapping object
     if (hAtfMap EQ NULL)
     {
         lstrcpyW (wszTemp, L"Unable to create file mapping:  ");

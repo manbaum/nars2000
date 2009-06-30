@@ -140,7 +140,7 @@ UBOOL InAsciiFile_EM
 {
     UBOOL               bRet = FALSE;               // TRUE iff the result is valid
     HANDLE              hA2AFile = NULL,            // Handle for ASCII2APL file
-                        hA2AMap = NULL,             // Handle from CreateFileMapping
+                        hA2AMap = NULL,             // Handle from CreateFileMappingW
                         hA2AView = NULL;            // Handle from MapViewOfFile
     DWORD               dwA2AFileSize;              // Byte size of ASCII2APL file
     LPWCHAR             lpwA2AView = NULL,          // Ptr to global memory
@@ -176,12 +176,12 @@ UBOOL InAsciiFile_EM
 
     // Map the file
     hA2AMap =
-      CreateFileMapping (hA2AFile,                  // Handle to file to map
-                         NULL,                      // Optional security attributes
-                         PAGE_READONLY,             // Protection for mapping object
-                         0,                         // High-order 32 bits of object size
-                         dwA2AFileSize,             // Low-order 32 bits of object size
-                         NULL);                     // Name of file-mapping object
+      CreateFileMappingW (hA2AFile,                 // Handle to file to map
+                          NULL,                     // Optional security attributes
+                          PAGE_READONLY,            // Protection for mapping object
+                          0,                        // High-order 32 bits of object size
+                          dwA2AFileSize,            // Low-order 32 bits of object size
+                          NULL);                    // Name of file-mapping object
     if (hA2AMap EQ NULL)
     {
         lstrcpyW (wszTemp, L"Unable to create file mapping:  ");

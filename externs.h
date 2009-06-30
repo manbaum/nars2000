@@ -1676,13 +1676,13 @@ CHOOSEFONTW cfTC,                       // Global for ChooseFont for the TC
             cfVE;                       // ...                           VE
 
 EXTERN
-TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
-           tmSM,                        // ...                           SM
-           tmPR,                        // ...                           Printer
-           tmCC,                        // ...                           CC
-           tmFE,                        // ...                           FE
-           tmME,                        // ...                           ME
-           tmVE;                        // ...                           VE
+TEXTMETRICW tmTC,                       // Global for TEXTMETRICW for the TC
+            tmSM,                       // ...                           SM
+            tmPR,                       // ...                           Printer
+            tmCC,                       // ...                           CC
+            tmFE,                       // ...                           FE
+            tmME,                       // ...                           ME
+            tmVE;                       // ...                           VE
 
 typedef enum tagFONTENUM
 {
@@ -1719,7 +1719,7 @@ typedef struct tagFONTSTRUC
 {
     LPLOGFONTW    lplf;                         // 00:  Ptr to LOGFONTW    struct for this font
     LPCHOOSEFONTW lpcf;                         // 04:  Ptr to CHOOSEFONTW ...
-    LPTEXTMETRIC  lptm;                         // 08:  Ptr to TEXTMETRIC  ...
+    LPTEXTMETRICW lptm;                         // 08:  Ptr to TEXTMETRICW ...
     int           iDefPtSize;                   // 0C:  Default point size
     SIZE          charSize;                     // 10:  x- and y-character size (8 bytes)
     UBOOL         bPrinter:1,                   // 14:  00000001:  TRUE iff this font is for the printer
@@ -1820,9 +1820,9 @@ typedef enum tagUNDO_ACTS
 
 typedef struct tagUNDO_BUF
 {
-    UINT      CharPosBeg,   // 00:  Beginning character position (from start of text),
-                            //      -1 = current position
-              CharPosEnd,   // 04:  Ending    ...
+    UINT  CharPosBeg,   // 00:  Beginning character position (from start of text),
+                        //      -1 = current position
+          CharPosEnd,   // 04:  Ending    ...
           Group;        // 08:  Group index identifies actions to be performed together,
                             //      0 = no grouping
     short Action;       // 0C:  Action (see UNDO_ACTS)

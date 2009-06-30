@@ -743,7 +743,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Create a semaphore
     hSemaphore =
     lpMemPTD->lpSISCur->hSemaphore =
-      CreateSemaphore (NULL,            // No security attrs
+      CreateSemaphoreW (NULL,           // No security attrs
                         0,              // Initial count (non-signalled)
                         64*1024,        // Maximum count
                         NULL);          // No name

@@ -48,7 +48,7 @@ SIZE ClientToWindowSize
     // Adjust the rectangle from client to window
     AdjustWindowRectEx (&rc,
                         GetWindowLongW   (hWnd, GWL_STYLE),
-                        GetClassLongPtrW (hWnd, GCL_MENUNAME),
+                        GetClassLongPtrW (hWnd, GCLP_MENUNAME) >= 0xFFFF,
                         GetWindowLongW   (hWnd, GWL_EXSTYLE)
                        );
     Size.cx = rc.right  - rc.left;
@@ -380,9 +380,9 @@ void A2W
 //***************************************************************************
 
 LPWCHAR FillMemoryW
-    (LPWCHAR lpMemDest,
+    (LPWCHAR  lpMemDest,
      UINT    uLen,
-     WCHAR   wc)
+     WCHAR    wc)
 
 {
     while (uLen--)
@@ -430,12 +430,12 @@ void nop
 //***************************************************************************
 
 UBOOL CALLBACK EnumCallbackRemoveProp
-    (HWND   hWnd,           // Handle of window with property
-     LPCSTR lpszString,     // Property string or atom
-     HANDLE hData)          // Data handle
+    (HWND    hWnd,          // Handle of window with property
+     LPCWSTR lpwszString,   // Property string or atom
+     HANDLE  hData)         // Data handle
 {
     // Remove the property
-    RemoveProp (hWnd, lpszString);
+    RemovePropW (hWnd, lpwszString);
 
     // Continue enumerating
     return TRUE;

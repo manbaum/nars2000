@@ -63,8 +63,8 @@ void CC_Delete
 //***************************************************************************
 
 LRESULT APIENTRY CCWndProc
-    (HWND hWnd,     // Window handle
-     UINT message,  // Type of message
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
      UINT wParam,   // Additional information
      LONG lParam)   // ...
 
@@ -298,16 +298,16 @@ LRESULT WINAPI LclCCListboxWndProc
             // Create a popup menu
             hMenu = CreatePopupMenu ();
 
-            AppendMenu (hMenu,                  // Handle
-                        mfState
-                      | MF_STRING,              // Flags
-                        IDM_COPY,
-                        "&Copy");
-            AppendMenu (hMenu,                  // Handle
-                        MF_ENABLED
-                      | MF_STRING,              // Flags
-                        IDM_SELECTALL,
-                        "Select &All");
+            AppendMenuW (hMenu,                 // Handle
+                         mfState
+                       | MF_STRING,             // Flags
+                         IDM_COPY,
+                         L"&Copy");
+            AppendMenuW (hMenu,                 // Handle
+                         MF_ENABLED
+                       | MF_STRING,             // Flags
+                         IDM_SELECTALL,
+                        L"Select &All");
 
             TrackPopupMenu (hMenu,              // Handle
                             TPM_CENTERALIGN

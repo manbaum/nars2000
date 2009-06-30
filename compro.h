@@ -32,6 +32,7 @@
   #include "cs_parse.pro"
   #include "cs_proc.pro"
   #include "customize.pro"
+  #include "DBGBRK.pro"
   #include "debug.pro"
   #include "dispdbg.pro"
   #include "display.pro"

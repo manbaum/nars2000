@@ -348,7 +348,7 @@ UBOOL IzitLastLine
 ////     HBITMAP hBitmapMem, hBitmapOld;
 ////
 ////     // Get the size of the bitmap
-////     GetObject (hBitmap, sizeof (BITMAP), (LPSTR) &bm);
+////     GetObjectW (hBitmap, sizeof (BITMAP), (LPVOID) &bm);
 ////
 ////     // Create a compatible DC and bitmap
 ////     hDCMem = MyCreateCompatibleDC (hDC);    // Get device context handle
@@ -1890,7 +1890,7 @@ NORMAL_EXIT:
             // Ensure it's from our Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
                 // Pass on to LclEditCtrlWndProc
-                SendMessage (hWndEC, MYWM_NOTIFY, wParam, lParam);
+                SendMessageW (hWndEC, MYWM_NOTIFY, wParam, lParam);
 
             return FALSE;           // We handled the msg
 #undef  lpnmEC
@@ -1953,7 +1953,7 @@ NORMAL_EXIT:
 
         case WM_DESTROY:
             // Remove all saved window properties
-            EnumProps (hWnd, EnumCallbackRemoveProp);
+            EnumPropsW (hWnd, EnumCallbackRemoveProp);
 #ifdef DEBUG
             // If the debugger is still active, close it
             if (lpMemPTD->hWndDB)

@@ -124,10 +124,10 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
 
     // Create a semaphore so we can be interrupted
     lpMemPTD->hSemaDelay =
-      CreateSemaphore (NULL,            // No security attrs
-                       0,               // Initial count (non-signalled)
-                       64*1024,         // Maximum count
-                       NULL);           // No name
+      CreateSemaphoreW (NULL,           // No security attrs
+                        0,              // Initial count (non-signalled)
+                        64*1024,        // Maximum count
+                        NULL);          // No name
     // Get the current tick count so we can subtract it from the next tick count
     dwTickCount = GetTickCount ();
 

@@ -267,7 +267,7 @@ __try
 #undef  idCtl
 
         case WM_CLOSE:
-            PostMessage (hDlg, MYWM_CLOSE, FALSE, 0);
+            PostMessageW (hDlg, MYWM_CLOSE, FALSE, 0);
 
             return TRUE;            // We handled the msg
 

@@ -109,9 +109,9 @@ APLU3264 CALLBACK AboutDlgProc
      LPARAM lParam)
 
 {
-    static HFONT    hFont = NULL;
-    static TOOLINFO ti = {0};
-    static char     szAppDPFE[_MAX_PATH];
+    static HFONT     hFont = NULL;
+    static TOOLINFOW ti = {0};
+    static WCHAR     wszLclAppDPFE[_MAX_PATH];
 
     // Split cases
     switch (message)
@@ -141,14 +141,14 @@ APLU3264 CALLBACK AboutDlgProc
                                  GWL_WNDPROC,
                                  (APLU3264) (LONG_PTR) (WNDPROC) &LclStaticWndProc);
             // If we haven't done this before, ...
-            if (szAppDPFE[0] EQ '\0')
+            if (wszLclAppDPFE[0] EQ L'\0')
             {
-#define TT_PREFIX   "Loaded from:  "
+#define TT_PREFIX   L"Loaded from:  "
                 // Copy the prefix to the text
-                lstrcpy (szAppDPFE, TT_PREFIX);
+                lstrcpyW (wszLclAppDPFE, TT_PREFIX);
 
-                // Convert the wide char to single byte
-                W2A (&szAppDPFE[strcountof (TT_PREFIX)], wszAppDPFE, sizeof (szAppDPFE) - 1 - strcountof (TT_PREFIX));
+                // Append the source DPFE
+                lstrcatW (wszLclAppDPFE, wszAppDPFE);
 #undef  TT_PREFIX
             } // End IF
 
@@ -159,11 +159,11 @@ APLU3264 CALLBACK AboutDlgProc
             ti.uId      = (APLU3264) (HANDLE_PTR) GetDlgItem (hDlg, IDC_LOADEDFROM);
 ////////////ti.rect     =                       // Not used with TTF_IDISHWND
 ////////////ti.hinst    =                       // Not used except with string resources
-            ti.lpszText = szAppDPFE;
+            ti.lpszText = wszLclAppDPFE;
 
             // Register a tooltip for the Icon
             SendMessageW (hWndTT,
-                          TTM_ADDTOOL,
+                          TTM_ADDTOOLW,
                           0,
                           (LPARAM) (LPTOOLINFOW) &ti);
             return TRUE;            // Use the focus in wParam
@@ -275,22 +275,22 @@ LRESULT WINAPI LclStaticWndProc
             // Check for the IDC_LINK static window
             if (hWnd EQ hWndStatic)
             {
-                char szStaticText[128];             // Text of static control
+                WCHAR wszStaticText[128];       // Text of static control
 
                 // The user clicked on our static text --
                 //   make it behave like a hyperlink
 
                 // Get the static text so we can pass it to ShellExecute
-                GetWindowText (hWndStatic,
-                               szStaticText,
-                               sizeof (szStaticText) - 1);
+                GetWindowTextW (hWndStatic,
+                                wszStaticText,
+                                countof (wszStaticText) - 1);
                 // Call the shell to invoke the browser
-                ShellExecute (hWnd,             // Handle to parent window
-                              "open",           // Operation to perform
-                              szStaticText,     // Object on which to perform operation
-                              NULL,             // Executable file parameters
-                              NULL,             // Default directory
-                              SW_SHOWNORMAL     // How window is to shown when opened
+                ShellExecuteW (hWnd,            // Handle to parent window
+                               L"open",         // Operation to perform
+                               wszStaticText,   // Object on which to perform operation
+                               NULL,            // Executable file parameters
+                               NULL,            // Default directory
+                               SW_SHOWNORMAL    // How window is to shown when opened
                              );
                 return FALSE;           // We handled the msg
             } // End IF

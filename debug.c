@@ -168,7 +168,7 @@ UBOOL WINAPI CreateDebuggerInThread
             {
                 // Handle MDI messages and accelerators
                 if (!TranslateMDISysAccel (hWndMC, &Msg)
-                 && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+                 && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
                 {
                     TranslateMessage (&Msg);
                     DispatchMessageW (&Msg);
@@ -226,8 +226,8 @@ void DB_Delete
 //***************************************************************************
 
 LRESULT APIENTRY DBWndProc
-    (HWND hWnd,     // Window handle
-     UINT message,  // Type of message
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
      UINT wParam,   // Additional information
      LONG lParam)   // ...
 
@@ -609,26 +609,26 @@ LRESULT WINAPI LclListboxWndProc
             // Create a popup menu
             hMenu = CreatePopupMenu ();
 
-            AppendMenu (hMenu,                  // Handle
-                        mfState
-                      | MF_STRING,              // Flags
-                        IDM_COPY,
-                        "&Copy");
-            AppendMenu (hMenu,                  // Handle
-                        mfState
-                      | MF_STRING,              // Flags
-                        IDM_DELETE,
-                        "&Delete");
-            AppendMenu (hMenu,                  // Handle
-                        MF_ENABLED
-                      | MF_STRING,              // Flags
-                        IDM_DELETEALL,
-                        "Delet&e All");
-            AppendMenu (hMenu,                  // Handle
-                        MF_ENABLED
-                      | MF_STRING,              // Flags
-                        IDM_SELECTALL,
-                        "Selec&t All");
+            AppendMenuW (hMenu,                 // Handle
+                         mfState
+                       | MF_STRING,             // Flags
+                         IDM_COPY,
+                         L"&Copy");
+            AppendMenuW (hMenu,                 // Handle
+                         mfState
+                       | MF_STRING,             // Flags
+                         IDM_DELETE,
+                         L"&Delete");
+            AppendMenuW (hMenu,                 // Handle
+                         MF_ENABLED
+                       | MF_STRING,             // Flags
+                         IDM_DELETEALL,
+                         L"Delet&e All");
+            AppendMenuW (hMenu,                 // Handle
+                         MF_ENABLED
+                       | MF_STRING,             // Flags
+                         IDM_SELECTALL,
+                         L"Selec&t All");
 
             TrackPopupMenu (hMenu,              // Handle
                             TPM_CENTERALIGN

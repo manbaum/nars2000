@@ -48,7 +48,7 @@ typedef struct tagFE_CREATESTRUCTW
 {
     LPAPLCHAR lpwszLine;
     UINT      ErrCode;
-} FE_CREATESTRUCTW, UNALIGNED *LPFE_CREATESTRUCTW;
+} FE_CREATESTRUCTW, *LPFE_CREATESTRUCTW;
 
 
 typedef struct tagCLIPFMTS
@@ -657,7 +657,7 @@ LRESULT APIENTRY FEWndProc
             // Ensure it's from our Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
                 // Pass on to LclEditCtrlWndProc
-                SendMessage (hWndEC, MYWM_NOTIFY, wParam, lParam);
+                SendMessageW (hWndEC, MYWM_NOTIFY, wParam, lParam);
 
             return FALSE;           // We handled the msg
 #undef  lpnmEC
@@ -826,7 +826,7 @@ LRESULT APIENTRY FEWndProc
 
         case WM_DESTROY:
             // Remove all saved window properties
-            EnumProps (hWnd, EnumCallbackRemoveProp);
+            EnumPropsW (hWnd, EnumCallbackRemoveProp);
 
             // *************** FCNMEMVIRTENUM Entries ******************
             // Get the MemVirtStr ptr
@@ -2964,7 +2964,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             hBitMap = CreateBitmap (sizeChar.cx, sizeChar.cy, 1, 1, &bits);
 
             // Save the handle
-            SetWindowLongPtr (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+            SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
 
             break;                  // Pass on to the Edit Ctrl
         } // End WM_SETFONT
@@ -2978,7 +2978,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 case EN_KILLFOCUS:
                     // Delete the replace mode bitmap (if any)
-                    hBitMap = (HBITMAP) GetWindowLongPtr (hWnd, GWLEC_HBITMAP);
+                    hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
 
                     // If it's valid
                     if (hBitMap)
@@ -2987,7 +2987,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         DeleteObject (hBitMap); hBitMap = NULL;
 
                         // Save the handle
-                        SetWindowLongPtr (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+                        SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
                     } // End IF
 
                     break;
@@ -3172,7 +3172,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             HBITMAP hBitMap;        // Handle of the replace caret bitmap
 
             // Remove all saved window properties
-            EnumProps (hWnd, EnumCallbackRemoveProp);
+            EnumPropsW (hWnd, EnumCallbackRemoveProp);
 
             // Get the replace caret bitmap handle (if any)
             hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
@@ -3184,7 +3184,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 DeleteObject (hBitMap); hBitMap = NULL;
 
 ////////////////// Save the handle
-////////////////SetWindowLongPtr (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+////////////////SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
             } // End IF
 
             break;

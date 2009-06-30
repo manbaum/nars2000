@@ -36,7 +36,7 @@ typedef struct tagSM_CREATESTRUCTW
     HGLOBAL hGlbDPFE;       // 00:  Workspace DPFE global memory handle
     UBOOL    bExecLX;       // 04:  TRUE iff execute []LX after successful load
                             // 08:  Length
-} SM_CREATESTRUCTW, *LPSM_CREATESTRUCTW;
+} UNALIGNED SM_CREATESTRUCTW, *LPSM_CREATESTRUCTW;
 
 
 //***************************************************************************

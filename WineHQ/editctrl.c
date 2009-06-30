@@ -65,6 +65,14 @@
 #include <windowsx.h>
 #include "local.h"
 
+#ifdef _WIN64
+  #define SIZE_T unsigned __int64
+#elif defined (_WIN32)
+  #define SIZE_T unsigned __int32
+#else
+  #error Need code for this architecture.
+#endif
+
 WINE_DEFAULT_DEBUG_CHANNEL(edit);
 WINE_DECLARE_DEBUG_CHANNEL(combo);
 WINE_DECLARE_DEBUG_CHANNEL(relay);
@@ -264,7 +272,7 @@ static void EDIT_EM_SetHandle16(EDITSTATE *es, HLOCAL16 hloc);
 static void EDIT_EM_SetLimitText(EDITSTATE *es, INT limit);
 static void EDIT_EM_SetMargins(EDITSTATE *es, INT action, WORD left, WORD right, BOOL repaint);
 static void EDIT_EM_SetPasswordChar(EDITSTATE *es, WCHAR c);
-static void EDIT_EM_SetSel(EDITSTATE *es, UINT start, UINT end, BOOL after_wrap);
+static void EDIT_EM_SetSel(EDITSTATE *es, APLU3264 start, APLU3264 end, BOOL after_wrap);
 static BOOL EDIT_EM_SetTabStops(EDITSTATE *es, INT count, LPINT tabs);
 #ifdef _WIN16
 static BOOL EDIT_EM_SetTabStops16(EDITSTATE *es, INT count, LPINT16 tabs);
@@ -283,7 +291,7 @@ static void EDIT_WM_ContextMenu(EDITSTATE *es, INT x, INT y);
 static void EDIT_WM_Copy(EDITSTATE *es);
 static LRESULT  EDIT_WM_Create(EDITSTATE *es, LPCWSTR name);
 static LRESULT  EDIT_WM_Destroy(EDITSTATE *es);
-static size_t  EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode);
+static SIZE_T  EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode);
 static LRESULT  EDIT_WM_HScroll(EDITSTATE *es, INT action, INT pos);
 static LRESULT  EDIT_WM_KeyDown(EDITSTATE *es, INT key);
 static LRESULT  EDIT_WM_KillFocus(EDITSTATE *es);
@@ -1049,7 +1057,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case WM_LBUTTONDOWN:
-        result = EDIT_WM_LButtonDown(es, wParam, (short)LOWORD(lParam), (short)HIWORD(lParam));
+        result = EDIT_WM_LButtonDown(es, (DWORD) wParam, (short)LOWORD(lParam), (short)HIWORD(lParam));
         break;
 
     case WM_LBUTTONUP:
@@ -1857,7 +1865,7 @@ static void EDIT_LockBuffer(EDITSTATE *es)
             if(hloc32W_new)
             {
             es->hloc32W = hloc32W_new;
-            es->buffer_size = LocalSize(hloc32W_new)/sizeof(WCHAR) - 1;
+            es->buffer_size = (UINT) LocalSize(hloc32W_new)/sizeof(WCHAR) - 1;
 //          TRACE("Real new size %d+1 WCHARs\n", es->buffer_size);
             }
 //          else
@@ -2025,7 +2033,7 @@ static BOOL EDIT_MakeFit(EDITSTATE *es, UINT size)
         if ((hNew32W = LocalReAlloc(es->hloc32W, alloc_size, LMEM_MOVEABLE | LMEM_ZEROINIT))) {
 //      TRACE("Old 32 bit handle %p, new handle %p\n", es->hloc32W, hNew32W);
         es->hloc32W = hNew32W;
-        es->buffer_size = LocalSize(hNew32W)/sizeof(WCHAR) - 1;
+        es->buffer_size = (UINT) LocalSize(hNew32W)/sizeof(WCHAR) - 1;
         }
     }
 
@@ -2642,7 +2650,7 @@ static void EDIT_UnlockBuffer(EDITSTATE *es, BOOL force)
             UINT countA_new = WideCharToMultiByte(CP_ACP, 0, es->text, countW, NULL, 0, NULL, NULL);
 //          TRACE("Synchronizing with 32-bit ANSI buffer\n");
 //          TRACE("%d WCHARs translated to %d bytes\n", countW, countA_new);
-            countA = LocalSize(es->hloc32A);
+            countA = (UINT) LocalSize(es->hloc32A);
             if(countA_new > countA)
             {
             HLOCAL hloc32A_new;
@@ -2652,7 +2660,7 @@ static void EDIT_UnlockBuffer(EDITSTATE *es, BOOL force)
             if(hloc32A_new)
             {
                 es->hloc32A = hloc32A_new;
-                countA = LocalSize(hloc32A_new);
+                countA = (UINT) LocalSize(hloc32A_new);
 //              TRACE("Real new size %d bytes\n", countA);
             }
 //          else
@@ -3736,7 +3744,7 @@ static void EDIT_EM_SetHandle(EDITSTATE *es, HLOCAL hloc)
         WCHAR *textW;
         CHAR *textA;
 
-        countA = LocalSize(hloc);
+        countA = (UINT) LocalSize(hloc);
         textA = LocalLock(hloc);
         countW = MultiByteToWideChar(CP_ACP, 0, textA, countA, NULL, 0);
         if(!(hloc32W_new = LocalAlloc(LMEM_MOVEABLE | LMEM_ZEROINIT, countW * sizeof(WCHAR))))
@@ -3756,7 +3764,7 @@ static void EDIT_EM_SetHandle(EDITSTATE *es, HLOCAL hloc)
         es->hloc32A = hloc;
     }
 
-    es->buffer_size = LocalSize(es->hloc32W)/sizeof(WCHAR) - 1;
+    es->buffer_size = (UINT) LocalSize(es->hloc32W)/sizeof(WCHAR) - 1;
 
         es->flags |= EF_APP_HAS_HANDLE;
     EDIT_LockBuffer(es);
@@ -3986,7 +3994,7 @@ static void EDIT_EM_SetPasswordChar(EDITSTATE *es, WCHAR c)
  *      In other words: this handler is OK
  *
  */
-static void EDIT_EM_SetSel(EDITSTATE *es, UINT start, UINT end, BOOL after_wrap)
+static void EDIT_EM_SetSel(EDITSTATE *es, APLU3264 start, APLU3264 end, BOOL after_wrap)
 {
     UINT old_start = es->selection_start;
     UINT old_end = es->selection_end;
@@ -3999,8 +4007,8 @@ static void EDIT_EM_SetSel(EDITSTATE *es, UINT start, UINT end, BOOL after_wrap)
         start = min(start, len);
         end = min(end, len);
     }
-    es->selection_start = start;
-    es->selection_end = end;
+    es->selection_start = (UINT) start;
+    es->selection_end = (UINT) end;
     if (after_wrap)
         es->flags |= EF_AFTER_WRAP;
     else
@@ -4034,16 +4042,16 @@ static void EDIT_EM_SetSel(EDITSTATE *es, UINT start, UINT end, BOOL after_wrap)
  */
             if (old_start > end )
             {
-                EDIT_InvalidateText(es, start, end);
+                EDIT_InvalidateText(es, (UINT) start, (UINT) end);
                 EDIT_InvalidateText(es, old_start, old_end);
             }
             else
             {
-                EDIT_InvalidateText(es, start, old_start);
-                EDIT_InvalidateText(es, end, old_end);
+                EDIT_InvalidateText(es, (UINT) start, old_start);
+                EDIT_InvalidateText(es, (UINT) end, old_end);
             }
     }
-        else EDIT_InvalidateText(es, start, old_end);
+        else EDIT_InvalidateText(es, (UINT) start, old_end);
 } // End EDIT_EM_SetSel
 
 
@@ -4417,7 +4425,7 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     {
         BOOL bItsaName;
 
-        bItsaName = SendMessageA (es->hwndSelf, MYWM_IZITNAME, x, y);
+        bItsaName = (UINT) SendMessageA (es->hwndSelf, MYWM_IZITNAME, x, y);
 
         AppendMenuW (popup, MF_SEPARATOR                           , 0             , NULL);
         AppendMenuW (popup, MF_STRING | (bItsaName ? 0 : MF_GRAYED), IDM_LOCALIZE  , L"&Localize");
@@ -4566,7 +4574,7 @@ static LRESULT EDIT_WM_Destroy(EDITSTATE *es)
  *  WM_GETTEXT
  *
  */
-static size_t EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode)
+static SIZE_T EDIT_WM_GetText(EDITSTATE *es, INT count, LPWSTR dst, BOOL unicode)
 {
     if(!count) return 0;
 
@@ -4902,7 +4910,7 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
                 if (!EDIT_IsInsideDialog(es)) return 1;
                 if (control) break;
                 hwndParent = GetParent(es->hwndSelf);
-                dw = SendMessageW( hwndParent, DM_GETDEFID, 0, 0 );
+                dw = (UINT) SendMessageW( hwndParent, DM_GETDEFID, 0, 0 );
         if (HIWORD(dw) == DC_HASDEFID)
         {
             SendMessageW( hwndParent, WM_COMMAND,
@@ -5133,7 +5141,7 @@ static LRESULT EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode)
     alloc_size = ROUND_TO_GROW((es->buffer_size + 1) * sizeof(WCHAR));
     if(!(es->hloc32W = LocalAlloc(LMEM_MOVEABLE | LMEM_ZEROINIT, alloc_size)))
         return FALSE;
-    es->buffer_size = LocalSize(es->hloc32W)/sizeof(WCHAR) - 1;
+    es->buffer_size = (UINT) LocalSize(es->hloc32W)/sizeof(WCHAR) - 1;
 
     if (!(es->undo_text = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (es->buffer_size + 1) * sizeof(WCHAR))))
         return FALSE;
@@ -6052,3 +6060,4 @@ static void EDIT_ImeComposition(HWND hwnd, LPARAM CompFlag, EDITSTATE *es)
     EDIT_SetCaretPos(es, es->selection_start + cursor, es->flags & EF_AFTER_WRAP);
 } // End EDIT_ImeComposition
 #endif
+#undef  SIZE_T

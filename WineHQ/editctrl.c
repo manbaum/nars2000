@@ -48,6 +48,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifndef _WIN64
+#define __i386__
+#endif
+
 #include "windef.h"
 #include "winbase.h"
 #include "winnt.h"

@@ -22,6 +22,7 @@
 GSL_LIB = gsl\libgsl$(WIN)-double.lib
 
 CFLAGS_WEXE = /nologo /GA /W3 /WX $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
+CFLAGS_WEXE = $(CFLAGS_WEXE) /D "WINVER=0x0501" /D "_WIN32_WINNT=0x0501" /D "_WIN32_IE=0x0701" /D "_MBCS"
 LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /GS- /D_AMD64_ /D_M_AMD64 /D_WIN64 /Gd
@@ -88,11 +89,14 @@ ALL:    DIR                 \
         PRO                 \
         DEP                 \
         EXE                 \
+        ZIP                 \
         MAKEVER
 
 EXE:    INITIAL_EXE         \
         $(O)$(ENAME).exe    \
         $(B)$(ENAME).exe
+
+ZIP:    $(B)$(ENAME).zip
 
 MAKEVER:                    \
         $(OC)$(MV).exe      \
@@ -124,7 +128,7 @@ INITIAL_PRO:
         @echo ---.pro Files---
 
 INITIAL_EXE:
-        @echo ---.c   Files---
+        @echo ---.c Files-----
 
 {}.rc{$(O)}.res:
         @Set INCLUDE=$(I98);$(O)
@@ -438,19 +442,24 @@ $(LIBS_WEXE) $(LIBS_EXT)
 /DEF:$(DEFFILE)
 /NODEFAULTLIB
 <<KEEP
+        @echo ---.exe File----
         @Set LIB=$(L98)
         @if exist $@ del $@
-        @$(LD) $(LFLAGS_WEXE) @$(O)main.crf
+        @$(LD) $(LFLAGS_WEXE) @$(O)main.crf >NUL
         @del $(O)$(@B).exp
         @del $(O)$(@B).lib
-        @copy $@ $(ENAME).exe
-        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE $(FONT)
-        @del $(ENAME).exe
         @copy $(O)$(ENAME).map $(B) >NUL
+
+$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE $(FONT)
+        @echo ---.zip File----
+        @copy $(O)$(ENAME).exe $(ENAME).exe >NUL
+        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE $(FONT) >NUL
+        @del $(ENAME).exe
+        @dir /ON $(B)$(ENAME).zip|grep "$(ENAME)\."
 
 $(B)$(ENAME).exe:       $(O)$(ENAME).exe
         @copy %s $@ >NUL
-        @dir /ON $(B)$(ENAME).*|grep "$(ENAME)\."
+        @dir /ON $(B)$(ENAME).exe|grep "$(ENAME)\."
 
 
 ############################# MAKEVER EXECUTABLE #####################

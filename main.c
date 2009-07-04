@@ -3227,11 +3227,6 @@ int PASCAL WinMain
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, TLSTYPE_MF);
 
-    // Set rounding precision to 53-bits
-    //   as per comments in top of <dtoa.c>
-    //   but we need 64 bits because of 64-bit ints
-    control87(PC_64, MCW_PC);
-
     // Get the value of PI
     aplPi = 0x400921FB54442D18;
     FloatPi = *(LPAPLFLOAT) &aplPi;

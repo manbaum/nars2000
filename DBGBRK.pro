@@ -2,6 +2,7 @@
 #define Dbgstop DbgStop
 void DbgBrk (void);
 
-void iAsmAdd64 (LPAPLINT, APLINT, APLINT);
-void iAsmSub64 (LPAPLINT, APLINT, APLINT);
+UBOOL iAsmAdd64 (LPAPLINT, APLINT, APLINT);
+UBOOL iAsmSub64 (LPAPLINT, APLINT, APLINT);
+UBOOL iAsmMul64 (LPAPLINT, APLINT, APLINT);
 

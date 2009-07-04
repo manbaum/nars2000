@@ -2418,7 +2418,7 @@ APLUINT BytesIn
 //
 //  Originally, this function was a macro as in
 //
-//    #define abs64(a)    (((a)>0)?a:-(a))
+//    #define abs64(a)    (((a)>=0)?a:-(a))
 //
 //  however, the first time I tried
 //
@@ -2439,6 +2439,7 @@ APLINT abs64
 //  $_iadd64
 //
 //  Add two 64-bit integers retaining maximum precision
+//    while handling overflow.
 //***************************************************************************
 
 APLINT _iadd64
@@ -2450,28 +2451,8 @@ APLINT _iadd64
     APLINT aplRes;              // The result
     UBOOL  bRet;                // TRUE iff the result is valid
 
-    _clear87 ();
-
-    // Set rounding precision to 53-bits
-    //   as per comments in top of <dtoa.c>
-    //   but we need 64 bits because of 64-bit ints
-    control87 (PC_64, MCW_PC);
-
-#ifdef _WIN64
-    iAsmAdd64 (&aplRes, aplLft, aplRht);
-#elif defined (_WIN32)
-    _asm
-    {
-        fild    aplLft;
-        fild    aplRht;
-        faddp   st(1),st(0);
-        fistp   aplRes;
-    }
-#else
-  #error Need code for this architecture.
-#endif
-    // Check for overflow
-    bRet = !(_SW_INVALID & _status87 ());
+    // Call an assembler routine
+    bRet = iAsmAdd64 (&aplRes, aplLft, aplRht);
 
     // If the caller handles the overflow, tell 'em whether or not it did
     if (lpbRet)
@@ -2489,6 +2470,7 @@ APLINT _iadd64
 //  $_isub64
 //
 //  Subtract two 64-bit integers retaining maximum precision
+//    while handling overflow.
 //***************************************************************************
 
 APLINT _isub64
@@ -2500,28 +2482,8 @@ APLINT _isub64
     APLINT aplRes;              // The result
     UBOOL  bRet;                // TRUE iff the result is valid
 
-    _clear87 ();
-
-    // Set rounding precision to 53-bits
-    //   as per comments in top of <dtoa.c>
-    //   but we need 64 bits because of 64-bit ints
-    control87 (PC_64, MCW_PC);
-
-#ifdef _WIN64
-    iAsmSub64 (&aplRes, aplLft, aplRht);
-#elif defined (_WIN32)
-    _asm
-    {
-        fild    aplLft;
-        fild    aplRht;
-        fsubp   st(1),st(0);
-        fistp   aplRes;
-    }
-#else
-  #error Need code for this architecture.
-#endif
-    // Check for overflow
-    bRet = !(_SW_INVALID & _status87 ());
+    // Call an assembler routine
+    bRet = iAsmSub64 (&aplRes, aplLft, aplRht);
 
     // If the caller handles the overflow, tell 'em whether or not it did
     if (lpbRet)
@@ -2539,6 +2501,7 @@ APLINT _isub64
 //  $_imul64
 //
 //  Multiply two 64-bit integers retaining maximum precision
+//    while handling overflow.
 //***************************************************************************
 
 APLINT _imul64
@@ -2550,33 +2513,9 @@ APLINT _imul64
     APLINT aplRes;              // The result
     UBOOL  bRet;                // TRUE iff the result is valid
 
-#ifdef _WIN64
-    // Start off with a straight multiply
-    aplRes = aplLft * aplRht;
+    // Call an assembler routine
+    bRet = iAsmMul64 (&aplRes, aplLft, aplRht);
 
-    // Check the high-order 64 bits of the product
-    bRet = (__mulh (aplLft, aplRht) EQ 0);
-#elif defined (_WIN32)
-    _clear87 ();
-
-    // Set rounding precision to 53-bits
-    //   as per comments in top of <dtoa.c>
-    //   but we need 64 bits because of 64-bit ints
-    control87(PC_64, MCW_PC);
-
-    _asm
-    {
-        fild    aplLft;
-        fild    aplRht;
-        fmulp   st(1),st(0);
-        fistp   aplRes;
-    }
-
-    // Check for overflow
-    bRet = !(_SW_INVALID & _status87 ());
-#else
-  #error Need code for this architecture.
-#endif
     // If the caller handles the overflow, tell 'em whether or not it did
     if (lpbRet)
         *lpbRet = bRet;

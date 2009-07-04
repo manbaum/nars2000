@@ -1644,8 +1644,11 @@ strtod
 #ifdef USE_LOCALE
         CONST char *s2;
 #endif
-        _control87(PC_53, MCW_PC);
-
+#ifndef _WIN64
+        // On the x64 architecture, changing the floating point
+        //   precision is not supported.
+        _control87 (PC_53, MCW_PC);
+#endif
         sign = nz0 = nz = 0;
         dval(rv) = 0.;
         for(s = s00;;s++) switch(*s) {

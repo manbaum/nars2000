@@ -75,7 +75,8 @@ Downloads</h1>
           <th>Size</th>
           <th>Type</th>
           <th class="notes">Notes</th>
-          <th></th>
+          <th>32-bit</th>
+          <th>64-bit</th>
         </tr>
 
         <?php
@@ -89,12 +90,17 @@ Downloads</h1>
         // This is the correct way to loop over the directory.
         while (false !== ($File = readdir ($dh)))
         {
-            if (!is_dir ($File)
+            if (!is_dir ($DirName . $File)
              && strcmp  ($File, "linestat.txt") != 0
              && strcmp  ($File, "nars2000.ver") != 0
-             && strncmp ($File, "Notes-", 6)    != 0
-             && strncmp ($File, "Version-", 8)  != 0)
+             && strncmp ($File, "Notes-", 6)    != 0)
             {
+                if (strncmp ($File, "Version-", 8) == 0)
+                {
+                    $Pos  = strpos ($File, '-');
+                    $File = "NARS2000" . substr ($File, $Pos, -3) . "zip";
+                } // End IF
+
                 $Files[] = $File;
             } // End IF
         } // End WHILE
@@ -107,44 +113,54 @@ Downloads</h1>
         foreach ($Files as $File)
         {
             // Ignore "robots.txt"
-            if (strcmp ($File, "robots.txt") != 0)
+            if (strcmp ($File, "robots.txt") == 0)
+                continue;
+
+            // Handle special files separately
+            $IsSpec = (strcmp ($File, "gsldir.zip") == 0
+                    || strcmp ($File, "misc.zip"  ) == 0
+                    || strcmp ($File, "qdebug.zip") == 0);
+            if ($IsSpec)
             {
-                if (strcmp ($File, "gsldir.zip") == 0
-                 || strcmp ($File, "misc.zip"  ) == 0
-                 || strcmp ($File, "qdebug.zip") == 0)
-                {
-                    $Name   = substr ($File, 0, strpos ($File, '.'));
-                    $Rel    = "";
-                    $ExtPos = strpos (strrev ($File), '.');
-                    $Ext    = substr ($File, -$ExtPos);    // Extract the extension
-                    $Class  = "map";
-                } else
-                {
-                    $Pos    = strpos ($File, '-');
-                    $Name   = substr ($File, 0, $Pos);
-                    $Rel    = substr ($File, $Pos + 1);
-                    $ExtPos = strpos (strrev ($File), '.');
-                    $Ext    = substr ($File, -$ExtPos);    // Extract the extension
-                    $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
-                    $Class  = $Ext;
-                    $Notes  = "Version-$Rel.txt";
-                } // End IF/ELSE
+                $Name   = substr ($File, 0, strpos ($File, '.'));
+                $Rel    = "";
+                $ExtPos = strpos (strrev ($File), '.');
+                $Ext    = substr ($File, -$ExtPos);         // Extract the extension
+                $Class  = "map";
+            } else
+            {
+                $Pos    = strpos ($File, '-');
+                $Name   = substr ($File, 0, $Pos);
+                $Rel    = substr ($File, $Pos + 1);
+                $ExtPos = strpos (strrev ($File), '.');
+                $Ext    = substr ($File, -$ExtPos);         // Extract the extension
+                $Rel    = substr ($Rel , 0, -$ExtPos-1);    // Remove trailing extension
+                $Class  = $Ext;
+                $Notes  = "Version-$Rel.txt";
+            } // End IF/ELSE
 
-                $Date   = gmdate ("Y F d H:i:s", filemtime ($DirName . $File));
-                $Size   = number_format (filesize ($DirName . $File));
+            $Is32 = is_file ($DirName . "w32/$File");
+            $Is64 = is_file ($DirName . "w64/$File");
+            $Sub  = ($IsSpec ? "" : ($Is32 ? "w32/" : "w64/"));
+            $Date = gmdate ("Y F d H:i:s", filemtime ("$DirName$Sub$File"));
+            $Size = number_format (filesize ("$DirName$Sub$File"));
 
-                echo   "      <tr class=\"$Class\">\n"
-                   .   "        <td>$Name</td>\n"
-                   .   "        <td>$Rel</td>\n"
-                   .   "        <td>$Date</td>\n"
-                   .   "        <td align=\"right\">$Size</td>\n"
-                   .   "        <td>$Ext</td>\n"
-                   . (($Class == 'zip')
-                   ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$Rel</a></td>\n"
-                   :   "        <td class=\"notes\"></td>\n")
-                   .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\" onclick=\"return PageTrack ('binaries/$File');\">Download</a></td>\n"
-                   .   "      </tr>\n";
-            } // End IF
+            echo   "      <tr class=\"$Class\">\n"
+               .   "        <td>$Name</td>\n"
+               .   "        <td>$Rel</td>\n"
+               .   "        <td>$Date</td>\n"
+               .   "        <td align=\"right\">$Size</td>\n"
+               .   "        <td>$Ext</td>\n"
+               . (($Class == 'zip')
+               ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$Rel</a></td>\n"
+               :   "        <td class=\"notes\"></td>\n")
+               . (($Is32 || $IsSpec)
+               ?   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$Sub$File\" onclick=\"return PageTrack ('binaries/$Sub$File');\">Download</a></td>\n"
+               :   "        <td></td>\n")
+               . ($Is64
+               ?   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$Sub$File\" onclick=\"return PageTrack ('binaries/$Sub$File');\">Download</a></td>\n"
+               :   "        <td></td>\n")
+               .   "      </tr>\n";
         } // End FOREACH
 
         closedir ($dh);

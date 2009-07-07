@@ -1,6 +1,17 @@
 
 #define GCL_HBRBACKGROUND       (-10)
 #define NM_LAST                 (0U- 99U)
+
+#undef  WM_KEYLAST
+
+#if(_WIN32_WINNT >= 0x0501)
+#define WM_UNICHAR                      0x0109
+#define WM_KEYLAST                      0x0109
+#define UNICODE_NOCHAR                  0xFFFF
+#else
+#define WM_KEYLAST                      0x0108
+#endif /* _WIN32_WINNT >= 0x0501 */
+
 #ifdef _WIN64
   typedef          __int64 APLI3264;    // Widest native signed value
   typedef unsigned __int64 APLU3264;    // ...           unsigned ...

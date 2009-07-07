@@ -78,7 +78,8 @@ UBOOL CmdSave_EM
     lpw = SkipToCharW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
-    *lpw = L'\0';
+    if (*lpw)
+        *lpw = L'\0';
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));

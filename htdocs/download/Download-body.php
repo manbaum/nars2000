@@ -32,7 +32,7 @@
 }
 .dnlbutton
 {
-  background-color: rgb(255, 69, 0); /* orangered */
+  background-color: rgb(255, 255, 224); /* Lightyellow */
 }
 .notes
 {
@@ -72,11 +72,10 @@ Downloads</h1>
           <th>File Name</th>
           <th>Version</th>
           <th>Date/Time (GMT)</th>
-          <th>Size</th>
           <th>Type</th>
           <th class="notes">Notes</th>
-          <th>32-bit</th>
-          <th>64-bit</th>
+          <th>32-bit (bytes)</th>
+          <th>64-bit (bytes)</th>
         </tr>
 
         <?php
@@ -98,10 +97,10 @@ Downloads</h1>
                 if (strncmp ($File, "Version-", 8) == 0)
                 {
                     $Pos  = strpos ($File, '-');
-                    $File = "NARS2000" . substr ($File, $Pos, -3) . "zip";
-                } // End IF
-
-                $Files[] = $File;
+                    $Files[] = "NARS2000" . substr ($File, $Pos, -3) . "zip";
+                    $Files[] = "NARS2000" . substr ($File, $Pos, -3) . "map";
+                } else
+                    $Files[] = $File;
             } // End IF
         } // End WHILE
 
@@ -141,24 +140,27 @@ Downloads</h1>
 
             $Is32 = is_file ($DirName . "w32/$File");
             $Is64 = is_file ($DirName . "w64/$File");
-            $Sub  = ($IsSpec ? "" : ($Is32 ? "w32/" : "w64/"));
-            $Date = gmdate ("Y F d H:i:s", filemtime ("$DirName$Sub$File"));
-            $Size = number_format (filesize ("$DirName$Sub$File"));
+            $D32  = ($IsSpec ? "" : "w32/" );
+            $Date = gmdate ("Y F d H:i:s", filemtime ("$DirName$D32$File"));
+            $Sz32 = number_format (filesize ("$DirName$D32/$File"));
+            if ($Is64)
+                $Sz64 = number_format (filesize ($DirName . "w64/$File"));
+            else
+                $Sz64 = '';
 
             echo   "      <tr class=\"$Class\">\n"
                .   "        <td>$Name</td>\n"
                .   "        <td>$Rel</td>\n"
                .   "        <td>$Date</td>\n"
-               .   "        <td align=\"right\">$Size</td>\n"
                .   "        <td>$Ext</td>\n"
                . (($Class == 'zip')
                ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$Rel</a></td>\n"
                :   "        <td class=\"notes\"></td>\n")
                . (($Is32 || $IsSpec)
-               ?   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$Sub$File\" onclick=\"return PageTrack ('binaries/$Sub$File');\">Download</a></td>\n"
+               ?   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$D32$File\" onclick=\"return PageTrack ('binaries/$D32$File');\">Download ($Sz32)</a></td>\n"
                :   "        <td></td>\n")
                . ($Is64
-               ?   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$Sub$File\" onclick=\"return PageTrack ('binaries/$Sub$File');\">Download</a></td>\n"
+               ?   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/w64/$File\" onclick=\"return PageTrack ('binaries/w64/$File');\">Download ($Sz64)</a></td>\n"
                :   "        <td></td>\n")
                .   "      </tr>\n";
         } // End FOREACH

@@ -338,14 +338,15 @@ Welcome to NARS2000</h1>
       <span class="APL">{quad}RL</span> is converted to the System or CLEAR WS default value
       (selected by User Preference)</li>
     <li>Control structures on one line or split across multiple lines
-      (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).</li>
+      (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>)</li>
     <li>Syntax coloring of lines of APL in Function Editor and Session Manager windows</li>
     <li>Base, Euler, and Pi Point Notation as extensions to Decimal Point and Exponential Point Notations
       for entering certain numeric constants</li>
-    <li> A <b>Status Window</b> at the bottom of the screen displays various pieces of information about
-      the cursor position and key states.</li>
+    <li>A <b>Status Window</b> at the bottom of the screen displays various pieces of information about
+      the cursor position and key states</li>
     <li><b>Alt-<i>nnnn</i></b> may be used to enter arbitrary Unicode characters in decimal.  For example,
-      <b>Alt-9735</b> is a lightning bolt (<span class="APL">&#9735;</span>).</li>
+      <b>Alt-9735</b> is a lightning bolt (<span class="APL">&#9735;</span>)</li>
+    <li>Available as either a 32- or 64-bit executable</li>
   </ul>
 
   <h3>Wish List of Miscellaneous Features</h3>
@@ -354,7 +355,6 @@ Welcome to NARS2000</h1>
       this also allows comments within a line</li>
     <li>Idiom recognition at tokenization time</li>
     <li>Language bar</li>
-    <li>64-bit executable</li>
   </ul>
 </div>
 
@@ -377,7 +377,7 @@ Welcome to NARS2000</h1>
 <div class="section">
   <h2 id="Platforms">Platforms</h2>
 
-    <p>At the moment, NARS2000 is available as a Windows-based
+    <p>At the moment, NARS2000 is available as a 32- or 64-bit Windows-based
       executable only, initially designed to run on Windows 2000,
       XP, and Vista.</p>
 

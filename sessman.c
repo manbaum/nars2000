@@ -133,7 +133,9 @@ HWND GetThreadSMEC
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+        lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC));
 
     // Return the handle to the Edit Ctrl
     return (HWND) GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
@@ -464,7 +466,9 @@ void DisplayPrompt
         dprintfWL9 (L"~~DisplayPrompt (%d)", uCaller);
 #endif
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+        lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC));
 
     // Mark as no longer executing
     lpMemPTD->bExecuting = FALSE;

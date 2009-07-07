@@ -1916,13 +1916,38 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_SAVE_WS:
                     // Get ptr to PerTabData global memory
-                    lpMemPTD = GetPerTabPtr (gOverTabIndex); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+                    lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC)); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+                    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+                        return FALSE;
 
                     // Get this tab's SM window handle
                     hWndSM = lpMemPTD->hWndSM;
 
                     // Tell the SM to save the ws
-                    return SendMessageW (hWndSM, MYWM_SAVE_WS, 0, (LPARAM) L"");
+                    SendMessageW (hWndSM, MYWM_SAVE_WS, 0, (LPARAM) L"");
+
+                    // If it's Quad input, and we're not resetting, ...
+                    if (lpMemPTD->lpSISCur
+                     && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
+                     && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                        // Tell the SM to display the Quad Input Prompt
+                        PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 100);
+                    else
+                    // If no SIS layer or not Quad input and not reset all, ...
+                    if (lpMemPTD->lpSISCur EQ NULL
+                     || (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD
+                      && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_ALL))
+                    {
+                        HWND hWndEC;
+
+                        // Get the handle to the Edit Ctrl
+                        hWndEC = (HWND) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
+
+                        // Display the default prompt
+                        DisplayPrompt (hWndEC, 4);
+                    } // End IF/ELSE/...
+
+                    return FALSE;   // We handled the msg
 
                 case IDM_SAVE_AS_WS:
 #ifdef DEBUG

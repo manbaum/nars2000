@@ -3269,7 +3269,9 @@ void ForceSendCursorMsg
     UBOOL        bOldExecuting; // TRUE iff the old value was executing
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+        lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC));
 
     // Indicate the new execution state
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = bExecuting;

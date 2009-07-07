@@ -70,7 +70,7 @@ AFLAGS=/Mu /DDEBUG=$(DEBUG)
 
 !if "$(VS)" == "1"
 O=DEBUG\                        # define output directory for intermediate files
-B=$(BIN)D$(WIN)\                 # ...                         binaries
+B=$(BIN)D$(WIN)\                # ...                         binaries
 !else
 !if "$(DEBUG)" == "1"
 O=RET\D$(WIN)\                  # define output directory for intermediate files

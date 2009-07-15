@@ -78,6 +78,7 @@
 #define KEYNAME_DEFAULTCOPY             L"DefaultCopy"
 #define KEYNAME_SYNTCLRFCNS             L"SyntClrFcns"
 #define KEYNAME_SYNTCLRSESS             L"SyntClrSess"
+#define KEYNAME_SYNTCLRPRNT             L"SyntClrPrnt"
 #define KEYNAME_CHECKGROUP              L"CheckGroup"
 #define KEYNAME_INSSTATE                L"InsState"
 #define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
@@ -291,6 +292,9 @@ void ReadIniFileGlb
                                  wszTemp,               // Ptr to the key name
                                  uCnt,                  // Default value if not found
                                  lpwszIniFile);         // Ptr to the file name
+        // Overcome a bug in which the saved glbSameFontAs value may be
+        //   larger than the corresponding index
+        glbSameFontAs[uCnt] = min (glbSameFontAs[uCnt], (int) uCnt);
     } // End FOR
 
     //***************************************************************
@@ -368,6 +372,12 @@ void ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_SYNTCLRSESS,   // Ptr to the key name
                              DEF_SYNTCLRSESS,       // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bSyntClrPrnt
+    OptionFlags.bSyntClrPrnt =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_SYNTCLRPRNT,   // Ptr to the key name
+                             DEF_SYNTCLRPRNT,       // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bCheckGroup
     OptionFlags.bCheckGroup =
@@ -1379,6 +1389,15 @@ void SaveIniFile
     // Write out bSyntClrSess
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_SYNTCLRSESS,        // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //******************* bSyntClrPrnt ************************
+    wszTemp[0] = L'0' + OptionFlags.bSyntClrPrnt;
+    wszTemp[1] = L'\0';
+
+    // Write out bSyntClrPrnt
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_SYNTCLRPRNT,        // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bCheckGroup *************************

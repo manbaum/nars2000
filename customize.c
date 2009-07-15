@@ -328,18 +328,18 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Initialize the CLEAR WS values
 
                         // Set the font for each Edit Ctrl or Combobox
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PP_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PW_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_RL_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, FALSE);
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PP_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PW_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_RL_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
 
                         // Save the normal font handle
                         hFontNorm_ST = (HFONT) SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_LEN), WM_GETFONT, 0, 0);
@@ -708,6 +708,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Check the "Enable ... Coloring" boxes
                         CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRFCNS, OptionFlags.bSyntClrFcns);
                         CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRSESS, OptionFlags.bSyntClrSess);
+                        CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRPRNT, OptionFlags.bSyntClrPrnt);
 
                         // Fill in the static members of the CHOOSECOLORW struc
                         cc.lStructSize    = sizeof (cc);
@@ -913,7 +914,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                        lstrlenW (scMenuItems[itemIndex].lpwName),
                                       &sMenuItem);
                 // We no longer need this resource
-                MyReleaseDC (hDlg, hDCClient);
+                MyReleaseDC (hDlg, hDCClient); hDCClient = NULL;
 
                 // Set the item width
                 lpmis->itemWidth  = SYNTCLR_MENU_MARGIN_LEFT
@@ -1593,6 +1594,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Copy the state of the "Enable ... Coloring" checkboxes to the OptionFlags
                         OptionFlags.bSyntClrFcns = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_CLRFCNS);
                         OptionFlags.bSyntClrSess = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_CLRSESS);
+                        OptionFlags.bSyntClrPrnt = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_CLRPRNT);
 
                         // If the Window background color changed, ...
                         if (bWinBGDiff)
@@ -2121,6 +2123,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                 case IDC_SYNTCLR_XB_CLRFCNS:
                 case IDC_SYNTCLR_XB_CLRSESS:
+                case IDC_SYNTCLR_XB_CLRPRNT:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)
                         // Enable the Apply button
@@ -2347,6 +2350,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                         InvalidateRect (GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt),
                                         NULL, FALSE);
                     } // End FOR
+
+                    // Restore default checkbox states
+                    CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRFCNS, DEF_SYNTCLRFCNS);
+                    CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRSESS, DEF_SYNTCLRSESS);
+                    CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_CLRPRNT, DEF_SYNTCLRPRNT);
 
                     // Enable the Apply button
                     EnableWindow (hWndApply, TRUE);

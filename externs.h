@@ -390,7 +390,7 @@ typedef struct tagFASTBOOLFNS
     UINT          NotMarker:1,          // 08:  00000001:  Complement of Marker
                   IdentElem:1,          //      00000002:  Identity element (if it exists)
                   Suffix   :1,          //      00000004:  Suffix equivalence value
-                  Avail    :29;         //      FFFFFFF8:  Available bits
+                           :29;         //      FFFFFFF8:  Available bits
                                         // 0C:  Length
 } FASTBOOLFNS, *LPFASTBOOLFNS;
 
@@ -1581,10 +1581,11 @@ typedef struct tagOPTIONFLAGS
          uDefaultCopy        :4,    // 0000F000:  Index of default Paste translation (see UNI_TRANS)
          bSyntClrFcns        :1,    // 00010000:  TRUE iff Syntax Coloring of functions is enabled (managed in IDD_PROPPAGE_SYNTAX_COLORING)
          bSyntClrSess        :1,    // 00020000:  ...                         sessions  ...
-         bCheckGroup         :1,    // 00040000:  ...      Check for improperly matched or nested grouping symbols
-         bInsState           :1,    // 00080000:  ...      Initial state of Ins key in each WS is ON
-         bViewStatusBar      :1,    // 00100000:  ...      Status Bar is displayed
-         Avail               :11;   // FFE00000:  Available bits
+         bSyntClrPrnt        :1,    // 00040000:  ...                         sessions  (when printing) ...
+         bCheckGroup         :1,    // 00080000:  ...      Check for improperly matched or nested grouping symbols
+         bInsState           :1,    // 00100000:  ...      Initial state of Ins key in each WS is ON
+         bViewStatusBar      :1,    // 00200000:  ...      Status Bar is displayed
+                             :10;   // FFC00000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1606,6 +1607,7 @@ OPTIONFLAGS OptionFlags
    DEF_DEFAULTCOPY,
    DEF_SYNTCLRFCNS,
    DEF_SYNTCLRSESS,
+   DEF_SYNTCLRPRNT,
    DEF_CHECKGROUP,
    DEF_INSSTATE,
    DEF_VIEWSTATUSBAR,

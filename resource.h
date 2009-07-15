@@ -212,25 +212,25 @@
 #define IDC_FONTS_RADIO4A                        856
 #define IDC_FONTS_RADIO4B                        857
 #define IDC_FONTS_RADIO4C                        858
-#define IDC_FONTS_RADIO4D                        860
-#define IDC_FONTS_RADIO5A                        861
-#define IDC_FONTS_RADIO5B                        862
-#define IDC_FONTS_RADIO5C                        863
-#define IDC_FONTS_RADIO5D                        864
-#define IDC_FONTS_RADIO5E                        865
-#define IDC_FONTS_RADIO6A                        866
-#define IDC_FONTS_RADIO6B                        867
-#define IDC_FONTS_RADIO6C                        868
-#define IDC_FONTS_RADIO6D                        869
-#define IDC_FONTS_RADIO6E                        870
-#define IDC_FONTS_RADIO6F                        871
-#define IDC_FONTS_RADIO7A                        872
-#define IDC_FONTS_RADIO7B                        873
-#define IDC_FONTS_RADIO7C                        874
-#define IDC_FONTS_RADIO7D                        875
-#define IDC_FONTS_RADIO7E                        876
-#define IDC_FONTS_RADIO7F                        877
-#define IDC_FONTS_RADIO7G                        878
+#define IDC_FONTS_RADIO4D                        859
+#define IDC_FONTS_RADIO5A                        860
+#define IDC_FONTS_RADIO5B                        861
+#define IDC_FONTS_RADIO5C                        862
+#define IDC_FONTS_RADIO5D                        863
+#define IDC_FONTS_RADIO5E                        864
+#define IDC_FONTS_RADIO6A                        865
+#define IDC_FONTS_RADIO6B                        866
+#define IDC_FONTS_RADIO6C                        867
+#define IDC_FONTS_RADIO6D                        868
+#define IDC_FONTS_RADIO6E                        869
+#define IDC_FONTS_RADIO6F                        870
+#define IDC_FONTS_RADIO7A                        871
+#define IDC_FONTS_RADIO7B                        872
+#define IDC_FONTS_RADIO7C                        873
+#define IDC_FONTS_RADIO7D                        874
+#define IDC_FONTS_RADIO7E                        875
+#define IDC_FONTS_RADIO7F                        876
+#define IDC_FONTS_RADIO7G                        877
 
 #define IDC_FONTS_TEXT                           880
 
@@ -282,7 +282,8 @@
 
 #define IDC_SYNTCLR_XB_CLRFCNS                  1040
 #define IDC_SYNTCLR_XB_CLRSESS                  1041
-#define IDC_SYNTCLR_BN_RESTORE                  1042
+#define IDC_SYNTCLR_XB_CLRPRNT                  1042
+#define IDC_SYNTCLR_BN_RESTORE                  1043
 
 #define IDC_USER_PREFS_XB_ADJUSTPW              1100
 #define IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE   1101

@@ -2079,7 +2079,7 @@ LRESULT APIENTRY MFWndProc
                                           PRF_PRINTCLIENT
                                         | ((pdex.Flags & PD_SELECTION) ? PRF_SELECTION
                                                                        : (pdex.Flags & PD_CURRENTPAGE) ? PRF_CURRENTPAGE
-                                                                                                      : 0));
+                                                                                                       : 0));
                             // End the print job
                             EndDoc (pdex.hDC);
 #ifdef DEBUG

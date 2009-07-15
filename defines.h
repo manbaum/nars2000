@@ -134,6 +134,7 @@
 #define DEF_DEFAULTCOPY             UNITRANS_NARS
 #define DEF_SYNTCLRFCNS             TRUE
 #define DEF_SYNTCLRSESS             TRUE
+#define DEF_SYNTCLRPRNT             FALSE
 #define DEF_CHECKGROUP              TRUE
 #define DEF_INSSTATE                TRUE
 #define DEF_VIEWSTATUSBAR           TRUE

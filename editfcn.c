@@ -1186,27 +1186,33 @@ int LclECPaintHook
      && ((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
       || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns)))
     {
-        // To do this, we use a FSA to parse the line from the start
-        //   through the last char to display
-
-        // Allocate space for the colors
-        hGlbClr = DbgGlobalAlloc (GHND, (uCol + uLen) * sizeof (lpMemClrIni[0]));
-        if (hGlbClr)
+        // If we're printing a session, ...
+        if (!((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
+           && (lFlags & PRF_PRINTCLIENT)
+           && !OptionFlags.bSyntClrPrnt))
         {
-            // Lock the memory to get a ptr to it
-            lpMemClrIni = MyGlobalLock (hGlbClr);
+            // To do this, we use a FSA to parse the line from the start
+            //   through the last char to display
 
-            // Syntax color the line
-            if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
+            // Allocate space for the colors
+            hGlbClr = DbgGlobalAlloc (GHND, (uCol + uLen) * sizeof (lpMemClrIni[0]));
+            if (hGlbClr)
             {
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbClr); lpMemClrIni = NULL;
+                // Lock the memory to get a ptr to it
+                lpMemClrIni = MyGlobalLock (hGlbClr);
 
-                // It's a system command, so we don't color that line
-                DbgGlobalFree (hGlbClr); hGlbClr = NULL;
+                // Syntax color the line
+                if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbClr); lpMemClrIni = NULL;
 
-                // Set the Window background color
-                SetBkColor (hDC, gSyntaxColorName[SC_WINBG].syntClr.crBack);
+                    // It's a system command, so we don't color that line
+                    DbgGlobalFree (hGlbClr); hGlbClr = NULL;
+
+                    // Set the Window background color
+                    SetBkColor (hDC, gSyntaxColorName[SC_WINBG].syntClr.crBack);
+                } // End IF
             } // End IF
         } // End IF
     } // End IF
@@ -1232,9 +1238,6 @@ int LclECPaintHook
     //   if we are, to initialize the struc
     rcAct = rcScr;
 
-    // Get the actual character width (rounded up)
-    cxAveChar = ((uLen - 1) + (rcScr.right - rcScr.left)) / uLen;
-
     if (lFlags & PRF_PRINTCLIENT)
     {
         // Get the current font to restore later
@@ -1257,7 +1260,12 @@ int LclECPaintHook
                  | DT_CALCRECT
                  | DT_NOPREFIX
                  | DT_NOCLIP);
-    } // End IF
+        // Get the actual character width (rounded up)
+        cxAveChar = ((uLen - 1) + (rcAct.right - rcAct.left)) / uLen;
+    } else
+        // Get the actual character width (rounded up)
+        cxAveChar = ((uLen - 1) + (rcScr.right - rcScr.left)) / uLen;
+
 #ifndef UNISCRIBE
     // On some systems when the alternate font isn't the same
     //   width as the SM font, the width calculated by DT_CALCRECT
@@ -1279,9 +1287,14 @@ int LclECPaintHook
         // Get the default background color for this DC
         clrBackDef = GetBkColor (hDC);
 
-        // Get a DC of the entire client area so we
-        //   can draw outside the clipping region
-        hDCClient = MyGetDC (hWndEC);
+        // If we're printing, ...
+        if (lFlags & PRF_PRINTCLIENT)
+            // Use the incoming DC as it has no clipping region
+            hDCClient = hDC;
+        else
+            // Get a DC of the entire client area so we
+            //   can draw outside the clipping region
+            hDCClient = MyGetDC (hWndEC);
 
         // Select the current font into the DC
         SelectObject (hDCClient, GetCurrentObject (hDC, OBJ_FONT));
@@ -1311,8 +1324,12 @@ int LclECPaintHook
             rcAct.left += cxAveChar;
         } // End FOR
 
-        // We no longer need this resource
-        MyReleaseDC (hWndEC, hDCClient);
+        // If we're not printing, ...
+        if (!(lFlags & PRF_PRINTCLIENT))
+        {
+            // We no longer need this resource
+            MyReleaseDC (hWndEC, hDCClient); hDCClient = NULL;
+        } // End IF
     } else
         // Draw the line for real
         DrawTextW (hDC,

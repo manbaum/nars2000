@@ -119,7 +119,7 @@ UBOOL CALLBACK EnumCallbackMonitors
 
 {
     // Save the monitor coordinates
-    ((LPRECT) dwData) = lprcMonitor;
+    *((LPRECT) dwData) = *lprcMonitor;
 
     // Tell W to stop enumerating
     return FALSE;
@@ -129,31 +129,48 @@ UBOOL CALLBACK EnumCallbackMonitors
 //************************************************************************
 //  $CenterWindow
 //
-//  Center the window on the desktop
+//  Center a window on the monitor that contains
+//    the center of the Master Frame
 //************************************************************************
 
 void CenterWindow
-    (HWND hWnd)
+    (HWND hWndCT)               // Window to center
 
 {
-    RECT  rcWnd;
-    POINT PosCtr;
+    RECT        rcWndMF,        // Master Frame window rect
+                rcWndCT;        // Window-to-center rect
+    POINT       PosCtr;         // Position of the center of the window-to-center
+    HMONITOR    hMonitor;       // Monitor handle
+    MONITORINFO monInfo;        // Monitor info struct
+    int         iOff;           // Non-negative offset to avoid top of window
+                                //   being out-of-sight
 
     // Get the window rect of the Master Frame
-    GetWindowRect (hWndMF, &rcWnd);
+    GetWindowRect (hWndMF, &rcWndMF);
 
-    // Define a 1x1 rectangle in the center of the Master Frame
-    rcWnd.top    = (rcWnd.top  + rcWnd.bottom) / 2;
-    rcWnd.bottom =  rcWnd.top  + 1;
-    rcWnd.left   = (rcWnd.left + rcWnd.right ) / 2;
-    rcWnd.right  =  rcWnd.left + 1;
+    // Get the window rect of the window-to-center
+    GetWindowRect (hWndCT, &rcWndCT);
 
-    // Enumerate the monitors which intersect the above rect
-    EnumDisplayMonitors (NULL, &rcWnd, &EnumCallbackMonitors, (LPARAM) (HANDLE_PTR) &rcWnd);
+    // Get the point in the center of the Master Frame.
+    PosCtr.x = (rcWndMF.left + rcWndMF.right ) / 2;
+    PosCtr.y = (rcWndMF.top  + rcWndMF.bottom) / 2;
 
-    PosCtr.x = (rcWnd.right  + rcWnd.left) / 2;     // Center horizontally
-    PosCtr.y = (rcWnd.bottom + rcWnd.top ) / 2;     // Center vertically
-    MoveWindowPos (hWnd, PosCtr);
+    // Get the handle of the monitor that contains this point
+    hMonitor = MonitorFromPoint (PosCtr, MONITOR_DEFAULTTONEAREST);
+
+    // Get the monitor rectangle
+    monInfo.cbSize = sizeof (monInfo);
+    GetMonitorInfo (hMonitor, &monInfo);
+
+    // Ensure that the top of the window-to-center
+    //   isn't above the top of the selected monitor
+    iOff = monInfo.rcMonitor.top - min (monInfo.rcMonitor.top, PosCtr.y - (rcWndCT.bottom - rcWndCT.top) / 2);
+
+    // Move the monitor rectangle down as necessary
+    PosCtr.y += iOff;
+
+    // Move the window into position
+    MoveWindowPos (hWndCT, PosCtr);
 } // End CenterWindow
 
 

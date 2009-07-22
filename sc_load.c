@@ -82,10 +82,10 @@ UBOOL CmdLoadCom_EM
     lpw = SkipToCharW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
-    *lpw = L'\0';
+    *lpw = WC_EOS;
 
     // If there's no WSID, that's an error
-    if (lpwszTail[0] EQ L'\0')
+    if (lpwszTail[0] EQ WC_EOS)
     {
         IncorrectCommand ();
 
@@ -186,7 +186,7 @@ UBOOL LoadWorkspace_EM
     lpwszDPFE = MyGlobalLock (hGlbDPFE);
 
     // Check for CLEAR WS
-    if (lpwszDPFE[0] EQ L'\0')
+    if (lpwszDPFE[0] EQ WC_EOS)
         goto WSID_EXIT;
 
     // Attempt to open the workspace
@@ -215,7 +215,7 @@ UBOOL LoadWorkspace_EM
     {
         // Tell the user the bad news
         MessageBoxW (NULL,
-                     L"The version of this workspace is later than the interpreter expects.\r\n"
+                     L"The version of this workspace is later than the interpreter expects." WS_CRLF
                      L"Please try loading the workspace with a later version of the interpreter.",
                      WS_APPNAME,
                      MB_OK | MB_ICONSTOP);
@@ -289,7 +289,7 @@ UBOOL LoadWorkspace_EM
                 lpwFcnLine = strchrW (lpwFcnName, L'[');
 
                 // Check for Quad suspension first
-                if ((lpwFcnName[0] NE L'\0')
+                if ((lpwFcnName[0] NE WC_EOS)
                  && (lstrcmpW (lpwFcnName, WS_UTF16_QUAD) EQ 0))
                 {
                     // Fill in the SIS header for Quad Input Mode
@@ -308,7 +308,7 @@ UBOOL LoadWorkspace_EM
                 if (lpwFcnLine NE NULL)
                 {
                     // Zap the trailing marker
-                    *lpwFcnLine++ = L'\0';
+                    *lpwFcnLine++ = WC_EOS;
 
                     // Get the function line #
                     swscanf (lpwFcnLine,
@@ -403,7 +403,7 @@ UBOOL LoadWorkspace_EM
                                           uMaxSize,             // Byte size of the output buffer
                                           lpwszDPFE);           // Ptr to the file name
                 // Check for empty or missing counter
-                if (*lpwSrc EQ L'\0')
+                if (*lpwSrc EQ WC_EOS)
                     continue;
 
                 // Look for the name separator (L'=')
@@ -411,7 +411,7 @@ UBOOL LoadWorkspace_EM
                 Assert (lpwCharEnd NE NULL);
 
                 // Zap to form zero-terminated name
-                *lpwCharEnd = L'\0';
+                *lpwCharEnd = WC_EOS;
 
                 // Convert the {name}s and other chars to UTF16_xxx
                 lpwSrc = ConvertNameInPlace (lpwSrc);
@@ -551,7 +551,7 @@ UBOOL LoadWorkspace_EM
                                           uMaxSize,             // Byte size of the output buffer
                                           lpwszDPFE);           // Ptr to the file name
                 // Check for empty or missing counter
-                if (*lpwSrc EQ L'\0')
+                if (*lpwSrc EQ WC_EOS)
                     continue;
 
                 // Look for the name separator (L'=')
@@ -559,7 +559,7 @@ UBOOL LoadWorkspace_EM
                 Assert (lpwCharEnd NE NULL);
 
                 // Zap to form zero-terminated name
-                *lpwCharEnd = L'\0';
+                *lpwCharEnd = WC_EOS;
 
                 // Convert the {name}s and other chars to UTF16_xxx
                 lpwSrc = ConvertNameInPlace (lpwSrc);
@@ -715,7 +715,7 @@ UBOOL ParseSavedWsFcn_EM
         lpwDataEnd = &lpwSrc[lstrlenW (lpwSrc)] + 1;
 
         // Save old next char, zap to form zero-terminated name
-        wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
+        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
 
         // Get the matching HGLOBAL
         lpSymEntry =
@@ -859,7 +859,7 @@ LPWCHAR ParseSavedWsVar_EM
         lpwDataEnd = &lpwSrc[lstrlenW (lpwSrc)] + 1;
 
         // Save old next char, zap to form zero-terminated name
-        wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
+        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
 
         // Get the matching HGLOBAL
         lpSymEntry =
@@ -983,7 +983,7 @@ LPWCHAR ParseSavedWsVar_EM
                 //   and skip over it
                 wcQuote = *lpwSrc++;
 
-                Assert (wcQuote EQ L'\'' || wcQuote EQ L'"');
+                Assert (wcQuote EQ WC_SQ || wcQuote EQ WC_DQ);
 
                 // Convert the single {name} or other char to UTF16_xxx
                 if (L'{' EQ  *lpwSrc)
@@ -1022,7 +1022,7 @@ LPWCHAR ParseSavedWsVar_EM
                 lpwCharEnd = SkipToCharW (lpwSrc, L' ');
 
                 // Save old next char, zap to form zero-terminated name
-                wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
+                wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
 
                 // Convert the format string to ASCII
                 W2A ((LPCHAR) lpwszFormat, lpwSrc, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
@@ -1143,7 +1143,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     //   F nnn.Name         for functions
 
     // Ensure it's non-empty
-    if  (lpwSrc[0] EQ L'\0')
+    if  (lpwSrc[0] EQ WC_EOS)
         goto CORRUPTWS_EXIT;
 
     // Split cases based upon Variable vs. Function/Operator
@@ -1280,7 +1280,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         lpwCharEnd = SkipToCharW (lpwSrc, L' ');
 
                         // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
+                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
 
                         // Convert the format string to ASCII
                         W2A ((LPCHAR) lpwszFormat, lpwSrc, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
@@ -1299,7 +1299,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     break;
 
                 case ARRAY_CHAR:
-                    Assert (L'\'' EQ *lpwSrc); lpwSrc++;
+                    Assert (WC_SQ EQ *lpwSrc); lpwSrc++;
 
                     // Loop through the elements
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
@@ -1321,7 +1321,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         *((LPAPLCHAR) lpMemObj)++ = wcTmp;
                     } // End FOR
 
-                    Assert (L'\'' EQ *lpwSrc); lpwSrc++;
+                    Assert (WC_SQ EQ *lpwSrc); lpwSrc++;
 
                     break;
 

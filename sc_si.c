@@ -180,7 +180,7 @@ UBOOL CmdSiSinlCom_EM
                         lpw = CopySteName (lpwszTemp, &lpSymEntryNxt[numSym], &uNameLen);
 
                         // Ensure properly terminated
-                        *lpw = L'\0';
+                        *lpw = WC_EOS;
 
                         // Get the name length plus two leading blanks
                         uNameLen += 2;

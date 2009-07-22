@@ -621,7 +621,7 @@ void GetFirstValueImm
             if (lpaplFloat)
                 *lpaplFloat   = (APLFLOAT) (APLBOOL) aplLongest;
             if (lpaplChar)
-                *lpaplChar    = L'\0';
+                *lpaplChar    = WC_EOS;
             break;
 
         case IMMTYPE_INT:
@@ -631,7 +631,7 @@ void GetFirstValueImm
                 // ***FIXME*** -- Possible loss of precision
                 *lpaplFloat   = (APLFLOAT) (APLINT) aplLongest;
             if (lpaplChar)
-                *lpaplChar    = L'\0';
+                *lpaplChar    = WC_EOS;
             break;
 
         case IMMTYPE_FLOAT:
@@ -640,7 +640,7 @@ void GetFirstValueImm
             if (lpaplInteger)
                 *lpaplInteger = (APLINT) *(LPAPLFLOAT) &aplLongest;
             if (lpaplChar)
-                *lpaplChar    = L'\0';
+                *lpaplChar    = WC_EOS;
             break;
 
         case IMMTYPE_CHAR:
@@ -741,7 +741,7 @@ void GetFirstValueGlb
             if (lpaplFloat)
                 *lpaplFloat   = (APLFLOAT) aplInteger;
             if (lpaplChar)
-                *lpaplChar    = L'\0';
+                *lpaplChar    = WC_EOS;
             if (lpaplLongest)
                 *lpaplLongest = aplInteger;
             if (lpSymGlb)
@@ -756,7 +756,7 @@ void GetFirstValueGlb
             if (lpaplFloat)
                 *lpaplFloat   = (APLFLOAT) aplInteger;  // ***FIXME*** -- Possible loss of precision
             if (lpaplChar)
-                *lpaplChar    = L'\0';
+                *lpaplChar    = WC_EOS;
             if (lpaplLongest)
                 *lpaplLongest = aplInteger;
             if (lpSymGlb)
@@ -773,7 +773,7 @@ void GetFirstValueGlb
             if (lpaplFloat)
                 *lpaplFloat   = (APLFLOAT) aplInteger;  // ***FIXME*** -- Possible loss of precision
             if (lpaplChar)
-                *lpaplChar    = L'\0';
+                *lpaplChar    = WC_EOS;
             if (lpaplLongest)
                 *lpaplLongest = aplInteger;
             if (lpSymGlb)
@@ -788,7 +788,7 @@ void GetFirstValueGlb
             if (lpaplInteger)
                 *lpaplInteger = (APLINT) aplFloat;
             if (lpaplChar)
-                *lpaplChar    = L'\0';
+                *lpaplChar    = WC_EOS;
             if (lpaplLongest)
                 *lpaplLongest = *(LPAPLLONGEST) &aplFloat;
             if (lpSymGlb)
@@ -851,9 +851,9 @@ void GetFirstValueGlb
                     if (lpaplFloat)
                         *lpaplFloat   = 0;
                     if (lpaplChar)
-                        *lpaplChar    = L'\0';
+                        *lpaplChar    = WC_EOS;
                     if (lpaplLongest)
-                        *lpaplLongest = L'\0';
+                        *lpaplLongest = WC_EOS;
                     if (lpSymGlb)
                         *lpSymGlb     = NULL;
                     break;
@@ -906,7 +906,7 @@ void GetFirstValueGlb
                     if (lpaplFloat)
                         *lpaplFloat   = 0;
                     if (lpaplChar)
-                        *lpaplChar    = L'\0';
+                        *lpaplChar    = WC_EOS;
                     if (lpaplLongest)
                         *lpaplLongest = 0;
                     if (lpSymGlb)

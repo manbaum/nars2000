@@ -285,14 +285,14 @@ APLU3264 ConvertWideToNameLength
         wc = *lpwszInp++;
 
         if (32 < wc && wc <= 0x7E
-         && wc NE L'\''
+         && wc NE WC_SQ
          && wc NE L'#'
          && wc NE L'{'
          && wc NE L'}')
             *lpwsz++ = wc;
         else
         // Check for name in hash table
-        if (wc NE L'\0'
+        if (wc NE WC_EOS
          && (lpwCharName = CharToSymbolName (wc)) NE NULL)
             lpwsz += wsprintfW (lpwsz,
                                 L"%s",
@@ -304,7 +304,7 @@ APLU3264 ConvertWideToNameLength
     } // End WHILE
 
     // Ensure properly terminated
-    *lpwsz = L'\0';
+    *lpwsz = WC_EOS;
 
     return (APLU3264) (lpwsz - lpwszOut);
 } // End ConvertWideToNameLength
@@ -380,7 +380,7 @@ LPWCHAR ConvertNameInPlace
         *lpwDst++ = *lpwSrc++;
 
     // Ensure properly terminated
-    *lpwDst = L'\0';
+    *lpwDst = WC_EOS;
 
     return lpwSrc;
 } // End ConvertNameInPlace

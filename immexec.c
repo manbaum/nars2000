@@ -152,7 +152,7 @@ void ImmExecLine
     SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszCompLine);
 
     // Ensure properly terminated
-    lpwszCompLine[uLineLen] = L'\0';
+    lpwszCompLine[uLineLen] = WC_EOS;
 
     // Strip off leading blanks
     for (lpwszLine = lpwszCompLine;
@@ -195,7 +195,7 @@ void ImmExecLine
 
             // Fall through to empty line case
 
-        case L'\0':         // Empty line
+        case WC_EOS:        // Empty line
             // If it's Quad input, ...
             if (lpMemPTD->lpSISCur
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)

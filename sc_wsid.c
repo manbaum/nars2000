@@ -70,7 +70,7 @@ UBOOL CmdWsid_EM
     lpw = SkipToCharW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
-    *lpw = L'\0';
+    *lpw = WC_EOS;
 
     // If there's a given WSID, set the WSID
     if (*lpwszTail)

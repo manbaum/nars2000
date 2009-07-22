@@ -67,7 +67,7 @@ typedef enum tagFSROW_INDICES       // FSA row indices for Format Specification
 {
  FSROW_INIT = 0   ,                 // 00:  Initial state
  FSROW_SPEC       ,                 // 01:  Within a format specification
- FSROW_CHKEOS     ,                 // 02:  Check for EOS (comma or L'\0')
+ FSROW_CHKEOS     ,                 // 02:  Check for EOS (comma or WC_EOS)
  FSROW_LENGTH     ,                 // 03:  # FSA terminal states (rows in fsaActTableFS)
                                     //      Because this enum is origin-0, this value is the # valid rows.
  FSROW_EXIT  = -1 ,                 // FSA is done

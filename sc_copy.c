@@ -75,7 +75,7 @@ UBOOL CmdCopy_EM
     hWndEC = GetThreadSMEC ();
 
     // If there's no WSID, that's an error
-    if (lpwszTail EQ L'\0')
+    if (lpwszTail EQ WC_EOS)
         goto INCORRECT_COMMAND_EXIT;
 
     // Save not found ptr
@@ -94,7 +94,7 @@ UBOOL CmdCopy_EM
 
         // Skip over the field
         lpwCmd = SkipToCharW (lpwszTail, L' ');
-        wcTmp = *lpwCmd; *lpwCmd++ = L'\0';
+        wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
         if (wcTmp)
             lpwCmd = SkipWhiteW (lpwCmd);
 
@@ -128,7 +128,7 @@ UBOOL CmdCopy_EM
         // ***FIXME*** -- Handle workspace names enclosed in double quotes
         //                  because they have embedded blanks.
         lpwCmd = SkipToCharW (lpwszTail, L' ');
-        wcTmp = *lpwCmd; *lpwCmd++ = L'\0';
+        wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
         if (wcTmp)
             lpwCmd = SkipWhiteW (lpwCmd);
 
@@ -160,7 +160,7 @@ UBOOL CmdCopy_EM
         {
             // Tell the user the bad news
             MessageBoxW (NULL,
-                         L"The version of this workspace is later than the interpreter expects.\r\n"
+                         L"The version of this workspace is later than the interpreter expects." WS_CRLF
                          L"Please try copying from this workspace with a later version of the interpreter.",
                          WS_APPNAME,
                          MB_OK | MB_ICONSTOP);
@@ -168,7 +168,7 @@ UBOOL CmdCopy_EM
         } // End IF
 
         // If the replaced char is EOS, copy all names
-        if (wcTmp EQ L'\0')
+        if (wcTmp EQ WC_EOS)
         {
             // Loop through the [Vars.0] section copying
             //   all the names
@@ -217,9 +217,9 @@ UBOOL CmdCopy_EM
                 // Find the next name
                 lpwNameInCmd = lpwCmd;
                 lpwCmd = SkipToCharW (lpwNameInCmd, L' ');
-                if (*lpwCmd NE L'\0')
+                if (*lpwCmd NE WC_EOS)
                 {
-                    *lpwCmd++ = L'\0';
+                    *lpwCmd++ = WC_EOS;
                     lpwCmd = SkipWhiteW (lpwCmd);
                 } // End IF
 
@@ -301,7 +301,7 @@ UBOOL CmdCopy_EM
     if (lpwNotFound NE lpwszTail)
     {
         // Ensure properly terminated
-        lpwNotFound[-1] = L'\0';
+        lpwNotFound[-1] = WC_EOS;
 
         // Write out the leading text followed by the names
         AppendLine (ERRMSG_NOT_FOUND, FALSE, FALSE);
@@ -424,7 +424,7 @@ int CopyWsVars
                                   wszTailDPFE);         // Ptr to the file name
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
-        *lpwDataInWrk++ = L'\0';
+        *lpwDataInWrk++ = WC_EOS;
 
         // Convert the {name}s and other chars to UTF16_xxx
         ConvertNameInPlace (lpwNameInWrk);
@@ -602,7 +602,7 @@ int CopyWsFcns
                                   wszTailDPFE);         // Ptr to the file name
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
-        *lpwDataInWrk++ = L'\0';
+        *lpwDataInWrk++ = WC_EOS;
 
         // Convert the {name}s and other chars to UTF16_xxx
         ConvertNameInPlace (lpwNameInWrk);

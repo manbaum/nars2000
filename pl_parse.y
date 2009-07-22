@@ -7989,14 +7989,14 @@ void pl_yyfprintf
     i1 = lstrlen (szTemp);
 
     // If it's a LF, it's time to flush the buffer.
-    if (szTemp[i1 - 1] EQ '\n')
+    if (szTemp[i1 - 1] EQ AC_LF)
     {
-        szTemp[i1 - 1] = '\0';  // Remove trailing LF
-                                //   because we're displaying
-                                //   in a GUI.
-        DbgMsg (szTemp);        // Display in my debugger window.
+        szTemp[i1 - 1] = AC_EOS;    // Remove trailing LF
+                                    //   because we're displaying
+                                    //   in a GUI.
+        DbgMsg (szTemp);            // Display in my debugger window.
 
-        szTemp[0] = '\0';       // Restart the buffer
+        szTemp[0] = AC_EOS;         // Restart the buffer
     } // End IF
 #endif
 } // End pl_yyfprintf
@@ -8029,13 +8029,13 @@ void pl_yyprint
             FormatImmed (wszTemp,
                          yyvaluep.tkToken.tkFlags.ImmType,
          (LPAPLLONGEST) &yyvaluep.tkToken.tkData.tkLongest);
-            lpwsz[-1] = L'\0';
+            lpwsz[-1] = WC_EOS;
             lpszFmt = lpszFmt2;
 
             break;
 
         default:
-            wszTemp[0] = L'\0';
+            wszTemp[0] = WC_EOS;
             lpszFmt = lpszFmt1;
 
             break;

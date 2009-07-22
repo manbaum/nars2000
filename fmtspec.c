@@ -159,7 +159,7 @@ UBOOL fnFmtDone
     Assert (lpfsLocalVars->lpwszCur[0] EQ L',');
 
     // Ensure there's another WCHAR in the format string
-    if (lpfsLocalVars->lpwszCur[1] EQ L'\0')
+    if (lpfsLocalVars->lpwszCur[1] EQ WC_EOS)
         goto FORMAT_EXIT;
 
     // If this entry is inuse, ...
@@ -511,8 +511,8 @@ UINT SaveText
     {
         // These delimiters are all their own
         //   matching righthand delimiter
-        case L'\'':
-        case L'"':
+        case WC_SQ:
+        case WC_DQ:
         case UTF16_QUAD:
         case UTF16_QUOTEQUAD:
         case UTF16_DIERESIS:
@@ -600,7 +600,7 @@ UINT SaveText
     lpfsLocalVars->uFsNxt += uCopyTxtLenChars * sizeof (WCHAR);
 
     // Ensure properly terminated
-    *(LPWCHAR) ByteAddr (lpfsLocalVars->lpfsCur, lpfsLocalVars->uFsNxt) = L'\0';
+    *(LPWCHAR) ByteAddr (lpfsLocalVars->lpfsCur, lpfsLocalVars->uFsNxt) = WC_EOS;
 
     //   and skip over it
     lpfsLocalVars->uFsNxt += sizeof (WCHAR);
@@ -1209,8 +1209,8 @@ UBOOL fnSetQual
 
             break;
 
-        case L'\'':
-        case L'"':
+        case WC_SQ:
+        case WC_DQ:
         case UTF16_QUAD:
         case UTF16_QUOTEQUAD:
         case UTF16_DIERESIS:
@@ -1339,7 +1339,7 @@ UBOOL FmtSpec_EM
         fsLocalVars.lpwszCur = &lpwszLine[uChar];
 
         if (uChar EQ uActLen)
-            wchOrig = L'\0';
+            wchOrig = WC_EOS;
         else
             wchOrig = lpwszLine[uChar];
 
@@ -1472,8 +1472,8 @@ FSCOLINDICES CharTransFS
         case L' ':
             return FSCOL_SPACE;
 
-        case L'\'':
-        case L'"':
+        case WC_SQ:
+        case WC_DQ:
         case UTF16_QUAD:
         case UTF16_QUOTEQUAD:
         case UTF16_DIERESIS:

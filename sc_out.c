@@ -94,14 +94,14 @@ UBOOL CmdOut_EM
     lpwszTemp = lpMemPTD->lpwszTemp;
 
     // Check for empty string
-    if (lpwszTail[0] EQ L'\0')
+    if (lpwszTail[0] EQ WC_EOS)
         goto INCORRECT_COMMAND_EXIT;
 
     // Split out the drive and path from the module filename
     _wsplitpath (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
 
     // If there's no extension, supply one
-    if (wszExt[0] EQ L'\0')
+    if (wszExt[0] EQ WC_EOS)
         lstrcpyW (wszExt, L".atf");
 
     // Put it all back together
@@ -119,8 +119,8 @@ UBOOL CmdOut_EM
     } // End IF
 
     // Initialize the end of szTemp
-    szTemp[REC_LEN + 0] = '\r';
-    szTemp[REC_LEN + 1] = '\n';
+    szTemp[REC_LEN + 0] = AC_CR;
+    szTemp[REC_LEN + 1] = AC_LF;
 
     // Copy the poem's starting point so we may
     //   increment our way through it
@@ -256,7 +256,7 @@ UBOOL CmdOut_EM
                      aplNELMRes -= uLen)
                 {
                     // Mark as to whether or not it's the last record
-                    szTemp[0] = (aplNELMRes <= INT_LEN) ? ASCII_X : ASCII_BLANK;
+                    szTemp[0] = (aplNELMRes <= INT_LEN) ? AC_X : AC_BLANK;
 
                     // Get the remaining length
                     uLen = min (INT_LEN, (UINT) aplNELMRes);

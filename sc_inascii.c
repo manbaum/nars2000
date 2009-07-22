@@ -56,7 +56,7 @@ UBOOL CmdInAscii_EM
     UINT             uFcnCount;             // # functions converted
 
     // Ensure there's something on the command line
-    if (lpwszTail[0] EQ L'\0')
+    if (lpwszTail[0] EQ WC_EOS)
         goto INCORRECT_COMMAND_EXIT;
 
     // Initialize the struc
@@ -253,7 +253,7 @@ UBOOL InAsciiFile_EM
             break;
 
         case 0x1A:
-            lpwA2AView[uLen] = L'\r';
+            lpwA2AView[uLen] = WC_CR;
 
             break;
 
@@ -273,19 +273,19 @@ UBOOL InAsciiFile_EM
     {
         LPWCHAR lpw, lpw2;
 
-        lpw = wcspbrk (lpwLoop, L"\r\n");
+        lpw = wcspbrk (lpwLoop, WS_CRLF);
         if (lpw)
         {
             // Account for the line length
             uLen -= (UINT) (lpw - lpwLoop);
 
             // Zap the CR/LF
-            *lpw++ = L'\0'; uLen --;
+            *lpw++ = WC_EOS; uLen --;
 
             // Strip off trailing CR/LFs
-            while (uLen && (*lpw EQ L'\r' || *lpw EQ L'\n'))
+            while (uLen && (*lpw EQ WC_CR || *lpw EQ WC_LF))
             {
-                *lpw++ = L'\0'; uLen--;
+                *lpw++ = WC_EOS; uLen--;
             } // End WHILE
 
             // Convert {name}s to UTF16_xxx equivalents
@@ -367,7 +367,7 @@ UBOOL InAsciiFile_EM
             FillMemoryW (lpwszTemp, uLeadingText, L' ');
 
             // Ensure properly terminated
-            lpwszTemp[uLeadingText] = L'\0';
+            lpwszTemp[uLeadingText] = WC_EOS;
         } // End IF
 
         // Append the separator and function name

@@ -499,7 +499,7 @@ LRESULT APIENTRY FEWndProc
                 for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
                 {
                     // Append a CRLF to the Edit Ctrl
-                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
+                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CRLF);
 
                     // Get the line text global memory handle
                     hGlbTxtLine = lpFcnLines->hGlbTxtLine;
@@ -903,7 +903,7 @@ APLU3264 GetFunctionName
     uLineLen = (APLU3264) SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
 
     // Ensure the line is properly terminated
-    lpwszTemp[uLineLen] = L'\0';
+    lpwszTemp[uLineLen] = WC_EOS;
 
     // Get the header line text
     lpSymName = ParseFunctionName (hWndFE, lpwszTemp);
@@ -944,7 +944,7 @@ void SetFETitle
 
     // Ensure properly terminated
     //   and increment the name length to the next position
-    lpwszTemp[uNameLen++] = L'\0';
+    lpwszTemp[uNameLen++] = WC_EOS;
 
     // Format the new title in the memory following the name
     wsprintfW (&lpwszTemp[uNameLen],
@@ -1070,7 +1070,7 @@ UBOOL SyntaxColor
         // Strip out EOL check so we don't confuse a zero-value char with EOL
         if (uChar EQ uLen)
         {
-            wchOrig = L'\0';
+            wchOrig = WC_EOS;
             tkColInd = TKCOL_EOL;
         } else
         {
@@ -1868,7 +1868,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             SendMessageW (hWnd, EM_GETLINE, uLineNum, (LPARAM) lpwszTemp);
 
             // Ensure the name is properly terminated
-            lpwszTemp[uLineLen] = L'\0';
+            lpwszTemp[uLineLen] = WC_EOS;
 
             // Check the chars at and to the right of the specified char pos
             uCharPosEnd = uCharPos;
@@ -1876,7 +1876,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 uCharPosEnd++;
 
             // Ensure the name is properly terminated
-            lpwszTemp[uCharPosEnd] = L'\0';
+            lpwszTemp[uCharPosEnd] = WC_EOS;
 
             // Check the chars to the left
             for (uCharPosBeg = uCharPos;
@@ -2089,7 +2089,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         return FALSE;
                     } // End IF
 
-                    // Insert L"\r\n"
+                    // Insert WS_CRLF
 
                     // Get the char position of the caret
                     uCharPos = GetCurCharPos (hWnd);
@@ -2149,7 +2149,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     for (uChar = 0; uChar < uSpaces; uChar++)
                         wChar[uChar] = L' ';
 
-                    wChar[uChar] = L'\0';
+                    wChar[uChar] = WC_EOS;
 
                     // Insert/replace the char string
                     InsRepCharStr (hWnd, wChar, lpMemPTD EQ NULL);
@@ -2317,7 +2317,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 return FALSE;
 
             // Check for Tab
-            if (wchCharCode EQ L'\t')
+            if (wchCharCode EQ WC_HT)
             {
                 // If it's from MF, ...
                 if (lpMemPTD EQ NULL)
@@ -2337,7 +2337,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
             // Check for Return
-            if (wchCharCode EQ L'\r'        // It's CR
+            if (wchCharCode EQ WC_CR        // It's CR
              && IzitSM (GetParent (hWnd)))  // Parent is SM
             {
                 // If it's on the last line, move the caret to the EOL (EOB)
@@ -2403,7 +2403,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             {
                 // Get the Nrm- char code
                 wChar[0] = aCharCodes[iChar].nrm;
-                wChar[1] = L'\0';
+                wChar[1] = WC_EOS;
 
                 // If it's valid, insert/replace it
                 if (wChar[0])
@@ -2467,7 +2467,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 // Get the Alt- char code
                 wChar[0] = aCharCodes[iChar].alt;
-                wChar[1] = L'\0';
+                wChar[1] = WC_EOS;
 
                 // If this control allows numbers only, ...
                 if (ES_NUMBER & GetWindowLongW (hWnd, GWL_STYLE))
@@ -2549,7 +2549,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                         // Put the character into a string
                         wChar[0] = lpUndoNxt->Char;
-                        wChar[1] = L'\0';
+                        wChar[1] = WC_EOS;
 
                         // Insert the selection
                         SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) &wChar);
@@ -2571,7 +2571,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                         // Put the character into a string
                         wChar[0] = lpUndoNxt->Char;
-                        wChar[1] = L'\0';
+                        wChar[1] = WC_EOS;
 
                         // Replace the selection
                         SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) &wChar);
@@ -3433,8 +3433,8 @@ void CopyAPLChars_EM
         // We no longer need this ptr
         GlobalUnlock (hGlbClip); lpMemClip = NULL;
 
-        // In case the last char is L'\0', ...
-        while (numChars && lpwszGlbTemp[numChars - 1] EQ L'\0')
+        // In case the last char is WC_EOS, ...
+        while (numChars && lpwszGlbTemp[numChars - 1] EQ WC_EOS)
             numChars--;
 
         // Format the text as an ASCII string with non-ASCII chars
@@ -3913,11 +3913,11 @@ WCHAR GetCharValue
     // Get the length of the line
     uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
-    // If the char position is at the end of the line, return '\r';
-    //   if it's beyond the end of the line, return '\n'
+    // If the char position is at the end of the line, return WC_CR;
+    //   if it's beyond the end of the line, return WC_LF
     uLineOff = uCharPos - uLinePos;
     if (uLineOff >= uLineLen)
-        return (uLineOff EQ uLineLen) ? L'\r' : L'\n';
+        return (uLineOff EQ uLineLen) ? WC_CR : WC_LF;
 
     // Tell EM_GETLINE maximum # chars in the buffer
     // The output array is a temporary so we don't have to
@@ -4222,7 +4222,7 @@ void DrawLineNumsFE
         // Pad out to FCN_INDENT chars
         for (; uLen < FCN_INDENT; uLen++)
             wszLineNum[uLen] = L' ';
-        wszLineNum[uLen] = L'\0';
+        wszLineNum[uLen] = WC_EOS;
 
         // Calculate the rectangle size of the line #s
         SetRectEmpty (&rcPaint);

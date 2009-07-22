@@ -278,7 +278,7 @@ __try
     lpFmtHeader->lpFmtRow1st = lpFmtHeader->lpFmtRowLst =
       (IsZeroDim (aplDimNRows) ? NULL
                                : (LPFMTROWSTR) lpaplChar);
-    // Loop through the array appending the formatted values (separated by L'\0')
+    // Loop through the array appending the formatted values (separated by WC_EOS)
     //   to the output vector, and accumulating the values in the appropriate
     //   FMTCOLSTR & FMTROWSTR entries.
 
@@ -697,7 +697,7 @@ LPAPLCHAR CompileArrBool
             *lpaplChar++ = ((uBitMask & *lpMem) ? L'1' : L'0');
 
             // Append a string separator
-            *lpaplChar++ = L'\0';
+            *lpaplChar++ = WC_EOS;
 
             // Count in another item
             lpFmtRowLcl->uItemCount++;
@@ -794,7 +794,7 @@ LPAPLCHAR CompileArrInteger
               FormatAplint (lpwszOut = lpaplChar,
                             *lpMem++);
             // Zap the trailing blank
-            lpaplChar[-1] = L'\0';
+            lpaplChar[-1] = WC_EOS;
 
             // Count in another item
             lpFmtRowLcl->uItemCount++;
@@ -907,7 +907,7 @@ LPAPLCHAR CompileArrFloat
                            *((LPAPLFLOAT) lpMem)++, // The floating point value
                            0);                      // Use default precision
             // Zap the trailing blank
-            lpaplChar[-1] = L'\0';
+            lpaplChar[-1] = WC_EOS;
 
             // Count in another item
             lpFmtRowLcl->uItemCount++;
@@ -1081,7 +1081,7 @@ LPAPLCHAR CompileArrChar
                 lpaplChar += uItmWidth;
 
                 // Ensure properly terminated
-                *lpaplChar++ = L'\0';
+                *lpaplChar++ = WC_EOS;
 
                 // Max the current width with the maximum width of this col
                 lpFmtColStr[0].uChrs = max (lpFmtColStr[0].uChrs, uMaxWidth);
@@ -1136,7 +1136,7 @@ LPAPLCHAR CompileArrChar
         lpMem     += aplDimNCols;
 
         // Ensure properly terminated
-        *lpaplChar++ = L'\0';
+        *lpaplChar++ = WC_EOS;
 
         // Count in another item
         lpFmtRowLcl->uItemCount++;
@@ -1234,7 +1234,7 @@ LPAPLCHAR CompileArrAPA
               FormatAplint (lpwszOut = lpaplChar,
                             apaOff + apaMul * apaAcc);
             // Zap the trailing blank
-            lpaplChar[-1] = L'\0';
+            lpaplChar[-1] = WC_EOS;
 
             // Count in another item
             lpFmtRowLcl->uItemCount++;
@@ -1367,7 +1367,7 @@ LPAPLCHAR CompileArrHetero
                 // Append trailing empty cells for each remaining col
                 for (uCol = aplDimCol; uCol < aplDimNCols; uCol++)
                 {
-                    *lpaplChar++ = L'\0';
+                    *lpaplChar++ = WC_EOS;
 
                     // Count in another item
                     lpFmtRowLcl->uItemCount++;
@@ -1402,7 +1402,7 @@ LPAPLCHAR CompileArrHetero
                 // Append leading empty cells for each leading col
                 for (uCol = 0; uCol <= aplDimCol; uCol++)
                 {
-                    *lpaplChar++ = L'\0';
+                    *lpaplChar++ = WC_EOS;
 
                     // Count in another item
                     lpFmtRowLcl->uItemCount++;
@@ -1423,7 +1423,7 @@ LPAPLCHAR CompileArrHetero
 
             // Zap the trailing blank
             if (bZapBlank)
-                lpaplChar[-1] = L'\0';
+                lpaplChar[-1] = WC_EOS;
 
             // Count in another item
             lpFmtRowLcl->uItemCount++;
@@ -1878,7 +1878,7 @@ LPAPLCHAR CompileArrNestedGlb
     lpFmtHeader->lpFmtRow1st = lpFmtHeader->lpFmtRowLst =
       (IsZeroDim (aplDimNRows) ? NULL
                                : (LPFMTROWSTR) lpaplChar);
-    // Loop through the array appending the formatted values (separated by L'\0')
+    // Loop through the array appending the formatted values (separated by WC_EOS)
     //   to the output vector, and accumulating the values in the appropriate
     //   FMTCOLSTR & FMTROWSTR entries.
 
@@ -2410,7 +2410,7 @@ LPAPLCHAR FormatArrSimple
                  && uQuadPW < (uLeadBefore + uCmpWid + uCol))
                 {
                     // Ensure properly terminated
-                    *lpwszOut = L'\0';
+                    *lpwszOut = WC_EOS;
 
                     // Check for Ctrl-Break
                     if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -2490,7 +2490,7 @@ LPAPLCHAR FormatArrSimple
             if (bRealRow && aplRealRow NE 1)        // Real row and not first row
                 AppendBlankRows (aplRank, aplRealRow, lpMemDim, lpbCtrlBreak);
             // Ensure properly terminated
-            *lpwszOut = L'\0';
+            *lpwszOut = WC_EOS;
 
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -3350,7 +3350,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         lpaplChar += aplNELMItmRht;
 
                         // Ensure it's properly terminated
-                        *lpaplChar++ = L'\0';
+                        *lpaplChar++ = WC_EOS;
 
                         // We no longer need this ptr
                         MyGlobalUnlock (ClrPtrTypeDir (hGlbItmRht)); lpMemItmRht = NULL;
@@ -3372,7 +3372,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                   aplLongestRht,    // The value to format
                                                   aplCharOverbar);  // Char to use as overbar
                                 // Zap the trailing blank
-                                lpaplChar[-1] = L'\0';
+                                lpaplChar[-1] = WC_EOS;
 
                                 if (iPrc)
                                 {
@@ -3380,7 +3380,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                     lpaplChar[-1] = aplCharDecimal;
                                     FillMemoryW (lpaplChar, (APLU3264) iPrc, L'0');
                                     lpaplChar += iPrc;
-                                    *lpaplChar++ = L'\0';
+                                    *lpaplChar++ = WC_EOS;
                                 } // End IF
                             } else
 ////////////////////////////if (iPrc < 0)
@@ -3429,13 +3429,13 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                  aplCharOverbar,                        // Char to use as overbar
                                                  FLTDISPFMT_E);                         // Float display format
                             // Zap the trailing blank
-                            lpaplChar[-1] = L'\0';
+                            lpaplChar[-1] = WC_EOS;
 
                             break;
 
                         case IMMTYPE_CHAR:
                             *lpaplChar++ = (APLCHAR) aplLongestRht;
-                            *lpaplChar++ = L'\0';
+                            *lpaplChar++ = WC_EOS;
 
                             break;
 
@@ -3482,7 +3482,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         lpaplChar = lpaplCharIni + uWid;
 
                         // Ensure properly terminated
-                        *lpaplChar++ = L'\0';
+                        *lpaplChar++ = WC_EOS;
                     } // End IF/ELSE/...
                 } // End FOR
 

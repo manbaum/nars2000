@@ -244,7 +244,7 @@ UBOOL CmdFNOV_EM
          && uLineChar NE 0)
         {
             // Ensure properly terminated
-            lpwszFormat[uLineChar] = L'\0';
+            lpwszFormat[uLineChar] = WC_EOS;
 
             // Output the current line
             AppendLine (lpwszFormat, bLineCont, TRUE);
@@ -281,7 +281,7 @@ UBOOL CmdFNOV_EM
     if (uLineChar NE 0)
     {
         // Ensure properly terminated
-        lpwszFormat[uLineChar] = L'\0';
+        lpwszFormat[uLineChar] = WC_EOS;
 
         // Output the current line
         AppendLine (lpwszFormat, TRUE, TRUE);

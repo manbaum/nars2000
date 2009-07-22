@@ -220,6 +220,7 @@
 
 #define CQUADPR_MT      L'\xFFFF'       // cQuadPR value indicating it's empty
 
+
 //***************************************************************************
 //  Threads
 //***************************************************************************
@@ -229,6 +230,269 @@
 #define TLSTYPE_MF      ((LPVOID) 'MF')     // Master Frame
 #define TLSTYPE_PL      ((LPVOID) 'PL')     // ParseLine
 #define TLSTYPE_TC      ((LPVOID) 'TC')     // Tab Control
+
+
+//***************************************************************************
+//  Miscellaneous constants
+//***************************************************************************
+
+#ifdef _WIN64
+  #define WS_WINSTR     L"Win64"
+#elif defined (_WIN32)
+  #define WS_WINSTR     L"Win32"
+#else
+  #error Need code for this architecture.
+#endif
+
+#define EQ ==
+#define NE !=
+
+#define TRUE    1
+#define FALSE   0
+#define NEG1U   (   (UINT) -1)
+#define NEG1A   ((APLUINT) -1)
+
+#define LOPART_DWORDLONG    ((DWORDLONG) 0x00000000FFFFFFFF)
+#define HIPART_DWORDLONG    ((DWORDLONG) 0xFFFFFFFF00000000)
+
+#define QWORD   ULONGLONG
+
+#define PAGESIZE        (4 * 1024)
+
+
+//***************************************************************************
+//  Debugging
+//***************************************************************************
+
+#define DbgStop()       __debugbreak ()
+
+#define defstop \
+default:        \
+    DbgStop();
+
+#define FNLN    FileNameOnly (__FILE__), __LINE__
+
+#ifdef DEBUG
+  #define LCLODS        ODS
+  #define LCLODSDD      ODSDD
+  #define LCLODSRECT    ODSRECT
+  #define LCLODSSIZE    ODSSIZE
+  #define LCLODSAPI     ODSAPI
+
+  #define DBGENTER      if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
+  #define DBGLEAVE      if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
+#else
+  #define LCLODS
+  #define LCLODSDD
+  #define LCLODSRECT
+  #define LCLODSSIZE
+  #define LCLODSAPI
+
+  #define DBGENTER
+  #define DBGLEAVE
+#endif
+
+
+//***************************************************************************
+//  Window extra byte offsets
+//***************************************************************************
+
+// Define offsets in DBWNDCLASS window extra bytes
+#define GWLDB_HWNDLB    0                                           // Window handle of Listbox
+#define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
+
+// Define common offset between the Session Manager and Function Editor
+#define GWLSF_PERTAB    0                                           // Ptr to PerTabData global memory
+#define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (HANDLE_PTR)    // ...           Edit Control window
+#define GWLSF_UNDO_BEG  GWLSF_HWNDEC   + 1 * sizeof (HANDLE_PTR)    // ...                beginning
+#define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (HANDLE_PTR)    // ...                next
+#define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (HANDLE_PTR)    // ...                last
+#define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (HANDLE_PTR)    // Value of next Undo group index
+#define GWLSF_LASTKEY   GWLSF_UNDO_GRP + 1 * sizeof (long)          // Value of last WM_KEYDOWN key
+#define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)          // Boolean of whether or not the text has changed
+#define GWLSF_LPMVS     GWLSF_CHANGED  + 1 * sizeof (long)          // Ptr to LPMEMVIRTSTR
+
+// Define offsets in SMWNDCLASS window extra bytes
+#define GWLSM_EXTRA     GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
+
+// Define offsets in FEWNDCLASS window extra bytes
+#define GWLFE_HWNDPRV   GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Next window handle in linked list (NULL = none)
+#define GWLFE_HWNDNXT   GWLFE_HWNDPRV  + 1 * sizeof (HANDLE_PTR)    // Previous ...
+#define GWLFE_EXTRA     GWLFE_HWNDNXT  + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
+
+// Define offsets in MEWNDCLASS window extra bytes
+#define GWLME_EXTRA     0                                           // Total # extra bytes
+
+// Define offsets in PMWNDCLASS window extra bytes
+#define GWLPM_HWNDLB    0                                           // Window handle of Listbox
+#define GWLPM_EXTRA     GWLPM_HWNDLB   + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
+
+// Define offsets in VEWNDCLASS window extra bytes
+#define GWLVE_EXTRA     0                                           // Total # extra bytes
+
+// Define offsets in CCWNDCLASS window extra bytes
+#define GWLCC_EXTRA     0                                           // Total # extra bytes
+
+// Define offsets in WCWNDCLASS window extra bytes
+#define GWLWC_EXTRA     0                                           // Total # extra bytes
+
+
+//***************************************************************************
+//  Local window messages
+//***************************************************************************
+
+// Define local window messages
+#define MYWM_MOVE           (WM_APP + 0)    // MF
+#define MYWM_SETFOCUS       (WM_APP + 1)    // SM (SetFocus)
+#define MYWM_IZITNAME       (WM_APP + 2)    // FE (Izit A Name)
+#define MYWM_SAVE_FN        (WM_APP + 3)    // FE (SaveFunction)
+#define MYWM_SAVECLOSE_FN   (WM_APP + 4)    // FE (SaveFunction/CloseFunction)
+#define MYWM_SAVE_AS_FN     (WM_APP + 5)    // FE (SaveAsFunction)
+#define MYWM_CLOSE_FN       (WM_APP + 6)    // FE (CloseFunction)
+#define MYWM_QUOTEQUAD      (WM_APP + 7)    // PL (Quote-Quad/Quad Input)
+#define MYWM_INIT_SMDB      (WM_APP + 8)    // SM (Initialize SM/DB windows)
+#define MYWM_ERRMSG         (WM_APP + 9)    // SM (Display error message)
+#define MYWM_SAVE_WS        (WM_APP +10)    // SM (Save workspace)
+#define MYWM_DISPMB         (WM_APP +11)    // CC (Display MessageBox)
+#define MYWM_RESIZE         (WM_APP +12)    // MF (Resize to display Status Bar)
+#define MYWM_NOTIFY         (WM_APP +13)    // EC (Pass on of WM_NOTIFY from EC)
+#define MYWM_CMPNAME        (WM_APP +14)    // FE (Compare function names)
+
+// Define Debug window messages
+#define MYWM_INIT_DB        (WM_APP +50)    // DB
+#define MYWM_DBGMSGA        (WM_APP +51)    // DB
+#define MYWM_DBGMSGW        (WM_APP +52)    // DB
+#define MYWM_DBGMSG_CLR     (WM_APP +53)    // DB
+#define MYWM_DBGMSG_SCROLL  (WM_APP +54)    // DB
+#define MYWM_UNHOOK         (WM_APP +55)    // DB
+
+
+//***************************************************************************
+//  Character constants -- ASCII and Wide characters and strings
+//***************************************************************************
+
+#define AC_EOS          '\0'        // 00:  End-of-string
+#define AC_LF           '\n'        // 0A:  Linefeed
+#define AC_CR           '\r'        // 0D:  Carriage Return
+#define AC_BLANK        ' '         // 20:  Space
+#define AC_LEFTPAREN    '('         // 28:  Left Paren
+#define AC_STAR         '*'         // 2A:  Asterisk
+#define AC_X            'X'         // 58:  Capital X
+#define AC_SLOPE        '\\'        // 5C:  Slope
+#define AC_CRLF         '\r\n'      // 0D0A:  Carriage Return Linefeed
+
+#define AS_LF           "\n"        // 0A:  Linefeed
+#define AS_CR           "\r"        // 0D:  Carriage Return
+#define AS_CRLF         "\r\n"      // 0D0A:  Carriage Return Linefeed
+#define EOL_LEN         2           // Length of EOL ("\r\n")
+
+#define WC_EOS          L'\0'       // 00:  End-of-string
+#define WC_HT           L'\t'       // 09:  Horizontal Tab
+#define WC_LF           L'\n'       // 0A:  Linefeed
+#define WC_CR           L'\r'       // 0D:  Carriage Return
+#define WC_DQ           L'\"'       // 22:  Double Quote
+#define WC_SQ           L'\''       // 27:  Single Quote
+#define WC_SLOPE        L'\\'       // 5C:  Slope
+
+#define WS_HT           L"\t"       // 09:  Horizontal Tab
+#define WS_LF           L"\n"       // 0A:  Linefeed
+#define WS_CR           L"\r"       // 0D:  Carriage Return
+#define WS_DQ           L"\""       // 22:  Double Quote
+#define WS_SQ           L"\'"       // 27:  Single Quote
+#define WS_SLOPE        L"\\"       // 5C:  Slope
+
+#define WS_CRLF         L"\r\n"     // 0D0A:  CR/LF
+
+
+//***************************************************************************
+// Wide-char routines From <string.h>
+//***************************************************************************
+
+#define strchrW         wcschr
+#define strncmpW        wcsncmp
+#define strpbrkW        wcspbrk
+#define strspnW         wcsspn
+
+
+//***************************************************************************
+//  Image list constants
+//***************************************************************************
+
+// Width and height of each image in the image list
+#define IMAGE_CX        16
+#define IMAGE_CY        16
+
+
+//***************************************************************************
+//  Bit, byte, etc. constants
+//***************************************************************************
+
+// Define bit masks
+#define BIT0    0x00000001
+#define BIT1    0x00000010
+#define BIT2    0x00000100
+#define BIT3    0x00001000
+#define BIT4    0x00010000
+#define BIT5    0x00100000
+#define BIT6    0x01000000
+#define BIT7    0x10000000
+
+// # bits in a byte
+#define NBIB            8
+
+// Log base 2 of NBIB
+#define LOG2NBIB        3
+
+// Mask for LOG2NBIB bits
+#define MASKLOG2NBIB    ((BIT0 << LOG2NBIB) - 1)    // a.k.a. (NBIB - 1)
+
+// # bits in a word
+#define NBIW           16
+
+// Log base 2 of NBIW
+#define LOG2NBIW        4
+
+// Mask for LOG2NBIW bits
+#define MASKLOG2NBIW    ((BIT0 << LOG2NBIW) - 1)    // a.k.a. (NBIW - 1)
+
+// # bits in a dword
+#define NBID           32
+
+// Log base 2 of NBID
+#define LOG2NBID        5
+
+// Mask for LOG2NBID bits
+#define MASKLOG2NBID    ((BIT0 << LOG2NBID) - 1)    // a.k.a. (NBID - 1)
+
+// # bits in a qword
+#define NBIQ           64
+
+// Log base 2 of NBIQ
+#define LOG2NBIQ        6
+
+// Mask for LOG2NBIQ bits
+#define MASKLOG2NBIQ    ((BIT0 << LOG2NBIQ) - 1)    // a.k.a. (NBIQ - 1)
+
+// End value for shift mask
+#define END_OF_BYTE     (BIT0 << NBIB)
+
+
+//***************************************************************************
+//  WM_PRINTCLIENT flags
+//***************************************************************************
+
+// Extra flags for WM_PRINTCLIENT to indicate ...
+#define PRF_PRINTCLIENT 0x80000000L     // called from WM_PRINTCLIENT
+#define PRF_SELECTION   0x40000000L     // to print the selection
+#define PRF_CURRENTPAGE 0x20000000L     // to print the current page
+
+
+//***************************************************************************
+// Resource debugging size
+//***************************************************************************
+
+#define MAXOBJ  128000
+
 
 
 //***************************************************************************

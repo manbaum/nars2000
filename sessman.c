@@ -172,8 +172,8 @@ void AppendLine
 
     // If requested, end the line
     if (bEndingCRLF)
-        // Replace the selection (none) with L"\r\n"
-        SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
+        // Replace the selection (none) with WS_CRLF
+        SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CRLF);
 ////#ifdef PERFMONON
 ////    UpdateWindow (hWndEC);
 ////#endif
@@ -1351,7 +1351,7 @@ WM_NCCREATE_FAIL:
             } // End IF
 
             // Zap so the above test doesn't succeed again
-            wszLoadFile[0] = L'\0';
+            wszLoadFile[0] = WC_EOS;
 
             // Tell the window to finish initialization
             PostMessageW (hWnd, MYWM_INIT_EC, 0, 0);
@@ -1662,7 +1662,7 @@ NORMAL_EXIT:
                             SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwTmpLine);
 
                             // Append CRLF
-                            lstrcatW (lpwTmpLine, L"\r\n");
+                            lstrcatW (lpwTmpLine, WS_CRLF);
 
                             // Move the text caret to the end of the buffer
                             MoveCaretEOB (hWndEC);

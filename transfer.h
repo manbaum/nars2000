@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,18 +25,10 @@
 #define EBCDIC_STAR         0x5C
 #define EBCDIC_X            0xE7
 
-#define ASCII_NL            0x0A
-#define ASCII_CR            0x0D
-#define ASCII_BLANK         0x20
-#define ASCII_LEFTPAREN     0x28
-#define ASCII_STAR          0x2A
-#define ASCII_X             0x58
-
 #define REC_LEN               80                            // Overall record length (excluding CR and CRLF)
 #define TYP_LEN                1                            // Type char length ('*', ' ', 'X')
 #define SEQ_LEN                8                            // Sequence numbers length in the record tail
 #define INT_LEN             (REC_LEN - TYP_LEN - SEQ_LEN)   // Interior length ("- 1" for the first col)
-#define EOL_LEN                2                            // Length of EOL ("\r\n")
 
 
 //***************************************************************************

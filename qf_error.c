@@ -132,7 +132,7 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
             lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht;
 
         // Ensure properly terminated
-        lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = L'\0';
+        lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = WC_EOS;
 
         // Save in PTD -- note that the tkCharIndex in the
         //   function token passed here isn't used unless this is

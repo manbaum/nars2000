@@ -174,7 +174,7 @@ UBOOL CreateAppDataDirs
 #undef  WS_APPDATA
 
     // Append the "\\NARS2000" part
-    lstrcatW (wszAppData, L"\\" WS_APPNAME);
+    lstrcatW (wszAppData, WS_SLOPE WS_APPNAME);
 
     // Ensure the "...\\Application Data\\NARS2000" directory is present
     if (!CreateDirectoryW (wszAppData, NULL)
@@ -204,7 +204,7 @@ UBOOL CreateAppDataDirs
     cchSize = lstrlenW (wszAppData);
 
     // Now append the .ini file name to get lpwszIniFile
-    lstrcpyW (&wszAppData[cchSize], L"\\" WS_APPNAME L".ini");
+    lstrcpyW (&wszAppData[cchSize], WS_SLOPE WS_APPNAME L".ini");
     lpwszIniFile = wszAppData;
 
     // Get ptr to where the workspaces dir will be stored
@@ -216,7 +216,7 @@ UBOOL CreateAppDataDirs
     lstrcpynW (lpwszWorkDir, lpwszIniFile, cchSize + 1);
 
     // Append the workspaces name
-    lstrcatW (lpwszWorkDir, L"\\" WS_WKSNAME);
+    lstrcatW (lpwszWorkDir, WS_SLOPE WS_WKSNAME);
 
     // Ensure the workspaces dir is present
     if (!CreateDirectoryW (lpwszWorkDir, NULL)
@@ -244,7 +244,7 @@ UBOOL CreateAppDataDirs
     } // End IF
 
     // Ensure there's a trailing backslash
-    lstrcatW (lpwszWorkDir, L"\\");
+    lstrcatW (lpwszWorkDir, WS_SLOPE);
 
     return TRUE;
 } // End CreateAppDataDirs
@@ -485,7 +485,7 @@ void ReadIniFileGlb
     ConvertNameInPlace (wszTemp);
 
     // If the value is empty (''), ...
-    if (wszTemp[0] EQ L'\0')
+    if (wszTemp[0] EQ WC_EOS)
     {
         cQuadPR_CWS = CQUADPR_MT;
         hGlbQuadPR_CWS = hGlbV0Char;
@@ -636,7 +636,7 @@ void ReadIniFileGlb
                                   TEMPBUFLEN,           // Byte size of the output buffer
                                   lpwszIniFile);        // Ptr to the file name
         // Check for value
-        if (wszTemp[0] NE L'\0')
+        if (wszTemp[0] NE WC_EOS)
             // Convert the numbers
             swscanf (wszTemp,
                      FMTSTR_SYNTAXCOLOR,
@@ -657,7 +657,7 @@ void ReadIniFileGlb
                               TEMPBUFLEN,           // Byte size of the output buffer
                               lpwszIniFile);        // Ptr to the file name
     // Check for value
-    if (wszTemp[0] NE L'\0')
+    if (wszTemp[0] NE WC_EOS)
         // Convert the numbers
         swscanf (wszTemp,
                  FMTSTR_CUSTOMCOLORS,
@@ -747,8 +747,8 @@ void GetPrivateProfileLogFontW
                 &lplfFont->lfFaceName);
         // If the facename contains an embedded blank, swscanf misses
         //   the tail of the name so we do it over again here
-        lstrcpyW (lplfFont->lfFaceName, strchrW (wszTemp, L'\'') + 1);
-        *(strchrW (lplfFont->lfFaceName, L'\'')) = L'\0';
+        lstrcpyW (lplfFont->lfFaceName, strchrW (wszTemp, WC_SQ) + 1);
+        *(strchrW (lplfFont->lfFaceName, WC_SQ)) = WC_EOS;
     } // End IF
 } // End GetPrivateProfileLogFontW
 
@@ -1285,7 +1285,7 @@ void SaveIniFile
 
     //******************* bAdjustPW ***************************
     wszTemp[0] = L'0' + OptionFlags.bAdjustPW;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bAdjustPw
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1294,7 +1294,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bUnderbarToLowercase ****************
     wszTemp[0] = L'0' + OptionFlags.bUnderbarToLowercase;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bUnderbarToLowercase
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1303,7 +1303,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bNewTabOnClear **********************
     wszTemp[0] = L'0' + OptionFlags.bNewTabOnClear;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bNewTabOnClear
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1312,7 +1312,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bNewTabOnLoad ***********************
     wszTemp[0] = L'0' + OptionFlags.bNewTabOnLoad;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bNewTabOnLoad
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1321,7 +1321,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bUseLocalTime ***********************
     wszTemp[0] = L'0' + OptionFlags.bUseLocalTime;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bUseLocalTime
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1330,7 +1330,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bBackupOnLoad ***********************
     wszTemp[0] = L'0' + OptionFlags.bBackupOnLoad;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bBackupOnLoad
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1339,7 +1339,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bBackupOnSave ***********************
     wszTemp[0] = L'0' + OptionFlags.bBackupOnSave;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bBackupOnSave
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1348,7 +1348,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bNoCopyrightMsg *********************
     wszTemp[0] = L'0' + OptionFlags.bNoCopyrightMsg;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bNoCopyrightMsg
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1375,7 +1375,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bSyntClrFcns ************************
     wszTemp[0] = L'0' + OptionFlags.bSyntClrFcns;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bSyntClrFcns
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1384,7 +1384,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bSyntClrSess ************************
     wszTemp[0] = L'0' + OptionFlags.bSyntClrSess;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bSyntClrSess
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1393,7 +1393,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bSyntClrPrnt ************************
     wszTemp[0] = L'0' + OptionFlags.bSyntClrPrnt;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bSyntClrPrnt
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1402,7 +1402,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bCheckGroup *************************
     wszTemp[0] = L'0' + OptionFlags.bCheckGroup;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bCheckGroup
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1411,7 +1411,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bInsState ***************************
     wszTemp[0] = L'0' + OptionFlags.bInsState;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bInsState
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1421,7 +1421,7 @@ void SaveIniFile
 
     //******************* bViewStatusBar **********************
     wszTemp[0] = L'0' + OptionFlags.bViewStatusBar;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bViewStatusBar
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
@@ -1449,7 +1449,7 @@ void SaveIniFile
                     L'-',                                   // Char to use as overbar
                     FLTDISPFMT_RAWFLT);                     // Float display format
     // Zap the trailing blank
-    lpaplChar[-1] = L'\0';
+    lpaplChar[-1] = WC_EOS;
 
     // Write out []CT
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
@@ -1488,7 +1488,7 @@ void SaveIniFile
                      L"%d ",
                     *((LPAPLINT) lpMemObj)++);
     // Zap the trailing blank
-    lpaplChar[-1] = L'\0';
+    lpaplChar[-1] = WC_EOS;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadIC_CWS); lpMemObj = NULL;
@@ -1505,7 +1505,7 @@ void SaveIniFile
                       bQuadIO_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
-    lpaplChar[-1] = L'\0';
+    lpaplChar[-1] = WC_EOS;
 
     // Write out []IO
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
@@ -1525,7 +1525,7 @@ void SaveIniFile
                       uQuadMF_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
-    lpaplChar[-1] = L'\0';
+    lpaplChar[-1] = WC_EOS;
 
     // Write out []MF
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
@@ -1539,7 +1539,7 @@ void SaveIniFile
                       uQuadPP_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
-    lpaplChar[-1] = L'\0';
+    lpaplChar[-1] = WC_EOS;
 
     // Write out []PP
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
@@ -1551,17 +1551,17 @@ void SaveIniFile
     if (cQuadPR_CWS EQ CQUADPR_MT)
     {
         wszTemp[0] =
-        wszTemp[1] = L'\'';
-        wszTemp[2] = L'\0';
+        wszTemp[1] = WC_SQ;
+        wszTemp[2] = WC_EOS;
     } else
     {
         UINT uLen;
 
-        wszTemp[0] = L'\'';
+        wszTemp[0] = WC_SQ;
         uLen = (UINT)
           ConvertWideToNameLength (&wszTemp[1], &cQuadPR_CWS, 1);
-        wszTemp[uLen + 1] = L'\'';
-        wszTemp[uLen + 2] = L'\0';
+        wszTemp[uLen + 1] = WC_SQ;
+        wszTemp[uLen + 2] = WC_EOS;
     } // End IF/ELSE
 
     // Write out []PR
@@ -1576,7 +1576,7 @@ void SaveIniFile
                       uQuadPW_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
-    lpaplChar[-1] = L'\0';
+    lpaplChar[-1] = WC_EOS;
 
     // Write out []PW
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
@@ -1590,7 +1590,7 @@ void SaveIniFile
                       uQuadRL_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
-    lpaplChar[-1] = L'\0';
+    lpaplChar[-1] = WC_EOS;
 
     // Write out []RL
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
@@ -1609,7 +1609,7 @@ void SaveIniFile
 
     //******************* bRangeLimit.CT **********************
     wszTemp[0] = L'0' + bRangeLimit.CT;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bRangeLimit.CT
     WritePrivateProfileStringW (SECTNAME_RANGELIMITS,       // Ptr to the section name
@@ -1618,7 +1618,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.IC **********************
     wszTemp[0] = L'0' + bRangeLimit.IC;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bRangeLimit.IC
     WritePrivateProfileStringW (SECTNAME_RANGELIMITS,       // Ptr to the section name
@@ -1627,7 +1627,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.IO **********************
     wszTemp[0] = L'0' + bRangeLimit.IO;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bRangeLimit.IO
     WritePrivateProfileStringW (SECTNAME_RANGELIMITS,       // Ptr to the section name
@@ -1636,7 +1636,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.PP **********************
     wszTemp[0] = L'0' + bRangeLimit.PP;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bRangeLimit.PP
     WritePrivateProfileStringW (SECTNAME_RANGELIMITS,       // Ptr to the section name
@@ -1645,7 +1645,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.PW **********************
     wszTemp[0] = L'0' + bRangeLimit.PW;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bRangeLimit.PW
     WritePrivateProfileStringW (SECTNAME_RANGELIMITS,       // Ptr to the section name
@@ -1654,7 +1654,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.RL **********************
     wszTemp[0] = L'0' + bRangeLimit.RL;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bRangeLimit.RL
     WritePrivateProfileStringW (SECTNAME_RANGELIMITS,       // Ptr to the section name
@@ -1667,7 +1667,7 @@ void SaveIniFile
 
     //****************** bResetVars.CT ************************
     wszTemp[0] = L'0' + bResetVars.CT;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bResetVars.CT
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
@@ -1676,7 +1676,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.FC ************************
     wszTemp[0] = L'0' + bResetVars.FC;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bResetVars.FC
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
@@ -1685,7 +1685,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.IC ************************
     wszTemp[0] = L'0' + bResetVars.IC;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bResetVars.IC
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
@@ -1694,7 +1694,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.IO ************************
     wszTemp[0] = L'0' + bResetVars.IO;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bResetVars.IO
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
@@ -1703,7 +1703,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.PP ************************
     wszTemp[0] = L'0' + bResetVars.PP;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bResetVars.PP
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
@@ -1712,7 +1712,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.PW ************************
     wszTemp[0] = L'0' + bResetVars.PW;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bResetVars.PW
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
@@ -1721,7 +1721,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.RL ************************
     wszTemp[0] = L'0' + bResetVars.RL;
-    wszTemp[1] = L'\0';
+    wszTemp[1] = WC_EOS;
 
     // Write out bResetVars.RL
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
@@ -1834,7 +1834,7 @@ void WritePrivateProfileGlbCharW
     lpaplChar = lpwszGlbTemp;
 
     // Leading single quote
-    *lpaplChar++ = L'\'';
+    *lpaplChar++ = WC_SQ;
 
     // Format the text as an ASCII string with non-ASCII chars
     //   represented as either {symbol} or {\xXXXX} where XXXX is
@@ -1844,10 +1844,10 @@ void WritePrivateProfileGlbCharW
                                lpMemObj,        // Ptr to incoming chars
                     (APLU3264) aplNELMObj);     // # chars to convert
     // Trailing single quote
-    *lpaplChar++ = L'\'';
+    *lpaplChar++ = WC_SQ;
 
     // Ensure properly terminated
-    *lpaplChar   = L'\0';
+    *lpaplChar   = WC_EOS;
 
     // Write out the global char vector
     WritePrivateProfileStringW (lpwSectName,        // Ptr to the section name

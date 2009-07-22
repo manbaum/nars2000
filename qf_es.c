@@ -176,7 +176,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                 lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht1;
 
             // Ensure properly terminated
-            lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = L'\0';
+            lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = WC_EOS;
         } else
         {
             UBOOL       bRet;               // TRUE iff result is valid
@@ -251,7 +251,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                     lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestLft;
 
                 // Ensure properly terminated
-                lpMemPTD->lpwszQuadErrorMsg[aplNELMLft] = L'\0';
+                lpMemPTD->lpwszQuadErrorMsg[aplNELMLft] = WC_EOS;
             } else
             {
                 LPAPLCHAR lpwErrMsg;

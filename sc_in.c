@@ -82,14 +82,14 @@ UBOOL CmdIn_EM
     hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
     // Check for empty string
-    if (lpwszTail[0] EQ L'\0')
+    if (lpwszTail[0] EQ WC_EOS)
         goto INCORRECT_COMMAND_EXIT;
 
     // Split out the drive and path from the module filename
     _wsplitpath (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
 
     // If there's no extension, supply one
-    if (wszExt[0] EQ L'\0')
+    if (wszExt[0] EQ WC_EOS)
         lstrcpyW (wszExt, L".atf");
 
     // Put it all back together
@@ -175,7 +175,7 @@ UBOOL CmdIn_EM
         CmdInEBCDIC2ASCII (lpAtfView, dwAtfFileSize);
 
     // Ensure that the file contents now look like ASCII
-    Assert ((lpAtfView[0] EQ ASCII_BLANK) || (lpAtfView[0] EQ ASCII_X) || (lpAtfView[0] EQ ASCII_STAR));
+    Assert ((lpAtfView[0] EQ AC_BLANK) || (lpAtfView[0] EQ AC_X) || (lpAtfView[0] EQ AC_STAR));
 
     while (dwAtfFileSize)
     {
@@ -340,7 +340,7 @@ UBOOL TransferInverseArr2_EM
 
     // Ensure the name is properly terminated
     wch = *lpwNameEnd;
-    *lpwNameEnd = L'\0';
+    *lpwNameEnd = WC_EOS;
 
     // Set the flags for what we're looking up/appending
     ZeroMemory (&stFlags, sizeof (stFlags));
@@ -402,7 +402,7 @@ UBOOL TransferInverseArr2_EM
             AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);
 
             // Ensure the name is properly terminated
-            *lpwNameEnd = L'\0';
+            *lpwNameEnd = WC_EOS;
 
             // Format the trailing part of the error message
             wsprintfW (lpwszFormat,
@@ -526,7 +526,7 @@ UBOOL TransferInverseFcn2_EM
 
     // Ensure the name is properly terminated
     wch = *lpwNameEnd;
-    *lpwNameEnd = L'\0';
+    *lpwNameEnd = WC_EOS;
 
     // Check for errors
     if (exitType EQ EXITTYPE_ERROR
@@ -697,7 +697,7 @@ UBOOL TransferInverseChr1_EM
 
     // Ensure the name is properly terminated
     wch = *lpwNameEnd;
-    *lpwNameEnd = L'\0';
+    *lpwNameEnd = WC_EOS;
 
     // Set the flags for what we're looking up/appending
     ZeroMemory (&stFlags, sizeof (stFlags));
@@ -946,7 +946,7 @@ UBOOL TransferInverseNum1_EM
 
     // Ensure the name is properly terminated
     wch = *lpwNameEnd;
-    *lpwNameEnd = L'\0';
+    *lpwNameEnd = WC_EOS;
 
     // Set the flags for what we're looking up/appending
     ZeroMemory (&stFlags, sizeof (stFlags));
@@ -1089,7 +1089,7 @@ IMMEXEC_EXIT:
         AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);
 
         // Ensure the name is properly terminated
-        *lpwNameEnd = L'\0';
+        *lpwNameEnd = WC_EOS;
 
         // Format the trailing part of the error message
         wsprintfW (lpwszFormat,
@@ -1158,11 +1158,11 @@ LPUCHAR CmdInCopyAndTranslate_EM
         // Split cases based upon the first char in the record
         switch (lpAtfView[0])
         {
-            case ASCII_STAR:
+            case AC_STAR:
                 // This record is a comment
 
                 // Check for a timestamp
-                if (lpAtfView[1] EQ ASCII_LEFTPAREN)
+                if (lpAtfView[1] EQ AC_LEFTPAREN)
                 {
                     sscanf (&lpAtfView[2],
                              "%hd %hd %hd %hd %hd %hd %hd",
@@ -1184,9 +1184,9 @@ LPUCHAR CmdInCopyAndTranslate_EM
 
                 break;
 
-            case ASCII_CR:
+            case AC_CR:
                 // Skip over CR or CRLF
-                if (lpAtfView[1] EQ ASCII_NL)
+                if (lpAtfView[1] EQ AC_LF)
                 {
                     lpAtfView += 2;
                     *lpdwAtfFileSize -= 2;
@@ -1198,18 +1198,18 @@ LPUCHAR CmdInCopyAndTranslate_EM
 
                 break;
 
-            case ASCII_X:
-            case ASCII_BLANK:
+            case AC_X:
+            case AC_BLANK:
                 // Copy and widen the input to the output save area
                 //   and translate chars from APL2 to NARS
                 for (uCnt = 0; uCnt < INT_LEN; uCnt++)
                     lpwszTemp[uCnt] = lpwTranslate[lpAtfView[uCnt + 1]];
 
                 //Ensure properly terminated
-                lpwszTemp[INT_LEN] = L'\0';
+                lpwszTemp[INT_LEN] = WC_EOS;
 
                 // If this is the last record, ...
-                if (lpAtfView[0] EQ ASCII_X)
+                if (lpAtfView[0] EQ AC_X)
                 {
                     LPWCHAR lpwTmp;
 
@@ -1234,10 +1234,10 @@ LPUCHAR CmdInCopyAndTranslate_EM
                 *lpdwAtfFileSize -= REC_LEN;
 
                 // If this is the last record, check for trailing CR/LF
-                if (!bContinue && *lpdwAtfFileSize && lpAtfView[0] EQ ASCII_CR)
+                if (!bContinue && *lpdwAtfFileSize && lpAtfView[0] EQ AC_CR)
                 {
                     // Skip over CR or CRLF
-                    if (lpAtfView[1] EQ ASCII_NL)
+                    if (lpAtfView[1] EQ AC_LF)
                     {
                         lpAtfView += 2;
                         *lpdwAtfFileSize -= 2;

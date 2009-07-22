@@ -209,7 +209,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
     // Copy the data to temporary storage so we can terminate it properly
     //   as well as translate it to/from APL2 charset
     CopyMemoryW (lpwszTemp, lpMemRht, (APLU3264) aplNELMRht);
-    lpwszTemp[aplNELMRht] = L'\0';
+    lpwszTemp[aplNELMRht] = WC_EOS;
 
     if (hGlbRht && lpMemRht)
     {
@@ -345,7 +345,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
         } // End SWITCH
 
         // Return the name of the var we just created
-        *(strchrW (&lpwszTemp[1], L' ')) = L'\0';
+        *(strchrW (&lpwszTemp[1], L' ')) = WC_EOS;
 
         // Get the name length
         aplNELMRes = lstrlenW (&lpwszTemp[1]);
@@ -966,7 +966,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
             lpwszTemp -= 3;
             lpwszTemp[0] = UTF16_QUAD;
             lpwszTemp[1] = L'z';
-            lpwszTemp[2] = L'\0';
+            lpwszTemp[2] = WC_EOS;
 
             // Set the flags for what we're looking up/appending
             ZeroMemory (&stFlags, sizeof (stFlags));
@@ -1029,7 +1029,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
 
         // Return the name of the var/fcn we just created
         wch = *lpwTemp;
-        *lpwTemp = L'\0';
+        *lpwTemp = WC_EOS;
 
         // Get the name length
         aplNELMRes = lstrlenW (lpwszTemp);
@@ -1191,7 +1191,7 @@ UBOOL TransferInverseFcn1_EM
 
     // Ensure the name is properly terminated
     wch = *lpwNameEnd;
-    *lpwNameEnd = L'\0';
+    *lpwNameEnd = WC_EOS;
 
     // Set the flags for what we're looking up/appending
     ZeroMemory (&stFlags, sizeof (stFlags));

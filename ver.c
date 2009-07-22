@@ -28,8 +28,8 @@
 #include "headers.h"
 
 
-WCHAR wszVarFileInfo[] = L"\\VarFileInfo\\Translation",
-      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L")\nVersion %s";
+WCHAR wszVarFileInfo[] = WS_SLOPE L"VarFileInfo" WS_SLOPE L"Translation",
+      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L")" WS_LF L"Version %s";
 
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
@@ -84,7 +84,7 @@ void LclFileVersionStrW
     // Extract the translation value (with the swapped words)
     dwTrans = *(DWORD FAR *)lpwBuf;
     wsprintfW (wszTemp,
-               L"\\StringFileInfo\\%08lX\\FileVersion",
+               WS_SLOPE L"StringFileInfo" WS_SLOPE L"%08lX" WS_SLOPE L"FileVersion",
                MAKELONG (HIWORD (dwTrans), LOWORD (dwTrans)));
     if (!VerQueryValueW (lpwVer, wszTemp, &lpwBuf, &cb))
         goto FREE;
@@ -141,7 +141,7 @@ APLU3264 CALLBACK AboutDlgProc
                                  GWLP_WNDPROC,
                                  (APLU3264) (LONG_PTR) (WNDPROC) &LclStaticWndProc);
             // If we haven't done this before, ...
-            if (wszLclAppDPFE[0] EQ L'\0')
+            if (wszLclAppDPFE[0] EQ WC_EOS)
             {
 #define TT_PREFIX   L"Loaded from:  "
                 // Copy the prefix to the text

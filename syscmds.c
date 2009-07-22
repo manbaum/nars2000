@@ -119,7 +119,7 @@ UBOOL ExecSysCmd
     else
     {
         // Make the command into a zero-terminated string
-        *wp++ = L'\0';
+        *wp++ = WC_EOS;
 
         // Otherwise, skip over all leading spaces
         while (*wp EQ L' ')
@@ -131,7 +131,7 @@ UBOOL ExecSysCmd
 
     // Delete trailing blanks
     while (wpEnd > lpwszLine && wpEnd[-1] EQ L' ')
-        *--wpEnd = L'\0';
+        *--wpEnd = WC_EOS;
 
     // Search for this command in the table
     for (i = 0; i < SYSCMDSTAB_NROWS; i++)

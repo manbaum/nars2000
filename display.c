@@ -161,9 +161,9 @@ UBOOL ArrayDisplay_EM
     // Delete the last blank in case it matters,
     //   and ensure properly terminated
     if (lpaplChar[-1] EQ L' ')
-        *--lpaplChar = L'\0';
+        *--lpaplChar = WC_EOS;
     else
-        *lpaplChar = L'\0';
+        *lpaplChar = WC_EOS;
 
     // Display the line
     AppendLine (lpwszFormat, FALSE, bEndingCR);
@@ -352,7 +352,7 @@ UBOOL DisplayGlbArr_EM
         else
             lpFmtHeader->lpFmtRow1st = NULL;
 
-        // Loop through the array appending the formatted values (separated by L'\0')
+        // Loop through the array appending the formatted values (separated by WC_EOS)
         //   to the output vector, and accumulating the values in the appropriate
         //   FMTCOLSTR & FMTROWSTR entries.
 
@@ -590,7 +590,7 @@ UBOOL DisplayGlbArr_EM
                     // Because AppendLine works on single zero-terminated lines,
                     //   we need to create one
                     wch = lpwsz[uOffset + uOutLen];     // Save the ending char
-                    lpwsz[uOffset + uOutLen] = L'\0';   // Terminate the line
+                    lpwsz[uOffset + uOutLen] = WC_EOS;  // Terminate the line
                     AppendLine (lpwsz + uOffset, bLineCont, TRUE);  // Display the line
                     lpwsz[uOffset + uOutLen] = wch;     // Restore the ending char
 
@@ -611,7 +611,7 @@ UBOOL DisplayGlbArr_EM
                 // Because AppendLine works on single zero-terminated lines,
                 //   we need to create one
                 wch = lpwsz[uOffset + aplDimTmp];       // Save the ending char
-                lpwsz[uOffset + aplDimTmp] = L'\0';     // Terminate the line
+                lpwsz[uOffset + aplDimTmp] = WC_EOS;    // Terminate the line
                 AppendLine (lpwsz + uOffset,
                             bLineCont,
                             bEndingCR || (uFmtRow NE (lpFmtHeader->uFmtRows - 1))); // Display the line
@@ -1456,7 +1456,7 @@ LPAPLCHAR FormatExpFmt
                       decpt - 1,        // The value to format
                       aplCharOverbar);  // Char to use as overbar
     // Ensure properly terminated
-    *--lpaplChar = L'\0';
+    *--lpaplChar = WC_EOS;
 
     return lpaplChar;
 } // End FormatExpFmt
@@ -1517,9 +1517,9 @@ LPWCHAR DisplayTransferVar2
     // Delete the last blank in case it matters,
     //   and ensure properly terminated
     if (lpwszTemp[-1] EQ L' ')
-        *--lpwszTemp = L'\0';
+        *--lpwszTemp = WC_EOS;
     else
-        *lpwszTemp = L'\0';
+        *lpwszTemp = WC_EOS;
 
     return lpwszTemp;
 } // End DisplayTransferVar2
@@ -1541,22 +1541,22 @@ LPWCHAR DisplayTransferChr2
     APLUINT uCnt;                           // Loop counter
 
     // Start with a leading quote
-    *lpwszTemp++ = L'\'';
+    *lpwszTemp++ = WC_SQ;
 
     // Loop through the elements
     for (uCnt = 0; uCnt < aplNELMArg; uCnt++, ((LPAPLCHAR) lpMemArg)++)
     // If the data is a single quote, ...
-    if ((*(LPAPLCHAR) lpMemArg) EQ L'\'')
+    if ((*(LPAPLCHAR) lpMemArg) EQ WC_SQ)
     {
         // The data is ''
-        *lpwszTemp++ = L'\'';
-        *lpwszTemp++ = L'\'';
+        *lpwszTemp++ = WC_SQ;
+        *lpwszTemp++ = WC_SQ;
     } else
         // ***FIXME*** -- Use []UCS to handle chars outside APL2's charset
         *lpwszTemp++ = *(LPAPLCHAR) lpMemArg;
 
     // End with a trailing quote
-    *lpwszTemp++ = L'\'';
+    *lpwszTemp++ = WC_SQ;
 
     // and a trailing blank
     *lpwszTemp++ = L' ';
@@ -1803,9 +1803,9 @@ LPWCHAR DisplayTransferGlb2
     // Delete the last blank in case it matters,
     //   and ensure properly terminated
     if (lpwszTemp[-1] EQ L' ')
-        *--lpwszTemp = L'\0';
+        *--lpwszTemp = WC_EOS;
     else
-        *lpwszTemp = L'\0';
+        *lpwszTemp = WC_EOS;
 
     // If not at the top level, ...
     if (!bTopLevel)
@@ -1931,9 +1931,9 @@ LPWCHAR DisplayTransferFcn2
     // Delete the last blank in case it matters,
     //   and ensure properly terminated
     if (lpwszTemp[-1] EQ L' ')
-        *--lpwszTemp = L'\0';
+        *--lpwszTemp = WC_EOS;
     else
-        *lpwszTemp = L'\0';
+        *lpwszTemp = WC_EOS;
 
     return lpwszTemp;
 } // End DisplayTransferFcn2

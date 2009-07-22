@@ -210,7 +210,7 @@ LPWCHAR FormatWithSep
                  iSep;          // # commas already introduced
 
     // Ensure properly terminated
-    wszTemp[iLen] = L'\0';
+    wszTemp[iLen] = WC_EOS;
 
     // Loop through the digits
     for (iSep = 0, iCnt = iLen - 1; iCnt >= 0; iCnt--)

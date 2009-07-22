@@ -42,22 +42,22 @@ void MakeWorkspaceNameCanonical
     UINT uLen;
 
     // If the incoming workspace name begins with a double-quote, skip over it
-    if (wszInp[0] EQ L'"')
+    if (wszInp[0] EQ WC_DQ)
         wszInp++;
 
     // Get the incoming workspace name string length
     uLen = lstrlenW (wszInp);
 
     // If the incoming workspace name ends with a double-quote, delete it
-    if (uLen && wszInp[uLen - 1] EQ L'"')
-        wszInp[uLen - 1] = L'\0';
+    if (uLen && wszInp[uLen - 1] EQ WC_DQ)
+        wszInp[uLen - 1] = WC_EOS;
 
     // If the name doesn't begin with a drive letter and
     //   doesn't start at the root or a dot, prepend the
     //   default dir
-    if (wszInp[0] NE L'\0'      // Non-empty,
+    if (wszInp[0] NE WC_EOS     // Non-empty,
      && wszInp[0] NE L'.'       // and not current dir,
-     && wszInp[0] NE L'\\'      // and not root dir,
+     && wszInp[0] NE WC_SLOPE   // and not root dir,
      && wszInp[1] NE L':')      // and no drive letter
     {
         lstrcpyW (wszOut, wszDefDir);
@@ -70,7 +70,7 @@ void MakeWorkspaceNameCanonical
 
     // If the workspace name ends with WSKEXT
     if (lstrcmpiW (&wszOut[uLen - WS_WKSEXT_LEN], WS_WKSEXT) EQ 0)
-        wszOut[uLen - WS_WKSEXT_LEN] = L'\0';
+        wszOut[uLen - WS_WKSEXT_LEN] = WC_EOS;
 } //  End MakeWorkspaceNameCanonical
 
 
@@ -286,7 +286,7 @@ UBOOL SaveNewWsid_EM
         // Omit the trailing WS_WKSEXT
         iLen2 = iLen - WS_WKSEXT_LEN;
         Assert (lpMemSaveWSID[iLen2] EQ L'.');
-        lpMemSaveWSID[iLen2] = L'\0';
+        lpMemSaveWSID[iLen2] = WC_EOS;
 
         // Calculate space needed for the new WSID
         ByteWSID = CalcArraySize (ARRAY_CHAR, iLen2, 1);

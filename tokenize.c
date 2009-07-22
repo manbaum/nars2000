@@ -711,7 +711,7 @@ UBOOL IsLocalName
 
         // Compare the incoming name with the header text
         if (strncmpW (lpwszName, wp, iStrLen) EQ 0
-         && (wp[iStrLen] EQ L'\0'
+         && (wp[iStrLen] EQ WC_EOS
           || strchrW (lpwBrkTerm, wp[iStrLen]) NE NULL))
         {
             // Mark as FOUND
@@ -729,10 +729,10 @@ UBOOL IsLocalName
     if (lpPosition)
     {
         // Remove the trailing lamp
-        lpwszTemp[lstrlenW (lpwszTemp) - 1] = L'\0';
+        lpwszTemp[lstrlenW (lpwszTemp) - 1] = WC_EOS;
 
         // Zap any other lamp
-        *SkipToCharW (lpwszTemp, UTF16_LAMP) = L'\0';
+        *SkipToCharW (lpwszTemp, UTF16_LAMP) = WC_EOS;
 
         // Find first semicolon
         wp = SkipToCharW (lpwszTemp, L';');
@@ -1007,7 +1007,7 @@ UBOOL fnAlpDone
         goto NORMAL_EXIT;
 
     // Ensure properly terminated
-    lpwszStr[lptkLocalVars->iStrLen] = L'\0';
+    lpwszStr[lptkLocalVars->iStrLen] = WC_EOS;
 
     // If this is a system name (starts with a Quad or Quote-Quad),
     //   convert it to lowercase as those names are
@@ -1132,7 +1132,7 @@ UBOOL fnDirIdent
     lptkLocalVars->iStrLen = 1;
 
     // Ensure properly terminated
-    lpwszStr[lptkLocalVars->iStrLen] = L'\0';
+    lpwszStr[lptkLocalVars->iStrLen] = WC_EOS;
 
     // Lookup in or append to the symbol table
     lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
@@ -2106,13 +2106,13 @@ UBOOL fnComDone
     DbgMsgW (L"fnComDone");
 #endif
 
-    // Get the length of the comment (up to but not including any '\r\n')
+    // Get the length of the comment (up to but not including any WS_CRLF)
     iLen = lptkLocalVars->uActLen - lptkLocalVars->uChar;   // Including the leading comment symbol
 
     // Because the incoming string might be in the middle of the Edit Ctrl buffer
-    //   and thus have embedded \r\n in it, we need to use the smaller of the
-    //   lstrlenW length and the first occurrence of \r or \n.
-    wp = strpbrkW (lptkLocalVars->lpwszCur, L"\r\n");
+    //   and thus have embedded WS_CRLF in it, we need to use the smaller of the
+    //   lstrlenW length and the first occurrence of WC_CR or WC_LF.
+    wp = strpbrkW (lptkLocalVars->lpwszCur, WS_CRLF);
     if (wp)
         iLen = min (iLen, (APLI3264) (wp - lptkLocalVars->lpwszCur));
 
@@ -2132,7 +2132,7 @@ UBOOL fnComDone
         goto NORMAL_EXIT;
     } // End IF
 
-    wp = wcspbrk (&lptkLocalVars->lpwszCur[1], L"\n");
+    wp = wcspbrk (&lptkLocalVars->lpwszCur[1], WS_LF);
     if (wp)
     {
         int iLen2;
@@ -2336,7 +2336,7 @@ UBOOL fnQuoDoneSub
     } // End IF
 
     // Ensure properly terminated
-    lpwszStr[lptkLocalVars->iStrLen] = L'\0';
+    lpwszStr[lptkLocalVars->iStrLen] = WC_EOS;
 
     // The initial FSA action for a string is to store the leading
     //   delimiter, that is a single or double quote, so we can
@@ -3412,12 +3412,12 @@ HGLOBAL Tokenize_EM
          */
 
         if (uChar EQ aplNELM)
-            wchOrig = L'\0';
+            wchOrig = WC_EOS;
         else
             wchOrig = lpwszLine[uChar];
 
         // Check for line continuation char
-        if (wchOrig EQ '\n')
+        if (wchOrig EQ AC_LF)
         {
             TKFLAGS tkFlags = {0};
             APLINT  aplInteger;     // Temporary integer for AppendNewToken_EM
@@ -4241,7 +4241,7 @@ TKCOLINDICES CharTransTK
             return TKCOL_DIGIT;
 
         case L' ':
-        case L'\t':
+        case WC_HT:
             return TKCOL_SPACE;
 
         case UTF16_ALPHA:               // Alt-'a' - alpha
@@ -4472,7 +4472,7 @@ TKCOLINDICES CharTransTK
         case L'$':
         case L'%':
         case L'&':
-        case L'\0':
+        case WC_EOS:
             return TKCOL_UNK;
 
         default:

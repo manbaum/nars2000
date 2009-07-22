@@ -374,7 +374,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         MyGlobalUnlock (hGlbQuadALX_CWS); lpMemChr = NULL;
 
                         // Ensure properly terminated
-                        lpwszGlbTemp[aplNELM] = L'\0';
+                        lpwszGlbTemp[aplNELM] = WC_EOS;
 
                         // Set the text
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_ALX_EC, lpwszGlbTemp);
@@ -392,7 +392,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                          UTF16_OVERBAR,                 // Char to use as overbar
                                          FLTDISPFMT_RAWFLT);            // Float display format
                         // Zap the trailing blank
-                        lpMemChr[-1] = L'\0';
+                        lpMemChr[-1] = WC_EOS;
 
                         // Set the text
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_CT_EC,  lpwszGlbTemp);
@@ -418,7 +418,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         MyGlobalUnlock (hGlbQuadELX_CWS); lpMemChr = NULL;
 
                         // Ensure properly terminated
-                        lpwszGlbTemp[aplNELM] = L'\0';
+                        lpwszGlbTemp[aplNELM] = WC_EOS;
 
                         // Set the text
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_ELX_EC, lpwszGlbTemp);
@@ -444,7 +444,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         MyGlobalUnlock (hGlbQuadFC_CWS); lpMemChr = NULL;
 
                         // Ensure properly terminated
-                        lpwszGlbTemp[aplNELM] = L'\0';
+                        lpwszGlbTemp[aplNELM] = WC_EOS;
 
                         // Set the text
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_FC_EC,  lpwszGlbTemp);
@@ -524,7 +524,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         MyGlobalUnlock (hGlbQuadLX_CWS); lpMemChr = NULL;
 
                         // Ensure properly terminated
-                        lpwszGlbTemp[aplNELM] = L'\0';
+                        lpwszGlbTemp[aplNELM] = WC_EOS;
 
                         // Set the text
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_LX_EC,  lpwszGlbTemp);
@@ -538,7 +538,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                           FormatAplint (lpwszGlbTemp,                   // Ptr to output save area
                                         uQuadMF_CWS);                   // The value to format
                         // Zap the trailing blank
-                        lpaplChar[-1] = L'\0';
+                        lpaplChar[-1] = WC_EOS;
 
                         // Get the window handle for the Monitor Function combo box
                         hWndProp1 = GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB);
@@ -585,7 +585,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                           FormatAplint (lpwszGlbTemp,                   // Ptr to output save area
                                         uQuadRL_CWS);                   // The value to format
                         // Zap the trailing blank
-                        lpaplChar[-1] = L'\0';
+                        lpaplChar[-1] = WC_EOS;
 
                         // Set the text
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_RL_EC,  lpwszGlbTemp);
@@ -1241,7 +1241,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     } // End IF/ELSE
 
                     // Initialize the tooltip text
-                    TooltipText[0] = L'\0';
+                    TooltipText[0] = WC_EOS;
 
                     // Loop through the color names to see if there's a match
                     for (uCnt = 0; uCnt < uColorNames; uCnt++)
@@ -1843,7 +1843,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 LPWCHAR wp;
 
                                 // Ensure empty
-                                wszTemp[0] = L'\0';
+                                wszTemp[0] = WC_EOS;
 
                                 // Save as current ptr
                                 wp = lpwszGlbTemp;
@@ -1857,7 +1857,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                                 // Ensure non-negative and no extra chars
                                 if (fQuadVar >= 0
-                                 && wszTemp[0] EQ L'\0')
+                                 && wszTemp[0] EQ WC_EOS)
                                     break;
                             } // End IF
 

@@ -1462,7 +1462,7 @@ MAKE_VECTOR:
 
         // Save the char as a string
         wsz[0] = aplChar;
-        wsz[1] = L'\0';
+        wsz[1] = WC_EOS;
 
         // Convert the []WSID workspace name into a canonical form
         MakeWorkspaceNameCanonical (lpwszTemp, wsz, lpwszWorkDir);

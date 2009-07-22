@@ -1356,7 +1356,7 @@ WCHAR SymbolNameToChar
     Assert (lpwCharName[0] EQ L'{');
 
     // Check for hex-notation as in {\xXXXX} or {\uXXXXXX}
-    if (lpwCharName[1] EQ L'\\'
+    if (lpwCharName[1] EQ WC_SLOPE
      && (lpwCharName[2] EQ L'x'
       || lpwCharName[2] EQ L'u'))
     {
@@ -1400,9 +1400,9 @@ WCHAR SymbolNameToChar
         // Look up the char
         lpHshEntryDest = HshTabLookupNameHash (lpwCharName, (UINT) (lpwCharEnd - lpwCharName), uHash);
         if (lpHshEntryDest NE LPHSHENTRY_NONE)
-            wcRes =lpHshEntryDest->htFlags.htChar;
+            wcRes = lpHshEntryDest->htFlags.htChar;
         else
-            wcRes =L'\0';
+            wcRes = WC_EOS;
     } // End IF/ELSE
 
     return wcRes;

@@ -269,7 +269,7 @@ UINT SF_LineLenAA
         lpw += lstrlenW (lpw);
 
         // Skip over trailing CR/LFs zapped to zeros
-        while (*lpw EQ L'\0')
+        while (*lpw EQ WC_EOS)
             lpw++;
         // Count out one more line
         uLineNum--;
@@ -375,7 +375,7 @@ void SF_ReadLineM
         *lpMemLine++ = lpMemRht[uRowOff];
 
     // Ensure properly terminated
-    *lpMemLine++ = L'\0';
+    *lpMemLine++ = WC_EOS;
 
     // We no longer need this ptr
     MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemRht = NULL;
@@ -413,7 +413,7 @@ void SF_ReadLineN
         case PTRTYPE_STCONST:
             // Copy the single char to the result
             *lpMemLine++ = ((LPSYMENTRY*) lpMemRht)[uLineNum]->stData.stChar;
-            *lpMemLine++ = L'\0';
+            *lpMemLine++ = WC_EOS;
 
             break;
 
@@ -470,7 +470,7 @@ void SF_ReadLineSV
     {
         // Copy the simple char to the result
         *lpMemLine++ = (APLCHAR) lpFX_Params->aplLongestRht;
-        *lpMemLine++ = L'\0';
+        *lpMemLine++ = WC_EOS;
     } else
     {
         // Lock the memory to get a ptr to it
@@ -481,7 +481,7 @@ void SF_ReadLineSV
 
         // Copy the simple char to the result
         *lpMemLine++ = lpMemRht[uLineNum];
-        *lpMemLine++ = L'\0';
+        *lpMemLine++ = WC_EOS;
 
         // We no longer need this ptr
         MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemRht = NULL;
@@ -537,7 +537,7 @@ void SF_ReadLineAA
         lpw += lstrlenW (lpw);
 
         // Skip over trailing CR/LFs zapped to zeros
-        while (*lpw EQ L'\0')
+        while (*lpw EQ WC_EOS)
             lpw++;
         // Count out one more line
         uLineNum--;
@@ -946,31 +946,31 @@ HGLOBAL SF_UndoBufferLW
                     //   and so don't need to check for zero result
                     lpMemUndoBin->Char = SymbolNameToChar (lpMemUndoTxt);
                 } else
-                if (lpMemUndoBin->Char EQ L'\\')
+                if (lpMemUndoBin->Char EQ WC_SLOPE)
                 {
                     // Skip over the slope char
-                    lpMemUndoTxt = SkipPastCharW (lpMemUndoTxt, L'\\');
+                    lpMemUndoTxt = SkipPastCharW (lpMemUndoTxt, WC_SLOPE);
 
                     // Split cases based upon the next char
                     switch (*lpMemUndoTxt)
                     {
                         case L'n':
-                            lpMemUndoBin->Char = L'\n';
+                            lpMemUndoBin->Char = WC_LF;
 
                             break;
 
                         case L'r':
-                            lpMemUndoBin->Char = L'\r';
+                            lpMemUndoBin->Char = WC_CR;
 
                             break;
 
-                        case L'\'':
-                            lpMemUndoBin->Char = L'\'';
+                        case WC_SQ:
+                            lpMemUndoBin->Char = WC_SQ;
 
                             break;
 
-                        case L'\\':
-                            lpMemUndoBin->Char = L'\\';
+                        case WC_SLOPE:
+                            lpMemUndoBin->Char = WC_SLOPE;
 
                             break;
 

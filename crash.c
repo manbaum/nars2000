@@ -228,8 +228,8 @@ LRESULT WINAPI LclCCListboxWndProc
                     // Loop through the selected items and calculate
                     //   the storage requirement for the collection
                     for (iTotalBytes = i = 0; i < iSelCnt; i++)
-                        // The "2 +" is for the '\r' and '\n' at the end of each line
-                        iTotalBytes += sizeof (WCHAR) * (2 + (UINT) SendMessageW (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
+                        // The "EOL_LEN +" is for the AC_CR and AC_LF at the end of each line
+                        iTotalBytes += sizeof (WCHAR) * (EOL_LEN + (UINT) SendMessageW (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
 
                     // Allocate storage for the entire collection
                     hGlbSel = GlobalAlloc (GHND | GMEM_DDESHARE, iTotalBytes);
@@ -241,8 +241,8 @@ LRESULT WINAPI LclCCListboxWndProc
                     for (p = lpSel, i = 0; i < iSelCnt; i++)
                     {
                         p += (UINT) SendMessageW (hWnd, LB_GETTEXT, lpInd[i], (LPARAM) p);
-                        *p++ = '\r';
-                        *p++ = '\n';
+                        *p++ = AC_CR;
+                        *p++ = AC_LF;
                     } // End FOR
 
                     // We no longer need this ptr

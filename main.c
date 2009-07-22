@@ -262,7 +262,7 @@ void SetStatusIns
     (UBOOL bInsKey)             // TRUE iff the Ins key is ON
 
 {
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_INS, (LPARAM) (bInsKey ? L"\tINS" : L"\tOVR"));
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_INS, (LPARAM) (bInsKey ? WS_HT L"INS" : WS_HT L"OVR"));
 } // End SetStatusIns
 
 
@@ -276,7 +276,7 @@ void SetStatusCaps
     (UBOOL bCapsKey)            // TRUE iff the CapsLock key is ON
 
 {
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_CAPS, (LPARAM) (bCapsKey ? L"\tCAPS" : L""));
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_CAPS, (LPARAM) (bCapsKey ? WS_HT L"CAPS" : L""));
 } // End SetStatusCaps
 
 
@@ -290,7 +290,7 @@ void SetStatusNum
     (UBOOL bNumKey)             // TRUE iff the NumLock key is ON
 
 {
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_NUM, (LPARAM) (bNumKey ? L"\tNUM" : L""));
+    SendMessageW (hWndStatus, SB_SETTEXTW, SP_NUM, (LPARAM) (bNumKey ? WS_HT L"NUM" : L""));
 } // End SetStatusNum
 
 
@@ -1371,7 +1371,7 @@ LRESULT APIENTRY MFWndProc
             if (!CreateNewTab (hWnd,
                                wszLoadFile,
                                TabCtrl_GetItemCount (hWndTC),
-                               wszLoadFile[0] NE L'\0'))
+                               wszLoadFile[0] NE WC_EOS))
                 return -1;          // Stop the whole process
 
             // *************** Fonts ***********************************
@@ -2484,7 +2484,7 @@ void CheckForUpdates
             UPDATESDLGSTR updatesDlgStr;
 
             // Ensure properly terminated
-            szTemp[uNumBytes] = L'\0';
+            szTemp[uNumBytes] = WC_EOS;
 
             // Convert the file contents to wide so we can compare it against the file version
             A2W (wszTemp, szTemp, sizeof (szTemp) - uNumBytes);
@@ -2891,7 +2891,7 @@ UBOOL InitInstance
 
             // Get the Windows directory (parent of the Fonts folder)
             GetWindowsDirectoryW (wszTemp, countof (wszTemp));
-            lstrcatW (wszTemp, L"\\Fonts\\" DEF_APLFONT_FILE);
+            lstrcatW (wszTemp, WS_SLOPE L"Fonts" WS_SLOPE DEF_APLFONT_FILE);
 
             // Copy the file to the Fonts folder without Overwrite
             if (!CopyFileW (wszFntDPFE, wszTemp, TRUE))

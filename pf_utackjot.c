@@ -235,7 +235,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
 
     // Save the char in the line
     lpwszCompLine[0] = (APLCHAR) aplLongest;
-    lpwszCompLine[1] = L'\0';
+    lpwszCompLine[1] = WC_EOS;
 
     return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE, lptkFunc);
 
@@ -295,7 +295,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     // Copy the chars into the line
     Assert (aplNELMRht EQ (APLU3264) aplNELMRht);
     CopyMemoryW (lpwszCompLine, lpMemRht, (APLU3264) aplNELMRht);
-    lpwszCompLine[aplNELMRht] = L'\0';
+    lpwszCompLine[aplNELMRht] = WC_EOS;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;

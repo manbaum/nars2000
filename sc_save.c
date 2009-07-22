@@ -79,7 +79,7 @@ UBOOL CmdSave_EM
 
     // Zap it in case there are trailing blanks
     if (*lpw)
-        *lpw = L'\0';
+        *lpw = WC_EOS;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
@@ -104,7 +104,7 @@ UBOOL CmdSave_EM
     //   we must copy the data to a temporary location and then
     //   append a zero terminator
     lstrcpynW (wszTempDPFE, lpMemSaveWSID, (UINT) aplNELMWSID + 1);
-////wszTempDPFE[aplNELMWSID] = L'\0';   // Already done via "+ 1" in lstrcpynW
+////wszTempDPFE[aplNELMWSID] = WC_EOS;  // Already done via "+ 1" in lstrcpynW
 
     // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
     MakeWorkspaceNameCanonical (wszWsidDPFE, wszTempDPFE, lpwszWorkDir);
@@ -349,7 +349,7 @@ UBOOL CmdSave_EM
                             if (IsImmChr (stFlags.ImmType))
                             {
                                 // Append a leading single quote
-                                *lpaplChar++ = L'\'';
+                                *lpaplChar++ = WC_SQ;
 
                                 // Format the text as an ASCII string with non-ASCII chars
                                 //   represented as either {symbol} or {\xXXXX} where XXXX is
@@ -359,10 +359,10 @@ UBOOL CmdSave_EM
                                                           &lpSymEntry->stData.stChar,   // Ptr to incoming chars
                                                            1);                          // # chars to convert
                                 // Append a trailing single quote
-                                *lpaplChar++ = L'\'';
+                                *lpaplChar++ = WC_SQ;
 
                                 // Ensure properly terminated
-                                *lpaplChar = L'\0';
+                                *lpaplChar = WC_EOS;
                             } else
                             {
                                 // Format the value
@@ -377,9 +377,9 @@ UBOOL CmdSave_EM
                                 // Delete the last blank in case it matters,
                                 //   and ensure properly terminated
                                 if (lpaplChar[-1] EQ L' ')
-                                    *--lpaplChar = L'\0';
+                                    *--lpaplChar = WC_EOS;
                                 else
-                                    *lpaplChar = L'\0';
+                                    *lpaplChar = WC_EOS;
                             } // End IF/ELSE
                         } else
                             // Convert the variable in global memory to saved ws form
@@ -547,7 +547,7 @@ UBOOL CmdSave_EM
 
     // Omit the trailing WS_WKSEXT
     Assert (lpMemSaveWSID[iCmp] EQ L'.');
-    lpMemSaveWSID[iCmp] = L'\0';
+    lpMemSaveWSID[iCmp] = WC_EOS;
 
     // Copy the (possibly shortened WSID)
     lstrcpyW (lpwszTemp, ShortenWSID (lpMemSaveWSID));
@@ -790,7 +790,7 @@ LPAPLCHAR SavedWsFormGlbFcn
                             &SavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to {{nnn}} (may be NULL)
                             &SavedWsGlbVarParm);    // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
             // Ensure properly terminated
-            *lpaplChar++ = L'\0';
+            *lpaplChar++ = WC_EOS;
 
             // Save as new start of buffer
             lpaplCharStart2 = lpaplChar;
@@ -803,7 +803,7 @@ LPAPLCHAR SavedWsFormGlbFcn
                                        lpaplCharStart,              // Ptr to incoming chars
                                        lstrlenW (lpaplCharStart));  // # chars to convert
             // Ensure properly terminated
-            *lpaplChar++ = L'\0';
+            *lpaplChar++ = WC_EOS;
 
             // Copy creation time
             ftCreation = ((LPFCNARRAY_HEADER) lpMemObj)->ftCreation;
@@ -885,7 +885,7 @@ LPAPLCHAR SavedWsFormGlbFcn
                 WCHAR      wcTmp[2];                // Temporary char string
 
                 // Ensure properly terminated
-                wcTmp[1] = L'\0';
+                wcTmp[1] = WC_EOS;
 
                 // Get the # entries
                 uUndoCount = (MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff)) / sizeof (UNDO_BUF);
@@ -908,28 +908,28 @@ LPAPLCHAR SavedWsFormGlbFcn
                     // Split cases based upon the undo char
                     switch (lpMemUndo->Char)
                     {
-                        case L'\0':
+                        case WC_EOS:
                             lpUndoChar = L"";
 
                             break;
 
-                        case L'\n':
-                            lpUndoChar = L"\\n";
+                        case WC_LF:
+                            lpUndoChar = WS_SLOPE L"n";
 
                             break;
 
-                        case L'\r':
-                            lpUndoChar = L"\\r";
+                        case WC_CR:
+                            lpUndoChar = WS_SLOPE L"r";
 
                             break;
 
-                        case L'\'':
-                            lpUndoChar = L"\\'";
+                        case WC_SQ:
+                            lpUndoChar = WS_SLOPE WS_SQ;
 
                             break;
 
-                        case L'\\':
-                            lpUndoChar = L"\\";
+                        case WC_SLOPE:
+                            lpUndoChar = WS_SLOPE;
 
                             break;
 
@@ -948,8 +948,8 @@ LPAPLCHAR SavedWsFormGlbFcn
                     // Format this element of the Undo Buffer
                     lpUndoOut +=
                       wsprintfW (lpUndoOut,
-                                 (*lpUndoChar EQ L'\0') ? L"%c %d %d %d, "
-                                                        : L"%c %d %d %d '%s', ",
+                                 (*lpUndoChar EQ WC_EOS) ? L"%c %d %d %d, "
+                                                         : L"%c %d %d %d '%s', ",
                                  UndoActToChar[lpMemUndo->Action],
                                  lpMemUndo->CharPosBeg,
                                  lpMemUndo->CharPosEnd,
@@ -962,9 +962,9 @@ LPAPLCHAR SavedWsFormGlbFcn
 
                 // Ensure properly terminated (zap the trailing comma)
                 if (lpUndoOut[-2] EQ L',')
-                    lpUndoOut[-2] = L'\0';
+                    lpUndoOut[-2] = WC_EOS;
                 else
-                    lpUndoOut[ 0] = L'\0';
+                    lpUndoOut[ 0] = WC_EOS;
             } else
                 // Ensure properly terminated
                 lstrcpyW (lpUndoIni, L"0");
@@ -1022,7 +1022,7 @@ LPAPLCHAR SavedWsFormGlbFcn
                 MyGlobalUnlock (lpMemDfnHdr->hGlbMonInfo); lpMemMonInfo = NULL;
 
                 // Ensure properly terminated and zap the trailing blank
-                lpaplCharMon[-1] = L'\0';
+                lpaplCharMon[-1] = WC_EOS;
 
                 // Write out the Monitor Info
                 WritePrivateProfileStringW (lpwszSectName,          // Ptr to the section name
@@ -1287,7 +1287,7 @@ LPAPLCHAR SavedWsFormGlbVar
 
         case ARRAY_CHAR:
             // Append a leading single quote
-            *lpaplChar++ = L'\'';
+            *lpaplChar++ = WC_SQ;
 
             // Loop through the array elements
             for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLCHAR) lpMemObj)++)
@@ -1299,7 +1299,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                            (LPAPLCHAR) lpMemObj,// Ptr to incoming chars
                                            1);                  // # chars to convert
             // Append a trailing single quote
-            *lpaplChar++ = L'\'';
+            *lpaplChar++ = WC_SQ;
 
             break;
 
@@ -1355,7 +1355,7 @@ LPAPLCHAR SavedWsFormGlbVar
 
                     case IMMTYPE_CHAR:
                         // Append a leading single quote
-                        *lpaplChar++ = L'\'';
+                        *lpaplChar++ = WC_SQ;
 
                         // Format the text as an ASCII string with non-ASCII chars
                         //   represented as either {symbol} or {\xXXXX} where XXXX is
@@ -1365,7 +1365,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                                   &(*(LPAPLHETERO) lpMemObj)->stData.stChar,// Ptr to incoming chars
                                                    1);                                      // # chars to convert
                         // Append a trailing single quote
-                        *lpaplChar++ = L'\'';
+                        *lpaplChar++ = WC_SQ;
 
                         // Append a trailing blank
                         *lpaplChar++ = L' ';
@@ -1445,7 +1445,7 @@ LPAPLCHAR SavedWsFormGlbVar
                             wcChar = lpSymEntry->stData.stChar;
 
                             // Get appropriate surrounding quote mark
-                            wcQuote = "\'\""[wcChar EQ L'\''];
+                            wcQuote = (WS_SQ WS_DQ)[wcChar EQ WC_SQ];
 
                             // Start with an initial quote mark
                             *lpaplChar++ = wcQuote;
@@ -1505,7 +1505,7 @@ LPAPLCHAR SavedWsFormGlbVar
                         if (lpaplChar[-1] NE L' ')
                         {
                             *lpaplChar++ = L' ';
-                            *lpaplChar   = L'\0';
+                            *lpaplChar   = WC_EOS;
                         } // End IF
 #undef  hGlbSub
                     } // End IF/ELSE
@@ -1526,9 +1526,9 @@ LPAPLCHAR SavedWsFormGlbVar
     // Delete the last blank in case it matters,
     //   and ensure properly terminated
     if (lpaplChar[-1] EQ L' ')
-        *--lpaplChar = L'\0';
+        *--lpaplChar = WC_EOS;
     else
-        *lpaplChar = L'\0';
+        *lpaplChar = WC_EOS;
 
     // Format the global count
     wsprintfW (wszGlbCnt,

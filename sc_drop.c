@@ -51,7 +51,7 @@ UBOOL CmdDrop_EM
     lpw = SkipToCharW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
-    *lpw = L'\0';
+    *lpw = WC_EOS;
 
     // If there is a specified WS Name, ...
     if (*lpwszTail)

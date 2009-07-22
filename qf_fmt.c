@@ -1684,7 +1684,7 @@ void QFMT_CommonG
                          UTF16_OVERBAR,                 // Char to use as overbar
                          FLTDISPFMT_RAWINT);            // Float display format
     // Ensure properly terminated
-    *--lpaplChar = L'\0';
+    *--lpaplChar = WC_EOS;
 
     // Calculate length of and ptr to negative text to prepend (M-modifier)
     if (lpfsNxt->bM && aplFltItm < 0)
@@ -1974,7 +1974,7 @@ void QFMT_CommonEFI
                 *lpwEnd++ = L' ';
 
             // Ensure properly terminated
-            *--lpwEnd = L'\0';
+            *--lpwEnd = WC_EOS;
 
             break;
         } // End FMTSPECVAL_E
@@ -1988,7 +1988,7 @@ void QFMT_CommonEFI
                              UTF16_OVERBAR,             // Char to use as overbar
                              FLTDISPFMT_F);             // Float display format
             // Ensure properly terminated
-            *--lpwEnd = L'\0';
+            *--lpwEnd = WC_EOS;
 
             // Get ptr to decimal point
             lpwSrc = strchrW (lpwszFormat, UTF16_DOT);
@@ -2003,7 +2003,7 @@ void QFMT_CommonEFI
                 *lpwEnd++ = UTF16_DOT;
 
                 // Ensure properly terminated
-                *lpwEnd = L'\0';
+                *lpwEnd = WC_EOS;
             } // End IF
 
             // Skip over the decimal point
@@ -2020,7 +2020,7 @@ void QFMT_CommonEFI
                 *lpwEnd++ = L'0';
 
             // Ensure properly terminated
-            *lpwEnd = L'\0';
+            *lpwEnd = WC_EOS;
 
             break;
 
@@ -2039,7 +2039,7 @@ void QFMT_CommonEFI
                                  UTF16_OVERBAR,         // Char to use as overbar
                                  FLTDISPFMT_RAWINT);    // Float display format
             // Ensure properly terminated
-            *--lpaplChar = L'\0';
+            *--lpaplChar = WC_EOS;
 
             break;
 
@@ -2156,7 +2156,7 @@ void QFMT_CommonEFI
 
             break;
 
-        case L'\0':
+        case WC_EOS:
             bContinue = FALSE;
 
             break;
@@ -2206,7 +2206,7 @@ void QFMT_CommonEFI
             for (; iWid < fsWid; iWid++)
                 lpwszFormat[iWid] = L' ';
             // Ensure properly terminated
-            lpwszFormat[iWid] = L'\0';
+            lpwszFormat[iWid] = WC_EOS;
 
             // iWid is the new formatted item length
         } // End IF
@@ -2308,7 +2308,7 @@ void QFMT_ThousandsSep
     uSep1 = uSep2 = ((uLen1 - uDec) - 1) / 3;
 
     // Ensure properly terminated
-    lpwszFormat[bNeg + uLen1 + uSep1] = L'\0';
+    lpwszFormat[bNeg + uLen1 + uSep1] = WC_EOS;
 
     // Loop through the separators
     for (; uSep1; uLen1 -= 3, uSep1--)

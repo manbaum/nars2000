@@ -53,6 +53,7 @@ extern int gDbgLvl;
 #endif
 
 #include "main.h"
+#include "defines.h"
 #include "editctrl.h"
 #include "resource.h"
 

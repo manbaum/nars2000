@@ -92,7 +92,7 @@ void FormatHTE
      UINT       i)
 
 {
-    WCHAR wszFlags[128] = {L'\0'};
+    WCHAR wszFlags[128] = {WC_EOS};
     UINT  htFlags,
           j;
 
@@ -135,8 +135,8 @@ void FormatHTE
     //   set the second byte to zero as well as
     //   when we do find flags, we skip over the
     //   leading blank.
-    if (wszFlags[0] EQ L'\0')
-        wszFlags[1] =  L'\0';
+    if (wszFlags[0] EQ WC_EOS)
+        wszFlags[1] =  WC_EOS;
 
     if (lpHshEntry->htFlags.Inuse
      && lpHshEntry->htSymEntry)
@@ -254,7 +254,7 @@ void FormatSTE
      LPWCHAR    wszTemp)                // Ptr to output save area
 
 {
-    WCHAR   wszFlags[128] = {L'\0'};
+    WCHAR   wszFlags[128] = {WC_EOS};
     STFLAGS stFlags;
     LPWCHAR lpwGlbName;
     int     j;                  // Loop counter
@@ -317,8 +317,8 @@ void FormatSTE
     //   set the second WCHAR to zero as well --
     //   when we do find flags, we skip over the
     //   leading blank.
-    if (wszFlags[0] EQ L'\0')
-        wszFlags[1] =  L'\0';
+    if (wszFlags[0] EQ WC_EOS)
+        wszFlags[1] =  WC_EOS;
 
     if (lpSymEntry->stFlags.Inuse)
     {
@@ -486,7 +486,7 @@ void DisplayGlobals
                         if (IsEmpty (lpHeader->NELM))
                         {
                             aplArrChar[0] = UTF16_ZILDE;
-                            aplArrChar[1] = L'\0';
+                            aplArrChar[1] = WC_EOS;
                         } else
                         {
                             lpwsz =
@@ -494,20 +494,20 @@ void DisplayGlobals
                                            TranslateArrayTypeToImmType (lpHeader->ArrType),
                                            (LPAPLLONGEST) lpData);
                             // Delete the trailing blank
-                            lpwsz[-1] = L'\0';
+                            lpwsz[-1] = WC_EOS;
                         } // End IF/ELSE
 
                         break;
 
                     case ARRAY_HETERO:
                     case ARRAY_NESTED:
-                        aplArrChar[0] = L'\0';
+                        aplArrChar[0] = WC_EOS;
 
                         break;
 
                     case ARRAY_CHAR:
                         lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (MAX_VAL_LEN, lpHeader->NELM));
-                        aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = L'\0';
+                        aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = WC_EOS;
 
                         break;
 
@@ -590,7 +590,7 @@ void DisplayGlobals
             {
                 // Copy the name to local storage
                 lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
-                aplArrChar[min (MAX_VAL_LEN, uNameLen)] = L'\0';
+                aplArrChar[min (MAX_VAL_LEN, uNameLen)] = WC_EOS;
 
                 wsprintfW (wszTemp,
                            L"hGlb=%p DType=%c  NELM=%3d RC=%1d%c                Lck=%d (%S#%4d) (%s)",
@@ -943,7 +943,7 @@ void DisplayFcnStrand
     } // End SWITCH
 
     // Ensure properly terminated
-    *lpaplChar = L'\0';
+    *lpaplChar = WC_EOS;
 
     if (bDispHdr)
         // Display the line in the debugging window
@@ -1019,7 +1019,7 @@ LPWCHAR DisplayFcnGlb
         lpaplChar[-1] = L')';
 
         // Ensure properly terminated
-        *lpaplChar = L'\0';
+        *lpaplChar = WC_EOS;
     } else
         lpaplChar =
           DisplayFcnSub (lpaplChar,             // Ptr to output save area
@@ -1288,7 +1288,7 @@ LPWCHAR DisplayFcnSub
             } // End IF
 
             if (lpaplChar[-1] EQ L' ')
-                *--lpaplChar = L'\0';   // Overwrite the trailing blank
+                *--lpaplChar = WC_EOS;  // Overwrite the trailing blank
             break;
 
         case TKT_FCNARRAY:
@@ -1371,7 +1371,7 @@ LPWCHAR DisplayFcnSub
                                lpYYMem->tkToken.tkData.tkSym,       // Ptr to function symbol table entry
                                NULL);                               // Ptr to name length (may be NULL)
             if (lpaplChar[-1] EQ L' ')
-                *--lpaplChar = L'\0';   // Overwrite the trailing blank
+                *--lpaplChar = WC_EOS;  // Overwrite the trailing blank
             break;
 
         case TKT_OP1NAMED:          // At the moment, named operators are all one char
@@ -1382,7 +1382,7 @@ LPWCHAR DisplayFcnSub
     } // End SWITCH
 
     // Ensure properly terminated
-    *lpaplChar = L'\0';
+    *lpaplChar = WC_EOS;
 
     return lpaplChar;
 } // End DisplayFcnSub
@@ -1647,36 +1647,36 @@ void DisplayUndo
     lpwsz = MyGlobalLock (hGlbEC);
 
 #define VIS_CR  L'\xAE'
-#define VIS_NL  L'\xA9'
+#define VIS_LF  L'\xA9'
 #define VIS_HT  L'\xBB'
 
-    // Replace L'\r' with a visible char
-    while (p = strchrW (lpwsz, L'\r'))
+    // Replace CR with a visible char
+    while (p = strchrW (lpwsz, WC_CR))
         *p = VIS_CR;
 
-    // Replace L'\n' with a visible char
-    while (p = strchrW (lpwsz, L'\n'))
-        *p = VIS_NL;
+    // Replace LF with a visible char
+    while (p = strchrW (lpwsz, WC_LF))
+        *p = VIS_LF;
 
-    // Replace L'\t' with a visible char
-    while (p = strchrW (lpwsz, L'\t'))
+    // Replace HT with a visible char
+    while (p = strchrW (lpwsz, WC_HT))
         *p = VIS_HT;
 
     // Display it
     dprintfWL9 (L"Text = <%s>",
               lpwsz);
 
-    // Restore L'\t'
+    // Restore HT
     while (p = strchrW (lpwsz, VIS_HT))
-        *p = L'\t';
+        *p = WC_HT;
 
-    // Restore L'\n'
-    while (p = strchrW (lpwsz, VIS_NL))
-        *p = L'\n';
+    // Restore LF
+    while (p = strchrW (lpwsz, VIS_LF))
+        *p = WC_LF;
 
-    // Restore L'\r'
+    // Restore CR
     while (p = strchrW (lpwsz, VIS_CR))
-        *p = L'\r';
+        *p = WC_CR;
 
     if (bShift)
         DbgBrk ();

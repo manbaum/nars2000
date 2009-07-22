@@ -54,19 +54,19 @@ UBOOL CmdLib_EM
     lpw = SkipToCharW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
-    *lpw = L'\0';
+    *lpw = WC_EOS;
 
     // If there's a command line tail, use it
-    if (lpwszTail[0] NE L'\0')
+    if (lpwszTail[0] NE WC_EOS)
     {
         lstrcpyW (lpwszTemp, lpwszTail);
 
         // Ensure there's a trailing backslash
         uExtLen = lstrlenW (lpwszTemp);
-        if (lpwszTemp[uExtLen - 1] NE L'\\')
+        if (lpwszTemp[uExtLen - 1] NE WC_SLOPE)
         {
-            lpwszTemp[uExtLen + 0] = L'\\';
-            lpwszTemp[uExtLen + 1] = L'\0';
+            lpwszTemp[uExtLen + 0] = WC_SLOPE;
+            lpwszTemp[uExtLen + 1] = WC_EOS;
         } // End IF
     } else
         lstrcpyW (lpwszTemp, lpwszWorkDir);
@@ -87,7 +87,7 @@ UBOOL CmdLib_EM
     if (hFind NE INVALID_HANDLE_VALUE)
     {
         // Delete the workspace extension
-        FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = L'\0';
+        FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = WC_EOS;
 
         // Display the workspace name
         AppendLine (FindData.cFileName, FALSE, TRUE);
@@ -96,7 +96,7 @@ UBOOL CmdLib_EM
         while (FindNextFileW (hFind, &FindData))
         {
             // Delete the workspace extension
-            FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = L'\0';
+            FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = WC_EOS;
 
             // Display the workspace name
             AppendLine (FindData.cFileName, FALSE, TRUE);

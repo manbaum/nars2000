@@ -198,7 +198,7 @@ UBOOL IsWhiteW
     (WCHAR wc)
 
 {
-    return (wc EQ L' ' || wc EQ L'\t') ? TRUE : FALSE;
+    return (wc EQ L' ' || wc EQ WC_HT) ? TRUE : FALSE;
 } // End IsWhiteW
 
 

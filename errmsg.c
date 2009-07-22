@@ -249,11 +249,11 @@ void ErrorMessageDirect
 
     // Calculate the length of the []DM vector
     aplNELMRes = uErrMsgLen
-               + lstrlenW (L"\r\n")
+               + EOL_LEN
                + uNameLen
                + uErrLinLen
                + ((uCaret EQ NEG1U) ? 0
-                                    : lstrlenW (L"\r\n")
+                                    : EOL_LEN
                                     + uCaretLen + 1);
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
@@ -296,7 +296,7 @@ void ErrorMessageDirect
     lpMemRes += uErrMsgLen;
 
     // Copy a line terminator to the result
-    *lpMemRes++ = L'\r'; *lpMemRes++ = L'\n';
+    *lpMemRes++ = WC_CR; *lpMemRes++ = WC_LF;
 
     // Copy the function name[line #] to the result
     CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
@@ -312,7 +312,7 @@ void ErrorMessageDirect
         UINT uLen;  // Length
 
         // Close the last line
-        *lpMemRes++ = L'\r'; *lpMemRes++ = L'\n';
+        *lpMemRes++ = WC_CR; *lpMemRes++ = WC_LF;
 
         // Get the # leading blanks
         uLen = uCaret + uNameLen;
@@ -320,7 +320,7 @@ void ErrorMessageDirect
         // Append the caret
         lpMemRes = FillMemoryW (lpMemRes, uLen, L' ');
        *lpMemRes++ = ERROR_CARET;
-///////*lpMemRes++ = L'\0';                 // Already zero from (GHND)
+///////*lpMemRes++ = WC_EOS;                // Already zero from (GHND)
     } // End IF
 
     // We no longer need this ptr

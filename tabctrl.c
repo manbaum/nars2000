@@ -1433,7 +1433,7 @@ LPAPLCHAR PointToWsName
 
                 // Skip over the path
                 q = lpMemWSID;
-                while (p = strchrW (q, L'\\'))
+                while (p = strchrW (q, WC_SLOPE))
                     q = p + 1;
 
                 // Copy to global temporary storage

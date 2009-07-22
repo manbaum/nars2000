@@ -1,0 +1,110 @@
+Version 0.0.2.2 consists of the following Builds:
+
+
+
+Build #499-- Version 0.0.2.2
+----------------------------
+
+* Implement )OFF as a synonym for )EXIT
+
+Directory trunk:
+
+SYSCMDS.C:
+  Implement )OFF as a synonym for )EXIT.
+
+
+Build #498-- Version 0.0.2.2
+----------------------------
+
+* Fix Bugs when printing.
+
+
+Directory trunk:
+
+EDITFCN.C:
+  Fix Bug:  When printing the screen, the average character
+    width is calculated based upon the screen font, not the
+    printer font.
+  Fix Bug:  When printing the screen and syntax coloring, a
+    screen DC is used to display the chars rather than the
+    incoming printer DC.
+
+
+Build #497-- Version 0.0.2.2
+----------------------------
+
+* Define a new Syntax Coloring preference "Enable Coloring
+    When Printing".
+
+
+Directory trunk:
+
+CUSTOMIZE.C:
+  When sending a <WM_SETFONT> message, use the <MAKELPARAM>
+    macro for the <fRedraw> parameter.
+  Define a new Syntax Coloring preference "Enable Coloring
+    When Printing".
+  Fix Bug:  When restoring the default Syntax Coloring settings,
+    restore the checkboxes, too.
+
+DEFINES.H:
+  Define a new Syntax Coloring preference "Enable Coloring
+    When Printing".
+
+EXTERNS.H:
+  Remove unneeded bit struc member <Avail>.
+  Define a new Syntax Coloring preference "Enable Coloring
+    When Printing".
+
+INIFILE.C:
+  Define a new Syntax Coloring preference "Enable Coloring
+    When Printing".
+  Fix Bug:  Due to a gap in the #defines for <IDC_FONTS_RADIOxx>
+    a value in <glbSameFontAs> can be out-of-range.
+
+MAIN.C:
+  Whitespace only changes.
+
+MAIN.RC:
+  Define a new Syntax Coloring preference "Enable Coloring
+    When Printing".
+  Lengthen the GroupBox and each Property Page so as to make
+    room for another Syntax Coloring preference.
+
+RESOURCE.H:
+  Fix Bug:  Due to a gap in the #defines for <IDC_FONTS_RADIOxx>
+    a value in <glbSameFontAs> can be out-of-range.
+  Define a new Syntax Coloring preference "Enable Coloring
+    When Printing".
+
+
+Build #496-- Version 0.0.2.2
+----------------------------
+
+* Minor changes to EDITCTRL.C.
+
+
+Directory trunk:
+
+VERSION.RC:
+  Increase version # to 0.0.2.2.
+
+
+Directory trunk\WineHQ:
+
+EDITCTRL.C:
+  Use common inline macro <get_vertical_line_count>.
+  Delete unused DEBUG stmt.
+
+
+Build #495-- Version 0.0.2.2
+----------------------------
+
+* Fix Bug when centering a window.
+
+
+Directory trunk:
+
+COMMON.C:
+  Fix Bug:  Centering a window can position it such
+    that the title bar is off screen.

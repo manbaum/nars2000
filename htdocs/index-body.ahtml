@@ -208,6 +208,7 @@ Welcome to NARS2000</h1>
             <li><span class="APL">)IN</span></li>
             <li><span class="APL">)INASCII</span></li>
             <li><span class="APL">)NEWTAB</span></li>
+            <li><span class="APL">)OFF</span></li>
             <li><span class="APL">)OUT</span></li>
             <li><span class="APL">)RESET</span></li>
           </ul>
@@ -397,11 +398,13 @@ Welcome to NARS2000</h1>
 <div class="section">
   <h2 id="Documentation">Documentation</h2>
 
-  <p>As with many free software projects, the documentation for
+  <p>As with many open source software projects, the documentation for
     this project is managed by a Wiki.  To see the current
-    effort, goto
-    <a class="linkleft" href="http://wiki.nars2000.org">the Wiki
-    page</a>.</p>
+    effort, goto the
+    <a class="linkleft" href="http://wiki.nars2000.org">NARS2000 Wiki</a>.
+    For information about other APL interpeters and APL in general,
+    see the <a class="linkleft" href="http://aplwiki.com">APL Wiki</a>
+    where, among other things, you'll find an excellent APL tutorial.</p>
 
 </div>
 

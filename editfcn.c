@@ -3681,6 +3681,8 @@ void PasteAPLChars_EM
             GlobalUnlock (hGlbClip); lpMemClip = NULL;
         } else
         {
+            APLU3264 uLen;
+
             // Allocate space for the new object
             // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
             //   because after we pass this handle to the clipboard
@@ -3707,11 +3709,27 @@ void PasteAPLChars_EM
             // We no longer need this ptr
             GlobalUnlock (hGlbClip); lpMemClip = NULL;
 
-            // Convert dwSize to # elements
-            dwSize /= sizeof (WCHAR);
+            // Get the string length
+            uLen = lstrlenW (lpMemText);
+
+            // If the parent of the Edit Ctrl is SM and the last character
+            //   in the string is CR/LF, delete it so the cursor appears
+            //   on the last line.  The user can then press Enter to
+            //   execute the expression.
+            if (IzitSM (GetParent (hWndEC)))
+            while (uLen
+                && (lpMemText[uLen - 1] EQ WC_LF
+                 || lpMemText[uLen - 1] EQ WC_CR))
+            {
+                // Back off by one character
+                uLen--;
+
+                // Delete the CR/LF
+                lpMemText[uLen] = WC_EOS;
+            } // End IF/WHILE
 
             // Translate the other APL charset to the NARS charset
-            for (uText = 0; uText < dwSize; uText++, lpMemText++)
+            for (uText = 0; uText < uLen; uText++, lpMemText++)
             if (*lpMemText)
             {
                 for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)

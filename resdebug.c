@@ -1175,6 +1175,7 @@ HGLOBAL _MyGlobalFree
 {
     char szTemp[1024];
 
+
     CheckMemStat ();
 
     // GlobalFlags returns the lock count in the low-order byte
@@ -1188,7 +1189,7 @@ HGLOBAL _MyGlobalFree
 
     CheckMemStat ();
 
-    return GlobalFree (hMem); hMem = NULL;
+    return GlobalFree (hMem);
 } // _MyGlobalFree
 
 

@@ -297,6 +297,7 @@
 #define IDC_USER_PREFS_CB_DEFAULTCOPY           1109
 #define IDC_USER_PREFS_XB_CHECKGROUP            1110
 #define IDC_USER_PREFS_XB_INSSTATE              1111
+#define IDC_USER_PREFS_XB_REVDBLCLK             1112
 
 #define IDC_SYNTCLR_LT1                         1400    // 00:  Global Name
 #define IDC_SYNTCLR_LT2                         1401    // 01:  Local  ...

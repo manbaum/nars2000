@@ -1700,8 +1700,8 @@ LRESULT WINAPI LclEditCtrlWndProc
 
 #define ID_TIMER        1729
         case WM_CONTEXTMENU:                // hwnd = (HWND) wParam;
-                                            // xPos = LOSHORT (lParam);
-                                            // yPos = HISHORT (lParam);
+                                            // xPos = LOSHORT (lParam); // horizontal position of cursor in Screen coords
+                                            // yPos = HISHORT (lParam); // vertical   ...
             // Set a timer waiting for WM_RBUTTONDBLCLK or expiration
             SetTimer (hWnd, ID_TIMER, GetDoubleClickTime () / 2, NULL);
 
@@ -1731,7 +1731,65 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
 
+        case WM_LBUTTONDBLCLK:      // fwKeys = wParam;         // key flags
+                                    // xPos = LOSHORT(lParam);  // horizontal position of cursor in CA coords
+                                    // yPos = HISHORT(lParam);  // vertical   ...
+            // If we're reversing left- and right-double-click, ...
+            if (OptionFlags.bRevDblClk)
+            {
+                POINT pt;
+
+                // Save this message's wParam & lParam so we
+                //   can retrieve them in MYWM_RBUTTONDBLCLK.  The values
+                //   in lParam are in client coordinates and must be
+                //   translated to screen coords to be compatible with
+                //   lParam from WM_CONTEXTMENU.
+                pt.x = LOSHORT (lParam);
+                pt.y = HISHORT (lParam);
+                ClientToScreen (hWnd, &pt);
+                SetPropW (hWnd, L"TIMER.WPARAM", (LPVOID) wParam);
+                SetPropW (hWnd, L"TIMER.LPARAM", (LPVOID) MAKELPARAM (pt.x, pt.y));
+
+                return SendMessageW (hWnd, MYWM_RBUTTONDBLCLK, wParam, lParam);
+            } else
+                break;
+
         case WM_RBUTTONDBLCLK:      // fwKeys = wParam;         // key flags
+                                    // xPos = LOSHORT(lParam);  // horizontal position of cursor
+                                    // yPos = HISHORT(lParam);  // vertical position of cursor
+            // It's a right double click, so cancel the timer
+            KillTimer (hWnd, ID_TIMER);
+
+            // If we're reversing left- and right-double-click, ...
+            if (OptionFlags.bRevDblClk)
+            {
+                // Pass on to the Edit Ctrl as a left-button down, double-click, up
+                CallWindowProcW (lpfnOldEditCtrlWndProc,
+                                 hWnd,
+                                 WM_LBUTTONDOWN,
+                                 wParam,
+                                 lParam);     // Pass on down the line
+                CallWindowProcW (lpfnOldEditCtrlWndProc,
+                                 hWnd,
+                                 WM_LBUTTONDBLCLK,
+                                 wParam,
+                                 lParam);     // Pass on down the line
+                CallWindowProcW (lpfnOldEditCtrlWndProc,
+                                 hWnd,
+                                 WM_LBUTTONUP,
+                                 wParam,
+                                 lParam);     // Pass on down the line
+                // In case we get a WM_RBUTTONUP message shortly after this one,
+                //   we need a way to recognize it and discard it so W doesn't
+                //   think to generate another WM_CONTEXTMENU message.
+                SetPropW (hWnd, L"DBLCLK.TICKCOUNT", ULongToHandle (GetTickCount ()));
+
+                return FALSE;
+            } // End IF
+
+            // Fall through to local right-double-click
+
+        case MYWM_RBUTTONDBLCLK:    // fwKeys = wParam;         // key flags
                                     // xPos = LOSHORT(lParam);  // horizontal position of cursor
                                     // yPos = HISHORT(lParam);  // vertical position of cursor
         {
@@ -1742,12 +1800,9 @@ LRESULT WINAPI LclEditCtrlWndProc
             if (lpMemPTD EQ NULL)
                 break;
 
-            // It's a right double click, so cancel the timer
-            KillTimer (hWnd, ID_TIMER);
-
             // Handle a right double click
 
-            // Get the lParam from the original WM_CONTEXTMENU message
+            // Get the lParam from the original WM_CONTEXTMENU/WM_LBUTTONDBLCLK message
             yPos = HandleToULong (GetPropW (hWnd, L"TIMER.LPARAM"));
 
             xPos = (short) LOWORD (yPos);

@@ -765,6 +765,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , OptionFlags.bNoCopyrightMsg     );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_CHECKGROUP         , OptionFlags.bCheckGroup         );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_INSSTATE           , OptionFlags.bInsState           );
+                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_REVDBLCLK          , OptionFlags.bRevDblClk          );
 
                         // ***FIXME*** -- Make these work so we don't have to gray out the choices
                         {
@@ -1670,6 +1671,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         OptionFlags.bNoCopyrightMsg      = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     );
                         OptionFlags.bCheckGroup          = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_CHECKGROUP         );
                         OptionFlags.bInsState            = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_INSSTATE           );
+                        OptionFlags.bRevDblClk           = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_REVDBLCLK          );
 
                         // Get the window handle for the Paste & Copy combo boxes
                         hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);
@@ -2487,6 +2489,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                 case IDC_USER_PREFS_XB_BACKUPONLOAD:
                 case IDC_USER_PREFS_XB_BACKUPONSAVE:
                 case IDC_USER_PREFS_XB_NOCOPYRIGHTMSG:
+                case IDC_USER_PREFS_XB_CHECKGROUP:
+                case IDC_USER_PREFS_XB_INSSTATE:
+                case IDC_USER_PREFS_XB_REVDBLCLK:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)
                         // Enable the Apply button
@@ -2494,12 +2499,6 @@ APLU3264 CALLBACK CustomizeDlgProc
                     return TRUE;    // We handled the msg
 
                 case IDC_USER_PREFS_CB_DEFAULTPASTE:
-                    // We care about CBN_SELCHANGE only
-                    if (CBN_SELCHANGE EQ cmdCtl)
-                        // Enable the Apply button
-                        EnableWindow (hWndApply, TRUE);
-                    return TRUE;    // We handled the msg
-
                 case IDC_USER_PREFS_CB_DEFAULTCOPY:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)

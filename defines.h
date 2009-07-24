@@ -137,6 +137,7 @@
 #define DEF_SYNTCLRPRNT             FALSE
 #define DEF_CHECKGROUP              TRUE
 #define DEF_INSSTATE                TRUE
+#define DEF_REVDBLCLK               FALSE
 #define DEF_VIEWSTATUSBAR           TRUE
 
 
@@ -357,6 +358,7 @@ default:        \
 #define MYWM_RESIZE         (WM_APP +12)    // MF (Resize to display Status Bar)
 #define MYWM_NOTIFY         (WM_APP +13)    // EC (Pass on of WM_NOTIFY from EC)
 #define MYWM_CMPNAME        (WM_APP +14)    // FE (Compare function names)
+#define MYWM_RBUTTONDBLCLK  (WM_APP +15)    // FE/SM (Right-double-click)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB

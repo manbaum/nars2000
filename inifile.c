@@ -81,6 +81,7 @@
 #define KEYNAME_SYNTCLRPRNT             L"SyntClrPrnt"
 #define KEYNAME_CHECKGROUP              L"CheckGroup"
 #define KEYNAME_INSSTATE                L"InsState"
+#define KEYNAME_REVDBLCLK               L"RevDblClk"
 #define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
 
 #define KEYNAME_SC_GLBNAME              L"GlbName"
@@ -390,6 +391,12 @@ void ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_INSSTATE,      // Ptr to the key name
                              DEF_INSSTATE,          // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bRevDblClk
+    OptionFlags.bRevDblClk =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_REVDBLCLK,     // Ptr to the key name
+                             DEF_REVDBLCLK,         // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bViewStatusBar
     OptionFlags.bViewStatusBar =
@@ -1416,6 +1423,16 @@ void SaveIniFile
     // Write out bInsState
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_INSSTATE,           // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+
+    //******************* bRevDblClk **************************
+    wszTemp[0] = L'0' + OptionFlags.bRevDblClk;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bRevDblClk
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_REVDBLCLK,          // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
 

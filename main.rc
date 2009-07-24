@@ -599,12 +599,14 @@ BEGIN
                     IDC_USER_PREFS_XB_CHECKGROUP         , 10,130,200, 10
     AUTOCHECKBOX    "Insert key ON at startup",
                     IDC_USER_PREFS_XB_INSSTATE           , 10,143,200, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,156, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+    AUTOCHECKBOX    "Reverse double-click:  left=edit, right=select",
+                    IDC_USER_PREFS_XB_REVDBLCLK          , 10,156,200, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,169, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC                           ,100,156,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,172, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,169,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,185, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
-                    IDC_STATIC                           ,100,172,160, 10
+                    IDC_STATIC                           ,100,185,160, 10
 END
 
 

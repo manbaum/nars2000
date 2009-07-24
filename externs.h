@@ -1377,6 +1377,8 @@ typedef struct
 //     Alt-'<'
 //     Alt-'>'
 //     Alt-'?'
+//     Alt-':'
+//     Alt-'"'
 //
 //   as well as several duplicated symbols:
 //
@@ -1584,8 +1586,9 @@ typedef struct tagOPTIONFLAGS
          bSyntClrPrnt        :1,    // 00040000:  ...                         sessions  (when printing) ...
          bCheckGroup         :1,    // 00080000:  ...      Check for improperly matched or nested grouping symbols
          bInsState           :1,    // 00100000:  ...      Initial state of Ins key in each WS is ON
-         bViewStatusBar      :1,    // 00200000:  ...      Status Bar is displayed
-                             :10;   // FFC00000:  Available bits
+         bRevDblClk:1,       :1,    // 00200000:  ...      Reverse double-click:  left=edit, right=select
+         bViewStatusBar      :1,    // 00400000:  ...      Status Bar is displayed
+                             :9;    // FF800000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1610,6 +1613,7 @@ OPTIONFLAGS OptionFlags
    DEF_SYNTCLRPRNT,
    DEF_CHECKGROUP,
    DEF_INSSTATE,
+   DEF_REVDBLCLK,
    DEF_VIEWSTATUSBAR,
    }
 #endif

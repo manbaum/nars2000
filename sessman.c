@@ -1367,7 +1367,7 @@ WM_CREATE_FAIL:
 LOAD_WORKSPACE_FAIL:
 NORMAL_EXIT:
             // Free the workspace global
-            MyGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE);
+            MyGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE); (*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE = NULL;
 
             PERFMON
 ////////////PERFMONSHOW

@@ -248,7 +248,6 @@ UBOOL WINAPI CreateNewTabInThread
 {
     int          iCurTabIndex = -1; // Index of the current tab
     TC_ITEMW     tcItem = {0};      // TabCtrl item struc
-    HGLOBAL      hGlbDPFE = NULL;   // Workspace DPFE global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     UBOOL        bRet = FALSE;      // TR$UE iff the result is valid
     RECT         rc;                // Rectangle for setting size of window
@@ -269,11 +268,11 @@ UBOOL WINAPI CreateNewTabInThread
     TlsSetValue (dwTlsType, TLSTYPE_TC);
 
     // Extract values from the arg struc
-    hWndParent = lpcntThread->hWndParent;
-    hGlbDPFE   = lpcntThread->hGlbDPFE;     // Freed in sessman.c/WM_CREATE
-    iTabIndex  = lpcntThread->iTabIndex;
-    bExecLX    = lpcntThread->bExecLX;
-    hThread    = lpcntThread->hThread;
+    hWndParent    = lpcntThread->hWndParent;
+    csSM.hGlbDPFE = lpcntThread->hGlbDPFE;      // Freed in sessman.c/WM_CREATE
+    iTabIndex     = lpcntThread->iTabIndex;
+    bExecLX       = lpcntThread->bExecLX;
+    hThread       = lpcntThread->hThread;
 
     // Get the size and position of the parent window.
     GetClientRect (hWndParent, &rc);
@@ -389,7 +388,6 @@ UBOOL WINAPI CreateNewTabInThread
 #endif
 
     // Fill in the SM WM_CREATE data struct
-    csSM.hGlbDPFE = hGlbDPFE;               // Freed in sessman.c/WM_CREATE
     csSM.bExecLX  = bExecLX;
 
     // Save hWndMC for use inside message loop
@@ -469,7 +467,7 @@ UBOOL WINAPI CreateNewTabInThread
     bRet = TRUE;
 
     // Zap so we don't try to free it
-    hGlbDPFE = NULL;
+    csSM.hGlbDPFE = NULL;
 
     goto NORMAL_EXIT;
 
@@ -494,10 +492,10 @@ NORMAL_EXIT:
         DestroyWindow (lpMemPTD->hWndMC); lpMemPTD->hWndMC = NULL;
     } // End IF
 
-    if (hGlbDPFE)
+    if (csSM.hGlbDPFE)
     {
         // Free the storage for the workspace DPFE global memory
-        MyGlobalFree (hGlbDPFE); hGlbDPFE = NULL;
+        MyGlobalFree (csSM.hGlbDPFE); csSM.hGlbDPFE = NULL;
     } // End IF
 
     if (lpMemPTD)

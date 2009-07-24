@@ -145,7 +145,7 @@ UBOOL LoadWorkspace_EM
      HWND    hWndEC)                    // Edit Ctrl window handle
 
 {
-    LPWCHAR      lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+    LPWCHAR      lpwszDPFE = NULL,      // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                  lpwErrMsg;             // Ptr to (constant) error message text
     FILE        *fStream;               // Ptr to file stream for the plain text workspace file
     UINT         uSymVar,               // Var section counter
@@ -219,7 +219,7 @@ UBOOL LoadWorkspace_EM
                      L"Please try loading the workspace with a later version of the interpreter.",
                      WS_APPNAME,
                      MB_OK | MB_ICONSTOP);
-        return FALSE;
+        goto ERROR_EXIT;
     } // End IF
 
     // Get the SI Level
@@ -648,7 +648,7 @@ ERRMSG_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbDPFE)
+    if (hGlbDPFE && lpwszDPFE)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
@@ -1090,36 +1090,36 @@ HGLOBAL LoadWorkspaceGlobal_EM
      LPWCHAR    *lplpwErrMsg)               // Ptr to ptr to (constant) error message text
 
 {
-    APLSTYPE     aplTypeObj;                // Object storage type
-    APLNELM      aplNELMObj;                // Object NELM
-    APLRANK      aplRankObj;                // Object rank
-    HGLOBAL      hGlbObj,                   // Object global memory handle
-                 hGlbChk;                   // Result from CheckGlobals
-    APLUINT      ByteObj,                   // # bytes needed for the object
-                 uObj;                      // Loop counter
-    STFLAGS      stFlags = {0};             // SymTab flags
-    LPSYMENTRY   lpSymEntry,                // Ptr to STE for HGLOBAL
-                 lpSymLink;                 // Ptr to SYMENTRY temp for *lplpSymLink
-    WCHAR        wcTmp,                     // Temporary char
-                 wszTimeStamp[16 + 1];      // Output save area for time stamp
-    LPWCHAR      lpwFcnName,                // Ptr to function name
-                 lpwSectName,               // Ptr to section name
-                 lpwSrcStart,               // Ptr to starting point
-                 lpwCharEnd;                // Temporary ptr
-    UINT         uBitIndex,                 // Bit index for looping through Boolean result
-                 uLineCnt,                  // # lines in the current function including the header
-                 uCnt,                      // Loop counter
-                 Count;                     // Temporary count for monitor info
-    FILETIME     ftCreation,                // Function creation time
-                 ftLastMod;                 // ...      last modification time
-    SYSTEMTIME   systemTime;                // Current system (UTC) time
+    APLSTYPE          aplTypeObj;           // Object storage type
+    APLNELM           aplNELMObj;           // Object NELM
+    APLRANK           aplRankObj;           // Object rank
+    HGLOBAL           hGlbObj,              // Object global memory handle
+                      hGlbChk;              // Result from CheckGlobals
+    APLUINT           ByteObj,              // # bytes needed for the object
+                      uObj;                 // Loop counter
+    STFLAGS           stFlags = {0};        // SymTab flags
+    LPSYMENTRY        lpSymEntry,           // Ptr to STE for HGLOBAL
+                      lpSymLink;            // Ptr to SYMENTRY temp for *lplpSymLink
+    WCHAR             wcTmp,                // Temporary char
+                      wszTimeStamp[16 + 1]; // Output save area for time stamp
+    LPWCHAR           lpwFcnName,           // Ptr to function name
+                      lpwSectName,          // Ptr to section name
+                      lpwSrcStart,          // Ptr to starting point
+                      lpwCharEnd;           // Temporary ptr
+    UINT              uBitIndex,            // Bit index for looping through Boolean result
+                      uLineCnt,             // # lines in the current function including the header
+                      uCnt,                 // Loop counter
+                      Count;                // Temporary count for monitor info
+    FILETIME          ftCreation,           // Function creation time
+                      ftLastMod;            // ...      last modification time
+    SYSTEMTIME        systemTime;           // Current system (UTC) time
     UBOOL        bUserDefined = FALSE,      // TRUE iff the durrent function is User-Defined
                  bPermNdx = FALSE;          // TRUE iff the var is a permenent
-    LPVOID       lpMemObj;                  // Ptr to object global memory
-    APLINT       aplInteger;                // Temporary integer
-    LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
-    LPWCHAR      lpwszFormat,               // Ptr to formatting save area
-                 lpwszOldTemp;              // Ptr to temporary save area
+    LPVOID            lpMemObj;             // Ptr to object global memory
+    APLINT            aplInteger;           // Temporary integer
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    LPWCHAR           lpwszFormat,          // Ptr to formatting save area
+                      lpwszOldTemp;         // Ptr to temporary save area
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));

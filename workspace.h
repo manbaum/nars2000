@@ -61,6 +61,10 @@
 #define LOADBAK_EXT             L".load.bak" WS_WKSEXT
 #define SAVEBAK_EXT             L".save.bak" WS_WKSEXT
 
+// Array Properties
+#define AP_PV0                  L"PV0"
+#define AP_PV1                  L"PV1"
+
 
 typedef struct tagSAVEDWSGLBVARPARM
 {

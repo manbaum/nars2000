@@ -1113,13 +1113,14 @@ HGLOBAL LoadWorkspaceGlobal_EM
     FILETIME          ftCreation,           // Function creation time
                       ftLastMod;            // ...      last modification time
     SYSTEMTIME        systemTime;           // Current system (UTC) time
-    UBOOL        bUserDefined = FALSE,      // TRUE iff the durrent function is User-Defined
-                 bPermNdx = FALSE;          // TRUE iff the var is a permenent
+    UBOOL             bUserDefined = FALSE, // TRUE iff the current function is User-Defined
+                      bPermNdx = FALSE;     // ...          var is a permenent
     LPVOID            lpMemObj;             // Ptr to object global memory
     APLINT            aplInteger;           // Temporary integer
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
     LPWCHAR           lpwszFormat,          // Ptr to formatting save area
                       lpwszOldTemp;         // Ptr to temporary save area
+    LPVARARRAY_HEADER lpHeader;             // Ptr to the array header
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
@@ -1199,7 +1200,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Lock the memory to get a ptr to it
             lpMemObj = MyGlobalLock (hGlbObj);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
+            // Save ptr to the array header
+            lpHeader = lpMemObj;
+
             // Fill in the header
 ////////////// Note that the RefCnt is initialized to zero
 ////////////// It will be incremented upon each reference
@@ -1210,7 +1213,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMObj;
             lpHeader->Rank       = aplRankObj;
-#undef  lpHeader
 
             // Skip over the header to the dimensions
             lpMemObj = VarArrayBaseToDim (lpMemObj);
@@ -1227,6 +1229,53 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 // Skip over the dimension
                 ((LPAPLDIM) lpMemObj)++;
             } // End FOR
+
+            // Clear all array properties
+            lpHeader->PV0        =
+            lpHeader->PV1        = FALSE;
+
+            // Check for array properties
+            if (*lpwSrc EQ L'(')
+            {
+#ifdef DEBUG
+                APLCHAR wcChar = L'(';
+#endif
+                while (TRUE)
+                {
+                    // Skip over the separator (initial left paren or trailing blank)
+                    Assert (*lpwSrc EQ wcChar); lpwSrc++;
+
+                    if (strncmpW (lpwSrc, AP_PV0, strcountof (AP_PV0)) EQ 0)
+                    {
+                        lpHeader->PV0 = TRUE;
+                        lpwSrc += strcountof (AP_PV0);
+                    } else
+                    if (strncmpW (lpwSrc, AP_PV1, strcountof (AP_PV1)) EQ 0)
+                    {
+                        lpHeader->PV1 = TRUE;
+                        lpwSrc += strcountof (AP_PV1);
+                    } else
+                    {
+                        MBC ("Unknown array property when loading workspace -- Load terminated.");
+
+                        goto CORRUPTWS_EXIT;
+                    } // End IF/ELSE/...
+
+                    // Check for the end
+                    if (*lpwSrc EQ L')')
+                        break;
+#ifdef DEBUG
+                    // Set new char to test
+                    wcChar = L' ';
+#endif
+                } // End WHILE
+
+                // Skip over the trailing separator
+                Assert (*lpwSrc EQ L')'); lpwSrc++;
+
+                // Skip over the trailing blank
+                Assert (*lpwSrc EQ L' '); lpwSrc++;
+            } // End IF
 
             // lpwSrc now points to the data
 

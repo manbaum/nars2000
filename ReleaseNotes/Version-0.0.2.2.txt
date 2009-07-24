@@ -1,6 +1,24 @@
 Version 0.0.2.2 consists of the following Builds:
 
 
+Build #504-- Version 0.0.2.2
+----------------------------
+
+* When a workspace is )SAVEd, save its variable's array properties,
+  too, and restore them on )LOAD.
+
+Directory trunk:
+
+SC_LOAD.C:
+  When a workspace is )LOADed, restore its variable's array properties.
+
+SC_SAVE.C:
+  When )SAVEing a ws, include variable's array properties in the saved ws.
+
+WORKSPACE.H:
+  Define names for existing array properties.
+
+
 Build #503-- Version 0.0.2.2
 ----------------------------
 

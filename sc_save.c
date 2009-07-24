@@ -344,7 +344,8 @@ UBOOL CmdSave_EM
                                                  TranslateImmTypeToChar (stFlags.ImmType),// Object storage type as WCHAR
                                                  1,                                 // Object NELM
                                                  0,                                 // Object rank
-                                                 NULL);                             // Ptr to object dimensions
+                                                 NULL,                              // Ptr to object dimensions
+                                                 NULL);                             // Ptr to array header
                             // If it's char, ...
                             if (IsImmChr (stFlags.ImmType))
                             {
@@ -1221,7 +1222,6 @@ LPAPLCHAR SavedWsFormGlbVar
     aplNELMObj = lpHeader->NELM;
     aplRankObj = lpHeader->Rank;
     permNdx    = lpHeader->PermNdx;
-#undef  lpHeader
 
     // The array values are preceded by the array
     //   attributes in the form of
@@ -1233,7 +1233,9 @@ LPAPLCHAR SavedWsFormGlbVar
                          TranslateArrayTypeToChar (aplTypeObj),// Object storage type as WCHAR
                          aplNELMObj,                        // Object NELM
                          aplRankObj,                        // Object rank
-                         VarArrayBaseToDim (lpMemObj));     // Ptr to object dimensions
+                         VarArrayBaseToDim (lpMemObj),      // Ptr to object dimensions
+                         lpHeader);                         // Ptr to array header
+#undef  lpHeader
     // Skip over the header and dimensions to the data
     lpMemObj = VarArrayBaseToData (lpMemObj, aplRankObj);
 
@@ -1335,7 +1337,8 @@ LPAPLCHAR SavedWsFormGlbVar
                                      TranslateImmTypeToChar ((*(LPAPLHETERO) lpMemObj)->stFlags.ImmType),// Object storage type as WCHAR
                                      1,                                 // Object NELM
                                      0,                                 // Object rank
-                                     NULL);                             // Ptr to object dimensions
+                                     NULL,                              // Ptr to object dimensions
+                                     NULL);                             // Ptr to array header
                 // Split cases based upon the element immediate type
                 switch ((*(LPAPLHETERO) lpMemObj)->stFlags.ImmType)
                 {
@@ -1411,7 +1414,8 @@ LPAPLCHAR SavedWsFormGlbVar
                                          TranslateImmTypeToChar (stFlags.ImmType),// Object storage type as WCHAR
                                          1,                                 // Object NELM
                                          0,                                 // Object rank
-                                         NULL);                             // Ptr to object dimensions
+                                         NULL,                              // Ptr to object dimensions
+                                         NULL);                             // Ptr to array header
                     // Split cases based upon the immediate type
                     switch (stFlags.ImmType)
                     {
@@ -1580,11 +1584,12 @@ NORMAL_EXIT:
 //***************************************************************************
 
 LPAPLCHAR AppendArrayHeader
-    (LPAPLCHAR lpaplChar,           // Ptr to output save area
-     APLCHAR   aplCharObj,          // Object storage type as WCHAR
-     APLNELM   aplNELMObj,          // Object NELM
-     APLRANK   aplRankObj,          // Object rank
-     LPAPLDIM  lpaplDimObj)         // Ptr to object dimensions
+    (LPAPLCHAR         lpaplChar,               // Ptr to output save area
+     APLCHAR           aplCharObj,              // Object storage type as WCHAR
+     APLNELM           aplNELMObj,              // Object NELM
+     APLRANK           aplRankObj,              // Object rank
+     LPAPLDIM          lpaplDimObj,             // Ptr to object dimensions
+     LPVARARRAY_HEADER lpHeader)                // Ptr to array header
 
 {
     APLRANK uObj;                   // Loop counter
@@ -1613,6 +1618,38 @@ LPAPLCHAR AppendArrayHeader
           FormatAplintFC (lpaplChar,            // Ptr to output save area
                           lpaplDimObj[uObj],    // The value to format
                           UTF16_BAR);           // Char to use as overbar
+    // Append array properties
+    if (lpHeader)
+    {
+        // Append leading separator
+        *lpaplChar++ = L'(';
+
+        // Check for array property:  PV0
+        if (lpHeader->PV0)
+        {
+            lstrcpyW (lpaplChar, AP_PV0);
+            lpaplChar += strcountof (AP_PV0);
+            *lpaplChar++ = L' ';
+        } // End IF
+
+        // Check for array property:  PV1
+        if (lpHeader->PV1)
+        {
+            lstrcpyW (lpaplChar, AP_PV1);
+            lpaplChar += strcountof (AP_PV1);
+            *lpaplChar++ = L' ';
+        } // End IF
+
+        if (lpaplChar[-1] NE L'(')
+        {
+            // Append trailing separator
+            lpaplChar[-1] = L')';
+            *lpaplChar++ = L' ';
+        } else
+            // Zap leading separator
+            *--lpaplChar = WC_EOS;
+    } // End IF
+
     return lpaplChar;
 } // End AppendArrayHeader
 

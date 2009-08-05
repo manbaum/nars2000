@@ -799,7 +799,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                   lpYYFcnStrLft;        // Ptr to left operand function strand
     TOKEN         tkLftArg = {0},       // Left arg token
                   tkRhtArg = {0};       // Right ...
-    LPTOKEN       lptkAxis;             // Ptr to axis token (may be NULL)
+    LPTOKEN       lptkAxis,             // Ptr to operator axis token (may be NULL)
+                  lptkAxis2;            // Ptr to operand axis token (may be NULL)
     LPPRIMFNS     lpPrimProtoLft;       // Ptr to left operand function strand (may be NULL if not prototyping)
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
@@ -812,7 +813,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
 
     DBGENTER;
 
-    // Check for axis operator
+    // Check for operator axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left operand,
@@ -823,6 +824,9 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
+    // Check for operand axis operator
+    lptkAxis2 = CheckAxisOper (lpYYFcnStrLft);
+
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -831,7 +835,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     // The rank of the result is the larger of the two args
     aplRankRes = max (aplRankLft, aplRankRht);
 
-    // Check for axis present
+    // Check for operator axis present
     if (lptkAxis NE NULL)
     {
         // Check the axis values, fill in # elements in axis
@@ -1084,7 +1088,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                               &tkLftArg,            // Ptr to left arg token
                                lpYYFcnStrLft,       // Ptr to function strand
                               &tkRhtArg,            // Ptr to right arg token
-                               NULL,                // Ptr to axis token
+                               lptkAxis2,           // Ptr to operand axis token
                                lpPrimProtoLft);     // Ptr to left operand prototype function
         // Free the left & right arg tokens
         if (lpMemLft)

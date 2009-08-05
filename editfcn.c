@@ -3369,7 +3369,8 @@ void ForceSendCursorMsg
 //***************************************************************************
 
 HGLOBAL CopyGlbMemory
-    (HGLOBAL hGlbSrc)
+    (HGLOBAL hGlbSrc,       // Global memory handle to copy
+     UBOOL   bMyFns)        // TRUE iff we're to MyXxx functions
 
 {
     HGLOBAL hGlbDst;        // The result global memory handle
@@ -3385,10 +3386,15 @@ HGLOBAL CopyGlbMemory
     dwSize = MyGlobalSize (hGlbSrc);
 
     // Allocate space for the result
+
     // Note we do not use MyGlobalAlloc here as the global memory handle
     //   is to be placed onto the clipboard at which point the system
     //   will own the handle
-    hGlbDst = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+
+    if (bMyFns)
+        hGlbDst = MyGlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+    else
+        hGlbDst =   GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
     if (hGlbDst)
     {
         // We don't use MyGlobalLock/Unlock on the source
@@ -3682,7 +3688,7 @@ void PasteAPLChars_EM
             // Get a handle to the clipboard data
             //   and make a copy of the data
             lpMemFmts[uFmt].hGlbFmt =
-              CopyGlbMemory (GetClipboardData (uFmtNum));
+              CopyGlbMemory (GetClipboardData (uFmtNum), FALSE);
         } // End IF
     } // End FOR
 

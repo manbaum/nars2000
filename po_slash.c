@@ -25,8 +25,8 @@
 #include "headers.h"
 
 
-// Define this symbol to include code for empty catenate
-///#define EMPTYCAT
+// Define this symbol to include code for catenate identity element
+#define CATIDENT
 
 
 //***************************************************************************
@@ -160,11 +160,16 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       lpMemRes = NULL;      // Ptr to result    ...
     LPAPLDIM          lpMemDimRht,          // Ptr to right arg dimensions
                       lpMemDimRes;          // Ptr to result    ...
+#ifdef CATIDENT
+    HGLOBAL           hGlbPro = NULL;       // Prototype global memory handle
+#endif
     APLFLOAT          aplFloatIdent;        // Identity element
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bPrimDydScal = FALSE, // TRUE iff the left operand is a Primitive Dyadic Scalar function
-#ifdef EMPTYCAT
-                      bEmptyCat = FALSE,    // TRUE iff reducing empty array with catenate
+                      bIdentity = FALSE,    // TRUE iff the left operand is a user-defined function/operator
+                                            //   and the right argument axis length is zero
+#ifdef CATIDENT
+                      bCatIdent = FALSE,    // TRUE iff reducing empty array with catenate
 #endif
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
     LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
@@ -300,24 +305,37 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     // Get a ptr to the Primitive Function Flags
     lpPrimFlags = GetPrimFlagsPtr (lpYYFcnStrLft);
 
+#ifdef CATIDENT
+    // If the result is empty or the axis dimension is zero,
+    //   and the function is catenate, ...
+    if ((IsEmpty (aplNELMRes)
+      || IsZeroDim (uDimAxRht))
+     && (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+      && (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMA
+       || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMABAR)))
+    {
+        aplTypeRes = ARRAY_NESTED;
+
+        // Mark as reducing empty array with catenate
+        //   to produce its identity element
+        bCatIdent = TRUE;
+    } else
+#endif
     // If the axis dimension is zero and the array is simple,
     //   get the identity element for the left operand or
     //   signal a DOMAIN ERROR
     if (IsZeroDim (uDimAxRht)
      && IsSimple (aplTypeRht))
     {
-#ifdef EMPTYCAT
-        // Split out catenate
-        if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         && (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMA
-          || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMABAR))
+        // If it's a user-defined function/operator, ...
+        if (IsTknUsrDfn (&lpYYFcnStrLft->tkToken))
         {
-            aplTypeRes = ARRAY_NESTED;
+            // Invoke the user-defined function/operator at []IDENTITY
+            bIdentity = TRUE;
 
-            // Mark as reducing empty array with catenate
-            bEmptyCat = TRUE;
+            // The result is nested
+            aplTypeRes = ARRAY_NESTED;
         } else
-#endif
         {
             // If it's not an immediate primitive function,
             //   or it is, but is without an identity element,
@@ -451,47 +469,188 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
     } // End IF
 
+#ifdef CATIDENT
+    // If this is catenate identity element, ...
+    if (bCatIdent)
+    {
+        IMM_TYPES immTypePro;           // Prototype immediate type
+        UBOOL     bCalcPro;             // TRUE iff we need to calculate the prototype
+        LPTOKEN   lptkAxis2;            // Ptr to secondary axis token
+        APLUINT   aplAxis2;             // The catenate axis value
+        APLRANK   aplRankPro;
+
+        // The prototype of the result is the same as that of the right arg except the
+        //   catenate axis (lptkAxis2) is zero.
+        // That is, we need 0/[aplAxis2] {take} R
+
+        // Get the prototype of the right arg ({take} R)
+        GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
+                            NULL,               // Ptr to integer result
+                            NULL,               // Ptr to float ...
+                            NULL,               // Ptr to WCHAR ...
+                            NULL,               // Ptr to longest ...
+                           &hGlbPro,            // Ptr to lpSym/Glb ...
+                           &immTypePro,         // Ptr to ...immediate type ...
+                            NULL);              // Ptr to array type ...
+        // Mark as needing more computation if the prototype is a global
+        bCalcPro = (hGlbPro NE NULL);
+
+        // If the prototype is a global, ...
+        if (bCalcPro)
+            // Get the attributes (Type, NELM, and Rank) of the prototype
+            AttrsOfGlb (hGlbPro, NULL, NULL, &aplRankPro, NULL);
+        else
+        // The prototype is an immediate
+        {
+            // The prototype of the result is an empty vector
+            //   of the same type as the prototype
+            if (IsImmChr (immTypePro))
+                hGlbPro = hGlbV0Char;
+            else
+                hGlbPro = hGlbZilde;
+
+            // Set the prototype rank to that of a vector
+            //   so ,[1] and commabar validate
+            aplRankPro = 1;
+        } // End IF
+
+        // Check for axis operator
+        lptkAxis2 = CheckAxisOper (lpYYFcnStrLft);
+        if (lptkAxis2)
+        {
+            // Catentate allows integer axis values only
+            // Note that there is no identity element for laminate reduction
+            if (!CheckAxis_EM (lptkAxis2,       // The axis token
+                               aplRankPro,      // All values less than this
+                               TRUE,            // TRUE iff scalar or one-element vector only
+                               FALSE,           // TRUE iff want sorted axes
+                               FALSE,           // TRUE iff axes must be contiguous
+                               FALSE,           // TRUE iff duplicate axes are allowed
+                               NULL,            // Return TRUE iff fractional values present
+                              &aplAxis2,        // Return last axis value
+                               NULL,            // Return # elements in axis vector
+                               NULL))           // Return HGLOBAL with APLINT axis values
+                goto ERROR_EXIT;
+        } else
+        {
+            // No axis specified:
+            //   if comma, use last dimension
+            if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMA)
+                aplAxis2 = max (0, (APLRANKSIGN) aplRankPro - 1);
+            else
+            {
+                Assert (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMABAR);
+
+                // Otherwise, it's CommaBar on the first dimension
+                aplAxis2 = 0;
+            } // End IF/ELSE
+        } // End IF/ELSE
+
+        // If we need to calculate the prototype
+        if (bCalcPro)
+        {
+            TOKEN        tkLft = {0},                   // Token for temporary left arg
+                         tkRht = {0},                   // ...                 right ...
+                         tkFcn = {0};                   // Ptr to function token
+            LPPL_YYSTYPE lpYYPro;                       // Ptr to prototype result
+
+            // Setup the left arg token
+            tkLft.tkFlags.TknType   = TKT_VARIMMED;
+            tkLft.tkFlags.ImmType   = IMMTYPE_BOOL;
+////////////tkLft.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+////////////tkLft.tkData.tkLongest  = 0;                // Already zero ftom = {0}
+
+            // Setup the right arg token
+            tkRht.tkFlags.TknType   = TKT_VARARRAY;
+////////////tkRht.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
+////////////tkRht.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+            tkRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbPro);
+
+            // Setup the function token
+            tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+            tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+            tkFcn.tkData.tkChar     = (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMABAR) ? UTF16_SLASHBAR
+                                                                                               : UTF16_SLASH;
+            // Compute 0/[aplAxis2] hGlbPro
+            lpYYPro =
+              PrimFnDydSlash_EM_YY (&tkLft,             // Ptr to left arg token
+                                    &tkFcn,             // Ptr to function token
+                                    &tkRht,             // Ptr to right arg token
+                                     lptkAxis2);        // Ptr to axis token (may be NULL)
+            if (lpYYPro EQ NULL)
+                goto ERROR_EXIT;
+            Assert (lpYYPro->tkToken.tkFlags.TknType EQ TKT_VARARRAY);
+
+            // Get the global memory handle as the prototype
+            hGlbPro = lpYYPro->tkToken.tkData.tkGlbData;
+
+            // Free the temporary result
+            YYFree (lpYYPro); lpYYPro = NULL;
+        } // End IF/ELSE
+
+        // Set the ptr type bits
+        hGlbPro = MakePtrTypeGlb (hGlbPro);
+
+        // Save the identity element in the result
+        *((LPAPLNESTED) lpMemRes)++ = hGlbPro;
+        for (uRes = 1; uRes < aplNELMRes; uRes++)
+            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hGlbPro);
+
+        goto YYALLOC_EXIT;
+    } else
+#endif
     // If the axis dimension is zero and the array is simple,
     //   fill with the identity element
     if (IsZeroDim (uDimAxRht)
      && IsSimple (aplTypeRht))
     {
-#ifdef EMPTYCAT
-        // Split out catenate
-        if (bEmptyCat)
+        // Split out user-defined function/operators
+        if (bIdentity)
         {
-            HGLOBAL  hGlbItm;           // Item global memory handle
-            LPAPLDIM lpMemItm;          // Ptr to item global memory
+            HGLOBAL    hGlbIdn;         // Identity element global memory handle
+            APLLONGEST aplLongestIdn;   // ...              immediate value
+            LPVOID     hSymGlbIdn;      // ...              LPSYMENTRY or HGLOBAL
+            APLSTYPE   aplTypeIdn;      // ...              storage type
 
-            // The item in the result is an array of the same rank as the right arg
-            //   with the same shape except for the axis coordinate which is zero
-            //   and with the same prototype
-            hGlbItm = CopyArray_EM (hGlbRht,                    // Global memory handle to copy
-                                   &lpYYFcnStrLft->tkToken);    // Ptr to left operand function strand
-            if (hGlbItm EQ NULL)
+            // Get the user-defined function/operator's identity element
+            lpYYRes =
+              ExecFuncStrLine_EM_YY (lptkRhtArg,        // Ptr to left arg token (same as right)
+                                     lpYYFcnStrLft,     // Ptr to left operand function strand
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     NULL,              // Ptr to axis token (may be NULL)
+                                     LINENUM_IDENTITY); // Starting line # (see LINE_NUMS)
+            if (!lpYYRes)
                 goto ERROR_EXIT;
+            // Get identity element's global ptr (if any)
+            aplLongestIdn = GetGlbPtrs (&lpYYRes->tkToken, &hGlbIdn);
 
-            // Save the item in the result
-            *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbItm);
+            // If the result is global, ...
+            if (hGlbIdn)
+                hSymGlbIdn = MakePtrTypeGlb (hGlbIdn);
+            else
+            {
+                // Get the attributes (Type, NELM, and Rank) of the identity element
+                AttrsOfToken (&lpYYRes->tkToken, &aplTypeIdn, NULL, NULL, NULL);
 
-            // Lock the memory to get a ptr to it
-            lpMemItm = MyGlobalLock (hGlbItm);
+                // Convert the immediate value to a SYMENTRY
+                hSymGlbIdn =
+                  MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeIdn),
+                                  &aplLongestIdn,
+                                  &lpYYFcnStrLft->tkToken);
+                if (!hSymGlbIdn)
+                    goto ERROR_EXIT;
+            } // End IF/ELSE
 
-            // Skip over the header to the dimensions
-            lpMemItm = VarArrayBaseToDim (lpMemItm);
+            // Save the identity element in the result
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hSymGlbIdn);
 
-            // ***FIXME*** -- We're using the wrong axis value
-            //                <aplAxis> is the reduce axis, whereas
-            //                we should use the axis on the catenate function
-            DbgBrk ();
+            // Free the YYRes (and the storage)
+            FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 
-            // Zero the axis coordinate in the item
-            lpMemItm[aplAxis] = 0;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
+            goto YYALLOC_EXIT;
         } else
-#endif
         {
             // The zero case is done (GHND)
 

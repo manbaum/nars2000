@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,9 +113,10 @@ LPPL_YYSTYPE PrimOpMonDieresisTilde_EM_YY
 
 
 //***************************************************************************
-//  $PrimOpMonDieresisTilde_EM_YY
+//  $PrimOpMonDieresisTildeCommon_EM_YY
 //
-//  Primitive operator for monadic derived function from DieresisTilde ("duplicate")
+//  Common subroutine for primitive operator for monadic derived function
+//    from DieresisTilde ("duplicate")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -215,7 +216,8 @@ LPPL_YYSTYPE PrimOpDydDieresisTilde_EM_YY
 //***************************************************************************
 //  $PrimOpDydDieresisTildeCommon_EM_YY
 //
-//  Primitive operator for dyadic derived function from DieresisTilde ("commute")
+//  Common subroutine for primitive operator for dyadic derived function
+//    from DieresisTilde ("commute")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -273,10 +275,10 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
                                   lptkAxis);        // Ptr to axis token
     } else
         // Execute the function dyadically between the two args switched
-        return ExecFuncStr_EM_YY (lptkRhtArg,   // Ptr to left arg token
-                                  lpYYFcnStrLft,// Ptr to left operand function strand
-                                  lptkLftArg,   // Ptr to right arg token
-                                  lptkAxis);    // Ptr to axis token (may be NULL)
+        return ExecFuncStr_EM_YY (lptkRhtArg,       // Ptr to left arg token
+                                  lpYYFcnStrLft,    // Ptr to left operand function strand
+                                  lptkLftArg,       // Ptr to right arg token
+                                  lptkAxis);        // Ptr to axis token (may be NULL)
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);

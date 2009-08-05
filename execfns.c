@@ -558,6 +558,36 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
      LPTOKEN      lptkAxis)         // Ptr to axis token (may be NULL)
 
 {
+    return
+      ExecFuncStrLine_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
+                             lpYYFcnStr,    // Ptr to function strand
+                             lptkRhtArg,    // Ptr to right arg token
+                             lptkAxis,      // Ptr to axis token (may be NULL)
+                             LINENUM_ONE);  // Starting line # type (see LINE_NUMS)
+} // End ExecFuncStr_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ExecFuncStrLine_EM_YY
+//
+//  Execute a function strand at a given line # type
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecFuncStrLine_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE ExecFuncStrLine_EM_YY
+    (LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL)
+     LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
+
+{
     LPPRIMFNS lpPrimFn;             // Ptr to function address
     HGLOBAL   hGlbFcn;              // Function strand or user-defined function/operator global memory handle
 
@@ -636,7 +666,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                                              lpYYFcnStr,    // Ptr to function strand
                                              lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                                              lptkRhtArg,    // Ptr to right arg token
-                                             LINENUM_ONE);  // Starting line # (see LINE_NUMS)
+                                             startLineNum); // Starting line # (see LINE_NUMS)
                 defstop
                     break;
             } // End SWITCH
@@ -682,7 +712,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                                              lpYYFcnStr,    // Ptr to function strand
                                              lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                                              lptkRhtArg,    // Ptr to right arg token
-                                             LINENUM_ONE);  // Starting line # (see LINE_NUMS)
+                                             startLineNum); // Starting line # (see LINE_NUMS)
                 defstop
                     break;
             } // End SWITCH
@@ -696,7 +726,7 @@ SYNTAX_EXIT:
                               &lpYYFcnStr->tkToken);
 ERROR_EXIT:
     return NULL;
-} // End ExecFuncStr_EM_YY
+} // End ExecFuncStrLine_EM_YY
 #undef  APPEND_NAME
 
 

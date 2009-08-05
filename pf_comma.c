@@ -996,39 +996,39 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     APLNELM       aplNELMLft,       // Left arg NELM
                   aplNELMRht,       // Right ...
                   aplNELMRes;       // Result   ...
-    HGLOBAL       hGlbLft = NULL,
-                  hGlbRht = NULL,
-                  hGlbRes = NULL,
-                  hGlbTmp;
-    LPVOID        lpMemLft = NULL,
-                  lpMemRht = NULL,
-                  lpMemRes = NULL,
-                  lpSymGlbLft,
-                  lpSymGlbRht;
-    LPAPLDIM      lpMemDimLft,
-                  lpMemDimRht,
-                  lpMemDimRes,
-                  lpMemDimDir;
+    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
+                  hGlbRht = NULL,   // Right ...
+                  hGlbRes = NULL,   // Result   ...
+                  hGlbTmp;          // Temporary ...
+    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
+                  lpMemRht = NULL,  // ...    right ...
+                  lpMemRes = NULL,  // ...    result   ...
+                  lpSymGlbLft,      // ...    left arg LPSYMENTRY/HGLOBAL
+                  lpSymGlbRht;      // ...    right ...
+    LPAPLDIM      lpMemDimLft,      // Ptr to left arg dimensions
+                  lpMemDimRht,      // ...    right ...
+                  lpMemDimRes,      // ...    result   ...
+                  lpMemDimDir;      // ...
     APLDIM        aplDimTmp,
                   aplDimBeg,
                   aplDimLftEnd,
                   aplDimRhtEnd,
                   aplDim1 = 1;
-    UBOOL         bFract = FALSE;
-    UINT          uBitMaskLft,
-                  uBitMaskRht,
-                  uBitIndexRes;
-    APLINT        aplIntegerLft,
-                  aplIntegerRht,
-                  apaOffLft,
-                  apaOffRht,
-                  apaMulLft,
-                  apaMulRht;
-    APLFLOAT      aplFloatLft,
-                  aplFloatRht;
-    APLCHAR       aplCharLft,
-                  aplCharRht;
-    APLLONGEST    aplVal;
+    UBOOL         bFract = FALSE;   // TRUE iff the axis value is fractional (laminate)
+    UINT          uBitMaskLft,      // Left arg bit mask for trundling through Booleans
+                  uBitMaskRht,      // Right ...
+                  uBitIndexRes;     // Result   ...
+    APLINT        aplIntegerLft,    // Left arg temporary integer value
+                  aplIntegerRht,    // Right ...
+                  apaOffLft,        // Left arg APA offset
+                  apaOffRht,        // Right ...
+                  apaMulLft,        // Left arg APA multiplier
+                  apaMulRht;        // Right ...
+    APLFLOAT      aplFloatLft,      // Left arg float temporary value
+                  aplFloatRht;      // Right ...
+    APLCHAR       aplCharLft,       // Left arg temporary character value
+                  aplCharRht;       // Right ...
+    APLLONGEST    aplVal;           // Temporary value
     LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
     LPSYMENTRY    lpSymTmp;         // Ptr to temporary LPSYMENTRY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
@@ -1130,8 +1130,9 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                               NULL)             // Return HGLOBAL with APLINT axis values
              && bFract)
                 break;
+
             // Otherwise, it's an AXIS ERROR
-            return NULL;
+            goto ERROR_EXIT;
         } // End WHILE
     } else
     {
@@ -1140,8 +1141,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
         if (lptkFunc->tkData.tkChar EQ UTF16_COMMA)
             aplAxis = max (0, (APLRANKSIGN) aplRankRes - 1);
         else
+        {
+            Assert (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
+
             // Otherwise, it's CommaBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Left and right scalar args are laminated

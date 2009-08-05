@@ -1562,6 +1562,21 @@ APLLONGEST GetGlbPtrs_LOCK
 
             return lpToken->tkData.tkLongest;
 
+        case TKT_FCNARRAY:
+            *lphGlb = lpToken->tkData.tkGlbData;
+
+            // Handle the HGLOBAL case
+            *lphGlb = ClrPtrTypeDir (*lphGlb);
+
+            // Lock the memory to get a ptr to it
+            lpMem = MyGlobalLock (*lphGlb);
+
+            // Get the type & NELM
+            aplTypeMem = ARRAY_LIST;
+            aplNELMMem = 0;
+
+            break;
+
         case TKT_NUMSTRAND:
         case TKT_VARARRAY:
         case TKT_AXISARRAY:
@@ -1861,6 +1876,10 @@ LPPRIMFNS GetPrototypeFcnPtr
     (LPPL_YYSTYPE lpYYFcnStr)
 
 {
+    HGLOBAL      hGlbFcn;                   // Function array global memory handle
+    LPPL_YYSTYPE lpMemFcn;                  // Ptr to function array global memory
+    LPPRIMFNS    lpPrimFns;                 // Ptr to result
+
     // Split cases based upon the token type of the function strand's first item
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
     {
@@ -1873,8 +1892,34 @@ LPPRIMFNS GetPrototypeFcnPtr
             return PrimProtoFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
 
         case TKT_FCNARRAY:
-            // Get a ptr to the prototype function for the user-defined function/operator
-            return &ExecDfnGlbProto_EM_YY;
+            // Split cases based upon the function array signature
+            switch (GetSignatureGlb (lpYYFcnStr->tkToken.tkData.tkGlbData))
+            {
+                case FCNARRAY_HEADER_SIGNATURE:
+                    // Get the function global memory handle
+                    hGlbFcn = ClrPtrTypeDir (lpYYFcnStr->tkToken.tkData.tkGlbData);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemFcn = MyGlobalLock (hGlbFcn);
+
+                    // Skip over the header to the data
+                    lpMemFcn = FcnArrayBaseToData (lpMemFcn);
+
+                    // Recurse to get the result
+                    lpPrimFns = GetPrototypeFcnPtr (lpMemFcn);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+
+                    return lpPrimFns;
+
+                case DFN_HEADER_SIGNATURE:
+                    // Get a ptr to the prototype function for the user-defined function/operator
+                    return &ExecDfnGlbProto_EM_YY;
+
+                defstop
+                    return NULL;
+            } // End SWITCH
 
         defstop
             return NULL;

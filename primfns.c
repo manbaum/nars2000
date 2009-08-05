@@ -1627,99 +1627,124 @@ HGLOBAL CopyArray_EM
         // Copy source to destin
         CopyMemory (lpMemDst, lpMemSrc, dwSize);
 
-        // Set the reference count in case it was a TKT_VARNAMED
+        // Split cases based upon the array type
+        switch (GetSignatureMem (lpMemDst))
+        {
+            case VARARRAY_HEADER_SIGNATURE:
+                // Set the reference count in case it was a TKT_VARNAMED
 #ifdef DEBUG_REFCNT
-        dprintfWL0 (L"##RefCnt=1 in " APPEND_NAME L":        %p(res=1) (%S#%d)", hGlbDst, FNLN);
+                dprintfWL0 (L"##RefCnt=1 in " APPEND_NAME L":        %p(res=1) (%S#%d)", hGlbDst, FNLN);
 #endif
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
-        // Clear the PermNdx flags
-        lpHeader->PermNdx = PERMNDX_NONE;
+                // Clear the PermNdx flags
+                lpHeader->PermNdx = PERMNDX_NONE;
 
-        // Set the RefCnt
-        lpHeader->RefCnt = 1;
+                // Set the RefCnt
+                lpHeader->RefCnt = 1;
 
-        // Clear the PermVec bits
-        lpHeader->PV0 =
-        lpHeader->PV1 = FALSE;
+                // Clear the PermVec bits
+                lpHeader->PV0 =
+                lpHeader->PV1 = FALSE;
 
-        // Recurse through the array, copying all the global ptrs
-        aplType = lpHeader->ArrType;
-        aplNELM = lpHeader->NELM;
-        aplRank = lpHeader->Rank;
+                // Recurse through the array, copying all the global ptrs
+                aplType = lpHeader->ArrType;
+                aplNELM = lpHeader->NELM;
+                aplRank = lpHeader->Rank;
 #undef  lpHeader
 
-        lpMemDstBase = lpMemDst = VarArrayBaseToData (lpMemDst, aplRank);
-        lpMemSrcBase = lpMemSrc = VarArrayBaseToData (lpMemSrc, aplRank);
+                lpMemDstBase = lpMemDst = VarArrayBaseToData (lpMemDst, aplRank);
+                lpMemSrcBase = lpMemSrc = VarArrayBaseToData (lpMemSrc, aplRank);
 
-        // Split cases based upon the array type
-        switch (aplType)
-        {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
-            case ARRAY_FLOAT:
-            case ARRAY_CHAR:
-            case ARRAY_APA:
-                break;
-
-            case ARRAY_HETERO:
-            case ARRAY_NESTED:
-                // Handle the empty case
-                aplNELM = max (aplNELM, 1);
-
-                // Fill nested result with PTR_REUSED
-                //   in case we fail part way through
-                for (u = 0; u < aplNELM; u++)
-                    *((LPAPLNESTED) lpMemDst)++ = PTR_REUSED;
-
-                // Start the destin ptr over again
-                lpMemDst = lpMemDstBase;
-
-                // Loop through the source and destin arrays
-                for (u = 0;
-                     u < aplNELM;
-                     u++, ((LPAPLNESTED) lpMemDst)++, ((LPAPLNESTED) lpMemSrc)++)
-                // Split cases based upon the ptr type
-                switch (GetPtrTypeInd (lpMemSrc))
+                // Split cases based upon the array type
+                switch (aplType)
                 {
-                    case PTRTYPE_STCONST:
-                        lpSymSrc = *(LPAPLHETERO) lpMemSrc;
-
-                        // It's an immediate
-                        Assert (lpSymSrc->stFlags.Imm);
-
-                        // Copy it
-                        lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
-                                                       -1,
-                                                       lptkFunc);
-                        if (lpSymDst)
-                            // Save into the destin
-                            *((LPAPLHETERO) lpMemDst) = lpSymDst;
-                        else
-                            bRet = FALSE;
+                    case ARRAY_BOOL:
+                    case ARRAY_INT:
+                    case ARRAY_FLOAT:
+                    case ARRAY_CHAR:
+                    case ARRAY_APA:
                         break;
 
-                    case PTRTYPE_HGLOBAL:
-                        Assert (IsNested (aplType));
+                    case ARRAY_HETERO:
+                    case ARRAY_NESTED:
+                        // Handle the empty case
+                        aplNELM = max (aplNELM, 1);
 
-                        // It's a valid HGLOBAL array
-                        Assert (IsGlbTypeVarInd (lpMemSrc));
+                        // Fill nested result with PTR_REUSED
+                        //   in case we fail part way through
+                        for (u = 0; u < aplNELM; u++)
+                            *((LPAPLNESTED) lpMemDst)++ = PTR_REUSED;
 
-                        // Copy the array
-                        hGlbTmp = CopyArray_EM (*(LPAPLNESTED) lpMemSrc,
-                                                lptkFunc);
-                        if (hGlbTmp)
-                            // Save into the destin
-                            *((LPAPLNESTED) lpMemDst) = MakePtrTypeGlb (hGlbTmp);
-                        else
-                            bRet = FALSE;
+                        // Start the destin ptr over again
+                        lpMemDst = lpMemDstBase;
+
+                        // Loop through the source and destin arrays
+                        for (u = 0;
+                             u < aplNELM;
+                             u++, ((LPAPLNESTED) lpMemDst)++, ((LPAPLNESTED) lpMemSrc)++)
+                        // Split cases based upon the ptr type
+                        switch (GetPtrTypeInd (lpMemSrc))
+                        {
+                            case PTRTYPE_STCONST:
+                                lpSymSrc = *(LPAPLHETERO) lpMemSrc;
+
+                                // It's an immediate
+                                Assert (lpSymSrc->stFlags.Imm);
+
+                                // Copy it
+                                lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
+                                                               -1,
+                                                               lptkFunc);
+                                if (lpSymDst)
+                                    // Save into the destin
+                                    *((LPAPLHETERO) lpMemDst) = lpSymDst;
+                                else
+                                    bRet = FALSE;
+                                break;
+
+                            case PTRTYPE_HGLOBAL:
+                                Assert (IsNested (aplType));
+
+                                // It's a valid HGLOBAL array
+                                Assert (IsGlbTypeVarInd (lpMemSrc));
+
+                                // Copy the array
+                                hGlbTmp = CopyArray_EM (*(LPAPLNESTED) lpMemSrc,
+                                                        lptkFunc);
+                                if (hGlbTmp)
+                                    // Save into the destin
+                                    *((LPAPLNESTED) lpMemDst) = MakePtrTypeGlb (hGlbTmp);
+                                else
+                                    bRet = FALSE;
+                                break;
+
+                            defstop
+                                break;
+                        } // End FOR/SWITCH
+
                         break;
 
                     defstop
                         break;
-                } // End FOR/SWITCH
+                } // End SWITCH
 
                 break;
 
+            case FCNARRAY_HEADER_SIGNATURE:
+#define lpHeader    ((LPFCNARRAY_HEADER) lpMemDst)
+                // Set the RefCnt
+                lpHeader->RefCnt = 1;
+
+                // If there is a line text global memory handle, ...
+                if (lpHeader->hGlbTxtLine)
+                    lpHeader->hGlbTxtLine =
+                      // Copy the memory to a new handle, ignoring failure
+                      CopyGlbMemory (lpHeader->hGlbTxtLine, TRUE);
+#undef  lpHeader
+                break;
+
+            case LSTARRAY_HEADER_SIGNATURE:     // No call for these as yet
+            case VARNAMED_HEADER_SIGNATURE:     // ...
             defstop
                 break;
         } // End SWITCH
@@ -2880,6 +2905,32 @@ UBOOL IsTknNamed
             return FALSE;
     } // End SWITCH
 } // End IsTknNamed
+
+
+//***************************************************************************
+//  $IsTknUsrDfn
+//
+//  Return TRUE iff the given token is a user-defined function
+//***************************************************************************
+
+UBOOL IsTknUsrDfn
+    (LPTOKEN lptkVar)
+
+{
+    HGLOBAL hGlb;
+
+    // If the token is immediate, it can't be a user fn
+    if (IsTknImmed (lptkVar))
+        return FALSE;
+
+    // Get the global memory handle (if any)
+    hGlb = GetGlbHandle (lptkVar);
+
+    if (hGlb EQ NULL)
+        return FALSE;
+
+    return (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlb)));
+} // End IsTknUsrDfn
 
 
 //***************************************************************************

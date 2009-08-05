@@ -473,8 +473,12 @@ DWORD WINAPI ImmExecStmtInThread
                     FALSE,                  // Suspended
                     TRUE,                   // Restartable
                     TRUE);                  // LinkIntoChain
-        // Set the cursor to indicate the new state
-        ForceSendCursorMsg (hWndEC, TRUE);
+        // If we're not waiting until finished, ...
+        // (in other words, we're called from LoadWorkspaceGlobal_EM
+        //  and we can't send a message to another thread.)
+        if (!bWaitUntilFini)
+            // Set the cursor to indicate the new state
+            ForceSendCursorMsg (hWndEC, TRUE);
 
         // Execute the line
         exitType =

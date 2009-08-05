@@ -820,7 +820,7 @@ UBOOL fnAlpha
             {
                 // Save the color
                 lptkLocalVars->lpMemClrNxt++->syntClr =
-                  gSyntaxColorName[SC_PRIMITIVE].syntClr;
+                  gSyntaxColorName[SC_PRIMFCN].syntClr;
 
                 // Save the name type
                 lptkLocalVars->scNameType = SC_NAMETYPE_PRIMITIVE;
@@ -1187,7 +1187,7 @@ UBOOL fnAsnDone
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMFCN].syntClr;
 
         return TRUE;
     } // End IF
@@ -1229,7 +1229,7 @@ UBOOL fnLstDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMFCN].syntClr;
 
         return TRUE;
     } // End IF
@@ -1310,7 +1310,7 @@ UBOOL fnClnDone
         } else
             // Save the color (plain old colon)
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColorName[SC_PRIMITIVE].syntClr;
+              gSyntaxColorName[SC_PRIMFCN].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -1546,7 +1546,7 @@ UBOOL fnPrmDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMFCN].syntClr;
 
         return TRUE;
     } // End IF
@@ -1837,7 +1837,7 @@ UBOOL fnOp1Done
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMOP1].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -1893,7 +1893,7 @@ UBOOL fnOp2Done
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMOP2].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -1938,7 +1938,7 @@ UBOOL fnDotDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMOP2].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -2014,7 +2014,7 @@ UBOOL fnJotDoneSub
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMOP2].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -2061,7 +2061,7 @@ UBOOL fnOutDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMOP1].syntClr;
 
         // Mark as successful
         return TRUE;
@@ -3059,7 +3059,7 @@ UBOOL fnDiaDone
     {
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMFCN].syntClr;
 
         goto NORMAL_EXIT;
     } // End IF
@@ -3163,7 +3163,7 @@ UBOOL fnSyntPrm
     if (lptkLocalVars->lpMemClrNxt)
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMITIVE].syntClr;
+          gSyntaxColorName[SC_PRIMFCN].syntClr;
 
     // Mark as successful
     return TRUE;

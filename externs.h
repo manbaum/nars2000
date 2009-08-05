@@ -1105,27 +1105,29 @@ typedef struct tagSYNTAXCOLORNAME
 EXTERN
 SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
 #ifdef DEFINE_VALUES
-= {{{DEF_SC_GLBNAME    }, L"Global Name"            },  // 00:  Global Name
-   {{DEF_SC_LCLNAME    }, L"Local Name"             },  // 01:  Local  ...
-   {{DEF_SC_LABEL      }, L"Label"                  },  // 02:  Label
-   {{DEF_SC_PRIMITIVE  }, L"Primitive"              },  // 03:  Primitive Function/Operator
-   {{DEF_SC_SYSFCN     }, L"System Fcn"             },  // 04:  System Function
-   {{DEF_SC_GLBSYSVAR  }, L"Global System Var"      },  // 05:  Global System Variable
-   {{DEF_SC_LCLSYSVAR  }, L"Local System Var"       },  // 06:  Local  ...
-   {{DEF_SC_CTRLSTRUC  }, L"Control Structure"      },  // 07:  Control Structure
-   {{DEF_SC_NUMCONST   }, L"Numeric Constant"       },  // 08:  Numeric constant
-   {{DEF_SC_CHRCONST   }, L"Character Constant"     },  // 09:  Character constant
-   {{DEF_SC_COMMENT    }, L"Comment"                },  // 0A:  Comment
-   {{DEF_SC_LINEDRAWING}, L"Line Drawing Chars"     },  // 0B:  Line drawing chars
-   {{DEF_SC_FCNLINENUMS}, L"Function Line Numbers"  },  // 0C:  Function line numbers
-   {{DEF_SC_MATCHGRP1  }, L"Matched Group Level 1"  },  // 0D:  Matched Grouping Symbols [] () {}
-   {{DEF_SC_MATCHGRP2  }, L"Matched Group Level 2"  },  // 0E:  Matched Grouping Symbols [] () {}
-   {{DEF_SC_MATCHGRP3  }, L"Matched Group Level 3"  },  // 0F:  Matched Grouping Symbols [] () {}
-   {{DEF_SC_MATCHGRP4  }, L"Matched Group Level 4"  },  // 10:  Matched Grouping Symbols [] () {}
-   {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"        },  // 11:  Unmatched Grouping Symbols [] () {} ' "
-   {{DEF_SC_UNNESTED   }, L"Improper Nesting"       },  // 12:  Improperly Nested Grouping Symbols [] () {}
-   {{DEF_SC_UNK        }, L"Unknown Symbols"        },  // 13:  Unknown symbol
-   {{DEF_SC_WINBG      }, L"Window Background"      },  // 14:  Window background
+= {{{DEF_SC_GLBNAME    }, L"Global Name"                  },  // 00:  Global Name
+   {{DEF_SC_LCLNAME    }, L"Local Name"                   },  // 01:  Local  ...
+   {{DEF_SC_LABEL      }, L"Label"                        },  // 02:  Label
+   {{DEF_SC_PRIMFCN    }, L"Primitive Function"           },  // 03:  Primitive Function
+   {{DEF_SC_PRIMOP1    }, L"Primitive Monadic Operator"   },  // 04:  Primitive Monadic Operator
+   {{DEF_SC_PRIMOP2    }, L"Primitive Dyadic Operator"    },  // 05:  Primitive Dyadic Operator
+   {{DEF_SC_SYSFCN     }, L"System Fcn"                   },  // 06:  System Function
+   {{DEF_SC_GLBSYSVAR  }, L"Global System Var"            },  // 07:  Global System Variable
+   {{DEF_SC_LCLSYSVAR  }, L"Local System Var"             },  // 08:  Local  ...
+   {{DEF_SC_CTRLSTRUC  }, L"Control Structure"            },  // 09:  Control Structure
+   {{DEF_SC_NUMCONST   }, L"Numeric Constant"             },  // 0A:  Numeric constant
+   {{DEF_SC_CHRCONST   }, L"Character Constant"           },  // 0B:  Character constant
+   {{DEF_SC_COMMENT    }, L"Comment"                      },  // 0C:  Comment
+   {{DEF_SC_LINEDRAWING}, L"Line Drawing Chars"           },  // 0D:  Line drawing chars
+   {{DEF_SC_FCNLINENUMS}, L"Function Line Numbers"        },  // 0E:  Function line numbers
+   {{DEF_SC_MATCHGRP1  }, L"Matched Group Level 1"        },  // 0F:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP2  }, L"Matched Group Level 2"        },  // 10:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP3  }, L"Matched Group Level 3"        },  // 11:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP4  }, L"Matched Group Level 4"        },  // 12:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"              },  // 13:  Unmatched Grouping Symbols [] () {} ' "
+   {{DEF_SC_UNNESTED   }, L"Improper Nesting"             },  // 14:  Improperly Nested Grouping Symbols [] () {}
+   {{DEF_SC_UNK        }, L"Unknown Symbols"              },  // 15:  Unknown symbol
+   {{DEF_SC_WINBG      }, L"Window Background"            },  // 16:  Window background
   }
 #endif
 ;

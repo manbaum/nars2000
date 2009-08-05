@@ -25,7 +25,9 @@
 #define DEF_SC_GLBNAME         DEF_SCN_RED          , DEF_SCN_TRANSPARENT
 #define DEF_SC_LCLNAME         DEF_SCN_GRAY         , DEF_SCN_TRANSPARENT
 #define DEF_SC_LABEL           DEF_SCN_MAROON       , DEF_SCN_TRANSPARENT
-#define DEF_SC_PRIMITIVE       DEF_SCN_NAVY         , DEF_SCN_TRANSPARENT
+#define DEF_SC_PRIMFCN         DEF_SCN_NAVY         , DEF_SCN_TRANSPARENT
+#define DEF_SC_PRIMOP1         DEF_SCN_ROYALBLUE    , DEF_SCN_TRANSPARENT
+#define DEF_SC_PRIMOP2         DEF_SCN_LIME         , DEF_SCN_TRANSPARENT
 #define DEF_SC_SYSFCN          DEF_SCN_NAVY         , DEF_SCN_TRANSPARENT
 #define DEF_SC_GLBSYSVAR       DEF_SCN_PURPLE       , DEF_SCN_TRANSPARENT
 #define DEF_SC_LCLSYSVAR       DEF_SCN_PURPLE       , DEF_SCN_TRANSPARENT
@@ -50,26 +52,28 @@ typedef enum tagSC_TYPE
     SC_GLBNAME = 0,     // 00:  Global Name
     SC_LCLNAME,         // 01:  Local  ...
     SC_LABEL,           // 02:  Label (including trailing colon)
-    SC_PRIMITIVE,       // 03:  Primitive Function/Operator (including quad, quote-quad, left/right arrows,
+    SC_PRIMFCN,         // 03:  Primitive Function (including quad, quote-quad, left/right arrows,
                         //      del, semicolon, and diamond)
-    SC_SYSFCN,          // 04:  System Function (including leading quad)
-    SC_GLBSYSVAR,       // 05:  Global System Variable (including leading quad)
-    SC_LCLSYSVAR,       // 06:  Local  ...
-    SC_CTRLSTRUC,       // 07:  Control Structure (including leading colon)
-    SC_NUMCONST,        // 08:  Numeric constant (including leading overbar)
-    SC_CHRCONST,        // 09:  Character constant (including single- or double-quote marks)
-    SC_COMMENT,         // 0A:  Comment (including comment symbol)
-    SC_LINEDRAWING,     // 0B:  Line drawing chars
-    SC_FCNLINENUMS,     // 0C:  Function Line Numbers
-    SC_MATCHGRP1,       // 0D:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP2,       // 0E:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP3,       // 0F:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP4,       // 10:  Matched Grouping Symbols [] () {}
-    SC_UNMATCHGRP,      // 11:  Unmatched Grouping Symbols [] () {} ' "
-    SC_UNNESTED,        // 12:  Improperly Nested Grouping Symbols [] () {}
-    SC_UNK,             // 13:  Unknown symbol
-    SC_WINBG,           // 14:  Window background
-    SC_LENGTH           // 15:  Length
+    SC_PRIMOP1,         // 04:  Primitive Monadic Operator
+    SC_PRIMOP2,         // 05:  Primitive Dyadic Operator
+    SC_SYSFCN,          // 06:  System Function (including leading quad)
+    SC_GLBSYSVAR,       // 07:  Global System Variable (including leading quad)
+    SC_LCLSYSVAR,       // 08:  Local  ...
+    SC_CTRLSTRUC,       // 09:  Control Structure (including leading colon)
+    SC_NUMCONST,        // 0A:  Numeric constant (including leading overbar)
+    SC_CHRCONST,        // 0B:  Character constant (including single- or double-quote marks)
+    SC_COMMENT,         // 0C:  Comment (including comment symbol)
+    SC_LINEDRAWING,     // 0D:  Line drawing chars
+    SC_FCNLINENUMS,     // 0E:  Function Line Numbers
+    SC_MATCHGRP1,       // 0F:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP2,       // 10:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP3,       // 11:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP4,       // 12:  Matched Grouping Symbols [] () {}
+    SC_UNMATCHGRP,      // 13:  Unmatched Grouping Symbols [] () {} ' "
+    SC_UNNESTED,        // 14:  Improperly Nested Grouping Symbols [] () {}
+    SC_UNK,             // 15:  Unknown symbol
+    SC_WINBG,           // 16:  Window background
+    SC_LENGTH           // 17:  Length
                         //      Because this enum is origin-0, this value is the # valid columns.
 } SCTYPE, *LPSCTYPE;
 

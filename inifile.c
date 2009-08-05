@@ -87,7 +87,9 @@
 #define KEYNAME_SC_GLBNAME              L"GlbName"
 #define KEYNAME_SC_LCLNAME              L"LclName"
 #define KEYNAME_SC_LABEL                L"Label"
-#define KEYNAME_SC_PRIM                 L"Prim"
+#define KEYNAME_SC_PRIMFCN              L"PrimFcn"
+#define KEYNAME_SC_PRIMOP1              L"PrimOp1"
+#define KEYNAME_SC_PRIMOP2              L"PrimOp2"
 #define KEYNAME_SC_SYSFCN               L"SysFcn"
 #define KEYNAME_SC_GLBSYSVAR            L"GlbSysVar"
 #define KEYNAME_SC_LCLSYSVAR            L"LclSysVar"
@@ -124,24 +126,26 @@ LPWCHAR aColorKeyNames[] =
 {KEYNAME_SC_GLBNAME     ,       // 00:  Global Name
  KEYNAME_SC_LCLNAME     ,       // 01:  Local  ...
  KEYNAME_SC_LABEL       ,       // 02:  Label
- KEYNAME_SC_PRIM        ,       // 03:  Primitive Function/Operator
- KEYNAME_SC_SYSFCN      ,       // 04:  System Function
- KEYNAME_SC_GLBSYSVAR   ,       // 05:  Global System Variable
- KEYNAME_SC_LCLSYSVAR   ,       // 06:  Local  ...
- KEYNAME_SC_CTRLSTRUC   ,       // 07:  Control Structure
- KEYNAME_SC_NUMCONST    ,       // 08:  Numeric constant
- KEYNAME_SC_CHRCONST    ,       // 09:  Character constant
- KEYNAME_SC_COMMENT     ,       // 0A:  Comment
- KEYNAME_SC_LINEDRAWING ,       // 0B:  Line drawing chars
- KEYNAME_SC_FCNLINENUMS ,       // 0C:  Function line numbers
- KEYNAME_SC_MATCHGRP1   ,       // 0D:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP2   ,       // 0E:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP3   ,       // 0F:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP4   ,       // 10:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_UNMATCHGRP  ,       // 11:  Unmatched Grouping Symbols [] () {} ' "
- KEYNAME_SC_UNNESTED    ,       // 12:  Improperly Nested Grouping Symbols [] () {}
- KEYNAME_SC_UNK         ,       // 13:  Unknown symbol
- KEYNAME_SC_WINBG       ,       // 14:  Window background
+ KEYNAME_SC_PRIMFCN     ,       // 03:  Primitive Function
+ KEYNAME_SC_PRIMOP1     ,       // 04:  Primitive Monadic Operator
+ KEYNAME_SC_PRIMOP2     ,       // 05:  Primitive Dyadic Operator
+ KEYNAME_SC_SYSFCN      ,       // 06:  System Function
+ KEYNAME_SC_GLBSYSVAR   ,       // 07:  Global System Variable
+ KEYNAME_SC_LCLSYSVAR   ,       // 08:  Local  ...
+ KEYNAME_SC_CTRLSTRUC   ,       // 09:  Control Structure
+ KEYNAME_SC_NUMCONST    ,       // 0A:  Numeric constant
+ KEYNAME_SC_CHRCONST    ,       // 0B:  Character constant
+ KEYNAME_SC_COMMENT     ,       // 0C:  Comment
+ KEYNAME_SC_LINEDRAWING ,       // 0D:  Line drawing chars
+ KEYNAME_SC_FCNLINENUMS ,       // 0E:  Function line numbers
+ KEYNAME_SC_MATCHGRP1   ,       // 0F:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP2   ,       // 10:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP3   ,       // 11:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP4   ,       // 12:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_UNMATCHGRP  ,       // 13:  Unmatched Grouping Symbols [] () {} ' "
+ KEYNAME_SC_UNNESTED    ,       // 14:  Improperly Nested Grouping Symbols [] () {}
+ KEYNAME_SC_UNK         ,       // 15:  Unknown symbol
+ KEYNAME_SC_WINBG       ,       // 16:  Window background
 };
 
 

@@ -220,7 +220,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
                   lpMemRes = NULL;  // Ptr to result    ...
     LPAPLDIM      lpMemDimRht;      // Ptr to right arg dimensions
     UBOOL         bRet = TRUE;      // TRUE iff result is valid
-    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
     APLBOOL       bQuadIO;          // []IO
     GRADE_DATA    gradeData;        // Data passed to GRADE_ROUTINE
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars

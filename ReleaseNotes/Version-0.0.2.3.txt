@@ -1,6 +1,19 @@
 Version 0.0.2.3 consists of the following Builds:
 
 
+Build #506-- Version 0.0.2.3
+----------------------------
+
+* Fix Bug:  An uninitialized variable  in grade up/down causes a system crash
+    if it needs to signal an error.
+
+Directory trunk:
+
+PF_DELTASTILE.C:
+  Fix Bug:  A variable is uninitialized such that if grade up/down signals
+    an error, the system crashes.
+
+
 Build #505-- Version 0.0.2.3
 ----------------------------
 

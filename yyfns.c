@@ -297,6 +297,20 @@ UINT YYCountFcnStr
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
             } else
+            if (tknType EQ TKT_FCNARRAY)
+            {
+                // Get the global memory handle
+                hGlbFcn = ClrPtrTypeDir (lpToken->tkData.tkGlbData);
+
+                // Lock the memory to get a ptr to it
+                lpMemFcn = MyGlobalLock (hGlbFcn);
+
+                // Accumulate tokens
+                TknCount += lpMemFcn->tknNELM;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+            } else
                 TknCount++;
         } // End IF/ELSE
     } // End FOR
@@ -410,18 +424,19 @@ LPPL_YYSTYPE YYCopyFcn
      UBOOL         bResUsed)            // TRUE iff the result is used
 
 {
-    int          i,
-                 iLen,
-                 TknCount,
-                 TotalTknCount = 0;
-    PL_YYSTYPE   YYFcn = {0};
+    int          i,                     // Loop counter
+                 iLen,                  // Token count in this function strand
+                 TknCount,              // # tokens added for this element of the function strand
+                 TotalTknCount = 0;     // Total token count
+    PL_YYSTYPE   YYFcn = {0};           // Temporary YYSTYPE
     HGLOBAL      hGlbFcn;               // Function array global memory handle
     LPPL_YYSTYPE lpMemFcn;              // Ptr to function array global memory
-    LPTOKEN      lpToken;
-    LPPL_YYSTYPE lpYYMem0,
-                 lpYYMem1,
-                 lpYYCopy;
-    UBOOL        bYYFcn;
+    LPTOKEN      lpToken;               // Ptr to temporary token
+    LPPL_YYSTYPE lpYYMem0,              // Ptr to temporary YYSTYPE
+                 lpYYMem1,              // ...
+                 lpYYCopy;              // ...
+    UBOOL        bYYFcn,                // TRUE iff we're using YYFcn
+                 bGlbFcn;               // TRUE iff we're using hGlbFcn
 
     // Get the token count in this function strand
     iLen = lpYYArg->TknCount;
@@ -465,6 +480,9 @@ LPPL_YYSTYPE YYCopyFcn
 
             // Assume it's a single token
             TknCount = 1;
+
+            // Assume we're not using hGlbFcn
+            bGlbFcn = FALSE;
 
             // Special case for named functions/operators
             if (lpToken->tkFlags.TknType EQ TKT_FCNNAMED
@@ -510,70 +528,11 @@ LPPL_YYSTYPE YYCopyFcn
                     Assert (IsGlbTypeFcnDir (hGlbFcn)
                          || IsGlbTypeDfnDir (hGlbFcn));
 
-                    // Split cases based upon the function signature
-                    switch (GetSignatureGlb (hGlbFcn))
-                    {
-                        case DFN_HEADER_SIGNATURE:
-                            // Increment the reference count in global memory
-                            DbgIncrRefCntDir (hGlbFcn);
+                    // Mark as using hGlbFcn
+                    bGlbFcn = TRUE;
 
-                            // Fill in the token
-                            YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-////////////////////////////YYFcn.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
-////////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
-                            YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;
-                            YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
-                            YYFcn.TknCount                  = TknCount;
-////////////////////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)
-////////////////////////////YYFcn.YYIndirect                = FALSE;            // Already zero from = {0}
-////////////////////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
-////////////////////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
-////////////////////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
-////////////////////////////YYFcn.lpYYFcnBase               = NULL;             // Already zero from = {0}
-                            YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
-
-                            break;
-
-                        case FCNARRAY_HEADER_SIGNATURE:
-                        {
-#ifdef DEBUG
-                            LPFCNARRAY_HEADER lpMemHdrFcn;
-#endif
-                            // Clear the ptr type bits
-                            hGlbFcn = ClrPtrTypeDir (hGlbFcn);
-#ifdef DEBUG
-                            lpMemHdrFcn = (LPVOID)
-#endif
-                            // Lock the memory to get a ptr to it
-                            lpMemFcn = MyGlobalLock (hGlbFcn);
-
-                            // Get the token count
-                            TknCount = ((LPFCNARRAY_HEADER) lpMemFcn)->tknNELM;
-
-                            // Increment function array reference counts
-                            IncrFcnMem (lpMemFcn);
-
-                            // Skip over the header to the data
-                            lpMemFcn = FcnArrayBaseToData (lpMemFcn);
-
-                            // Copy the contents of the function array to global memory
-                            CopyMemory (lpYYMem, lpMemFcn, TknCount * sizeof (lpYYMem[0]));
-
-                            // Skip over the copied function array
-                            lpYYMem += TknCount;
-
-                            // We no longer need this ptr
-                            MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
-
-                            // Mark as not using YYFcn
-                            bYYFcn = FALSE;
-
-                            break;
-                        } // End FCNARRAY_HEADER_SIGNATURE
-
-                        defstop
-                            break;
-                    } // End SWITCH
+                    // Mark as not using YYFcn
+                    bYYFcn = FALSE;
                 } // End IF/ELSE/...
 
                 // If we used YYFcn (and thus didn't already copy the function to lpYYMem)
@@ -593,6 +552,22 @@ LPPL_YYSTYPE YYCopyFcn
                     Assert (YYCheckInuse (&lpYYMem[-1]));
                 } // End IF
             } else
+            if (lpToken->tkFlags.TknType EQ TKT_FCNARRAY)
+            {
+                // tkData is an HGLOBAL
+                Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_HGLOBAL);
+
+                // Get the global memory handle or function address if direct
+                hGlbFcn = lpToken->tkData.tkGlbData;
+
+                // stData is a valid HGLOBAL function array
+                //   or user-defined function/operator
+                Assert (IsGlbTypeFcnDir (hGlbFcn)
+                     || IsGlbTypeDfnDir (hGlbFcn));
+
+                // Mark as using hGlbFcn
+                bGlbFcn = TRUE;
+            } else
             {
                 lpYYCopy = CopyPL_YYSTYPE_EM_YY (&lpYYArg[i], FALSE);
                 if (lpYYMem->YYInuse)
@@ -602,6 +577,95 @@ LPPL_YYSTYPE YYCopyFcn
                 Assert (YYCheckInuse (&lpYYMem[-1]));
                 YYFree (lpYYCopy); lpYYCopy = NULL;
             } // End IF/ELSE
+
+            // If we used hGlbFcn, ...
+            if (bGlbFcn)
+            {
+                // Split cases based upon the function signature
+                switch (GetSignatureGlb (hGlbFcn))
+                {
+                    case DFN_HEADER_SIGNATURE:
+                        // Increment the reference count in global memory
+                        DbgIncrRefCntDir (hGlbFcn);
+
+                        // Fill in the token
+                        YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+////////////////////////YYFcn.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
+////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+                        YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;
+                        YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
+                        YYFcn.TknCount                  = TknCount;
+////////////////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)
+////////////////////////YYFcn.YYIndirect                = FALSE;            // Already zero from = {0}
+////////////////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
+////////////////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
+////////////////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
+////////////////////////YYFcn.lpYYFcnBase               = NULL;             // Already zero from = {0}
+                        YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
+
+                        // Mark as using YYFcn
+                        bYYFcn = TRUE;
+
+                        break;
+
+                    case FCNARRAY_HEADER_SIGNATURE:
+                    {
+#ifdef DEBUG
+                        LPFCNARRAY_HEADER lpMemHdrFcn;
+#endif
+                        // Clear the ptr type bits
+                        hGlbFcn = ClrPtrTypeDir (hGlbFcn);
+#ifdef DEBUG
+                        lpMemHdrFcn = (LPVOID)
+#endif
+                        // Lock the memory to get a ptr to it
+                        lpMemFcn = MyGlobalLock (hGlbFcn);
+
+                        // Get the token count
+                        TknCount = ((LPFCNARRAY_HEADER) lpMemFcn)->tknNELM;
+
+                        // Increment function array reference counts
+                        IncrFcnMem (lpMemFcn);
+
+                        // Skip over the header to the data
+                        lpMemFcn = FcnArrayBaseToData (lpMemFcn);
+
+                        // Copy the contents of the function array to global memory
+                        CopyMemory (lpYYMem, lpMemFcn, TknCount * sizeof (lpYYMem[0]));
+
+                        // Skip over the copied function array
+                        lpYYMem += TknCount;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+
+                        // Mark as not using YYFcn
+                        bYYFcn = FALSE;
+
+                        break;
+                    } // End FCNARRAY_HEADER_SIGNATURE
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // If we used YYFcn (and thus didn't already copy the function to lpYYMem)
+                if (bYYFcn)
+                {
+                    YYFcn.YYInuse  = FALSE;
+#ifdef DEBUG
+                    YYFcn.YYIndex  = NEG1U;
+#endif
+                    // Copy the destination YYInuse flag in case it's
+                    //   in the YYRes allocated region
+                    YYFcn.YYInuse  = lpYYMem->YYInuse;
+                    YYFcn.TknCount = TknCount;
+
+                    // Copy to the destination
+                    *lpYYMem++ = YYFcn;
+                    Assert (YYCheckInuse (&lpYYMem[-1]));
+                } // End IF
+            } // End IF
         } // End IF/ELSE
 
         // Accumulate into the total token count
@@ -675,6 +739,7 @@ void IncrFcnMem
 
                     break;
 
+                case TKT_AXISIMMED:
                 case TKT_VARIMMED:
                 case TKT_FCNIMMED:
                 case TKT_OP1IMMED:

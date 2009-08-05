@@ -894,7 +894,7 @@ StmtSing:
 ////                                              DbgBrk ();
 ////
 ////                                              lpplLocalVars->lpYYMak =
-////                                                MakeNameFcnOpr_YY (&$2);
+////                                                MakeNameFcnOpr_YY (&$2, TRUE);
 ////                                              FreeResult (&$2.tkToken);
 ////
 ////                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -1781,7 +1781,7 @@ AmbOpAssign:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -1853,7 +1853,7 @@ AmbOpAssign:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$2);
+                                               MakeNameFcnOpr_YY (&$2, TRUE);
 /////////////////////////////////////////////FreeResult (&$2.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -4466,7 +4466,7 @@ LeftOper:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -4489,7 +4489,7 @@ LeftOper:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -4512,7 +4512,7 @@ LeftOper:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, FALSE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -4842,13 +4842,6 @@ Train:
                                              // Initialize the function strand (Train) base
                                              $1.lpYYStrandBase = $1.lpYYFcnBase;
 
-                                             lpplLocalVars->lpYYRht =
-                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
-                                             if (lpplLocalVars->lpYYRht)
-                                             {
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
-                                             } // End IF
-
                                              FreeResult (&$1.tkToken);
                                              YYERROR3
                                          } else
@@ -4859,13 +4852,6 @@ Train:
                                          {
                                              // Initialize the function strand (Train) base
                                              $1.lpYYStrandBase = $1.lpYYFcnBase;
-
-                                             lpplLocalVars->lpYYRht =
-                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
-                                             if (lpplLocalVars->lpYYRht)
-                                             {
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
-                                             } // End IF
 
                                              FreeResult (&$1.tkToken);
                                              YYERROR3
@@ -5091,13 +5077,6 @@ Train:
                                              // Initialize the function strand (Train) base
                                              $1.lpYYStrandBase = $1.lpYYFcnBase;
 
-                                             lpplLocalVars->lpYYRht =
-                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
-                                             if (lpplLocalVars->lpYYRht)
-                                             {
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
-                                             } // End IF
-
                                              FreeResult (&$1.tkToken);
                                              YYERROR3
                                          } else
@@ -5248,7 +5227,7 @@ RightOper:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -5274,7 +5253,7 @@ RightOper:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -5300,7 +5279,7 @@ RightOper:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, FALSE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -5400,7 +5379,7 @@ AxisFunc:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$4);
+                                               MakeNameFcnOpr_YY (&$4, TRUE);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -5459,7 +5438,7 @@ AxisFunc:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$4);
+                                               MakeNameFcnOpr_YY (&$4, FALSE);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -5587,7 +5566,7 @@ AmbOp:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -5752,7 +5731,7 @@ MonOp:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -5884,7 +5863,7 @@ DydOp:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
-                                               MakeNameFcnOpr_YY (&$1);
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
                                              FreeResult (&$1.tkToken);               // Decrement reccnt
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
@@ -7478,16 +7457,7 @@ PL_YYLEX_START:
             if (CheckNullOp3 (lpplLocalVars))
                 return NULLOP;
             else
-            {
-                // Split cases based upon the operator symbol
-                switch (lpYYLval->tkToken.tkData.tkChar)
-                {
-                    default:
-                        break;
-                } // End SWITCH
-
                 return OP1;
-            } // End IF/ELSE
 
         case TKT_OP2IMMED:
             // Split cases based upon the operator symbol

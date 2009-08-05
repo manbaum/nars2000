@@ -1,6 +1,3 @@
-Version 0.0.2.3 consists of the following Builds:
-
-
 Build #507-- Version 0.0.2.3
 ----------------------------
 
@@ -28,32 +25,3 @@ YYFNS.C:
     save them at the top level in the result rather than just point to the
     function array global memory handle.
   In <IncrFcnMem>, handle immediate axis values.
-
-
-Build #506-- Version 0.0.2.3
-----------------------------
-
-* Fix Bug:  An uninitialized variable  in grade up/down causes a system crash
-    if it needs to signal an error.
-
-Directory trunk:
-
-PF_DELTASTILE.C:
-  Fix Bug:  A variable is uninitialized such that if grade up/down signals
-    an error, the system crashes.
-
-
-Build #505-- Version 0.0.2.3
-----------------------------
-
-* Avoid Deadlock of Sending Message to Suspended Thread
-
-Directory trunk:
-
-IMMEXEC.C:
-  In <ImmExecStmtInThread>, don't call <ForceSendCursorMsg> if we're
-    not waiting until finished as the message might be sent to another
-    thread.
-
-VERSION.RC:
-  Increment version #.

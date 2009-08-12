@@ -267,7 +267,7 @@
                 >
             </File>
             <File
-                RelativePath=".\Debug64\cs_parse.c"
+                RelativePath="$(OutDir)\cs_parse.c"
                 >
             </File>
             <File
@@ -393,7 +393,7 @@
                 >
             </File>
             <File
-                RelativePath=".\Debug64\fh_parse.c"
+                RelativePath="$(OutDir)\fh_parse.c"
                 >
             </File>
             <File
@@ -645,7 +645,7 @@
                 >
             </File>
             <File
-                RelativePath=".\Debug64\pl_parse.c"
+                RelativePath="$(OutDir)\pl_parse.c"
                 >
             </File>
             <File
@@ -669,7 +669,7 @@
                 </FileConfiguration>
             </File>
             <File
-                RelativePath=".\Debug64\pn_parse.c"
+                RelativePath="$(OutDir)\pn_parse.c"
                 >
             </File>
             <File

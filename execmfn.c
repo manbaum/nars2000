@@ -50,7 +50,7 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      LPTOKEN      lptkAxis,             // Ptr to axis token (may be NULL)
      HGLOBAL      hGlbMF,               // Magic function global memory handle
-     LINE_NUMS    lineNum)              // Starting line # type (see LINE_NUMS)
+     LINE_NUMS    startLineType)        // Starting line type (see LINE_NUMS)
 
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to result
@@ -61,7 +61,7 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
                         lpYYFcnStrOpr,  // Ptr to operator function strand
                         lptkAxis,       // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                         lptkRhtArg,     // Ptr to right arg token
-                        lineNum);       // Starting line # type (see LINE_NUMS)
+                        startLineType); // Starting line type (see LINE_NUMS)
     // If there was an error, set the caret to
     //   point to the primitive function
     if (lpYYRes EQ NULL)
@@ -86,7 +86,7 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      LPTOKEN      lptkAxis,             // Ptr to axis token (may be NULL)
      HGLOBAL      hGlbMF,               // Magic function global memory handle
-     LINE_NUMS    lineNum)              // Starting line # type (see LINE_NUMS)
+     LINE_NUMS    startLineType)        // Starting line type (see LINE_NUMS)
 
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to result
@@ -99,7 +99,7 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
                            lpYYFcnStrRht,   // Ptr to right operand function strand
                            lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                            lptkRhtArg,      // Ptr to right arg token
-                           lineNum);        // Starting line # type (see LINE_NUMS)
+                           startLineType);  // Starting line type (see LINE_NUMS)
     // If there was an error, set the caret to
     //   point to the primitive function
     if (lpYYRes EQ NULL)
@@ -576,8 +576,9 @@ HGLOBAL Init1MagicFunction
             goto ERROR_EXIT;
         } // End IF
 
-        // Check for special labels ([]IDENTITY, []INVERSE, []PROTOTYPE, and []SINGLETON)
-        GetSpecialLabelNums (lpMemDfnHdr);
+        // Check for special labels ([]IDENTITY, etc.)
+        if (!GetSpecialLabelNums (lpMemDfnHdr, TRUE))
+            goto ERROR_EXIT;
 
         // Get the function/operator LPSYMENTRY
         lpSymEntry = lpMemDfnHdr->steFcnName;
@@ -670,18 +671,18 @@ UBOOL InitMagicFunctions
 ////initMF.uPtdMemVirtEnd   = uPtdMemVirtEnd;
 
     // Define the magic functions
-    lpMemPTD->hGlbMF_MonIota   = Init1MagicFunction (MFN_MonIota  , &MF_MonIota  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_DydIota   = Init1MagicFunction (MFN_DydIota  , &MF_DydIota  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_MonDnShoe = Init1MagicFunction (MFN_MonDnShoe, &MF_MonDnShoe, lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_DydTilde  = Init1MagicFunction (MFN_DydTilde , &MF_DydTilde , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_MonRank   = Init1MagicFunction (MFN_MonRank  , &MF_MonRank  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_DydRank   = Init1MagicFunction (MFN_DydRank  , &MF_DydRank  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_Conform   = Init1MagicFunction (MFN_Conform  , &MF_Conform  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_MonIota     = Init1MagicFunction (MFN_MonIota  , &MF_MonIota  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_DydIota     = Init1MagicFunction (MFN_DydIota  , &MF_DydIota  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_MonDnShoe   = Init1MagicFunction (MFN_MonDnShoe, &MF_MonDnShoe, lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_DydTilde    = Init1MagicFunction (MFN_DydTilde , &MF_DydTilde , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_MonRank     = Init1MagicFunction (MFN_MonRank  , &MF_MonRank  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_DydRank     = Init1MagicFunction (MFN_DydRank  , &MF_DydRank  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_Conform     = Init1MagicFunction (MFN_Conform  , &MF_Conform  , lpMemPTD, hWndEC, NULL);
 ////initMF.lpHTS = &lpMemPTD->htsPTD_MonFMT;
-    lpMemPTD->hGlbMF_MonFMT    = Init1MagicFunction (MFN_MonFMT   , &MF_MonFMT   , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_MonFMT      = Init1MagicFunction (MFN_MonFMT   , &MF_MonFMT   , lpMemPTD, hWndEC, NULL);
 ////initMF.lpHTS = &lpMemPTD->htsPTD_MonFMT;
-    lpMemPTD->hGlbMF_Box       = Init1MagicFunction (MFN_Box      , &MF_Box      , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_MonVR     = Init1MagicFunction (MFN_MonVR    , &MF_MonVR    , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_Box         = Init1MagicFunction (MFN_Box      , &MF_Box      , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMF_MonVR       = Init1MagicFunction (MFN_MonVR    , &MF_MonVR    , lpMemPTD, hWndEC, NULL);
 
     return TRUE;
 } // InitMagicFunctions

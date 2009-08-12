@@ -72,7 +72,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
      LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL -- used only if function strand is NULL)
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token
-     LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
+     LINE_NUMS    startLineType)    // Starting line type (see LINE_NUMS)
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
@@ -111,7 +111,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
                            lpYYFcnStrRht,   // Ptr to right operand function strand (may be NULL if not an operator and no axis)
                            lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                            lptkRhtArg,      // Ptr to right arg token
-                           startLineNum);   // Starting line # (see LINE_NUMS)
+                           startLineType);  // Starting line type (see LINE_NUMS)
 } // End ExecDfnGlb_EM_YY
 #undef  APPEND_NAME
 
@@ -136,7 +136,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
      LPPL_YYSTYPE lpYYFcnStrRht,    // Ptr to right operand function strand (may be NULL if not an operator and no axis)
      LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL -- used only if function strand is NULL)
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token
-     LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
+     LINE_NUMS    startLineType)    // Starting line type (see LINE_NUMS)
 
 {
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
@@ -164,6 +164,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  bNamedRhtFcn;      // ...          right ...
     UBOOL        bOldExecuting;     // Old value of bExecuting
     HWND         hWndEC;            // Edit Ctrl window handle
+    UINT         startLineNum;      // Starting line #
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
@@ -178,10 +179,12 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
     // If there's no left arg token and this function requires a left arg,
+    //   and we're not entering at LINENUM_IDENTITY,
     //   signal a VALENCE ERROR
     if (lptkLftArg EQ NULL
      && lpMemDfnHdr->FcnValence NE FCNVALENCE_AMB
-     && lpMemDfnHdr->numLftArgSTE NE 0)
+     && lpMemDfnHdr->numLftArgSTE NE 0
+     && startLineType NE LINENUM_IDENTITY)
         goto VALENCE_EXIT;
 
     // If there's a left arg token and this function has no left arg,
@@ -232,7 +235,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     } // End IF
 
     // Split cases based upon the starting line #
-    switch (startLineNum)
+    switch (startLineType)
     {
         case LINENUM_ONE:
             startLineNum = 1;
@@ -250,8 +253,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
             break;
 
         case LINENUM_PROTOTYPE:
-            // If not defined (=0), enter at line 1
-            startLineNum = max (1, lpMemDfnHdr->nPrototypeLine);
+            startLineNum = lpMemDfnHdr->nPrototypeLine;
 
             break;
 

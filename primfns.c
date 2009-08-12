@@ -2953,6 +2953,7 @@ UBOOL IsTknImmed
         case TKT_OP3IMMED:
         case TKT_AXISIMMED:
         case TKT_LSTIMMED:
+        case TKT_OPJOTDOT:
             return TRUE;
 
         case TKT_VARNAMED:

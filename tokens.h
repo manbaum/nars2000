@@ -167,7 +167,7 @@ typedef enum tagTOKEN_TYPES
 typedef struct tagTKFLAGS
 {
     UINT TknType:7,         // 0000007F:  Data token type (see TOKEN_TYPES)
-         Align:1,           // 00000080:  Alignment bits (available if necessary
+         :1,                // 00000080:  Alignment bit (available if necessary
          ImmType:4,         // 00000F00:  Type of immediate data (see IMM_TYPES) (if .TknType is TKT_xxxIMMED)
          NoDisplay:1,       // 00001000:  Do not display this token
          :19;               // FFFFE000:  Available bits

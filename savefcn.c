@@ -1555,8 +1555,9 @@ UBOOL SaveFunctionCom
             goto ERROR_EXIT;
         } // End IF
 
-        // Check for special labels ([]IDENTITY, []INVERSE, []PROTOTYPE, and []SINGLETON)
-        GetSpecialLabelNums (lpMemDfnHdr);
+        // Check for special labels ([]IDENTITY, etc.)
+        if (!GetSpecialLabelNums (lpMemDfnHdr, hWndFE NE NULL))
+            goto ERROR_EXIT;
 
         // If there was a previous function, ...
         if (hGlbOldDfn)
@@ -1764,15 +1765,16 @@ UBOOL IsLineEmpty
 //  Return the line #s (or zero if not found) of the special line labels
 //***************************************************************************
 
-void GetSpecialLabelNums
-    (LPDFN_HEADER  lpMemDfnHdr)     // Ptr to user-defined function/operator header
+UBOOL GetSpecialLabelNums
+    (LPDFN_HEADER  lpMemDfnHdr,     // Ptr to user-defined function/operator header
+     UBOOL         bDispErrMsg)     // TRUE iff we may display error messages
 
 {
-    UINT           numFcnLines,  // # lines in the function
-                   uLineNum;     // Loop counter
-    LPFCNLINE      lpFcnLines;   // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    LPTOKEN_HEADER lptkHdr;      // Ptr to header of tokenized line
-    LPTOKEN        lptkLine;     // Ptr to tokenized line
+    UINT           numFcnLines,     // # lines in the function
+                   uLineNum;        // Loop counter
+    LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;        // Ptr to tokenized line
 
     // Get # lines in the function
     numFcnLines = lpMemDfnHdr->numFcnLines;
@@ -1818,16 +1820,29 @@ void GetSpecialLabelNums
                 lpMemName = MyGlobalLock (hGlbName);
 
                 if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"identity") EQ 0)
+                {
+                    if (lpMemDfnHdr->nIdentityLine)
+                        goto ERROR_EXIT;
                     lpMemDfnHdr->nIdentityLine  = uLineNum + 1;
-
+                } else
                 if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"inverse") EQ 0)
+                {
+                    if (lpMemDfnHdr->nInverseLine)
+                        goto ERROR_EXIT;
                     lpMemDfnHdr->nInverseLine   = uLineNum + 1;
-
+                } else
                 if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"prototype") EQ 0)
+                {
+                    if (lpMemDfnHdr->nPrototypeLine)
+                        goto ERROR_EXIT;
                     lpMemDfnHdr->nPrototypeLine = uLineNum + 1;
-
+                } else
                 if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"singleton") EQ 0)
+                {
+                    if (lpMemDfnHdr->nSingletonLine)
+                        goto ERROR_EXIT;
                     lpMemDfnHdr->nSingletonLine = uLineNum + 1;
+                } // End IF/ELSE/...
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbName); lpMemName = NULL;
@@ -1840,6 +1855,28 @@ void GetSpecialLabelNums
         // Skip to the next struct
         lpFcnLines++;
     } // End FOR/IF
+
+    // Mark as successful
+    return TRUE;
+
+ERROR_EXIT:
+    if (bDispErrMsg)
+    {
+        WCHAR wszTemp[1024];            // Save area for error message text
+
+        // Format the error message
+        wsprintfW (wszTemp,
+                   L"Duplicate special []label line # %d -- function not saved",
+                   uLineNum + 1);
+        // Display the error message
+        MessageBoxW (NULL,
+                    wszTemp,
+                    lpwszAppName,
+                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+    } // End IF
+
+    // Mark as in error
+    return FALSE;
 } // End GetSpecialLabelNums
 
 

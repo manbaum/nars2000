@@ -45,10 +45,10 @@ LPPL_YYSTYPE ExecuteFn0
 
     if (lpYYFcn0->tkToken.tkData.tkSym->stFlags.FcnDir)
         // Call the execution routine
-        return (*lpNameFcn) (NULL,
-                            &lpYYFcn0->tkToken,
-                             NULL,
-                             NULL);
+        return (*lpNameFcn) (NULL,                      // Ptr to left arg token (may be NULL if monadic)
+                            &lpYYFcn0->tkToken,         // Ptr to function token
+                             NULL,                      // Ptr to right arg token
+                             NULL);                     // Ptr to axis token (may be NULL)
     else
         // tkData is a valid HGLOBAL function array or user-defined function/operator
         Assert (IsGlbTypeFcnDir (lpNameFcn)
@@ -115,12 +115,15 @@ LPPL_YYSTYPE ExecFunc_EM_YY
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
     {
         case TKT_FCNIMMED:
+            // Get the address of the execution routine
             lpPrimFn = PrimFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
             if (!lpPrimFn)
                 goto SYNTAX_EXIT;
 
-            return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, NULL);
-
+            return (*lpPrimFn) (lptkLftArg,                         // Ptr to left arg token (may be NULL if monadic)
+                               &lpYYFcnStr->tkToken,                // Ptr to function token
+                                lptkRhtArg,                         // Ptr to right arg token
+                                lptkAxis);                          // Ptr to axis token (may be NULL)
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYFcnStr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
@@ -143,8 +146,10 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
                     // If it's an internal function, go there
                     if (stFlags.FcnDir)
-                        return (*lpNameFcn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, NULL);
-
+                        return (*lpNameFcn) (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+                                            &lpYYFcnStr->tkToken,   // Ptr to function token
+                                             lptkRhtArg,            // Ptr to right arg token
+                                             lptkAxis);             // Ptr to axis token (may be NULL)
                     // Use the HGLOBAL
                     hGlbFcn = lpNameFcn;
                 } else
@@ -169,7 +174,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
                                              hGlbFcn,       // Function array global memory handle
                                              lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
-                                             NULL);         // Ptr to axis token (may be NULL)
+                                             lptkAxis);     // Ptr to axis token (may be NULL)
             } // End IF
 
             // Handle the immediate case
@@ -192,7 +197,10 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     tkFn.tkData.tkChar     = lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar;
                     tkFn.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
 
-                    return (*lpPrimFn) (lptkLftArg, &tkFn, lptkRhtArg, NULL);
+                    return (*lpPrimFn) (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
+                                       &tkFn,           // Ptr to function token
+                                        lptkRhtArg,     // Ptr to right arg token
+                                        lptkAxis);      // Ptr to axis token (may be NULL)
                 } // End IMMTYPE_PRIMFCN
 
                 defstop
@@ -585,7 +593,7 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
      LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token
      LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL)
-     LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
+     LINE_NUMS    startLineType)    // Starting line type (see LINE_NUMS)
 
 {
     LPPRIMFNS lpPrimFn;             // Ptr to function address
@@ -624,8 +632,10 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
             if (!lpPrimFn)
                 goto SYNTAX_EXIT;
 
-            return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
-
+            return (*lpPrimFn) (lptkLftArg,                 // Ptr to left arg token (may be NULL if monadic)
+                               &lpYYFcnStr->tkToken,        // Ptr to function token
+                                lptkRhtArg,                 // Ptr to right arg token
+                                lptkAxis);                  // Ptr to axis token (may be NULL)
         case TKT_FCNARRAY:
                                 // 1.  User-defined operator
                                 //   e.g., Z{is}L (F FOO G) R
@@ -666,7 +676,7 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                                              lpYYFcnStr,    // Ptr to function strand
                                              lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                                              lptkRhtArg,    // Ptr to right arg token
-                                             startLineNum); // Starting line # (see LINE_NUMS)
+                                             startLineType); // Starting line type (see LINE_NUMS)
                 defstop
                     break;
             } // End SWITCH
@@ -689,8 +699,10 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
 
             // Check for internal functions
             if (lpYYFcnStr->tkToken.tkData.tkSym->stFlags.FcnDir)
-                return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
-
+                return (*lpPrimFn) (lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+                                   &lpYYFcnStr->tkToken,    // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
             // tkData is a valid HGLOBAL function array
             //   or user-defined function/operator
             Assert (IsGlbTypeFcnDir (hGlbFcn)
@@ -712,7 +724,7 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                                              lpYYFcnStr,    // Ptr to function strand
                                              lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                                              lptkRhtArg,    // Ptr to right arg token
-                                             startLineNum); // Starting line # (see LINE_NUMS)
+                                             startLineType); // Starting line type (see LINE_NUMS)
                 defstop
                     break;
             } // End SWITCH

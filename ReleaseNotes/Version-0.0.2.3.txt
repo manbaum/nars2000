@@ -1,7 +1,25 @@
 Version 0.0.2.3 consists of the following Builds:
 
 
-Build #519-- Version 0.0.2.3
+Build #520 -- Version 0.0.2.3
+----------------------------
+
+* Fix Bug:  =/1 1 1 returns incorrect result
+* Fix Bug:  +/1 2{jot}.={iota}17 and =/1 2{jot}.={iota}17
+    both return incorrect result
+
+Directory trunk:
+
+FASTBOOL.C:
+  Fix Bug:  =/1 1 1 returns incorrect result due to failure to take into
+    account the parity of the # 1s for {notequal} and the complement of
+    the # 0s for {equal}.
+  Fix Bug:  +/1 2{jot}.={iota}17 and =/1 2{jot}.={iota}17
+    both return incorrect result due to incorrect variable used to
+    calculate length of remaining bits in the last byte.
+
+
+Build #519 -- Version 0.0.2.3
 ----------------------------
 
 * Fix Bug:  The stmt foo{dydop}A{monop}B is not parsed (SYNTAX ERROR)
@@ -13,7 +31,7 @@ PL_PARSE.Y:
     a SYNTAX ERROR.  (foo{dydop}A{monop})B works, though.
 
 
-Build #518-- Version 0.0.2.3
+Build #518 -- Version 0.0.2.3
 ----------------------------
 
 * Special case 1/R for non-scalar R
@@ -24,7 +42,7 @@ PF_SLASH.C:
   Special case 1/R for non-scalar R.
 
 
-Build #517-- Version 0.0.2.3
+Build #517 -- Version 0.0.2.3
 ----------------------------
 
 * Fix Bug:  The Status Window isn't properly hidden under certain
@@ -39,7 +57,7 @@ MAIN.C:
     as appropriate.
 
 
-Build #516-- Version 0.0.2.3
+Build #516 -- Version 0.0.2.3
 ----------------------------
 
 * Allow Monadic and Dyadic Grade Up/down on Scalars and
@@ -57,7 +75,7 @@ PF_DELTASTILE.C:
   Fix Bug:  Dyadic grade up/down did not mark the result as a PV.
 
 
-Build #515-- Version 0.0.2.3
+Build #515 -- Version 0.0.2.3
 ----------------------------
 
 * Append Array Properties to 0 []DR
@@ -71,7 +89,7 @@ QF_DR.C:
   Append array properties to end of 0 []DR result.
 
 
-Build #514-- Version 0.0.2.3
+Build #514 -- Version 0.0.2.3
 ----------------------------
 
 * Fix Bug:  Wrong error line displayed under certain cirumstances.
@@ -107,7 +125,7 @@ TOKENIZE.C:
     <ErrorMessageDirect>, and related functions as it is unneeded.
 
 
-Build #513-- Version 0.0.2.3
+Build #513 -- Version 0.0.2.3
 ----------------------------
 
 * Optimize Unique
@@ -120,7 +138,7 @@ PF_DSHOE.C:
     standard for magic functions.
 
 
-Build #512-- Version 0.0.2.3
+Build #512 -- Version 0.0.2.3
 ----------------------------
 
 * Fix Bug:  When calculating a window size, the height of the
@@ -135,7 +153,7 @@ COMMON.C:
     of the menu.
 
 
-Build #511-- Version 0.0.2.3
+Build #511 -- Version 0.0.2.3
 ----------------------------
 
 * Optimize IndexOf and ElementOf on Simple Non-hetero Arrays
@@ -208,7 +226,7 @@ RESDEBUG.C:
   White space changes only.
 
 
-Build #510-- Version 0.0.2.3
+Build #510 -- Version 0.0.2.3
 ----------------------------
 
 * Implement system label []IDENTITY.
@@ -261,7 +279,7 @@ TOKENS.H:
   In <TKFLAGS>, omit name from otherwise anonymous bit field.
 
 
-Build #509-- Version 0.0.2.3
+Build #509 -- Version 0.0.2.3
 ----------------------------
 
 * Generate the correct identity element for catenate reduction empty
@@ -305,7 +323,7 @@ PRIMFNS.C:
   Define new routine to determine if a token is a user-defined function/operator.
 
 
-Build #508-- Version 0.0.2.3
+Build #508 -- Version 0.0.2.3
 ----------------------------
 
 * Split Out Syntax Coloring for Primitives into Functions, Monadic, and Dyadic Operators.
@@ -332,7 +350,7 @@ TOKENIZE.C:
   Use new Syntax Color category names as appropriate.
 
 
-Build #507-- Version 0.0.2.3
+Build #507 -- Version 0.0.2.3
 ----------------------------
 
 * Fix Bug:  When a named function array is used in a statement and an error
@@ -361,7 +379,7 @@ YYFNS.C:
   In <IncrFcnMem>, handle immediate axis values.
 
 
-Build #506-- Version 0.0.2.3
+Build #506 -- Version 0.0.2.3
 ----------------------------
 
 * Fix Bug:  An uninitialized variable  in grade up/down causes a system crash
@@ -374,7 +392,7 @@ PF_DELTASTILE.C:
     an error, the system crashes.
 
 
-Build #505-- Version 0.0.2.3
+Build #505 -- Version 0.0.2.3
 ----------------------------
 
 * Avoid Deadlock of Sending Message to Suspended Thread

@@ -665,6 +665,10 @@ void FastBoolRedQual
               uByteMaskIni,         // Initial byte mask based on uDimAxRht
               uBitsInMask;          // # bits in the mask
     LPAPLBOOL lpaplBool;            // Ptr to Booleans to reduce
+    UBOOL     bComp;                // TRUE iff (uFBFNIndex EQ PF_INDEX_NOTEQUAL) EQ (BIT0 & uDimAxRht)
+
+    // Calculate comparison bit to distinguish EQ from NE
+    bComp = (uFBFNIndex EQ PF_INDEX_NOTEQUAL);
 
     // If the right arg is an APA, handle it specially
     if (IsSimpleAPA (aplTypeRht))
@@ -687,7 +691,7 @@ void FastBoolRedQual
         // Check the APA multiplier
         if (lpAPA->Mul EQ 0)
         {
-            if ((uFBFNIndex EQ PF_INDEX_NOTEQUAL) EQ (BIT0 & uDimAxRht))
+            if (bComp EQ (BIT0 & uDimAxRht))
                 FillBitMemory (lpMemRes, uDimLo);
         } else
             DbgStop ();         // We should never get here
@@ -730,19 +734,20 @@ void FastBoolRedQual
         // If there are more bits in this vector, ...
         while (uDimAxRht > uBitCountVector)
         {
-            uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitsInMask, NBIB))) - 1);
+            uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitCountVector, NBIB))) - 1);
             uBitsInMask = FastBoolTrans[uByteMask][FBT_BITSUM];
 
             uAccum += FastBoolTrans[uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]][FBT_BITSUM];
 
             // Update the # bits processed so far (modulo NBIB)
-            uBitCountTotal += uBitsInMask;
+            uBitCountTotal  += uBitsInMask;
             uBitCountVector += uBitsInMask;
         } // End IF
 
         // Save in the result
         *((LPAPLBOOL) lpMemRes) |=
-          ((uFBFNIndex EQ PF_INDEX_NOTEQUAL) EQ (BIT0 & uAccum)) << uDimRes++;
+          (bComp ?  (BIT0 &              uAccum)
+                 : !(BIT0 & (uDimAxRht - uAccum))) << uDimRes++;
 
         // Check to see if we need to skip to the next result byte
         CHECK_NEXT_RESULT_BYTE (lpMemRes, uDimRes);
@@ -838,13 +843,13 @@ void FastBoolRedPlus
         // If there are more bits in this vector, ...
         while (uDimAxRht > uBitCountVector)
         {
-            uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitsInMask, NBIB))) - 1);
+            uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitCountVector, NBIB))) - 1);
             uBitsInMask = FastBoolTrans[uByteMask][FBT_BITSUM];
 
             uAccum += FastBoolTrans[uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]][FBT_BITSUM];
 
             // Update the # bits processed so far (modulo NBIB)
-            uBitCountTotal += uBitsInMask;
+            uBitCountTotal  += uBitsInMask;
             uBitCountVector += uBitsInMask;
         } // End IF
 

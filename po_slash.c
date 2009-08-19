@@ -129,6 +129,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
 {
     APLSTYPE          aplTypeRht,           // Right arg storage type
+                      aplTypeRht2,          // Right arg secondary storage type
                       aplTypeTmp,           // Temp right arg ...
                       aplTypeRes;           // Result    ...
     APLNELM           aplNELMRht,           // Right arg NELM
@@ -701,8 +702,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         } // End IF
 
         goto YYALLOC_EXIT;
-    } // End IF
-
+    } else
     // If this is a fast Boolean operation, ...
     if (bFastBool)
     {
@@ -877,6 +877,9 @@ RESTART_EXCEPTION_APA:
 ////////tkLftArg.tkFlags.NoDisplay = FALSE;     // Already zero from {0}
 ////////tkLftArg.tkData.tkGlbData  =            // To be filled in below
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
+        // Initialize the secondary right arg storage type
+        aplTypeRht2 = aplTypeRht;
 RESTART_EXCEPTION:
         // Initialize in case Boolean
         uBitIndex = 0;
@@ -913,38 +916,38 @@ RESTART_EXCEPTION:
                     case ARRAY_BOOL:
                         tkRhtArg.tkFlags.ImmType  = IMMTYPE_BOOL;
                         tkRhtArg.tkData.tkInteger =
-                        aplIntegerRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
-                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+                        aplIntegerRht             = GetNextInteger (lpMemRht, aplTypeRht, uRht);
+                        aplFloatRht               = (APLFLOAT) aplIntegerRht;   // In case of type promotion
 
                         break;
 
                     case ARRAY_INT:
                         tkRhtArg.tkFlags.ImmType  = IMMTYPE_INT;
                         tkRhtArg.tkData.tkInteger =
-                        aplIntegerRht = ((LPAPLINT)   lpMemRht)[uRht];
-                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+                        aplIntegerRht             = ((LPAPLINT)   lpMemRht)[uRht];
+                        aplFloatRht               = (APLFLOAT) aplIntegerRht;   // In case of type promotion
 
                         break;
 
                     case ARRAY_APA:
                         tkRhtArg.tkFlags.ImmType  = IMMTYPE_INT;
                         tkRhtArg.tkData.tkInteger =
-                        aplIntegerRht = apaOffRht + apaMulRht * uRht;
-                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+                        aplIntegerRht             = apaOffRht + apaMulRht * uRht;
+                        aplFloatRht               = (APLFLOAT) aplIntegerRht;   // In case of type promotion
 
                         break;
 
                     case ARRAY_FLOAT:
-                        tkRhtArg.tkFlags.ImmType = IMMTYPE_FLOAT;
-                        tkRhtArg.tkData.tkFloat  =
-                        aplFloatRht   = ((LPAPLFLOAT) lpMemRht)[uRht];
+                        tkRhtArg.tkFlags.ImmType  = IMMTYPE_FLOAT;
+                        tkRhtArg.tkData.tkFloat   =
+                        aplFloatRht               = ((LPAPLFLOAT) lpMemRht)[uRht];
 
                         break;
 
                     case ARRAY_CHAR:
-                        tkRhtArg.tkFlags.ImmType = IMMTYPE_CHAR;
-                        tkRhtArg.tkData.tkChar   =
-                        aplCharRht    = ((LPAPLCHAR)  lpMemRht)[uRht];
+                        tkRhtArg.tkFlags.ImmType  = IMMTYPE_CHAR;
+                        tkRhtArg.tkData.tkChar    =
+                        aplCharRht                = ((LPAPLCHAR)  lpMemRht)[uRht];
 
                         break;
 
@@ -965,7 +968,7 @@ RESTART_EXCEPTION:
 ////////////////////// Calculate the index of the previous element in this vector (now done in the FOR stmt)
 ////////////////////uPrv = uDimRht + iDim * uDimHi;
 
-                    // Split cases based upon the left arg storage type
+                    // Split cases based upon the left (actually right) arg storage type
                     switch (aplTypeRht)
                     {
                         case ARRAY_BOOL:
@@ -1009,7 +1012,7 @@ RESTART_EXCEPTION:
                     if (!PrimFnDydSiScSiScSub_EM (&tkRhtArg,
                                                   &lpYYFcnStrLft->tkToken,
                                                    aplTypeRes,
-                                                   aplTypeRht,
+                                                   aplTypeRht2,
                                                    aplIntegerLft,
                                                    aplFloatLft,
                                                    aplCharLft,
@@ -1042,6 +1045,9 @@ RESTART_EXCEPTION:
 
                         case IMMTYPE_FLOAT:
                             aplFloatRht   = tkRhtArg.tkData.tkFloat;
+                            aplTypeRht2   =
+                            aplTypeRes    =
+                            lpMemHdrRes->ArrType = ARRAY_FLOAT;
 
                             break;
 

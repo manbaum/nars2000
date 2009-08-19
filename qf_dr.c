@@ -742,13 +742,16 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
      LPTOKEN  lptkFunc)
 
 {
-    APLSTYPE     aplTypeRht;    // Right arg storage type
-    APLUINT      ByteRes;       // # bytes in the result
-    HGLOBAL      hGlbRes;       // Result global memory handle
-    LPVOID       lpMemRes;      // Ptr to result global memory
-    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
-    APLNELM      aplNELMRes;    // Result NELM
-    APLCHAR      wszTemp[128];  // Temporary APLCHARs
+    APLSTYPE          aplTypeRht;       // Right arg storage type
+    APLUINT           ByteRes;          // # bytes in the result
+    HGLOBAL           hGlbRht,          // Right arg global memory handle
+                      hGlbRes;          // Result    ...
+    LPVARARRAY_HEADER lpHeader;         // Ptr to right arg array header
+    LPVOID            lpMemRes;         // Ptr to result global memory
+    LPPL_YYSTYPE      lpYYRes;          // Ptr to the result
+    APLNELM           aplNELMRes;       // Result NELM
+    APLCHAR           wszTemp[512];     // Temporary APLCHARs
+    UBOOL             bInit = FALSE;    // TRUE iff array properties have been initialized
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -832,6 +835,39 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         defstop
             break;
     } // End SWITCH
+
+    // Get right arg's global ptr
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpHeader);
+
+    // Append array properties
+    if (IsPermVector0 (lpHeader))
+    {
+        if (!bInit)
+        {
+            lstrcatW (wszTemp, L" --");
+            bInit = TRUE;
+        } // End IF
+
+        lstrcatW (wszTemp, L" " AP_PV0);
+    } // End IF
+
+    if (IsPermVector1 (lpHeader))
+    {
+        if (!bInit)
+        {
+            lstrcatW (wszTemp, L" --");
+            bInit = TRUE;
+        } // End IF
+
+        lstrcatW (wszTemp, L" " AP_PV1);
+    } // End IF
+
+    // If the ptr is valid, ...
+    if (hGlbRht && lpHeader)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpHeader = NULL;
+    } // End IF
 
     // Get the result NELM
     aplNELMRes = lstrlenW (wszTemp);

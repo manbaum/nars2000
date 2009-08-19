@@ -186,8 +186,10 @@
 // Define macro for detecting list array type
 #define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
 
-// Define macro for detecting permuation vectors
-#define IsPermVector(lpHeader)          ((lpHeader NE NULL) && (lpHeader->PV0 || lpHeader->PV1))
+// Define macros for detecting permuation vectors
+#define IsPermVector0(lpHeader)         (((lpHeader) NE NULL) && (lpHeader)->PV0)
+#define IsPermVector1(lpHeader)         (((lpHeader) NE NULL) && (lpHeader)->PV1)
+#define IsPermVector(lpHeader)          (IsPermVector0 (lpHeader) || IsPermVector1 (lpHeader))
 
 // Define macro for detecting scalars
 #define IsScalar(ArrRank)               ((ArrRank) EQ 0)

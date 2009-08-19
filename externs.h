@@ -1873,8 +1873,8 @@ typedef union tagMEMTXT_UNION
 
 typedef void (*LPERRHANDFN) (LPWCHAR lpwszMsg,
                              LPWCHAR lpwszLine,
-                             UINT uCaret,
-                             HWND hWndEC);
+                             UINT uCaret);
+
 typedef enum tagERROR_CODES
 {
     ERRORCODE_NONE = 0,     // 00:  No error

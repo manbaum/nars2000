@@ -897,7 +897,7 @@ APLU3264 GetFunctionName
     // Tell EM_GETLINE maximum # chars in the buffer
     // The output array is a temporary so we don't have to
     //   worry about overwriting outside the allocated buffer
-    ((LPWORD) lpwszTemp)[0] = -1;
+    ((LPWORD) lpwszTemp)[0] = (WORD) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
 
     // Get the contents of the line
     uLineLen = (APLU3264) SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
@@ -4391,8 +4391,7 @@ UBOOL QueryCloseFE
 void ErrorHandler
     (LPWCHAR lpwszMsg,          // Ptr to error message text
      LPWCHAR lpwszLine,         // Ptr to the line which generated the error
-     UINT    uCaret,            // Position of caret (origin-0)
-     HWND    hWndEC)            // Window handle to the Edit Ctrl
+     UINT    uCaret)            // Position of caret (origin-0)
 
 {
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory

@@ -133,8 +133,7 @@ void BreakMessage
 void ErrorMessageDirect
     (LPWCHAR lpwszMsg,          // Ptr to error message text
      LPWCHAR lpwszLine,         // Ptr to the line which generated the error
-     UINT    uCaret,            // Position of caret (origin-0)
-     HWND    hWndSM)            // Window handle to the Session Manager
+     UINT    uCaret)            // Position of caret (origin-0)
 
 {
     APLNELM       aplNELMRes;   // Result NELM
@@ -264,7 +263,7 @@ void ErrorMessageDirect
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
     {
-        MessageBoxW (hWndSM,
+        MessageBoxW (hWndMF,
                      L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
                      lpwszAppName,
                      MB_OK | MB_ICONWARNING | MB_APPLMODAL);

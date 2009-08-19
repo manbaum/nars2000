@@ -416,6 +416,14 @@ DWORD WINAPI ImmExecStmtInThread
         // Save the ptr to the next token on the CS stack
         lptkCSBeg = lpMemPTD->lptkCSNxt;
 
+        // Fill in the SIS header for Immediate Execution Mode
+        FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
+                    NULL,                   // Semaphore handle
+                    DFNTYPE_IMM,            // DfnType
+                    FCNVALENCE_IMM,         // FcnValence
+                    FALSE,                  // Suspended
+                    TRUE,                   // Restartable
+                    TRUE);                  // LinkIntoChain
         // Tokenize, parse, and untokenize the line
 
         // Tokenize the line
@@ -455,24 +463,15 @@ DWORD WINAPI ImmExecStmtInThread
                        csLocalVars.tkCSErr.tkData.uLineNum,
                        csLocalVars.tkCSErr.tkData.uStmtNum + 1);
             // Set the error message
-            ErrorMessageDirect (wszTemp,                        // Ptr to error message text
-                                lpwszCompLine,                  // Ptr to the line which generated the error
-                                csLocalVars.tkCSErr.tkCharIndex,// Position of caret (origin-0)
-                                hWndSM);                        // Window handle to the Session Manager
+            ErrorMessageDirect (wszTemp,                            // Ptr to error message text
+                                lpwszCompLine,                      // Ptr to the line which generated the error
+                                csLocalVars.tkCSErr.tkCharIndex);   // Position of caret (origin-0)
             // If we should act on this error, ...
             exitType = bActOnErrors ? ActOnError (hWndSM) : EXITTYPE_ERROR;
 
             goto UNTOKENIZE_EXIT;
         } // End IF
 
-        // Fill in the SIS header for Immediate Execution Mode
-        FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
-                    NULL,                   // Semaphore handle
-                    DFNTYPE_IMM,            // DfnType
-                    FCNVALENCE_IMM,         // FcnValence
-                    FALSE,                  // Suspended
-                    TRUE,                   // Restartable
-                    TRUE);                  // LinkIntoChain
         // If we're not waiting until finished, ...
         // (in other words, we're called from LoadWorkspaceGlobal_EM
         //  and we can't send a message to another thread.)
@@ -515,8 +514,7 @@ DWORD WINAPI ImmExecStmtInThread
                     // Set the error message
                     ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
                                         lpwszCompLine,                  // Ptr to the line which generated the error
-                                        lpMemPTD->tkErrorCharIndex,     // Position of caret (origin-0)
-                                        hWndSM);                        // Window handle to the Session Manager
+                                        lpMemPTD->tkErrorCharIndex);    // Position of caret (origin-0)
                     if (bActOnErrors)
                         // Execute []ELX in immediate execution mode
 ////////////////////////exitType =
@@ -690,15 +688,15 @@ DWORD WINAPI ImmExecStmtInThread
 
         // Get the reset flag
         resetFlag = lpMemPTD->lpSISCur->ResetFlag;
-
-        // Unlocalize the STEs on the innermost level
-        //   and strip off one level
-        UnlocalizeSTEs ();
 UNTOKENIZE_EXIT:
         // Untokenize the temporary line and free its memory
         Untokenize (hGlbToken);
         MyGlobalFree (hGlbToken); hGlbToken = NULL;
 ERROR_EXIT:
+        // Unlocalize the STEs on the innermost level
+        //   and strip off one level
+        UnlocalizeSTEs ();
+
 #ifdef DEBUG
         dprintfWL9 (L"--Ending   thread in <ImmExecStmtInThread>.");
 #endif

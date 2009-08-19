@@ -666,11 +666,12 @@ UBOOL IsLocalName
                                         // (may be NULL if position not desired)
 
 {
-    LPWCHAR lpwszName,                  // Ptr to name
-            wp,                         // Ptr to temp char
-            lpwBrkLead = L"({[ ]});" WS_UTF16_LEFTARROW,
-            lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_UTF16_LAMP;
-    WCHAR   sysName[32];                // Temp storage for sysnames in lowercase
+    LPWCHAR  lpwszName,                 // Ptr to name
+             wp,                        // Ptr to temp char
+             lpwBrkLead = L"({[ ]});" WS_UTF16_LEFTARROW,
+             lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_UTF16_LAMP;
+    WCHAR    sysName[32];               // Temp storage for sysnames in lowercase
+    APLU3264 uLineLen;                  // Line length
 
     // If this is a sysname, ...
     if (IsSysName (lpwszStr))
@@ -688,10 +689,13 @@ UBOOL IsLocalName
         lpwszName = lpwszStr;
 
     // Tell EM_GETLINE maximum # chars in the buffer
-    lpwszTemp[0] = (WORD) -1;
+    lpwszTemp[0] = (WORD) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
 
     // Get the function header line
-    SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
+    uLineLen = (APLU3264) SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
+
+    // Ensure the line is properly terminated
+    lpwszTemp[uLineLen] = WC_EOS;
 
     // Append a trailing marker
     lstrcatW (lpwszTemp, WS_UTF16_LAMP);
@@ -3557,7 +3561,7 @@ NONCE_EXIT:
 ERROR_EXIT:
     // Signal an error
     if (lpErrHandFn)
-        (*lpErrHandFn) (lpMemPTD->lpwszErrorMessage, lpwszLine, tkLocalVars.uChar, hWndEC);
+        (*lpErrHandFn) (lpMemPTD->lpwszErrorMessage, lpwszLine, tkLocalVars.uChar);
 
     if (tkLocalVars.hGlbToken)
     {

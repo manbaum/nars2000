@@ -6612,8 +6612,7 @@ EXIT_TYPES ParseLine
             // Signal an error
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
                                 lpwszLine,                      // Ptr to the line which generated the error
-                                plLocalVars.tkErrorCharIndex,   // Position of caret (origin-0)
-                                hWndSM);                        // Window handle to the Session Manager
+                                plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
         else
         {
             LPMEMTXT_UNION lpMemTxtLine;
@@ -6624,8 +6623,7 @@ EXIT_TYPES ParseLine
             // Signal an error
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
                                &lpMemTxtLine->C,                // Ptr to the line which generated the error
-                                plLocalVars.tkErrorCharIndex,   // Position of caret (origin-0)
-                                hWndSM);                        // Window handle to the Session Manager
+                                plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
         } // End IF/ELSE

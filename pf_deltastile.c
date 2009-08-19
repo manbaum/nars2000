@@ -64,9 +64,9 @@ LPPL_YYSTYPE PrimFnDeltaStile_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis, FALSE);
     else
-        return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, FALSE);
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
@@ -111,9 +111,9 @@ LPPL_YYSTYPE PrimFnDelStile_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis, FALSE);
     else
-        return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, FALSE);
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
@@ -206,7 +206,8 @@ LPPL_YYSTYPE PrimProtoFnDelStile_EM_YY
 LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+     LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
+     UBOOL   bRavelArg)             // TRUE iff we're to treat the right arg as ravelled
 
 {
     APLNELM       aplNELMRht,       // Right arg NELM
@@ -260,12 +261,23 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
-    // Get the length of the first dimension (as result length)
-    gradeData.aplNELMRht = aplNELMRes = lpMemDimRht[0];
+    // If we're ravelling the right arg, ...
+    if (bRavelArg)
+    {
+        // Get the NELM of the right arg (as result length)
+        gradeData.aplNELMRht = aplNELMRes = aplNELMRht;
 
-    // Calculate the length of the dimensions after the first one
-    for (gradeData.aplNELMRest = 1, uRes = 1; uRes < aplRankRht; uRes++)
-        gradeData.aplNELMRest *= lpMemDimRht[uRes];
+        // Calculate the length of the dimensions after the first one
+        gradeData.aplNELMRest = 1;
+    } else
+    {
+        // Get the length of the first dimension (as result length)
+        gradeData.aplNELMRht = aplNELMRes = lpMemDimRht[0];
+
+        // Calculate the length of the dimensions after the first one
+        for (gradeData.aplNELMRest = 1, uRes = 1; uRes < aplRankRht; uRes++)
+            gradeData.aplNELMRest *= lpMemDimRht[uRes];
+    } // End IF/ELSE
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
@@ -552,7 +564,7 @@ UBOOL BoolVecGrade
             goto ERROR_EXIT;
 
         // Count the # 1s
-        u1s += FastBoolTrans[*lpMemBool++][2];
+        u1s += FastBoolTrans[*lpMemBool++][FBT_BITSUM];
     } // End IF
 
     // Restart the ptr
@@ -641,7 +653,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+     LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
+     UBOOL   bRavelArg)             // TRUE iff we're to treat the right arg as ravelled
 
 {
     APLSTYPE      aplTypeLft;               // Left arg storage type
@@ -792,12 +805,23 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
-    // Get the length of the first dimension (as result length)
-    aplNELMRes = lpMemDimRht[0];
+    // If we're ravelling the right arg, ...
+    if (bRavelArg)
+    {
+        // Get the NELM of the right arg (as result length)
+        gradeData.aplNELMRht = aplNELMRes = aplNELMRht;
 
-    // Calculate the length of the dimensions after the first one
-    for (gradeData.aplNELMRest = 1, uRes = 1; uRes < aplRankRht; uRes++)
-        gradeData.aplNELMRest *= lpMemDimRht[uRes];
+        // Calculate the length of the dimensions after the first one
+        gradeData.aplNELMRest = 1;
+    } else
+    {
+        // Get the length of the first dimension (as result length)
+        gradeData.aplNELMRht = aplNELMRes = lpMemDimRht[0];
+
+        // Calculate the length of the dimensions after the first one
+        for (gradeData.aplNELMRest = 1, uRes = 1; uRes < aplRankRht; uRes++)
+            gradeData.aplNELMRest *= lpMemDimRht[uRes];
+    } // End IF/ELSE
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);

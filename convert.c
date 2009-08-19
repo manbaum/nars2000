@@ -28,14 +28,15 @@
 
 
 //***************************************************************************
-//  $FloatToAplint_SCT
+//  $FloatToAplint_CT
 //
 //  Attempt to convert a Floating Point number to an APLINT
-//    using System Comparison Tolerance
+//    using Comparison Tolerance
 //***************************************************************************
 
-APLINT FloatToAplint_SCT
+APLINT FloatToAplint_CT
     (APLFLOAT fFloat,       // The number to convert
+     APLFLOAT fQuadCT,      // Comparison tolerance to use
      LPUBOOL  lpbRet)       // TRUE iff successful conversion
                             // (may be NULL if the caller isn't interested)
 {
@@ -45,7 +46,7 @@ APLINT FloatToAplint_SCT
     aplInteger = (APLINT) floor (fFloat);
 
     // See how the number and its tolerant floor compare
-    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL, TRUE))
+    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, fQuadCT, NULL, TRUE))
     {
         if (lpbRet)
             *lpbRet = TRUE;
@@ -56,7 +57,7 @@ APLINT FloatToAplint_SCT
     aplInteger = (APLINT) ceil (fFloat);
 
     // See how the number and its tolerant ceiling compare
-    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL, TRUE))
+    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, fQuadCT, NULL, TRUE))
     {
         if (lpbRet)
             *lpbRet = TRUE;
@@ -70,6 +71,22 @@ APLINT FloatToAplint_SCT
     // Return the ceiling of the fractional value
     // The ceiling is important in CheckAxis for laminate
     return aplInteger;
+} // End FloatToAplint_CT
+
+
+//***************************************************************************
+//  $FloatToAplint_SCT
+//
+//  Attempt to convert a Floating Point number to an APLINT
+//    using System Comparison Tolerance
+//***************************************************************************
+
+APLINT FloatToAplint_SCT
+    (APLFLOAT fFloat,       // The number to convert
+     LPUBOOL  lpbRet)       // TRUE iff successful conversion
+                            // (may be NULL if the caller isn't interested)
+{
+    return FloatToAplint_CT (fFloat, SYS_CT, lpbRet);
 } // End FloatToAplint_SCT
 
 

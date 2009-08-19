@@ -1758,6 +1758,25 @@ APLBOOL GetQuadIO
 
 
 //***************************************************************************
+//  $SetQuadIO
+//
+//  Set the current value of []IO
+//***************************************************************************
+
+void SetQuadIO
+    (APLBOOL bQuadIO)
+
+{
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+    lpMemPTD->lpSymQuadIO->stData.stBoolean = bQuadIO;
+} // End SetQuadIO
+
+
+//***************************************************************************
 //  $GetQuadPP
 //
 //  Get the current value of []PP

@@ -306,6 +306,16 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         // Check the singleton arg
         if (aplIntegerLft < 0)
             goto LEFT_DOMAIN_EXIT;
+        else
+        // Special case 1/R for non-scalar R
+        if (aplIntegerLft EQ 1
+         && !IsScalar (aplRankRht))
+        {
+            // Increment the right arg reference count
+            hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
+
+            goto YYALLOC_EXIT;
+        } // End IF
 
         // Calculate the length of the axis dimension in the result
         if (lpMemDimRht && !IsScalar (aplRankRht))
@@ -711,7 +721,7 @@ PROTO_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 

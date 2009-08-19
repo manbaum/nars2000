@@ -120,6 +120,27 @@ WNDPROC lpfnOldStatusWndProc;           // Save area for old Status Window proce
 
 
 //***************************************************************************
+//  $SendStatusMsg
+//
+//  Send a message to the status window and show or hide the
+//    window afterwards in case the message sent activated it.
+//***************************************************************************
+
+void SendStatusMsg
+    (UINT msg,
+     WPARAM wParam,
+     LPARAM lParam)
+
+{
+    // Send the message to the window
+    SendMessageW (hWndStatus, msg, wParam, lParam);
+
+    // Show or hide the status window in case the above message activated the window
+    ShowWindow (hWndStatus, OptionFlags.bViewStatusBar ? SW_SHOWNORMAL : SW_HIDE);
+} // End SendStatusMsg
+
+
+//***************************************************************************
 //  $SetStatusParts
 //
 //  Set the Status Parts and right edges
@@ -234,7 +255,7 @@ void SetStatusParts
     } // End FOR/IF/ELSE/...
 
     // Tell the status window about the new Status Parts right edge
-    SendMessageW (hWndStatus, SB_SETPARTS, SP_LENGTH, (LPARAM) lclStatusPartsRight);
+    SendStatusMsg (SB_SETPARTS, SP_LENGTH, (LPARAM) lclStatusPartsRight);
 
     // We no longer need this resource
     MyReleaseDC (hWndStatus, hDC); hDC = NULL;
@@ -262,7 +283,7 @@ void SetStatusIns
     (UBOOL bInsKey)             // TRUE iff the Ins key is ON
 
 {
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_INS, (LPARAM) (bInsKey ? WS_HT L"INS" : WS_HT L"OVR"));
+    SendStatusMsg (SB_SETTEXTW, SP_INS, (LPARAM) (bInsKey ? WS_HT L"INS" : WS_HT L"OVR"));
 } // End SetStatusIns
 
 
@@ -276,7 +297,7 @@ void SetStatusCaps
     (UBOOL bCapsKey)            // TRUE iff the CapsLock key is ON
 
 {
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_CAPS, (LPARAM) (bCapsKey ? WS_HT L"CAPS" : L""));
+    SendStatusMsg (SB_SETTEXTW, SP_CAPS, (LPARAM) (bCapsKey ? WS_HT L"CAPS" : L""));
 } // End SetStatusCaps
 
 
@@ -290,7 +311,7 @@ void SetStatusNum
     (UBOOL bNumKey)             // TRUE iff the NumLock key is ON
 
 {
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_NUM, (LPARAM) (bNumKey ? WS_HT L"NUM" : L""));
+    SendStatusMsg (SB_SETTEXTW, SP_NUM, (LPARAM) (bNumKey ? WS_HT L"NUM" : L""));
 } // End SetStatusNum
 
 
@@ -326,13 +347,13 @@ void SetStatusPos
     wsprintfW (szTemp,
                L"%u",
                uLineNum);
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_LINEPOS, (LPARAM) szTemp);
+    SendStatusMsg (SB_SETTEXTW, SP_LINEPOS, (LPARAM) szTemp);
 
     // Format the char #
     wsprintfW (szTemp,
                L"%u",
                uCharPos);
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_CHARPOS, (LPARAM) szTemp);
+    SendStatusMsg (SB_SETTEXTW, SP_CHARPOS, (LPARAM) szTemp);
 } // End SetStatusPos
 
 
@@ -346,7 +367,7 @@ void SetStatusMsg
     (LPWCHAR lpwszMsg)          // Ptr to Status Window msg
 
 {
-    SendMessageW (hWndStatus, SB_SETTEXTW, SP_TEXTMSG, (LPARAM) lpwszMsg);
+    SendStatusMsg (SB_SETTEXTW, SP_TEXTMSG, (LPARAM) lpwszMsg);
     SetPropW (hWndStatus, PROP_STATUSMSG, (HANDLE) lpwszMsg);
 } // End SetStatusMsg
 
@@ -1200,7 +1221,7 @@ UBOOL CreateChildWindows
                            hWnd,            // Parent window
                            IDWC_MF_ST);     // Window ID
     // Get the width of the borders of the Status Window
-    SendMessageW (hWndStatus, SB_GETBORDERS, 0, (LPARAM) glbStatusBorders);
+    SendStatusMsg (SB_GETBORDERS, 0, (LPARAM) glbStatusBorders);
 
     return TRUE;            // Tell 'em it worked
 } // End CreateChildWindows
@@ -1510,7 +1531,7 @@ LRESULT APIENTRY MFWndProc
                 SetStatusParts (rc.right - rc.left);
 
                 // Position and size the Status Window
-                SendMessageW (hWndStatus, WM_SIZE, wParam, lParam);
+                SendStatusMsg (WM_SIZE, wParam, lParam);
 
                 EndDeferWindowPos (hdwp);
 

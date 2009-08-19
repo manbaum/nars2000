@@ -1,6 +1,18 @@
 Version 0.0.2.3 consists of the following Builds:
 
 
+Build #522 -- Version 0.0.2.3
+----------------------------
+
+* Fix Bug:  Handle the case where a named SYMENTRY is an immediate function.
+
+Directory trunk:
+
+STRAND.C:
+  Fix Bug:  In <MakeNameFcnOpr_YY>, handle the case where the named
+    SYMENTRY is immediate to return an unnamed immediate token.
+
+
 Build #521 -- Version 0.0.2.3
 ----------------------------
 

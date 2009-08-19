@@ -1706,58 +1706,104 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
   #define lpMemFcnData ((LPPL_YYSTYPE) lpMemData)
 #endif
 
-    // Get the named function global memory handle
-    hGlbData = ClrPtrTypeDir (lpYYFcnOpr->tkToken.tkData.tkSym->stData.stGlbData);
-
-    Assert (hGlbData NE NULL);
-
-    // If we're to reset the base of a function array, ...
-    if (bResetBase
-     && GetSignatureGlb (hGlbData) EQ FCNARRAY_HEADER_SIGNATURE)
+    // If the SYMENTRY is an immediate, ...
+    if (lpYYFcnOpr->tkToken.tkData.tkSym->stFlags.Imm)
     {
-        UINT tknNELM,                   // # tokens in the named function
-             uCnt,                      // Loop counter
-             uInd;                      // Common tkCharIndex
-
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
 
-        // Copy the PL_YYSTYPE
-        YYCopy (lpYYRes, lpYYFcnOpr);
+        // Save the immediate type
+        lpYYRes->tkToken.tkFlags.ImmType = lpYYFcnOpr->tkToken.tkData.tkSym->stFlags.ImmType;
 
-        Assert (lpYYRes->tkToken.tkFlags.TknType EQ TKT_FCNNAMED);
+        // Split cases based upon the named function/operator immediate type
+        switch (lpYYRes->tkToken.tkFlags.ImmType)
+        {
+            case IMMTYPE_PRIMFCN:
+                // Save the token type
+                lpYYRes->tkToken.tkFlags.TknType = TKT_FCNIMMED;
 
-        // Increment the RefCnt as the next line after the caller
-        //   will decrement it
-        DbgIncrRefCntDir (MakePtrTypeGlb (hGlbData));
+                break;
 
-        // Make a copy of the array as we're changing parts of it
-        hGlbData = CopyArray_EM (hGlbData, &lpYYRes->tkToken);
+            case IMMTYPE_PRIMOP1:
+                // Save the token type
+                lpYYRes->tkToken.tkFlags.TknType = TKT_OP1IMMED;
 
-        // Lock the memory to get a ptr to it
-        lpMemFcnHdr = lpMemData = MyGlobalLock (hGlbData);
+                break;
 
-        // Change the token type and data to an array
-        lpYYRes->tkToken.tkFlags.TknType = TKT_FCNARRAY;
-        lpYYRes->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbData);
+            case IMMTYPE_PRIMOP2:
+                // Save the token type
+                lpYYRes->tkToken.tkFlags.TknType = TKT_OP2IMMED;
 
-        // Get the # function tokens
-        tknNELM = lpMemFcnHdr->tknNELM;
+                break;
 
-        // Skip over the the header to the data
-        lpMemFcnData = lpMemData = FcnArrayBaseToData (lpMemData);
+            case IMMTYPE_PRIMOP3:
+                // Save the token type
+                lpYYRes->tkToken.tkFlags.TknType = TKT_OP3IMMED;
 
-        // Get the current token's tkCharIndex
-        uInd = lpYYFcnOpr->tkToken.tkCharIndex;
+                break;
 
-        // Trundle through the arg rebasing each tkCharIndex
-        for (uCnt = 0; uCnt < tknNELM; uCnt++, lpMemFcnData++)
-            lpMemFcnData->tkToken.tkCharIndex = uInd;
+            defstop
+                break;
+        } // End SWITCH
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbData); lpMemFcnHdr = lpMemData = NULL;
+        // Save the character index and function/operator symbol
+        lpYYRes->tkToken.tkCharIndex   = lpYYFcnOpr->tkToken.tkCharIndex;
+        lpYYRes->tkToken.tkData.tkChar = lpYYFcnOpr->tkToken.tkData.tkSym->stData.stChar;
     } else
-        lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcnOpr, FALSE);
+    {
+        // Get the named function global memory handle
+        hGlbData = ClrPtrTypeDir (lpYYFcnOpr->tkToken.tkData.tkSym->stData.stGlbData);
+
+        Assert (hGlbData NE NULL);
+
+        // If we're to reset the base of a function array, ...
+        if (bResetBase
+         && GetSignatureGlb (hGlbData) EQ FCNARRAY_HEADER_SIGNATURE)
+        {
+            UINT tknNELM,                   // # tokens in the named function
+                 uCnt,                      // Loop counter
+                 uInd;                      // Common tkCharIndex
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Copy the PL_YYSTYPE
+            YYCopy (lpYYRes, lpYYFcnOpr);
+
+            Assert (lpYYRes->tkToken.tkFlags.TknType EQ TKT_FCNNAMED);
+
+            // Increment the RefCnt as the next line after the caller
+            //   will decrement it
+            DbgIncrRefCntDir (MakePtrTypeGlb (hGlbData));
+
+            // Make a copy of the array as we're changing parts of it
+            hGlbData = CopyArray_EM (hGlbData, &lpYYRes->tkToken);
+
+            // Lock the memory to get a ptr to it
+            lpMemFcnHdr = lpMemData = MyGlobalLock (hGlbData);
+
+            // Change the token type and data to an array
+            lpYYRes->tkToken.tkFlags.TknType = TKT_FCNARRAY;
+            lpYYRes->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbData);
+
+            // Get the # function tokens
+            tknNELM = lpMemFcnHdr->tknNELM;
+
+            // Skip over the the header to the data
+            lpMemFcnData = lpMemData = FcnArrayBaseToData (lpMemData);
+
+            // Get the current token's tkCharIndex
+            uInd = lpYYFcnOpr->tkToken.tkCharIndex;
+
+            // Trundle through the arg rebasing each tkCharIndex
+            for (uCnt = 0; uCnt < tknNELM; uCnt++, lpMemFcnData++)
+                lpMemFcnData->tkToken.tkCharIndex = uInd;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbData); lpMemFcnHdr = lpMemData = NULL;
+        } else
+            lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcnOpr, FALSE);
+    } // End IF/ELSE
 
     // Set common elements
     lpYYRes->lpYYFcnBase = NULL;

@@ -243,18 +243,49 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &gradeData.aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Check for RIGHT RANK ERROR
-    if (IsScalar (aplRankRht))
-        goto RANK_EXIT;
-
     // Check for RIGHT DOMAIN ERROR
-    if (!IsSimpleNum (gradeData.aplTypeRht))
+    if (!IsSimpleNH (gradeData.aplTypeRht))
         goto DOMAIN_EXIT;
+
+    // Check for scalar right arg
+    if (IsScalar (aplRankRht))
+    {
+        // Return {enclose}{zilde}
+        hGlbRes = MakeEncloseZilde ();
+        if (!hGlbRes)
+            goto WSFULL_EXIT;
+        else
+            goto YYALLOC_EXIT;
+    } // End IF
+
+    // Check for simple char
+    if (IsSimpleChar (gradeData.aplTypeRht))
+    {
+        TOKEN tkLft = {0};
+
+        // Setup the left arg token
+        tkLft.tkFlags.TknType   = TKT_VARARRAY;
+////////tkLft.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
+////////tkLft.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+        tkLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbQuadAV);
+        tkLft.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        lpYYRes =
+          PrimFnDydGradeCommon_EM_YY (&tkLft,       // Ptr to left arg token
+                                       lptkFunc,    // Ptr to function token
+                                       lptkRhtArg,  // Ptr to right arg token
+                                       NULL,        // Ptr to axis token (may be NULL)
+                                       bRavelArg);  // TRUE iff we're to treat the right arg as ravelled
+        if (lpYYRes)
+            goto NORMAL_EXIT;
+        else
+            goto ERROR_EXIT;
+    } // End IF
 
     // Get right arg global ptr
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Save the
+    // Save the Array Property bits
     gradeData.PV0 = ((LPVARARRAY_HEADER) lpMemRht)->PV0;
     gradeData.PV1 = ((LPVARARRAY_HEADER) lpMemRht)->PV1;
 
@@ -298,8 +329,8 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-    lpHeader->PV0        = (gradeData.PV0 || gradeData.PV1) && bQuadIO EQ 0;
-    lpHeader->PV1        = (gradeData.PV0 || gradeData.PV1) && bQuadIO EQ 1;
+    lpHeader->PV0        = bQuadIO EQ 0;
+    lpHeader->PV1        = bQuadIO EQ 1;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -359,7 +390,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -371,11 +402,6 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
-
-RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkFunc);
-    goto ERROR_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
@@ -415,6 +441,59 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnMonGradeCommon_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MakeEncloseZilde
+//
+//  Return an HGLOBAL with {enclose}{zilde}
+//***************************************************************************
+
+HGLOBAL MakeEncloseZilde
+    (void)
+
+{
+    APLUINT ByteRes;            // # bytes in the result
+    HGLOBAL hGlbRes;            // Result global memory handle
+    LPVOID  lpMemRes;           // Ptr to result global memory
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
+
+    // Allocate space for the result.
+    // N.B. Conversion from APLUINT to UINT.
+    Assert (ByteRes EQ (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        return NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_NESTED;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+////lpHeader->PV0        =
+////lpHeader->PV1        = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = 1;
+    lpHeader->Rank       = 0;
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+
+    // Save the one item
+    *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbZilde);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    return hGlbRes;
+} // End MakeEncloseZilde
 
 
 //***************************************************************************
@@ -706,10 +785,6 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     if (IsScalar (aplRankLft))
         goto LEFT_RANK_EXIT;
 
-    // Check for RIGHT RANK ERROR
-    if (IsScalar (aplRankRht))
-        goto RIGHT_RANK_EXIT;
-
     // Check for LEFT LENGTH ERROR
     if (IsEmpty (aplNELMLft))
         goto LEFT_LENGTH_EXIT;
@@ -722,6 +797,17 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     if (!IsSimpleChar (gradeData.aplTypeRht)
      && !IsEmpty (aplNELMRht))
         goto RIGHT_DOMAIN_EXIT;
+
+    // Check for scalar right arg
+    if (IsScalar (aplRankRht))
+    {
+        // Return {enclose}{zilde}
+        hGlbRes = MakeEncloseZilde ();
+        if (!hGlbRes)
+            goto WSFULL_EXIT;
+        else
+            goto YYALLOC_EXIT;
+    } // End IF
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -842,6 +928,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->PV0        = bQuadIO EQ 0;
+    lpHeader->PV1        = bQuadIO EQ 1;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -882,7 +970,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -898,11 +986,6 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 LEFT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                lptkLftArg);
-    goto ERROR_EXIT;
-
-RIGHT_RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkRhtArg);
     goto ERROR_EXIT;
 
 LEFT_LENGTH_EXIT:

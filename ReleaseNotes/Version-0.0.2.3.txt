@@ -1,8 +1,59 @@
 Version 0.0.2.3 consists of the following Builds:
 
 
+Build #523 -- Version 0.0.2.3
+-----------------------------
+
+* Update copyright year
+
+Directory trunk:
+
+CHKESP.C:
+COLORNAMES.H:
+CONVERT.C:
+EVENTTYPES.H:
+PERFMON.H:
+PF_BAR.C:
+PF_CIRCLE.C:
+PF_COLONBAR.C:
+PF_CSTAR.C:
+PF_DCARET.C:
+PF_DSTILE.C:
+PF_EQUAL.C:
+PF_LCARET.C:
+PF_LCARETUND.C:
+PF_NDCARET.C:
+PF_PLUS.C:
+PF_QDOT.C:
+PF_RCARET.C:
+PF_RCARETUND.C:
+PF_STAR.C:
+PF_STILE.C:
+PF_TIMES.C:
+PF_UCARET.C:
+PF_USTILE.C:
+PO_CMIDDOT.C:
+PO_JOT.C:
+PRIMFNS.H:
+PRIMSPEC.H:
+QF.H:
+QF_EA.C:
+QF_TC.C:
+QF_TS.C:
+RESDEBUG.H:
+SAVEFCN.H:
+SC_DROP.C:
+SORT.C:
+SYMBOLNAMES.H:
+SYSCMDS.C:
+TERMCODE.H:
+UNITRANSHDR.H:
+UNITRANSTAB.H:
+  Update copyright year.
+
+
 Build #522 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  Handle the case where a named SYMENTRY is an immediate function.
 
@@ -14,7 +65,7 @@ STRAND.C:
 
 
 Build #521 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  Integer overflow for {times} reduction not handled correctly
 
@@ -28,7 +79,7 @@ PO_SLASH.C:
 
 
 Build #520 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  =/1 1 1 returns incorrect result
 * Fix Bug:  +/1 2{jot}.={iota}17 and =/1 2{jot}.={iota}17
@@ -46,7 +97,7 @@ FASTBOOL.C:
 
 
 Build #519 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  The stmt foo{dydop}A{monop}B is not parsed (SYNTAX ERROR)
 
@@ -58,7 +109,7 @@ PL_PARSE.Y:
 
 
 Build #518 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Special case 1/R for non-scalar R
 
@@ -69,7 +120,7 @@ PF_SLASH.C:
 
 
 Build #517 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  The Status Window isn't properly hidden under certain
   circumstances
@@ -84,7 +135,7 @@ MAIN.C:
 
 
 Build #516 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Allow Monadic and Dyadic Grade Up/down on Scalars and
   Monadic Grade Up/down on Characters
@@ -102,7 +153,7 @@ PF_DELTASTILE.C:
 
 
 Build #515 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Append Array Properties to 0 []DR
 
@@ -116,7 +167,7 @@ QF_DR.C:
 
 
 Build #514 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  Wrong error line displayed under certain cirumstances.
 
@@ -152,7 +203,7 @@ TOKENIZE.C:
 
 
 Build #513 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Optimize Unique
 
@@ -165,7 +216,7 @@ PF_DSHOE.C:
 
 
 Build #512 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  When calculating a window size, the height of the
   menu wasn't included
@@ -180,7 +231,7 @@ COMMON.C:
 
 
 Build #511 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Optimize IndexOf and ElementOf on Simple Non-hetero Arrays
 
@@ -253,7 +304,7 @@ RESDEBUG.C:
 
 
 Build #510 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Implement system label []IDENTITY.
 
@@ -306,7 +357,7 @@ TOKENS.H:
 
 
 Build #509 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Generate the correct identity element for catenate reduction empty
 
@@ -350,7 +401,7 @@ PRIMFNS.C:
 
 
 Build #508 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Split Out Syntax Coloring for Primitives into Functions, Monadic, and Dyadic Operators.
 
@@ -377,7 +428,7 @@ TOKENIZE.C:
 
 
 Build #507 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  When a named function array is used in a statement and an error
   is signalled because of something in that named function array (e.g. AXIS ERROR),
@@ -406,7 +457,7 @@ YYFNS.C:
 
 
 Build #506 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Fix Bug:  An uninitialized variable  in grade up/down causes a system crash
     if it needs to signal an error.
@@ -419,7 +470,7 @@ PF_DELTASTILE.C:
 
 
 Build #505 -- Version 0.0.2.3
-----------------------------
+-----------------------------
 
 * Avoid Deadlock of Sending Message to Suspended Thread
 

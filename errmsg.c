@@ -72,16 +72,11 @@ void BreakMessage
 
     // Allocate space for the result
     // N.B.  Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
-    {
-        MessageBoxW (hWndSM,
-                     L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
-                     lpwszAppName,
-                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-        return;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -114,6 +109,15 @@ void BreakMessage
 
     // Save the new value in the STE
     lpMemPTD->hGlbQuadDM = hGlbRes;
+
+    return;
+
+WSFULL_EXIT:
+    MessageBoxW (hWndSM,
+                 L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
+                 lpwszAppName,
+                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+    return;
 } // End BreakMessage
 #undef  APPEND_NAME
 
@@ -259,16 +263,11 @@ void ErrorMessageDirect
 
     // Allocate space for the result
     // N.B.  Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_DM_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
-    {
-        MessageBoxW (hWndMF,
-                     L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
-                     lpwszAppName,
-                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-        return;
-    } // End IF
+        goto WSFULL_DM_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -356,69 +355,68 @@ void ErrorMessageDirect
         ByteRes = CalcArraySize (ARRAY_CHAR, 3 * uMaxLen, 2);
 
         // Allocate space for the result
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EM_EXIT;
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (hGlbRes)
-        {
-            // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+        if (!hGlbRes)
+            goto WSFULL_EM_EXIT;
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-            // Fill in the header
-            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = ARRAY_CHAR;
-////////////lpHeader->Perm       = FALSE;           // Already zero from GHND
-////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-            lpHeader->RefCnt     = 1;
-            lpHeader->NELM       = 3 * uMaxLen;
-            lpHeader->Rank       = 2;
+        // Fill in the header
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_CHAR;
+////////lpHeader->Perm       = FALSE;           // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = 3 * uMaxLen;
+        lpHeader->Rank       = 2;
 #undef  lpHeader
 
-            // Skip over the header to the dimensions
-            lpMemRes = (LPAPLCHAR) VarArrayBaseToDim (lpMemRes);
+        // Skip over the header to the dimensions
+        lpMemRes = (LPAPLCHAR) VarArrayBaseToDim (lpMemRes);
 
-            // Fill in the result's dimensions
-            *((LPAPLDIM) lpMemRes)++ = 3;
-            *((LPAPLDIM) lpMemRes)++ = uMaxLen;
+        // Fill in the result's dimensions
+        *((LPAPLDIM) lpMemRes)++ = 3;
+        *((LPAPLDIM) lpMemRes)++ = uMaxLen;
 
-            // lpMemRes now points to the data
+        // lpMemRes now points to the data
 
-            // Copy the error message text to the result
-            CopyMemoryW (lpMemRes, lpwszMsg, uErrMsgLen);
-            lpMemRes += uErrMsgLen;
-            uTailLen = uMaxLen - uErrMsgLen;
+        // Copy the error message text to the result
+        CopyMemoryW (lpMemRes, lpwszMsg, uErrMsgLen);
+        lpMemRes += uErrMsgLen;
+        uTailLen = uMaxLen - uErrMsgLen;
+        lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
+
+        // Copy the function name[line #] to the result
+        CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
+        lpMemRes += uNameLen;
+
+        // Copy the function line to the result
+        CopyMemoryW (lpMemRes, lpwszLine, uErrLinLen);
+        lpMemRes += uErrLinLen;
+        uTailLen = uMaxLen - (uNameLen + uErrLinLen);
+        lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
+
+        // Copy the caret line to the result
+        if (uCaret NE NEG1U)
+        {
+            lpMemRes = FillMemoryW (lpMemRes, uCaretLen, L' ');
+           *lpMemRes++ = ERROR_CARET;
+            uTailLen = uMaxLen - (uCaretLen + 1);
             lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
-
-            // Copy the function name[line #] to the result
-            CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
-            lpMemRes += uNameLen;
-
-            // Copy the function line to the result
-            CopyMemoryW (lpMemRes, lpwszLine, uErrLinLen);
-            lpMemRes += uErrLinLen;
-            uTailLen = uMaxLen - (uNameLen + uErrLinLen);
-            lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
-
-            // Copy the caret line to the result
-            if (uCaret NE NEG1U)
-            {
-                lpMemRes = FillMemoryW (lpMemRes, uCaretLen, L' ');
-               *lpMemRes++ = ERROR_CARET;
-                uTailLen = uMaxLen - (uCaretLen + 1);
-                lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
-            } else
-                lpMemRes = FillMemoryW (lpMemRes, uMaxLen, L' ');
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-            // Free the old value of []EM
-            FreeResultGlobalVar (lpSISCur->hGlbQuadEM); lpSISCur->hGlbQuadEM = NULL;
-
-            // Save the global in the current SIS header
-            lpSISCur->hGlbQuadEM = hGlbRes;
         } else
-            lpSISCur->hGlbQuadEM = hGlbQuadEM;
+            lpMemRes = FillMemoryW (lpMemRes, uMaxLen, L' ');
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+        // Free the old value of []EM
+        FreeResultGlobalVar (lpSISCur->hGlbQuadEM); lpSISCur->hGlbQuadEM = NULL;
+
+        // Save the global in the current SIS header
+        lpSISCur->hGlbQuadEM = hGlbRes;
     } // End IF
 
     if (lpMemTxtLine)
@@ -426,6 +424,24 @@ void ErrorMessageDirect
         // We no longer need this ptr
         MyGlobalUnlock (GlobalHandle (lpMemTxtLine));
     } // End IF
+
+    return;
+
+WSFULL_DM_EXIT:
+    MessageBoxW (hWndMF,
+                 L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
+                 lpwszAppName,
+                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+    return;
+WSFULL_EM_EXIT:
+    // WS FULL, so leave it alone
+    lpSISCur->hGlbQuadEM = hGlbQuadEM;
+
+    MessageBoxW (hWndMF,
+                 L"Unable to allocate space for " WS_UTF16_QUAD L"EM",
+                 lpwszAppName,
+                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+    return;
 } // End ErrorMessageDirect
 #undef  ERROR_CARET
 #undef  APPEND_NAME

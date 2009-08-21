@@ -98,7 +98,11 @@ void MakeQuadAV
 
     // Create []AV
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
     hGlbQuadAV = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbQuadAV)
     {

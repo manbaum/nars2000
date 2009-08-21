@@ -207,7 +207,8 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
 
     // Allocate storage for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -597,7 +598,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         // Allocate temp storage for the normalized left arg
         // N.B.: Conversion from APLUINT to UINT
         ByteRes = aplNELMLft * sizeof (APLINT);
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         hGlbRot = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRot)
             goto WSFULL_EXIT;
@@ -734,7 +736,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

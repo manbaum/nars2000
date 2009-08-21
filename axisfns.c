@@ -292,7 +292,8 @@ UBOOL CheckAxisGlb
 
         // Allocate storage for the axis vector
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteAxis EQ (APLU3264) ByteAxis);
+        if (ByteAxis NE (APLU3264) ByteAxis)
+            goto WSFULL_EXIT;
         *lphGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteAxis);
         if (!*lphGlbAxis)
             goto WSFULL_EXIT;
@@ -312,7 +313,8 @@ UBOOL CheckAxisGlb
 
     // Allocate global memory bit vector to test for duplicates
     // N.B.  Conversion from APLUINT to UINT.
-    Assert (ByteDup EQ (APLU3264) ByteDup);
+    if (ByteDup NE (APLU3264) ByteDup)
+        goto WSFULL_EXIT;
     hGlbDup = DbgGlobalAlloc (GHND, (APLU3264) ByteDup);
     if (!hGlbDup)
         goto WSFULL_EXIT;
@@ -735,7 +737,8 @@ UBOOL CheckAxis_EM
         // Allocate storage for the axis vector
         // N.B. Conversion from APLUINT to UINT.
         //***************************************************************
-        Assert (ByteAxis EQ (APLU3264) ByteAxis);
+        if (ByteAxis NE (APLU3264) ByteAxis)
+            goto WSFULL_EXIT;
         *lphGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteAxis);
         if (!*lphGlbAxis)
             goto WSFULL_EXIT;

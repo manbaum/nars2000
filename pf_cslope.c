@@ -140,7 +140,8 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
 
     // Allocate storage for the left argument
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbLft)
         goto WSFULL_EXIT;
@@ -406,7 +407,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -472,7 +474,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   doesn't handle the empty case well.
     ByteRes = max (ByteRes, 1);
 
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVec)
         goto WSFULL_EXIT;
@@ -504,7 +507,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   doesn't handle the empty case well.
     ByteRes = max (ByteRes, 1);
 
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdo)
         goto WSFULL_EXIT;

@@ -450,51 +450,55 @@ void TypeDemote
         ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
 
         // Allocate space for a new array
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (hGlbRes)
-        {
-            // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+        if (!hGlbRes)
+            goto WSFULL_EXIT;
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-            // Fill in the header
-            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = aplTypeRes;
-////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-            lpHeader->RefCnt     = 1;
-            lpHeader->NELM       = aplNELMRht;
-            lpHeader->Rank       = aplRankRht;
+        // Fill in the header
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = aplTypeRes;
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplNELMRht;
+        lpHeader->Rank       = aplRankRht;
 #undef  lpHeader
 
-            // Skip over the header to the dimensions
-            lpMemRht = VarArrayBaseToDim (lpMemRhtHdr);
-            lpMemRes = VarArrayBaseToDim (lpMemRes);
+        // Skip over the header to the dimensions
+        lpMemRht = VarArrayBaseToDim (lpMemRhtHdr);
+        lpMemRes = VarArrayBaseToDim (lpMemRes);
 
-            // Copy the dimensions to the result
-            for (uRht = 0; uRht < aplRankRht; uRht++)
-                *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;
+        // Copy the dimensions to the result
+        for (uRht = 0; uRht < aplRankRht; uRht++)
+            *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;
 
-            // Now, lpMemRes and lpMemRht both point to their
-            //   respective data
+        // Now, lpMemRes and lpMemRht both point to their
+        //   respective data
 
-            // Demote the data in the right arg, copying it to the result
-            DemoteData (aplTypeRes,
-                        lpMemRes,
-                        aplTypeRht,
-                        aplNELMRht,
-                        lpMemRht);
-            // We no longer need these ptrs
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        // Demote the data in the right arg, copying it to the result
+        DemoteData (aplTypeRes,
+                    lpMemRes,
+                    aplTypeRht,
+                    aplNELMRht,
+                    lpMemRht);
+        // We no longer need these ptrs
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
-            // Free the old array
-            FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
-        } else
-            // WS FULL, so no demotion
-            hGlbRes = hGlbRht;
+        // Free the old array
+        FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
     } // End IF/ELSE
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // WS FULL, so no demotion
+    hGlbRes = hGlbRht;
 NORMAL_EXIT:
     // Split cases based upon the right arg token type
     switch (lptkRhtArg->tkFlags.TknType)

@@ -205,7 +205,8 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
 
     // Allocate space for the result
     // N.B.: Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -334,7 +335,8 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
 
     // Allocate space for the result
     // N.B.: Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -510,6 +512,12 @@ void PrimFnMonEpsilonGlbCount
 //  Copy the data from the right arg to the result
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonEpsilonGlbCopy_EM"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL PrimFnMonEpsilonGlbCopy_EM
     (APLSTYPE aplTypeRes,           // Result type
      LPVOID  *lplpMemRes,           // Ptr to ptr to result memory
@@ -576,7 +584,8 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     {
                         // N.B.: Conversion from APLUINT to UINT.
                         ByteRes = sizeof (APLBOOL) * RoundUpBitsToBytes (aplNELMRht);
-                        Assert (ByteRes EQ (APLU3264) ByteRes);
+                        if (ByteRes NE (APLU3264) ByteRes)
+                            goto WSFULL_EXIT;
                         CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
 
                         // Unless the right arg is a multiple of NBIB bits,
@@ -720,7 +729,8 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     //   so just copy the data
                     // N.B.: Conversion from APLUINT to UINT.
                     ByteRes = sizeof (APLINT) * aplNELMRht;
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
                     ((LPAPLINT) *lplpMemRes) += aplNELMRht;
 
@@ -846,7 +856,8 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     //   so just copy the data
                     // N.B.: Conversion from APLUINT to UINT.
                     ByteRes = sizeof (APLFLOAT) * aplNELMRht;
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
                     ((LPAPLFLOAT) *lplpMemRes) += aplNELMRht;
 
@@ -939,7 +950,8 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     //   so just copy the data
                     // N.B.: Conversion from APLUINT to UINT.
                     ByteRes = sizeof (APLCHAR) * aplNELMRht;
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
                     ((LPAPLCHAR) *lplpMemRes) += aplNELMRht;
 
@@ -1122,7 +1134,8 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     //   so just copy the data
                     // N.B.: Conversion from APLUINT to UINT.
                     ByteRes = sizeof (APLHETERO) * aplNELMRht;
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
                     ((LPAPLHETERO) *lplpMemRes) += aplNELMRht;
 
@@ -1228,12 +1241,22 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
     return bRet;
 } // End PrimFnMonEpsilonGlbCopy_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1305,7 +1328,8 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -2491,7 +2515,8 @@ UBOOL PrimFnDydEpsilonCvC_EM
     // Note that this allocation is GPTR (GMEM_FIXED | GMEM_ZEROINIT)
     //   because we'll use it quickly and then free it.
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteTT EQ (APLU3264) ByteTT);
+    if (ByteTT NE (APLU3264) ByteTT)
+        goto WSFULL_EXIT;
     lpMemTT = MyGlobalAlloc (GPTR, (APLU3264) ByteTT);
     if (!lpMemTT)
         goto WSFULL_EXIT;

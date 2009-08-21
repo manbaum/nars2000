@@ -189,7 +189,8 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_APA, abs64 (aplLongestRht), 1);
-
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     // Allocate space for an APA
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
@@ -302,7 +303,8 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
     {
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
-
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         // Allocate space for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
@@ -503,7 +505,8 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -1610,7 +1613,8 @@ UBOOL PrimFnDydIotaPvN_EM
     APLUINT   uLft,                     // Loop counter
               uRht;                     // Loop counter
     APLINT    aplIntegerLft,            // Left arg integer
-              aplIntegerRht;            // Right arg integer
+              aplIntegerRht,            // Right arg integer
+              ByteRes;                  // # bytes in the result
     APLFLOAT  aplFloatRht,              // Right arg float
               fQuadCT;                  // []CT
     HGLOBAL   hGlbInv = NULL;           // Inverse indices global memory handle
@@ -1620,8 +1624,12 @@ UBOOL PrimFnDydIotaPvN_EM
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
 
+    // Calculate space needed for the result
+    ByteRes = aplNELMLft * sizeof (APLUINT);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     // Allocate a temporary array to hold the inverse indices
-    hGlbInv = DbgGlobalAlloc (GHND, (APLU3264) (aplNELMLft * sizeof (APLUINT)));
+    hGlbInv = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbInv)
         goto WSFULL_EXIT;
 

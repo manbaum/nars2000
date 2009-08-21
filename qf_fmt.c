@@ -853,7 +853,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     ByteRes = CalcArraySize (ARRAY_CHAR, aplColsRes * aplNumRows, 2);
 
     // Allocate space for the result
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

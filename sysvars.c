@@ -84,6 +84,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL              , SYSVAR_WSID},  // Workspace Identifier
     {WS_UTF16_QUAD L"identity" , SYSLBL,      TRUE , NULL              , 0          },  // User-defined function/operator entry point for []identity
     {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []inverse
+    {WS_UTF16_QUAD L"multiset" , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []multiset
     {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []prototype
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []singleton
 
@@ -1970,7 +1971,8 @@ MAKE_VECTOR:
     // Calculate space needed for the result
     //   (an integer vector)
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
-
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (hGlbRes EQ NULL)

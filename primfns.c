@@ -548,7 +548,8 @@ UBOOL PrimScalarFnDydAllocate_EM
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     *lphGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!*lphGlbRes)
         goto WSFULL_EXIT;
@@ -752,7 +753,8 @@ HGLOBAL MakeMonPrototype_EM
 
                     // Allocate space for the result.
                     // N.B. Conversion from APLUINT to UINT.
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbTmp)
                         goto WSFULL_EXIT;
@@ -1121,7 +1123,8 @@ HGLOBAL MakeDydPrototype_EM
 
         // Allocate space for the result.
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
@@ -1267,7 +1270,8 @@ HGLOBAL MakeDydPrototype_EM
                     // N.B.  Conversion from APLUINT to UINT.
                     //***************************************************************
                     ByteRes = aplRankRes * sizeof (APLUINT);
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbWVec)
                         goto WSFULL_EXIT;
@@ -1293,7 +1297,8 @@ HGLOBAL MakeDydPrototype_EM
                     // N.B.  Conversion from APLUINT to UINT.
                     //***************************************************************
                     ByteRes = aplRankRes * sizeof (APLUINT);
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbOdo)
                         goto WSFULL_EXIT;
@@ -1812,7 +1817,8 @@ HGLOBAL CopyGlbAsType_EM
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

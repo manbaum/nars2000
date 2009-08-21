@@ -250,7 +250,8 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
     // Allocate space for the result
     // N.B.: Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -355,7 +356,8 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
                 case ARRAY_FLOAT:
                     ByteRes = aplNELMRes * sizeof (APLFLOAT);
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     Assert (sizeof (double) EQ sizeof (APLFLOAT));
                     CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
 ////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
@@ -730,7 +732,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
         // Allocate space for the result
         // N.B.: Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
@@ -842,7 +845,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                 case ARRAY_FLOAT:
                     ByteRes = aplNELMRht * sizeof (APLFLOAT);
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     Assert (sizeof (double) EQ sizeof (APLFLOAT));
                     CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
 ////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)

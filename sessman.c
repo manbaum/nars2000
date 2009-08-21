@@ -552,78 +552,81 @@ void FormatQQuadInput
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lpMemPTD->lpSISCur->lptkFunc);
-        // Make a PL_YYSTYPE NoValue entry
-        lpYYRes = MakeNoValue_YY (lpMemPTD->lpSISCur->lptkFunc);
-    } else
-    {
-        // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-        // Fill in the header
-        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeader->ArrType    = ARRAY_CHAR;
-////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-        lpHeader->RefCnt     = 1;
-        lpHeader->NELM       = uLineLen;
-        lpHeader->Rank       = 1;
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = uLineLen;
+    lpHeader->Rank       = 1;
 #undef  lpHeader
 
-        // Save the dimension in the result
-        *VarArrayBaseToDim (lpMemRes) = uLineLen;
+    // Save the dimension in the result
+    *VarArrayBaseToDim (lpMemRes) = uLineLen;
 
-        // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-        // Tell EM_GETLINE maximum # chars in the buffer
-        // Because we allocated space for max (uLineLen, 1)
-        //   chars, we don't have to worry about overwriting
-        //   the allocation limits of the buffer
-        ((LPWORD) lpMemRes)[0] = (WORD) uLineLen;
+    // Tell EM_GETLINE maximum # chars in the buffer
+    // Because we allocated space for max (uLineLen, 1)
+    //   chars, we don't have to worry about overwriting
+    //   the allocation limits of the buffer
+    ((LPWORD) lpMemRes)[0] = (WORD) uLineLen;
 
-        // Get the contents of the line
-        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemRes);
+    // Get the contents of the line
+    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemRes);
 
-        // Replace leading Prompt Replacement chars
-        if (lpMemPTD->cQuadPR NE CQUADPR_MT)
-        {
-            UINT QQPromptLen,   // Length of QQ prompt
-                 u;             // Loop counter
+    // Replace leading Prompt Replacement chars
+    if (lpMemPTD->cQuadPR NE CQUADPR_MT)
+    {
+        UINT QQPromptLen,   // Length of QQ prompt
+             u;             // Loop counter
 
-            // Get the length of the QQ prompt
-            QQPromptLen = lpMemPTD->lpSISCur->QQPromptLen;
+        // Get the length of the QQ prompt
+        QQPromptLen = lpMemPTD->lpSISCur->QQPromptLen;
 
-            // ***FIXME*** -- we're supposed to save the actual prompt
-            //                and compare it with the chars after the
-            //                user has responded to the request for
-            //                Quote-Quad input.
+        // ***FIXME*** -- we're supposed to save the actual prompt
+        //                and compare it with the chars after the
+        //                user has responded to the request for
+        //                Quote-Quad input.
 
-            // Replace all prompt chars
-            for (u = 0; u < QQPromptLen; u++)
-                lpMemRes[u] = lpMemPTD->cQuadPR;
-        } // End IF
+        // Replace all prompt chars
+        for (u = 0; u < QQPromptLen; u++)
+            lpMemRes[u] = lpMemPTD->cQuadPR;
+    } // End IF
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-        // Allocate a new YYRes
-        lpYYRes = YYAlloc ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-        // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-        lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
-        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-        lpYYRes->tkToken.tkCharIndex       = lpMemPTD->lpSISCur->lptkFunc->tkCharIndex;
-    } // End IF/ELSE
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lpMemPTD->lpSISCur->lptkFunc->tkCharIndex;
 
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lpMemPTD->lpSISCur->lptkFunc);
+    // Make a PL_YYSTYPE NoValue entry
+    lpYYRes = MakeNoValue_YY (lpMemPTD->lpSISCur->lptkFunc);
+NORMAL_EXIT:
     // Save the result in PerTabData
     lpMemPTD->YYResExec = *lpYYRes;
 

@@ -701,7 +701,8 @@ static char tabConvert[][STRAND_LENGTH] =
 
     // Allocate global memory for a length <iLen> vector of type <aplTypeRes>.
     // N.B.: Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
         goto WSFULL_EXIT;
@@ -1348,7 +1349,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     // Allocate global memory for the function array
     // N.B.: Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
         goto WSFULL_EXIT;
@@ -2021,7 +2023,8 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
 
     // Allocate global memory for a length <iLen> vector of type <cState>
     // N.B.: Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
         goto WSFULL_EXIT;
@@ -2299,7 +2302,8 @@ LPPL_YYSTYPE MakeList_EM_YY
 
     // Allocate global memory for a length <iLen> vector
     // N.B.: Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbLst = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbLst)
         goto WSFULL_EXIT;

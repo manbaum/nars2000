@@ -378,7 +378,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -473,7 +474,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbWVecRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRht)
         goto WSFULL_EXIT;
@@ -501,7 +503,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRht)
         goto WSFULL_EXIT;
@@ -518,7 +521,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbWVecRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRes)
         goto WSFULL_EXIT;
@@ -545,7 +549,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
     ByteRes = aplRankRes * sizeof (APLUINT);
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbOdoRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRes)
         goto WSFULL_EXIT;

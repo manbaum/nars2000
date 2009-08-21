@@ -196,7 +196,8 @@ UBOOL CmdSave_EM
 
     // Allocate space for two counters (Vars & Fcns) per SI level
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbCnt = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbCnt)
         goto WSFULL_EXIT;

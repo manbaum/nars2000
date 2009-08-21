@@ -293,7 +293,8 @@ UBOOL SaveNewWsid_EM
 
         // Allocate space for the new WSID
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteWSID EQ (APLU3264) ByteWSID);
+        if (ByteWSID NE (APLU3264) ByteWSID)
+            goto WSFULL_EXIT;
         hGlbWSID = DbgGlobalAlloc (GHND, (APLU3264) ByteWSID);
         if (!hGlbWSID)
             goto WSFULL_EXIT;

@@ -186,7 +186,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
         // Allocate space for the result.
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
@@ -298,7 +299,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
             // Allocate space for the result.
             // N.B. Conversion from APLUINT to UINT.
-            Assert (ByteRes EQ (APLU3264) ByteRes);
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;
@@ -476,7 +478,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
             // Allocate space for the temp
             // N.B. Conversion from APLUINT to UINT.
-            Assert (ByteRes EQ (APLU3264) ByteRes);
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
             hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbTmp)
                 goto WSFULL_EXIT;
@@ -550,7 +553,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
             // Allocate space for the result.
             // N.B. Conversion from APLUINT to UINT.
-            Assert (ByteRes EQ (APLU3264) ByteRes);
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;

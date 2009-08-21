@@ -81,7 +81,8 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -191,7 +192,8 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 
         // Re-allocate the global downwards
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+////////if (ByteRes NE (APLU3264) ByteRes)
+////////    goto WSFULL_EXIT;
         hGlbRes = MyGlobalReAlloc (hGlbRes, (APLU3264) ByteRes, GMEM_MOVEABLE);
     } else
     if (aplNELMRes > SYSVER_NELM)

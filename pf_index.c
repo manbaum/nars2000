@@ -237,7 +237,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
             // Calculate space needed for the result
             ByteRes = CalcArraySize (aplTypeRes, aplNELMSub, aplRankSub);
-
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
             // Allocate space for the result
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
@@ -690,7 +691,8 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
 
         // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeRes, 1, aplRankRes);
-
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         // Allocate space for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
@@ -820,7 +822,8 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMLst, aplRankLst);
-
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
@@ -1096,7 +1099,8 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeNam, aplNELMRes, aplRankLst);
-
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
@@ -1360,7 +1364,8 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
     {
         // Calculate bytes needed for the new list arg
         ByteRes = CalcArraySize (ARRAY_LIST, uCount, 1);
-
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         // Allocate space for the new list arg
         hGlbLstNew = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbLstNew)
@@ -1413,7 +1418,8 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
 
         // Calculate space needed for the axis operator
         ByteRes = CalcArraySize (ARRAY_INT, uCount, 1);
-
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         // Allocate space for the axis operator
         hGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbAxis)
@@ -1940,7 +1946,8 @@ UBOOL ArrayIndexSetNamScalar_EM
     {
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
-
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         // Wrap the global in a scalar
         hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
@@ -3319,7 +3326,8 @@ UBOOL ArrayIndexSetRect_EM
     {
         // Calculate bytes needed for the new list arg
         ByteRes = CalcArraySize (ARRAY_LIST, uCount, 1);
-
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         // Allocate space for the new list arg
         hGlbLstNew = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbLstNew)
@@ -3372,7 +3380,8 @@ UBOOL ArrayIndexSetRect_EM
 
         // Calculate space needed for the axis operator
         ByteRes = CalcArraySize (ARRAY_INT, uCount, 1);
-
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         // Allocate space for the axis operator
         hGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbAxis)

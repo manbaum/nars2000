@@ -315,7 +315,8 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -462,7 +463,8 @@ HGLOBAL MakeEncloseZilde
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        return NULL;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         return NULL;
@@ -813,8 +815,12 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
+    // Calcualte space needed for the TTs
+    ByteRes = aplRankLft * sizeof (TT_HANDLES);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     // Allocate an array to hold the HGLOBALs of the translate tables
-    hGlbTTHandles = DbgGlobalAlloc (GHND, (APLU3264) aplRankLft * sizeof (TT_HANDLES));
+    hGlbTTHandles = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbTTHandles)
         goto WSFULL_EXIT;
 
@@ -825,9 +831,12 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     //   one per left arg dimension
     for (uDim = 0; uDim < aplRankLft; uDim++)
     {
+        ByteRes = APLCHAR_SIZE * sizeof (APLCHAR);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         // Allocate space for the TT -- note we don't use GHND (which includes GMEM_ZEROINIT)
         //    as we'll initialize it ourselves
-        lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, APLCHAR_SIZE * sizeof (APLCHAR));
+        lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, (APLU3264) ByteRes);
         if (!lpMemTTHandles[uDim].hGlbTT)
             goto WSFULL_EXIT;
 
@@ -914,7 +923,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

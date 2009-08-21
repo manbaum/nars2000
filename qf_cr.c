@@ -299,67 +299,66 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                     // Allocate space for the result
                     // N.B.:  Conversion from APLUINT to UINT
-                    Assert (ByteRes EQ (APLU3264) ByteRes);
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
                     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbRes)
                         goto WSFULL_EXIT;
-                    else
-                    {
-                        // Lock the memory to get a ptr to it
-                        lpMemRes = MyGlobalLock (hGlbRes);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-                        // Fill in the header
-                        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                        lpHeader->ArrType    = aplTypeRes;
-////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-                        lpHeader->RefCnt     = 1;
-                        lpHeader->NELM       = aplNELMRes;
-                        lpHeader->Rank       = aplRankRes;
+                    // Fill in the header
+                    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                    lpHeader->ArrType    = aplTypeRes;
+////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                    lpHeader->RefCnt     = 1;
+                    lpHeader->NELM       = aplNELMRes;
+                    lpHeader->Rank       = aplRankRes;
 #undef  lpHeader
 
-                        // Save the dimensions in the result ("1 +" includes the header)
-                        (VarArrayBaseToDim (lpMemRes))[0] = 1 + uNumLines;
-                        if (IsMatrix (aplRankRes))
-                            (VarArrayBaseToDim (lpMemRes))[1] = uMaxLineLen;
+                    // Save the dimensions in the result ("1 +" includes the header)
+                    (VarArrayBaseToDim (lpMemRes))[0] = 1 + uNumLines;
+                    if (IsMatrix (aplRankRes))
+                        (VarArrayBaseToDim (lpMemRes))[1] = uMaxLineLen;
 
 #define lpMemResChar    ((LPAPLCHAR) lpMemRes)
-                        // Skip over the header and dimensions to the data
-                        lpMemResChar = VarArrayBaseToData (lpMemRes, aplRankRes);
+                    // Skip over the header and dimensions to the data
+                    lpMemResChar = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-                        // If this is a nested result, fill it in PTR_REUSED
-                        //   in case we fail along the way
-                        if (IsVector (aplRankRes))
-                        for (uRes = 0; uRes < aplNELMRes; uRes++)
-                            ((LPAPLNESTED) lpMemResChar)[uRes] = PTR_REUSED;
+                    // If this is a nested result, fill it in PTR_REUSED
+                    //   in case we fail along the way
+                    if (IsVector (aplRankRes))
+                    for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        ((LPAPLNESTED) lpMemResChar)[uRes] = PTR_REUSED;
 
-                        // Copy the header to the result as either a row or as an allocated HGLOBAL
-                        lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, lpMemDfnHdr->hGlbTxtHdr, uMaxLineLen, lptkFunc);
-                        if (lpMemResChar EQ NULL)
-                            goto ERROR_EXIT;
+                    // Copy the header to the result as either a row or as an allocated HGLOBAL
+                    lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, lpMemDfnHdr->hGlbTxtHdr, uMaxLineLen, lptkFunc);
+                    if (lpMemResChar EQ NULL)
+                        goto ERROR_EXIT;
 
-                        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-                        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+                    // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+                    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-                        // Run through the function lines copying each line text to the result
-                        for (uLine = 0; uLine < uNumLines; uLine++)
+                    // Run through the function lines copying each line text to the result
+                    for (uLine = 0; uLine < uNumLines; uLine++)
+                    {
+                        // Get the line text global memory handle
+                        hGlbTxtLine = lpFcnLines->hGlbTxtLine;
+
+                        if (hGlbTxtLine)
                         {
-                            // Get the line text global memory handle
-                            hGlbTxtLine = lpFcnLines->hGlbTxtLine;
-
-                            if (hGlbTxtLine)
-                            {
-                                // Copy the header to the result as either a row or as an allocated HGLOBAL
-                                lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, hGlbTxtLine, uMaxLineLen, lptkFunc);
-                                if (lpMemResChar EQ NULL)
-                                    goto ERROR_EXIT;
-                            } // End IF
+                            // Copy the header to the result as either a row or as an allocated HGLOBAL
+                            lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, hGlbTxtLine, uMaxLineLen, lptkFunc);
+                            if (lpMemResChar EQ NULL)
+                                goto ERROR_EXIT;
+                        } // End IF
 #undef  lpMemResChar
-                            // Skip to the next struct
-                            lpFcnLines++;
-                        } // End FOR
-                    } // End IF/ELSE
+                        // Skip to the next struct
+                        lpFcnLines++;
+                    } // End FOR
 
                     break;
                 } // End DFN_HEADER_SIGNATURE
@@ -482,15 +481,11 @@ LPVOID SysFnCR_Copy_EM
 
         // Allocate space for the result.
         // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         hGlbCpy = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbCpy)
-        {
-            // Mark as in error
-            lpMemRes = NULL;
-
             goto WSFULL_EXIT;
-        } // End IF
 
         // Lock the memory to get a ptr to it
         lpMemCpy = MyGlobalLock (hGlbCpy);
@@ -541,6 +536,9 @@ LPVOID SysFnCR_Copy_EM
     goto NORMAL_EXIT;
 
 WSFULL_EXIT:
+    // Mark as in error
+    lpMemRes = NULL;
+
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
@@ -593,7 +591,8 @@ HGLOBAL SysFnMonCR_ALLOC_EM
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

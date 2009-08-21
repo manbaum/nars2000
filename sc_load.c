@@ -1192,7 +1192,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Now we can allocate the storage for the result
             // N.B.:  Conversion from APLUINT to UINT.
             //***************************************************************
-            Assert (ByteObj EQ (APLU3264) ByteObj);
+            if (ByteObj NE (APLU3264) ByteObj)
+                goto WSFULL_EXIT;
             hGlbObj = MyGlobalAlloc (GHND, (APLU3264) ByteObj);
             if (!hGlbObj)
                 goto WSFULL_EXIT;

@@ -308,7 +308,8 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         // Allocate temp storage for the normalized left arg
         // N.B.: Conversion from APLUINT to UINT
         ByteRes = aplNELMLft * sizeof (APLINT);
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         hGlbRep = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRep)
             goto WSFULL_EXIT;
@@ -435,7 +436,8 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

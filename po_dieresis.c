@@ -234,7 +234,8 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT.
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -993,7 +994,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (APLU3264) ByteAlloc);
+        if (ByteAlloc NE (APLU3264) ByteAlloc)
+            goto WSFULL_EXIT;
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
@@ -1019,7 +1021,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteAlloc = aplRankRes * sizeof (APLUINT);
-        Assert (ByteAlloc EQ (APLU3264) ByteAlloc);
+        if (ByteAlloc NE (APLU3264) ByteAlloc)
+            goto WSFULL_EXIT;
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbOdo)
             goto WSFULL_EXIT;

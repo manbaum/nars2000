@@ -2297,7 +2297,7 @@ UBOOL fnQuoDoneSub
     TKFLAGS      tkFlags = {0};         // Token flags
     APLINT       aplInteger;            // Temporary integer
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    UBOOL        bRet;                  // TRUE iff result is valid
+    UBOOL        bRet = TRUE;           // TRUE iff result is valid
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2390,6 +2390,7 @@ UBOOL fnQuoDoneSub
     } else
     {
         APLUINT ByteRes;        // # bytes in the string vector
+        LPWCHAR lpwsz;
 
         // Calculate space needed for the string vector
         ByteRes = CalcArraySize (ARRAY_CHAR, lptkLocalVars->iStrLen, 1);
@@ -2400,57 +2401,57 @@ UBOOL fnQuoDoneSub
         //   excluding the terminating zero.
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        Assert (ByteRes EQ (APLU3264) ByteRes);
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
         hGlb = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlb)
-        {
-            // Save the error message
-            ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+            goto WSFULL_EXIT;
+        // Lock the memory to get a ptr to it
+        lpwsz = MyGlobalLock (hGlb);
 
-            bRet = FALSE;
-        } else
-        {
-            LPWCHAR lpwsz;
-
-            // Lock the memory to get a ptr to it
-            lpwsz = MyGlobalLock (hGlb);
-
-            // Setup the header, and copy
-            //   the string to the global memory
+        // Setup the header, and copy
+        //   the string to the global memory
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpwsz)
-            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = ARRAY_CHAR;
-////////////lpHeader->PermNdx    = PERMNDX_NONE;
-////////////lpHeader->SysVar     = FALSE;
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_CHAR;
+////////lpHeader->PermNdx    = PERMNDX_NONE;
+////////lpHeader->SysVar     = FALSE;
 #ifdef DEBUG
-            lpHeader->bMFvar     = lptkLocalVars->bMF;
+        lpHeader->bMFvar     = lptkLocalVars->bMF;
 #endif
-            lpHeader->RefCnt     = 1;
-            lpHeader->NELM       = lptkLocalVars->iStrLen;
-            lpHeader->Rank       = 1;
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = lptkLocalVars->iStrLen;
+        lpHeader->Rank       = 1;
 #undef  lpHeader
 
-            *VarArrayBaseToDim (lpwsz) = lptkLocalVars->iStrLen;
-            CopyMemoryW (VarArrayBaseToData (lpwsz, 1),
-                        &lpwszStr[1],       // Skip over the string delimiter
-                         lptkLocalVars->iStrLen);
-            MyGlobalUnlock (hGlb); lpwsz = NULL;
+        *VarArrayBaseToDim (lpwsz) = lptkLocalVars->iStrLen;
+        CopyMemoryW (VarArrayBaseToData (lpwsz, 1),
+                    &lpwszStr[1],       // Skip over the string delimiter
+                     lptkLocalVars->iStrLen);
+        MyGlobalUnlock (hGlb); lpwsz = NULL;
 
-            // Mark the data as a character strand in a global memory handle
-            tkFlags.TknType = TKT_CHRSTRAND;
+        // Mark the data as a character strand in a global memory handle
+        tkFlags.TknType = TKT_CHRSTRAND;
 
-            // Copy to local var so we may pass its address
-            (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlb);
+        // Copy to local var so we may pass its address
+        (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlb);
 
-            // Attempt to append as new token, check for TOKEN TABLE FULL,
-            //   and resize as necessary.
-            bRet = AppendNewToken_EM (lptkLocalVars,
-                                     &tkFlags,
-                                     &aplInteger,
-                                      -lptkLocalVars->iStrLen);
-        } // End IF/ELSE
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                 &aplInteger,
+                                  -lptkLocalVars->iStrLen);
     } // End IF
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+    bRet = FALSE;
 NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
     InitAccumVars (lptkLocalVars);
@@ -2798,9 +2799,9 @@ UBOOL MergeNumbers
     APLUINT    ByteRes,                 // # bytes in the result
                uPrv;                    // Loop counter
     HGLOBAL    hGlbRes,                 // Result global memory handle
-               hGlbPrv;                 // Previous token ...
+               hGlbPrv = NULL;          // Previous token ...
     LPVOID     lpMemRes,                // Ptr to result global memory
-               lpMemPrv;                // Ptr to previous token ...
+               lpMemPrv = NULL;         // Ptr to previous token ...
     APLLONGEST aplLongestPrv;           // Previous token immediate value
     UINT       uBitMask;                // Bit mask for looping through Booleans
     UBOOL      bMerge = FALSE;          // TRUE iff we merged with the previous token
@@ -2863,177 +2864,179 @@ UBOOL MergeNumbers
             ByteRes = CalcArraySize (aplTypeRes, aplNELMPrv + 1, 1);
 
             // Allocate global memory for the array
-            Assert (ByteRes EQ (APLU3264) ByteRes);
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
             hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
-            {
-                // Save the error message
-                ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+                goto WSFULL_EXIT;
+            // Lock the memory to get a ptr to it
+            lpMemRes = MyGlobalLock (hGlbRes);
 
-                // Mark as not successful
-                lpbRet = FALSE;
-            } else
-            {
-                // Lock the memory to get a ptr to it
-                lpMemRes = MyGlobalLock (hGlbRes);
-
-                // Fill in the header
+            // Fill in the header
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                lpHeader->ArrType    = aplTypeRes;
-////////////////lpHeader->PermNdx    = PERMNDX_NONE;
-////////////////lpHeader->SysVar     = FALSE;
+            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+            lpHeader->ArrType    = aplTypeRes;
+////////////lpHeader->PermNdx    = PERMNDX_NONE;
+////////////lpHeader->SysVar     = FALSE;
 #ifdef DEBUG
-                lpHeader->bMFvar     = lptkLocalVars->bMF;
+            lpHeader->bMFvar     = lptkLocalVars->bMF;
 #endif
-                lpHeader->RefCnt     = 1;
-                lpHeader->NELM       = aplNELMPrv + 1;
-                lpHeader->Rank       = 1;
+            lpHeader->RefCnt     = 1;
+            lpHeader->NELM       = aplNELMPrv + 1;
+            lpHeader->Rank       = 1;
 #undef  lpHeader
-                // Save the dimension
-                *VarArrayBaseToDim (lpMemRes) = aplNELMPrv + 1;
+            // Save the dimension
+            *VarArrayBaseToDim (lpMemRes) = aplNELMPrv + 1;
 
-                // Skip over the header and dimensions to the data
-                lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+            // Skip over the header and dimensions to the data
+            lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-                // Initialize the bit mask
-                uBitMask = BIT0;
+            // Initialize the bit mask
+            uBitMask = BIT0;
 
-                // If the previous token is global, ...
-                if (hGlbPrv)
-                    // Skip over the header and dimension
-                    lpMemPrv = VarArrayBaseToData (lpMemPrv, aplRankPrv);
-                else
-                    lpMemPrv = &aplLongestPrv;
+            // If the previous token is global, ...
+            if (hGlbPrv)
+                // Skip over the header and dimension
+                lpMemPrv = VarArrayBaseToData (lpMemPrv, aplRankPrv);
+            else
+                lpMemPrv = &aplLongestPrv;
 
-                // Convert and copy the previous token's data to the new token
-                // Split cases based upon the result storage type
-                switch (aplTypeRes)
-                {
-                    case ARRAY_BOOL:
-                        // Same type as the result, so just copy the Booleans
-                        CopyMemory (lpMemRes, lpMemPrv, (APLU3264) RoundUpBitsToBytes (aplNELMPrv) * sizeof (APLBOOL));
+            // Convert and copy the previous token's data to the new token
+            // Split cases based upon the result storage type
+            switch (aplTypeRes)
+            {
+                case ARRAY_BOOL:
+                    // Same type as the result, so just copy the Booleans
+                    CopyMemory (lpMemRes, lpMemPrv, (APLU3264) RoundUpBitsToBytes (aplNELMPrv) * sizeof (APLBOOL));
 
-                        // Save the new value as a Boolean
-                        ((LPAPLBOOL) lpMemRes)[aplNELMPrv >> LOG2NBIB] |= (lppnLocalVars->aplInteger << (MASKLOG2NBIB & (UINT) aplNELMPrv));
+                    // Save the new value as a Boolean
+                    ((LPAPLBOOL) lpMemRes)[aplNELMPrv >> LOG2NBIB] |= (lppnLocalVars->aplInteger << (MASKLOG2NBIB & (UINT) aplNELMPrv));
 
-                        break;
+                    break;
 
-                    case ARRAY_INT:
-                        // Split cases based upon the previous token's storage type
-                        switch (aplTypePrv)
-                        {
-                            case ARRAY_BOOL:
-                                // Loop through the previous token's values
-                                for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                case ARRAY_INT:
+                    // Split cases based upon the previous token's storage type
+                    switch (aplTypePrv)
+                    {
+                        case ARRAY_BOOL:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                            {
+                                if (uBitMask & *(LPAPLBOOL) lpMemPrv)
+                                    ((LPAPLINT) lpMemRes)[uPrv] = 1;
+
+                                // Shift over the bit mask
+                                uBitMask <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMask EQ END_OF_BYTE)
                                 {
-                                    if (uBitMask & *(LPAPLBOOL) lpMemPrv)
-                                        ((LPAPLINT) lpMemRes)[uPrv] = 1;
+                                    uBitMask = BIT0;            // Start over
+                                    ((LPAPLBOOL) lpMemPrv)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
 
-                                    // Shift over the bit mask
-                                    uBitMask <<= 1;
+                            break;
 
-                                    // Check for end-of-byte
-                                    if (uBitMask EQ END_OF_BYTE)
-                                    {
-                                        uBitMask = BIT0;            // Start over
-                                        ((LPAPLBOOL) lpMemPrv)++;   // Skip to next byte
-                                    } // End IF
-                                } // End FOR
+                        case ARRAY_INT:
+                            // Same type as the result, so just copy the integers
+                            CopyMemory (lpMemRes, lpMemPrv, (APLU3264) aplNELMPrv * sizeof (APLINT));
 
-                                break;
+                            break;
 
-                            case ARRAY_INT:
-                                // Same type as the result, so just copy the integers
-                                CopyMemory (lpMemRes, lpMemPrv, (APLU3264) aplNELMPrv * sizeof (APLINT));
+                        defstop
+                            break;
+                    } // End SWITCH
 
-                                break;
+                    // Save the new value as an integer
+                    ((LPAPLINT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplInteger;
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                    break;
 
-                        // Save the new value as an integer
-                        ((LPAPLINT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplInteger;
+                case ARRAY_FLOAT:
+                    // Split cases based upon the previous token's storage type
+                    switch (aplTypePrv)
+                    {
+                        case ARRAY_BOOL:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                            {
+                                if (uBitMask & *(LPAPLBOOL) lpMemPrv)
+                                    ((LPAPLFLOAT) lpMemRes)[uPrv] = 1;
 
-                        break;
+                                // Shift over the bit mask
+                                uBitMask <<= 1;
 
-                    case ARRAY_FLOAT:
-                        // Split cases based upon the previous token's storage type
-                        switch (aplTypePrv)
-                        {
-                            case ARRAY_BOOL:
-                                // Loop through the previous token's values
-                                for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                // Check for end-of-byte
+                                if (uBitMask EQ END_OF_BYTE)
                                 {
-                                    if (uBitMask & *(LPAPLBOOL) lpMemPrv)
-                                        ((LPAPLFLOAT) lpMemRes)[uPrv] = 1;
+                                    uBitMask = BIT0;            // Start over
+                                    ((LPAPLBOOL) lpMemPrv)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
 
-                                    // Shift over the bit mask
-                                    uBitMask <<= 1;
+                            break;
 
-                                    // Check for end-of-byte
-                                    if (uBitMask EQ END_OF_BYTE)
-                                    {
-                                        uBitMask = BIT0;            // Start over
-                                        ((LPAPLBOOL) lpMemPrv)++;   // Skip to next byte
-                                    } // End IF
-                                } // End FOR
+                        case ARRAY_INT:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                ((LPAPLFLOAT) lpMemRes)[uPrv] = (APLFLOAT) *((LPAPLINT) lpMemPrv)++;
+                            break;
 
-                                break;
+                        case ARRAY_FLOAT:
+                            // Same type as the result, so just copy the floats
+                            CopyMemory (lpMemRes, lpMemPrv, (APLU3264) aplNELMPrv * sizeof (APLFLOAT));
 
-                            case ARRAY_INT:
-                                // Loop through the previous token's values
-                                for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
-                                    ((LPAPLFLOAT) lpMemRes)[uPrv] = (APLFLOAT) *((LPAPLINT) lpMemPrv)++;
-                                break;
+                            break;
 
-                            case ARRAY_FLOAT:
-                                // Same type as the result, so just copy the floats
-                                CopyMemory (lpMemRes, lpMemPrv, (APLU3264) aplNELMPrv * sizeof (APLFLOAT));
+                        defstop
+                            break;
+                    } // End SWITCH
 
-                                break;
+                    // Save the new value as a float
+                    ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplFloat;
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                    break;
 
-                        // Save the new value as a float
-                        ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplFloat;
-
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
-
-                if (hGlbPrv)
-                {
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPrv); lpMemPrv = NULL;
-
-                    // Free the previous token's storage
-                    MyGlobalFree (hGlbPrv); hGlbPrv = NULL;
-                } // End IF
-
-                // Setup the previous token
-                lptkPrv->tkFlags.TknType  = TKT_NUMSTRAND;
-                lptkPrv->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
-                lptkPrv->tkData.tkGlbData = MakePtrTypeGlb (hGlbRes);
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-                // Mark as succcessfully merged
-                bMerge = TRUE;
-            } // End IF/ELSE
+                defstop
+                    break;
+            } // End SWITCH
 
             if (hGlbPrv)
             {
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbPrv); lpMemPrv = NULL;
+
+                // Free the previous token's storage
+                MyGlobalFree (hGlbPrv); hGlbPrv = NULL;
             } // End IF
+
+            // Setup the previous token
+            lptkPrv->tkFlags.TknType  = TKT_NUMSTRAND;
+            lptkPrv->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
+            lptkPrv->tkData.tkGlbData = MakePtrTypeGlb (hGlbRes);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+            // Mark as succcessfully merged
+            bMerge = TRUE;
         } // End IF
+    } // End IF
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Save the error message
+    ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+    // Mark as not successful
+    *lpbRet = FALSE;
+NORMAL_EXIT:
+    if (hGlbPrv && lpMemPrv)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPrv); lpMemPrv = NULL;
     } // End IF
 
     return bMerge;

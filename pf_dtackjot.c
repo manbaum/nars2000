@@ -454,7 +454,8 @@ __try
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -3029,7 +3030,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     // Allocate temp storage for the normalized left arg
     // N.B.: Conversion from APLUINT to UINT
     ByteRes = aplColsRht * sizeof (WIDPRC);
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbWidPrc = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWidPrc)
         goto WSFULL_EXIT;
@@ -3513,7 +3515,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, aplRankRes);
 
     // Allocate space for the result
-    Assert (ByteRes EQ (APLU3264) ByteRes);
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

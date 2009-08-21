@@ -1037,7 +1037,8 @@ NEXTLINE:
 
             // Allocate space for the result
             // N.B.: Conversion from APLUINT to UINT.
-            Assert (ByteRes EQ (APLU3264) ByteRes);
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;
@@ -1874,7 +1875,8 @@ UBOOL InitFcnSTEs
 
             // Allocate global memory for the function array
             // N.B.: Conversion from APLUINT to UINT.
-            Assert (ByteRes EQ (APLU3264) ByteRes);
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;

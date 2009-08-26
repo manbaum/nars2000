@@ -357,12 +357,18 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                 // Restore the SI level of lpYYRes
                 lpYYRes->SILevel++;
 #endif
-            } else
-                // Just disclose the argument
-                lpYYRes2 =
-                  PrimFnMonRightShoe_EM_YY (&lpYYFcnStrOpr->tkToken,    // Ptr to function token
-                                            &lpYYRes->tkToken,          // Ptr to right arg token
-                                             lptkAxis);                 // Ptr to axis token
+                // Free the first YYRes
+                FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+
+                // Copy secondary result as primary result
+                lpYYRes = lpYYRes2; lpYYRes2 = NULL;
+            } // End IF
+
+            // Just disclose the argument
+            lpYYRes2 =
+              PrimFnMonRightShoe_EM_YY (&lpYYFcnStrOpr->tkToken,    // Ptr to function token
+                                        &lpYYRes->tkToken,          // Ptr to right arg token
+                                         lptkAxis);                 // Ptr to axis token
             // Free the first YYRes
             FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 
@@ -418,7 +424,7 @@ static APLCHAR MonHeader[] =
   L"Z" $IS L"(LO " MFN_MonRank L" Y) R;O";
 
 static APLCHAR MonLine1[] =
-  L"Y" $IS L"1" $RHO L"Y";
+  L"Y" $IS L"1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y";
 
 static APLCHAR MonLine2[] =
   L"O" $IS $RHO $RHO L"R";
@@ -455,7 +461,7 @@ static APLCHAR ConHeader[] =
   L"Z" $IS L"L " MFN_Conform L" R";
 
 static APLCHAR ConLine1[] =
-  L"Z" $IS $DISCLOSE L"(((L-" $EPSILON $RHO $JOT $RHO $EACH L"R)" $RHO $EACH L"1)," $EACH $RHO $EACH L"R)" $RHO $EACH L"R";
+  L"Z" $IS L"(((L-" $EPSILON $RHO $JOT $RHO $EACH L"R)" $RHO $EACH L"1)," $EACH $RHO $EACH L"R)" $RHO $EACH L"R";
 
 static LPAPLCHAR ConBody[] =
 {ConLine1,

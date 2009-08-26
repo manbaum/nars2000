@@ -1177,18 +1177,28 @@ LPAPLCHAR SavedWsFormGlbVar
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     PERM_NDX     permNdx;               // Permanent object index
     STFLAGS      stFlags;               // Object SymTab flags
-    WCHAR        wszGlbObj[16 + 1],     // Save area for formatted hGlbObj (room for 64-bit ptr plus terminating zero)
+    WCHAR        wszGlbObj[16 + 1 + 1], // Save area for formatted hGlbObj (room for FMTCHR_LEAD,
+                                        //   64-bit ptr, and terminating zero)
                  wszGlbCnt[8 + 1];      // Save area for formatted *lpGlbCnt
     LPSYMENTRY   lpSymLink;             // Ptr to SYMENTRY temp for *lplpSymLink
+    UBOOL        bUsrDfn;               // TRUE iff the object is a user-defined function/operator
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
+    // Check on user-defined functions/operators
+    bUsrDfn = IsGlbTypeDfnDir (hGlbObj);
+
     // stData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbObj));
+    //   or user-defined function/operator
+    Assert (IsGlbTypeVarDir (hGlbObj)
+         || bUsrDfn);
 
     // Clear the ptr type bits
     hGlbObj = ClrPtrTypeDir (hGlbObj);
+
+    // Lock the memory to get a ptr to it
+    lpMemObj = MyGlobalLock (hGlbObj);
 
     // Format the hGlbObj
     wsprintfW (wszGlbObj,
@@ -1202,7 +1212,23 @@ LPAPLCHAR SavedWsFormGlbVar
                                   lpaplChar,                    // Ptr to the output buffer
                                   8 * sizeof (lpaplChar[0]),    // Byte size of the output buffer
                                   lpMemSaveWSID))               // Ptr to the file name
+    {
+        if (bUsrDfn)
+        {
+            // Copy the STE name instead as we don't use :nnn convention in
+            //   function arrays
+#define lpHeader        ((LPDFN_HEADER) lpMemObj)
+            lpaplChar =
+              CopySteName (lpaplChar,               // Ptr to output area
+                           lpHeader->steFcnName,    // Ptr to function STE
+                           NULL);                   // Ptr to name length (may be NULL)
+#undef  lpHeader
+            // Ensure properly terminated
+            *lpaplChar = WC_EOS;
+        } // End IF
+
         goto NORMAL_EXIT;
+    } // End IF
 
     // Save as ptr to the profile keyname
     lpMemProKeyName = lpaplChar;
@@ -1213,9 +1239,6 @@ LPAPLCHAR SavedWsFormGlbVar
     // Append the marker as a variable
     *lpaplChar++ = L'V';
     *lpaplChar++ = L' ';
-
-    // Lock the memory to get a ptr to it
-    lpMemObj = MyGlobalLock (hGlbObj);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
     // Get the array attributes

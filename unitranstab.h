@@ -27,7 +27,7 @@
 #define SAME    0xFFFF
 
 WCHAR uniTransTab[][UNITRANS_LENGTH] =
-{// APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
+{// APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
     {  NA  , 0x00C3,   NA  ,   NA  , 0x00A0,   NA  , UTF16_A_                }, // A underbar
     {  NA  , 0x00C4,   NA  ,   NA  , 0x00E2,   NA  , UTF16_B_                }, // B underbar
     {  NA  , 0x00C5,   NA  ,   NA  , 0x00E4,   NA  , UTF16_C_                }, // C underbar
@@ -54,7 +54,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {  NA  , 0x00DA,   NA  ,   NA  , 0x00C5,   NA  , UTF16_X_                }, // X underbar
     {  NA  , 0x00DB,   NA  ,   NA  , 0x00C7,   NA  , UTF16_Y_                }, // Y underbar
     {  NA  , 0x00DC,   NA  ,   NA  , 0x00D1,   NA  , UTF16_Z_                }, // Z underbar
-//  APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
+//  APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
     {0x00B8, 0x00A9,  SAME ,  SAME , 0x005E,   NA  , UTF16_ALPHA             }, // Alpha
     {0x00B1, 0x00B4,  SAME ,  SAME , 0x00B8,   NA  , UTF16_CIRCLE            }, // Circle
     {0x00B4, 0x00EE,  SAME ,  SAME , 0x00D2,   NA  , UTF16_CIRCLEBAR         }, // Circle bar
@@ -81,7 +81,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x2039, 0x00E9,  SAME ,  SAME , 0x00F4,   NA  , UTF16_DOWNCARETTILDE    }, // Downcaret tilde
     {0x017E, 0x00B8,  SAME ,  SAME , 0x00BF,   NA  , UTF16_DOWNSHOE          }, // Down shoe
     {0x02DC, 0x00AC,  SAME ,  SAME , 0x00FE,   NA  , UTF16_DOWNSTILE         }, // Downstile
-//  APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
+//  APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
     {0x201A, 0x00B3,  SAME ,  SAME , 0x00AF,   NA  , UTF16_DOWNTACK          }, // Down tack
     {0x2022, 0x00E0,  SAME ,  SAME , 0x00D5,   NA  , UTF16_DOWNTACKJOT       }, // Down tack jot
     {0x00B9, 0x00AD,  SAME ,  SAME , 0x00A3,   NA  , UTF16_EPSILON           }, // Epsilon
@@ -109,7 +109,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x008D, 0x00E4,  SAME ,  SAME , 0x00FA,   NA  , UTF16_QUOTEQUAD         }, // Quote-quad
     { SAME ,  SAME ,  SAME ,  SAME , 0x00A8,   NA  , UTF16_RIGHTBRACKET      }, // Right bracket
     {0x00BD, 0x00B5, 0x03C1,  SAME , 0x00B7,   NA  , UTF16_RHO               }, // Rho
-//  APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
+//  APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
     {0x2026, 0x00BE,  SAME ,  SAME , 0x00B1,   NA  , UTF16_RIGHTARROW        }, // Right arrow
     {0x2030, 0x00BF,  SAME ,  SAME , 0x00DE,   NA  , UTF16_RIGHTCARETUNDERBAR}, // Right caret underbar
     {0x0153, 0x00BA,  SAME ,  SAME , 0x00AA,   NA  , UTF16_RIGHTSHOE         }, // Right shoe
@@ -133,7 +133,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x2013, 0x00DF,  SAME ,  SAME , 0x00DA,   NA  , UTF16_UPTACKJOT         }, // Up tack jot
     {0x00D0,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_ZILDE             }, // Zilde                Missing from ISO charset
 
-//  APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
+//  APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
 //  {0x00E1,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // a acute
 //  {0x00E5,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // a circle
 //  {0x00E2,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // a circumflex
@@ -160,7 +160,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
 //  {0x00CB,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // E umlaut
 //  {0x00ED,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // i acute
 //  {0x00EE,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // i circumflex
-//  APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
+//  APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
 //  {0x00EC,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // i grave
 //  {0x00EF,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // i umlaut
 //  {0x00CD,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // I acute
@@ -192,7 +192,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
 //  {0x00FF,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // y umlaut
 //  {0x00DD,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // Y acute
 
-//  APL+WIN    ISO     APL2  Dyalog  PC3270  Normal  NARS
+//  APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
 //  {0x00A6,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // broken stile
 //  {0x00BF,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // upside down query
 //  {0x00F8,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // 0 slash

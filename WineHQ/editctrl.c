@@ -3584,7 +3584,7 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     EnableMenuItem(popup, IDM_CUT         , ((end - start) && !(es->style & ES_PASSWORD) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* copy */
     EnableMenuItem(popup, IDM_COPY        , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
-    /* copy APL+WIN */
+    /* copy APL+Win */
     EnableMenuItem(popup, IDM_COPY_APLWIN , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* copy APL2    */
     EnableMenuItem(popup, IDM_COPY_APL2   , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
@@ -3596,7 +3596,7 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     EnableMenuItem(popup, IDM_COPY_BRACES , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* paste */
     EnableMenuItem(popup, IDM_PASTE       , ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
-    /* paste APL+WIN */
+    /* paste APL+Win */
     EnableMenuItem(popup, IDM_PASTE_APLWIN, ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste APL2 */
     EnableMenuItem(popup, IDM_PASTE_APL2  , ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));

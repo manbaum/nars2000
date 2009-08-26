@@ -23,7 +23,7 @@
 
 typedef enum tagUNI_TRANS
 {
-    UNITRANS_APLWIN = 0,    // 00:  APL+WIN 3.6 (and maybe later)
+    UNITRANS_APLWIN = 0,    // 00:  APL+Win 3.6 (and maybe later)
     UNITRANS_ISO,           // 01:  ISO Standard (What Typeface is this???)
     UNITRANS_APL2,          // 02:  APL2 ???     ***FINISHME***
     UNITRANS_DYALOG,        // 03:  Dyalog ???   ***FINISHME***

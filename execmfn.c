@@ -230,7 +230,7 @@ HGLOBAL Init1MagicFunction
                         hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                         0,                  // Function line # (0 = header)
                        &ErrorHandler,       // Ptr to error handling function (may be NULL)
-                       TRUE);               // TRUE iff we're tokenizing a Magic Function
+                        TRUE);              // TRUE iff we're tokenizing a Magic Function
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } else
@@ -302,6 +302,7 @@ HGLOBAL Init1MagicFunction
         LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
         LPSYMENTRY  *lplpSymDfnHdr;     // Ptr to LPSYMENTRYs at end of user-defined function/operator header
         CSLOCALVARS  csLocalVars = {0}; // CS local vars
+        SYSTEMTIME   systemTime;        // Current system (UTC) time
 
         // Get # extra result STEs
         if (fhLocalVars.lpYYResult)
@@ -387,6 +388,13 @@ HGLOBAL Init1MagicFunction
         lpMemDfnHdr->hGlbTknHdr   = hGlbTknHdr;
 ////////lpMemDfnHdr->hGlbUndoBuff = NULL;       // Already zero from GHND
 ////////lpMemDfnHdr->hGlbMonInfo  = NULL;       // Already zero from GHND
+
+        // Get the current system (UTC) time
+        GetSystemTime (&systemTime);
+
+        // Convert system time to file time and save as creation time
+        SystemTimeToFileTime (&systemTime, &lpMemDfnHdr->ftCreation);
+        lpMemDfnHdr->ftLastMod    = lpMemDfnHdr->ftCreation;
 
         // Save the dynamic parts of the function into global memory
 

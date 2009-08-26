@@ -741,6 +741,10 @@
                 >
             </File>
             <File
+                RelativePath=".\qf_at.c"
+                >
+            </File>
+            <File
                 RelativePath=".\qf_av.c"
                 >
             </File>

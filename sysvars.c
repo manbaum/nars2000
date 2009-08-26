@@ -27,6 +27,7 @@
 
 #ifdef PROTO
 #define SysFnA_EM_YY        NULL
+#define SysFnAT_EM_YY       NULL
 #define SysFnAV_EM_YY       NULL
 #define SysFnCR_EM_YY       NULL
 #define SysFnDL_EM_YY       NULL
@@ -88,6 +89,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []prototype
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []singleton
 
+// Niladic system functions
     {WS_UTF16_QUAD L"a"        ,      0,      FALSE, SysFnA_EM_YY      , 0          },  // Alphabet
     {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM_YY     , 0          },  // Atomic Vector
     {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM_YY     , 0          },  // Diagnostic Message
@@ -111,6 +113,8 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM_YY     , 0          },  // Time Stamp
     {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
 
+// Monadic or dyadic system functions
+    {WS_UTF16_QUAD L"at"       ,      1,      FALSE, SysFnAT_EM_YY     , 0          },  // Attributes
 ////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM_YY   , 0          },  // Call Assembler Code
     {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM_YY     , 0          },  // Canonical Representation
 ////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM_YY    , 0          },  // Canonical Representation, Line

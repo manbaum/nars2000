@@ -427,14 +427,15 @@ UBOOL IsValid2ndCharInName
 //   2 = User variable
 //   3 = User-defined function
 //   4 = User-defined operator (monadic or dyadic)
-//   5 = System variable
-//   6 = System function
-//   7 = System label
-//   8 = Magic Function
+//  21 = System label
+//  22 = System variable
+//  23 = System function
+//  24 = Magic Function
 //
-//  Note that )NMS in <syscmds.c> assumes that the Name Class
-//    is a single digit.  If you add enough classes to invalidate
-//    that assumption, be sure make )NMS work, too.
+//  Note that the left shifts (BIT0 <<) in <SysFnDydNL_EM_YY>
+//    assume that the name class values are limited to 63.  If
+//    you add nameclasses to invalidate that assumption, be sure
+//    to make <SysFnDydNL_EM_YY> work, too.
 //***************************************************************************
 
 APLINT CalcNameClass

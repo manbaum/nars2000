@@ -27,6 +27,10 @@
 #include "headers.h"
 
 
+// Calculate length of trailing text for )NMS
+#define NMSLEN      strcountof (L".nn")
+
+
 //***************************************************************************
 //  $CmdFns_EM
 //
@@ -48,7 +52,7 @@ UBOOL CmdFns_EM
 //***************************************************************************
 
 UBOOL IzitFNS
-    (UINT stNameType)
+    (NAME_TYPES stNameType)
 
 {
     return IsNameTypeFn (stNameType);
@@ -76,7 +80,7 @@ UBOOL CmdNms_EM
 //***************************************************************************
 
 UBOOL IzitNMS
-    (UINT stNameType)
+    (NAME_TYPES stNameType)
 
 {
     return IsNameTypeName (stNameType);
@@ -104,7 +108,7 @@ UBOOL CmdOps_EM
 //***************************************************************************
 
 UBOOL IzitOPS
-    (UINT stNameType)
+    (NAME_TYPES stNameType)
 
 {
     return IsNameTypeOp (stNameType);
@@ -132,7 +136,7 @@ UBOOL CmdVars_EM
 //***************************************************************************
 
 UBOOL IzitVARS
-    (UINT stNameType)
+    (NAME_TYPES stNameType)
 
 {
     return IsNameTypeVar (stNameType);
@@ -147,7 +151,7 @@ UBOOL IzitVARS
 
 UBOOL CmdFNOV_EM
     (LPWCHAR lpwszTail,             // Ptr to command line tail
-     UBOOL (*IzitFVO) (UINT),       // Ptr to function to determine name type
+     UBOOL (*IzitFVO) (NAME_TYPES), // Ptr to function to determine name type
      UBOOL   bNMS)                  // TRUE iff the command is )NMS
 
 {
@@ -181,7 +185,9 @@ UBOOL CmdFNOV_EM
          lpSymEntry++)
     if (lpSymEntry->stFlags.Inuse
      && lpSymEntry->stFlags.Value
-     && lpSymEntry->stFlags.ObjName NE OBJNAME_SYS
+     && lpSymEntry->stFlags.ObjName NE OBJNAME_MF
+     && (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS
+      || lpSymEntry->stFlags.DfnLabel)
      && (*IzitFVO) (lpSymEntry->stFlags.stNameType))
     {
         // ***FIXME*** -- Make sensitive to [first][-][last] in lpwszTail
@@ -193,17 +199,11 @@ UBOOL CmdFNOV_EM
              lpGlbEntry = lpGlbEntry->stPrvEntry)
             ;
 
-        // Check for System or Magic Functions
-        //   and skip if so
-        if (lpGlbEntry->stFlags.ObjName EQ OBJNAME_SYS
-         || lpGlbEntry->stFlags.ObjName EQ OBJNAME_MF)
-            continue;
-
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (lpGlbEntry->stHshEntry->htGlbName);
 
         // Get the name length
-        uNameLen = lstrlenW (lpMemName) + bNMS * 2;
+        uNameLen = lstrlenW (lpMemName) + bNMS * NMSLEN;
 
         // Find the longest name
         uMaxNameLen = max (uMaxNameLen, uNameLen);
@@ -225,8 +225,7 @@ UBOOL CmdFNOV_EM
     uQuadPW = (UINT) GetQuadPW ();
 
     // Re-initialize the output area
-    for (uLineChar = 0; uLineChar < uQuadPW; uLineChar++)
-        lpwszFormat[uLineChar] = L' ';
+    FillMemoryW (lpwszFormat, uQuadPW, L' ');
 
     // Display the names
     for (bLineCont = FALSE, uLineChar = uSymNum = 0;
@@ -240,7 +239,7 @@ UBOOL CmdFNOV_EM
         uNameLen = lstrlenW (lpMemName);
 
         // If the line is too long, skip to the next one
-        if ((uLineChar + uNameLen + bNMS * 2) > uQuadPW
+        if ((uLineChar + uNameLen + bNMS * NMSLEN) > uQuadPW
          && uLineChar NE 0)
         {
             // Ensure properly terminated
@@ -253,8 +252,7 @@ UBOOL CmdFNOV_EM
             bLineCont = TRUE;
 
             // Re-initialize the output area
-            for (uLineChar = 0; uLineChar < uQuadPW; uLineChar++)
-                lpwszFormat[uLineChar] = L' ';
+            FillMemoryW (lpwszFormat, uQuadPW, L' ');
 
             // Re-initialize the char counter
             uLineChar = 0;
@@ -266,8 +264,20 @@ UBOOL CmdFNOV_EM
         // If it's )NMS, append the name class
         if (bNMS)
         {
+            UINT uNC;               // Name class
+
+            // Calculate the name class
+            uNC = (UINT) CalcNameClass (lpSymSort[uSymNum]);
+
             lpwszFormat[uLineChar + uNameLen + 0] = L'.';
-            lpwszFormat[uLineChar + uNameLen + 1] = L'0' + (UINT) CalcNameClass (lpSymSort[uSymNum]);
+
+            // If the name class is two-digits, ...
+            if (uNC > 9)
+            {
+                lpwszFormat[uLineChar + uNameLen + 1] = L'0' + uNC / 10;
+                lpwszFormat[uLineChar + uNameLen + 2] = L'0' + uNC % 10;
+            } else
+                lpwszFormat[uLineChar + uNameLen + 1] = L'0' + uNC;
         } // End IF
 
         // Skip to the next name boundary

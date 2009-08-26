@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,16 +28,19 @@ typedef enum tagNAME_CLASS
     NAMECLASS_USRLBL,       //  1 = User label
     NAMECLASS_USRVAR,       //  2 = User variable
     NAMECLASS_USRFCN,       //  3 = User-defined function
-    NAMECLASS_USROPR,       //  4 = User-defined operator (monadic or dyadec)
-    NAMECLASS_SYSVAR,       //  5 = System variable
-    NAMECLASS_SYSFCN,       //  6 = System function
-    NAMECLASS_SYSLBL,       //  7 = System label
-    NAMECLASS_MF,           //  8 = Magic Function
-    NAMECLASS_LENp1,        //  9 = # valid entries + 1 (1-8)
+    NAMECLASS_USROPR,       //  4 = User-defined operator (monadic or dyadic)
+    NAMECLASS_UNUSED1,      //  5 = Start of unused area
+    NAMECLASS_UNUSED2 = 20, // 20 = End   ...
+    NAMECLASS_SYSLBL,       // 21 = System label
+    NAMECLASS_SYSVAR,       // 22 = System variable
+    NAMECLASS_SYSFCN,       // 23 = System function
+    NAMECLASS_MF,           // 24 = Magic function/operator
+    NAMECLASS_LENp1,        // 25 = # valid entries + 1
 } NAME_CLASS;
-// Note that )NMS in <sc_fnov.c> assumes that the Name Class
-//   is a single digit.  If you add enough classes to invalidate
-//   that assumption, be sure make )NMS work, too.
+//  Note that the left shifts (BIT0 <<) in <SysFnDydNL_EM_YY>
+//    assume that the name class values are limited to 63.  If
+//    you add nameclasses to invalidate that assumption, be sure
+//    to make <SysFnDydNL_EM_YY> work, too.
 
 
 //***************************************************************************

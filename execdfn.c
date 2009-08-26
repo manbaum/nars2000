@@ -1524,14 +1524,16 @@ LPSYMENTRY LocalizeLabels
 
                 // Clear the STE flags & data
                 *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
-////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below
+////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
 
                 // Initialize the SYMENTRY to an integer constant
                 lpSymEntrySrc->stFlags.Imm        = TRUE;
                 lpSymEntrySrc->stFlags.ImmType    = IMMTYPE_INT;
                 lpSymEntrySrc->stFlags.Inuse      = TRUE;
                 lpSymEntrySrc->stFlags.Value      = TRUE;
-                lpSymEntrySrc->stFlags.ObjName    = OBJNAME_USR;
+                lpSymEntrySrc->stFlags.ObjName    = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
+                                                  ? OBJNAME_SYS
+                                                  : OBJNAME_USR;
                 lpSymEntrySrc->stFlags.stNameType = NAMETYPE_VAR;
                 lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
                 lpSymEntrySrc->stData.stInteger   = uLineNum + 1;

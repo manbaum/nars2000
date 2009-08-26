@@ -135,8 +135,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     APLINT       apaOffRht,         // Right arg APA offset
                  apaMulRht;         // Right arg APA multiplier
     APLNELM      uNameLen;          // Length of the current name
+    APLUINT      nameClasses = 0;   // Bit flags for each nameclass 1 through (NAMECLASS_LENp1 - 1)
     UINT         uBitMask,          // Mask for looping through Booleans
-                 nameClasses = 0,   // Bit flags for each nameclass 1 through (NAMECLASS_LENp1 - 1)
                  uMaxNameLen = 0,   // Length of longest name
                  uSymCnt,           // Count of # matching STEs
                  uSymNum;           // Loop counter
@@ -216,11 +216,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     aplLongestRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE;
 
                     if (aplLongestRht EQ 0
-                     || aplLongestRht >= NAMECLASS_LENp1)
+                     || aplLongestRht >= NAMECLASS_LENp1
+                     || (aplLongestRht >= NAMECLASS_UNUSED1
+                      && aplLongestRht <= NAMECLASS_UNUSED2))
                         goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
-                    nameClasses |= BIT0 << (UINT) aplLongestRht;
+                    nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
                 } // End FOR
 
                 break;
@@ -233,11 +235,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     aplLongestRht = ((LPAPLINT) lpMemRht)[uRht];
 
                     if (aplLongestRht EQ 0
-                     || aplLongestRht >= NAMECLASS_LENp1)
+                     || aplLongestRht >= NAMECLASS_LENp1
+                     || (aplLongestRht >= NAMECLASS_UNUSED1
+                      && aplLongestRht <= NAMECLASS_UNUSED2))
                         goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
-                    nameClasses |= BIT0 << (UINT) aplLongestRht;
+                    nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
                 } // End FOR
 
                 break;
@@ -251,11 +255,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
                     if (!bRet
                      || aplLongestRht EQ 0
-                     || aplLongestRht >= NAMECLASS_LENp1)
+                     || aplLongestRht >= NAMECLASS_LENp1
+                     || (aplLongestRht >= NAMECLASS_UNUSED1
+                      && aplLongestRht <= NAMECLASS_UNUSED2))
                         goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
-                    nameClasses |= BIT0 << (UINT) aplLongestRht;
+                    nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
                 } // End FOR
 
                 break;
@@ -273,11 +279,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     aplLongestRht = apaOffRht + apaMulRht * uRht;
 
                     if (aplLongestRht EQ 0
-                     || aplLongestRht >= NAMECLASS_LENp1)
+                     || aplLongestRht >= NAMECLASS_LENp1
+                     || (aplLongestRht >= NAMECLASS_UNUSED1
+                      && aplLongestRht <= NAMECLASS_UNUSED2))
                         goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
-                    nameClasses |= BIT0 << (UINT) aplLongestRht;
+                    nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
                 } // End FOR
 
                 break;
@@ -295,11 +303,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             case ARRAY_APA:
             case ARRAY_INT:
                 if (aplLongestRht EQ 0
-                 || aplLongestRht >= NAMECLASS_LENp1)
+                 || aplLongestRht >= NAMECLASS_LENp1
+                 || (aplLongestRht >= NAMECLASS_UNUSED1
+                  && aplLongestRht <= NAMECLASS_UNUSED2))
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
-                nameClasses |= BIT0 << (UINT) aplLongestRht;
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
 
                 break;
 
@@ -308,11 +318,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                 if (!bRet
                  || aplLongestRht EQ 0
-                 || aplLongestRht >= NAMECLASS_LENp1)
+                 || aplLongestRht >= NAMECLASS_LENp1
+                 || (aplLongestRht >= NAMECLASS_UNUSED1
+                  && aplLongestRht <= NAMECLASS_UNUSED2))
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
-                nameClasses |= BIT0 << (UINT) aplLongestRht;
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
 
                 break;
 
@@ -329,8 +341,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     for (lpSymEntry = lpMemPTD->htsPTD.lpSymTab, uSymCnt = 0;
          lpSymEntry < lpMemPTD->htsPTD.lpSymTabNext;
          lpSymEntry++)
-    if (lpSymEntry->stFlags.Inuse                   // It's in use
-     && nameClasses & (BIT0 << CalcNameClass (lpSymEntry))) // It's in one of the specified name classes
+    if (lpSymEntry->stFlags.Inuse                                       // It's in use
+     && nameClasses & (APLINT) (BIT0 << CalcNameClass (lpSymEntry)))    // It's in one of the specified name classes
     {
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);

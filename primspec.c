@@ -3374,6 +3374,105 @@ RESTART_EXCEPTION:
 
                     break;
 
+                case ARRAY_APA:             // Res = BOOL, Lft = APA(S)
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:    // Res = BOOL, Lft = APA(S), Rht = BOOL(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisIvI) (aplIntegerLft,
+                                                         BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex),
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRht)++;       // Skip to next byte
+                                    ((LPAPLBOOL) lpMemRes)++;       // ...
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:     // Res = BOOL, Lft = APA(S), Rht = INT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisIvI) (aplIntegerLft,
+                                                         *((LPAPLINT) lpMemRht)++,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_APA:     // Res = BOOL, Lft = APA(S), Rht = APA(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisIvI) (aplIntegerLft,
+                                                         apaOffRht + apaMulRht * uRes,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = BOOL, Lft = APA(S), Rht = FLOAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisFvF) (aplFloatLft,
+                                                         *((LPAPLFLOAT) lpMemRht)++,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
                 case ARRAY_FLOAT:           // Res = BOOL, Lft = FLOAT(S)
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
@@ -4313,6 +4412,105 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = BOOL, Lft = FLOAT(M),  Rht = BOOL/INT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisFvF) (*((LPAPLFLOAT) lpMemLft)++,
+                                                         aplFloatRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_APA:             // Res = BOOL,                  Rht = APA(S)
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL(M),   Rht = APA(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisIvI) (BIT0 & ((*(LPAPLBOOL) lpMemLft) >> uBitIndex),
+                                                         aplIntegerRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemLft)++;       // Skip to next byte
+                                    ((LPAPLBOOL) lpMemRes)++;       // ...
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:     // Res = BOOL, Lft = INT (M),   Rht = APA(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisIvI) (*((LPAPLINT) lpMemLft)++,
+                                                         aplIntegerRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_APA:     // Res = BOOL, Lft = APA (M),   Rht = APA(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisIvI) (apaOffLft + apaMulLft * uRes,
+                                                         aplIntegerRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = BOOL, Lft = FLOAT(M),  Rht = APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {

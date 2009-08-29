@@ -129,7 +129,7 @@ static APLCHAR MonLineVR4[] =
 
 static APLCHAR MonLineVR5[] =
   L"Z" $IS L"(" $EPSILON L"((" $ENCLOSE L"[1]'LO<    " $DEL L">P<[>Q<]>I6' " $QUAD L"FMT " $IOTA $RHO L"Z),"
-  $EACH L"Z)," $EACH $ENCLOSE $QUAD L"TCNL," $QUAD L"TCLF),'    " $DEL L"'";
+  $EACH L"Z)," $EACH $ENCLOSE $QUAD L"TCNL," $QUAD L"TCLF),'    " $DEL L" ',(" $FORMAT L"2 ##." $QUAD L"AT R), ' (UTC)'";
 
 static LPAPLCHAR MonBodyVR[] =
 {MonLineVR1,

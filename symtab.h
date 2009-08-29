@@ -144,6 +144,33 @@ typedef struct tagHSHENTRY
 
 #define LPHSHENTRY_NONE     ((LPHSHENTRY) -1)
 
+typedef struct tagHSHTABSTR
+{
+    struct tagHSHTABSTR
+              *lpHshTabPrvSrch,         // 00:  Ptr to previous HSHTABSTR
+                                        //        for the purposes of searching (NULL = none)
+              *lpHshTabPrvMF;           // 04:  Ptr to previous HSHTABSTR
+                                        //        for the purposes of append new/lookup old MF (NULL = none)
+    LPHSHENTRY lpHshTab,                // 08:  Ptr to start of HshTab
+               lpHshTabSplitNext;       // 0C:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
+    int        iHshTabBaseNelm,         // 10:  Base size of hash table
+               iHshTabTotalNelm,        // 14:  # HTEs, currently, including EPBs
+               iHshTabIncrFree,         // 18:  Increment when looping through HshTab looking for free entry
+               iHshTabIncrNelm,         // 1C:  Incremental size
+               iHshTabEPB;              // 20:  # entries per block
+    UINT       uHashMask,               // 24:  Mask for all HshTab lookups
+               uHshTabNBlks;            // 28:  # blocks in this HshTab
+    UINT       bGlbHshTab:1,            // 2C:  00000001:  This HTS is global
+               bSysNames:1,             //      00000002:  TRUE iff system names have been appended
+               :30;                     //      FFFFFFFE:  Available bits
+    struct tagSYMENTRY
+              *lpSymTab,                // 30:  Ptr to start of Symtab
+              *lpSymTabNext,            // 34:  Ptr to next available STE
+              *lpSymQuad[SYSVAR_LENGTH];// 38:  Ptr to array of system var STEs (14*4 bytes)
+    UINT       uSymTabIncrNelm;         // 70:  # STEs by which to resize when low
+    int        iSymTabTotalNelm;        // 74:  # STEs, currently
+} HSHTABSTR, *LPHSHTABSTR;              // 78:  Length
+
 //********************* SYMBOL TABLE ****************************************
 
 // Maximum symbol table size (# entries)

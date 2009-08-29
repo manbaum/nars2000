@@ -772,23 +772,24 @@ static TOKENNAMES tokenNames[] =
  {"CS_WHILE2"   , TKT_CS_WHILE2     },  // 37: ...                 WHILE2     ...
  {"CS_SKIPCASE" , TKT_CS_SKIPCASE   },  // 38: ...                 Special token
  {"CS_SKIPEND"  , TKT_CS_SKIPEND    },  // 39: ...                 Special token
- {"SYNTERR"     , TKT_SYNTERR       },  // 3A: ...                 Special token
- {"STRAND"      , TKT_STRAND        },  // 3B: Strand accumulating (data is LPTOKEN)
- {"LISTINT"     , TKT_LISTINT       },  // 3C: List in parens    (data is HGLOBAL)
- {"LISTPAR"     , TKT_LISTPAR       },  // 3D: List in parens    (data is HGLOBAL)
- {"LSTIMMED"    , TKT_LSTIMMED      },  // 3E: List in brackets, single element, immed (data is immediate)
- {"LSTARRAY"    , TKT_LSTARRAY      },  // 3F: List in brackets, single element, array (data is HGLOBAL)
- {"LSTMULT"     , TKT_LSTMULT       },  // 40: List in brackets, multiple elements (data is HGLOBAL)
- {"FCNARRAY"    , TKT_FCNARRAY      },  // 41: Array of functions (data is HGLOBAL)
- {"FCNNAMED"    , TKT_FCNNAMED      },  // 42: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED"   , TKT_AXISIMMED     },  // 43: An immediate axis specification (data is immediate)
- {"AXISARRAY"   , TKT_AXISARRAY     },  // 44: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"    , TKT_OP1NAMED      },  // 45: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"    , TKT_OP2NAMED      },  // 46: ...     dyadic  ...
- {"OP3NAMED"    , TKT_OP3NAMED      },  // 47: ...     ambiguous ...
- {"STRNAMED"    , TKT_STRNAMED      },  // 48: ...     strand  ...
- {"CS_NEC"      , TKT_CS_NEC        },  // 49: Control Structure:  Special token
- {"CS_EOL"      , TKT_CS_EOL        },  // 4A: ...                 Special token
+ {"SYS_NS"      , TKT_SYS_NS        },  // 3A: System namespace
+ {"SYNTERR"     , TKT_SYNTERR       },  // 3B: Syntax Error
+ {"STRAND"      , TKT_STRAND        },  // 3C: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"     , TKT_LISTINT       },  // 3D: List in parens    (data is HGLOBAL)
+ {"LISTPAR"     , TKT_LISTPAR       },  // 3E: List in parens    (data is HGLOBAL)
+ {"LSTIMMED"    , TKT_LSTIMMED      },  // 3F: List in brackets, single element, immed (data is immediate)
+ {"LSTARRAY"    , TKT_LSTARRAY      },  // 40: List in brackets, single element, array (data is HGLOBAL)
+ {"LSTMULT"     , TKT_LSTMULT       },  // 41: List in brackets, multiple elements (data is HGLOBAL)
+ {"FCNARRAY"    , TKT_FCNARRAY      },  // 42: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"    , TKT_FCNNAMED      },  // 43: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED"   , TKT_AXISIMMED     },  // 44: An immediate axis specification (data is immediate)
+ {"AXISARRAY"   , TKT_AXISARRAY     },  // 45: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"    , TKT_OP1NAMED      },  // 46: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"    , TKT_OP2NAMED      },  // 47: ...     dyadic  ...
+ {"OP3NAMED"    , TKT_OP3NAMED      },  // 48: ...     ambiguous ...
+ {"STRNAMED"    , TKT_STRNAMED      },  // 49: ...     strand  ...
+ {"CS_NEC"      , TKT_CS_NEC        },  // 4A: Control Structure:  Special token
+ {"CS_EOL"      , TKT_CS_EOL        },  // 4B: ...                 Special token
 };
 
 // The # rows in the above table

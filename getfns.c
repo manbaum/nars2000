@@ -1734,7 +1734,7 @@ APLFLOAT GetQuadCT
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    return lpMemPTD->lpSymQuadCT->stData.stFloat;
+    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_CT]->stData.stFloat;
 } // End GetQuadCT
 
 
@@ -1753,7 +1753,7 @@ APLBOOL GetQuadIO
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    return lpMemPTD->lpSymQuadIO->stData.stBoolean;
+    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IO]->stData.stBoolean;
 } // End GetQuadIO
 
 
@@ -1772,7 +1772,7 @@ void SetQuadIO
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    lpMemPTD->lpSymQuadIO->stData.stBoolean = bQuadIO;
+    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IO]->stData.stBoolean = bQuadIO;
 } // End SetQuadIO
 
 
@@ -1791,7 +1791,7 @@ APLUINT GetQuadPP
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    return lpMemPTD->lpSymQuadPP->stData.stInteger;
+    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
 } // End GetQuadPP
 
 
@@ -1810,7 +1810,7 @@ APLUINT GetQuadPW
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    return lpMemPTD->lpSymQuadPW->stData.stInteger;
+    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PW]->stData.stInteger;
 } // End GetQuadPW
 
 
@@ -1830,7 +1830,7 @@ APLUINT GetQuadRL
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the current value
-    return lpMemPTD->lpSymQuadRL->stData.stInteger;
+    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_RL]->stData.stInteger;
 } // End GetQuadRL
 
 
@@ -1850,7 +1850,7 @@ void SetQuadRL
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Set the new value
-    lpMemPTD->lpSymQuadRL->stData.stInteger = uQuadRL;
+    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
 } // End SetQuadRL
 
 

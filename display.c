@@ -1962,7 +1962,7 @@ APLCHAR GetQuadFCValue
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the []FC global memory handle
-    hGlbQuadFC = ClrPtrTypeDir (lpMemPTD->lpSymQuadFC->stData.stGlbData);
+    hGlbQuadFC = ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FC]->stData.stGlbData);
 
     // Lock the memory to get a ptr to it
     lpMemQuadFC = MyGlobalLock (hGlbQuadFC);
@@ -2013,7 +2013,7 @@ APLINT GetQuadICValue
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the []IC global memory handle
-    hGlbQuadIC = ClrPtrTypeDir (lpMemPTD->lpSymQuadIC->stData.stGlbData);
+    hGlbQuadIC = ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IC]->stData.stGlbData);
 
     // Lock the memory to get a ptr to it
     lpMemQuadIC = MyGlobalLock (hGlbQuadIC);

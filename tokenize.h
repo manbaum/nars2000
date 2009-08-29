@@ -58,15 +58,16 @@ typedef enum tagTKCOL_INDICES       // FSA column indices for Tokenize
  TKCOL_QUOTE2       ,               // 19:  Double ...
  TKCOL_DIAMOND      ,               // 1A:  Diamond symbol
  TKCOL_LAMP         ,               // 1B:  Comment symbol
- TKCOL_EOL          ,               // 1C:  End-Of-Line
- TKCOL_UNK          ,               // 1D:  Unknown symbols
+ TKCOL_SYS_NS       ,               // 1C:  System namespace
+ TKCOL_EOL          ,               // 1D:  End-Of-Line
+ TKCOL_UNK          ,               // 1E:  Unknown symbols
 
- TKCOL_LENGTH       ,               // 1E:  # column indices (cols in fsaActTableTK)
+ TKCOL_LENGTH       ,               // 1F:  # column indices (cols in fsaActTableTK)
                                     //      Because this enum is origin-0, this value is the # valid columns.
 } TKCOLINDICES, *LPTKCOLINDICES;
 
 // Whenever you add a new TKCOL_*** entry,
-//   be sure to put code into <CharTrans> in <tokenize.c>
+//   be sure to put code into <CharTransTK> in <tokenize.c>
 //   to return the newly defined value,
 //   and insert a new entry into <GetColName> in <tokenize.c>.
 
@@ -86,8 +87,8 @@ typedef enum tagTKROW_INDICES       // FSA row indices for Tokenize
  TKROW_DOTAMBIG   ,                 // 09:  Ambiguous dot:  either TKROW_POINTNOT or TKROW_INIT w/fnOp2Done
  TKROW_JOTAMBIG   ,                 // 0A:  Ambiguous jot:  either TKROW_INIT w/fnOp2Done or TKROW_OUTAMBIG
  TKROW_OUTAMBIG   ,                 // 0B:  Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOp2Done
-
- TKROW_LENGTH     ,                 // 0C:  # FSA terminal states (rows in fsaActTableTK)
+ TKROW_SYS_NS     ,                 // 0C:  System namespace
+ TKROW_LENGTH     ,                 // 0D:  # FSA terminal states (rows in fsaActTableTK)
                                     //      Because this enum is origin-0, this value is the # valid rows.
  TKROW_EXIT  = -1 ,                 // FSA is done
  TKROW_NONCE = -2 ,                 // State not specified as yet
@@ -127,9 +128,9 @@ typedef struct tagTKLOCALVARS
 {
     HGLOBAL      hGlbToken;         // 00:  Global memory handle
     UNION_TOKEN  t2;                // 04:  Locked base of hGlbToken
-    LPTOKEN      lpStart,           // 08:  First available entry after the header
-                 lpNext,            // 0C:  Next  ...
-                 lpLastEOS;         // 10:  Ptr to last EOS token
+    LPTOKEN      lptkStart,         // 08:  First available entry after the header
+                 lptkNext,          // 0C:  Next  ...
+                 lptkLastEOS;       // 10:  Ptr to last EOS token
     TKROWINDICES State[3];          // 14:  Current state (TKROW__xxx) (12 bytes)
     UINT         uChar,             // 20:  ...     index into lpwszLine
                  uCharStart,        // 24:  Initial ...                  (static)

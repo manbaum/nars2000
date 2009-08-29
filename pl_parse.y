@@ -125,7 +125,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
     have long left scope, so they are declared in the %right list.
  */
 %right DIAMOND
-%left  ASSIGN PRIMFCN NAMEFCN NAMETRN SYSFN12 GOTO
+%left  ASSIGN PRIMFCN NAMEFCN NAMETRN SYSFN12 GOTO SYSNS
 %right NULLOP NAMEOP1 OP1 NAMEOP2 OP2 NAMEOP3 OP3 JOTDOT OP3ASSIGN NAMEOP3ASSIGN
 
 %start StmtMult
@@ -4496,7 +4496,7 @@ ParenFunc:
 // Left operand function
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 LeftOper:
-          PRIMFCN                       {DbgMsgWP (L"%%LeftOper:  PRIMFCN");
+          PRIMFCN  SYSNS                {DbgMsgWP (L"%%LeftOper:  SYSNS PRIMFCN");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -4517,6 +4517,61 @@ LeftOper:
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $2.tkToken.tkFlags.SysNSLvl;
+                                         } // End IF
+                                        }
+        | PRIMFCN                       {DbgMsgWP (L"%%LeftOper:  PRIMFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakePrimFcn_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                         } // End IF
+                                        }
+    |     NAMEFCN  SYSNS                {DbgMsgWP (L"%%LeftOper:  SYSNS NAMEFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $2.tkToken.tkFlags.SysNSLvl;
                                          } // End IF
                                         }
     |     NAMEFCN                       {DbgMsgWP (L"%%LeftOper:  NAMEFCN");
@@ -4566,6 +4621,32 @@ LeftOper:
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                         } // End IF
+                                        }
+    |     SYSFN12  SYSNS                {DbgMsgWP (L"%%LeftOper:  SYSNS SYSFN12");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakeNameFcnOpr_YY (&$1, FALSE);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $2.tkToken.tkFlags.SysNSLvl;
                                          } // End IF
                                         }
     |     SYSFN12                       {DbgMsgWP (L"%%LeftOper:  SYSFN12");
@@ -5291,7 +5372,7 @@ Train:
 // Right operand function (short right scope)
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 RightOper:
-          PRIMFCN                       {DbgMsgWP (L"%%RightOper:  PRIMFCN");
+          PRIMFCN SYSNS                 {DbgMsgWP (L"%%RightOper:  SYSNS PRIMFCN");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5312,6 +5393,61 @@ RightOper:
                                              // The result is always the root of the function tree
                                              $$ = *lpplLocalVars->lpYYFcn;
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $2.tkToken.tkFlags.SysNSLvl;
+                                         } // End IF
+                                        }
+        | PRIMFCN                       {DbgMsgWP (L"%%RightOper:  PRIMFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakePrimFcn_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                         } // End IF
+                                        }
+    |     NAMEFCN SYSNS                 {DbgMsgWP (L"%%RightOper:  SYSNS NAMEFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakeNameFcnOpr_YY (&$1, TRUE);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $2.tkToken.tkFlags.SysNSLvl;
                                          } // End IF
                                         }
     |     NAMEFCN                       {DbgMsgWP (L"%%RightOper:  NAMEFCN");
@@ -5366,6 +5502,32 @@ RightOper:
                                              YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
+    |     SYSFN12 SYSNS                 {DbgMsgWP (L"%%RightOper:  SYSNS SYSFN12");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakeNameFcnOpr_YY (&$1, FALSE);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $2.tkToken.tkFlags.SysNSLvl;
+                                         } // End IF
+                                        }
     |     SYSFN12                       {DbgMsgWP (L"%%RightOper:  SYSFN12");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
@@ -5399,13 +5561,75 @@ RightOper:
 // Axis function expression
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 AxisFunc:
-      '}' error   '['  PRIMFCN          {DbgMsgWP (L"%%AxisFunc:  PRIMFCN[error]");
+      '}' error   '['  PRIMFCN SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS PRIMFCN[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$4.tkToken);
                                              YYERROR3
                                          } else
                                              YYERROR2
+                                        }
+    | '}' error   '['  PRIMFCN          {DbgMsgWP (L"%%AxisFunc:  PRIMFCN[error]");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             FreeResult (&$4.tkToken);
+                                             YYERROR3
+                                         } else
+                                             YYERROR2
+                                        }
+    | '}' ArrExpr '['  PRIMFCN SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS PRIMFCN[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakePrimFcn_YY (&$4);
+                                             FreeResult (&$4.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 2, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeAxis_YY (&$2);
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYAxis =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
+                                             YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $5.tkToken.tkFlags.SysNSLvl;
+                                         } // End IF
                                         }
     | '}' ArrExpr '['  PRIMFCN          {DbgMsgWP (L"%%AxisFunc:  PRIMFCN[ArrExpr]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -5458,6 +5682,14 @@ AxisFunc:
                                              YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
+    | '}' error   '['  NAMEFCN SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS NAMEFCN[error]");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
+                                             YYERROR3
+                                         } else
+                                             YYERROR2
+                                        }
     | '}' error   '['  NAMEFCN          {DbgMsgWP (L"%%AxisFunc:  NAMEFCN[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5465,6 +5697,60 @@ AxisFunc:
                                              YYERROR3
                                          } else
                                              YYERROR2
+                                        }
+    | '}' ArrExpr '['  NAMEFCN SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS NAMEFCN[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakeNameFcnOpr_YY (&$4, TRUE);
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 2, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeAxis_YY (&$2);
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYAxis =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
+                                             YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $5.tkToken.tkFlags.SysNSLvl;
+                                         } // End IF
                                         }
     | '}' ArrExpr '['  NAMEFCN          {DbgMsgWP (L"%%AxisFunc:  NAMEFCN[ArrExpr]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -5517,6 +5803,14 @@ AxisFunc:
                                              YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
+    | '}' error   '['  SYSFN12 SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS SYSFN12[error]");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
+                                             YYERROR3
+                                         } else
+                                             YYERROR2
+                                        }
     | '}' error   '['  SYSFN12          {DbgMsgWP (L"%%AxisFunc:  SYSFN12[error]");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5524,6 +5818,60 @@ AxisFunc:
                                              YYERROR3
                                          } else
                                              YYERROR2
+                                        }
+    | '}' ArrExpr '['  SYSFN12 SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS SYSFN12[ArrExpr]");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYMak =
+                                               MakeNameFcnOpr_YY (&$4, FALSE);
+/////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 2, DIRECT); // Function (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeAxis_YY (&$2);
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYAxis =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Axis value (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYAxis)           // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYAxis); lpplLocalVars->lpYYAxis = NULL;
+                                             YYFree (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
+
+                                             // Copy the system namespace level
+                                             $$.tkToken.tkFlags.SysNSLvl = $5.tkToken.tkFlags.SysNSLvl;
+                                         } // End IF
                                         }
     | '}' ArrExpr '['  SYSFN12          {DbgMsgWP (L"%%AxisFunc:  SYSFN12[ArrExpr]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -7129,7 +7477,8 @@ char LookaheadAdjacent
 
             goto NORMAL_EXIT;
 
-        case TKT_LINECONT:
+        case TKT_LINECONT:          // Line continuation marker
+        case TKT_SYS_NS:            // System namespace
             plLocalVars.lptkNext--; // Ignore these tokens
 
             break;                  // Go around again
@@ -7310,6 +7659,7 @@ BOOL LookaheadDyadicOp
         case TKT_CS_NEC:            // ...                 Special token
         case TKT_CS_EOL:            // ...                 Special token
         case TKT_SYNTERR:           // Syntax Error
+        case TKT_SYS_NS:            // System namespace
             bRet = FALSE;
 
             goto NORMAL_EXIT;
@@ -7761,6 +8111,9 @@ PL_YYLEX_START:
 
         case TKT_RIGHTBRACE:
             return RBRACE;
+
+        case TKT_SYS_NS:
+            return SYSNS;           // System namespace
 
         case TKT_CS_ANDIF:          // Control structure:  ANDIF
             return CS_ANDIF;

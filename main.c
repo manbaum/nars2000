@@ -3084,7 +3084,8 @@ UBOOL InitInstance
     } // End FOR
 
     // Initialize the global HshTab values
-    htsGLB.lpHshTabPrv       = NULL;
+    htsGLB.lpHshTabPrvSrch   =
+    htsGLB.lpHshTabPrvMF     = NULL;
     htsGLB.lpHshTabSplitNext = htsGLB.lpHshTab;
     htsGLB.iHshTabBaseNelm   = DEF_GLBHSHTAB_INITNELM;
     htsGLB.iHshTabTotalNelm  = DEF_GLBHSHTAB_INITNELM;
@@ -3093,7 +3094,7 @@ UBOOL InitInstance
     htsGLB.iHshTabEPB        = DEF_GLBHSHTAB_EPB;
     htsGLB.uHashMask         = DEF_GLBHSHTAB_HASHMASK;
     htsGLB.bGlbHshTab        = TRUE;
-    htsGLB.lpSymTab          = NULL;
+    htsGLB.lpSymTab          =
     htsGLB.lpSymTabNext      = NULL;
     htsGLB.iSymTabTotalNelm  = 0;
 

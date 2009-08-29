@@ -1401,13 +1401,13 @@ LPAPLCHAR PointToWsName
     lstrcpyW (lpwszGlbTemp, L"  CLEAR WS");
 
     // If the []WSID STE has been setup, ...
-    if (lpMemPTD->lpSymQuadWSID)
+    if (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID])
     {
         APLNELM aplNELMWSID;    // []WSID NELM
         APLRANK aplRankWSID;    // []WSID rank
 
         // Get the []WSID global memory handle
-        hGlbWSID = ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData);
+        hGlbWSID = ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
 
         // If the []WSID STE has been setup, ...
         if (hGlbWSID)

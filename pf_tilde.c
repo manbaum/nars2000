@@ -292,6 +292,7 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
                                   hGlbMF,       // Magic function global memory handle
+                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
     goto NORMAL_EXIT;
 

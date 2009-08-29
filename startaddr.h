@@ -137,7 +137,16 @@ typedef struct tagSTART_ADDRESSES
 
     // editfcn.c
     "CreateFcnWindow"           , (LPUCHAR) &CreateFcnWindow            ,
+    "SetMarginsFE"              , (LPUCHAR) &SetMarginsFE               ,
+    "FE_Create"                 , (LPUCHAR) &FE_Create                  ,
+    "FE_Delete"                 , (LPUCHAR) &FE_Delete                  ,
     "FEWndProc"                 , (LPUCHAR) &FEWndProc                  ,
+    "GetFunctionName"           , (LPUCHAR) &GetFunctionName            ,
+    "SetFETitle"                , (LPUCHAR) &SetFETitle                 ,
+    "SyntaxColor"               , (LPUCHAR) &SyntaxColor                ,
+    "LclECPaintHook"            , (LPUCHAR) &LclECPaintHook             ,
+    "IzitNameChar"              , (LPUCHAR) &IzitNameChar               ,
+    "GetVkState"                , (LPUCHAR) &GetVkState                 ,
     "LclEditCtrlWndProc"        , (LPUCHAR) &LclEditCtrlWndProc         ,
 
     // editmat.c
@@ -215,6 +224,23 @@ typedef struct tagSTART_ADDRESSES
     "GetGlbHandle"              , (LPUCHAR) &GetGlbHandle               ,
     "GetGlbPtrs"                , (LPUCHAR) &GetGlbPtrs                 ,
     "GetGlbPtrs_LOCK"           , (LPUCHAR) &GetGlbPtrs_LOCK            ,
+    "GetSteZero"                , (LPUCHAR) &GetSteZero                 ,
+    "GetSteOne"                 , (LPUCHAR) &GetSteOne                  ,
+    "GetSteBlank"               , (LPUCHAR) &GetSteBlank                ,
+    "GetQuadCT"                 , (LPUCHAR) &GetQuadCT                  ,
+    "GetQuadIO"                 , (LPUCHAR) &GetQuadIO                  ,
+    "SetQuadIO"                 , (LPUCHAR) &SetQuadIO                  ,
+    "GetQuadPP"                 , (LPUCHAR) &GetQuadPP                  ,
+    "GetQuadPW"                 , (LPUCHAR) &GetQuadPW                  ,
+    "GetQuadRL"                 , (LPUCHAR) &GetQuadRL                  ,
+    "SetQuadRL"                 , (LPUCHAR) &SetQuadRL                  ,
+    "SavePrimSpecRL"            , (LPUCHAR) &SavePrimSpecRL             ,
+    "RestPrimSpecRL"            , (LPUCHAR) &RestPrimSpecRL             ,
+    "GetPrototypeFcnPtr"        , (LPUCHAR) &GetPrototypeFcnPtr         ,
+    "GetPrimFlagsPtr"           , (LPUCHAR) &GetPrimFlagsPtr            ,
+    "GetTokenLineHandle"        , (LPUCHAR) &GetTokenLineHandle         ,
+    "GetImmedType"              , (LPUCHAR) &GetImmedType               ,
+    "GetSignatureGlb"           , (LPUCHAR) &GetSignatureGlb            ,
 
     // getreent.c
     "__getreent"                , (LPUCHAR) &__getreent                 ,

@@ -846,26 +846,6 @@ APLFLOAT PosInfinity,                   // Positive infinity
          Float2Pow53;                   // 2*53 in floating point
 
 
-typedef enum tagSYS_VARS
-{
-    SYSVAR_UNK = 0,             // 00:  Unknown name
-    SYSVAR_ALX ,                // 01:  []ALX
-    SYSVAR_CT  ,                // 02:  []CT
-    SYSVAR_ELX ,                // 03:  []ELX
-    SYSVAR_FC  ,                // 04:  []FC
-    SYSVAR_IC  ,                // 05:  []IC
-    SYSVAR_IO  ,                // 06:  []IO
-    SYSVAR_LX  ,                // 07:  []LX
-    SYSVAR_PP  ,                // 08:  []PP
-    SYSVAR_PR  ,                // 09:  []PR
-    SYSVAR_PW  ,                // 0A:  []PW
-    SYSVAR_RL  ,                // 0B:  []RL
-    SYSVAR_SA  ,                // 0C:  []SA
-    SYSVAR_WSID,                // 0D:  []WSID
-    SYSVAR_LENGTH               // 0E:  # entries in the enum
-                                // 0F-1F:  Available entries (5 bits)
-} SYS_VARS;
-
 typedef UBOOL (*ASYSVARVALIDSET) (LPTOKEN, LPTOKEN);
 
 EXTERN
@@ -1049,28 +1029,6 @@ UINT uMemVirtCnt
  = MEMVIRT_LENGTH
 #endif
 ;
-
-typedef struct tagHSHTABSTR
-{
-    struct tagHSHTABSTR
-              *lpHshTabPrv;             // 00:  Ptr to previous HSHTABSTR (NULL = none)
-    LPHSHENTRY lpHshTab,                // 04:  Ptr to start of HshTab
-               lpHshTabSplitNext;       // 08:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
-    int        iHshTabBaseNelm,         // 0C:  Base size of hash table
-               iHshTabTotalNelm,        // 10:  # HTEs, currently, including EPBs
-               iHshTabIncrFree,         // 14:  Increment when looping through HshTab looking for free entry
-               iHshTabIncrNelm,         // 18:  Incremental size
-               iHshTabEPB;              // 1C:  # entries per block
-    UINT       uHashMask,               // 20:  Mask for all HshTab lookups
-               uHshTabNBlks;            // 24:  # blocks in this HshTab
-    UINT       bGlbHshTab:1,            // 28:  00000001:  This HTS is global
-               :31;                     //      FFFFFFFE:  Available bits
-
-    LPSYMENTRY lpSymTab,                // 2C:  Ptr to start of Symtab
-               lpSymTabNext;            // 30:  Ptr to next available STE
-    UINT       uSymTabIncrNelm;         // 34:  # STEs by which to resize when low
-    int        iSymTabTotalNelm;        // 38:  # STEs, currently
-} HSHTABSTR, *LPHSHTABSTR;              // 3C:  Length
 
 EXTERN
 HSHTABSTR htsGLB;                       // Global HshTab struc

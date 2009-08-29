@@ -89,7 +89,7 @@ UBOOL CmdSave_EM
     lpwszTemp   = lpMemPTD->lpwszTemp;
 
     // Lock the memory to get a ptr to it
-    lpMemOldWSID = MyGlobalLock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
+    lpMemOldWSID = MyGlobalLock (ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemOldWSID)
     // Get the NELM and Rank
@@ -157,7 +157,7 @@ UBOOL CmdSave_EM
             } // End IF
 
             // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
+            MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData)); lpMemOldWSID = NULL;
 
             // Set the value of the new []WSID as wszTailDPFE
             if (!SaveNewWsid_EM (wszTailDPFE))
@@ -182,7 +182,7 @@ UBOOL CmdSave_EM
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData)); lpMemOldWSID = NULL;
     } // End IF
 
     // The full workspace name to save to is in lpMemSaveWSID
@@ -591,7 +591,7 @@ NORMAL_EXIT:
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
+        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData)); lpMemOldWSID = NULL;
     } // End IF
 
     if (hGlbCnt)
@@ -1450,9 +1450,9 @@ LPAPLCHAR SavedWsFormGlbVar
                         case IMMTYPE_INT:
                         case IMMTYPE_FLOAT:
                             // Ensure we format with full precision in case it's floating point
-                            uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
+                            uQuadPP = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
                             if (IsImmFlt (stFlags.ImmType))
-                                lpMemPTD->lpSymQuadPP->stData.stInteger = DEF_MAX_QUADPP;
+                                lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP;
 
                             // Format the value
                             lpaplChar =
@@ -1464,7 +1464,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                              UTF16_BAR,                             // Char to use as overbar
                                              FLTDISPFMT_RAWFLT);                    // Float display format
                             // Restore user's precision
-                            lpMemPTD->lpSymQuadPP->stData.stInteger = uQuadPP;
+                            lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
 
                             break;
 

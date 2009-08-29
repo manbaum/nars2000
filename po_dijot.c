@@ -254,6 +254,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                                   lptkRhtArg,               // Ptr to right arg token
                                   NULL,                     // Ptr to axis token
                                   hGlbMF1,                  // Magic function global memory handle
+                                  NULL,                     // Ptr to HSHTAB struc (may be NULL)
                                   bPrototyping
                                 ? LINENUM_PROTOTYPE
                                 : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
@@ -352,6 +353,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                                               &lpYYRes->tkToken,        // Ptr to right arg token
                                                NULL,                    // Ptr to axis token
                                                hGlbMF2,                 // Magic function global memory handle
+                                               NULL,                    // Ptr to HSHTAB struc (may be NULL)
                                                LINENUM_ONE);            // Starting line # type (see LINE_NUMS)
 #ifdef DEBUG
                 // Restore the SI level of lpYYRes

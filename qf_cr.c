@@ -126,8 +126,8 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                    hGlbRes = NULL,      // Result    ...
                    hGlbData = NULL,     // Data      ...
                    hGlbTxtLine;         // Line text ...
-    LPVOID         lpMemRht = NULL,     // Ptr to right arg global memory
-                   lpMemRes = NULL,     // Ptr to result    ...
+    LPAPLCHAR      lpMemRht = NULL;     // Ptr to right arg global memory
+    LPVOID         lpMemRes = NULL,     // Ptr to result    ...
                    lpMemData = NULL;    // Ptr to function data ...
     LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
     UINT           uRes;                // Loop counter
@@ -163,15 +163,15 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     else
         // Point to the right arg data
-        lpMemRht = &aplLongestRht;
+        lpMemRht = (LPAPLCHAR) &aplLongestRht;
 
     // Lookup the name in the symbol table
     // SymTabLookupName sets the .ObjName enum,
     //   and the .Inuse flag
     lpSymEntry =
-      SymTabLookupNameLength ((LPAPLCHAR) lpMemRht,
+      SymTabLookupNameLength (lpMemRht,
                               (APLU3264) aplNELMRht,
-                                 &stFlags);
+                             &stFlags);
     // Mark the result type & rank
     aplTypeRes = ARRAY_CHAR;
 

@@ -91,6 +91,7 @@ typedef enum tagSA_VALUES
                             // 05-07:  Available entries (3 bits)
 } SA_VALUES;
 
+
 // Format Control
 typedef enum tagFC_INDICES
 {
@@ -102,6 +103,27 @@ typedef enum tagFC_INDICES
     FCNDX_OVERBAR,          // 05:  Overbar (WS_UTF16_OVERBAR)
     FCNDX_LENGTH,           // 06:  Length
 } FC_INDICES;
+
+
+typedef enum tagSYS_VARS
+{
+    SYSVAR_UNK = 0,             // 00:  Unknown name
+    SYSVAR_ALX    ,             // 01:  []ALX
+    SYSVAR_CT     ,             // 02:  []CT
+    SYSVAR_ELX    ,             // 03:  []ELX
+    SYSVAR_FC     ,             // 04:  []FC
+    SYSVAR_IC     ,             // 05:  []IC
+    SYSVAR_IO     ,             // 06:  []IO
+    SYSVAR_LX     ,             // 07:  []LX
+    SYSVAR_PP     ,             // 08:  []PP
+    SYSVAR_PR     ,             // 09:  []PR
+    SYSVAR_PW     ,             // 0A:  []PW
+    SYSVAR_RL     ,             // 0B:  []RL
+    SYSVAR_SA     ,             // 0C:  []SA
+    SYSVAR_WSID   ,             // 0D:  []WSID
+    SYSVAR_LENGTH               // 0E:  # entries in the enum
+                                // 0F-1F:  Available entries (5 bits)
+} SYS_VARS, *LPSYS_VARS;
 
 
 typedef struct tagSYSNAME

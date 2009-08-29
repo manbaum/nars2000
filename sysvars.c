@@ -386,14 +386,14 @@ HGLOBAL MakePermVectorCom
 
 
 //***************************************************************************
-//  $SymTabAppendSysName_EM
+//  $SymTabAppendOneSysName_EM
 //
 //  Append a system name to the symbol table
 //***************************************************************************
 
-UBOOL SymTabAppendSysName_EM
+UBOOL SymTabAppendOneSysName_EM
     (LPSYSNAME   lpSysName,
-     LPSYMENTRY *lplpSysVarSym)
+     LPSYMENTRY *lplpSymEntry)
 
 {
     STFLAGS    stFlags = {0};
@@ -426,14 +426,35 @@ UBOOL SymTabAppendSysName_EM
         return FALSE;
 
     // Save the LPSYMENTRY if requested
-    if (lplpSysVarSym)
-        *lplpSysVarSym = lpSymEntry;
+    if (lplpSymEntry)
+        *lplpSymEntry = lpSymEntry;
 
     // Save the address of the execution routine
     lpSymEntry->stData.stNameFcn = lpSysName->lpNameFcn;
 
     return TRUE;
-} // End SymTabAppendSysName_EM
+} // End SymTabAppendOneSysName_EM
+
+
+//***************************************************************************
+//  $SymTabAppendAllSysNames_EM
+//
+//  Append all system names to the symbol table
+//***************************************************************************
+
+UBOOL SymTabAppendAllSysNames_EM
+    (LPHSHTABSTR lpHTS)                 // Ptr to HshTabStr
+
+{
+    int i;                      // Loop counter
+
+    for (i = 0; i < ASYSTEMNAMES_NROWS; i++)
+    if (!SymTabAppendOneSysName_EM (&aSystemNames[i],
+                                    &lpHTS->lpSymQuad[aSystemNames[i].sysVarIndex]))
+        return FALSE;
+
+    return TRUE;
+} // End SymTabAppendAllSysNames_EM
 
 
 //***************************************************************************
@@ -446,45 +467,20 @@ UBOOL InitSystemNames_EM
     (void)
 
 {
-    int          i;                 // Loop counter
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-#ifdef DEBUG
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
-#endif
     UBOOL        bRet = TRUE;       // TRUE iff result is valid
-    LPSYMENTRY  *ptdSysVarSym[SYSVAR_LENGTH];
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    ptdSysVarSym[SYSVAR_UNK ] = NULL                    ;
-    ptdSysVarSym[SYSVAR_ALX ] = &lpMemPTD->lpSymQuadALX ;
-    ptdSysVarSym[SYSVAR_CT  ] = &lpMemPTD->lpSymQuadCT  ;
-    ptdSysVarSym[SYSVAR_ELX ] = &lpMemPTD->lpSymQuadELX ;
-    ptdSysVarSym[SYSVAR_FC  ] = &lpMemPTD->lpSymQuadFC  ;
-    ptdSysVarSym[SYSVAR_IC  ] = &lpMemPTD->lpSymQuadIC  ;
-    ptdSysVarSym[SYSVAR_IO  ] = &lpMemPTD->lpSymQuadIO  ;
-    ptdSysVarSym[SYSVAR_LX  ] = &lpMemPTD->lpSymQuadLX  ;
-    ptdSysVarSym[SYSVAR_PP  ] = &lpMemPTD->lpSymQuadPP  ;
-    ptdSysVarSym[SYSVAR_PR  ] = &lpMemPTD->lpSymQuadPR  ;
-    ptdSysVarSym[SYSVAR_PW  ] = &lpMemPTD->lpSymQuadPW  ;
-    ptdSysVarSym[SYSVAR_RL  ] = &lpMemPTD->lpSymQuadRL  ;
-    ptdSysVarSym[SYSVAR_SA  ] = &lpMemPTD->lpSymQuadSA  ;
-    ptdSysVarSym[SYSVAR_WSID] = &lpMemPTD->lpSymQuadWSID;
-#ifdef DEBUG
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
 
     Assert (HshTabFrisk (lpHTS));
-#endif
-    // Append all system names
-    for (i = 0; bRet && i < ASYSTEMNAMES_NROWS; i++)
-    if (!SymTabAppendSysName_EM (&aSystemNames[i], ptdSysVarSym[aSystemNames[i].sysVarIndex]))
-    {
-        bRet = FALSE;
 
-        break;
-    } // End FOR/IF
+    // Append all system names
+    bRet = SymTabAppendAllSysNames_EM (lpHTS);
 
     Assert (HshTabFrisk (lpHTS));
 
@@ -3084,6 +3080,40 @@ UBOOL ValidNdxAny
 
 
 //***************************************************************************
+//  $AssignDefaultSysVars
+//
+//  Assign default values to the system vars
+//***************************************************************************
+
+UBOOL AssignDefaultSysVars
+    (LPSYMENTRY lpSymQuad[SYSVAR_LENGTH])
+
+{
+    if (!AssignGlobalCWS     (hGlbQuadALX_CWS   , SYSVAR_ALX , lpSymQuad[SYSVAR_ALX ])) return FALSE;   // Attention Latent Expression
+    if (!AssignRealScalarCWS (fQuadCT_CWS       , SYSVAR_CT  , lpSymQuad[SYSVAR_CT  ])) return FALSE;   // Comparison Tolerance
+    if (!AssignGlobalCWS     (hGlbQuadELX_CWS   , SYSVAR_ELX , lpSymQuad[SYSVAR_ELX ])) return FALSE;   // Error Latent Expression
+    if (!AssignGlobalCWS     (hGlbQuadFC_CWS    , SYSVAR_FC  , lpSymQuad[SYSVAR_FC  ])) return FALSE;   // Format Control
+    if (!AssignGlobalCWS     (hGlbQuadIC_CWS    , SYSVAR_IC  , lpSymQuad[SYSVAR_IC  ])) return FALSE;   // Indeterminate Control
+    if (!AssignBoolScalarCWS (bQuadIO_CWS       , SYSVAR_IO  , lpSymQuad[SYSVAR_IO  ])) return FALSE;   // Index Origin
+    if (!AssignGlobalCWS     (hGlbQuadLX_CWS    , SYSVAR_LX  , lpSymQuad[SYSVAR_LX  ])) return FALSE;   // Latent Expression
+    if (!AssignIntScalarCWS  (uQuadPP_CWS       , SYSVAR_PP  , lpSymQuad[SYSVAR_PP  ])) return FALSE;   // Print Precision
+    if (cQuadPR_CWS EQ CQUADPR_MT)
+    {
+        if (!AssignGlobalCWS (hGlbQuadPR_CWS    , SYSVAR_PR  , lpSymQuad[SYSVAR_PR  ])) return FALSE;   // Prompt Replacement
+    } else
+    {
+        if (!AssignCharScalarCWS (cQuadPR_CWS   , SYSVAR_PR  , lpSymQuad[SYSVAR_PR  ])) return FALSE;   // Prompt Replacement
+    } // End IF
+    if (!AssignIntScalarCWS  (uQuadPW_CWS       , SYSVAR_PW  , lpSymQuad[SYSVAR_PW  ])) return FALSE;   // Print Width
+    if (!AssignIntScalarCWS  (uQuadRL_CWS       , SYSVAR_RL  , lpSymQuad[SYSVAR_RL  ])) return FALSE;   // Random Link
+    if (!AssignGlobalCWS     (hGlbQuadSA_CWS    , SYSVAR_SA  , lpSymQuad[SYSVAR_SA  ])) return FALSE;   // Stop Action
+    if (!AssignGlobalCWS     (hGlbQuadWSID_CWS  , SYSVAR_WSID, lpSymQuad[SYSVAR_WSID])) return FALSE;   // Workspace Identifier
+
+    return TRUE;
+} // End AssignDefaultSysVars
+
+
+//***************************************************************************
 //  $InitSystemVars
 //
 //  Initialize all system vars
@@ -3129,25 +3159,8 @@ UBOOL InitSystemVars
     aSysVarValidNdx[SYSVAR_WSID] = ValidNdxChar   ;
 
     // Assign default values to the system vars
-    if (!AssignGlobalCWS     (hGlbQuadALX_CWS   , SYSVAR_ALX , lpMemPTD->lpSymQuadALX      )) return FALSE;   // Attention Latent Expression
-    if (!AssignRealScalarCWS (fQuadCT_CWS       , SYSVAR_CT  , lpMemPTD->lpSymQuadCT       )) return FALSE;   // Comparison Tolerance
-    if (!AssignGlobalCWS     (hGlbQuadELX_CWS   , SYSVAR_ELX , lpMemPTD->lpSymQuadELX      )) return FALSE;   // Error Latent Expression
-    if (!AssignGlobalCWS     (hGlbQuadFC_CWS    , SYSVAR_FC  , lpMemPTD->lpSymQuadFC       )) return FALSE;   // Format Control
-    if (!AssignGlobalCWS     (hGlbQuadIC_CWS    , SYSVAR_IC  , lpMemPTD->lpSymQuadIC       )) return FALSE;   // Indeterminate Control
-    if (!AssignBoolScalarCWS (bQuadIO_CWS       , SYSVAR_IO  , lpMemPTD->lpSymQuadIO       )) return FALSE;   // Index Origin
-    if (!AssignGlobalCWS     (hGlbQuadLX_CWS    , SYSVAR_LX  , lpMemPTD->lpSymQuadLX       )) return FALSE;   // Latent Expression
-    if (!AssignIntScalarCWS  (uQuadPP_CWS       , SYSVAR_PP  , lpMemPTD->lpSymQuadPP       )) return FALSE;   // Print Precision
-    if (cQuadPR_CWS EQ CQUADPR_MT)
-    {
-        if (!AssignGlobalCWS (hGlbQuadPR_CWS    , SYSVAR_PR  , lpMemPTD->lpSymQuadPR       )) return FALSE;   // Prompt Replacement
-    } else
-    {
-        if (!AssignCharScalarCWS (cQuadPR_CWS   , SYSVAR_PR  , lpMemPTD->lpSymQuadPR       )) return FALSE;   // Prompt Replacement
-    } // End IF
-    if (!AssignIntScalarCWS  (uQuadPW_CWS       , SYSVAR_PW  , lpMemPTD->lpSymQuadPW       )) return FALSE;   // Print Width
-    if (!AssignIntScalarCWS  (uQuadRL_CWS       , SYSVAR_RL  , lpMemPTD->lpSymQuadRL       )) return FALSE;   // Random Link
-    if (!AssignGlobalCWS     (hGlbQuadSA_CWS    , SYSVAR_SA  , lpMemPTD->lpSymQuadSA       )) return FALSE;   // Stop Action
-    if (!AssignGlobalCWS     (hGlbQuadWSID_CWS  , SYSVAR_WSID, lpMemPTD->lpSymQuadWSID     )) return FALSE;   // Workspace Identifier
+    if (!AssignDefaultSysVars (lpMemPTD->htsPTD.lpSymQuad))
+        return FALSE;
 
     // Save the index value
     lpMemPTD->cQuadxSA = cQuadxSA_CWS;

@@ -99,6 +99,7 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
                                   hGlbMF,       // Magic function global memory handle
+                                 &lpMemPTD->htsPTD_MonVR, // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End SysFnMonVR_EM_YY
 
@@ -112,13 +113,13 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
 //***************************************************************************
 
 static APLCHAR MonHeaderVR[] =
-  L"Z" $IS MFN_MonVR L" R;" $QUAD L"io";
+  L"Z" $IS MFN_MonVR L" R;" $QUAD L"IO";
 
 static APLCHAR MonLineVR1[] =
-  $QUAD L"io" $IS L"0";
+  $QUAD L"IO" $IS L"0";
 
 static APLCHAR MonLineVR2[] =
-  L"Z" $IS L"1 " $QUAD L"cr R";
+  L"Z" $IS L"1 ##." $QUAD L"CR R";
 
 static APLCHAR MonLineVR3[] =
   $GOTO L"(0" $NOTEQUAL $RHO L"Z)/L1 " $DIAMOND L" Z" $IS L"'' " $DIAMOND L" " $GOTO L"0";
@@ -127,7 +128,7 @@ static APLCHAR MonLineVR4[] =
   L"L1:" $GOTO L"(1=" $MATCH L"Z)/0";
 
 static APLCHAR MonLineVR5[] =
-  L"Z" $IS L"(" $EPSILON L"((" $ENCLOSE L"[1]'LO<    " $DEL L">P<[>Q<]>I6' " $QUAD L"fmt " $IOTA $RHO L"Z),"
+  L"Z" $IS L"(" $EPSILON L"((" $ENCLOSE L"[1]'LO<    " $DEL L">P<[>Q<]>I6' " $QUAD L"FMT " $IOTA $RHO L"Z),"
   $EACH L"Z)," $EACH $ENCLOSE $QUAD L"TCNL," $QUAD L"TCLF),'    " $DEL L"'";
 
 static LPAPLCHAR MonBodyVR[] =

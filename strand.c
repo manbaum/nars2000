@@ -1326,6 +1326,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         // Copy the entire token
         lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg->lpYYFcnBase, FALSE);
         lpYYRes->TknCount = 1;
+        lpYYRes->tkToken.tkFlags.SysNSLvl = lpYYArg->tkToken.tkFlags.SysNSLvl;
 
         lpYYBase = lpYYArg->lpYYFcnBase;
         lpYYRes->lpYYFcnBase = NULL;            // No longer valid

@@ -95,9 +95,14 @@ LPPL_YYSTYPE ExecFunc_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    LPPRIMFNS lpPrimFn;             // Ptr to direct primitive or system function
-    LPTOKEN   lptkAxis;             // Ptr to axis token (may be NULL)
-    HGLOBAL   hGlbFcn;              // Function array global memory handle
+    LPPRIMFNS    lpPrimFn;              // Ptr to direct primitive or system function
+    LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
+    HGLOBAL      hGlbFcn;               // Function array global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    HSHTABSTR    htsPTD;                // Old copy of HshTab struc
+    LPHSHTABSTR  lphtsPTD = NULL;       // Ptr to HshTab struc about to be activated
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+    UINT         uSysNSLvl;             // System namespace level
 
     DBGENTER;
 
@@ -111,6 +116,9 @@ LPPL_YYSTYPE ExecFunc_EM_YY
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStr);
 
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
     // Split cases based upon the function token type
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
     {
@@ -120,10 +128,58 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             if (!lpPrimFn)
                 goto SYNTAX_EXIT;
 
-            return (*lpPrimFn) (lptkLftArg,                         // Ptr to left arg token (may be NULL if monadic)
-                               &lpYYFcnStr->tkToken,                // Ptr to function token
-                                lptkRhtArg,                         // Ptr to right arg token
-                                lptkAxis);                          // Ptr to axis token (may be NULL)
+            // Get the system namespace level
+            uSysNSLvl = lpYYFcnStr->tkToken.tkFlags.SysNSLvl;
+
+            // Check for system namespace
+            if (uSysNSLvl > 0)
+            {
+                // Save the old HshTab struc
+                htsPTD = lpMemPTD->htsPTD;
+
+                // Peel back HshTabStrs
+                while (uSysNSLvl-- > 1 && lpMemPTD->htsPTD.lpHshTabPrvSrch)
+                {
+                    lphtsPTD = lpMemPTD->htsPTD.lpHshTabPrvSrch;
+                    lpMemPTD->htsPTD = *lphtsPTD;
+                } // End WHILE
+
+                // If there's a previous struc, ...
+                if (lphtsPTD)
+                {
+                    // Save the address of the previous struc
+                    lpMemPTD->htsPTD.lpHshTabPrvSrch =
+                    lpMemPTD->htsPTD.lpHshTabPrvMF   = &htsPTD;
+                } // End IF
+            } // End IF
+
+            // Execute the primitive function
+            lpYYRes =
+              (*lpPrimFn) (lptkLftArg,                      // Ptr to left arg token (may be NULL if monadic)
+                          &lpYYFcnStr->tkToken,             // Ptr to function token
+                           lptkRhtArg,                      // Ptr to right arg token
+                           lptkAxis);                       // Ptr to axis token (may be NULL)
+            // Get the system namespace level
+            uSysNSLvl = lpYYFcnStr->tkToken.tkFlags.SysNSLvl;
+
+            // Check for system namespace,
+            //   and past HshTabStr struc
+            if (uSysNSLvl > 0
+             && lphtsPTD)
+            {
+                // Delete address of previous struc
+                lpMemPTD->htsPTD.lpHshTabPrvSrch =
+                lpMemPTD->htsPTD.lpHshTabPrvMF   = NULL;
+
+                // Copy back the contents of the current struc
+                *lphtsPTD = lpMemPTD->htsPTD;
+
+                // Restore the old HTS
+                lpMemPTD->htsPTD = htsPTD;
+            } // End IF
+
+            return lpYYRes;
+
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYFcnStr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
@@ -136,25 +192,69 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                 // Get the STE flags of the first token
                 stFlags = lpYYFcnStr->tkToken.tkData.tkSym->stFlags;
 
-                // Skip assertion if it's some kind of function/operator
-                if (IsNameTypeFnOp (stFlags.stNameType))
+                // If it's an internal function, execute it directly
+                if (stFlags.FcnDir)
                 {
-                    LPPRIMFNS lpNameFcn;
+                    LPPRIMFNS lpNameFcn;            // Ptr to the internal routine
 
                     // Get the address of the execution routine
                     lpNameFcn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stNameFcn;
 
-                    // If it's an internal function, go there
-                    if (stFlags.FcnDir)
-                        return (*lpNameFcn) (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-                                            &lpYYFcnStr->tkToken,   // Ptr to function token
-                                             lptkRhtArg,            // Ptr to right arg token
-                                             lptkAxis);             // Ptr to axis token (may be NULL)
-                    // Use the HGLOBAL
-                    hGlbFcn = lpNameFcn;
-                } else
-                    // Use the HGLOBAL
-                    hGlbFcn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stGlbData;
+                    // Get the system namespace level
+                    uSysNSLvl = lpYYFcnStr->tkToken.tkFlags.SysNSLvl;
+
+                    // Check for system namespace
+                    if (uSysNSLvl > 0)
+                    {
+                        // Save the old HshTab struc
+                        htsPTD = lpMemPTD->htsPTD;
+
+                        // Peel back HshTabStrs
+                        while (uSysNSLvl-- > 1 && lpMemPTD->htsPTD.lpHshTabPrvSrch)
+                        {
+                            lphtsPTD = lpMemPTD->htsPTD.lpHshTabPrvSrch;
+                            lpMemPTD->htsPTD = *lphtsPTD;
+                        } // End WHILE
+
+                        // If there's a previous struc, ...
+                        if (lphtsPTD)
+                        {
+                            // Save the address of the previous struc
+                            lpMemPTD->htsPTD.lpHshTabPrvSrch =
+                            lpMemPTD->htsPTD.lpHshTabPrvMF   = &htsPTD;
+                        } // End IF
+                    } // End IF
+
+                    // If it's an internal function, ...
+                    lpYYRes =
+                      (*lpNameFcn) (lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+                                   &lpYYFcnStr->tkToken,    // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
+                    // Get the system namespace level
+                    uSysNSLvl = lpYYFcnStr->tkToken.tkFlags.SysNSLvl;
+
+                    // Check for system namespace,
+                    //   and past HshTabStr struc
+                    if (uSysNSLvl > 0
+                     && lphtsPTD)
+                    {
+                        // Delete address of previous struc
+                        lpMemPTD->htsPTD.lpHshTabPrvSrch =
+                        lpMemPTD->htsPTD.lpHshTabPrvMF   = NULL;
+
+                        // Copy back the contents of the current struc
+                        *lphtsPTD = lpMemPTD->htsPTD;
+
+                        // Restore the old HTS
+                        lpMemPTD->htsPTD = htsPTD;
+                    } // End IF
+
+                    return lpYYRes;
+                } // End IF
+
+                // Use the HGLOBAL
+                hGlbFcn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL function array
                 //   or user-defined function/operator

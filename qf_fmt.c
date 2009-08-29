@@ -100,15 +100,6 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
     // Get the magic function global memory handle
     hGlbMF = lpMemPTD->hGlbMF_MonFMT;
 
-////// Save the old HshTab struc
-////htsPTD = lpMemPTD->htsPTD;
-////
-////// Put the HshTab and SymTab into effect
-////lpMemPTD->htsPTD = lpMemPTD->htsPTD_MonFMT;
-////
-////// Save address of previous struc
-////lpMemPTD->htsPTD.lpHshTabPrv = &htsPTD;
-
     //  Return the array display
     //  Use an internal magic function.
     lpYYRes =
@@ -118,16 +109,8 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
                                   hGlbMF,       // Magic function global memory handle
+                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
-////// Delete address of previous struc
-////lpMemPTD->htsPTD.lpHshTabPrv = NULL;
-////
-////// Copy back the contents of the current struc
-////lpMemPTD->htsPTD_MonFMT = lpMemPTD->htsPTD;
-////
-////// Restore the old HTS
-////lpMemPTD->htsPTD = htsPTD;
-
     return lpYYRes;
 } // End SysFnMonFMT_EM_YY
 #undef  APPEND_NAME

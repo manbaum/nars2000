@@ -1080,6 +1080,8 @@ UBOOL SyntaxColor
 
         // Save the TKCOL_xxx value
         tkLocalVars.colIndex = tkColInd;
+        if (uChar < uLen)
+            tkLocalVars.lpMemClrNxt->colIndex = tkColInd;
 
         // Get primary action and new state
         fnAction1_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].fnAction1;
@@ -1990,7 +1992,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                           DEF_MAX_QUADPW,   // High ...
                                           bRangeLimit.PW))  // TRUE iff we're range limiting
                     // Save as new []PW
-                    lpMemPTD->lpSymQuadPW->stData.stInteger = aplInteger;
+                    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
             } // End IF
 
             PERFMON

@@ -1470,11 +1470,11 @@ LPSYMENTRY SymTabLookupChar
         } // End FOR/IF/ELSE
 
         if (lpSymEntry NE NULL
-         || lpHTS->lpHshTabPrv EQ NULL)
+         || lpHTS->lpHshTabPrvSrch EQ NULL)
             break;
 
         // Search through the previous HshTab
-        lpHTS = lpHTS->lpHshTabPrv;
+        lpHTS = lpHTS->lpHshTabPrvSrch;
     } // End WHILE
 
     return lpSymEntry;
@@ -1545,11 +1545,11 @@ LPSYMENTRY SymTabLookupNumber
         } // End FOR/IF/ELSE
 
         if (lpSymEntry NE NULL
-         || lpHTS->lpHshTabPrv EQ NULL)
+         || lpHTS->lpHshTabPrvSrch EQ NULL)
             break;
 
         // Search through the previous HshTab
-        lpHTS = lpHTS->lpHshTabPrv;
+        lpHTS = lpHTS->lpHshTabPrvSrch;
     } // End WHILE
 
     return lpSymEntry;
@@ -1617,11 +1617,11 @@ LPSYMENTRY SymTabLookupFloat
         } // End FOR/IF/ELSE
 
         if (lpSymEntry NE NULL
-         || lpHTS->lpHshTabPrv EQ NULL)
+         || lpHTS->lpHshTabPrvSrch EQ NULL)
             break;
 
         // Search through the previous HshTab
-        lpHTS = lpHTS->lpHshTabPrv;
+        lpHTS = lpHTS->lpHshTabPrvSrch;
     } // End WHILE
 
     return lpSymEntry;
@@ -1721,6 +1721,15 @@ LPSYMENTRY SymTabLookupNameLength
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
 
+    // If the name is of a Magic Function, ...
+    if (IsMFName (lpwszString))
+    {
+        // Peel back the HshTabStrs so we lookup
+        //   the name in the top level HshTabStr
+        while (lpHTS->lpHshTabPrvMF)
+            lpHTS = lpHTS->lpHshTabPrvMF;
+    } // End IF
+
     // Skip over trailing white space
     while (iLen && lpwszString[iLen - 1] EQ L' ')
         iLen--;
@@ -1819,11 +1828,11 @@ LPSYMENTRY SymTabLookupNameLength
         } // End FOR
 
         if (lpSymEntry NE NULL
-         || lpHTS->lpHshTabPrv EQ NULL)
+         || lpHTS->lpHshTabPrvSrch EQ NULL)
             break;
 
         // Search through the previous HshTab
-        lpHTS = lpHTS->lpHshTabPrv;
+        lpHTS = lpHTS->lpHshTabPrvSrch;
     } // End WHILE
 ERROR_EXIT:
     return lpSymEntry;
@@ -2332,16 +2341,25 @@ LPSYMENTRY SymTabAppendNewName_EM
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
 
+    // If the name is of a Magic Function, ...
+    if (IsMFName (lpwszString))
+    {
+        // Peel back the HshTabStrs so we append
+        //   the name to the top level HshTabStr
+        while (lpHTS->lpHshTabPrvMF)
+            lpHTS = lpHTS->lpHshTabPrvMF;
+    } // End IF
+
     Assert (HshTabFrisk (lpHTS));
 
     // Get the string length in units of WCHAR
     iLen = lstrlenW (lpwszString);
 
     // Hash the name
-    uHash = hashlittleConv
-           (lpwszString,                    // A ptr to the name to hash
-             iLen,                          // The # bytes pointed to
-             0);                            // Initial value or previous hash
+    uHash =
+      hashlittleConv (lpwszString,      // A ptr to the name to hash
+                      iLen,             // The # bytes pointed to
+                      0);               // Initial value or previous hash
     // This name isn't in the ST -- find the next free entry
     //   in the hash table, split if necessary
     lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lpHTS);

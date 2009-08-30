@@ -30,8 +30,6 @@
 //#include <multimon.h>   // Multiple monitor support
 #include <limits.h>
 #include <direct.h>
-#include <float.h>
-#include <math.h>
 #include <wininet.h>
 
 #define DEFINE_VARS
@@ -3226,7 +3224,6 @@ int PASCAL WinMain
 {
     MSG     Msg;                    // Message for GetMessageW loop
     UINT    uCnt;                   // Loop counter
-    APLUINT aplPi;                  // Temporary for Pi
 
 #ifdef PERFMONON
     MessageBeep (NEG1U);
@@ -3273,13 +3270,6 @@ int PASCAL WinMain
 
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, TLSTYPE_MF);
-
-    // Get the value of PI
-    aplPi = 0x400921FB54442D18;
-    FloatPi = *(LPAPLFLOAT) &aplPi;
-
-    // Get the value of e
-    FloatE = exp (1);
 
     PERFMON
 

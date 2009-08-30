@@ -1,6 +1,21 @@
 Version 0.0.2.4 consists of the following Builds:
 
 
+Build #533 -- Version 0.0.2.4
+-----------------------------
+
+* Move Initialization Of Constants To Common Routine
+
+Directory trunk:
+
+INITDATA.C:
+  Update copyright year.
+  Move initialization of constants to common routine.
+
+MAIN.C:
+  Move initialization of constants to common routine.
+
+
 Build #532 -- Version 0.0.2.4
 -----------------------------
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2008 Sudley Place Software
+    Copyright (C) 2006-2009 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include <float.h>
+#include <math.h>
 
 
 extern PRIMSPEC PrimSpecBar;
@@ -161,27 +163,49 @@ void InitPrimTabs
     (void)
 
 {
-    APLINT aplInteger;
+    InitConstants ();           // Initialize various constants
+    InitPrimFns ();             // ...        prim fcn/opr jump tables
+    InitPrimProtoFns ();        // ...        prim fcn/opr prototype jump table
+    InitPrimSpecs ();           // ...        table of PRIMSPECs
+    InitPrimFlags ();           // ...        table of primitive fcn/opr flags
+    InitIdentityElements ();    // ...        identity elements
+} // End InitPrimTabs
 
-    InitPrimFns ();
-    InitPrimProtoFns ();
-    InitPrimSpecs ();
-    InitPrimFlags ();
 
-    // Initialize identity elements
-    InitIdentityElements ();
+//***************************************************************************
+//  $InitConstants
+//
+//  Initialize various constants
+//***************************************************************************
+
+void InitConstants
+    (void)
+
+{
+    APLINT aplInteger;          // Temporary value
 
 #define POS_INFINITY            (0x7FF0000000000000)
 #define NEG_INFINITY            (0xFFF0000000000000)
 #define QUIET_NAN               (0xFFF8000000000000)
 #define FLOAT2POW53             (0x4340000000000000)
+#define FLOATPI                 (0x400921FB54442D18)
+#define FLOATE                  (0x4005BF0A8B145769)
 
     // Create various floating point constants
-    aplInteger = POS_INFINITY; PosInfinity = *(double *) &aplInteger;
+    aplInteger = POS_INFINITY; PosInfinity = *(LPAPLFLOAT) &aplInteger;
                                __infinity  = PosInfinity;
-    aplInteger = NEG_INFINITY; NegInfinity = *(double *) &aplInteger;
-    aplInteger = FLOAT2POW53;  Float2Pow53 = *(double *) &aplInteger;
-} // End InitPrimTabs
+    aplInteger = NEG_INFINITY; NegInfinity = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = FLOAT2POW53;  Float2Pow53 = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = FLOATPI;      FloatPi     = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = FLOATE;       FloatE      = *(LPAPLFLOAT) &aplInteger;
+
+#undef  FLOATE
+#undef  FLOATPI
+#undef  FLOAT2POW53
+#undef  QUIET_NAN
+#undef  NEG_INFINITY
+#undef  POS_INFINITY
+} // End InitConstants
 
 
 //***************************************************************************
@@ -814,19 +838,12 @@ void InitIdentityElements
     (void)
 
 {
-    APLFLOAT aplFloatPosInf,
-             aplFloatNegInf;
-    APLUINT  aplInteger;
-
-    aplInteger = POS_INFINITY; aplFloatPosInf = *(LPAPLFLOAT) &aplInteger;
-    aplInteger = NEG_INFINITY; aplFloatNegInf = *(LPAPLFLOAT) &aplInteger;
-
     InitIdentityElement (PF_INDEX_PLUS    , 0.0);
     InitIdentityElement (PF_INDEX_MINUS   , 0.0);
     InitIdentityElement (PF_INDEX_DIVIDE  , 1.0);
 
-    InitIdentityElement (PF_INDEX_MIN     , aplFloatPosInf);
-    InitIdentityElement (PF_INDEX_MAX     , aplFloatNegInf);
+    InitIdentityElement (PF_INDEX_MIN     , PosInfinity);
+    InitIdentityElement (PF_INDEX_MAX     , NegInfinity);
 
     InitIdentityElement (PF_INDEX_AND     , 1.0);
     InitIdentityElement (PF_INDEX_OR      , 0.0);

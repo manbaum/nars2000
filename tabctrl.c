@@ -730,7 +730,6 @@ LRESULT WINAPI LclTabCtrlWndProc
             int     iNewTabIndex,               // Index of new tab (after deleting this one)
                     iDelTabIndex;               // Index of tab to delete
             LRESULT lResult;                    // Result from CallWindowProcW
-            UBOOL   bExecuting;                 // TRUE iff we're waiting for an execution to complete
             DWORD   dwThreadId;                 // Outgoing thread ID
 
             // Save the tab index to delete
@@ -743,11 +742,8 @@ LRESULT WINAPI LclTabCtrlWndProc
             if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
                 break;
 
-            // Get the execution state
-            bExecuting = lpMemPTD->bExecuting;
-
             // If this tab is still executing, ignore this action
-            if (bExecuting)
+            if (lpMemPTD->bExecuting)
                 break;
 
             // If gOverTabIndex is this tab or to the right of it,
@@ -764,10 +760,16 @@ LRESULT WINAPI LclTabCtrlWndProc
             iNewTabIndex = TabCtrl_GetCurSel (hWnd);
             if (iNewTabIndex EQ iDelTabIndex)
             {
+                int iItemCount;
+
+                // Get the # active tabs ("- 1" to exclude the one we're deleting)
+                iItemCount = TabCtrl_GetItemCount (hWnd) - 1;
+
                 // Izit the rightmost tab?
-                if (iNewTabIndex EQ (TabCtrl_GetItemCount (hWnd) - 1))
+                if (iNewTabIndex EQ iItemCount)
                     iNewTabIndex--;
                 else
+                if (iNewTabIndex < (iItemCount - 1))
                     iNewTabIndex++;
             } // End IF
 

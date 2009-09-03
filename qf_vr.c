@@ -113,21 +113,18 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
 //***************************************************************************
 
 static APLCHAR MonHeaderVR[] =
-  L"Z" $IS MFN_MonVR L" R;" $QUAD L"IO";
+  L"Z" $IS MFN_MonVR L" R";
 
 static APLCHAR MonLineVR1[] =
-  $QUAD L"IO" $IS L"0";
-
-static APLCHAR MonLineVR2[] =
   L"Z" $IS L"1 ##." $QUAD L"CR R";
 
-static APLCHAR MonLineVR3[] =
+static APLCHAR MonLineVR2[] =
   $GOTO L"(0" $NOTEQUAL $RHO L"Z)/L1 " $DIAMOND L" Z" $IS L"'' " $DIAMOND L" " $GOTO L"0";
 
-static APLCHAR MonLineVR4[] =
+static APLCHAR MonLineVR3[] =
   L"L1:" $GOTO L"(1=" $MATCH L"Z)/0";
 
-static APLCHAR MonLineVR5[] =
+static APLCHAR MonLineVR4[] =
   L"Z" $IS L"(" $EPSILON L"((" $ENCLOSE L"[1]'LO<    " $DEL L">P<[>Q<]>I6' " $QUAD L"FMT " $IOTA $RHO L"Z),"
   $EACH L"Z)," $EACH $ENCLOSE $QUAD L"TCNL," $QUAD L"TCLF),'    " $DEL L" ',(" $FORMAT L"2 ##." $QUAD L"AT R), ' (UTC)'";
 
@@ -136,7 +133,6 @@ static LPAPLCHAR MonBodyVR[] =
  MonLineVR2,
  MonLineVR3,
  MonLineVR4,
- MonLineVR5,
 };
 
 MAGIC_FUNCTION MF_MonVR =

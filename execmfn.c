@@ -772,6 +772,9 @@ UBOOL InitMagicFunctions
     initMF.lpHTS = &lpMemPTD->htsPTD_MonVR;
     lpMemPTD->hGlbMF_MonVR       = Init1MagicFunction (MFN_MonVR    , &MF_MonVR    , lpMemPTD, hWndEC, &initMF);
 
+    // Set []IO to zero in the symbol table for []VR
+    lpMemPTD->htsPTD_MonVR.lpSymQuad[SYSVAR_IO]->stData.stBoolean = 0;
+
     return TRUE;
 } // InitMagicFunctions
 

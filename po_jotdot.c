@@ -29,7 +29,7 @@
 //  $PrimOpJotDot_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    monadic operator JotDot ("ERROR" and "outer product")
+//    monadic operator JotDot (ERROR and "outer product")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpJotDot_EM_YY
@@ -59,7 +59,7 @@ LPPL_YYSTYPE PrimOpJotDot_EM_YY
 //  $PrimProtoOpJotDot_EM_YY
 //
 //  Generate a prototype for the derived functions from
-//    monadic operator JotDot ("ERROR" and "outer product")
+//    monadic operator JotDot (ERROR and "outer product")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimProtoOpJotDot_EM_YY
@@ -93,7 +93,7 @@ LPPL_YYSTYPE PrimProtoOpJotDot_EM_YY
 //***************************************************************************
 //  $PrimOpMonJotDot_EM_YY
 //
-//  Primitive operator for monadic derived function from JotDot ("ERROR")
+//  Primitive operator for monadic derived function from JotDot (ERROR)
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpMonJotDot_EM_YY
@@ -110,7 +110,7 @@ LPPL_YYSTYPE PrimOpMonJotDot_EM_YY
 //***************************************************************************
 //  $PrimOpMonJotDotCommon_EM_YY
 //
-//  Primitive operator for monadic derived function from JotDot ("ERROR")
+//  Primitive operator for monadic derived function from JotDot (ERROR)
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpMonJotDotCommon_EM_YY
@@ -119,7 +119,7 @@ LPPL_YYSTYPE PrimOpMonJotDotCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken);
 } // End PrimOpJotDotCommon_EM_YY
 
 
@@ -224,7 +224,8 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Ensure the right operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
+     || IsTknFillJot (&lpYYFcnStrRht->tkToken))
         goto RIGHT_SYNTAX_EXIT;
 
     // The result NELM is the product of the left & right NELMs

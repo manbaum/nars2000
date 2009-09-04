@@ -88,6 +88,7 @@ char TokenTypeFV
         case TKT_FCNIMMED:
         case TKT_FCNARRAY:
         case TKT_FCNNAMED:
+        case TKT_FILLJOT:
             return 'F';
 
         case TKT_OP1IMMED:

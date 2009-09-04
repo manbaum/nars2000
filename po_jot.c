@@ -123,6 +123,12 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
     lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
+    if (IsTknFillJot (&lpYYFcnStrLft->tkToken))
+        goto LEFT_SYNTAX_EXIT;
+
+    if (IsTknFillJot (&lpYYFcnStrRht->tkToken))
+        goto RIGHT_SYNTAX_EXIT;
+
     // Test for fcn/opr vs. var
     bLftArg = IsTknFcnOpr (&lpYYFcnStrLft->tkToken);
     bRhtArg = IsTknFcnOpr (&lpYYFcnStrRht->tkToken);
@@ -277,6 +283,11 @@ AXIS_SYNTAX_EXIT:
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
+    return NULL;
+
+RIGHT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
     return NULL;
 
 LEFT_NONCE_EXIT:

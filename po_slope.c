@@ -29,7 +29,7 @@
 //  $PrimOpSlope_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    monadic operator Slope ("scan" and "ERROR")
+//    monadic operator Slope ("scan" and ERROR)
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpSlope_EM_YY
@@ -62,7 +62,7 @@ LPPL_YYSTYPE PrimOpSlope_EM_YY
 //  $PrimProtoOpSlope_EM_YY
 //
 //  Generate a prototype for the derived functions from
-//    monadic operator Slope ("scan" and "ERROR")
+//    monadic operator Slope ("scan" and ERROR)
 //***************************************************************************
 
 LPPL_YYSTYPE PrimProtoOpSlope_EM_YY
@@ -181,7 +181,8 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Get a ptr to the prototype function for the first symbol (a function or operator)
@@ -408,14 +409,14 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         lpFastBool = FastBoolFns[lpPrimFlags->Index].lpScan;
 
         // Call it
-        (*lpFastBool) (aplTypeRht,          // Right arg storage type
-                       aplNELMRht,          // Right arg NELM
-                       lpMemRht,            // Ptr to right arg memory
-                       lpMemRes,            // Ptr to result    memory
-                       uDimLo,              // Product of dimensions below axis
-                       uDimAxRht,           // Length of right arg axis dimension
+        (*lpFastBool) (aplTypeRht,              // Right arg storage type
+                       aplNELMRht,              // Right arg NELM
+                       lpMemRht,                // Ptr to right arg memory
+                       lpMemRes,                // Ptr to result    memory
+                       uDimLo,                  // Product of dimensions below axis
+                       uDimAxRht,               // Length of right arg axis dimension
                        lpPrimFlags->Index,  // FBFN_INDS value (e.g., index into FastBoolFns[])
-                       lpYYFcnStrOpr);      // Ptr to operator function strand
+                       lpYYFcnStrOpr);          // Ptr to operator function strand
     } else
     {
         // Fill in the right arg token
@@ -911,7 +912,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $PrimOpDydSlope_EM_YY
 //
-//  Primitive operator for dyadic derived function from Slope ("ERROR")
+//  Primitive operator for dyadic derived function from Slope (ERROR)
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpDydSlope_EM_YY
@@ -930,7 +931,7 @@ LPPL_YYSTYPE PrimOpDydSlope_EM_YY
 //***************************************************************************
 //  $PrimOpDydSlopeCommon_EM_YY
 //
-//  Primitive operator for dyadic derived function from Slope ("ERROR")
+//  Primitive operator for dyadic derived function from Slope (ERROR)
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY

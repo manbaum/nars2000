@@ -4122,6 +4122,7 @@ void Untokenize
             case TKT_CS_SKIPEND:        // ...                 Special token
             case TKT_SYS_NS:            // System namespace
             case TKT_SYNTERR:           // Syntax Error
+            case TKT_FILLJOT:           // Fill jot
                 break;                  // Nothing to do
 
             case TKT_CS_NEC:            // ...                 Special token
@@ -4308,6 +4309,7 @@ UBOOL AppendNewToken_EM
         case TKT_INPOUT      :
         case TKT_VARARRAY    :
         case TKT_SYS_NS      :
+        case TKT_FILLJOT     :
             // Append the NEC token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (TKT_CS_NEC,

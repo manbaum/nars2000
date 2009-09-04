@@ -746,6 +746,7 @@ void IncrFcnMem
                 case TKT_OP2IMMED:
                 case TKT_OP3IMMED:
                 case TKT_OPJOTDOT:
+                case TKT_FILLJOT:
                     break;
 
                 defstop

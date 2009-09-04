@@ -170,7 +170,8 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
@@ -822,7 +823,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Check for operand axis operator

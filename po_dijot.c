@@ -199,11 +199,13 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Ensure the right operand is a variable
-    if (IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
+    if (IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
+     || IsTknFillJot (&lpYYFcnStrRht->tkToken))
         goto RIGHT_SYNTAX_EXIT;
 
     // Get ptr to PerTabData global memory

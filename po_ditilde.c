@@ -150,7 +150,8 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Split cases depending on whether or not we're prototyping
@@ -253,7 +254,8 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Split cases depending on whether or not we're prototyping

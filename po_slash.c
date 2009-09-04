@@ -192,7 +192,8 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
@@ -232,9 +233,9 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     if (IsScalar (aplRankRht))
     {
         lpYYRes = PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
-                                              hGlbRht,          // Right arg global memory handle
-                                              lpYYFcnStrOpr,    // Ptr to operator function strand
-                                              bPrototyping);    // TRUE iff prototyping
+                                      hGlbRht,          // Right arg global memory handle
+                                      lpYYFcnStrOpr,    // Ptr to operator function strand
+                                      bPrototyping);    // TRUE iff prototyping
         goto NORMAL_EXIT;
     } // End IF
 
@@ -686,20 +687,20 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         // If we're not doing prototypes, ...
         if (lpPrimProtoLft EQ NULL)
         {
-            // Check for identity element 1
+                // Check for identity element 1
             if (aplFloatIdent EQ 1.0)
-            {
-                APLNELM uNELMRes;
+                {
+                    APLNELM uNELMRes;
 
-                // Calculate the # bytes in the result, rounding up
-                uNELMRes = (aplNELMRes + (NBIB - 1)) >> LOG2NBIB;
+                    // Calculate the # bytes in the result, rounding up
+                    uNELMRes = (aplNELMRes + (NBIB - 1)) >> LOG2NBIB;
 
-                for (uRes = 0; uRes < uNELMRes; uRes++)
-                    *((LPAPLBOOL) lpMemRes)++ = 0xFF;
+                    for (uRes = 0; uRes < uNELMRes; uRes++)
+                        *((LPAPLBOOL) lpMemRes)++ = 0xFF;
             } else
             if (aplFloatIdent NE 0.0)
-                for (uRes = 0; uRes < aplNELMRes; uRes++)
-                    *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+                *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
         } // End IF
 
         goto YYALLOC_EXIT;
@@ -707,20 +708,20 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     // If this is a fast Boolean operation, ...
     if (bFastBool)
     {
-        LPFASTBOOLFCN lpFastBool;           // Ptr to Fast Boolean reduction routine
+        LPFASTBOOLFCN lpFastBool;               // Ptr to Fast Boolean reduction routine
 
         // Get a ptr to the appropriate Fast Boolean routine
         lpFastBool = FastBoolFns[lpPrimFlags->Index].lpReduction;
 
         // Call it
-        (*lpFastBool) (aplTypeRht,          // Right arg storage type
-                       aplNELMRht,          // Right arg NELM
-                       lpMemRht,            // Ptr to right arg memory
-                       lpMemRes,            // Ptr to result    memory
-                       uDimLo,              // Product of dimensions below axis
-                       uDimAxRht,           // Length of right arg axis dimension
+        (*lpFastBool) (aplTypeRht,              // Right arg storage type
+                       aplNELMRht,              // Right arg NELM
+                       lpMemRht,                // Ptr to right arg memory
+                       lpMemRes,                // Ptr to result    memory
+                       uDimLo,                  // Product of dimensions below axis
+                       uDimAxRht,               // Length of right arg axis dimension
                        lpPrimFlags->Index,  // FBFN_INDS value (e.g., index into FastBoolFns[])
-                       lpYYFcnStrOpr);      // Ptr to operator function strand
+                       lpYYFcnStrOpr);          // Ptr to operator function strand
     } else
     // If this is a nested result from an empty right arg, ...
     if (IsEmpty (aplNELMRht)
@@ -1333,8 +1334,8 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
         } else
             DbgIncrRefCntDir (MakePtrTypeGlb (hGlbRht));
 
-        // Allocate a new YYRes
-        lpYYRes = YYAlloc ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -1369,8 +1370,8 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
             } // End IF/ELSE
         } // End IF/ELSE
 
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkCharIndex       =        // Filled in below
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkCharIndex       =                // Filled in below
     } // End IF/ELSE
 
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
@@ -1524,7 +1525,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank)
@@ -1737,7 +1739,6 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
               lpMemDimRht,          // Ptr to right arg dimensions
               aplAxis,              // The (one and only) axis value
               uDimAxRes,            // Result axis value dimension length
-
              &hGlbRes,              // Ptr to result global memory handle
              &lpMemRes,             // Ptr to ptr to result global memory
              &apaOffRht,            // Ptr to right arg APA offset
@@ -1750,7 +1751,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // Check for Boolean result
         if (IsSimpleBool (aplTypeRes))
         {
-            // The zero case is done (already zero from GHND)
+        // The zero case is done (already zero from GHND)
 
             // Check for identity element 1
             if (aplFloatIdent EQ 1.0)
@@ -1764,8 +1765,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                     *((LPAPLBOOL) lpMemRes)++ = 0xFF;
             } // End IF
         } else
-            for (uRes = 0; uRes < aplNELMRes; uRes++)
-                *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
+        for (uRes = 0; uRes < aplNELMRes; uRes++)
+            *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
     } else
     // If the absolute value of the left arg is one, the result is
     //   the right arg

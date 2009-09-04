@@ -123,6 +123,8 @@ Welcome to NARS2000</h1>
           the result as non-displayable</li>
         <li>User-defined function/operator prototype entry point
           (<span class="APL">{quad}PROTOTYPE:</span>)</li>
+        <li>User-defined function/operator identity element entry point
+          (<span class="APL">{quad}IDENTITY:</span>)</li>
         <li>Monadic operator null (<span class="APL"><i>f</i>{circlemiddledot}</span>) to aid in
           resolving ambiguities with slash/slope as function/operator
           (e.g., use <span class="APL">(/{circlemiddledot})/3 4</span>
@@ -239,8 +241,6 @@ Welcome to NARS2000</h1>
 
   <h3>Wish List of Language Features</h3>
   <ul>
-    <li>User-defined function/operator identity element entry point
-      (<span class="APL">{quad}IDENTITY:</span>)</li>
     <li>User-defined function/operator inverse entry point
       (<span class="APL">{quad}INVERSE:</span>)</li>
     <li>User-defined function/operator singleton entry point
@@ -252,7 +252,10 @@ Welcome to NARS2000</h1>
       (Format By Example)</li>
     <li>Primitive dyadic function epsilon underbar (<span class="APL">L{epsilon_}R</span>) (Find)</li>
     <li>Primitive dyadic operator dieresis-del (<span class="APL"><i>f</i>{deldieresis}<i>g</i></span>) (Dual)</li>
-    <li>Primitive dyadic operator dieresis-star (<span class="APL"><i>f</i>{stardieresis}<i>g</i></span>) (Power)</li>
+    <li>Primitive dyadic operator dieresis-star
+     (<span class="APL"><i>f</i>{stardieresis}<i>g</i></span>,
+      <span class="APL"><i>f</i>{stardieresis}<i>N</i></span>, and
+      <span class="APL"><i>f</i>{stardieresis}{jot}</span>) (Power)</li>
     <li>Primitive dyadic operator dieresis-downtack (<span class="APL"><i>f</i>{downtackdieresis}<i>g</i></span>) (Convolution)</li>
     <li>Primitive dyadic operator stile-tilde (<span class="APL"><i>f</i>{stiletilde}</span>) (Partition)</li>
     <li>Selective assignment (e.g., <span class="APL">(1 1{transpose}M){is}0</span>)</li>

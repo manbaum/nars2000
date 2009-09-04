@@ -151,7 +151,8 @@ typedef enum tagTOKEN_TYPES
  TKT_STRNAMED    ,          // 49: A named strand
  TKT_CS_NEC      ,          // 4A: Control structure:  Special token (cs_yyparse only)
  TKT_CS_EOL      ,          // 4B: Control structure:  Special token (cs_yyparse only)
-                            // 4C-7F:  Available entries (7 bits)
+ TKT_FILLJOT     ,          // 4C: Fill jot
+                            // 4D-7F:  Available entries (7 bits)
 } TOKEN_TYPES;
 
 #define TKT_LENGTH      (TKT_LENGTHp1 - 1)

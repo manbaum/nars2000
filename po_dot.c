@@ -225,18 +225,19 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
-    // Get the attributes (Type,NELM, and Rank)
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
     lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
     // Ensure the right operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
+    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
+     || IsTknFillJot (&lpYYFcnStrRht->tkToken))
         goto RIGHT_SYNTAX_EXIT;
 
     // Get a ptr to the left & right prototype function

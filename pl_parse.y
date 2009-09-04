@@ -117,6 +117,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 %token CS_SKIPEND
 %token CS_UNTIL
 %token CS_WHILE
+%token FILLJOT
 
 /*  Note that as we parse APL from right to left, these rules
     are all reversed as well as token associativity (long scope).
@@ -3998,6 +3999,55 @@ Drv1Func:
                                          } else
                                              YYERROR2
                                         }
+    | FILLJOT   DydOp StrandInst        {DbgMsgWP (L"%%Drv1Func:  StrandInst DydOp FILLJOT");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (&$3, 1, DIRECT);    // Left operand (Direct)
+                                             // If this strand is a named var, ...
+ /////////////////////////////////////////////FreeResult (&$3.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             lpplLocalVars->lpYYRht =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Right operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+
+                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
     | RightOper DydOp StrandInst        {DbgMsgWP (L"%%Drv1Func:  StrandInst DydOp RightOper");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
@@ -4030,6 +4080,54 @@ Drv1Func:
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, INDIRECT);  // Right operand (Indirect)
                                              FreeResult (&$1.tkToken);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+
+                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
+    | FILLJOT   DydOp Drv1Func          {DbgMsgWP (L"%%Drv1Func:  Drv1Func DydOp FILLJOT");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
+                                             FreeResult (&$3.tkToken);
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             lpplLocalVars->lpYYRht =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Right operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
                                              FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
@@ -4148,6 +4246,56 @@ Drv2Func:
                                          } else
                                              YYERROR2
                                         }
+    | StrandInst DydOp FILLJOT          {DbgMsgWP (L"%%Drv2Func:  FILLJOT DydOp StrandInst");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$3);
+                                             FreeResult (&$3.tkToken);
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Left operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYRht =
+                                               PushFcnStrand_YY (&$1, 1, DIRECT);    // Right operand (Direct)
+                                             // If this strand is a named var, ...
+                                             if (IsTknNamed ($1.tkToken.tkFlags.TknType))
+                                                 FreeResult (&$1.tkToken);           // RefCnt is incremented by PushFcnStrand_YY because it's a var
+
+                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
     | StrandInst DydOp LeftOper         {DbgMsgWP (L"%%Drv2Func:  LeftOper DydOp StrandInst");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
@@ -4202,6 +4350,55 @@ Drv2Func:
                                              YYERROR3
                                          } else
                                              YYERROR2
+                                        }
+    | FILLJOT    DydOp AxisFunc         {DbgMsgWP (L"%%Drv2Func:  AxisFunc DydOp StrandInst");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
+                                             FreeResult (&$3.tkToken);
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             lpplLocalVars->lpYYRht =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);    // Right operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
                                         }
     | StrandInst DydOp AxisFunc         {DbgMsgWP (L"%%Drv2Func:  AxisFunc DydOp StrandInst");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -4755,6 +4952,41 @@ LeftOper:
                                          } // End IF
                                         }
 ////|                  MonOp error      //--Conflicts
+    |                  MonOp FILLJOT    {DbgMsgWP (L"%%LeftOper:  FILLJOT MonOp");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$1, 2, INDIRECT);  // Monadic operator (Indirect)
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp1;
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$2);
+                                             FreeResult (&$2.tkToken);
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Left operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                         } // End IF
+                                        }
     |                  MonOp Drv2Func   {DbgMsgWP (L"%%LeftOper:  Drv2Func MonOp");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
@@ -4974,6 +5206,178 @@ LeftOper:
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                              YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
+    |     RightOper DydOp FILLJOT       {DbgMsgWP (L"%%LeftOper:  FILLJOT DydOp RightOper");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$3);
+                                             FreeResult (&$3.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);     // Left operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYRht =
+                                               PushFcnStrand_YY (&$1, 1, INDIRECT);  // Right operand (Indirect)
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
+    |     FILLJOT   DydOp LeftOper      {DbgMsgWP (L"%%LeftOper:  LeftOper DydOp FILLJOT");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
+                                             FreeResult (&$3.tkToken);
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYRht =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Right operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
+    |     FILLJOT   DydOp FILLJOT       {DbgMsgWP (L"%%LeftOper:  FILLJOT DydOp FILLJOT");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$3);
+                                             FreeResult (&$3.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Left operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             lpplLocalVars->lpYYMak =
+                                               MakeFillJot_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYRht =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Right operand (Direct)
+                                             FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
@@ -7375,7 +7779,8 @@ char LookaheadSurround
 
 char LookaheadAdjacent
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
-     UBOOL         bSkipBrackets)   // TRUE if we're to skip over left/right brackets first
+     UBOOL         bSkipBrackets,   // TRUE iff we're to skip over left/right brackets first
+     UBOOL         bCheckLeft)      // TRUE iff we're to check to the left of the current symbol
 
 {
     PLLOCALVARS plLocalVars;    // Local copy of outer PLLOCALVARS
@@ -7404,6 +7809,17 @@ char LookaheadAdjacent
     // Split cases based upon the token type
     switch (plLocalVars.lptkNext->tkFlags.TknType)
     {
+        case TKT_FILLJOT:
+            // If the caller doesn't want us to check to the left of the jot, ...
+            if (!bCheckLeft)
+            {
+                cRes = 'J';             // Jot
+
+                goto NORMAL_EXIT;
+            } // End IF
+
+            // Otherwise, fall through to check to the left
+
         case TKT_CHRSTRAND:
         case TKT_NUMSTRAND:
         case TKT_VARIMMED:
@@ -7412,22 +7828,11 @@ char LookaheadAdjacent
             // Lookahead to see if the next token is a dyadic operator:
             //   if so, return 'F'; otherwise return 'V'.
 
-            // Split cases based upon the lookahead result
-            switch (LookaheadDyadicOp (&plLocalVars, &plLocalVars.lptkNext[-1]))
-            {
-                case TRUE:
-                    cRes = 'F';     // Function
-
-                    break;
-
-                case FALSE:
-                    cRes = 'V';     // Variable
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
+            // If the next token is a dyadic op, ...
+            if (LookaheadDyadicOp (&plLocalVars, &plLocalVars.lptkNext[-1]))
+                cRes = 'F';     // Function
+            else
+                cRes = 'V';     // Variable
 
             goto NORMAL_EXIT;
 
@@ -7439,8 +7844,46 @@ char LookaheadAdjacent
             goto NORMAL_EXIT;
 
         case TKT_OP2IMMED:
+            // If the OP2 is JOT, ...
+            if (plLocalVars.lptkNext->tkData.tkChar EQ UTF16_JOT)
+            {
+                // If the caller wants us to check to the left of the jot, ...
+                if (bCheckLeft)
+                {
+                    // Lookahead to see if the next token is a dyadic operator:
+                    //   if so, return 'F'; otherwise return 'V'.
+
+                    // If the next token is a dyadic op, ...
+                    if (LookaheadDyadicOp (&plLocalVars, &plLocalVars.lptkNext[-1]))
+                        cRes = 'F';     // Function
+                    else
+                        cRes = 'V';     // Variable
+                } else
+                    cRes = 'J';             // Jot
+            } else
+                cRes = '2';             // Dyadic operator
+
+            goto NORMAL_EXIT;
+
         case TKT_OP2NAMED:
-            cRes = '2';             // Dyadic operator
+            // If the OP2 is JOT, ...
+            if (plLocalVars.lptkNext->tkData.tkSym->stData.stChar EQ UTF16_JOT)
+            {
+                // If the caller wants us to check to the left of the jot, ...
+                if (bCheckLeft)
+                {
+                    // Lookahead to see if the next token is a dyadic operator:
+                    //   if so, return 'F'; otherwise return 'V'.
+
+                    // If the next token is a dyadic op, ...
+                    if (LookaheadDyadicOp (&plLocalVars, &plLocalVars.lptkNext[-1]))
+                        cRes = 'F';     // Function
+                    else
+                        cRes = 'V';     // Variable
+                } else
+                    cRes = 'J';             // Jot
+            } else
+                cRes = '2';             // Dyadic operator
 
             goto NORMAL_EXIT;
 
@@ -7584,7 +8027,7 @@ NORMAL_EXIT:
 //    the next non-right grouping symbol is a dyadic operator or not.
 //***************************************************************************
 
-BOOL LookaheadDyadicOp
+UBOOL LookaheadDyadicOp
     (LPPLLOCALVARS lpplLocalVars,
      LPTOKEN       lptkNext)
 
@@ -7660,6 +8103,7 @@ BOOL LookaheadDyadicOp
         case TKT_CS_EOL:            // ...                 Special token
         case TKT_SYNTERR:           // Syntax Error
         case TKT_SYS_NS:            // System namespace
+        case TKT_FILLJOT:           // Fill jot
             bRet = FALSE;
 
             goto NORMAL_EXIT;
@@ -7761,7 +8205,7 @@ PL_YYLEX_START:
     {
         case TKT_VARIMMED:
         case TKT_VARARRAY:
-            return CONSTANT;
+                return CONSTANT;
 
         case TKT_INPOUT:
             if (lpplLocalVars->lptkNext->tkData.tkChar EQ UTF16_QUAD)
@@ -7831,8 +8275,10 @@ PL_YYLEX_START:
 
                 case NAMETYPE_LST:
                 defstop
-                    break;
+                    return UNK;
             } // End SWITCH
+
+            return UNK;
         } // End TKT_VARNAMED
 
         case TKT_ASSIGN:
@@ -7863,10 +8309,10 @@ PL_YYLEX_START:
             goto PL_YYLEX_START;    // Ignore these tokens
 
         case TKT_CHRSTRAND:
-            return CHRSTRAND;
+                return CHRSTRAND;
 
         case TKT_NUMSTRAND:
-            return NUMSTRAND;
+                return NUMSTRAND;
 
         case TKT_OP1NAMED:
             // Check for / or /[I] or /[A]
@@ -7883,7 +8329,7 @@ PL_YYLEX_START:
             //   an assignment arrow            (return NAMEOP3ASSIGN)
 
             // Split cases based upon the lookahead result
-            switch (LookaheadAdjacent (lpplLocalVars, FALSE))
+            switch (LookaheadAdjacent (lpplLocalVars, FALSE, FALSE))
             {
                 case 'A':                   // If the next token is an assignment arrow
                     return NAMEOP3ASSIGN;   //   then this token is a named ambiguous assignment
@@ -7908,6 +8354,40 @@ PL_YYLEX_START:
 
                     break;
 
+                case UTF16_JOT:
+                    // If either the next or previous token is OP2NAMED,
+                    //   or the previous token is OP1NAMED, ...
+                    if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_OP2NAMED
+                     || lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_OP2NAMED
+                     || lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_OP1NAMED)
+                        return FILLJOT;
+
+                    // If the previous token is VARNAMED and the name type is OP1 or OP2, ...
+                    if (lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_VARNAMED
+                     && (lpplLocalVars->lptkNext[ 1].tkData.tkSym->stFlags.stNameType EQ NAMETYPE_OP1
+                      || lpplLocalVars->lptkNext[ 1].tkData.tkSym->stFlags.stNameType EQ NAMETYPE_OP2))
+                        return FILLJOT;
+
+                    // If the next     token is VARNAMED and the name type is OP2, ...
+                    if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_VARNAMED
+                     && lpplLocalVars->lptkNext[-1].tkData.tkSym->stFlags.stNameType EQ NAMETYPE_OP2)
+                        return FILLJOT;
+
+                    // If the previous token is OP2IMMED and the value is not JOT, ...
+                    if (lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_OP2IMMED
+                     && lpplLocalVars->lptkNext[ 1].tkData.tkChar NE UTF16_JOT)
+                        return FILLJOT;
+
+                    // If the next     token is OP2IMMED and the value is not JOT, ...
+                    if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_OP2IMMED
+                     && lpplLocalVars->lptkNext[-1].tkData.tkChar NE UTF16_JOT)
+                        return FILLJOT;
+
+                    // If the previous token is OP1IMMED, ...
+                    if (lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_OP1IMMED)
+                        return FILLJOT;
+                    break;
+
                 default:
                     break;
             } // End SWITCH
@@ -7923,7 +8403,7 @@ PL_YYLEX_START:
             //   an assignment arrow            (return OP3ASSIGN)
 
             // Split cases based upon the lookahead result
-            switch (LookaheadAdjacent (lpplLocalVars, FALSE))
+            switch (LookaheadAdjacent (lpplLocalVars, FALSE, TRUE))
             {
                 case '1':               // If the next token is a monadic operator, or
                 case 'F':               // If the next token is a function,
@@ -8056,7 +8536,7 @@ PL_YYLEX_START:
             //   a variable or niladic function (return ']')
 
             // Split cases based upon the lookahead result
-            switch (LookaheadAdjacent (lpplLocalVars, TRUE))
+            switch (LookaheadAdjacent (lpplLocalVars, TRUE, FALSE))
             {
                 case '2':               // If the next token is a dyadic operator,
                     return '?';         //   then this token is an axis operator
@@ -8066,6 +8546,7 @@ PL_YYLEX_START:
                 case 'A':               //   an assignment arrow, or
                 case 'F':               //   a function,
                 case 'T':               //   a train,
+                case 'J':               //   a jot,
                     return '}';         //   then this token is an axis operator
 
                 case 'E':               // If the next token is EOL/EOS, or
@@ -8232,7 +8713,7 @@ PL_YYLEX_START:
 //  Check for NULLOP followed by an ambiguous operator possible with axis
 //***************************************************************************
 
-BOOL CheckNullOp3
+UBOOL CheckNullOp3
     (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {

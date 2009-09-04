@@ -374,7 +374,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  lpMemDfnHdr->numLftArgSTE,
                  (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE));
     // Setup the left operand STE
-    if (lpYYFcnTmpLft)
+    if (lpYYFcnTmpLft
+     && lpYYFcnTmpLft->tkToken.tkFlags.TknType NE TKT_FILLJOT)
     {
         // Split cases based upon fcn vs. var
         if (!IsTknFcnOpr (&lpYYFcnTmpLft->tkToken))
@@ -393,7 +394,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  lpMemDfnHdr->steAxisOpr NE NULL,
                 &lpMemDfnHdr->steAxisOpr);
     // Setup the right operand STE
-    if (lpYYFcnTmpRht)
+    if (lpYYFcnTmpRht
+     && lpYYFcnTmpRht->tkToken.tkFlags.TknType NE TKT_FILLJOT)
     {
         // Split cases based upon fcn vs. var
         if (!IsTknFcnOpr (&lpYYFcnTmpRht->tkToken))
@@ -1992,6 +1994,7 @@ void UninitOprSTEs
 
             case TKT_VARIMMED:
             case TKT_FCNIMMED:
+            case TKT_FILLJOT:
                 break;
 
             defstop
@@ -2000,7 +2003,8 @@ void UninitOprSTEs
     } // End FOR
 
     // If the STE is a global memory handle, decrement its RefCnt
-    if (!(*lplpSymEntry)->stFlags.Imm)
+    if ((*lplpSymEntry)->stFlags.Value
+     && (*lplpSymEntry)->stFlags.Imm EQ FALSE)
     {
         HGLOBAL hGlbData;
         UINT    uRefCnt;

@@ -489,9 +489,9 @@ void DisplayGlobals
                             aplArrChar[1] = WC_EOS;
                         } else
                         {
-                            lpwsz =
+                                lpwsz =
                               FormatImmed (aplArrChar,
-                                           TranslateArrayTypeToImmType (lpHeader->ArrType),
+                                               TranslateArrayTypeToImmType (lpHeader->ArrType),
                                            (LPAPLLONGEST) lpData);
                             // Delete the trailing blank
                             lpwsz[-1] = WC_EOS;
@@ -790,6 +790,7 @@ static TOKENNAMES tokenNames[] =
  {"STRNAMED"    , TKT_STRNAMED      },  // 49: ...     strand  ...
  {"CS_NEC"      , TKT_CS_NEC        },  // 4A: Control Structure:  Special token
  {"CS_EOL"      , TKT_CS_EOL        },  // 4B: ...                 Special token
+ {"FILLJOT"     , TKT_FILLJOT       },  // 4C: Fill jot
 };
 
 // The # rows in the above table
@@ -1118,6 +1119,7 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_FCNIMMED:
+        case TKT_FILLJOT:
             // Translate from INDEX_xxx to UTF16_xxx
             *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);    // Fcn
 

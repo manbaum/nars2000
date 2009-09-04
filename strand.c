@@ -296,6 +296,7 @@ void FreeStrand
             case TKT_OP3IMMED:
             case TKT_OPJOTDOT:
             case TKT_LISTSEP:
+            case TKT_FILLJOT:
                 break;
 
             defstop
@@ -547,6 +548,7 @@ static char tabConvert[][STRAND_LENGTH] =
             case TKT_CS_SKIPEND:        // ...                 Special token
             case TKT_CS_NEC:            // ...                 Special token
             case TKT_CS_EOL:            // ...                 Special token
+            case TKT_FILLJOT:           // Fill jot
             defstop
                 goto ERROR_EXIT;
         } // End SWITCH
@@ -1682,6 +1684,44 @@ LPPL_YYSTYPE MakePrimFcn_YY
 
 
 //***************************************************************************
+//  $MakeFillJot_YY
+//
+//  Make a filljot token
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakeFillJot_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE MakeFillJot_YY
+    (LPPL_YYSTYPE lpYYJot)
+
+{
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+
+    DBGENTER;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_FILLJOT;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;             // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkChar     = UTF16_JOT;
+    lpYYRes->tkToken.tkCharIndex       = lpYYJot->tkToken.tkCharIndex;
+    lpYYRes->TknCount = 1;
+
+    DBGLEAVE;
+
+    return lpYYRes;
+} // End MakeFillJot_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $MakeNameFcnOpr_YY
 //
 //  Make a token for a named function, monadic/dyadic/ambiguous operator, and train
@@ -2571,6 +2611,7 @@ LPTOKEN CopyToken_EM
         case TKT_OP2IMMED:      // ...
         case TKT_OP3IMMED:      // ...
         case TKT_OPJOTDOT:      // ...
+        case TKT_FILLJOT:       // ...
             break;              // Ignore immediates
 
         case TKT_LISTPAR:       // tkData is HGLOBAL

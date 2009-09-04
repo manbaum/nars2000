@@ -433,6 +433,7 @@ void DisplayGlobals
     LPAPLCHAR    lpwsz;
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
+    IMM_TYPES    immType;           // Immediate type of the incoming array
 
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
@@ -459,162 +460,250 @@ void DisplayGlobals
         } // End IF
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-        if (lpHeader->Sig.nature EQ VARARRAY_HEADER_SIGNATURE)
+        // Split cases based upon the array signature
+        switch (lpHeader->Sig.nature)
+#undef  lpHeader
         {
-            // If we're to display all globals or
-            //   this one is not a sysvar, ...
-            if (uDispGlb EQ 2
-             || !lpHeader->SysVar)
-            {
-                // It's a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlb)));
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+            case VARARRAY_HEADER_SIGNATURE:
+                // Calc the immediate type
+                immType = TranslateArrayTypeToImmType (lpHeader->ArrType);
 
-                if (IsScalar (lpHeader->Rank))
-                    aplDim = (APLDIM) -1;
-                else
-                    aplDim = *VarArrayBaseToDim (lpHeader);
-                // Skip over the header and dimension to the data
-                lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
-
-                // Split cases based upon the array storage type
-                switch (lpHeader->ArrType)
+                // If we're to display all globals or
+                //   this one is not a sysvar, ...
+                if (uDispGlb EQ 2
+                 || !lpHeader->SysVar)
                 {
-                    case ARRAY_BOOL:
-                    case ARRAY_INT:
-                    case ARRAY_FLOAT:
-                    case ARRAY_APA:
-                        if (IsEmpty (lpHeader->NELM))
+                    // It's a valid HGLOBAL variable array
+                    Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlb)));
+
+                    if (IsScalar (lpHeader->Rank))
+                        aplDim = (APLDIM) -1;
+                    else
+                        aplDim = *VarArrayBaseToDim (lpHeader);
+                    // Skip over the header and dimension to the data
+                    lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+
+                    // Split cases based upon the array storage type
+                    switch (lpHeader->ArrType)
+                    {
+                        case ARRAY_BOOL:
+                            if (IsEmpty (lpHeader->NELM))
+                            {
+                                aplArrChar[0] = UTF16_ZILDE;
+                                aplArrChar[1] = WC_EOS;
+                            } else
+                            {
+                                UINT       uArr,
+                                           uBitMask = BIT0;
+                                APLLONGEST aplZero = 0,
+                                           aplOne  = 1;
+
+                                for (lpwsz = aplArrChar, uArr = 0; uArr < min (3, lpHeader->NELM); uArr++)
+                                {
+                                    lpwsz =
+                                      FormatImmed (lpwsz,
+                                                   immType,
+                                                   (LPAPLLONGEST) ((uBitMask & *(LPAPLBOOL) lpData)) ? &aplOne : &aplZero);
+                                    uBitMask <<= 1;
+                                } // End FOR
+
+                                if (lpHeader->NELM > 3)
+                                {
+                                    lpwsz[-1] = UTF16_HORIZELLIPSIS;
+                                    *lpwsz++ = L' ';
+                                } // End IF
+
+                                // Delete the trailing blank
+                                lpwsz[-1] = WC_EOS;
+                            } // End IF/ELSE
+
+                            break;
+
+                        case ARRAY_INT:
+                        case ARRAY_FLOAT:
+                            if (IsEmpty (lpHeader->NELM))
+                            {
+                                aplArrChar[0] = UTF16_ZILDE;
+                                aplArrChar[1] = WC_EOS;
+                            } else
+                            {
+                                UINT uArr;
+
+                                for (lpwsz = aplArrChar, uArr = 0; uArr < min (3, lpHeader->NELM); uArr++)
+                                    lpwsz =
+                                      FormatImmed (lpwsz,
+                                                   immType,
+                                                  &((LPAPLLONGEST) lpData)[uArr]);
+                                if (lpHeader->NELM > 3)
+                                {
+                                    lpwsz[-1] = UTF16_HORIZELLIPSIS;
+                                    *lpwsz++ = L' ';
+                                } // End IF
+
+                                // Delete the trailing blank
+                                lpwsz[-1] = WC_EOS;
+                            } // End IF/ELSE
+
+                            break;
+
+                        case ARRAY_APA:
                         {
-                            aplArrChar[0] = UTF16_ZILDE;
-                            aplArrChar[1] = WC_EOS;
-                        } else
-                        {
-                                lpwsz =
-                              FormatImmed (aplArrChar,
-                                               TranslateArrayTypeToImmType (lpHeader->ArrType),
-                                           (LPAPLLONGEST) lpData);
-                            // Delete the trailing blank
-                            lpwsz[-1] = WC_EOS;
-                        } // End IF/ELSE
+                            APLINT apaOff,
+                                   apaMul;
 
-                        break;
+                            // Get the APA parameters
+                            apaOff = ((LPAPLAPA) lpData)->Off;
+                            apaMul = ((LPAPLAPA) lpData)->Mul;
 
-                    case ARRAY_HETERO:
-                    case ARRAY_NESTED:
-                        aplArrChar[0] = WC_EOS;
+                            lpwsz = aplArrChar;
 
-                        break;
+                            lpwsz =
+                              FormatImmed (lpwsz,
+                                           immType,
+                                          &apaOff);
+                            lpwsz[-1] = L'+';
+                            lpwsz =
+                              FormatImmed (lpwsz,
+                                           immType,
+                                          &apaMul);
+                            lpwsz[-1] = UTF16_TIMES;
+                            *lpwsz++  = UTF16_IOTA;
+                            lpwsz =
+                              FormatImmed (lpwsz,
+                                           immType,
+                                          &lpHeader->NELM);
+                            lstrcpyW (lpwsz, WS_UTF16_QUAD L"IO" WS_UTF16_LEFTARROW L"0");
 
-                    case ARRAY_CHAR:
-                        lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (MAX_VAL_LEN, lpHeader->NELM));
-                        aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = WC_EOS;
+                            break;
+                        } // End ARRAY_APA
 
-                        break;
+                        case ARRAY_HETERO:
+                        case ARRAY_NESTED:
+                            aplArrChar[0] = WC_EOS;
 
-                    case ARRAY_LIST:
-                        lstrcpyW (aplArrChar, L"[...]");
+                            break;
 
-                        break;
+                        case ARRAY_CHAR:
+                            lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (MAX_VAL_LEN, lpHeader->NELM));
+                            aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = WC_EOS;
 
-                    defstop
-                        break;
-                } // End SWITCH
+                            break;
 
-                // Check for non-permanents
-                if (uDispGlb EQ 1
-                 || uDispGlb EQ 2
-                 || ((lpHeader->PermNdx EQ PERMNDX_NONE)
+                        case ARRAY_LIST:
+                            lstrcpyW (aplArrChar, L"[...]");
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Check for non-permanents
+                    if (uDispGlb EQ 1
+                     || uDispGlb EQ 2
+                     || ((lpHeader->PermNdx EQ PERMNDX_NONE)
                   && (lpHeader->bMFOvar EQ FALSE)))
+                    {
+                        wsprintfW (wszTemp,
+                                   L"hGlb=%p AType=%c%c NELM=%3d RC=%1d%cRnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
+                                   hGlb,
+                                   ArrayTypeAsChar[lpHeader->ArrType],
+                                   L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
+                                   LODWORD (lpHeader->NELM),
+                                   lpHeader->RefCnt,
+                                   L" *"[lpHeader->RefCnt > 1],
+                                   LODWORD (lpHeader->Rank),
+                                   LODWORD (aplDim),
+                                   (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                                   lpaFileNameGLBALLOC[i],
+                                   auLinNumGLBALLOC[i],
+                                   aplArrChar);
+                        DbgMsgW (wszTemp);
+                    } // End IF
+                } // End IF
+
+                break;
+#undef  lpHeader
+
+#define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
+            case FCNARRAY_HEADER_SIGNATURE:
+                // It's a valid HGLOBAL function array
+                Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlb)));
+
+                wsprintfW (wszTemp,
+                           L"hGlb=%p NType=%sNELM=%3d RC=%1d%c                Lck=%d (%S#%4d)",
+                           hGlb,
+                           lpwNameTypeStr[lpHeader->fnNameType],
+                           lpHeader->tknNELM,
+                           lpHeader->RefCnt,
+                           L" *"[lpHeader->RefCnt > 1],
+                           (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                           lpaFileNameGLBALLOC[i],
+                           auLinNumGLBALLOC[i]);
+                DbgMsgW (wszTemp);
+
+                break;
+#undef  lpHeader
+
+#define lpHeader    ((LPDFN_HEADER) lpMem)
+            case DFN_HEADER_SIGNATURE:
+            {
+                LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
+                APLUINT      uNameLen;              // User-defined function/operator name length
+
+                // It's a valid HGLOBAL user-defined function/operator
+                Assert (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlb)));
+
+                // Lock to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (hGlb);
+
+                // Copy the user-defined function/operator name
+                CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
+                             lpMemDfnHdr->steFcnName,   // Ptr to function symbol table entry
+                            &uNameLen);                 // Ptr to name length (may be NULL)
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlb); lpMemDfnHdr = NULL;
+
+                // If we're to display all globals or
+            //   this one is not a Magic Function/Operator, ...
+                if (uDispGlb EQ 2
+             || !IsMFOName (lpMemPTD->lpwszTemp))
                 {
+                    // Copy the name to local storage
+                    lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
+                    aplArrChar[min (MAX_VAL_LEN, uNameLen)] = WC_EOS;
+
                     wsprintfW (wszTemp,
-                               L"hGlb=%p AType=%c%c NELM=%3d RC=%1d%cRnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
+                               L"hGlb=%p DType=%c  NELM=%3d RC=%1d%c                Lck=%d (%S#%4d) (%s)",
                                hGlb,
-                               ArrayTypeAsChar[lpHeader->ArrType],
-                               L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
-                               LODWORD (lpHeader->NELM),
+                               cDfnTypeStr[lpHeader->DfnType],
+                               lpHeader->numFcnLines,
                                lpHeader->RefCnt,
                                L" *"[lpHeader->RefCnt > 1],
-                               LODWORD (lpHeader->Rank),
-                               LODWORD (aplDim),
                                (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
                                lpaFileNameGLBALLOC[i],
                                auLinNumGLBALLOC[i],
                                aplArrChar);
                     DbgMsgW (wszTemp);
                 } // End IF
-            } // End IF
-        } else
+
+                break;
+            } // End DFN_HEADER_SIGNATURE
 #undef  lpHeader
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
-        if (lpHeader->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE)
-        {
-            // It's a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlb)));
 
-            wsprintfW (wszTemp,
-                       L"hGlb=%p NType=%sNELM=%3d RC=%1d%c                Lck=%d (%S#%4d)",
-                       hGlb,
-                       lpwNameTypeStr[lpHeader->fnNameType],
-                       lpHeader->tknNELM,
-                       lpHeader->RefCnt,
-                       L" *"[lpHeader->RefCnt > 1],
-                       (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                       lpaFileNameGLBALLOC[i],
-                       auLinNumGLBALLOC[i]);
-            DbgMsgW (wszTemp);
-        } else
-#undef  lpHeader
-#define lpHeader    ((LPDFN_HEADER) lpMem)
-        if (lpHeader->Sig.nature EQ DFN_HEADER_SIGNATURE)
-        {
-            LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
-            APLUINT      uNameLen;              // User-defined function/operator name length
+            default:
+                if (uDispGlb EQ 2)
+                {
+                    wsprintfW (wszTemp,
+                               L"hGlb=%p -- No NARS/FCNS Signature (%u bytes)",
+                               hGlb,
+                               MyGlobalSize (hGlb));
+                    DbgMsgW (wszTemp);
+                } // End IF/ELSE
 
-            // It's a valid HGLOBAL user-defined function/operator
-            Assert (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlb)));
-
-            // Lock to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlb);
-
-            // Copy the user-defined function/operator name
-            CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
-                         lpMemDfnHdr->steFcnName,   // Ptr to function symbol table entry
-                        &uNameLen);                 // Ptr to name length (may be NULL)
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlb); lpMemDfnHdr = NULL;
-
-            // If we're to display all globals or
-            //   this one is not a Magic Function/Operator, ...
-            if (uDispGlb EQ 2
-             || !IsMFOName (lpMemPTD->lpwszTemp))
-            {
-                // Copy the name to local storage
-                lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
-                aplArrChar[min (MAX_VAL_LEN, uNameLen)] = WC_EOS;
-
-                wsprintfW (wszTemp,
-                           L"hGlb=%p DType=%c  NELM=%3d RC=%1d%c                Lck=%d (%S#%4d) (%s)",
-                           hGlb,
-                           cDfnTypeStr[lpHeader->DfnType],
-                           lpHeader->numFcnLines,
-                           lpHeader->RefCnt,
-                           L" *"[lpHeader->RefCnt > 1],
-                           (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                           lpaFileNameGLBALLOC[i],
-                           auLinNumGLBALLOC[i],
-                           aplArrChar);
-                DbgMsgW (wszTemp);
-            } // End IF
-        } else
-#undef  lpHeader
-        if (uDispGlb EQ 2)
-        {
-            wsprintfW (wszTemp,
-                       L"hGlb=%p -- No NARS/FCNS Signature (%u bytes)",
-                       hGlb,
-                       MyGlobalSize (hGlb));
-            DbgMsgW (wszTemp);
-        } // End IF/ELSE
+                break;
+        } // End SWITCH
 
         // We no longer need this ptr
         GlobalUnlock (hGlb); lpMem = NULL;

@@ -425,12 +425,13 @@ UBOOL IsValid2ndCharInName
 //   0 = Available name
 //   1 = User label
 //   2 = User variable
-//   3 = User-defined function
-//   4 = User-defined operator (monadic or dyadic)
+//   3 = User-defined function (any valence:  0, 1, or 2)
+//   4 = User-defined operator (either valence:  1 or 2)
 //  21 = System label
 //  22 = System variable
-//  23 = System function
-//  24 = Magic Function
+//  23 = System function       (any valence:  0, 1, or 2)
+//  24 = Magic function        (any valence:  0, 1, or 2)
+//  25 = Magic operator        (either valence:  1 or 2)
 //
 //  Note that the left shifts (BIT0 <<) in <SysFnDydNL_EM_YY>
 //    assume that the name class values are limited to 63.  If
@@ -468,16 +469,16 @@ APLINT CalcNameClass
                 return NAMECLASS_USRFCN;
             else
             // Check for Magic Functions
-            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MF)
-                return NAMECLASS_MF;
+            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO)
+                return NAMECLASS_MAGFCN;
             else
                 return NAMECLASS_SYSFCN;
 
         case NAMETYPE_OP1:
         case NAMETYPE_OP2:
-            // Check for Magic Functions
-            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MF)
-                return NAMECLASS_MF;
+            // Check for Magic Operators
+            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO)
+                return NAMECLASS_MAGOPR;
             else
                 return NAMECLASS_USROPR;
 

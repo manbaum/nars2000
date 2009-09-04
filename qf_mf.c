@@ -802,7 +802,7 @@ UBOOL ToggleMonInfo
 
     // Check for user-defined function/operator
     if ((lpSymEntry->stFlags.ObjName NE OBJNAME_USR
-      && lpSymEntry->stFlags.ObjName NE OBJNAME_MF)
+      && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO)
      || !IsNameTypeFnOp (lpSymEntry->stFlags.stNameType))
         return FALSE;
 

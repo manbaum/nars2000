@@ -84,7 +84,7 @@ typedef struct tagDFN_HEADER        // Function header structure
     UINT             DfnType:4,     // 08:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                      FcnValence:3,  //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
-                     PermFn:1,      //      00000100:  Permanent function (i.e. Magic Function)
+                     PermFn:1,      //      00000100:  Permanent function (i.e. Magic Function/Operator)
                      NoDispRes:1,   //      00000200:  TRUE iff the result is non-displayable
                      ListRes:1,     //      00000400:  TRUE iff the result is a list (unused so far)
                      ListLft:1,     //      00000800:  TRUE iff the left arg is a list

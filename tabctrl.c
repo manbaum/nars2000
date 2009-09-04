@@ -830,7 +830,8 @@ LRESULT WINAPI LclTabCtrlWndProc
                  && lpSymEntry->stFlags.Value
                  && lpSymEntry->stFlags.Imm  EQ FALSE)
                 {
-                    if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MF)
+                    // If it's a Magic Function/Operator, ...
+                    if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO)
                     {
                         HGLOBAL      hGlbData;          // User-defined function/operator global memory handle
                         LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator struc

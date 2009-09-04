@@ -149,7 +149,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                 {
                     // Save the address of the previous struc
                     lpMemPTD->htsPTD.lpHshTabPrvSrch =
-                    lpMemPTD->htsPTD.lpHshTabPrvMF   = &htsPTD;
+                    lpMemPTD->htsPTD.lpHshTabPrvMFO  = &htsPTD;
                 } // End IF
             } // End IF
 
@@ -169,7 +169,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             {
                 // Delete address of previous struc
                 lpMemPTD->htsPTD.lpHshTabPrvSrch =
-                lpMemPTD->htsPTD.lpHshTabPrvMF   = NULL;
+                lpMemPTD->htsPTD.lpHshTabPrvMFO  = NULL;
 
                 // Copy back the contents of the current struc
                 *lphtsPTD = lpMemPTD->htsPTD;
@@ -221,7 +221,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                         {
                             // Save the address of the previous struc
                             lpMemPTD->htsPTD.lpHshTabPrvSrch =
-                            lpMemPTD->htsPTD.lpHshTabPrvMF   = &htsPTD;
+                            lpMemPTD->htsPTD.lpHshTabPrvMFO  = &htsPTD;
                         } // End IF
                     } // End IF
 
@@ -241,7 +241,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     {
                         // Delete address of previous struc
                         lpMemPTD->htsPTD.lpHshTabPrvSrch =
-                        lpMemPTD->htsPTD.lpHshTabPrvMF   = NULL;
+                        lpMemPTD->htsPTD.lpHshTabPrvMFO  = NULL;
 
                         // Copy back the contents of the current struc
                         *lphtsPTD = lpMemPTD->htsPTD;

@@ -925,7 +925,7 @@ NEXTLINE:
                                NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                1,                       // Function line # (0 = header)
                                NULL,                    // Ptr to error handling function (may be NULL)
-                               FALSE);                  // TRUE iff we're tokenizing a Magic Function
+                               FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator
                 // Execute the line
                 exitType =
                   ParseLine (hWndSM,                    // Session Manager window handle

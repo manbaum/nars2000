@@ -785,7 +785,7 @@ UBOOL FreeResultGlobalDfn
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbData);
 
-    // If the function is not permanent (i.e. Magic Function), ...
+    // If the function is not permanent (i.e. Magic Function/Operator), ...
     if (!lpMemDfnHdr->PermFn)
     {
         // Get the reference count

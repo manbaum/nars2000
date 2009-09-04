@@ -1003,7 +1003,7 @@ UBOOL SyntaxColor
     tkLocalVars.hWndEC           = hWndEC;
     tkLocalVars.uSyntClrLen      = uLen;            // # Syntax Color entries
     tkLocalVars.lpMemPTD         = lpMemPTD;        // Ptr to PerTabData global memory
-////tkLocalVars.bMF              = FALSE;           // Not a Magic Function (already zero from = {0})
+////tkLocalVars.bMFO             = FALSE;           // Not a Magic Function/Operator (already zero from = {0})
 
     // Skip over the temp storage ptr
     ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
@@ -4443,7 +4443,7 @@ LPSYMENTRY ParseFunctionName
                    NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    0,                       // Function line # (0 = header)
                    NULL,                    // Ptr to error handling function (may be NULL)
-                   FALSE);                  // TRUE iff we're tokenizing a Magic Function
+                   FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator
     if (!hGlbTknHdr)
         goto ERROR_EXIT;
 

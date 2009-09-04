@@ -740,8 +740,8 @@ LPAPLUINT AttributeExecProp
             // If it's a user-defined function/operator
             if (lpSymEntry->stFlags.UsrDfn)
             {
-                // If it's a Magic Function, ...
-                if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MF)
+                // If it's a Magic Function/Operator, ...
+                if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO)
                 {
                     *lpMemDataRes++ = 0;            // [1] = Nondisplayable
                     *lpMemDataRes++ = 1;            // [2] = Nonsuspendable

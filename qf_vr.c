@@ -80,7 +80,7 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbMF;            // Magic function ...
+    HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     Assert (lptkAxis EQ NULL);
@@ -88,24 +88,24 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Get the magic function global memory handle
-    hGlbMF = lpMemPTD->hGlbMF_MonVR;
+    // Get the magic function/operator global memory handle
+    hGlbMFO = lpMemPTD->hGlbMFO_MonVR;
 
-    //  Use an internal magic function.
+    //  Use an internal magic function/operator.
     return
       ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
                                   lptkFunc,     // Ptr to function token
                                   NULL,         // Ptr to function strand
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
-                                  hGlbMF,       // Magic function global memory handle
+                                  hGlbMFO,      // Magic function/operator global memory handle
                                  &lpMemPTD->htsPTD_MonVR, // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End SysFnMonVR_EM_YY
 
 
 //***************************************************************************
-//  Magic function for Monadic []VR
+//  Magic function/operator for Monadic []VR
 //
 //  Monadic []VR -- Visual Represenation
 //
@@ -113,7 +113,7 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
 //***************************************************************************
 
 static APLCHAR MonHeaderVR[] =
-  L"Z" $IS MFN_MonVR L" R";
+  L"Z" $IS MFON_MonVR L" R";
 
 static APLCHAR MonLineVR1[] =
   L"Z" $IS L"1 ##." $QUAD L"CR R";
@@ -135,7 +135,7 @@ static LPAPLCHAR MonBodyVR[] =
  MonLineVR4,
 };
 
-MAGIC_FUNCTION MF_MonVR =
+MAGIC_FCNOPR MFO_MonVR =
 {MonHeaderVR,
  MonBodyVR,
  countof (MonBodyVR),

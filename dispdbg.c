@@ -524,7 +524,7 @@ void DisplayGlobals
                 if (uDispGlb EQ 1
                  || uDispGlb EQ 2
                  || ((lpHeader->PermNdx EQ PERMNDX_NONE)
-                  && (lpHeader->bMFvar EQ FALSE)))
+                  && (lpHeader->bMFOvar EQ FALSE)))
                 {
                     wsprintfW (wszTemp,
                                L"hGlb=%p AType=%c%c NELM=%3d RC=%1d%cRnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
@@ -584,9 +584,9 @@ void DisplayGlobals
             MyGlobalUnlock (hGlb); lpMemDfnHdr = NULL;
 
             // If we're to display all globals or
-            //   this one is not a Magic Function, ...
+            //   this one is not a Magic Function/Operator, ...
             if (uDispGlb EQ 2
-             || lpMemPTD->lpwszTemp[0] NE L'#')
+             || !IsMFOName (lpMemPTD->lpwszTemp))
             {
                 // Copy the name to local storage
                 lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));

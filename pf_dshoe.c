@@ -132,7 +132,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                  uRht;              // Loop counter
     HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
                  hGlbRes = NULL,    // Result    ...
-                 hGlbMF,            // Magic function global memory handle
+                 hGlbMFO,           // Magic function/operator global memory handle
                  hGlbGup = NULL,    // Grade-up global memory handle
                  hGlbTmp = NULL;    // Temporary ...
     LPAPLINT     lpMemGup = NULL,   // Ptr to grade-up global memory
@@ -625,18 +625,18 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             // Get ptr to PerTabData global memory
             lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-            // Get the magic function global memory handle
-            hGlbMF = lpMemPTD->hGlbMF_MonDnShoe;
+            // Get the magic function/operator global memory handle
+            hGlbMFO = lpMemPTD->hGlbMFO_MonDnShoe;
 
             //  Return the unique elements in the right arg.
-            //  Use an internal magic function.
+            //  Use an internal magic function/operator.
             lpYYRes =
               ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
                                           lptkFunc,     // Ptr to function token
                                           NULL,         // Ptr to function strand
                                           lptkRhtArg,   // Ptr to right arg token
                                           lptkAxis,     // Ptr to axis token
-                                          hGlbMF,       // Magic function global memory handle
+                                          hGlbMFO,      // Magic function/operator global memory handle
                                           NULL,         // Ptr to HSHTAB struc (may be NULL)
                                           LINENUM_ONE); // Starting line # type (see LINE_NUMS)
             break;
@@ -646,7 +646,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
     } // End IF/ELSE/SWITCH
 
     // If there's no result global memory handle, ...
-    //   (we executed a magic function)
+    //   (we executed a magic function/operator)
     if (hGlbRes EQ NULL)
         goto NORMAL_EXIT;
 
@@ -728,7 +728,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  Magic function for monadic DownShoe
+//  Magic function/operator for monadic DownShoe
 //
 //  Monadic DownShoe -- Unique
 //
@@ -736,7 +736,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  L"Z" $IS MFN_MonDnShoe L" R";
+  L"Z" $IS MFON_MonDnShoe L" R";
 
 static APLCHAR MonLine1[] =
   L"Z" $IS L"((R" $IOTA L"R)=" $IOTA $RHO L"R)/R" $IS L",R";
@@ -745,7 +745,7 @@ static LPAPLCHAR MonBody[] =
 {MonLine1,
 };
 
-MAGIC_FUNCTION MF_MonDnShoe =
+MAGIC_FCNOPR MFO_MonDnShoe =
 {MonHeader,
  MonBody,
  countof (MonBody),

@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Magic Function Execution Routines
+//  NARS2000 -- Magic Function/Operator Execution Routines
 //***************************************************************************
 
 /***************************************************************************
@@ -25,16 +25,16 @@
 #include "headers.h"
 
 
-extern MAGIC_FUNCTION MF_MonIota;
-extern MAGIC_FUNCTION MF_DydIota;
-extern MAGIC_FUNCTION MF_MonDnShoe;
-extern MAGIC_FUNCTION MF_DydTilde;
-extern MAGIC_FUNCTION MF_MonRank;
-extern MAGIC_FUNCTION MF_DydRank;
-extern MAGIC_FUNCTION MF_Conform;
-extern MAGIC_FUNCTION MF_MonFMT;
-extern MAGIC_FUNCTION MF_Box;
-extern MAGIC_FUNCTION MF_MonVR;
+extern MAGIC_FCNOPR MFO_MonIota;
+extern MAGIC_FCNOPR MFO_DydIota;
+extern MAGIC_FCNOPR MFO_MonDnShoe;
+extern MAGIC_FCNOPR MFO_DydTilde;
+extern MAGIC_FCNOPR MFO_MonRank;
+extern MAGIC_FCNOPR MFO_DydRank;
+extern MAGIC_FCNOPR MFO_Conform;
+extern MAGIC_FCNOPR MFO_MonFMT;
+extern MAGIC_FCNOPR MFO_Box;
+extern MAGIC_FCNOPR MFO_MonVR;
 
 
 //***************************************************************************
@@ -49,7 +49,7 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand (may be NULL if not an operator)
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      LPTOKEN      lptkAxis,             // Ptr to axis token (may be NULL)
-     HGLOBAL      hGlbMF,               // Magic function global memory handle
+     HGLOBAL      hGlbMFO,              // Magic function/operator global memory handle
      LPHSHTABSTR  lphtsPTD,             // Ptr to HSHTABSTR (may be NULL)
      LINE_NUMS    startLineType)        // Starting line type (see LINE_NUMS)
 
@@ -61,7 +61,7 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // If this magic function uses a separate HTS, ...
+    // If this magic function/operator uses a separate HTS, ...
     if (lphtsPTD)
     {
         // Save the old HshTab struc
@@ -72,22 +72,22 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
 
         // Save address of previous struc
         lpMemPTD->htsPTD.lpHshTabPrvSrch =
-        lpMemPTD->htsPTD.lpHshTabPrvMF   = &htsPTD;
+        lpMemPTD->htsPTD.lpHshTabPrvMFO  = &htsPTD;
     } // End IF
 
     lpYYRes =
-      ExecDfnGlb_EM_YY (hGlbMF,         // Magic function global memory handle
+      ExecDfnGlb_EM_YY (hGlbMFO,        // Magic function/operator global memory handle
                         lptkLftArg,     // Ptr to left arg token
                         lpYYFcnStrOpr,  // Ptr to operator function strand
                         lptkAxis,       // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                         lptkRhtArg,     // Ptr to right arg token
                         startLineType); // Starting line type (see LINE_NUMS)
-    // If this magic function uses a separate HTS, ...
+    // If this magic function/operator uses a separate HTS, ...
     if (lphtsPTD)
     {
         // Delete address of previous struc
         lpMemPTD->htsPTD.lpHshTabPrvSrch =
-        lpMemPTD->htsPTD.lpHshTabPrvMF   = NULL;
+        lpMemPTD->htsPTD.lpHshTabPrvMFO  = NULL;
 
         // Copy back the contents of the current struc
         *lphtsPTD = lpMemPTD->htsPTD;
@@ -119,7 +119,7 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
      LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand (may be NULL if not an operator)
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      LPTOKEN      lptkAxis,             // Ptr to axis token (may be NULL)
-     HGLOBAL      hGlbMF,               // Magic function global memory handle
+     HGLOBAL      hGlbMFO,              // Magic function/operator global memory handle
      LPHSHTABSTR  lphtsPTD,             // Ptr to HSHTABSTR (may be NULL)
      LINE_NUMS    startLineType)        // Starting line type (see LINE_NUMS)
 
@@ -131,7 +131,7 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // If this magic function uses a separate HTS, ...
+    // If this magic function/operator uses a separate HTS, ...
     if (lphtsPTD)
     {
         // Save the old HshTab struc
@@ -142,11 +142,11 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
 
         // Save address of previous struc
         lpMemPTD->htsPTD.lpHshTabPrvSrch =
-        lpMemPTD->htsPTD.lpHshTabPrvMF   = &htsPTD;
+        lpMemPTD->htsPTD.lpHshTabPrvMFO  = &htsPTD;
     } // End IF
 
     lpYYRes =
-      ExecDfnOprGlb_EM_YY (hGlbMF,          // Magic function global memory handle
+      ExecDfnOprGlb_EM_YY (hGlbMFO,         // Magic function/operator global memory handle
                            lptkLftArg,      // Ptr to left arg token
                            lpYYFcnStrLft,   // Ptr to left operand function strand
                            lpYYFcnStrOpr,   // Ptr to operator function strand
@@ -154,12 +154,12 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
                            lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                            lptkRhtArg,      // Ptr to right arg token
                            startLineType);  // Starting line type (see LINE_NUMS)
-    // If this magic function uses a separate HTS, ...
+    // If this magic function/operator uses a separate HTS, ...
     if (lphtsPTD)
     {
         // Delete address of previous struc
         lpMemPTD->htsPTD.lpHshTabPrvSrch =
-        lpMemPTD->htsPTD.lpHshTabPrvMF   = NULL;
+        lpMemPTD->htsPTD.lpHshTabPrvMFO  = NULL;
 
         // Copy back the contents of the current struc
         *lphtsPTD = lpMemPTD->htsPTD;
@@ -180,15 +180,15 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
 //***************************************************************************
 //  $Init1MagicFunction
 //
-//  Initialize a single magic function
+//  Initialize a single magic function/operator
 //***************************************************************************
 
 HGLOBAL Init1MagicFunction
     (LPWCHAR          lpwszName,            // Ptr to the external name
-     LPMAGIC_FUNCTION lpMagicFunction,      // Ptr to magic function struc
+     LPMAGIC_FCNOPR   lpMagicFcnOpr,        // Ptr to magic function/operator struc
      LPPERTABDATA     lpMemPTD,             // Ptr to PerTabData global memory
      HWND             hWndEC,               // Edit Ctrl window handle
-     LPINIT_MF        lpInitMF)             // Ptr to temporary struc
+     LPINIT_MFO       lpInitMFO)            // Ptr to temporary struc
 
 {
     UINT           uLineLen;                // Line length var
@@ -197,47 +197,47 @@ HGLOBAL Init1MagicFunction
                    hGlbDfnHdr = NULL;       // User-defined function/operator header ...
     LPMEMTXT_UNION lpMemTxtLine;            // Ptr to header/line text global memory
     FHLOCALVARS    fhLocalVars = {0};       // Function Header local vars
-    LPSYMENTRY     lpSymEntry;              // Ptr to SYMENTRY for the MF
+    LPSYMENTRY     lpSymEntry;              // Ptr to SYMENTRY for the MFO
     MEMVIRTSTR     lclMemVirtStr[1] = {0};  // Room for one GuardAlloc
     LPTOKEN        lptkCSBeg;               // Ptr to next token on the CS stack
     HSHTABSTR      htsPTD;                  // Old copy of HshTab struc
 
-    // If lpInitMF is valid, ...
-    if (lpInitMF)
+    // If lpInitMFO is valid, ...
+    if (lpInitMFO)
     {
         // If the HshTab has not been allocated as yet, ...
-        if (lpInitMF->lpHTS->lpHshTab EQ NULL)
+        if (lpInitMFO->lpHTS->lpHshTab EQ NULL)
         {
             // Check on Start < End
-            Assert (lpInitMF->uPtdMemVirtStart < lpInitMF->uPtdMemVirtEnd);
+            Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
 #ifdef DEBUG
-            lpInitMF->lpLclMemVirtStr[lpInitMF->uPtdMemVirtStart].lpText = "lpInitMF->htsMF.lpHshTab in <Init1MagicFunction>";
+            lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpHshTab in <Init1MagicFunction>";
 #endif
             // Allocate virtual memory for the hash table
-            if (!AllocHshTab (&lpInitMF->lpLclMemVirtStr[lpInitMF->uPtdMemVirtStart++], // Ptr to this PTDMEMVIRT entry
-                               lpInitMF->lpHTS,                                         // Ptr ot this HSHTABSTR
-                               128,                                                     // Initial # blocks in HshTab (@ EPB HTEs per block)
-                               16,                                                      // # HTEs by which to resize when low
-                               1024))                                                   // Maximum # HTEs
+            if (!AllocHshTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
+                               lpInitMFO->lpHTS,                                            // Ptr ot this HSHTABSTR
+                               128,                                                         // Initial # blocks in HshTab (@ EPB HTEs per block)
+                               16,                                                          // # HTEs by which to resize when low
+                               1024))                                                       // Maximum # HTEs
                 DbgStop ();
         } // End IF
 
         // If the SymTab has not been allocated as yet, ...
-        if (lpInitMF->lpHTS->lpSymTab EQ NULL)
+        if (lpInitMFO->lpHTS->lpSymTab EQ NULL)
         {
             // Check on Start < End
-            Assert (lpInitMF->uPtdMemVirtStart < lpInitMF->uPtdMemVirtEnd);
+            Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
 #ifdef DEBUG
-            lpInitMF->lpLclMemVirtStr[lpInitMF->uPtdMemVirtStart].lpText = "lpInitMF->htsMF.lpSymTab in <Init1MagicFunction>";
+            lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpSymTab in <Init1MagicFunction>";
 #endif
             // Allocate virtual memory for the symbol table
-            if (!AllocSymTab (&lpInitMF->lpLclMemVirtStr[lpInitMF->uPtdMemVirtStart++], // Ptr to this PTDMEMVIRT entry
-                               lpMemPTD,                                                // PerTabData global memory handle
-                               lpInitMF->lpHTS,                                         // Ptr to this HSHTABSTR
-                               FALSE,                                                   // TRUE iff we're to initialize the constant STEs
-                               256,                                                     // Initial # STEs in SymTab
-                               16,                                                      // # STEs by which to resize when low
-                               1024))                                                   // Maximum # STEs
+            if (!AllocSymTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
+                               lpMemPTD,                                                    // PerTabData global memory handle
+                               lpInitMFO->lpHTS,                                            // Ptr to this HSHTABSTR
+                               FALSE,                                                       // TRUE iff we're to initialize the constant STEs
+                               256,                                                         // Initial # STEs in SymTab
+                               16,                                                          // # STEs by which to resize when low
+                               1024))                                                       // Maximum # STEs
                 DbgStop ();
         } // End IF
 
@@ -245,10 +245,10 @@ HGLOBAL Init1MagicFunction
         htsPTD = lpMemPTD->htsPTD;
 
         // Put the HshTab and SymTab into effect
-        lpMemPTD->htsPTD = *lpInitMF->lpHTS;
+        lpMemPTD->htsPTD = *lpInitMFO->lpHTS;
 
         // Save address of previous struc
-        lpMemPTD->htsPTD.lpHshTabPrvMF = &htsPTD;
+        lpMemPTD->htsPTD.lpHshTabPrvMFO = &htsPTD;
 
         // If the system names have not been appended as yet, ...
         if (!lpMemPTD->htsPTD.bSysNames)
@@ -269,7 +269,7 @@ HGLOBAL Init1MagicFunction
     lptkCSBeg = lpMemPTD->lptkCSNxt;
 
     // Get the length of the header line
-    uLineLen  = lstrlenW (lpMagicFunction->Header);
+    uLineLen  = lstrlenW (lpMagicFcnOpr->Header);
 
     // Allocate space for the text
     //   (the "sizeof (uLineLen)" is for the leading line length
@@ -278,7 +278,7 @@ HGLOBAL Init1MagicFunction
     if (!hGlbTxtHdr)
     {
         MessageBox (hWndEC,
-                    "Insufficient memory to save the magic function header text!!",
+                    "Insufficient memory to save the magic function/operator header text!!",
                     lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
         goto ERROR_EXIT;
@@ -302,7 +302,7 @@ HGLOBAL Init1MagicFunction
         lpMemTxtLine->W = (WORD) uLineLen;
 
         // Copy the line text to global memory
-        CopyMemoryW (&lpMemTxtLine->C, lpMagicFunction->Header, uLineLen);
+        CopyMemoryW (&lpMemTxtLine->C, lpMagicFcnOpr->Header, uLineLen);
 
         // Tokenize the line
         hGlbTknHdr =
@@ -311,7 +311,7 @@ HGLOBAL Init1MagicFunction
                         hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                         0,                  // Function line # (0 = header)
                        &ErrorHandler,       // Ptr to error handling function (may be NULL)
-                        TRUE);              // TRUE iff we're tokenizing a Magic Function
+                        TRUE);              // TRUE iff we're tokenizing a Magic Function/Operator
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } else
@@ -322,7 +322,7 @@ HGLOBAL Init1MagicFunction
                        NULL,                // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                        0,                   // Function line # (0 = header)
                        NULL,                // Ptr to error handling function (may be NULL)
-                       TRUE);               // TRUE iff we're tokenizing a Magic Function
+                       TRUE);               // TRUE iff we're tokenizing a Magic Function/Operator
     if (!hGlbTknHdr)
     {
         WCHAR wszTemp[1024];
@@ -414,7 +414,7 @@ HGLOBAL Init1MagicFunction
             numLocalsSTE = 0;
 
         // Get # lines in the function
-        numFcnLines = lpMagicFunction->numFcnLines;
+        numFcnLines = lpMagicFcnOpr->numFcnLines;
 
         // Allocate global memory for the function header
         hGlbDfnHdr =
@@ -556,7 +556,7 @@ HGLOBAL Init1MagicFunction
             HGLOBAL hGlbTxtLine;    // Line text global memory handle
 
             // Get the line length of the line
-            uLineLen = lstrlenW (lpMagicFunction->Body[uLineNum]);
+            uLineLen = lstrlenW (lpMagicFcnOpr->Body[uLineNum]);
 
             // Allocate global memory to hold this text
             // The "sizeof (uLineLen) + " is for the leading length
@@ -594,7 +594,7 @@ HGLOBAL Init1MagicFunction
                 lpMemTxtLine->W = (WORD) uLineLen;
 
                 // Copy the line text to global memory
-                CopyMemoryW (&lpMemTxtLine->C, lpMagicFunction->Body[uLineNum], uLineLen);
+                CopyMemoryW (&lpMemTxtLine->C, lpMagicFcnOpr->Body[uLineNum], uLineLen);
 
                 // Tokenize the line
                 lpFcnLines->hGlbTknLine =
@@ -603,7 +603,7 @@ HGLOBAL Init1MagicFunction
                                 hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                 uLineNum + 1,       // Function line # (0 = header)
                                &ErrorHandler,       // Ptr to error handling function (may be NULL)
-                                TRUE);              // TRUE iff we're tokenizing a Magic Function
+                                TRUE);              // TRUE iff we're tokenizing a Magic Function/Operator
             } else
                 // Tokenize the (empty) line
                 lpFcnLines->hGlbTknLine =
@@ -612,7 +612,7 @@ HGLOBAL Init1MagicFunction
                                hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                uLineNum + 1,        // Function line # (0 = header)
                               &ErrorHandler,        // Ptr to error handling function (may be NULL)
-                               TRUE);               // TRUE iff we're tokenizing a Magic Function
+                               TRUE);               // TRUE iff we're tokenizing a Magic Function/Operator
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
@@ -676,7 +676,7 @@ HGLOBAL Init1MagicFunction
         lpSymEntry->stFlags.Inuse      =
         lpSymEntry->stFlags.Value      =
         lpSymEntry->stFlags.UsrDfn     = TRUE;
-        lpSymEntry->stFlags.ObjName    = OBJNAME_MF;
+        lpSymEntry->stFlags.ObjName    = OBJNAME_MFO;
         lpSymEntry->stFlags.DfnAxis    = lpMemDfnHdr->DfnAxis;
         lpSymEntry->stFlags.stNameType = fhLocalVars.fhNameType;
         lpSymEntry->stData.stGlbData   = MakePtrTypeGlb (hGlbDfnHdr);
@@ -710,14 +710,14 @@ NORMAL_EXIT:
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;
 
-    // If lpInitMF is valid, ...
-    if (lpInitMF)
+    // If lpInitMFO is valid, ...
+    if (lpInitMFO)
     {
         // Delete address of previous struc
-        lpMemPTD->htsPTD.lpHshTabPrvMF = NULL;
+        lpMemPTD->htsPTD.lpHshTabPrvMFO = NULL;
 
         // Copy back the contents of the current struc
-        *lpInitMF->lpHTS = lpMemPTD->htsPTD;
+        *lpInitMFO->lpHTS = lpMemPTD->htsPTD;
 
         // Restore the old HTS
         lpMemPTD->htsPTD = htsPTD;
@@ -740,7 +740,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $InitMagicFunctions
 //
-//  Initialize all magic functions
+//  Initialize all magic functions/operators
 //***************************************************************************
 
 UBOOL InitMagicFunctions
@@ -751,26 +751,26 @@ UBOOL InitMagicFunctions
      UINT         uPtdMemVirtEnd)       // Ending   ...
 
 {
-    INIT_MF initMF;                     // Temporary struc for passing multiple args
+    INIT_MFO initMFO;                   // Temporary struc for passing multiple args
 
     // Initialize the temp struc
-////initMF.lpHTS            = NULL;             // Set below
-    initMF.lpLclMemVirtStr  = lpLclMemVirtStr;
-    initMF.uPtdMemVirtStart = uPtdMemVirtStart;
-    initMF.uPtdMemVirtEnd   = uPtdMemVirtEnd;
+////initMFO.lpHTS            = NULL;             // Set below
+    initMFO.lpLclMemVirtStr  = lpLclMemVirtStr;
+    initMFO.uPtdMemVirtStart = uPtdMemVirtStart;
+    initMFO.uPtdMemVirtEnd   = uPtdMemVirtEnd;
 
-    // Define the magic functions
-    lpMemPTD->hGlbMF_MonIota     = Init1MagicFunction (MFN_MonIota  , &MF_MonIota  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_DydIota     = Init1MagicFunction (MFN_DydIota  , &MF_DydIota  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_MonDnShoe   = Init1MagicFunction (MFN_MonDnShoe, &MF_MonDnShoe, lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_DydTilde    = Init1MagicFunction (MFN_DydTilde , &MF_DydTilde , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_MonRank     = Init1MagicFunction (MFN_MonRank  , &MF_MonRank  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_DydRank     = Init1MagicFunction (MFN_DydRank  , &MF_DydRank  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_Conform     = Init1MagicFunction (MFN_Conform  , &MF_Conform  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_MonFMT      = Init1MagicFunction (MFN_MonFMT   , &MF_MonFMT   , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMF_Box         = Init1MagicFunction (MFN_Box      , &MF_Box      , lpMemPTD, hWndEC, NULL);
-    initMF.lpHTS = &lpMemPTD->htsPTD_MonVR;
-    lpMemPTD->hGlbMF_MonVR       = Init1MagicFunction (MFN_MonVR    , &MF_MonVR    , lpMemPTD, hWndEC, &initMF);
+    // Define the magic functions/operators
+    lpMemPTD->hGlbMFO_MonIota     = Init1MagicFunction (MFON_MonIota  , &MFO_MonIota  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO_DydIota     = Init1MagicFunction (MFON_DydIota  , &MFO_DydIota  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO_MonDnShoe   = Init1MagicFunction (MFON_MonDnShoe, &MFO_MonDnShoe, lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO_DydTilde    = Init1MagicFunction (MFON_DydTilde , &MFO_DydTilde , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO_MonRank     = Init1MagicFunction (MFON_MonRank  , &MFO_MonRank  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO_DydRank     = Init1MagicFunction (MFON_DydRank  , &MFO_DydRank  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO_Conform     = Init1MagicFunction (MFON_Conform  , &MFO_Conform  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO_MonFMT      = Init1MagicFunction (MFON_MonFMT   , &MFO_MonFMT   , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO_Box         = Init1MagicFunction (MFON_Box      , &MFO_Box      , lpMemPTD, hWndEC, NULL);
+    initMFO.lpHTS = &lpMemPTD->htsPTD_MonVR;
+    lpMemPTD->hGlbMFO_MonVR       = Init1MagicFunction (MFON_MonVR    , &MFO_MonVR    , lpMemPTD, hWndEC, &initMFO);
 
     // Set []IO to zero in the symbol table for []VR
     lpMemPTD->htsPTD_MonVR.lpSymQuad[SYSVAR_IO]->stData.stBoolean = 0;

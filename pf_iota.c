@@ -156,7 +156,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     if (!IsSimpleNum (aplTypeRht))
         goto DOMAIN_EXIT;
 
-    // Handle length != 1 args via magic function
+    // Handle length != 1 args via magic function/operator
     if (!IsSingleton (aplNELMRht))
         return PrimFnMonIotaVector_EM_YY (lptkFunc,     // Ptr to function token
                                           lptkRhtArg,   // Ptr to right arg token
@@ -287,8 +287,8 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
     APLNELM      aplNELMRht;        // Right arg NELM
     APLUINT      ByteRes;           // # bytes in the result
     LPVOID       lpMemRes;          // Ptr to result global memory
-    HGLOBAL      hGlbRes,           // Result     ...
-                 hGlbMF;            // Magic function ...
+    HGLOBAL      hGlbRes,           // Result global memory handle
+                 hGlbMFO;           // Magic function/operator ...
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
@@ -341,18 +341,18 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
         // Get ptr to PerTabData global memory
         lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-        // Get the magic function global memory handle
-        hGlbMF = lpMemPTD->hGlbMF_MonIota;
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO_MonIota;
 
         //  Return the matrix of indices
-        //  Use an internal magic function.
+        //  Use an internal magic function/operator.
         return
           ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
                                       lptkFunc,     // Ptr to function token
                                       NULL,         // Ptr to function strand
                                       lptkRhtArg,   // Ptr to right arg token
                                       lptkAxis,     // Ptr to axis token
-                                      hGlbMF,       // Magic function global memory handle
+                                      hGlbMFO,      // Magic function/operator global memory handle
                                       NULL,         // Ptr to HSHTAB struc (may be NULL)
                                       LINENUM_ONE); // Starting line # type (see LINE_NUMS)
     } // End IF/ELSE
@@ -383,7 +383,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  Magic function for Extended Monadic Iota
+//  Magic function/operator for Extended Monadic Iota
 //
 //  Extended Monadic Iota -- Index Generator For Arrays
 //
@@ -394,7 +394,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  L"Z" $IS MFN_MonIota L" R";
+  L"Z" $IS MFON_MonIota L" R";
 
 static APLCHAR MonLine1[] =
   L"Z" $IS $DISCLOSE $JOT L".,/" $IOTA $EACH L"R";
@@ -403,7 +403,7 @@ static LPAPLCHAR MonBody[] =
 {MonLine1,
 };
 
-MAGIC_FUNCTION MF_MonIota =
+MAGIC_FCNOPR MFO_MonIota =
 {MonHeader,
  MonBody,
  countof (MonBody),
@@ -470,26 +470,26 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     // Check for extended dyadic iota
     if (IsMultiRank (aplRankLft))
     {
-        HGLOBAL      hGlbMF;            // Magic function global memory handle
+        HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
         LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
         // Get ptr to PerTabData global memory
         lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-        // Get the magic function global memory handle
-        hGlbMF = lpMemPTD->hGlbMF_DydIota;
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO_DydIota;
 
         //  Extend to aplRankLft > 1 args by returning
         //    an array of index vectors where the length
         //    of each vector is aplRankLft.
-        //  Use an internal magic function.
+        //  Use an internal magic function/operator.
         return
           ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
                                       lptkFunc,     // Ptr to function token
                                       NULL,         // Ptr to function strand
                                       lptkRhtArg,   // Ptr to right arg token
                                       lptkAxis,     // Ptr to axis token
-                                      hGlbMF,       // Magic function global memory handle
+                                      hGlbMFO,      // Magic function/operator global memory handle
                                       NULL,         // Ptr to HSHTAB struc (may be NULL)
                                       LINENUM_ONE); // Starting line # type (see LINE_NUMS)
     } // End IF
@@ -2035,7 +2035,7 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  Magic function for extended dyadic iota
+//  Magic function/operator for extended dyadic iota
 //
 //  Extended dyadic iota
 //
@@ -2044,7 +2044,7 @@ ERROR_EXIT:
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFN_DydIota L" R;" $QUAD_IO L";O";
+  L"Z" $IS L"L " MFON_DydIota L" R;" $QUAD_IO L";O";
 
 static APLCHAR DydLine1[] =
   L"O" $IS $QUAD_IO
@@ -2058,7 +2058,7 @@ static LPAPLCHAR DydBody[] =
  DydLine2,
 };
 
-MAGIC_FUNCTION MF_DydIota =
+MAGIC_FCNOPR MFO_DydIota =
 {DydHeader,
  DydBody,
  countof (DydBody),

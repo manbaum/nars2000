@@ -180,8 +180,8 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
-    HGLOBAL       hGlbMF1,              // Magic function #1 global memory handle
-                  hGlbMF2,              // Magic function #2 global memory handle
+    HGLOBAL       hGlbMFO1,             // Magic function/operator #1 global memory handle
+                  hGlbMFO2,             // Magic function/operator #2 global memory handle
                   hGlbOprRht;           // Right operand global memory handle
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
     LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to result
@@ -211,10 +211,10 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Get the magic function global memory handles
-    hGlbMF1 = (lptkLftArg EQ NULL) ? lpMemPTD->hGlbMF_MonRank
-                                   : lpMemPTD->hGlbMF_DydRank;
-    hGlbMF2 = lpMemPTD->hGlbMF_Conform;
+    // Get the magic function/operator global memory handles
+    hGlbMFO1 = (lptkLftArg EQ NULL) ? lpMemPTD->hGlbMFO_MonRank
+                                    : lpMemPTD->hGlbMFO_DydRank;
+    hGlbMFO2 = lpMemPTD->hGlbMFO_Conform;
 
     // Get right operand global ptrs
     hGlbOprRht = GetGlbHandle (&lpYYFcnStrRht->tkToken);
@@ -255,7 +255,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                                   lpYYFcnStrRht,            // Ptr to right operand function strand
                                   lptkRhtArg,               // Ptr to right arg token
                                   NULL,                     // Ptr to axis token
-                                  hGlbMF1,                  // Magic function global memory handle
+                                  hGlbMFO1,                 // Magic function/operator global memory handle
                                   NULL,                     // Ptr to HSHTAB struc (may be NULL)
                                   bPrototyping
                                 ? LINENUM_PROTOTYPE
@@ -347,14 +347,14 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                 // Decrement the SI level of lpYYRes so YYResIsEmpty won't complain
                 lpYYRes->SILevel--;
 #endif
-                // Finish it off with another magic function
+                // Finish it off with another magic function/operator
                 lpYYRes2 =
                   ExecuteMagicFunction_EM_YY (&tkLftArg,                // Ptr to left arg token
                                               &lpYYFcnStrOpr->tkToken,  // Ptr to function token
                                                NULL,                    // Ptr to function strand
                                               &lpYYRes->tkToken,        // Ptr to right arg token
                                                NULL,                    // Ptr to axis token
-                                               hGlbMF2,                 // Magic function global memory handle
+                                               hGlbMFO2,                // Magic function/operator global memory handle
                                                NULL,                    // Ptr to HSHTAB struc (may be NULL)
                                                LINENUM_ONE);            // Starting line # type (see LINE_NUMS)
 #ifdef DEBUG
@@ -421,11 +421,11 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  Magic function for monadic derived function from the rank dyadic operator
+//  Magic function/operator for monadic derived function from the rank dyadic operator
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  L"Z" $IS L"(LO " MFN_MonRank L" Y) R;O";
+  L"Z" $IS L"(LO " MFON_MonRank L" Y) R;O";
 
 static APLCHAR MonLine1[] =
   L"Y" $IS L"1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y";
@@ -454,7 +454,7 @@ static LPAPLCHAR MonBody[] =
  MonLine5,
 };
 
-MAGIC_FUNCTION MF_MonRank =
+MAGIC_FCNOPR MFO_MonRank =
 {MonHeader,
  MonBody,
  countof (MonBody),
@@ -462,7 +462,7 @@ MAGIC_FUNCTION MF_MonRank =
 
 
 static APLCHAR ConHeader[] =
-  L"Z" $IS L"L " MFN_Conform L" R";
+  L"Z" $IS L"L " MFON_Conform L" R";
 
 static APLCHAR ConLine1[] =
   L"Z" $IS L"(((L-" $EPSILON $RHO $JOT $RHO $EACH L"R)" $RHO $EACH L"1)," $EACH $RHO $EACH L"R)" $RHO $EACH L"R";
@@ -471,7 +471,7 @@ static LPAPLCHAR ConBody[] =
 {ConLine1,
 };
 
-MAGIC_FUNCTION MF_Conform =
+MAGIC_FCNOPR MFO_Conform =
 {ConHeader,
  ConBody,
  countof (ConBody),
@@ -529,11 +529,11 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 
 
 //***************************************************************************
-//  Magic function for dyadic derived function from the rank dyadic operator
+//  Magic function/operator for dyadic derived function from the rank dyadic operator
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  L"Z" $IS L"L (LO " MFN_DydRank L" Y) R;O";
+  L"Z" $IS L"L (LO " MFON_DydRank L" Y) R;O";
 
 static APLCHAR DydLine1[] =
   L"Y" $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y";
@@ -562,7 +562,7 @@ static LPAPLCHAR DydBody[] =
  DydLine5,
 };
 
-MAGIC_FUNCTION MF_DydRank =
+MAGIC_FCNOPR MFO_DydRank =
 {DydHeader,
  DydBody,
  countof (DydBody),

@@ -159,7 +159,7 @@ typedef struct tagTKLOCALVARS
                  iStrLen,           // 7C:  ...        lpwszString
                  iNumLim,           // 80:  Current limit for lpszNumAlp
                  iStrLim;           // 84:  ...               lpwszString
-    UINT         bMF:1,             // 88:  00000001:  TRUE iff this is a Magic Function
+    UINT         bMFO:1,            // 88:  00000001:  TRUE iff this is a Magic Function/Operator
                  :31;               //      FFFFFFFE:  Available bits
     struct tagPERTABDATA *lpMemPTD; // 8C:  Ptr to PerTabData global memory
                                     // 90:  Length

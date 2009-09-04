@@ -124,7 +124,7 @@ int ChangeRefCntDir
                 case DFN_HEADER_SIGNATURE:
 #define lpHeader        ((LPDFN_HEADER) lpSig)
 
-                    // Don't change the reference count on permanent functions (i.e. Magic Functions)
+                    // Don't change the reference count on permanent functions (i.e. Magic Functions/Operators)
                     if (lpHeader->PermFn)
                     {
 #ifdef DEBUG_REFCNT

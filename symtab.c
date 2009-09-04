@@ -1721,13 +1721,13 @@ LPSYMENTRY SymTabLookupNameLength
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
 
-    // If the name is of a Magic Function, ...
-    if (IsMFName (lpwszString))
+    // If the name is of a Magic Function/Operator, ...
+    if (IsMFOName (lpwszString))
     {
         // Peel back the HshTabStrs so we lookup
         //   the name in the top level HshTabStr
-        while (lpHTS->lpHshTabPrvMF)
-            lpHTS = lpHTS->lpHshTabPrvMF;
+        while (lpHTS->lpHshTabPrvMFO)
+            lpHTS = lpHTS->lpHshTabPrvMFO;
     } // End IF
 
     // Skip over trailing white space
@@ -1762,8 +1762,8 @@ LPSYMENTRY SymTabLookupNameLength
         if (IsSysName (lpwszName))
             lpstFlags->ObjName = OBJNAME_SYS;
         else
-        if (IsMFName (lpwszName))
-            lpstFlags->ObjName = OBJNAME_MF;
+        if (IsMFOName (lpwszName))
+            lpstFlags->ObjName = OBJNAME_MFO;
         else
             lpstFlags->ObjName = OBJNAME_USR;
     } // End IF
@@ -2341,13 +2341,13 @@ LPSYMENTRY SymTabAppendNewName_EM
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
 
-    // If the name is of a Magic Function, ...
-    if (IsMFName (lpwszString))
+    // If the name is of a Magic Function/Operator, ...
+    if (IsMFOName (lpwszString))
     {
         // Peel back the HshTabStrs so we append
         //   the name to the top level HshTabStr
-        while (lpHTS->lpHshTabPrvMF)
-            lpHTS = lpHTS->lpHshTabPrvMF;
+        while (lpHTS->lpHshTabPrvMFO)
+            lpHTS = lpHTS->lpHshTabPrvMFO;
     } // End IF
 
     Assert (HshTabFrisk (lpHTS));

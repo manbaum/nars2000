@@ -86,8 +86,8 @@ typedef enum tagPTDMEMVIRTENUM
     PTDMEMVIRT_WSZFORMAT,               // 0B:  Temporary formatting
     PTDMEMVIRT_WSZTEMP,                 // 0C:  Temporary save area
     PTDMEMVIRT_FORSTMT,                 // 0D:  FOR ... IN stmts
-    PTDMEMVIRT_MF1,                     // 0E:  Magic functions
-    PTDMEMVIRT_MF2,                     // 0F:  ...
+    PTDMEMVIRT_MFO1,                    // 0E:  Magic functions/operators
+    PTDMEMVIRT_MFO2,                    // 0F:  ...
     PTDMEMVIRT_LENGTH                   // 10:  # entries
 } PTDMEMVIRTENUM;
 
@@ -1308,10 +1308,10 @@ WM_NCCREATE_FAIL:
             ShowWindow (hWndEC, SW_SHOWNORMAL);
             UpdateWindow (hWndEC);
 
-            // *************** Magic Functions *************************
+            // *************** Magic Functions/Operators ***************
 
-            // Initialize all magic functions
-            if (!InitMagicFunctions (lpMemPTD, hWndEC, lpLclMemVirtStr, PTDMEMVIRT_MF1, PTDMEMVIRT_LENGTH))
+            // Initialize all magic functions/operators
+            if (!InitMagicFunctions (lpMemPTD, hWndEC, lpLclMemVirtStr, PTDMEMVIRT_MFO1, PTDMEMVIRT_LENGTH))
             {
                 DbgMsgW (L"WM_CREATE:  InitMagicFunctions failed");
 

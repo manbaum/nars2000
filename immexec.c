@@ -433,7 +433,7 @@ DWORD WINAPI ImmExecStmtInThread
                        hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                        1,                   // Function line # (0 = header)
                       &ErrorMessageDirect,  // Ptr to error handling function (may be NULL)
-                       FALSE);              // TRUE iff we're tokenizing a Magic Function
+                       FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator
         // If it's invalid, ...
         if (hGlbToken EQ NULL)
         {

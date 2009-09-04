@@ -48,7 +48,7 @@ typedef struct tagSIS_HEADER
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Suspended:1,   //      00000100:  Function is suspended
                      ResetFlag:3,   //      00000E00:  SI stack is resetting (see RESET_FLAGS)
-                     PermFn:1,      //      00001000:  Permanent function (i.e. Magic Function)
+                     PermFn:1,      //      00001000:  Permanent function (i.e. Magic Function/Operator)
                      Restartable:1, //      00002000:  This SI level is restartable
                      Unwind:1,      //      00004000:  Unwind this level for error message level
                      :17;           //      FFFF8000:  Available bits

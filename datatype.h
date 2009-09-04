@@ -266,7 +266,7 @@ typedef struct tagVARARRAY_HEADER
                      PV1:1,             //      00000400:  ...                          1
                      bSelSpec:1,        //      00000800:  Select Specification array
 #ifdef DEBUG
-                     bMFvar:1,          //      00001000:  Magic Function var -- do not display
+                     bMFOvar:1,         //      00001000:  Magic Function/Operator var -- do not display
                      :19;               //      FFFFF000:  Available bits
 #else
                      :20;               //      FFFFF000:  Available bits

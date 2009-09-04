@@ -149,8 +149,8 @@ typedef struct tagHSHTABSTR
     struct tagHSHTABSTR
               *lpHshTabPrvSrch,         // 00:  Ptr to previous HSHTABSTR
                                         //        for the purposes of searching (NULL = none)
-              *lpHshTabPrvMF;           // 04:  Ptr to previous HSHTABSTR
-                                        //        for the purposes of append new/lookup old MF (NULL = none)
+              *lpHshTabPrvMFO;          // 04:  Ptr to previous HSHTABSTR
+                                        //        for the purposes of append new/lookup old MFO (NULL = none)
     LPHSHENTRY lpHshTab,                // 08:  Ptr to start of HshTab
                lpHshTabSplitNext;       // 0C:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
     int        iHshTabBaseNelm,         // 10:  Base size of hash table
@@ -243,13 +243,13 @@ typedef enum tagOBJ_NAMES
     OBJNAME_NONE = 0,       // 00:  Unnamed
     OBJNAME_USR,            // 01:  User name
     OBJNAME_SYS,            // 02:  System name (starts with a Quad or Quote-quad)
-    OBJNAME_MF,             // 03:  Magic Function
+    OBJNAME_MFO,            // 03:  Magic function/operator
     OBJNAME_LOD,            // 04:  )LOAD and )COPY HGLOBAL
     OBJNAME_NOVALUE,        // 05:  NoValue object (result from, say, {execute}'')
                             // 06-07:  Available entries (3 bits)
 } OBJ_NAMES;
 
-#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MF", L"LOD"}
+#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MFO", L"LOD"}
 
 // Symbol table flags
 typedef struct tagSTFLAGS

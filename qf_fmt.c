@@ -87,9 +87,8 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbMF;            // Magic function ...
+    HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-////HSHTABSTR    htsPTD;            // Old copy of HshTab struc
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     Assert (lptkAxis EQ NULL);
@@ -97,18 +96,18 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Get the magic function global memory handle
-    hGlbMF = lpMemPTD->hGlbMF_MonFMT;
+    // Get the magic function/operator global memory handle
+    hGlbMFO = lpMemPTD->hGlbMFO_MonFMT;
 
     //  Return the array display
-    //  Use an internal magic function.
+    //  Use an internal magic function/operator.
     lpYYRes =
       ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
                                   lptkFunc,     // Ptr to function token
                                   NULL,         // Ptr to function strand
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
-                                  hGlbMF,       // Magic function global memory handle
+                                  hGlbMFO,      // Magic function/operator global memory handle
                                   NULL,         // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
     return lpYYRes;
@@ -117,7 +116,7 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
 
 
 //***************************************************************************
-//  Magic function for Monadic []FMT
+//  Magic function/operator for Monadic []FMT
 //
 //  Monadic []FMT -- Boxed Display of Arrays
 //
@@ -125,7 +124,7 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
 //***************************************************************************
 
 static APLCHAR MonHeaderFMT[] =
-  L"Z" $IS MFN_MonFMT L" R;" $QUAD L"io;Type;Lft;Top;Proto;A";
+  L"Z" $IS MFON_MonFMT L" R;" $QUAD L"io;Type;Lft;Top;Proto;A";
 
 static APLCHAR MonLineFMT1[] =
   $QUAD L"io" $IS L"0";
@@ -225,7 +224,7 @@ static APLCHAR MonLineFMT32[] =
   L"  :endif";
 
 static APLCHAR MonLineFMT33[] =
-  L"  Z" $IS L"Z " MFN_Box L" R";
+  L"  Z" $IS L"Z " MFON_Box L" R";
 
 static APLCHAR MonLineFMT34[] =
   L":else";
@@ -234,10 +233,10 @@ static APLCHAR MonLineFMT35[] =
   L"  :if 0" $EPSILON $RHO L"R";
 
 static APLCHAR MonLineFMT36[] =
-  L"    Z" $IS MFN_MonFMT $TAKE L"R";
+  L"    Z" $IS MFON_MonFMT $TAKE L"R";
 
 static APLCHAR MonLineFMT37[] =
-  L"    Z" $IS L"Z " MFN_Box L" R";
+  L"    Z" $IS L"Z " MFON_Box L" R";
 
 static APLCHAR MonLineFMT38[] =
   L"  :else";
@@ -249,7 +248,7 @@ static APLCHAR MonLineFMT40[] =
   L"    :forlcl I :in R";
 
 static APLCHAR MonLineFMT41[] =
-  L"      A" $IS MFN_MonFMT L" I";
+  L"      A" $IS MFON_MonFMT L" I";
 
 static APLCHAR MonLineFMT42[] =
   L"      :if 0=" $MATCH L"I";
@@ -286,7 +285,7 @@ static APLCHAR MonLineFMT52[] =
 
 static APLCHAR MonLineFMT53[] =
   L"    Z" $IS L"(((" $NEG L"3" $DROP $RHO L"Z),(" $RHO L"Z)[" $NEG L"2],×/(" $RHO L"Z)[" $NEG L"3 " $NEG L"1])"
-  $RHO L",[" $NEG L"2 " $NEG L"3] Z) " MFN_Box L" R";
+  $RHO L",[" $NEG L"2 " $NEG L"3] Z) " MFON_Box L" R";
 
 static APLCHAR MonLineFMT54[] =
   L"  :endif";
@@ -352,7 +351,7 @@ static LPAPLCHAR MonBodyFMT[] =
  MonLineFMT55,
 };
 
-MAGIC_FUNCTION MF_MonFMT =
+MAGIC_FCNOPR MFO_MonFMT =
 {MonHeaderFMT,
  MonBodyFMT,
  countof (MonBodyFMT),
@@ -360,7 +359,7 @@ MAGIC_FUNCTION MF_MonFMT =
 
 
 //***************************************************************************
-//  Magic function for Box
+//  Magic function/operator for Box
 //
 //  Box function -- Boxed Display For Arrays
 //
@@ -368,7 +367,7 @@ MAGIC_FUNCTION MF_MonFMT =
 //***************************************************************************
 
 static APLCHAR MonHeaderBox[] =
-  L"Z" $IS L"Z " MFN_Box L" R;RD;LD;D";
+  L"Z" $IS L"Z " MFON_Box L" R;RD;LD;D";
 
 static APLCHAR MonLineBox1[] =
   L"LD" $IS $FORMAT L"(0" $NOTEQUAL $RHO $RHO L"R)/" $NEG L"1" $TAKE $RHO L"R";
@@ -488,7 +487,7 @@ static LPAPLCHAR MonBodyBox[] =
  MonLineBox28,
 };
 
-MAGIC_FUNCTION MF_Box =
+MAGIC_FCNOPR MFO_Box =
 {MonHeaderBox,
  MonBodyBox,
  countof (MonBodyBox),

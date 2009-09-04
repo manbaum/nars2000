@@ -255,7 +255,7 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
 
 {
     APLRANK      aplRankLft;        // Left arg rank
-    HGLOBAL      hGlbMF;            // Magic function global memory handle
+    HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
@@ -280,18 +280,18 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // Get the magic function global memory handle
-    hGlbMF = lpMemPTD->hGlbMF_DydTilde;
+    // Get the magic function/operator global memory handle
+    hGlbMFO = lpMemPTD->hGlbMFO_DydTilde;
 
     //  Return the elements in L not in R.
-    //  Use an internal magic function.
+    //  Use an internal magic function/operator.
     lpYYRes =
       ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
                                   lptkFunc,     // Ptr to function token
                                   NULL,         // Ptr to function strand
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
-                                  hGlbMF,       // Magic function global memory handle
+                                  hGlbMFO,      // Magic function/operator global memory handle
                                   NULL,         // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
     goto NORMAL_EXIT;
@@ -313,7 +313,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  Magic function for dyadic Tilde
+//  Magic function/operator for dyadic Tilde
 //
 //  Dyadic Tilde -- Without
 //
@@ -321,7 +321,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR Header[] =
-  L"Z" $IS L"L " MFN_DydTilde L" R";
+  L"Z" $IS L"L " MFON_DydTilde L" R";
 
 static APLCHAR Line1[] =
   L"Z" $IS L"(~L" $EPSILON L"R)/L";
@@ -330,7 +330,7 @@ static LPAPLCHAR Body[] =
 {Line1,
 };
 
-MAGIC_FUNCTION MF_DydTilde =
+MAGIC_FCNOPR MFO_DydTilde =
 {Header,
  Body,
  countof (Body),

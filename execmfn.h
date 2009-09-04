@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Magic Function Execution Header
+//  NARS2000 -- Magic Function/Operator Execution Header
 //***************************************************************************
 
 /***************************************************************************
@@ -20,19 +20,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-// Magic Function Names
-#define MFN_MonIota         L"#MonIota"
-#define MFN_DydIota         L"#DydIota"
-#define MFN_MonDnShoe       L"#MonDnShoe"
-#define MFN_DydTilde        L"#DydTilde"
-#define MFN_MonRank         L"#MonRank"
-#define MFN_DydRank         L"#DydRank"
-#define MFN_Conform         L"#Conform"
-#define MFN_MonFMT          L"#MonFMT"
-#define MFN_Box             L"#Box"
-#define MFN_MonVR           L"#MonVR"
+// Magic Function/Operator Names
+#define MFON_MonIota        L"#MonIota"
+#define MFON_DydIota        L"#DydIota"
+#define MFON_MonDnShoe      L"#MonDnShoe"
+#define MFON_DydTilde       L"#DydTilde"
+#define MFON_MonRank        L"#MonRank"
+#define MFON_DydRank        L"#DydRank"
+#define MFON_Conform        L"#Conform"
+#define MFON_MonFMT         L"#MonFMT"
+#define MFON_Box            L"#Box"
+#define MFON_MonVR          L"#MonVR"
 
-// Magic function variables
+// Magic function/Operator variables
 #define $COMMABAR       WS_UTF16_COMMABAR
 #define $DECODE         WS_UTF16_UPTACK
 #define $DIAMOND        WS_UTF16_DIAMOND
@@ -82,22 +82,22 @@
 #define $ZILDE          WS_UTF16_ZILDE
 
 
-typedef struct tagMAGIC_FUNCTION
+typedef struct tagMAGIC_FCNOPR
 {
     LPAPLCHAR  Header;              // 00:  Ptr to function/operator header
     LPAPLCHAR *Body;                // 04:  Ptr to array of function lines
     UINT       numFcnLines;         // 08:  # function lines in the body
                                     // 0C:  Length
-} MAGIC_FUNCTION, *LPMAGIC_FUNCTION;
+} MAGIC_FCNOPR, *LPMAGIC_FCNOPR;
 
-typedef struct tagINIT_MF
+typedef struct tagINIT_MFO
 {
     LPHSHTABSTR  lpHTS;             // 00:  Ptr to HSHTABSTR struc
     LPMEMVIRTSTR lpLclMemVirtStr;   // 04:  Ptr to local MemVirtStr
     UINT         uPtdMemVirtStart,  // 08:  Starting offset into lpLclMemVirtStr
                  uPtdMemVirtEnd;    // 0C:  Ending   ...
                                     // 10:  Length
-} INIT_MF, *LPINIT_MF;
+} INIT_MFO, *LPINIT_MFO;
 
 
 //***************************************************************************

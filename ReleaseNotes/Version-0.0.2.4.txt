@@ -1,6 +1,40 @@
 Version 0.0.2.4 consists of the following Builds:
 
 
+Build #537 -- Version 0.0.2.4
+-----------------------------
+
+* Split Name Class For Magic Functions/Operators In Two
+
+Directory trunk:
+
+EXECMFN.C:
+QF_AT.C:
+QF_MF.C:
+SC_FNOV.C:
+SC_OUT.C:
+SC_SAVE.C:
+SYMTAB.H:
+TABCTRL.C:
+  Rename <OBJNAME_MF> to <OBJNAME_MFO> to indicate it includes operators.
+
+MACROS.H:
+  Rename macro <IsMFName> to <IsMFOName> to indicate it includes operators.
+
+NAMECLASS.H:
+  Improve comments.
+  Split name class for magic functions/operators in two.
+
+QF_NC.C:
+  Improve comments.
+  Split name class for magic functions/operators in two.
+
+SYMTAB.C:
+  Improve comments.
+  Rename macro <IsMFName> to <IsMFOName> to indicate it includes operators.
+  Rename <OBJNAME_MF> to <OBJNAME_MFO> to indicate it includes operators.
+
+
 Build #536 -- Version 0.0.2.4
 -----------------------------
 

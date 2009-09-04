@@ -263,8 +263,8 @@ UBOOL CmdSave_EM
         for (lpSymEntry = lpSymTabNext;
              lpSymEntry;
              lpSymEntry = lpSymEntry->stPrvEntry)
-        if (lpSymEntry->stHshEntry->htGlbName           // Must have a name (not steZero, etc.)
-         && lpSymEntry->stFlags.ObjName NE OBJNAME_MF   // and not be a Magic Function
+        if (lpSymEntry->stHshEntry->htGlbName           // Must have a name (not steZero, etc.),
+         && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO  // and not be a Magic Function/Operator,
          && lpSymEntry->stFlags.ObjName NE OBJNAME_LOD) // and not be a )LOAD HGLOBAL
         {
             // Get the symbol name's global memory handle

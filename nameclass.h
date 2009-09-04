@@ -27,20 +27,21 @@ typedef enum tagNAME_CLASS
     NAMECLASS_AVL = 0,      //  0 = Available name
     NAMECLASS_USRLBL,       //  1 = User label
     NAMECLASS_USRVAR,       //  2 = User variable
-    NAMECLASS_USRFCN,       //  3 = User-defined function
-    NAMECLASS_USROPR,       //  4 = User-defined operator (monadic or dyadic)
+    NAMECLASS_USRFCN,       //  3 = User-defined function (any valence:  0, 1, or 2)
+    NAMECLASS_USROPR,       //  4 = User-defined operator (either valence:  1 or 2)
     NAMECLASS_UNUSED1,      //  5 = Start of unused area
     NAMECLASS_UNUSED2 = 20, // 20 = End   ...
     NAMECLASS_SYSLBL,       // 21 = System label
     NAMECLASS_SYSVAR,       // 22 = System variable
-    NAMECLASS_SYSFCN,       // 23 = System function
-    NAMECLASS_MF,           // 24 = Magic function/operator
-    NAMECLASS_LENp1,        // 25 = # valid entries + 1
+    NAMECLASS_SYSFCN,       // 23 = System function       (any valence:  0, 1, or 2)
+    NAMECLASS_MAGFCN,       // 24 = Magic function        (any valence:  0, 1, or 2)
+    NAMECLASS_MAGOPR,       // 25 = Magic operator        (either valence:  1 or 2)
+    NAMECLASS_LENp1,        // 26 = # valid entries + 1
 } NAME_CLASS;
 //  Note that the left shifts (BIT0 <<) in <SysFnDydNL_EM_YY>
-//    assume that the name class values are limited to 63.  If
-//    you add nameclasses to invalidate that assumption, be sure
-//    to make <SysFnDydNL_EM_YY> work, too.
+//    assume that the name class values are <= 63.  If you add
+//    nameclasses to invalidate that assumption, be sure to
+//    make <SysFnDydNL_EM_YY> work, too.
 
 
 //***************************************************************************

@@ -142,7 +142,7 @@ UBOOL CmdOut_EM
 
             if (lpSymEntry->stHshEntry->htGlbName           // Must have a name (not steZero, etc.),
              && lpSymEntry->stFlags.Value                   // and have a value,
-             && lpSymEntry->stFlags.ObjName NE OBJNAME_MF   // and not be a Magic Function,
+             && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO  // and not be a Magic Function/Operator,
              && lpSymEntry->stFlags.ObjName NE OBJNAME_LOD) // and not be a )LOAD HGLOBAL
             {
                 // Copy ptr to increment

@@ -185,7 +185,7 @@ UBOOL CmdFNOV_EM
          lpSymEntry++)
     if (lpSymEntry->stFlags.Inuse
      && lpSymEntry->stFlags.Value
-     && lpSymEntry->stFlags.ObjName NE OBJNAME_MF
+     && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO
      && (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS
       || lpSymEntry->stFlags.DfnLabel)
      && (*IzitFVO) (lpSymEntry->stFlags.stNameType))

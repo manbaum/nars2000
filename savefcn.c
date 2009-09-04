@@ -1108,7 +1108,7 @@ UBOOL SaveFunctionCom
                         hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                         0,                  // Function line # (0 = header)
                        &ErrorHandler,       // Ptr to error handling function (may be NULL)
-                        FALSE);             // TRUE iff we're tokenizing a Magic Function
+                        FALSE);             // TRUE iff we're tokenizing a Magic Function/Operator
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } // End IF
@@ -1476,7 +1476,7 @@ UBOOL SaveFunctionCom
                                 hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                 uLineNum + 1,       // Function line # (0 = header)
                                &ErrorHandler,       // Ptr to error handling function (may be NULL)
-                                FALSE);             // TRUE iff we're tokenizing a Magic Function
+                                FALSE);             // TRUE iff we're tokenizing a Magic Function/Operator
             } else
                 // Tokenize the (empty) line
                 lpFcnLines->hGlbTknLine =
@@ -1485,7 +1485,7 @@ UBOOL SaveFunctionCom
                                hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                uLineNum + 1,        // Function line # (0 = header)
                               &ErrorHandler,        // Ptr to error handling function (may be NULL)
-                               FALSE);              // TRUE iff we're tokenizing a Magic Function
+                               FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator
             // Check the line for empty
             lpFcnLines->bEmpty =
               IsLineEmpty (lpFcnLines->hGlbTknLine);

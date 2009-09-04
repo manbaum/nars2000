@@ -86,17 +86,17 @@ typedef struct tagPERTABDATA
                                     //      in thread creation order (NULL = none)
     WNDPROC lpfnOldEditCtrlWndProc; // D8:  Save area for old Edit Ctrl procedure
 
-    // Magic function handles and strucs
-    HGLOBAL      hGlbMF_MonIota,    // DC:  Extended Monadic Iota
-                 hGlbMF_DydIota,    // E0:  Extended Dyadic Iota
-                 hGlbMF_MonDnShoe,  // E4:  Monadic Down Shoe
-                 hGlbMF_DydTilde,   // E8:  Dyadic Tilde
-                 hGlbMF_MonRank,    // EC:  Monadic Rank
-                 hGlbMF_DydRank,    // F0:  Dyadic Rank
-                 hGlbMF_Conform,    // F4:  Conform for Rank operator
-                 hGlbMF_MonFMT,     // F8:  Display function (monadic []FMT)
-                 hGlbMF_Box,        // FC:  Box     ...
-                 hGlbMF_MonVR;      //100:  Visual Representation function (monadic []VR)
+    // Magic function/operator handles and strucs
+    HGLOBAL      hGlbMFO_MonIota,   // DC:  Extended Monadic Iota
+                 hGlbMFO_DydIota,   // E0:  Extended Dyadic Iota
+                 hGlbMFO_MonDnShoe, // E4:  Monadic Down Shoe
+                 hGlbMFO_DydTilde,  // E8:  Dyadic Tilde
+                 hGlbMFO_MonRank,   // EC:  Monadic Rank
+                 hGlbMFO_DydRank,   // F0:  Dyadic Rank
+                 hGlbMFO_Conform,   // F4:  Conform for Rank operator
+                 hGlbMFO_MonFMT,    // F8:  Display function (monadic []FMT)
+                 hGlbMFO_Box,       // FC:  Box     ...
+                 hGlbMFO_MonVR;     //100:  Visual Representation function (monadic []VR)
     HSHTABSTR    htsPTD_MonVR;      //104:  HTS for monadic []VR (120 bytes)
 
     UINT         SILevel,           //17C:  Current State Indicator level

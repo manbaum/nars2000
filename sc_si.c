@@ -116,7 +116,7 @@ UBOOL CmdSiSinlCom_EM
             case DFNTYPE_OP2:
             case DFNTYPE_FCN:
 #ifndef DEBUG
-                // If it's a Magic Function, skip it
+                // If it's a Magic Function/Operator, skip it
                 if (lpSISCur->PermFn)
                     break;
 #endif

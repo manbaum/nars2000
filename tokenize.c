@@ -2717,7 +2717,7 @@ UBOOL fnQuoDoneSub
 ////////lpHeader->PermNdx    = PERMNDX_NONE;
 ////////lpHeader->SysVar     = FALSE;
 #ifdef DEBUG
-        lpHeader->bMFvar     = lptkLocalVars->bMF;
+        lpHeader->bMFOvar    = lptkLocalVars->bMFO;
 #endif
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = lptkLocalVars->iStrLen;
@@ -3189,7 +3189,7 @@ UBOOL MergeNumbers
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;
 ////////////lpHeader->SysVar     = FALSE;
 #ifdef DEBUG
-            lpHeader->bMFvar     = lptkLocalVars->bMF;
+            lpHeader->bMFOvar    = lptkLocalVars->bMFO;
 #endif
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMPrv + 1;
@@ -3609,7 +3609,7 @@ HGLOBAL Tokenize_EM
      HWND        hWndEC,            // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
      UINT        uLineNum,          // Function line # (0 = header)
      LPERRHANDFN lpErrHandFn,       // Ptr to error handling function (may be NULL)
-     UBOOL       bMF)               // TRUE iff we're tokenizing a Magic Function
+     UBOOL       bMFO)              // TRUE iff we're tokenizing a Magic Function/Operator
 
 {
     UINT         uChar;             // Loop counter
@@ -3641,7 +3641,7 @@ HGLOBAL Tokenize_EM
     tkLocalVars.State[0] = TKROW_SOS;
     tkLocalVars.uLineNum = uLineNum;
     tkLocalVars.uStmtNum = 0;
-    tkLocalVars.bMF      = bMF;             // TRUE iff this is a Magic Function
+    tkLocalVars.bMFO     = bMFO;            // TRUE iff this is a Magic Function/Operator
     tkLocalVars.lpMemPTD = lpMemPTD;        // Ptr to PerTabData global memory
 
     // If this is the function header (uLineNum EQ 0)
@@ -4816,8 +4816,8 @@ TKCOLINDICES CharTransTK
              || lpwNxt[0] EQ WC_EOS)
                 return TKCOL_SYS_NS;
             else
-            // If we're tokenizing a Magic Function, ...
-            if (lptkLocalVars->bMF)
+            // If we're tokenizing a Magic Function/Operator, ...
+            if (lptkLocalVars->bMFO)
                 return TKCOL_ALPHA;
             else
                 return TKCOL_UNK;

@@ -1662,7 +1662,9 @@ void DisplayStrand
         } // End IF
 
         wsprintfW (wszTemp,
-                   L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
+                   IsTknNamed (lp->tkToken.tkFlags.TknType)
+                 ? L"Strand (%p): %-9.9S D=%p CI=%2d TC=%1d IN=%1d F=%p B=%p"
+                 : L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
                    lp,
                    GetTokenTypeName (lp->tkToken.tkFlags.TknType),
                    lp->tkToken.tkData.tkInteger,

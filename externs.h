@@ -335,7 +335,12 @@ typedef struct tagPRIMFLAGS
 } PRIMFLAGS, *LPPRIMFLAGS;
 
 EXTERN
-PRIMFLAGS PrimFlags[256];               // The flag tables for all primitive functions/operators
+PRIMFLAGS PrimFlags0                    // All zero PrimFlags for global R/O use
+#ifdef DEFINE_VALUES
+ = {0}
+#endif
+,
+          PrimFlags[256];               // The flag tables for all primitive functions/operators
 
 
 //***************************************************************************
@@ -369,8 +374,17 @@ typedef enum tagFBFN_INDS               // Fast Boolean function indices
 //   be sure to make a corresponding change to
 //    <FastBoolFns[]> in <externs.h>.
 
+typedef struct tagPRIMIDENT
+{
+    UINT     IsBool:1,                  // 00:  00000001:  TRUE iff the identity element is Boolean
+             bIdentElem:1,              //      00000002:  The identity element if Boolean
+             :30;                       //      FFFFFFFC:  Available bits
+    APLFLOAT fIdentElem;                // 04:  The identity element if float (8 bytes)
+                                        // 0C:  Length
+} PRIMIDENT, *LPPRIMIDENT;
+
 EXTERN
-APLFLOAT PrimIdent[PF_INDEX_NEXT];      // Primitive scalar function identity elements
+PRIMIDENT PrimIdent[PF_INDEX_NEXT];     // Primitive scalar function identity elements
                                         //   in the same order as FBFN_INDS
 
 typedef void (FASTBOOLFCN) (APLSTYPE     aplTypeRht,        // Right arg storage type

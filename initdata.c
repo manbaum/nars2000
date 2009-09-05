@@ -869,7 +869,12 @@ void InitIdentityElement
      APLFLOAT aplFloat)
 
 {
-    PrimIdent[uIndex] = aplFloat;
+    // If the identity element is Boolean, ...
+    PrimIdent[uIndex].IsBool     = (aplFloat EQ 0.0) || (aplFloat EQ 1.0);
+    PrimIdent[uIndex].bIdentElem = (aplFloat EQ 1.0);
+
+    // Save if it's float
+    PrimIdent[uIndex].fIdentElem = aplFloat;
 } // End InitIdentityElement
 
 

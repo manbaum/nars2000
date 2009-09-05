@@ -161,14 +161,16 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     APLFLOAT          aplFloatIdent;        // Identity element
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bPrimDydScal = FALSE, // TRUE iff the left operand is a Primitive Dyadic Scalar function
-                      bUsrDfnOpr = FALSE,   // TRUE iff the left operand is a user-defined function/operator
-                      bCatIdent = FALSE,    // TRUE iff reducing empty array with catenate
+                      bNrmIdent = FALSE,    // TRUE iff reducing an empty array with a primitive scalar dyadic function
+                      bUsrDfnOpr = FALSE,   // TRUE iff reducing an empty array with a user-defined function/operator
+                      bCatIdent = FALSE,    // TRUE iff reducing an empty array with catenate
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
-    LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
-    LPPRIMFLAGS       lpPrimFlags;          // Ptr to corresponding PrimFlags entry
+    LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
+    LPPRIMSPEC        lpPrimSpecLft;        // Ptr to left operand PRIMSPEC
+    LPPRIMFLAGS       lpPrimFlagsLft;       // Ptr to left operand PrimFlags entry
+    LPPRIMIDENT       lpPrimIdentLft;       // Ptr to left operand PrimIdent entry
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
                       lpYYFcnStrLft;        // Ptr to left operand function strand
-    LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     TOKEN             tkLftArg = {0},       // Left arg token
                       tkRhtArg = {0};       // Right ...
     LPTOKEN           lptkAxis;             // Ptr to axis token (may be NULL)
@@ -177,6 +179,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    APLLONGEST        aplLongestRht;        // Right arg immediate value
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -227,14 +230,18 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     } // End IF/ELSE
 
     // Get right arg's global ptr
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // If the right arg is a scalar, return it
     if (IsScalar (aplRankRht))
     {
-        lpYYRes = PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
+        lpYYRes =
+          PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
+                                      aplTypeRht,       // Right arg storage type
+                                      aplLongestRht,    // Right arg immediate value
                                       hGlbRht,          // Right arg global memory handle
                                       lpYYFcnStrOpr,    // Ptr to operator function strand
+                                      lpYYFcnStrLft,    // Ptr to left operand
                                       bPrototyping);    // TRUE iff prototyping
         goto NORMAL_EXIT;
     } // End IF
@@ -296,10 +303,18 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         lpPrimProtoLft = NULL;
 
     // Get a ptr to the Primitive Function Flags
-    lpPrimFlags = GetPrimFlagsPtr (lpYYFcnStrLft);
+    lpPrimFlagsLft = GetPrimFlagsPtr (lpYYFcnStrLft);
+    if (lpPrimFlagsLft)
+        lpPrimIdentLft = &PrimIdent[lpPrimFlagsLft->Index];
+    else
+        lpPrimIdentLft = NULL;
+
+    // Use all zero PrimFlags if not present
+    if (!lpPrimFlagsLft)
+        lpPrimFlagsLft = &PrimFlags0;
 
     // If the result is empty or the axis dimension is zero,
-    //   and the function is catenate, ...
+    //   and the function is user-defined, ...
     if ((IsEmpty (aplNELMRes)
       || IsZeroDim (uDimAxRht))
      && IsTknUsrDfn (&lpYYFcnStrLft->tkToken))
@@ -327,7 +342,6 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         bCatIdent = TRUE;
     } else
     // If the axis dimension is zero and the array is simple
-    //   or the left operand is a user-defined function/operator,
     //   get the identity element for the left operand or
     //   signal a DOMAIN ERROR
     if (IsZeroDim (uDimAxRht)
@@ -337,20 +351,23 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         //   or it is, but is without an identity element,
         //   signal a DOMAIN ERROR
         if (lpYYFcnStrLft->tkToken.tkFlags.TknType NE TKT_FCNIMMED
-         || lpPrimFlags EQ NULL
-         || !lpPrimFlags->IdentElem)
+         || !lpPrimFlagsLft->IdentElem)
             goto DOMAIN_EXIT;
 
         // Get the identity element
-        aplFloatIdent = PrimIdent[lpPrimFlags->Index];
+        aplFloatIdent = lpPrimIdentLft->fIdentElem;
 
-        // If the identity element is Boolean, the result is too
-        if (aplFloatIdent EQ 0.0
-         || aplFloatIdent EQ 1.0
+        // If the identity element is Boolean or we're prototyping,
+        //   the result is too
+        if (lpPrimIdentLft->IsBool
          || lpPrimProtoLft NE NULL)
             aplTypeRes = ARRAY_BOOL;
         else
             aplTypeRes = ARRAY_FLOAT;
+
+        // Mark as reducing empty array with a primitive scalar dyadic function
+        //   to produce its identity element
+        bNrmIdent = TRUE;
     } else
     // If the product of the dimensions above
     //   the axis dimension is one, and
@@ -368,14 +385,13 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
        && apaMulRht EQ 0 ))
      && IsMultiDim (uDimAxRht)
      && lpPrimProtoLft EQ NULL
-     && lpPrimFlags
-     && (lpPrimFlags->FastBool || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PLUS))
+     && (lpPrimFlagsLft->FastBool || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PLUS))
     {
         // Mark as a Fast Boolean operation
         bFastBool = TRUE;
 
         // If this is "plus", then the storage type is Integer
-        if (lpPrimFlags->Index EQ PF_INDEX_PLUS)
+        if (lpPrimFlagsLft->Index EQ PF_INDEX_PLUS)
             aplTypeRes = ARRAY_INT;
         else
         // Otherwise, it's Boolean
@@ -386,8 +402,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     //   calculate the storage type of the result,
     //   otherwise, assume it's ARRAY_NESTED
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-     && lpPrimFlags
-     && lpPrimFlags->DydScalar
+     && lpPrimFlagsLft->DydScalar
      && IsSimpleNH (aplTypeRht))
     {
         // If the function is equal or not-equal, and the right
@@ -401,15 +416,16 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             aplTypeRes = ARRAY_NESTED;
         else
         {
-            // Get the corresponding lpPrimSpec
-            lpPrimSpec = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+            // Get the corresponding lpPrimSpecLft
+            lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
             // Calculate the storage type of the result
-            aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMRht,
-                                                       &aplTypeRht,
-                                                       &lpYYFcnStrLft->tkToken,
-                                                        aplNELMRht,
-                                                       &aplTypeRht);
+            aplTypeRes =
+              (*lpPrimSpecLft->StorageTypeDyd) (aplNELMRht,
+                                               &aplTypeRht,
+                                               &lpYYFcnStrLft->tkToken,
+                                                aplNELMRht,
+                                               &aplTypeRht);
             if (aplTypeRes EQ ARRAY_ERROR)
                 goto DOMAIN_EXIT;
 
@@ -472,7 +488,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         UBOOL     bCalcPro;             // TRUE iff we need to calculate the prototype
         LPTOKEN   lptkAxis2;            // Ptr to secondary axis token
         APLUINT   aplAxis2;             // The catenate axis value
-        APLRANK   aplRankPro;
+        APLRANK   aplRankPro;           // Prototype rank
 
         // The prototype of the result is the same as that of the right arg except the
         //   catenate axis (lptkAxis2) is zero.
@@ -591,8 +607,6 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         *((LPAPLNESTED) lpMemRes)++ = hGlbPro;
         for (uRes = 1; uRes < aplNELMRes; uRes++)
             *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hGlbPro);
-
-        goto YYALLOC_EXIT;
     } else
     // If this is user-defined function/operator identity element, ...
     if (bUsrDfnOpr)
@@ -647,10 +661,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
         // If the result is global, ...
         if (hGlbIdn)
-            hSymGlbIdn =
-              MakeMonPrototype_EM (MakePtrTypeGlb (hGlbIdn),    // Proto arg global memory handle
-                                  &lpYYFcnStrOpr->tkToken,      // Ptr to function token
-                                   MP_CHARS);                   // Chars allowed
+            hSymGlbIdn = CopySymGlbDirAsGlb (hGlbIdn);
         else
         {
             // Get the attributes (Type, NELM, and Rank) of the identity element
@@ -674,21 +685,20 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
         for (uRes = 1; uRes < aplNELMRes; uRes++)
             *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hSymGlbIdn);
-
-        goto YYALLOC_EXIT;
     } else
-    // If the axis dimension is zero and the array is simple,
-    //   fill with the identity element
-    if (IsZeroDim (uDimAxRht)
-     && IsSimple (aplTypeRht))
+    // If this is primitive scalar dyadic function identity element, ...
+    if (bNrmIdent)
     {
         // The zero case is done (GHND)
 
         // If we're not doing prototypes, ...
         if (lpPrimProtoLft EQ NULL)
         {
+            // Check for Boolean identity element
+            if (lpPrimIdentLft->IsBool)
+            {
                 // Check for identity element 1
-            if (aplFloatIdent EQ 1.0)
+                if (lpPrimIdentLft->bIdentElem)
                 {
                     APLNELM uNELMRes;
 
@@ -697,13 +707,11 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
                     for (uRes = 0; uRes < uNELMRes; uRes++)
                         *((LPAPLBOOL) lpMemRes)++ = 0xFF;
+                } // End IF
             } else
-            if (aplFloatIdent NE 0.0)
             for (uRes = 0; uRes < aplNELMRes; uRes++)
                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
         } // End IF
-
-        goto YYALLOC_EXIT;
     } else
     // If this is a fast Boolean operation, ...
     if (bFastBool)
@@ -711,7 +719,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         LPFASTBOOLFCN lpFastBool;               // Ptr to Fast Boolean reduction routine
 
         // Get a ptr to the appropriate Fast Boolean routine
-        lpFastBool = FastBoolFns[lpPrimFlags->Index].lpReduction;
+        lpFastBool = FastBoolFns[lpPrimFlagsLft->Index].lpReduction;
 
         // Call it
         (*lpFastBool) (aplTypeRht,              // Right arg storage type
@@ -720,7 +728,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                        lpMemRes,                // Ptr to result    memory
                        uDimLo,                  // Product of dimensions below axis
                        uDimAxRht,               // Length of right arg axis dimension
-                       lpPrimFlags->Index,  // FBFN_INDS value (e.g., index into FastBoolFns[])
+                       lpPrimFlagsLft->Index,   // FBFN_INDS value (e.g., index into FastBoolFns[])
                        lpYYFcnStrOpr);          // Ptr to operator function strand
     } else
     // If this is a nested result from an empty right arg, ...
@@ -1022,7 +1030,7 @@ RESTART_EXCEPTION:
                                                    aplIntegerRht,
                                                    aplFloatRht,
                                                    aplCharRht,
-                                                   lpPrimSpec))
+                                                   lpPrimSpecLft))
                         goto ERROR_EXIT;
 
                     Assert (tkRhtArg.tkFlags.TknType EQ TKT_VARIMMED);
@@ -1223,7 +1231,7 @@ RESTART_EXCEPTION:
             //   we don't need to free tkRhtArg.
         } // End FOR/FOR
     } // End IF/ELSE
-YYALLOC_EXIT:
+
     // Unlock the result global memory in case TypeDemote actually demotes
     if (hGlbRes && lpMemRes)
     {
@@ -1310,19 +1318,25 @@ NORMAL_EXIT:
 
 LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
     (LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     APLSTYPE     aplTypeRht,           // Right arg storage type
+     APLLONGEST   aplLongestRht,        // Right arg immediate value
      HGLOBAL      hGlbRht,              // Right arg global memory handle
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+    HGLOBAL      hGlbPro = NULL;        // Prototype global memory handle
+    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
 
-    // If it's valid, ...
+    // If it's a global, ...
     if (hGlbRht)
     {
-        // Make a copy of the right arg
+        // If we're prototyping, ...
         if (bPrototyping)
         {
+            // Make a copy of the right arg
+            hGlbPro =
             hGlbRht =
               MakeMonPrototype_EM (MakePtrTypeGlb (hGlbRht),    // Proto arg global memory handle
                                   &lpYYFcnStrOpr->tkToken,      // Ptr to function token
@@ -1333,10 +1347,19 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
             Assert (GetPtrTypeDir (hGlbRht) EQ PTRTYPE_HGLOBAL);
         } else
             DbgIncrRefCntDir (MakePtrTypeGlb (hGlbRht));
+    } else  // It's an immediate
+    {
+        // If we're prototyping, ...
+        if (bPrototyping)
+            aplLongestRht = IsSimpleChar (aplTypeRht) ? L' ' : 0;
+    } // End IF/ELSE
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
+    // If it's a global, ...
+    if (hGlbRht)
+    {
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
@@ -1345,32 +1368,11 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
 ////////lpYYRes->tkToken.tkCharIndex       =                // Filled in below
     } else  // It's an immediate
     {
-        // Allocate a new YYRes
-        lpYYRes = YYAlloc ();
-
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-
-        if (bPrototyping)
-        {
-            lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
-            lpYYRes->tkToken.tkData.tkLongest  = 0;
-        } else
-        {
-            if (IsTknNamed (lptkRhtArg->tkFlags.TknType))
-            {
-                Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-                lpYYRes->tkToken.tkFlags.ImmType   = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
-                lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkSym->stData.stLongest;
-            } else
-            {
-                lpYYRes->tkToken.tkFlags.ImmType   = lptkRhtArg->tkFlags.ImmType;
-                lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkLongest;
-            } // End IF/ELSE
-        } // End IF/ELSE
-
+        lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeRht);
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
 ////////lpYYRes->tkToken.tkCharIndex       =                // Filled in below
     } // End IF/ELSE
 
@@ -1384,6 +1386,11 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if (hGlbPro)
+    {
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbPro); hGlbPro = NULL;
+    } // End IF
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimOpMonSlashScalar_EM_YY
@@ -1504,8 +1511,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                       tkRhtArg = {0};       // Right ...
     LPTOKEN           lptkAxis;             // Ptr to axis token (may be NULL)
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
-    LPPRIMFLAGS       lpPrimFlags;          // Ptr to corresponding PrimFlags entry
-    LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
+    LPPRIMSPEC        lpPrimSpecLft;        // Ptr to left operand PRIMSPEC
+    LPPRIMFLAGS       lpPrimFlagsLft;       // Ptr to left operand PrimFlags entry
+    LPPRIMIDENT       lpPrimIdentLft;       // Ptr to left operand PrimIdent entry
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
     LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
@@ -1651,7 +1659,15 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     aplRankRes = max (aplRankRht, 1);
 
     // Get a ptr to the Primitive Function Flags
-    lpPrimFlags = GetPrimFlagsPtr (lpYYFcnStrLft);
+    lpPrimFlagsLft = GetPrimFlagsPtr (lpYYFcnStrLft);
+    if (lpPrimFlagsLft)
+        lpPrimIdentLft = &PrimIdent[lpPrimFlagsLft->Index];
+    else
+        lpPrimIdentLft = NULL;
+
+    // Use all zero PrimFlags if not present
+    if (!lpPrimFlagsLft)
+        lpPrimFlagsLft = &PrimFlags0;
 
     // If the left arg is zero, or
     //    the absolute value of the left arg is (uDimAxRht + 1),
@@ -1664,16 +1680,16 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         //   or it is, but is without an identity element,
         //   signal a LEFT DOMAIN ERROR
         if (!lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         || lpPrimFlags EQ NULL
-         || !lpPrimFlags->IdentElem)
+         || !lpPrimFlagsLft->IdentElem)
             goto LEFT_DOMAIN_EXIT;
 
         // Get the identity element
-        aplFloatIdent = PrimIdent[lpPrimFlags->Index];
+        aplFloatIdent = lpPrimIdentLft->fIdentElem;
 
-        // If the prototype is Boolean, the result is too
-        if (aplFloatIdent EQ 0.0
-         || aplFloatIdent EQ 1.0)
+        // If the identity element is Boolean or we're prototyping,
+        //   the result is, too
+        if (lpPrimIdentLft->IsBool
+         || lpPrimProtoLft NE NULL)
             aplTypeRes = ARRAY_BOOL;
         else
             aplTypeRes = ARRAY_FLOAT;
@@ -1682,7 +1698,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     //   calculate the storage type of the result,
     //   otherwise, assume it's ARRAY_NESTED
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-     && lpPrimFlags->DydScalar)
+     && lpPrimFlagsLft->DydScalar)
     {
         // If the function is equal or not-equal, and the right
         //   arg is not Boolean, make the result storage type
@@ -1695,15 +1711,16 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             aplTypeRes = ARRAY_NESTED;
         else
         {
-            // Get the corresponding lpPrimSpec
-            lpPrimSpec = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+            // Get the corresponding lpPrimSpecLft
+            lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
             // Calculate the storage type of the result
-            aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (1,
-                                                       &aplTypeRht,
-                                                       &lpYYFcnStrLft->tkToken,
-                                                        1,
-                                                       &aplTypeRht);
+            aplTypeRes =
+              (*lpPrimSpecLft->StorageTypeDyd) (1,
+                                               &aplTypeRht,
+                                               &lpYYFcnStrLft->tkToken,
+                                                1,
+                                               &aplTypeRht);
             if (aplTypeRes EQ ARRAY_ERROR)
                 goto DOMAIN_EXIT;
         } // End IF/ELSE
@@ -1748,13 +1765,13 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
         // Fill in the data values (i.e., replicate the identity element)
 
-        // Check for Boolean result
-        if (IsSimpleBool (aplTypeRes))
-        {
         // The zero case is done (already zero from GHND)
 
+        // Check for Boolean identity element
+        if (lpPrimIdentLft->IsBool)
+        {
             // Check for identity element 1
-            if (aplFloatIdent EQ 1.0)
+            if (lpPrimIdentLft->bIdentElem)
             {
                 APLNELM uNELMRes;
 

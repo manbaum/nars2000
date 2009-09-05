@@ -155,7 +155,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
     LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
-    LPPRIMFLAGS       lpPrimFlags;          // Ptr to corresponding PrimFlags entry
+    LPPRIMFLAGS       lpPrimFlagsLft;       // Ptr to left operand PrimFlags entry
     TOKEN             tkLftArg = {0},       // Left arg token
                       tkRhtArg = {0};       // Right ...
     LPTOKEN           lptkAxis;             // Ptr to axis token (may be NULL)
@@ -166,6 +166,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    APLLONGEST        aplLongestRht;        // Right arg immediate type
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -226,15 +227,19 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     } // End IF/ELSE
 
     // Get right arg's global ptr
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // If the right arg is a scalar, return it
     if (IsScalar (aplRankRht))
     {
-        lpYYRes = PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
-                                              hGlbRht,          // Right arg global memory handle
-                                              lpYYFcnStrOpr,    // Ptr to operator function strand
-                                              bPrototyping);    // TRUE iff prototyping
+        lpYYRes =
+          PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
+                                      aplTypeRht,       // Right arg storage type
+                                      aplLongestRht,    // Right arg immediate value
+                                      hGlbRht,          // Right arg global memory handle
+                                      lpYYFcnStrOpr,    // Ptr to operator function strand
+                                      lpYYFcnStrLft,    // Ptr to left operand
+                                      bPrototyping);    // TRUE iff prototyping
         goto NORMAL_EXIT;
     } // End IF
 
@@ -294,7 +299,11 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     } // End IF
 
     // Get a ptr to the Primitive Function Flags
-    lpPrimFlags = GetPrimFlagsPtr (lpYYFcnStrLft);
+    lpPrimFlagsLft = GetPrimFlagsPtr (lpYYFcnStrLft);
+
+    // Use all zero PrimFlags if not present
+    if (!lpPrimFlagsLft)
+        lpPrimFlagsLft = &PrimFlags0;
 
     // If the product of the dimensions above
     //   the axis dimension is one, and
@@ -312,8 +321,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
        && apaMulRht EQ 0 ))
      && IsMultiDim (uDimAxRht)
      && lpPrimProtoLft EQ NULL
-     && lpPrimFlags
-     && lpPrimFlags->FastBool)
+     && lpPrimFlagsLft->FastBool)
     {
         // Mark as a Fast Boolean operation
         bFastBool = TRUE;
@@ -326,8 +334,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     //   calculate the storage type of the result,
     //   otherwise, assume it's ARRAY_NESTED
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-     && lpPrimFlags
-     && lpPrimFlags->DydScalar
+     && lpPrimFlagsLft->DydScalar
      && IsSimpleNH (aplTypeRht))
     {
         // If the function is equal or not-equal, and the right
@@ -345,11 +352,12 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
             lpPrimSpec = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
             // Calculate the storage type of the result
-            aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (1,
-                                                       &aplTypeRht,
-                                                       &lpYYFcnStrLft->tkToken,
-                                                        1,
-                                                       &aplTypeRht);
+            aplTypeRes =
+              (*lpPrimSpec->StorageTypeDyd) (1,
+                                            &aplTypeRht,
+                                            &lpYYFcnStrLft->tkToken,
+                                             1,
+                                            &aplTypeRht);
             if (aplTypeRes EQ ARRAY_ERROR)
                 goto DOMAIN_EXIT;
         } // End IF/ELSE
@@ -406,7 +414,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         LPFASTBOOLFCN lpFastBool;           // Ptr to Fast Boolean reduction routine
 
         // Get a ptr to the appropriate Fast Boolean routine
-        lpFastBool = FastBoolFns[lpPrimFlags->Index].lpScan;
+        lpFastBool = FastBoolFns[lpPrimFlagsLft->Index].lpScan;
 
         // Call it
         (*lpFastBool) (aplTypeRht,              // Right arg storage type
@@ -415,7 +423,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                        lpMemRes,                // Ptr to result    memory
                        uDimLo,                  // Product of dimensions below axis
                        uDimAxRht,               // Length of right arg axis dimension
-                       lpPrimFlags->Index,  // FBFN_INDS value (e.g., index into FastBoolFns[])
+                       lpPrimFlagsLft->Index,   // FBFN_INDS value (e.g., index into FastBoolFns[])
                        lpYYFcnStrOpr);          // Ptr to operator function strand
     } else
     {
@@ -450,9 +458,8 @@ RESTART_EXCEPTION:
             //   vector under consideration.
 
             // If this function is associative, speed it up
-            if (lpPrimFlags
-             && ((lpPrimFlags->AssocBool && IsSimpleBool (aplTypeRht))
-              || (lpPrimFlags->AssocNumb && IsSimpleNum (aplTypeRht))))
+            if ((lpPrimFlagsLft->AssocBool && IsSimpleBool (aplTypeRht))
+             || (lpPrimFlagsLft->AssocNumb && IsSimpleNum (aplTypeRht)))
             {
                 // Calculate the first index in this vector
                 uRht = uDimRht + 0 * uDimHi;

@@ -166,10 +166,10 @@ typedef struct tagHSHTABSTR
     struct tagSYMENTRY
               *lpSymTab,                // 30:  Ptr to start of Symtab
               *lpSymTabNext,            // 34:  Ptr to next available STE
-              *lpSymQuad[SYSVAR_LENGTH];// 38:  Ptr to array of system var STEs (14*4 bytes)
-    UINT       uSymTabIncrNelm;         // 70:  # STEs by which to resize when low
-    int        iSymTabTotalNelm;        // 74:  # STEs, currently
-} HSHTABSTR, *LPHSHTABSTR;              // 78:  Length
+              *lpSymQuad[SYSVAR_LENGTH];// 38:  Ptr to array of system var STEs (15*4 bytes)
+    UINT       uSymTabIncrNelm;         // 74:  # STEs by which to resize when low
+    int        iSymTabTotalNelm;        // 78:  # STEs, currently
+} HSHTABSTR, *LPHSHTABSTR;              // 7C:  Length
 
 //********************* SYMBOL TABLE ****************************************
 

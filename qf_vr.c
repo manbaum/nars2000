@@ -89,7 +89,7 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the magic function/operator global memory handle
-    hGlbMFO = lpMemPTD->hGlbMFO_MonVR;
+    hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonVR];
 
     //  Use an internal magic function/operator.
     return

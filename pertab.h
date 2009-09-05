@@ -56,84 +56,75 @@ typedef struct tagPERTABDATA
 
     // Symbol & hash table variables
     HSHTABSTR    htsPTD;            // 0C:  Current HTS (124 bytes)
-    UINT         tkErrorCharIndex;  // 88:  Char index for lpwszQuadErrorMsg if ImmExec
-    HGLOBAL      hGlbQuadDM;        // 8C:  Quad-DM global memory handle
+    UINT         tkErrorCharIndex;  // 0C+HTS:  Char index for lpwszQuadErrorMsg if ImmExec
+    HGLOBAL      hGlbQuadDM;        // 10+HTS:  Quad-DM global memory handle
 
-    HWND         hWndMC,            // 90:  MDI Client window handle
-                 hWndSM,            // 94:  Session Manager ...
-                 hWndDB,            // 98:  Debugger     ...
-                 hWndActive;        // 9C:  Active MDI window when last switched out
-    UINT         bTabTextState:1,   // A0:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
-                 bExecLX:1,         //      00000002:  TRUE iff execute []LX after successful load
-                 bExecuting:1,      //      00000004:  TRUE iff we're waiting for an execution to complete
-                 :29;               //      FFFFFFF8:  Available bits
-    HGLOBAL      hGlbCurLine;       // A4:  Current line global memory handle
-    LPWCHAR      lpwszErrorMessage; // A8:  Ptr to error message to signal
-    LPWCHAR      lpwszQuadErrorMsg; // AC   Used for []ERROR/[]ES messages
-    UINT         uCaret;            // B0:  Position of the caret in the current line on error
-    int          crIndex;           // B4:  Tab's color index
-    APLINT       uQuadMF;           // B8:  []MF timer value (8 bytes)
-    LPSYMENTRY   steZero,           // BC:  Ptr to STE for constant zero
-                 steOne,            // C0:  ...                     one
-                 steBlank,          // C4:  ...                     blank
-                 steNoValue;        // C8:  ...            no-value result
+    HWND         hWndMC,            // 14+HTS:  MDI Client window handle
+                 hWndSM,            // 18+HTS:  Session Manager ...
+                 hWndDB,            // 1C+HTS:  Debugger     ...
+                 hWndActive;        // 20+HTS:  Active MDI window when last switched out
+    UINT         bTabTextState:1,   // 24+HTS:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
+                 bExecLX:1,         //          00000002:  TRUE iff execute []LX after successful load
+                 bExecuting:1,      //          00000004:  TRUE iff we're waiting for an execution to complete
+                 :29;               //          FFFFFFF8:  Available bits
+    HGLOBAL      hGlbCurLine;       // 28+HTS:  Current line global memory handle
+    LPWCHAR      lpwszErrorMessage; // 2C+HTS:  Ptr to error message to signal
+    LPWCHAR      lpwszQuadErrorMsg; // 30+HTS   Used for []ERROR/[]ES messages
+    UINT         uCaret;            // 34+HTS:  Position of the caret in the current line on error
+    int          crIndex;           // 38+HTS:  Tab's color index
+    APLINT       uQuadMF;           // 3C+HTS:  []MF timer value (8 bytes)
+    LPSYMENTRY   steZero,           // 44+HTS:  Ptr to STE for constant zero
+                 steOne,            // 48+HTS:  ...                     one
+                 steBlank,          // 4C+HTS:  ...                     blank
+                 steNoValue;        // 50+HTS:  ...            no-value result
     struct tagSIS_HEADER
-                *lpSISBeg,          // CC:  Ptr to State Indicator Stack beginning
-                *lpSISCur,          // D0:  ...                          current (may be NULL if SI is empty)
-                *lpSISNxt;          // D4:  ...                          next
+                *lpSISBeg,          // 54+HTS:  Ptr to State Indicator Stack beginning
+                *lpSISCur,          // 58+HTS:  ...                          current (may be NULL if SI is empty)
+                *lpSISNxt;          // 5C+HTS:  ...                          next
     struct tagPLLOCALVARS
-                *lpPLCur;           // D8:  Ptr to current plLocalVars struct
+                *lpPLCur;           // 60+HTS:  Ptr to current plLocalVars struct
                                     //      in thread creation order (NULL = none)
-    WNDPROC lpfnOldEditCtrlWndProc; // DC:  Save area for old Edit Ctrl procedure
+    WNDPROC lpfnOldEditCtrlWndProc; // 64+HTS:  Save area for old Edit Ctrl procedure
 
     // Magic function/operator handles and strucs
-    HGLOBAL      hGlbMFO_MonIota,   // E0:  Extended Monadic Iota
-                 hGlbMFO_DydIota,   // E4:  Extended Dyadic Iota
-                 hGlbMFO_MonDnShoe, // E8:  Monadic Down Shoe
-                 hGlbMFO_DydTilde,  // EC:  Dyadic Tilde
-                 hGlbMFO_MonRank,   // F0:  Monadic Rank
-                 hGlbMFO_DydRank,   // F4:  Dyadic Rank
-                 hGlbMFO_Conform,   // F8:  Conform for Rank operator
-                 hGlbMFO_MonFMT,    // FC:  Display function (monadic []FMT)
-                 hGlbMFO_Box,       //100:  Box     ...
-                 hGlbMFO_MonVR;     //104:  Visual Representation function (monadic []VR)
-    HSHTABSTR    htsPTD_MonVR;      //108:  HTS for monadic []VR (124 bytes)
+    HGLOBAL      hGlbMFO[MFOE_LENGTH];// 68+HTS: Magic function/operator global memory handles (40 bytes)
+    HSHTABSTR    htsPTD_MonVR;      // 68+HTS+MFO:  HTS for monadic []VR (124 bytes)
 
-    UINT         SILevel,           //184:  Current State Indicator level
-                 CurTabID,          //188:  ID of the corresponding tab
-                 PrvTabID;          //18C:  ID of the preceding tab (from which we were loaded)
-    HANDLE       hSemaDelay;        //190:  Delay semaphore (NULL if no delay active)
-    EXIT_TYPES   ImmExecExitType;   //194:  ImmExec exit type (see EXIT_TYPES)
-    PL_YYSTYPE   YYResExec,         //198:  Result from execute primitive
+    UINT         SILevel,           // 68+2*HTS+MFO:  Current State Indicator level
+                 CurTabID,          // 6C+2*HTS+MFO:  ID of the corresponding tab
+                 PrvTabID;          // 70+2*HTS+MFO:  ID of the preceding tab (from which we were loaded)
+    HANDLE       hSemaDelay;        // 74+2*HTS+MFO:  Delay semaphore (NULL if no delay active)
+    EXIT_TYPES   ImmExecExitType;   // 78+2*HTS+MFO:  ImmExec exit type (see EXIT_TYPES)
+    PL_YYSTYPE   YYResExec,         // 7C+2*HTS+MFO:  Result from execute primitive
                                     //      Size = 2Ch for DEBUG, 20h otherwise
-                 YYCaseExec;        //1C4:  Result from CASE arg execution
+                 YYCaseExec;        // 7C+2*HTS+MFO+YYS:  Result from CASE arg execution
                                     //      Size = 2Ch for DEBUG, 20h otherwise
-    LPPL_YYSTYPE lpStrand[STRAND_LEN];//1F0:  Ptrs to strand accumulators in parser (4*4 bytes)
+    LPPL_YYSTYPE lpStrand[STRAND_LEN];// 7C+2*HTS+MFO+2*YYS:  Ptrs to strand accumulators in parser (4*4 bytes)
     LPLOADWSGLBVARCONV
-                 lpLoadWsGlbVarConv;//200:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
+                 lpLoadWsGlbVarConv;// 8C+2*HTS+MFO+2*YYS:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
     LPLOADWSGLBVARPARM
-                 lpLoadWsGlbVarParm;//204:  Ptr to extra parms for LoadWsGlbVarConv
-    LPMEMVIRTSTR lpLstMVS;          //208:  Ptr to last MEMVIRTSTR (NULL = none)
-    LPWCHAR      lpwszFormat,       //20C:  Ptr to formatting save area
-                 lpwszBaseTemp,     //210:  Ptr to base of lpwszTemp
-                 lpwszTemp;         //214:  Ptr to temporary  ...
-    UINT         uTempMaxSize,      //218:  Maximum size of lpwszTemp
-                 uErrLine;          //21C:  Error line # from []FX for )IN
-    APLU3264     RegisterEBP;       //220:  Register EBP/RBP from an exception
-    LPTOKEN      lptkCSIni,         //224:  Ptr to start of CtrlStruc token stack (static)
-                 lptkCSNxt;         //228:  Ptr to next available slot in CS ...  (dynamic)
+                 lpLoadWsGlbVarParm;// 90+2*HTS+MFO+2*YYS:  Ptr to extra parms for LoadWsGlbVarConv
+    LPMEMVIRTSTR lpLstMVS;          // 94+2*HTS+MFO+2*YYS:  Ptr to last MEMVIRTSTR (NULL = none)
+    LPWCHAR      lpwszFormat,       // 98+2*HTS+MFO+2*YYS:  Ptr to formatting save area
+                 lpwszBaseTemp,     // 9C+2*HTS+MFO+2*YYS:  Ptr to base of lpwszTemp
+                 lpwszTemp;         // A0+2*HTS+MFO+2*YYS:  Ptr to temporary  ...
+    UINT         uTempMaxSize,      // A4+2*HTS+MFO+2*YYS:  Maximum size of lpwszTemp
+                 uErrLine;          // A8+2*HTS+MFO+2*YYS:  Error line # from []FX for )IN
+    APLU3264     RegisterEBP;       // AC+2*HTS+MFO+2*YYS:  Register EBP/RBP from an exception
+    LPTOKEN      lptkCSIni,         // B0+2*HTS+MFO+2*YYS:  Ptr to start of CtrlStruc token stack (static)
+                 lptkCSNxt;         // B4+2*HTS+MFO+2*YYS:  Ptr to next available slot in CS ...  (dynamic)
     struct tagFORSTMT *
-                 lpForStmtBase;     //22C:  Ptr to base of FORSTMT stack
+                 lpForStmtBase;     // B8+2*HTS+MFO+2*YYS:  Ptr to base of FORSTMT stack
 #ifndef UNISCRIBE
     IMLangFontLink
-                *lpFontLink;        //230:  Ptr to FontLink struc
+                *lpFontLink;        // BC+2*HTS+MFO+2*YYS:  Ptr to FontLink struc
 #endif
-    APLCHAR      cQuadPR,           //234:  []PR     (' ') (When a char scalar)
-                 cQuadxSA;          //236:  []SA     (0)   (in its index form as an integer)
-    DWORD        dwThreadId;        //238:  Corresponding thread ID
-    HANDLE       hExitphore;        //23C:  Semaphore used to close a tab (may be NULL)
-    HWND         hWndFENxt;         //240:  Next FE window handle (NULL = none)
-                                    //244:  Length
+    APLCHAR      cQuadPR,           // C0+2*HTS+MFO+2*YYS:  []PR     (' ') (When a char scalar) (2 bytes)
+                 cQuadxSA;          // C2+2*HTS+MFO+2*YYS:  []SA     (0)   (in its index form as an integer) (2 bytes)
+    DWORD        dwThreadId;        // C4+2*HTS+MFO+2*YYS:  Corresponding thread ID
+    HANDLE       hExitphore;        // C8+2*HTS+MFO+2*YYS:  Semaphore used to close a tab (may be NULL)
+    HWND         hWndFENxt;         // CC+2*HTS+MFO+2*YYS:  Next FE window handle (NULL = none)
+                                    // D0+2*HTS+MFO+2*YYS:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

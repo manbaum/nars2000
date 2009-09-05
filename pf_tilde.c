@@ -281,7 +281,7 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the magic function/operator global memory handle
-    hGlbMFO = lpMemPTD->hGlbMFO_DydTilde;
+    hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydTilde];
 
     //  Return the elements in L not in R.
     //  Use an internal magic function/operator.

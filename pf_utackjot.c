@@ -604,7 +604,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
 //***************************************************************************
 //  $PrimFnDydUpTackJot_EM_YY
 //
-//  Primitive function for dyadic UpTackJot ("ERROR")
+//  Primitive function for dyadic UpTackJot (ERROR)
 //***************************************************************************
 
 #ifdef DEBUG

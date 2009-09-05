@@ -760,17 +760,17 @@ UBOOL InitMagicFunctions
     initMFO.uPtdMemVirtEnd   = uPtdMemVirtEnd;
 
     // Define the magic functions/operators
-    lpMemPTD->hGlbMFO_MonIota     = Init1MagicFunction (MFON_MonIota  , &MFO_MonIota  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO_DydIota     = Init1MagicFunction (MFON_DydIota  , &MFO_DydIota  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO_MonDnShoe   = Init1MagicFunction (MFON_MonDnShoe, &MFO_MonDnShoe, lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO_DydTilde    = Init1MagicFunction (MFON_DydTilde , &MFO_DydTilde , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO_MonRank     = Init1MagicFunction (MFON_MonRank  , &MFO_MonRank  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO_DydRank     = Init1MagicFunction (MFON_DydRank  , &MFO_DydRank  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO_Conform     = Init1MagicFunction (MFON_Conform  , &MFO_Conform  , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO_MonFMT      = Init1MagicFunction (MFON_MonFMT   , &MFO_MonFMT   , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO_Box         = Init1MagicFunction (MFON_Box      , &MFO_Box      , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_MonIota  ]  = Init1MagicFunction (MFON_MonIota  , &MFO_MonIota  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_DydIota  ]  = Init1MagicFunction (MFON_DydIota  , &MFO_DydIota  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_MonDnShoe]  = Init1MagicFunction (MFON_MonDnShoe, &MFO_MonDnShoe, lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_DydTilde ]  = Init1MagicFunction (MFON_DydTilde , &MFO_DydTilde , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_MonRank  ]  = Init1MagicFunction (MFON_MonRank  , &MFO_MonRank  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_DydRank  ]  = Init1MagicFunction (MFON_DydRank  , &MFO_DydRank  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_Conform  ]  = Init1MagicFunction (MFON_Conform  , &MFO_Conform  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_MonFMT   ]  = Init1MagicFunction (MFON_MonFMT   , &MFO_MonFMT   , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_Box      ]  = Init1MagicFunction (MFON_Box      , &MFO_Box      , lpMemPTD, hWndEC, NULL);
     initMFO.lpHTS = &lpMemPTD->htsPTD_MonVR;
-    lpMemPTD->hGlbMFO_MonVR       = Init1MagicFunction (MFON_MonVR    , &MFO_MonVR    , lpMemPTD, hWndEC, &initMFO);
+    lpMemPTD->hGlbMFO[MFOE_MonVR    ]  = Init1MagicFunction (MFON_MonVR    , &MFO_MonVR    , lpMemPTD, hWndEC, &initMFO);
 
     // Set []IO to zero in the symbol table for []VR
     lpMemPTD->htsPTD_MonVR.lpSymQuad[SYSVAR_IO]->stData.stBoolean = 0;

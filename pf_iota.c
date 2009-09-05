@@ -342,7 +342,7 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
         lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Get the magic function/operator global memory handle
-        hGlbMFO = lpMemPTD->hGlbMFO_MonIota;
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonIota];
 
         //  Return the matrix of indices
         //  Use an internal magic function/operator.
@@ -477,7 +477,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
         lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Get the magic function/operator global memory handle
-        hGlbMFO = lpMemPTD->hGlbMFO_DydIota;
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydIota];
 
         //  Extend to aplRankLft > 1 args by returning
         //    an array of index vectors where the length

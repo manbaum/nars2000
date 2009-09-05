@@ -212,9 +212,9 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Get the magic function/operator global memory handles
-    hGlbMFO1 = (lptkLftArg EQ NULL) ? lpMemPTD->hGlbMFO_MonRank
-                                    : lpMemPTD->hGlbMFO_DydRank;
-    hGlbMFO2 = lpMemPTD->hGlbMFO_Conform;
+    hGlbMFO1 = (lptkLftArg EQ NULL) ? lpMemPTD->hGlbMFO[MFOE_MonRank]
+                                    : lpMemPTD->hGlbMFO[MFOE_DydRank];
+    hGlbMFO2 = lpMemPTD->hGlbMFO[MFOE_Conform];
 
     // Get right operand global ptrs
     hGlbOprRht = GetGlbHandle (&lpYYFcnStrRht->tkToken);

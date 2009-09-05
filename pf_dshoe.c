@@ -626,7 +626,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
             // Get the magic function/operator global memory handle
-            hGlbMFO = lpMemPTD->hGlbMFO_MonDnShoe;
+            hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonDnShoe];
 
             //  Return the unique elements in the right arg.
             //  Use an internal magic function/operator.

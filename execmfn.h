@@ -20,6 +20,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+// Magic Function/Operator Enum
+typedef enum tagMFO
+{
+    MFOE_MonIota    ,           // 00:  Extended Monadic Iota
+    MFOE_DydIota    ,           // 01:  Extended Dyadic Iota
+    MFOE_MonDnShoe  ,           // 02:  Monadic Down Shoe
+    MFOE_DydTilde   ,           // 03:  Dyadic Tilde
+    MFOE_MonRank    ,           // 04:  Monadic Derived Function from Rank Operator
+    MFOE_DydRank    ,           // 05:  Dyadic  ...
+    MFOE_Conform    ,           // 06:  Conform  (for Rank Operator)
+    MFOE_MonFMT     ,           // 07:  Monadic []FMT
+    MFOE_Box        ,           // 08:  Box (for monadic []FMT)
+    MFOE_MonVR      ,           // 09:  Monadic []VR
+    MFOE_LENGTH                 // 0A:  Length (# entries)
+} MFO, *LPMFO;
+
 // Magic Function/Operator Names
 #define MFON_MonIota        L"#MonIota"
 #define MFON_DydIota        L"#DydIota"
@@ -32,7 +48,7 @@
 #define MFON_Box            L"#Box"
 #define MFON_MonVR          L"#MonVR"
 
-// Magic function/Operator variables
+// Magic Function/Operator Variables
 #define $COMMABAR       WS_UTF16_COMMABAR
 #define $DECODE         WS_UTF16_UPTACK
 #define $DIAMOND        WS_UTF16_DIAMOND

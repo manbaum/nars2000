@@ -83,6 +83,7 @@ char TokenTypeFV
         case TKT_AXISIMMED:
         case TKT_AXISARRAY:
         case TKT_LISTINT:
+        case TKT_STRAND:
             return 'V';
 
         case TKT_FCNIMMED:
@@ -122,7 +123,6 @@ char TokenTypeFV
         case TKT_SOS:
         case TKT_LINECONT:
         case TKT_INPOUT:
-        case TKT_STRAND:
         case TKT_LISTPAR:
         case TKT_LSTIMMED:
         case TKT_LSTARRAY:

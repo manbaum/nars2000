@@ -2562,10 +2562,88 @@ SingVar:
                                         }
     ;
 
+// Index var with brackets
+IndexVarBR:
+      IndexListBR     error             {DbgMsgWP (L"%%IndexVarBR:  error IndexListBR");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR3
+                                         } else
+                                             YYERROR2
+                                        }
+    | IndexListBR     SingVar           {DbgMsgWP (L"%%IndexVarBR:  SingVar IndexListBR");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             InitVarStrand (&$2);
+
+                                             lpplLocalVars->lpYYRes =
+                                               PushVarStrand_YY (&$2);
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushVarStrand_YY
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYStr =
+                                               MakeVarStrand_EM_YY (lpplLocalVars->lpYYRes);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+
+                                             if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ArrayIndexRef_EM_YY (&lpplLocalVars->lpYYStr->tkToken, &$1.tkToken);
+                                             FreeResult (&$1.tkToken);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    ;
+
 // Strand Recursion
 StrandRec:
 ////  error                             //--Conflicts
       SingVar                           {DbgMsgWP (L"%%StrandRec:  SingVar -- InitVarStrand/PushVarStrand_YY");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             InitVarStrand (&$1);
+
+                                             lpplLocalVars->lpYYRes =
+                                               PushVarStrand_YY (&$1);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushVarStrand_YY
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    | IndexVarBR                        {DbgMsgWP (L"%%StrandRec:  IndexVarBR -- InitVarStrand/PushVarStrand_YY");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2611,7 +2689,29 @@ StrandRec:
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
                                                  YYERROR3
+                                             } // End IF
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    | StrandRec IndexVarBR              {DbgMsgWP (L"%%StrandRec:  IndexVarBR StrandRec -- PushVarStrand_YY");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYRes =
+                                               PushVarStrand_YY (&$2);
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushVarStrand_YY
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR3
+                                             } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -2636,59 +2736,6 @@ StrandInst:
                                              $$ = *lpplLocalVars->lpYYStr;
                                              YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
                                          } // End IF
-                                        }
-    | IndexListBR     error             {DbgMsgWP (L"%%StrandInst:  error IndexListBR");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR3
-                                         } else
-                                             YYERROR2
-                                        }
-    | IndexListBR     StrandRec         {DbgMsgWP (L"%%StrandInst:  StrandRec IndexListBR");
-                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYStr =
-                                               MakeVarStrand_EM_YY (&$2);
-                                             FreeResult (&$2.tkToken);
-
-                                             if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$1.tkToken);
-                                                 YYERROR3
-                                             } // End IF
-
-                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-                                                 lpplLocalVars->lpYYRes = NULL;
-                                             else
-                                                 lpplLocalVars->lpYYRes =
-                                                   ArrayIndexRef_EM_YY (&lpplLocalVars->lpYYStr->tkToken, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
-                                             FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
-
-                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR3
-
-                                             $$ = *lpplLocalVars->lpYYRes;
-                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                         } // End IF
-                                        }
-    | error           StrandRec         {DbgMsgWP (L"%%StrandInst:  StrandRec error");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYStr =
-                                               MakeVarStrand_EM_YY (&$2);
-                                             FreeResult (&$2.tkToken);
-
-                                             if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
-                                                 YYERROR3
-
-                                             FreeYYFcn1 (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
-
-                                             YYERROR3
-                                         } else
-                                             YYERROR2
                                         }
     | CONSTANT   ':'                    {DbgMsgWP (L"%%StrandInst:  :CONSTANT");
                                          if (!lpplLocalVars->bLookAhead)
@@ -2871,7 +2918,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | error ASSIGN IndexListBR  NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN IndexListBR  NAMEUNK
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
@@ -3293,7 +3341,7 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-////| ArrExpr ASSIGN error ')' NameVals '(' //--Conflicts
+////| ArrExpr ASSIGN error    ')' NameVals '(' //--Conflicts
     | ArrExpr ASSIGN AxisFunc ')' NameVals '('
                                         {DbgMsgWP (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -9050,7 +9098,7 @@ LPPL_YYSTYPE WaitForInput
 #define APPEND_NAME
 #endif
 
-BOOL AmbOpSwap_EM
+UBOOL AmbOpSwap_EM
     (LPPL_YYSTYPE lpYYFcn)              // Ptr to function strand
 
 {

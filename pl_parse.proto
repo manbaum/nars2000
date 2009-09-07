@@ -6,7 +6,7 @@ char LookaheadAdjacent (LPPLLOCALVARS lpplLocalVars, UBOOL bSkipBrackets, UBOOL 
 UBOOL LookaheadDyadicOp (LPPLLOCALVARS lpplLocalVars, LPTOKEN lptkNext);
 UBOOL CheckNullOp3 (LPPLLOCALVARS lpplLocalVars);
 LPPL_YYSTYPE WaitForInput (HWND hWndSM, UBOOL bQuoteQuad, LPTOKEN lptkFunc);
-BOOL AmbOpSwap_EM (LPPL_YYSTYPE lpYYFcn);
+UBOOL AmbOpSwap_EM (LPPL_YYSTYPE lpYYFcn);
 void AmbOpToFcn (LPPL_YYSTYPE lpYYFcn);
 void AmbOpToOp1 (LPPL_YYSTYPE lpYYFcn);
 void ArrExprCheckCaller (LPPLLOCALVARS lpplLocalVars, LPSIS_HEADER lpSISCur, LPPL_YYSTYPE lpYYArg);

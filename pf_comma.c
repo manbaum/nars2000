@@ -1266,12 +1266,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     //   as well as the NELMs
     if (IsEmpty (aplNELMLft))
     {
-        aplTypeRes = aplTypeRht;
+        aplTypeRes = aplTypeLft = aplTypeRht;
         hGlbTmp    = hGlbRht;
     } else
     if (IsEmpty (aplNELMRht))
     {
-        aplTypeRes = aplTypeLft;
+        aplTypeRes = aplTypeRht = aplTypeLft;
         hGlbTmp    = hGlbLft;
     } else
         aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];

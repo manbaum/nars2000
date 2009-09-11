@@ -484,6 +484,8 @@ void DisplayGlobals
                     // Skip over the header and dimension to the data
                     lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
 
+#define MAXDISPLEN  7
+
                     // Split cases based upon the array storage type
                     switch (lpHeader->ArrType)
                     {
@@ -499,7 +501,7 @@ void DisplayGlobals
                                 APLLONGEST aplZero = 0,
                                            aplOne  = 1;
 
-                                for (lpwsz = aplArrChar, uArr = 0; uArr < min (3, lpHeader->NELM); uArr++)
+                                for (lpwsz = aplArrChar, uArr = 0; uArr < min (MAXDISPLEN, lpHeader->NELM); uArr++)
                                 {
                                     lpwsz =
                                       FormatImmed (lpwsz,
@@ -508,7 +510,7 @@ void DisplayGlobals
                                     uBitMask <<= 1;
                                 } // End FOR
 
-                                if (lpHeader->NELM > 3)
+                                if (lpHeader->NELM > MAXDISPLEN)
                                 {
                                     lpwsz[-1] = UTF16_HORIZELLIPSIS;
                                     *lpwsz++ = L' ';
@@ -530,12 +532,12 @@ void DisplayGlobals
                             {
                                 UINT uArr;
 
-                                for (lpwsz = aplArrChar, uArr = 0; uArr < min (3, lpHeader->NELM); uArr++)
+                                for (lpwsz = aplArrChar, uArr = 0; uArr < min (MAXDISPLEN, lpHeader->NELM); uArr++)
                                     lpwsz =
                                       FormatImmed (lpwsz,
                                                    immType,
                                                   &((LPAPLLONGEST) lpData)[uArr]);
-                                if (lpHeader->NELM > 3)
+                                if (lpHeader->NELM > MAXDISPLEN)
                                 {
                                     lpwsz[-1] = UTF16_HORIZELLIPSIS;
                                     *lpwsz++ = L' ';
@@ -598,6 +600,7 @@ void DisplayGlobals
                         defstop
                             break;
                     } // End SWITCH
+#undef  MAXDISPLEN
 
                     // Check for non-permanents
                     if (uDispGlb EQ 1

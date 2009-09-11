@@ -2596,7 +2596,7 @@ IndexVarBR:
                                              if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
+/////////////////////////////////////////////////FreeResult (&$2.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -2610,7 +2610,7 @@ IndexVarBR:
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$2.tkToken);
+/////////////////////////////////////////////////FreeResult (&$2.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -4067,8 +4067,7 @@ Drv1Func:
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$3, 1, DIRECT);    // Left operand (Direct)
-                                             // If this strand is a named var, ...
- /////////////////////////////////////////////FreeResult (&$3.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
@@ -5287,12 +5286,12 @@ LeftOper:
                                              } // End IF
 
                                              lpplLocalVars->lpYYLft =
-                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT);     // Left operand (Direct)
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Left operand (Direct)
                                              FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                             FreeResult (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                                  YYERROR3
                                              } // End IF

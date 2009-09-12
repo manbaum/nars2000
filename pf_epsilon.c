@@ -313,7 +313,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     APLUINT           ByteRes;              // # bytes in the result
     UINT              uBitMask = 0x01,      // Bit mask for marching through Booleans
                       uBitIndex = 0;        // Bit index ...
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
+    UBOOL             bRet = TRUE;          // TRUE iff result is valid
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
     LPVARARRAY_HEADER lpMemHdrRht;          // Ptr to right arg header
 
@@ -325,7 +325,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     PrimFnMonEpsilonGlbCount (hGlbRht,      // Right arg global memory handle
                              &aplTypeRes,   // Ptr to result storage type
                              &aplNELMRes,   // Ptr to result NELM
-                             &aplTypePro);   // Ptr to prototype storage type
+                             &aplTypePro);  // Ptr to prototype storage type
     // Handle empty result
     if (IsEmpty (aplNELMRes))
         aplTypeRes = aplTypePro;
@@ -527,7 +527,8 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
 {
     APLSTYPE      aplTypeRht;       // Right arg storage type
-    APLNELM       aplNELMRht;       // Right arg NELM
+    APLNELM       aplNELMRht,       // Right arg NELM
+                  aplNELMNst;       // ...            in case nested
     APLRANK       aplRankRht;       // Right arg rank
     LPVOID        lpMemRht;         // Ptr to right arg global memory
     UINT          uBitMask = BIT0;  // Bit mask for marching through Booleans
@@ -556,6 +557,9 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
 #undef  lpHeader
+
+    // Include the prototype element in the right arg in case it's empty nested
+    aplNELMNst = max (aplNELMRht, 1);
 
     // Skip past the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
@@ -632,7 +636,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = BOOL  , Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -751,7 +755,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = INT   , Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -878,7 +882,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = FLOAT , Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -959,7 +963,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = CHAR  , Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -1143,7 +1147,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = HETERO, Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))

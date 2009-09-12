@@ -1,6 +1,18 @@
 Version 0.0.2.4 consists of the following Builds:
 
 
+Build #548 -- Version 0.0.2.4
+-----------------------------
+
+* Fix Bug:  Enlist on an empty array of other than numbers fails
+
+Directory trunk:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCopy_EM>, I forgot to process the prototype
+    element of an empty nested array.
+
+
 Build #547 -- Version 0.0.2.4
 -----------------------------
 

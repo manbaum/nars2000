@@ -1532,18 +1532,10 @@ UBOOL IzitNameChar
     (APLCHAR aplChar)
 
 {
-    return ((L'a' <= aplChar
-          &&         aplChar <= L'z')
-         || (L'A' <= aplChar
-          &&         aplChar <= L'Z')
-         || (L'0' <= aplChar
-          &&         aplChar <= L'9')
-         || aplChar EQ UTF16_DELTA
-         || aplChar EQ UTF16_DELTAUNDERBAR
-         || aplChar EQ UTF16_OVERBAR
-         || aplChar EQ UTF16_ALPHA          // Only as one and only char
-         || aplChar EQ UTF16_OMEGA          // ...
-         || IsSysName (&aplChar));          // Valid as 1st char only
+    return IsValid2ndCharInName (aplChar)
+        || aplChar EQ UTF16_ALPHA           // Only as one and only char
+        || aplChar EQ UTF16_OMEGA           // ...
+        || IsSysName (&aplChar);            // Valid as 1st char only
 } // End IzitNameChar
 
 

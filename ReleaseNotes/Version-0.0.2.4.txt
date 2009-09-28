@@ -1,8 +1,22 @@
 Version 0.0.2.4 consists of the following Builds:
 
 
-Build #549 -- Version 0.0.1.16
-------------------------------
+Build #550 -- Version 0.0.2.4
+-----------------------------
+
+* Rename File Menu From &Load to &Open
+
+Directory trunk:
+
+MAIN.RC:
+  Rename file menu from &Load to &Open.
+
+SYSCMDS.C:
+  Define )OPEN as synonym for )LOAD.
+
+
+Build #549 -- Version 0.0.2.4
+-----------------------------
 
 * Rename <IsTknNamed> to <IsTknTypeNamed> to better reflect its purpose
 

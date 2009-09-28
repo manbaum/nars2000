@@ -1,5 +1,5 @@
-Build #549 -- Version 0.0.1.16
-------------------------------
+Build #549 -- Version 0.0.2.4
+-----------------------------
 
 * Rename <IsTknNamed> to <IsTknTypeNamed> to better reflect its purpose
 

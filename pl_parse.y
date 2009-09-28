@@ -4329,7 +4329,7 @@ Drv2Func:
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, DIRECT);    // Right operand (Direct)
                                              // If this strand is a named var, ...
-                                             if (IsTknNamed ($1.tkToken.tkFlags.TknType))
+                                             if (IsTknTypeNamedVar ($1.tkToken.tkFlags.TknType))
                                                  FreeResult (&$1.tkToken);           // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
@@ -4375,7 +4375,7 @@ Drv2Func:
                                              lpplLocalVars->lpYYRht =
                                                PushFcnStrand_YY (&$1, 1, DIRECT);    // Right operand (Direct)
                                              // If this strand is a named var, ...
-                                             if (IsTknNamed ($1.tkToken.tkFlags.TknType))
+                                             if (IsTknTypeNamedVar ($1.tkToken.tkFlags.TknType))
                                                  FreeResult (&$1.tkToken);           // RefCnt is incremented by PushFcnStrand_YY because it's a var
 
                                              if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR

@@ -1582,6 +1582,7 @@ void DisplayStrand
     LPPLLOCALVARS lpplLocalVars;
     LPPERTABDATA  lpMemPTD;         // Ptr to PerTabData global memory
     WCHAR         wszTemp[1024];    // Ptr to temporary output area
+    UBOOL         bIsTknImmed;      // TRUE iff the token is immediate
 
     // Split cases based upon the strand type
     //   so we can display or not depending upon the type
@@ -1664,13 +1665,16 @@ void DisplayStrand
             lpLast  = lp->lpYYStrandBase;
         } // End IF
 
+        // Get token immediate status
+        bIsTknImmed = IsTknImmed (&lp->tkToken);
+
         wsprintfW (wszTemp,
-                   IsTknNamed (lp->tkToken.tkFlags.TknType)
-                 ? L"Strand (%p): %-9.9S D=%p CI=%2d TC=%1d IN=%1d F=%p B=%p"
-                 : L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
+                   L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
                    lp,
                    GetTokenTypeName (lp->tkToken.tkFlags.TknType),
-                   lp->tkToken.tkData.tkInteger,
+                   bIsTknImmed
+                 ?           lp->tkToken.tkData.tkInteger
+                 : (APLUINT) lp->tkToken.tkData.tkGlbData,
                    lp->tkToken.tkCharIndex,
                    lp->TknCount,
                    lp->YYIndirect,

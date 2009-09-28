@@ -2022,7 +2022,7 @@ IMM_TYPES GetImmedType
     (LPTOKEN lptkArg)               // Ptr to token
 
 {
-    if (IsTknNamed (lptkArg->tkFlags.TknType))
+    if (IsTknTypeNamed (lptkArg->tkFlags.TknType))
         return lptkArg->tkData.tkSym->stFlags.ImmType;
     else
         return lptkArg->tkFlags.ImmType;

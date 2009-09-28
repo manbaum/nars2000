@@ -163,7 +163,7 @@ typedef enum tagTOKEN_TYPES
 //   <LookaheadAdjacent>, <LookaheadDyadicOp>, and <pl_yylex> in <pl_parse.y>,
 //   <MakeVarStrand_EM_YY> in <strand.c>,
 //   <GetTokenTypeName> in <dispdbg.c>,
-//   and <TokenTypeFV>, <IsTknNamed>, and <IsTknImmed> in <primfns.c>.
+//   and <TokenTypeFV>, <IsTknTypeNamed>, <IsTknTypeNamedVar>, and <IsTknImmed> in <primfns.c>.
 
 
 typedef struct tagTKFLAGS

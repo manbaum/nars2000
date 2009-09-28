@@ -308,8 +308,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         tkLftTmp = *lptkLftArg;
         lptkLftTmp = &tkLftTmp;
 
-        // If the token is named, ...
-        if (IsTknNamed (lptkLftTmp->tkFlags.TknType))
+        // If the token type is named, ...
+        if (IsTknTypeNamed (lptkLftTmp->tkFlags.TknType))
         {
             // Copy the STE in case its name conflicts with a local
             symLftArg = *lptkLftTmp->tkData.tkSym;
@@ -323,8 +323,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         // Copy the PL_YYSTYPE
         lpYYFcnTmpLft = lpYYFcnStrLft;
 
-        // If the token is named, ...
-        if (bNamedLftFcn = IsTknNamed (lpYYFcnTmpLft->tkToken.tkFlags.TknType))
+        // If the token type is named, ...
+        if (bNamedLftFcn = IsTknTypeNamed (lpYYFcnTmpLft->tkToken.tkFlags.TknType))
         {
             // Copy the STE in case its name conflicts with a local
             lpSymLftFcn = lpYYFcnTmpLft->tkToken.tkData.tkSym;
@@ -339,8 +339,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         // Copy the PL_YYSTYPE
         lpYYFcnTmpRht = lpYYFcnStrRht;
 
-        // If the token is named, ...
-        if (bNamedRhtFcn = IsTknNamed (lpYYFcnTmpRht->tkToken.tkFlags.TknType))
+        // If the token type is named, ...
+        if (bNamedRhtFcn = IsTknTypeNamed (lpYYFcnTmpRht->tkToken.tkFlags.TknType))
         {
             // Copy the STE in case its name conflicts with a local
             lpSymRhtFcn = lpYYFcnTmpRht->tkToken.tkData.tkSym;
@@ -356,8 +356,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         tkRhtTmp = *lptkRhtArg;
         lptkRhtTmp = &tkRhtTmp;
 
-        // If the token is named, ...
-        if (IsTknNamed (lptkRhtTmp->tkFlags.TknType))
+        // If the token type is named, ...
+        if (IsTknTypeNamed (lptkRhtTmp->tkFlags.TknType))
         {
             // Copy the STE in case its name conflicts with a local
             symRhtArg = *lptkRhtTmp->tkData.tkSym;

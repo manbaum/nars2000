@@ -2890,15 +2890,16 @@ UINT GetImmTypeFcn
 
 
 //***************************************************************************
-//  $IsTknNamed
+//  $IsTknTypeNamed
 //
-//  Return TRUE iff the given token is named
+//  Return TRUE iff the given token type is named
 //***************************************************************************
 
-UBOOL IsTknNamed
+UBOOL IsTknTypeNamed
     (TOKEN_TYPES tknType)
 
 {
+    // Split cases based upon the token type
     switch (tknType)
     {
         case TKT_VARNAMED:
@@ -2911,7 +2912,29 @@ UBOOL IsTknNamed
         default:
             return FALSE;
     } // End SWITCH
-} // End IsTknNamed
+} // End IsTknTypeNamed
+
+
+//***************************************************************************
+//  $IsTknTypeNamedVar
+//
+//  Return TRUE iff the given token type is a named var
+//***************************************************************************
+
+UBOOL IsTknTypeNamedVar
+    (TOKEN_TYPES tknType)
+
+{
+    // Split cases based upon the token type
+    switch (tknType)
+    {
+        case TKT_VARNAMED:
+            return TRUE;
+
+        default:
+            return FALSE;
+    } // End SWITCH
+} // End IsTknTypeNamedVar
 
 
 //***************************************************************************

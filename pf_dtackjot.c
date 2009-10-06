@@ -3386,6 +3386,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                 } // End IF
                             } else
 ////////////////////////////if (iPrc < 0)
+                            {
                                 // Format the number
                                 lpaplChar =
                                   FormatFloatFC (lpaplChar,                         // Ptr to output save area
@@ -3394,6 +3395,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                  aplCharDecimal,                    // Char to use as decimal separator
                                                  aplCharOverbar,                    // Char to use as overbar
                                                  FLTDISPFMT_E);                     // Float display format
+                                // Zap the trailing blank
+                                lpaplChar[-1] = WC_EOS;
+                            } // End IF/ELSE
+
                             break;
 
                         case IMMTYPE_FLOAT:

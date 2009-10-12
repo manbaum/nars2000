@@ -151,82 +151,82 @@ LPPL_YYSTYPE PrimOpDydDot_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
-     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     UBOOL        bPrototyping)         // TRUE iff prototyping
+    (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,               // Ptr to right arg token
+     UBOOL        bPrototyping)             // TRUE iff prototyping
 
 {
-    APLSTYPE      aplTypeLft,           // Left arg storage type
-                  aplTypeRht,           // Right ...
-                  aplTypeCmp,           // Comparison ...
-                  aplTypeRes;           // Result   ...
-    APLNELM       aplNELMLft,           // Left arg NELM
-                  aplNELMRht,           // Right ...
-                  aplNELMRes;           // Result   ...
-    APLRANK       aplRankLft,           // Left arg rank
-                  aplRankRht,           // Right ...
-                  aplRankRes;           // Result   ...
-    APLDIM        aplColsLft,           // Left arg last dim
-                  aplRestLft,           // Left arg product of remaining dims
-                  aplFrstRht,           // Right arg 1st dim
-                  aplRestRht,           // Right arg product of remaining dims
-                  aplInnrMax;           // Larger of inner dimensions
-    APLLONGEST    aplLongestLft,        // Left arg immediate value
-                  aplLongestRht,        // Right ...
-                  aplLongestProLft,     // Left arg prototype immediate value
-                  aplLongestProRht;     // Right ...
-    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
-                  hGlbRht = NULL,       // Right ...
-                  hGlbRes = NULL,       // Result   ...
-                  hGlbItm,              // Arg item ...
-                  hGlbPro = NULL,       // Prototype global memory handle
-                  hGlbProLft,           // Left arg prototype global memory handle
-                  hGlbProRht;           // Right ...
-    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
-                  lpMemRht = NULL,      // Ptr to right ...
-                  lpMemRes = NULL;      // Ptr to result   ...
-    LPAPLDIM      lpMemDimLft,          // Ptr to left arg dimensions
-                  lpMemDimRht,          // Ptr to right ...
-                  lpMemDimRes;          // Ptr to result   ...
-    APLUINT       ByteRes,              // # bytes in the result
-                  uRes,                 // Loop counter
-                  uOutLft,              // Loop counter
-                  uOutRht,              // Loop counter
-                  uDimCopy;             // # dimensions to copy
-    APLINT        iInnMax,              // Loop counter
-                  apaOffLft,            // Left arg APA offset
-                  apaMulLft,            // ...          multiplier
-                  apaOffRht,            // Right arg APA offset
-                  apaMulRht;            // ...           multiplier
-    APLFLOAT      aplFloatIdent;        // Identity element
-    LPPL_YYSTYPE  lpYYRes = NULL,       // Ptr to the result
-                  lpYYRes2,             // Ptr to secondary result
-                  lpYYFcnStrLft,        // Ptr to left operand function strand
-                  lpYYFcnStrRht;        // Ptr to right ...
-    LPTOKEN       lptkAxis;             // Ptr to axis token (may be NULL)
-    LPPRIMFNS     lpPrimProtoLft,       // Ptr to left operand prototype function
-                  lpPrimProtoRht;       // Ptr to right ...
-    TOKEN         tkItmLft = {0},       // Left arg item token
-                  tkItmRht = {0},       // Right ...
-                  tkItmRed,             // Reduction ...
-                  tkProLft = {0},       // Left arg prototype token
-                  tkProRht = {0};       // Right ...
-    IMM_TYPES     immTypeItm,           // Arg item immediate type
-                  immTypeProLft,        // Left arg prototype immediate type
-                  immTypeProRht;        // Right ...
-    LPSYMENTRY    lpSymTmp;             // Ptr to temporary LPSYMENTRY
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    LPPRIMSPEC    lpPrimSpecLft,        // Ptr to left operand local PRIMSPEC
-                  lpPrimSpecRht;        // ...    right ...
-    LPPRIMFLAGS   lpPrimFlagsLft,       // Ptr to left operand PrimFlags entry
-                  lpPrimFlagsRht;       // ...    right ...
-    LPPRIMIDENT   lpPrimIdentLft;       // Ptr to left operand PrimIdent entry
-    UBOOL         bRet = TRUE,          // TRUE iff result is valid
-                  bNrmIdent = FALSE,    // TRUE iff reducing an empty array with a primitive scalar dyadic function
-                  bUsrDfnOpr = FALSE,   // TRUE iff reducing an empty array with a user-defined function/operator
-                  bCatIdent = FALSE;    // TRUE iff reducing an empty array with catenate
+    APLSTYPE      aplTypeLft,               // Left arg storage type
+                  aplTypeRht,               // Right ...
+                  aplTypeCmp,               // Comparison ...
+                  aplTypeRes;               // Result   ...
+    APLNELM       aplNELMLft,               // Left arg NELM
+                  aplNELMRht,               // Right ...
+                  aplNELMRes;               // Result   ...
+    APLRANK       aplRankLft,               // Left arg rank
+                  aplRankRht,               // Right ...
+                  aplRankRes;               // Result   ...
+    APLDIM        aplColsLft,               // Left arg last dim
+                  aplRestLft,               // Left arg product of remaining dims
+                  aplFrstRht,               // Right arg 1st dim
+                  aplRestRht,               // Right arg product of remaining dims
+                  aplInnrMax;               // Larger of inner dimensions
+    APLLONGEST    aplLongestLft,            // Left arg immediate value
+                  aplLongestRht,            // Right ...
+                  aplLongestProLft,         // Left arg prototype immediate value
+                  aplLongestProRht;         // Right ...
+    HGLOBAL       hGlbLft = NULL,           // Left arg global memory handle
+                  hGlbRht = NULL,           // Right ...
+                  hGlbRes = NULL,           // Result   ...
+                  hGlbItm,                  // Arg item ...
+                  hGlbPro = NULL,           // Prototype global memory handle
+                  hGlbProLft,               // Left arg prototype global memory handle
+                  hGlbProRht;               // Right ...
+    LPVOID        lpMemLft = NULL,          // Ptr to left arg global memory
+                  lpMemRht = NULL,          // Ptr to right ...
+                  lpMemRes = NULL;          // Ptr to result   ...
+    LPAPLDIM      lpMemDimLft,              // Ptr to left arg dimensions
+                  lpMemDimRht,              // Ptr to right ...
+                  lpMemDimRes;              // Ptr to result   ...
+    APLUINT       ByteRes,                  // # bytes in the result
+                  uRes,                     // Loop counter
+                  uOutLft,                  // Loop counter
+                  uOutRht,                  // Loop counter
+                  uDimCopy;                 // # dimensions to copy
+    APLINT        iInnMax,                  // Loop counter
+                  apaOffLft,                // Left arg APA offset
+                  apaMulLft,                // ...          multiplier
+                  apaOffRht,                // Right arg APA offset
+                  apaMulRht;                // ...           multiplier
+    APLFLOAT      aplFloatIdent;            // Identity element
+    LPPL_YYSTYPE  lpYYRes = NULL,           // Ptr to the result
+                  lpYYRes2,                 // Ptr to secondary result
+                  lpYYFcnStrLft,            // Ptr to left operand function strand
+                  lpYYFcnStrRht;            // Ptr to right ...
+    LPTOKEN       lptkAxis;                 // Ptr to axis token (may be NULL)
+    LPPRIMFNS     lpPrimProtoLft = NULL,    // Ptr to left operand prototype function
+                  lpPrimProtoRht = NULL;    // Ptr to right ...
+    TOKEN         tkItmLft = {0},           // Left arg item token
+                  tkItmRht = {0},           // Right ...
+                  tkItmRed,                 // Reduction ...
+                  tkProLft = {0},           // Left arg prototype token
+                  tkProRht = {0};           // Right ...
+    IMM_TYPES     immTypeItm,               // Arg item immediate type
+                  immTypeProLft,            // Left arg prototype immediate type
+                  immTypeProRht;            // Right ...
+    LPSYMENTRY    lpSymTmp;                 // Ptr to temporary LPSYMENTRY
+    LPPLLOCALVARS lpplLocalVars;            // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;             // Ptr to Ctrl-Break flag
+    LPPRIMSPEC    lpPrimSpecLft,            // Ptr to left operand local PRIMSPEC
+                  lpPrimSpecRht;            // ...    right ...
+    LPPRIMFLAGS   lpPrimFlagsLft,           // Ptr to left operand PrimFlags entry
+                  lpPrimFlagsRht;           // ...    right ...
+    LPPRIMIDENT   lpPrimIdentLft;           // Ptr to left operand PrimIdent entry
+    UBOOL         bRet = TRUE,              // TRUE iff result is valid
+                  bNrmIdent = FALSE,        // TRUE iff reducing an empty array with a primitive scalar dyadic function
+                  bUsrDfnOpr = FALSE,       // TRUE iff reducing an empty array with a user-defined function/operator
+                  bCatIdent = FALSE;        // TRUE iff reducing an empty array with catenate
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -259,13 +259,13 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
         goto RIGHT_SYNTAX_EXIT;
 
-    // Get the appropriate prototype function ptrs
-    lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
-    lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
-
     // Get a ptr to the left & right prototype function
     if (bPrototyping)
     {
+       // Get the appropriate prototype function ptrs
+       lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+       lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
 
@@ -339,8 +339,9 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     if (IsEmpty (aplNELMRes)
      || bPrototyping)
     {
-        // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        if (!lpPrimProtoLft)
+            // Get the appropriate prototype function ptr
+            lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
     } else
@@ -365,7 +366,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         // If the identity element is Boolean or we're prototyping,
         //   the result is, too
         if (lpPrimIdentLft->IsBool
-         || lpPrimProtoLft NE NULL)
+         || lpPrimProtoLft)
             aplTypeRes = ARRAY_BOOL;
         else
             aplTypeRes = ARRAY_FLOAT;
@@ -717,7 +718,7 @@ RESTART_INNERPROD_RES:
         } // End IF
 
         // Get the right operand prototype function
-        if (lpPrimProtoRht EQ NULL)
+        if (!lpPrimProtoRht)
         {
             // Get the appropriate prototype function ptr
             lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
@@ -1113,7 +1114,7 @@ RESTART_INNERPROD_RES:
         // The zero case is done (GHND)
 
         // If we're not doing prototypes, ...
-        if (lpPrimProtoLft EQ NULL)
+        if (!lpPrimProtoLft)
         {
             // Check for Boolean identity element
             if (lpPrimIdentLft->IsBool)

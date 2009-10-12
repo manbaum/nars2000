@@ -1262,127 +1262,127 @@ HGLOBAL MakeDydPrototype_EM
             {
                 // Both args are nested
 
-                // Handle axis if present
-                if (aplNELMAxis NE aplRankRes)
+            // Handle axis if present
+            if (aplNELMAxis NE aplRankRes)
+            {
+                //***************************************************************
+                // Allocate space for the weighting vector which is
+                //   {times}{backscan}1{drop}({rho}Z),1
+                // N.B.  Conversion from APLUINT to UINT.
+                //***************************************************************
+                ByteRes = aplRankRes * sizeof (APLUINT);
+                if (ByteRes NE (APLU3264) ByteRes)
+                    goto WSFULL_EXIT;
+                hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                if (!hGlbWVec)
+                    goto WSFULL_EXIT;
+
+                // Lock the memory to get a ptr to it
+                lpMemWVec = MyGlobalLock (hGlbWVec);
+
+                // Loop through the dimensions of the result in reverse
+                //   order {backscan} and compute the cumulative product
+                //   (weighting vector).
+                // Note we use a signed index variable because we're
+                //   walking backwards and the test against zero must be
+                //   made as a signed variable.
+                for (uRes = 1, iDim = aplRankRes - 1; iDim >= 0; iDim--)
                 {
-                    //***************************************************************
-                    // Allocate space for the weighting vector which is
-                    //   {times}{backscan}1{drop}({rho}Z),1
-                    // N.B.  Conversion from APLUINT to UINT.
-                    //***************************************************************
-                    ByteRes = aplRankRes * sizeof (APLUINT);
-                    if (ByteRes NE (APLU3264) ByteRes)
-                        goto WSFULL_EXIT;
-                    hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                    if (!hGlbWVec)
-                        goto WSFULL_EXIT;
+                    lpMemWVec[iDim] = uRes;
+                    uRes *= lpMemDimRes[iDim];
+                } // End FOR
 
-                    // Lock the memory to get a ptr to it
-                    lpMemWVec = MyGlobalLock (hGlbWVec);
+                //***************************************************************
+                // Allocate space for the odometer array, one value per dimension
+                //   in the right arg, with values initially all zero (thanks to GHND).
+                // N.B.  Conversion from APLUINT to UINT.
+                //***************************************************************
+                ByteRes = aplRankRes * sizeof (APLUINT);
+                if (ByteRes NE (APLU3264) ByteRes)
+                    goto WSFULL_EXIT;
+                hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                if (!hGlbOdo)
+                    goto WSFULL_EXIT;
 
-                    // Loop through the dimensions of the result in reverse
-                    //   order {backscan} and compute the cumulative product
-                    //   (weighting vector).
-                    // Note we use a signed index variable because we're
-                    //   walking backwards and the test against zero must be
-                    //   made as a signed variable.
-                    for (uRes = 1, iDim = aplRankRes - 1; iDim >= 0; iDim--)
-                    {
-                        lpMemWVec[iDim] = uRes;
-                        uRes *= lpMemDimRes[iDim];
-                    } // End FOR
+                // Lock the memory to get a ptr to it
+                lpMemOdo = MyGlobalLock (hGlbOdo);
+            } // End IF
 
-                    //***************************************************************
-                    // Allocate space for the odometer array, one value per dimension
-                    //   in the right arg, with values initially all zero (thanks to GHND).
-                    // N.B.  Conversion from APLUINT to UINT.
-                    //***************************************************************
-                    ByteRes = aplRankRes * sizeof (APLUINT);
-                    if (ByteRes NE (APLU3264) ByteRes)
-                        goto WSFULL_EXIT;
-                    hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                    if (!hGlbOdo)
-                        goto WSFULL_EXIT;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemOdo = MyGlobalLock (hGlbOdo);
-                } // End IF
-
-                // Loop through the elements of the result
-                for (uRes = 0; uRes < aplNELMRes; uRes++)
+            // Loop through the elements of the result
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+            {
+                // If there's an axis, ...
+                if (lptkAxis
+                 && aplNELMAxis NE aplRankRes)
                 {
-                    // If there's an axis, ...
-                    if (lptkAxis
-                     && aplNELMAxis NE aplRankRes)
+                    APLUINT uArg;       // Loop counter
+
+                    // Loop through the odometer values accumulating
+                    //   the weighted sum
+                    for (uArg = 0, uRht = aplRankRes - aplNELMAxis; uRht < aplRankRes; uRht++)
+                        uArg += lpMemOdo[lpMemAxisHead[uRht]] * lpMemWVec[uRht];
+
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRes
+                    IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                    // Use the just computed index for the argument
+                    //   with the smaller rank
+                    if (aplRankLft < aplRankRht)
                     {
-                        APLUINT uArg;       // Loop counter
-
-                        // Loop through the odometer values accumulating
-                        //   the weighted sum
-                        for (uArg = 0, uRht = aplRankRes - aplNELMAxis; uRht < aplRankRes; uRht++)
-                            uArg += lpMemOdo[lpMemAxisHead[uRht]] * lpMemWVec[uRht];
-
-                        // Increment the odometer in lpMemOdo subject to
-                        //   the values in lpMemDimRes
-                        IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
-
-                        // Use the just computed index for the argument
-                        //   with the smaller rank
-                        if (aplRankLft < aplRankRht)
-                        {
-                            uLft = uArg;
-                            uRht = uRes;
-                        } else
-                        {
-                            uRht = uArg;
-                            uLft = uRes;
-                        } // End IF/ELSE
+                        uLft = uArg;
+                        uRht = uRes;
                     } else
                     {
-                        uLft = uRes % aplNELMLft;
-                        uRht = uRes % aplNELMRht;
+                        uRht = uArg;
+                        uLft = uRes;
                     } // End IF/ELSE
+                } else
+                {
+                    uLft = uRes % aplNELMLft;
+                    uRht = uRes % aplNELMRht;
+                } // End IF/ELSE
 
                     // If the left arg element is an STE,
-                    //   the result element is the prototype
-                    //   of the right arg element
+                //   the result element is the prototype
+                //   of the right arg element
                     if (GetPtrTypeDir (lpMemLft[uLft]) EQ PTRTYPE_STCONST)
-                    {
-                        hGlbSub =
-                          MakeMonPrototype_EM (lpMemRht[uRht],                  // Proto arg handle
-                                               lptkFunc,                        // Ptr to function token
-                                                bBoolFn ? MP_NUMCONV : MP_NUMONLY);
-                        if (!hGlbSub)
-                            goto ERROR_EXIT;
-                        *lpMemRes++ = hGlbSub;
-                    } else
+                {
+                    hGlbSub =
+                      MakeMonPrototype_EM (lpMemRht[uRht],                  // Proto arg handle
+                                           lptkFunc,                        // Ptr to function token
+                                           bBoolFn ? MP_NUMCONV : MP_NUMONLY);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    *lpMemRes++ = hGlbSub;
+                } else
                     // If the right arg element is an STE,
-                    //   the result element is the prototype
-                    //   of the left arg element
+                //   the result element is the prototype
+                //   of the left arg element
                     if (GetPtrTypeDir (lpMemRht[uRht]) EQ PTRTYPE_STCONST)
-                    {
-                        hGlbSub =
-                          MakeMonPrototype_EM (lpMemLft[uLft],                  // Proto arg handle
-                                               lptkFunc,                        // Ptr to function token
-                                               bBoolFn ? MP_NUMCONV : MP_NUMONLY);
-                        if (!hGlbSub)
-                            goto ERROR_EXIT;
-                        *lpMemRes++ = hGlbSub;
-                    } else
-                    {
-                        // Both args are nested HGLOBALs
-                        hGlbSub =
-                          MakeDydPrototype_EM (lpMemLft[uLft],  // Left arg proto handle
-                                               0,               // Left arg immediate type (irrelevant as it's an HGLOBAL)
-                                               lptkFunc,        // Ptr to function token
-                                               lpMemRht[uRht],  // Right arg proto handle
-                                               0,               // Right arg immediate type (irrelevant as it's an HGLOBAL)
-                                               NULL);           // Ptr to axis token (may be NULL)
-                        if (!hGlbSub)
-                            goto ERROR_EXIT;
-                        *lpMemRes++ = hGlbSub;
-                    } // End IF/ELSE/...
-                } // End FOR
+                {
+                    hGlbSub =
+                      MakeMonPrototype_EM (lpMemLft[uLft],                  // Proto arg handle
+                                           lptkFunc,                        // Ptr to function token
+                                           bBoolFn ? MP_NUMCONV : MP_NUMONLY);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    *lpMemRes++ = hGlbSub;
+                } else
+                {
+                    // Both args are nested HGLOBALs
+                    hGlbSub =
+                      MakeDydPrototype_EM (lpMemLft[uLft],  // Left arg proto handle
+                                           0,               // Left arg immediate type (irrelevant as it's an HGLOBAL)
+                                           lptkFunc,        // Ptr to function token
+                                           lpMemRht[uRht],  // Right arg proto handle
+                                           0,               // Right arg immediate type (irrelevant as it's an HGLOBAL)
+                                           NULL);           // Ptr to axis token (may be NULL)
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    *lpMemRes++ = hGlbSub;
+                } // End IF/ELSE/...
+            } // End FOR
             } // End IF/ELSE/...
         } // End IF
 
@@ -1602,18 +1602,18 @@ HGLOBAL CopyArray_EM
      LPTOKEN lptkFunc)      // Ptr to function token
 
 {
-    SIZE_T      dwSize;
-    LPVOID      lpMemSrc, lpMemSrcBase,
-                lpMemDst, lpMemDstBase;
-    HGLOBAL     hGlbDst,
-                hGlbTmp;
-    APLSTYPE    aplType;
-    APLNELM     aplNELM;
-    APLRANK     aplRank;
-    LPSYMENTRY  lpSymSrc,
-                lpSymDst;
-    APLNELM     u;
-    UBOOL       bRet = TRUE;
+    SIZE_T       dwSize;
+    LPVOID       lpMemSrc, lpMemSrcBase,
+                 lpMemDst, lpMemDstBase;
+    HGLOBAL      hGlbDst,
+                 hGlbTmp;
+    APLSTYPE     aplType;
+    APLNELM      aplNELM;
+    APLRANK      aplRank;
+    LPSYMENTRY   lpSymSrc,
+                 lpSymDst;
+    APLNELM      u;
+    UBOOL        bRet = TRUE;
 
     // Clear the ptr type bits
     hGlbSrc = ClrPtrTypeDir (hGlbSrc);
@@ -1994,6 +1994,7 @@ HGLOBAL CopyGlbAsType_EM
 
             break;
 
+        case ARRAY_HETERO:
         case ARRAY_NESTED:
             // Copy the arg to the result
 

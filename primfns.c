@@ -1235,33 +1235,6 @@ HGLOBAL MakeDydPrototype_EM
         if (!IsSimple (aplTypeLft)
          || !IsSimple (aplTypeRht))
         {
-            // If the left arg is simple, the result is
-            //   the prototype of the right arg
-            if (IsSimple (aplTypeLft))
-            {
-                hGlbSub =
-                  MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht,     // Proto arg handle
-                                       lptkFunc,                    // Ptr to function token
-                                       bBoolFn ? MP_NUMCONV : MP_NUMONLY);
-                if (!hGlbSub)
-                    goto ERROR_EXIT;
-                *lpMemRes++ = hGlbSub;
-            } else
-            // If the right arg is simple, the result is
-            //   the prototype of the left arg
-            if (IsSimple (aplTypeRht))
-            {
-                hGlbSub =
-                  MakeMonPrototype_EM (*(LPAPLNESTED) lpMemLft,     // Proto arg handle
-                                       lptkFunc,                    // Ptr to function token
-                                       bBoolFn ? MP_NUMCONV : MP_NUMONLY);
-                if (!hGlbSub)
-                    goto ERROR_EXIT;
-                *lpMemRes++ = hGlbSub;
-            } else
-            {
-                // Both args are nested
-
             // Handle axis if present
             if (aplNELMAxis NE aplRankRes)
             {
@@ -1343,10 +1316,11 @@ HGLOBAL MakeDydPrototype_EM
                     uRht = uRes % aplNELMRht;
                 } // End IF/ELSE
 
-                    // If the left arg element is an STE,
+                // If the left arg element is simple or an STE,
                 //   the result element is the prototype
                 //   of the right arg element
-                    if (GetPtrTypeDir (lpMemLft[uLft]) EQ PTRTYPE_STCONST)
+                if (IsSimple (aplTypeLft)
+                 || GetPtrTypeDir (lpMemLft[uLft]) EQ PTRTYPE_STCONST)
                 {
                     hGlbSub =
                       MakeMonPrototype_EM (lpMemRht[uRht],                  // Proto arg handle
@@ -1356,10 +1330,11 @@ HGLOBAL MakeDydPrototype_EM
                         goto ERROR_EXIT;
                     *lpMemRes++ = hGlbSub;
                 } else
-                    // If the right arg element is an STE,
+                // If the right arg element is simple or an STE,
                 //   the result element is the prototype
                 //   of the left arg element
-                    if (GetPtrTypeDir (lpMemRht[uRht]) EQ PTRTYPE_STCONST)
+                if (IsSimple (aplTypeRht)
+                 || GetPtrTypeDir (lpMemRht[uRht]) EQ PTRTYPE_STCONST)
                 {
                     hGlbSub =
                       MakeMonPrototype_EM (lpMemLft[uLft],                  // Proto arg handle
@@ -1383,7 +1358,6 @@ HGLOBAL MakeDydPrototype_EM
                     *lpMemRes++ = hGlbSub;
                 } // End IF/ELSE/...
             } // End FOR
-            } // End IF/ELSE/...
         } // End IF
 
         // We no longer need this ptr

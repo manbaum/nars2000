@@ -1,6 +1,20 @@
 Version 0.0.2.4 consists of the following Builds:
 
 
+Build #554 -- Version 0.0.2.4
+-----------------------------
+
+* Fix Bug:  Handle Prototype Generation Better
+
+Directory trunk:
+
+PRIMFNS.C:
+  In <MakeDydPrototype_EM>, handle prototype generation for
+    (0{rho}{enclose}0 0)+0{rho}{enclose}(0 0) 0 by not picking
+    off the special cases at the start but by handling them
+    individually in the loop.
+
+
 Build #553 -- Version 0.0.2.4
 -----------------------------
 

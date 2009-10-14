@@ -30,11 +30,6 @@
 extern HANDLE ahGLBALLOC[MAXOBJ];
 extern UINT auLinNumGLBALLOC[MAXOBJ];
 extern LPCHAR lpaFileNameGLBALLOC[MAXOBJ];
-
-UINT gVarLvl = 3,   // Debug level for display of variable-related info
-     gFcnLvl = 3,   // ...                        function-related ...
-     gLstLvl = 3,   // ...                        list-related     ...
-     gNamLvl = 3;   // ...                        name-related     ...
 #endif
 
 
@@ -1416,13 +1411,13 @@ LPWCHAR DisplayFcnSub
                 case DFN_HEADER_SIGNATURE:
                     // If there's a callback function, use it
                     if (lpSavedWsGlbVarConv)
-                        lpaplChar =
+                                    lpaplChar =
                           (*lpSavedWsGlbVarConv) (lpaplChar,                // Ptr to output save area
                                                   MakePtrTypeGlb (hGlbData),// Object global memory handle
                                                   lpSavedWsGlbVarParm);     // Ptr to extra parameters for lpSavedWsGlbVarConv
                     else
                         // Copy the user-defined function/operator name
-                        lpaplChar =
+                                lpaplChar =
                           CopySteName (lpaplChar,                               // Ptr to result global memory
                                        ((LPDFN_HEADER) lpMemData)->steFcnName,  // Ptr to function symbol table entry
                                        NULL);                                   // Ptr to name length (may be NULL)
@@ -1532,7 +1527,8 @@ void DisplayFcnLine
     LPMEMTXT_UNION lpMemTxtLine;
     LPAPLCHAR      lpMemFcnName;
 
-    if (gDbgLvl < 2)
+    // Check debug level
+    if (gDbgLvl < gFcnLvl)
         return;
 
     // If the handle is valid, ...

@@ -199,6 +199,34 @@ RESET_VARS bResetVars
 
 
 //***************************************************************************
+//  Debug values
+//***************************************************************************
+
+#ifdef DEBUG
+UINT gVarLvl        // Debug level for display of variable-related info
+#ifdef DEFINE_VALUES
+= 3
+#endif
+,
+     gFcnLvl        // ...                        function-related ...
+#ifdef DEFINE_VALUES
+= 3
+#endif
+,
+     gLstLvl        // ...                        list-related     ...
+#ifdef DEFINE_VALUES
+= 3
+#endif
+,
+     gNamLvl        // ...                        name-related     ...
+#ifdef DEFINE_VALUES
+= 3
+#endif
+;
+#endif
+
+
+//***************************************************************************
 //  Application values
 //***************************************************************************
 

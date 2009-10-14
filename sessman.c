@@ -1842,6 +1842,10 @@ NORMAL_EXIT:
                     DbgBrk ();
 
                     return FALSE;
+
+                    gFcnLvl = 0;
+
+                    return FALSE;
                 } // End VK_F11
 #endif
 #ifdef DEBUG

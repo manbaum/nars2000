@@ -928,8 +928,7 @@ StmtSing:
 ////                                              } // End IF
 ////
 ////                                              lpplLocalVars->lpYYRes =
-////                                                ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
-////                                              FreeResult (&$1.tkToken);
+////                                                ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
 ////                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 ////
 ////                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -1396,7 +1395,7 @@ FcnSpec:
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-                                             FreeResult (&$2.tkToken);
+                                                 FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
@@ -1534,7 +1533,7 @@ FcnSpec:
 
                                              lpplLocalVars->lpYYLft =
                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-                                             FreeResult (&$2.tkToken);
+                                                 FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
@@ -2020,8 +2019,7 @@ ArrExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2057,8 +2055,7 @@ ArrExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2094,8 +2091,7 @@ ArrExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2147,10 +2143,8 @@ ArrExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -2248,8 +2242,7 @@ ArrExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2301,10 +2294,8 @@ ArrExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -2349,10 +2340,8 @@ ArrExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -2399,10 +2388,8 @@ ArrExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -3153,10 +3140,8 @@ SimpExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
+                                                   ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, FALSE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-/////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  Used below
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
@@ -3213,10 +3198,8 @@ SimpExpr:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
+                                                   ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, FALSE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-/////////////////////////////////////////////FreeResult (&$4.tkToken);               // DO NOT FREE:  Used below
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
@@ -3591,8 +3574,7 @@ SelectSpec:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3626,10 +3608,9 @@ SelectSpec:
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                                  lpplLocalVars->lpYYRes = NULL;
-                                             else
-                                                 lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                             else                                                 
+                                             lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3664,8 +3645,7 @@ SelectSpec:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3714,10 +3694,8 @@ SelectSpec:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -3763,10 +3741,8 @@ SelectSpec:
                                                  lpplLocalVars->lpYYRes = NULL;
                                              else
                                                  lpplLocalVars->lpYYRes =
-                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                                   ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -5722,6 +5698,7 @@ Train:
 
                                                  lpplLocalVars->lpYYRht =
                                                    MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -5743,6 +5720,7 @@ Train:
 
                                                  lpplLocalVars->lpYYRht =
                                                    MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -5778,6 +5756,7 @@ Train:
 
                                                  lpplLocalVars->lpYYRht =
                                                    MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
@@ -5799,6 +5778,7 @@ Train:
 
                                                  lpplLocalVars->lpYYRht =
                                                    MakeFcnStrand_EM_YY (&$1, NAMETYPE_TRN, TRUE);
+
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;

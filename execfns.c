@@ -92,21 +92,43 @@ LPPL_YYSTYPE ExecuteFn0
 LPPL_YYSTYPE ExecFunc_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStr,           // Ptr to function strand
-     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     UBOOL        bFreeLft,             // TRUE iff we should free the left arg on exit
+     UBOOL        bFreeRht)             // ...                         right ...
 
 {
     LPPRIMFNS    lpPrimFn;              // Ptr to direct primitive or system function
     LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
-    HGLOBAL      hGlbFcn;               // Function array global memory handle
+    HGLOBAL      hGlbFcn,               // Function array global memory handle
+                 hGlbLft,               // Left arg global memory handle (may be NULL)
+                 hGlbRht;               // Right ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     HSHTABSTR    htsPTD;                // Old copy of HshTab struc
     LPHSHTABSTR  lphtsPTD = NULL;       // Ptr to HshTab struc about to be activated
-    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
     UINT         uSysNSLvl;             // System namespace level
 
     DBGENTER;
 
     Assert (lpYYFcnStr->YYInuse);
+
+    // Get the left and right arg global memory handle
+    if (lptkLftArg)
+        hGlbLft = GetGlbHandle (lptkLftArg);
+    else
+        hGlbLft = NULL;
+    if (lptkRhtArg)
+        hGlbRht = GetGlbHandle (lptkRhtArg);
+    else
+        hGlbRht = NULL;
+
+    // Increment the RefCnt for both args so as to handle
+    //   the case where the function suspends, and the user
+    //   erases the global name.
+    if (hGlbLft)
+        DbgIncrRefCntDir (MakePtrTypeGlb (hGlbLft));
+    if (hGlbRht)
+        DbgIncrRefCntDir (MakePtrTypeGlb (hGlbRht));
 
     // Check for NoValue
     if (IsTokenNoValue (lptkLftArg)
@@ -178,7 +200,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                 lpMemPTD->htsPTD = htsPTD;
             } // End IF
 
-            return lpYYRes;
+            break;
 
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
@@ -250,7 +272,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                         lpMemPTD->htsPTD = htsPTD;
                     } // End IF
 
-                    return lpYYRes;
+                    break;
                 } // End IF
 
                 // Use the HGLOBAL
@@ -263,18 +285,21 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
                 // If it's a user-defined function/operator, ...
                 if (stFlags.UsrDfn)
-                    return ExecDfnGlb_EM_YY (hGlbFcn,       // User-defined function/operator global memory handle
-                                             lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
-                                             lpYYFcnStr,    // Ptr to function strand
-                                             lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                             lptkRhtArg,    // Ptr to right arg token
-                                             LINENUM_ONE);  // Starting line # (see LINE_NUMS)
+                    lpYYRes =
+                      ExecDfnGlb_EM_YY (hGlbFcn,        // User-defined function/operator global memory handle
+                                        lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
+                                        lpYYFcnStr,     // Ptr to function strand
+                                        lptkAxis,       // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                        lptkRhtArg,     // Ptr to right arg token
+                                        LINENUM_ONE);   // Starting line # (see LINE_NUMS)
                 else
                     // Execute a function array global memory handle
-                    return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
-                                             hGlbFcn,       // Function array global memory handle
-                                             lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
-                                             lptkAxis);     // Ptr to axis token (may be NULL)
+                    lpYYRes =
+                      ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic or niladic)
+                                        hGlbFcn,        // Function array global memory handle
+                                        lptkRhtArg,     // Ptr to right arg token (may be NULL if niladic)
+                                        lptkAxis);      // Ptr to axis token (may be NULL)
+                break;
             } // End IF
 
             // Handle the immediate case
@@ -297,10 +322,12 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     tkFn.tkData.tkChar     = lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar;
                     tkFn.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
 
-                    return (*lpPrimFn) (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
-                                       &tkFn,           // Ptr to function token
-                                        lptkRhtArg,     // Ptr to right arg token
-                                        lptkAxis);      // Ptr to axis token (may be NULL)
+                    lpYYRes =
+                      (*lpPrimFn) (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                  &tkFn,            // Ptr to function token
+                                   lptkRhtArg,      // Ptr to right arg token
+                                   lptkAxis);       // Ptr to axis token (may be NULL)
+                    break;
                 } // End IMMTYPE_PRIMFCN
 
                 defstop
@@ -321,38 +348,63 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Execute a function array global memory handle
-                    return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
-                                             hGlbFcn,       // Function array global memory handle
-                                             lptkRhtArg,    // Ptr to right arg token
-                                             lptkAxis);     // Ptr to axis token (may be NULL)
+                    lpYYRes =
+                      ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic or niladic)
+                                        hGlbFcn,        // Function array global memory handle
+                                        lptkRhtArg,     // Ptr to right arg token
+                                        lptkAxis);      // Ptr to axis token (may be NULL)
+                    break;
+
                 case DFN_HEADER_SIGNATURE:
                     // Execute a user-defined function/operator global memory handle
-                    return ExecDfnGlb_EM_YY (hGlbFcn,       // User-defined function/operator global memory handle
-                                             lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
-                                             lpYYFcnStr,    // Ptr to function strand
-                                             lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                             lptkRhtArg,    // Ptr to right arg token
-                                             LINENUM_ONE);  // Starting line # (see LINE_NUMS)
+                    lpYYRes =
+                      ExecDfnGlb_EM_YY (hGlbFcn,        // User-defined function/operator global memory handle
+                                        lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
+                                        lpYYFcnStr,     // Ptr to function strand
+                                        lptkAxis,       // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                        lptkRhtArg,     // Ptr to right arg token
+                                        LINENUM_ONE);   // Starting line # (see LINE_NUMS)
+                    break;
+
                 defstop
                     break;
             } // End SWITCH
+
+            break;
 
         defstop
             break;
     } // End SWITCH
 
-    return NULL;
+    goto NORMAL_EXIT;
 
 SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStr->tkToken);
-    return NULL;
+    goto NORMAL_EXIT;
 
 VALUE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                                (lptkLftArg NE NULL) ? lptkLftArg
                                                     : lptkRhtArg);
-    return NULL;
+    goto NORMAL_EXIT;
+
+NORMAL_EXIT:
+    // Free the left and/or right args if requested
+    if (bFreeLft && hGlbLft)
+        FreeResultGlobalVar (hGlbLft);
+    if (bFreeRht && hGlbRht)
+        FreeResultGlobalVar (hGlbRht);
+
+    // Decrement the RefCnt for both args so as to handle
+    //   the case where the function suspends, and the user
+    //   erases the global name.
+    if (hGlbLft)
+        FreeResultGlobalVar (hGlbLft);
+    if (hGlbRht)
+        FreeResultGlobalVar (hGlbRht);
+
+    return lpYYRes;
 } // End ExecFunc_EM_YY
 #undef  APPEND_NAME
 

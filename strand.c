@@ -1425,6 +1425,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     // Calculate the actual length
     lpHeader->tknNELM = uActLen = (UINT) (lpYYMemData - lpYYMemStart);
+#undef  lpHeader
 
     Assert (TknCount EQ uIniLen);
     Assert (uActLen  EQ uIniLen);
@@ -1435,49 +1436,24 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     if (bSaveTxtLine)
     {
-        LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
-        UINT           uLineLen;        // Line length
-        LPMEMTXT_UNION lpMemTxtLine;    // Ptr to line text global memory
-        LPAPLCHAR      lpMemTxtSrc,     // Ptr to start of WCHARs
-                       lpMemTxtEnd;     // ...    end   ...
+        HGLOBAL           hGlbFcnArr;       // Function array global memory handle
+        LPFCNARRAY_HEADER lpHeader;         // Ptr to function array header
 
-        // Get ptr to PerTabData global memory
-        lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+        // Clear the ptr type bits
+        hGlbFcnArr = ClrPtrTypeDir (hGlbStr);
 
-        // Use a temp var
-        lpMemTxtSrc = lpMemPTD->lpwszTemp;
+        // Lock the memory to get a ptr to it
+        lpHeader = MyGlobalLock (hGlbFcnArr);
 
-        // Convert the tokens to WCHARs
-        lpMemTxtEnd =
-          DisplayFcnGlb (lpMemTxtSrc,       // Ptr to output save area
-                         hGlbStr,           // Function array global memory handle
-                         FALSE,             // TRUE iff we're to display the header
-                         NULL,              // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
-                         NULL);             // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
-        // Get the line length
-        uLineLen = (UINT) (lpMemTxtEnd - lpMemTxtSrc);
+        // Make a function array text line
+        MakeTxtLine (lpHeader);
 
-        // Allocate global memory for a length <uLineLen> vector of type <APLCHAR>.
-        lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
-        if (lpHeader->hGlbTxtLine)
-        {
-            // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (lpHeader->hGlbTxtLine);
-
-            // Save the line length
-            lpMemTxtLine->U = uLineLen;
-
-            // Copy the line text to global memory
-            CopyMemoryW (&lpMemTxtLine->C, lpMemTxtSrc, uLineLen);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
-        } // End IF
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbFcnArr); lpHeader = NULL;
     } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbStr); lpMemStr = lpYYMemData = lpYYMemStart = NULL;
-#undef  lpHeader
 
     Assert (YYCheckInuse (lpYYRes));
 
@@ -1524,6 +1500,64 @@ ERROR_EXIT:
     YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 } // End MakeFcnStrand_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MakeTxtLine
+//
+//  Make a function text line
+//***************************************************************************
+
+void MakeTxtLine
+    (LPFCNARRAY_HEADER lpHeader)    // Ptr to function array header
+
+{
+    LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
+    UINT           uLineLen;        // Line length
+    LPMEMTXT_UNION lpMemTxtLine;    // Ptr to line text global memory
+    LPAPLCHAR      lpMemTxtSrc,     // Ptr to start of WCHARs
+                   lpMemTxtEnd;     // ...    end   ...
+    LPPL_YYSTYPE   lpMemFcnArr;     // ...                   global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+    // Use a temp var
+    lpMemTxtSrc = lpMemPTD->lpwszTemp;
+
+    Assert (GetSignatureMem (lpHeader) EQ FCNARRAY_HEADER_SIGNATURE);
+
+    // Skip over the function array header
+    lpMemFcnArr = FcnArrayBaseToData (lpHeader);
+
+    // Convert the tokens to WCHARs
+    lpMemTxtEnd =
+      DisplayFcnMem (lpMemTxtSrc,           // Ptr to output save area
+                     lpMemFcnArr,           // Function array global memory handle
+                     lpHeader->tknNELM,     // Token NELM
+                     lpHeader->fnNameType,  // Function array name type
+                     NULL,                  // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                     NULL);                 // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+    // Get the line length
+    uLineLen = (UINT) (lpMemTxtEnd - lpMemTxtSrc);
+
+    // Allocate global memory for a length <uLineLen> vector of type <APLCHAR>.
+    lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
+    if (lpHeader->hGlbTxtLine)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemTxtLine = MyGlobalLock (lpHeader->hGlbTxtLine);
+
+        // Save the line length
+        lpMemTxtLine->U = uLineLen;
+
+        // Copy the line text to global memory
+        CopyMemoryW (&lpMemTxtLine->C, lpMemTxtSrc, uLineLen);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
+    } // End IF
+} // End MakeTxtLine
 
 
 //***************************************************************************
@@ -1635,7 +1669,7 @@ LPPL_YYSTYPE MakeAxis_YY
 
             // Copy the token and rename it
             lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYAxis, FALSE);
-            lpYYRes->tkToken.tkFlags.TknType = TKT_AXISARRAY;
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISARRAY;
 
             break;
 
@@ -2524,7 +2558,7 @@ LPSYMENTRY CopyImmToken_EM
 
 LPTOKEN CopyToken_EM
     (LPTOKEN lpToken,
-     UBOOL   bChanging) // TRUE iff we're going to change the HGLOBAL
+     UBOOL   bChanging)     // TRUE iff we're going to change the HGLOBAL
 
 {
     LPSYMENTRY lpSymEntry;  // Ptr to SYMENTRY in the token

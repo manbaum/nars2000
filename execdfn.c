@@ -1326,7 +1326,8 @@ void UnlocalizeSTEs
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     UINT         numSymEntries,     // # LPSYMENTRYs localized
                  numSym;            // Loop counter
-    LPSYMENTRY   lpSymEntryNxt;     // Ptr to next localized LPSYMENTRY on the SIS
+    LPSYMENTRY   lpSymEntryNxt,     // Ptr to next localized LPSYMENTRY on the SIS
+                 lpSymEntryCur;     // Ptr to SYMENTRY to release & unlocalize
     RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
     LPFORSTMT    lpForStmtNext;     // Ptr to next entry on the FOR/FORLCL stmt stack
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS level
@@ -1364,8 +1365,6 @@ void UnlocalizeSTEs
         // If the hash entry is valid, ...
         if (lpSymEntryNxt->stHshEntry)
         {
-            LPSYMENTRY lpSymEntryCur;       // Ptr to SYMENTRY to release & unlocalize
-
             // Get the ptr to the corresponding SYMENTRY
             lpSymEntryCur = lpSymEntryNxt->stHshEntry->htSymEntry;
 
@@ -1854,25 +1853,46 @@ UBOOL InitFcnSTEs
         TknCount = lpYYArg->TknCount;
 
         // Split cases based upon the function count
-        if (TknCount EQ 1
-         && lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNIMMED)
+        if (TknCount EQ 1)
         {
             // Clear the STE flags & data
             *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
-////////////(*lplpSymEntry)->stData.stLongest = 0;          // stLongest set below
 
-            (*lplpSymEntry)->stFlags.Imm        = TRUE;
-            (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
+            // Set common values
             (*lplpSymEntry)->stFlags.Value      = TRUE;
             (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
             (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
-            (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
+
+            // If the function is immediate, ...
+            if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNIMMED)
+            {
+                (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
+////////////////(*lplpSymEntry)->stFlags.Value      = TRUE;             // Set above
+////////////////(*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;      // ...
+////////////////(*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;    // ...
+////////////////(*lplpSymEntry)->stFlags.UsrDfn     = FALSE;            // Already zero from above
+                (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
+            } else
+            {
+////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;            // Already zero from above
+////////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;    // Already zero from above
+////////////////(*lplpSymEntry)->stFlags.Value      = TRUE;             // Set above
+////////////////(*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;      // ...
+////////////////(*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;    // ...
+                (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb (lpYYArg->tkToken.tkData.tkSym) EQ DFN_HEADER_SIGNATURE);
+                (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir (lpYYArg->tkToken.tkData.tkGlbData);
+            } // End IF/ELSE
         } else
         {
-            APLUINT ByteRes;            // # bytes in the result
-            HGLOBAL hGlbRes;            // Result global memory handle
-            LPVOID  lpMemRes;           // Ptr to result global memory
-            UINT    uFcn;               // Loop counter
+            APLUINT           ByteRes;          // # bytes in the result
+            HGLOBAL           hGlbRes;          // Result global memory handle
+            LPVOID            lpMemRes;         // Ptr to result global memory
+            UINT              uFcn;             // Loop counter
+            LPFCNARRAY_HEADER lpHeader;         // Ptr to function array header
+
+            Assert (IsTknImmed (&lpYYArg->tkToken)
+                 || GetSignatureGlb (lpYYArg->tkToken.tkData.tkSym) EQ FCNARRAY_HEADER_SIGNATURE);
 
             // Calculate space needed for the result
             ByteRes = CalcFcnSize (TknCount);
@@ -1888,14 +1908,14 @@ UBOOL InitFcnSTEs
             // Lock the memory to get a ptr to it
             lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMemRes)
+            // Save a ptr to the function array header
+            lpHeader = (LPFCNARRAY_HEADER) lpMemRes;
+
             // Fill in the header
             lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
             lpHeader->fnNameType  = NAMETYPE_FN12;
             lpHeader->RefCnt      = 1;
             lpHeader->tknNELM     = TknCount;
-////////////lpHeader->hGlbTxtLine = NULL;           // Already zero from GHND
-#undef  lpHeader
 
             // Skip over the header to the data (PL_YYSTYPEs)
             lpMemRes = FcnArrayBaseToData (lpMemRes);
@@ -1904,6 +1924,9 @@ UBOOL InitFcnSTEs
             // Test cases:  +/rank[2] a     (as defined operator)
             //              +/{rank}[2] a   (as primitive operator)
             CopyMemory (lpMemRes, lpYYArg, TknCount * sizeof (PL_YYSTYPE));
+
+            // Make a function array text line
+            MakeTxtLine (lpHeader);
 
             // Loop through the functions incrementing the RefCnt as appropriate
             for (uFcn = 0; uFcn < TknCount; uFcn++, lpYYArg++)
@@ -1933,7 +1956,6 @@ UBOOL InitFcnSTEs
 
             // Clear the STE flags & data
             *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
-////////////(*lplpSymEntry)->stData.stLongest   = 0;            // stLongest set below
 ////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from above
 ////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;// Already zero from above
             (*lplpSymEntry)->stFlags.Value      = TRUE;

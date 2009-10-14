@@ -216,8 +216,7 @@ UBOOL DisplayGlbArr_EM
     LPFMTHEADER  lpFmtHeader,       // Ptr to format header struc
                  lpFmtHeader2;      // ...
     LPFMTCOLSTR  lpFmtColStr;       // Ptr to format col struc
-    APLUINT      uQuadPP,           // []PP
-                 uQuadPW;           // []PW
+    APLUINT      uQuadPW;           // []PW
     UBOOL        bLineCont = FALSE, // TRUE iff this line is a continuation
                  bRawOut,           // TRUE iff using raw output
                  bRet = FALSE;      // TRUE iff the result is valid
@@ -231,8 +230,7 @@ UBOOL DisplayGlbArr_EM
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
 
-    // Get the current value of []PP & PW
-    uQuadPP = GetQuadPP ();
+    // Get the current value of PW
     uQuadPW = GetQuadPW ();
 
     // Allocate space for the display
@@ -1061,7 +1059,7 @@ LPAPLCHAR FormatFloatFC
         int      decpt,                 // Exponent from dtoa
                  iSigDig,               // # significant digits
                  sign;                  // TRUE iff the number is negative
-        UBOOL    bIntegral;             // TRUE iff the # is integral
+        UBOOL    bPowerOfTwo;           // TRUE iff the # is a power of two
 
         // 0 = shortest string
         // 2 = nDigits significant digits
@@ -1078,11 +1076,11 @@ LPAPLCHAR FormatFloatFC
             // Save the FP value in the union so we can pick it apart
             aplFloatUnion.aplFloat = aplFloat;
 
-            // Determine if the value is integral
-            bIntegral = (aplFloatUnion.aplFloatStr.uMantissa EQ 0);
+            // Determine if the value is a power of two
+            bPowerOfTwo = (aplFloatUnion.aplFloatStr.uMantissa EQ 0);
 
-            // If it's not integral, ...
-            if (!bIntegral)
+            // If it's not a power of two, ...
+            if (!bPowerOfTwo)
             {
                 nDigits = 0;                    // No digits (integral)
                 dtoaMode = DTOAMODE_FRACTDIGS;  // 3 = nDigits past decimal point
@@ -1097,12 +1095,7 @@ LPAPLCHAR FormatFloatFC
                 if (aplFloat EQ 0)
                     aplFloat = 0;
             } // End IF
-        } else
-        if (fltDispFmt EQ FLTDISPFMT_RAWFLT && nDigits EQ 0)
-        {
-            nDigits = GetQuadPP ();             // Get the default precision
-            dtoaMode = DTOAMODE_SIGDIGS;        // 2 = nDigits significant digits
-        } // End IF/ELSE
+        } // End IF
 
         // Convert aplFloat to an ASCII string
         // Use David Gay's routines
@@ -1218,8 +1211,8 @@ LPAPLCHAR FormatFloatFC
                 break;
 
             case FLTDISPFMT_RAWINT:
-                // If the number is integral, ...
-                if (bIntegral)
+                // If the number is a power of two, ...
+                if (bPowerOfTwo)
                     // Copy the remaining digits to the result
                     //   converting from one-byte ASCII to two-byte UTF16
                     while (*s)
@@ -1234,7 +1227,10 @@ LPAPLCHAR FormatFloatFC
                     if (nDigits)
                         nSigDig = min (nDigits, DEF_MAX_QUADPP);
                     else
+                    {
                         nSigDig = DEF_MAX_QUADPP;
+                        nDigits = decpt;
+                    } // End IF/ELSE
 
                     // Loop through the digits
                     while (nSigDig > 0
@@ -1273,6 +1269,11 @@ LPAPLCHAR FormatFloatFC
 
             case FLTDISPFMT_RAWFLT:
                 // Format the number wth no more than nDigits significant digits
+
+                // If we're formatting as default, ...
+                if (nDigits EQ 0)
+                    // Get the default precision
+                    nDigits = GetQuadPP ();
 
                 // If (decpt > nDigits) or (decpt < -5), switch to E-format
                 if (decpt > nDigits

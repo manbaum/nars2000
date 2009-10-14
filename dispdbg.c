@@ -1438,27 +1438,119 @@ LPWCHAR DisplayFcnSub
             switch (((LPHEADER_SIGNATURE) lpMemData)->nature)
             {
                 case FCNARRAY_HEADER_SIGNATURE:
+                    lpMemData = FcnArrayBaseToData (lpMemData);
+
                     lpaplChar =
-                      DisplayFcnGlb (lpaplChar,             // Ptr to output save area
-                                     hGlbData,              // Function array global memory handle
-                                     FALSE,                 // TRUE iff we're to display the header
+                      DisplayFcnSub (lpaplChar,             // Ptr to output save area
+                                     lpMemData,             // Ptr to function array data
+                                     tknNELM,               // Token NELM
                                      lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
                                      lpSavedWsGlbVarParm);  // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                     break;
 
                 case DFN_HEADER_SIGNATURE:
-                    // If there's a callback function, use it
-                    if (lpSavedWsGlbVarConv)
+                    // Split cases based upon the UDFO type
+                    switch (((LPDFN_HEADER) lpMemData)->DfnType)
+                    {
+                        case DFNTYPE_OP1:
+                            // Check for axis operator
+                            if (tknNELM > 1
+                             && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+                              || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+                            {
+                                // If there's a function, ...
+                                if (tknNELM > 2)
+                                {
                                     lpaplChar =
-                          (*lpSavedWsGlbVarConv) (lpaplChar,                // Ptr to output save area
-                                                  MakePtrTypeGlb (hGlbData),// Object global memory handle
-                                                  lpSavedWsGlbVarParm);     // Ptr to extra parameters for lpSavedWsGlbVarConv
-                    else
-                        // Copy the user-defined function/operator name
+                                      DisplayFcnSub (lpaplChar,                                         // Fcn
+                                                    &lpYYMem[2],
+                                                     tknNELM - 2,
+                                                     lpSavedWsGlbVarConv,
+                                                     lpSavedWsGlbVarParm);
+                                    *lpaplChar++ = L' ';                                                // Sep
+                                } // End IF
+
                                 lpaplChar =
-                          CopySteName (lpaplChar,                               // Ptr to result global memory
-                                       ((LPDFN_HEADER) lpMemData)->steFcnName,  // Ptr to function symbol table entry
-                                       NULL);                                   // Ptr to name length (may be NULL)
+                                  FillDfnName (lpaplChar,               // Ptr to output save area      // Op1
+                                               hGlbData,                // Global memory handle
+                                               lpMemData,               // Ptr to global memory
+                                               lpSavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                                               lpSavedWsGlbVarParm);    // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                *lpaplChar++ = L' ';                                                    // Sep
+                                lpaplChar =
+                                  DisplayFcnSub (lpaplChar,                                             // [X]
+                                                &lpYYMem[1],
+                                                 1,
+                                                 lpSavedWsGlbVarConv,
+                                                 lpSavedWsGlbVarParm);
+                            } else
+                            {
+                                if (tknNELM > 1)
+                                {
+                                    lpaplChar =
+                                      DisplayFcnSub (lpaplChar,                                         // Fcn
+                                                    &lpYYMem[1],
+                                                     tknNELM - 1,
+                                                     lpSavedWsGlbVarConv,
+                                                     lpSavedWsGlbVarParm);
+                                    *lpaplChar++ = L' ';                                                // Sep
+                                } // End IF
+
+                                lpaplChar =
+                                  FillDfnName (lpaplChar,               // Ptr to output save area      // Op1
+                                               hGlbData,                // Global memory handle
+                                               lpMemData,               // Ptr to global memory
+                                               lpSavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                                               lpSavedWsGlbVarParm);    // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                            } // End IF/ELSE
+
+                            break;
+
+                        case DFNTYPE_OP2:
+                            TknCount = 1 + lpYYMem[1].TknCount;
+                            // If there's a function, ...
+                            if (tknNELM > 2)
+                            {
+                                lpaplChar =
+                                  DisplayFcnSub (lpaplChar,                                             // Lfcn
+                                                &lpYYMem[1],
+                                                 lpYYMem[1].TknCount,
+                                                 lpSavedWsGlbVarConv,
+                                                 lpSavedWsGlbVarParm);
+                                *lpaplChar++ = L' ';                                                    // Sep
+                            } // End IF
+
+                            lpaplChar =
+                              FillDfnName (lpaplChar,               // Ptr to output save area          // Op2
+                                           hGlbData,                // Global memory handle
+                                           lpMemData,               // Ptr to global memory
+                                           lpSavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                                           lpSavedWsGlbVarParm);    // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                            if (lpYYMem[TknCount].TknCount > 1)
+                                *lpaplChar++ = L'(';
+                            lpaplChar =
+                              DisplayFcnSub (lpaplChar,                                                 // Rfcn
+                                            &lpYYMem[TknCount],
+                                             lpYYMem[TknCount].TknCount,
+                                             lpSavedWsGlbVarConv,
+                                             lpSavedWsGlbVarParm);
+                            if (lpYYMem[TknCount].TknCount > 1)
+                                *lpaplChar++ = L')';
+                            break;
+
+                        case DFNTYPE_FCN:
+                            lpaplChar =
+                              FillDfnName (lpaplChar,               // Ptr to output save area          // Fcn
+                                           hGlbData,                // Global memory handle
+                                           lpMemData,               // Ptr to global memory
+                                           lpSavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                                           lpSavedWsGlbVarParm);    // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
                     break;
 
                 defstop
@@ -1514,6 +1606,35 @@ LPWCHAR DisplayFcnSub
 
     return lpaplChar;
 } // End DisplayFcnSub
+
+
+//***************************************************************************
+//  $FillDfnName
+//
+//  Fill in the name of a UDFO
+//***************************************************************************
+
+LPWCHAR FillDfnName
+    (LPWCHAR             lpaplChar,             // Ptr to output save area
+     HGLOBAL             hGlbData,              // Global memory handle
+     LPVOID              lpMemData,             // Ptr to global memory
+     LPSAVEDWSGLBVARCONV lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+     LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+
+{
+    // If there's a callback function, use it
+    if (lpSavedWsGlbVarConv)
+        return
+          (*lpSavedWsGlbVarConv) (lpaplChar,                // Ptr to output save area
+                                  MakePtrTypeGlb (hGlbData),// Object global memory handle
+                                  lpSavedWsGlbVarParm);     // Ptr to extra parameters for lpSavedWsGlbVarConv
+    else
+        // Copy the user-defined function/operator name
+        return
+          CopySteName (lpaplChar,                               // Ptr to result global memory
+                       ((LPDFN_HEADER) lpMemData)->steFcnName,  // Ptr to function symbol table entry
+                       NULL);                                   // Ptr to name length (may be NULL)
+} // End FillDfnName
 
 
 #ifdef DEBUG

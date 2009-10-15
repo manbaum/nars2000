@@ -2891,6 +2891,31 @@ UBOOL IsTknTypeNamed
 
 
 //***************************************************************************
+//  $IsTknTypeNamedFcnOpr
+//
+//  Return TRUE iff the given token type is a named fcn/opr
+//***************************************************************************
+
+UBOOL IsTknTypeNamedFcnOpr
+    (TOKEN_TYPES tknType)
+
+{
+    // Split cases based upon the token type
+    switch (tknType)
+    {
+        case TKT_FCNNAMED:
+        case TKT_OP1NAMED:
+        case TKT_OP2NAMED:
+        case TKT_OP3NAMED:
+            return TRUE;
+
+        default:
+            return FALSE;
+    } // End SWITCH
+} // End IsTknTypeNamedFcnOpr
+
+
+//***************************************************************************
 //  $IsTknTypeNamedVar
 //
 //  Return TRUE iff the given token type is a named var

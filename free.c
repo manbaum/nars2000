@@ -211,6 +211,8 @@ void FreeResultSub
         case TKT_VARARRAY:  // tkData contains an HGLOBAL of an array of LPSYMENTRYs and HGLOBALs
         case TKT_AXISARRAY: // ...
         case TKT_FCNARRAY:  // ...
+        case TKT_NUMSTRAND: // ...
+        case TKT_CHRSTRAND: // ...
         case TKT_LSTARRAY:  // tkData contains an HGLOBAL of an array of LPTOKENs
         case TKT_LSTMULT:   // ...
             // Get the global memory ptr
@@ -555,14 +557,14 @@ UBOOL FreeResultGlobalFcn
     (HGLOBAL hGlbData)
 
 {
-    LPVOID       lpMemData;     // Ptr to the function array's global memory
-    UINT         tknNELM,       // The # tokens in the function array
-                 u,             // Loop counter
-                 RefCnt;        // Reference count
-    UBOOL        bRet;          // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYToken;     // Ptr to function array token
-    HGLOBAL      hGlbLcl,       // Global memory handle
-                 hGlbTxtLine;   // Line text gobal memory handle
+    LPFCNARRAY_HEADER lpMemHdr;     // Ptr to the function array's global memory
+    UINT              tknNELM,      // The # tokens in the function array
+                      u,            // Loop counter
+                      RefCnt;       // Reference count
+    UBOOL             bRet;         // TRUE iff result is valid
+    LPPL_YYSTYPE      lpYYToken;    // Ptr to function array token
+    HGLOBAL           hGlbLcl,      // Global memory handle
+                      hGlbTxtLine;  // Line text gobal memory handle
 
     DBGENTER;
 
@@ -573,14 +575,12 @@ UBOOL FreeResultGlobalFcn
     hGlbData = ClrPtrTypeDir (hGlbData);
 
     // Lock the memory to get a ptr to it
-    lpMemData = MyGlobalLock (hGlbData);
+    lpMemHdr = MyGlobalLock (hGlbData);
 
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMemData)
     // Get the Type, RefCnt, NELM, and line text handle
-    RefCnt      = lpHeader->RefCnt;
-    tknNELM     = lpHeader->tknNELM;
-    hGlbTxtLine = lpHeader->hGlbTxtLine;
-#undef  lpHeader
+    RefCnt      = lpMemHdr->RefCnt;
+    tknNELM     = lpMemHdr->tknNELM;
+    hGlbTxtLine = lpMemHdr->hGlbTxtLine;
 
     // Ensure non-zero
     Assert (RefCnt > 0);
@@ -598,7 +598,7 @@ UBOOL FreeResultGlobalFcn
         } // End IF
 
         // Skip over the header to the data (PL_YYSTYPEs)
-        lpYYToken = FcnArrayBaseToData (lpMemData);
+        lpYYToken = FcnArrayBaseToData (lpMemHdr);
 
         // Loop through the PL_YYSTYPEs
         for (u = 0; u < tknNELM; u++, lpYYToken++)
@@ -736,7 +736,7 @@ UBOOL FreeResultGlobalFcn
     } // End IF
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMemData = NULL;
+    MyGlobalUnlock (hGlbData); lpMemHdr = NULL;
 
     // If the RefCnt is zero, free the global
     bRet = (RefCnt EQ 0);

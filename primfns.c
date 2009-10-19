@@ -1312,8 +1312,9 @@ HGLOBAL MakeDydPrototype_EM
                     } // End IF/ELSE
                 } else
                 {
-                    uLft = uRes % aplNELMLft;
-                    uRht = uRes % aplNELMRht;
+                    // Handle 0 modulus as C fails miserably
+                    uLft = mod64 (uRes, aplNELMLft);
+                    uRht = mod64 (uRes, aplNELMRht);
                 } // End IF/ELSE
 
                 // If the left arg element is simple or an STE,
@@ -1586,6 +1587,7 @@ HGLOBAL CopyArray_EM
     APLRANK      aplRank;
     LPSYMENTRY   lpSymSrc,
                  lpSymDst;
+    LPPL_YYSTYPE lpMemFcn;                  // Ptr to function array data
     APLNELM      u;
     UBOOL        bRet = TRUE;
 
@@ -1715,12 +1717,33 @@ HGLOBAL CopyArray_EM
                 // Set the RefCnt
                 lpHeader->RefCnt = 1;
 
+                // Get the NELM
+                aplNELM = lpHeader->tknNELM;
+
                 // If there is a line text global memory handle, ...
                 if (lpHeader->hGlbTxtLine)
                     lpHeader->hGlbTxtLine =
                       // Copy the memory to a new handle, ignoring failure
                       CopyGlbMemory (lpHeader->hGlbTxtLine, TRUE);
 #undef  lpHeader
+                // Skip over the header to the data
+                lpMemFcn = FcnArrayBaseToData (lpMemDst);
+
+                // Loop through the items
+                for (u = 0; u < aplNELM; u++, lpMemFcn++)
+                // Split cases based upon the token type
+                switch (lpMemFcn->tkToken.tkFlags.TknType)
+                {
+                    case TKT_VARARRAY:
+                    case TKT_FCNARRAY:
+                        DbgIncrRefCntDir (lpMemFcn->tkToken.tkData.tkGlbData);
+
+                        break;
+
+                    default:
+                        break;
+                } // End FOR/SWITCH
+
                 break;
 
             case LSTARRAY_HEADER_SIGNATURE:     // No call for these as yet
@@ -2443,6 +2466,27 @@ APLINT abs64
 
 
 //***************************************************************************
+//  $mod64
+//
+//  Return the modulus of a 64-bit integer by a 64-bit integer
+//
+//  I'd like to use C's bulltin function a % b, but it signals a
+//    Divide By Zero error if b EQ 0.
+//***************************************************************************
+
+APLINT mod64
+    (APLINT aplLft,             // Left arg (the value -- moduland?)
+     APLINT aplRht)             // Right arg (the modulus)
+
+{
+    if (aplRht)
+        return aplLft % aplRht;
+    else
+        return aplLft;
+} // End mod64
+
+
+//***************************************************************************
 //  $_iadd64
 //
 //  Add two 64-bit integers retaining maximum precision
@@ -2970,7 +3014,7 @@ UBOOL IsTknUsrDfn
 //***************************************************************************
 
 UBOOL IsTknImmed
-    (LPTOKEN lptkVar)
+    (LPTOKEN lptkVar)                       // Ptr to var token
 
 {
     // Split cases based upon the token type
@@ -2996,6 +3040,30 @@ UBOOL IsTknImmed
             return FALSE;
     } // End SWITCH
 } // End IsTknImmed
+
+
+//***************************************************************************
+//  $SetVarArraySkipRefCntFlag
+//
+//  Set SkipRefCntIncr flag in a variable array.
+//***************************************************************************
+
+void SetVarArraySkipRefCntFlag
+    (LPTOKEN lptkVar)                   // Ptr to var token
+
+{
+    HGLOBAL           hGlbVar;
+    LPVARARRAY_HEADER lpMemVar;
+
+    GetGlbPtrs_LOCK (lptkVar, &hGlbVar, &lpMemVar);
+    if (hGlbVar)
+    {
+        // Set the flag
+        lpMemVar->SkipRefCntIncr = TRUE;
+
+        MyGlobalUnlock (hGlbVar); lpMemVar = NULL;
+    } // End IF
+} // End SetVarArrayFlags
 
 
 //***************************************************************************

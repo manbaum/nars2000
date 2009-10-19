@@ -423,19 +423,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
-    // If we incremented the RefCnt for the right operand,
-    //   decrement it now
-    if (lpYYFcnTmpRht
-     && lpMemDfnHdr->steRhtOpr NE NULL)
-        UninitOprSTEs (lpYYFcnTmpRht,
-                      &lpMemDfnHdr->steRhtOpr);
 LEFT_UNLOCALIZE_EXIT:
-    // If we incremented the RefCnt for the left operand,
-    //   decrement it now
-    if (lpYYFcnTmpLft
-     && lpMemDfnHdr->steLftOpr NE NULL)
-        UninitOprSTEs (lpYYFcnTmpLft,
-                      &lpMemDfnHdr->steLftOpr);
 UNLOCALIZE_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
@@ -1612,6 +1600,8 @@ void InitVarSTEs
 
             case TKT_VARARRAY:
             case TKT_AXISARRAY:
+            case TKT_CHRSTRAND:
+            case TKT_NUMSTRAND:
                 // Get the arg global memory handle
                 hGlbArg = lptkArg->tkData.tkGlbData;
 
@@ -1973,79 +1963,6 @@ WSFULL_EXIT:
     return FALSE;
 } // End InitFcnSTEs
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $UninitOprSTEs
-//
-//  Uninitialize operand arg STEs
-//***************************************************************************
-
-void UninitOprSTEs
-    (LPPL_YYSTYPE lpYYArg,          // Ptr to arg PL_YYSTYPE
-     LPSYMENTRY  *lplpSymEntry)     // Ptr to LPSYMENTRYs
-
-{
-    UINT    uFcn,                   // Loop counter
-            TknCount;               // Token count
-
-    // Get the token count
-    TknCount = lpYYArg->TknCount;
-
-    // Loop through the functions/variables decrementing the RefCnt as appropriate
-    for (uFcn = 0; uFcn < TknCount; uFcn++, lpYYArg++)
-    {
-        // Split cases based upon the token type
-        switch (lpYYArg->tkToken.tkFlags.TknType)
-        {
-            case TKT_VARNAMED:
-            case TKT_FCNNAMED:
-                // If it's not an immediate, ...
-                if (!lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
-                    // Decrement the RefCnt
-                    FreeResultGlobalDFLV (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
-
-                break;
-
-            case TKT_VARARRAY:
-            case TKT_FCNARRAY:
-                // Decrement the RefCnt
-                FreeResultGlobalDFLV (lpYYArg->tkToken.tkData.tkGlbData);
-
-                break;
-
-            case TKT_VARIMMED:
-            case TKT_FCNIMMED:
-            case TKT_FILLJOT:
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
-    } // End FOR
-
-    // If the STE is a global memory handle, decrement its RefCnt
-    if ((*lplpSymEntry)->stFlags.Value
-     && (*lplpSymEntry)->stFlags.Imm EQ FALSE)
-    {
-        HGLOBAL hGlbData;
-        UINT    uRefCnt;
-
-        // Get the global memory handle
-        hGlbData = (*lplpSymEntry)->stData.stGlbData;
-
-        // Get the RefCnt
-        uRefCnt = GetRefCntGlb (hGlbData);
-
-        // Decrement the RefCnt
-        FreeResultGlobalDFLV (hGlbData);
-
-        // If the RefCnt was 1 (now zero), ...
-        if (uRefCnt EQ 1)
-            // Mark as without a value
-            (*lplpSymEntry)->stFlags.Value = FALSE;
-    } // End IF
-} // End UninitOprSTEs
 
 
 //***************************************************************************

@@ -185,7 +185,6 @@ typedef struct tagSTART_ADDRESSES
     "LocalizeLabels"            , (LPUCHAR) &LocalizeLabels             ,
     "InitVarSTEs"               , (LPUCHAR) &InitVarSTEs                ,
     "InitFcnSTEs"               , (LPUCHAR) &InitFcnSTEs                ,
-    "UninitOprSTEs"             , (LPUCHAR) &UninitOprSTEs              ,
     "LocalizeSymEntries"        , (LPUCHAR) &LocalizeSymEntries         ,
 
     // execfns.c
@@ -408,6 +407,8 @@ typedef struct tagSTART_ADDRESSES
 
     // qf_*.c
 
+    // qf_cr.c
+    "CopySteName"               , (LPUCHAR) &CopySteName                ,
 
     // qf_tf.c
     "SysFnTF_EM_YY"             , (LPUCHAR) &SysFnTF_EM_YY              ,

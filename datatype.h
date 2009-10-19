@@ -265,11 +265,12 @@ typedef struct tagVARARRAY_HEADER
                      PV0:1,             //      00000200:  Permutation Vector in origin-0
                      PV1:1,             //      00000400:  ...                          1
                      bSelSpec:1,        //      00000800:  Select Specification array
+                     SkipRefCntIncr:1,  //      00001000:  Skip the next RefCnt increment
 #ifdef DEBUG
-                     bMFOvar:1,         //      00001000:  Magic Function/Operator var -- do not display
-                     :19;               //      FFFFF000:  Available bits
+                     bMFOvar:1,         //      00002000:  Magic Function/Operator var -- do not display
+                     :18;               //      FFFFC000:  Available bits
 #else
-                     :20;               //      FFFFF000:  Available bits
+                     :19;               //      FFFFE000:  Available bits
 #endif
     UINT             RefCnt;            // 08:  Reference count
     APLNELM          NELM;              // 0C:  # elements in the array

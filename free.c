@@ -676,6 +676,8 @@ UBOOL FreeResultGlobalFcn
 
             case TKT_VARARRAY:      // Free the var array (strand arg to dyadic op)
             case TKT_AXISARRAY:     // Free the axis array
+            case TKT_CHRSTRAND:     // Free the character strand
+            case TKT_NUMSTRAND:     // Free the numeric strand
                 // Get the global handle
                 hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
 

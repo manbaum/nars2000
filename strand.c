@@ -72,6 +72,9 @@ void InitVarStrand
 //  $PushVarStrand_YY
 //
 //  Push a variable token onto the strand stack.
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 LPPL_YYSTYPE PushVarStrand_YY
@@ -116,8 +119,9 @@ LPPL_YYSTYPE PushVarStrand_YY
 //  $PushFcnStrand_YY
 //
 //  Push a function token onto the strand stack.
-//  No RefCnt copies are made by this routine, so don't free
-//    the argument.
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 LPPL_YYSTYPE PushFcnStrand_YY
@@ -153,7 +157,7 @@ LPPL_YYSTYPE PushFcnStrand_YY
 
     // Save this token on the strand stack
     //   and skip over it
-    lpYYCopy = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
+    lpYYCopy = CopyPL_YYSTYPE_YY (lpYYArg);
     YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_FCN]++, lpYYCopy);
     YYFree (lpYYCopy); lpYYCopy = NULL;
 #ifdef DEBUG
@@ -310,6 +314,9 @@ void FreeStrand
 //  $MakeVarStrand_EM_YY
 //
 //  Make the variable strand into an immediate token or a global memory array.
+//
+//  On exit:
+//      RefCnt++ at the top level.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -344,7 +351,7 @@ LPPL_YYSTYPE MakeVarStrand_EM_YY
         LPSYMENTRY  *Sym;
     } LPAPL;
 
-static char tabConvert[][STRAND_LENGTH] =
+static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 // Initial       Boolean        Integer        Float          Char           CharStrand     String         Hetero         Nested
 {{STRAND_INIT  , STRAND_BOOL  , STRAND_INT   , STRAND_FLOAT , STRAND_CHAR  , STRAND_CHARST, STRAND_STRING, STRAND_HETERO, STRAND_NESTED}, // Initial
  {STRAND_BOOL  , STRAND_BOOL  , STRAND_INT   , STRAND_FLOAT , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED}, // Boolean
@@ -357,7 +364,7 @@ static char tabConvert[][STRAND_LENGTH] =
  {STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED}, // Nested
 };
 
-    char          cStrandCurType = STRAND_INIT,
+    STRAND_TYPES  cStrandCurType = STRAND_INIT,
                   cStrandNxtType;
     APLSTYPE      aplTypeNum,           // Numeric strand storage type
                   aplTypeRes;           // Result storage type
@@ -615,11 +622,8 @@ static char tabConvert[][STRAND_LENGTH] =
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                        lpYYRes->tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
+                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYStrand->tkToken.tkData.tkGlbData);
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
-
-                        // Mark as reused
-                        lpYYStrand->tkToken.tkData.tkGlbData = PTR_REUSED;
 
                         break;
 
@@ -630,11 +634,11 @@ static char tabConvert[][STRAND_LENGTH] =
                 break;
             } // End STRAND_BOOL/INT/CHAR/FLOAT
 
-            case STRAND_NESTED:     // e.g., a named variable that is not a simple scalar
+            case STRAND_NESTED:
                 // Split cases based upon the token type
                 switch (lpYYStrand->tkToken.tkFlags.TknType)
                 {
-                    case TKT_VARNAMED:
+                    case TKT_VARNAMED:      // e.g., a named variable that is not a simple scalar
                         // tkData is an LPSYMENTRY
                         Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -652,7 +656,7 @@ static char tabConvert[][STRAND_LENGTH] =
 
                         break;
 
-                    case TKT_VARARRAY:
+                    case TKT_VARARRAY:      // e.g., {zilde}
                         // tkData is a valid HGLOBAL variable array
                         Assert (IsGlbTypeVarDir (lpYYStrand->tkToken.tkData.tkGlbData));
 
@@ -660,11 +664,8 @@ static char tabConvert[][STRAND_LENGTH] =
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                        lpYYRes->tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
+                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYStrand->tkToken.tkData.tkGlbData);
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
-
-                        // Mark as reused
-                        lpYYStrand->tkToken.tkData.tkGlbData = PTR_REUSED;
 
                         break;
 
@@ -679,11 +680,8 @@ static char tabConvert[][STRAND_LENGTH] =
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
+                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYStrand->tkToken.tkData.tkGlbData);
                 lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
-
-                // Mark as reused
-                lpYYStrand->tkToken.tkData.tkGlbData = PTR_REUSED;
 
                 break;
 
@@ -1138,15 +1136,21 @@ static char tabConvert[][STRAND_LENGTH] =
                     break;
 
                 case TKT_VARARRAY:  // 1('ab')
+                    // tkData is a valid HGLOBAL variable array
+                    Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
+
+                    // Copy the nested entry to the result, w/o incrementing the RefCnt
+                    //   as it is a temp with no other reference whose value is passed on
+                    *LPAPL.Nested++ = lpYYToken->tkToken.tkData.tkGlbData;
+
+                    break;
+
                 case TKT_CHRSTRAND: // 1 'ab'
                     // tkData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
 
-                    // Copy the nested entry to the result
-                    *LPAPL.Nested++ = lpYYToken->tkToken.tkData.tkGlbData;
-
-                    // Mark as reused
-                    lpYYToken->tkToken.tkData.tkGlbData = PTR_REUSED;
+                    // Copy the nested entry to the result, incrementing the RefCnt
+                    *LPAPL.Nested++ = CopySymGlbDir (lpYYToken->tkToken.tkData.tkGlbData);
 
                     break;
 
@@ -1214,9 +1218,6 @@ static char tabConvert[][STRAND_LENGTH] =
     if (!bRet)
         goto ERROR_EXIT;
 NORMAL_EXIT:
-    // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_VAR], lpplLocalVars->lpYYStrArrBase[STRAND_VAR]);
-
     // Strip the tokens on this portion of the strand stack
     StripStrand (lpplLocalVars, lpYYRes, STRAND_VAR);
 
@@ -1254,6 +1255,9 @@ ERROR_EXIT:
 //  $MakeFcnStrand_EM_YY
 //
 //  Make the function strand into an immediate token or a global memory array.
+//
+//  On exit:
+//      RefCnt++ at all levels.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1476,8 +1480,10 @@ NORMAL_EXIT:
     DisplayStrand (STRAND_FCN);
 #endif
 
-    // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_FCN], lpplLocalVars->lpYYStrArrBase[STRAND_FCN]);
+    // If the arg was CopyArray'ed, ...
+    if (lpYYArg->YYCopyArray)
+        // Free the tokens on this portion of the strand stack
+        FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_FCN], lpplLocalVars->lpYYStrArrBase[STRAND_FCN]);
 
     // Strip the tokens on this portion of the strand stack
     StripStrand (lpplLocalVars, lpYYRes, STRAND_FCN);
@@ -1604,6 +1610,9 @@ LPPL_YYSTYPE CopyString_EM_YY
 //  $MakeAxis_YY
 //
 //  Make an axis value
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1640,7 +1649,7 @@ LPPL_YYSTYPE MakeAxis_YY
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYAxis->tkToken.tkData.tkSym->stData.stGlbData);
+                lpYYRes->tkToken.tkData.tkGlbData  = lpYYAxis->tkToken.tkData.tkSym->stData.stGlbData;
                 lpYYRes->tkToken.tkCharIndex       = lpYYAxis->tkToken.tkCharIndex;
 
                 break;
@@ -1657,18 +1666,19 @@ LPPL_YYSTYPE MakeAxis_YY
 
         case TKT_VARIMMED:
             // Copy the token and rename it
-            YYCopy (lpYYRes, lpYYAxis);     // No need to CopyPL_YYSTYPE_EM_YY immediates
+            YYCopy (lpYYRes, lpYYAxis);     // No need to CopyPL_YYSTYPE_YY immediates
             lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISIMMED;
 
             break;
 
         case TKT_VARARRAY:
-            // Free the result as CopyPL_YYSTYPE_EM_YY
+            // Free the result as CopyPL_YYSTYPE_YY
             //   will allocate a result
             YYFree (lpYYRes); lpYYRes = NULL;
 
             // Copy the token and rename it
-            lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYAxis, FALSE);
+            //   but don't increment the refcnt as it's a temporary
+            lpYYRes = CopyPL_YYSTYPE_YY (lpYYAxis);
             lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISARRAY;
 
             break;
@@ -1688,6 +1698,9 @@ LPPL_YYSTYPE MakeAxis_YY
 //  $MakePrimFcn_YY
 //
 //  Make a token a primitive function
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1704,7 +1717,7 @@ LPPL_YYSTYPE MakePrimFcn_YY
 
     DBGENTER;
 
-    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcn, FALSE);
+    lpYYRes = CopyPL_YYSTYPE_YY (lpYYFcn);
     lpYYRes->tkToken.tkFlags.TknType = TKT_FCNIMMED;
     lpYYRes->tkToken.tkFlags.ImmType = GetImmTypeFcn (lpYYFcn->tkToken.tkData.tkChar);
     lpYYRes->lpYYFcnBase = NULL;
@@ -1759,6 +1772,9 @@ LPPL_YYSTYPE MakeFillJot_YY
 //  $MakeNameFcnOpr_YY
 //
 //  Make a token for a named function, monadic/dyadic/ambiguous operator, and train
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1829,7 +1845,7 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
     } else
     {
         // Get the named function global memory handle
-        hGlbData = ClrPtrTypeDir (lpYYFcnOpr->tkToken.tkData.tkSym->stData.stGlbData);
+        hGlbData = lpYYFcnOpr->tkToken.tkData.tkSym->stData.stGlbData;
 
         Assert (hGlbData NE NULL);
 
@@ -1849,10 +1865,6 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
 
             Assert (lpYYRes->tkToken.tkFlags.TknType EQ TKT_FCNNAMED);
 
-            // Increment the RefCnt as the next line after the caller
-            //   will decrement it
-            DbgIncrRefCntDir (MakePtrTypeGlb (hGlbData));
-
             // Make a copy of the array as we're changing parts of it
             hGlbData = CopyArray_EM (hGlbData, &lpYYRes->tkToken);
 
@@ -1862,6 +1874,9 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
             // Change the token type and data to an array
             lpYYRes->tkToken.tkFlags.TknType = TKT_FCNARRAY;
             lpYYRes->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbData);
+
+            // Mark as copied so it'll be freed later
+            lpYYRes->YYCopyArray = TRUE;
 
             // Get the # function tokens
             tknNELM = lpMemFcnHdr->tknNELM;
@@ -1879,7 +1894,7 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
             // We no longer need this ptr
             MyGlobalUnlock (hGlbData); lpMemFcnHdr = lpMemData = NULL;
         } else
-            lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcnOpr, FALSE);
+            lpYYRes = CopyPL_YYSTYPE_YY (lpYYFcnOpr);
     } // End IF/ELSE
 
     // Set common elements
@@ -1898,6 +1913,9 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
 //  $MakePrimOp1_YY
 //
 //  Make a primitive monadic operator
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1919,6 +1937,9 @@ LPPL_YYSTYPE MakePrimOp1_YY
 //  $MakePrimOp2_YY
 //
 //  Make a primitive dyadic operator
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1940,6 +1961,9 @@ LPPL_YYSTYPE MakePrimOp2_YY
 //  $MakePrimOp3_YY
 //
 //  Make a primitive ambiguous operator
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1961,6 +1985,9 @@ LPPL_YYSTYPE MakePrimOp3_YY
 //  $MakePrimOp123_YY
 //
 //  Common routine to MakePrimOp?_YY
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1976,7 +2003,7 @@ LPPL_YYSTYPE MakePrimOp123_YY
 {
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
-    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp123, FALSE);
+    lpYYRes = CopyPL_YYSTYPE_YY (lpYYOp123);
     lpYYRes->lpYYFcnBase = NULL;
     lpYYRes->TknCount    = 0;
 #ifdef DEBUG
@@ -2013,6 +2040,9 @@ void InitNameStrand
 //  $PushNameStrand_YY
 //
 //  Push a name strand
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 LPPL_YYSTYPE PushNameStrand_YY
@@ -2055,6 +2085,9 @@ LPPL_YYSTYPE PushNameStrand_YY
 //  $MakeNameStrand_EM_YY
 //
 //  Make a name strand
+//
+//  On exit:
+//      No change in RefCnt.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -2547,7 +2580,10 @@ LPSYMENTRY CopyImmToken_EM
 //***************************************************************************
 //  $CopyToken_EM
 //
-//  Make a copy of a token, incrementing ref count if not changing
+//  Make a copy of a token.
+//
+//  On exit:
+//      RefCnt++ if not changing.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -2620,7 +2656,9 @@ LPTOKEN CopyToken_EM
             break;              // Ignore immediates
 
         case TKT_VARARRAY:      // tkData is HGLOBAL
-        case TKT_AXISARRAY:     // tkData is HGLOBAL
+        case TKT_AXISARRAY:     // ...
+        case TKT_CHRSTRAND:     // ...
+        case TKT_NUMSTRAND:     // ...
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lpToken->tkData.tkGlbData));
 
@@ -2666,7 +2704,10 @@ LPTOKEN CopyToken_EM
 //***************************************************************************
 //  $CopyPL_YYSTYPE_EM_YY
 //
-//  Make a copy of a PL_YYSTYPE, incrementing ref count if not changing
+//  Make a copy of a PL_YYSTYPE.
+//
+//  On exit:
+//      RefCnt++ if not changing.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -2699,6 +2740,42 @@ LPPL_YYSTYPE CopyPL_YYSTYPE_EM_YY
 
     return lpYYRes;
 } // End CopyPL_YYSTYPE_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CopyPL_YYSTYPE_YY
+//
+//  Make a copy of a PL_YYSTYPE
+//
+//  On exit:
+//      No change in RefCnt.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CopyPL_YYSTYPE_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE CopyPL_YYSTYPE_YY
+    (LPPL_YYSTYPE lpYYArg)
+
+{
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
+
+    DBGENTER;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Copy the PL_YYSTYPE
+    YYCopy (lpYYRes, lpYYArg);
+
+    DBGLEAVE;
+
+    return lpYYRes;
+} // End CopyPL_YYSTYPE_YY
 #undef  APPEND_NAME
 
 

@@ -98,7 +98,14 @@ int ChangeRefCntDir
                         DbgStop ();
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
-                    lpHeader->RefCnt += iIncr;
+
+                    // If we're to skip this RefCnt increment, ...
+                    if (iIncr EQ 1
+                     && lpHeader->SkipRefCntIncr)
+                        // Clear the flag
+                        lpHeader->SkipRefCntIncr = FALSE;
+                    else
+                        lpHeader->RefCnt += iIncr;
                     RefCnt = lpHeader->RefCnt;
 #undef  lpHeader
                     break;

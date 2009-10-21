@@ -114,7 +114,7 @@ NORMAL_EXIT:
 //  $YYCopy
 //
 //  Copy one PL_YYSTYPE to another
-//    retaining the destination Inuse, Flag, and Index
+//    retaining the destination Inuse and DEBUG values
 //***************************************************************************
 
 void YYCopy
@@ -123,22 +123,31 @@ void YYCopy
 
 {
 #ifdef DEBUG
-    UINT YYIndex,
-         YYFlag;
+    UINT   YYIndex,
+           YYFlag,
+           SILevel,
+           uLineNum;
+    LPCHAR lpFileName;
 #endif
 
     Assert (lpYYDst->YYInuse);
 
 #ifdef DEBUG
-    // Save the old index & flag
-    YYIndex = lpYYDst->YYIndex;
-    YYFlag  = lpYYDst->YYFlag;
+    // Save the old values
+    YYIndex    = lpYYDst->YYIndex;
+    YYFlag     = lpYYDst->YYFlag;
+    SILevel    = lpYYDst->SILevel;
+    lpFileName = lpYYDst->lpFileName;
+    uLineNum   = lpYYDst->uLineNum;
 #endif
-    *lpYYDst = *lpYYSrc;            // Copy the PL_YYSTYPE
-    lpYYDst->YYInuse = TRUE;        // Retain YYInuse flag
+    *lpYYDst = *lpYYSrc;                // Copy the PL_YYSTYPE
+    lpYYDst->YYInuse = TRUE;            // Retain YYInuse flag
 #ifdef DEBUG
-    lpYYDst->YYIndex = YYIndex;     // Retain YYIndex
-    lpYYDst->YYFlag  = YYFlag;      // ...    YYFlag
+    lpYYDst->YYIndex    = YYIndex;      // Retain YYIndex
+    lpYYDst->YYFlag     = YYFlag;       // ...    YYFlag
+    lpYYDst->SILevel    = SILevel;      // ...    SILevel
+    lpYYDst->lpFileName = lpFileName;   // ...    ptr to filename
+    lpYYDst->uLineNum   = uLineNum;     // ...    line #
 #endif
 } // End YYCopy
 
@@ -291,6 +300,8 @@ UINT YYCountFcnStr
                 // Lock the memory to get a ptr to it
                 lpMemFcn = MyGlobalLock (hGlbFcn);
 
+                Assert (lpMemFcn->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE);
+
                 // Accumulate tokens
                 TknCount += lpMemFcn->tknNELM;
 
@@ -304,6 +315,8 @@ UINT YYCountFcnStr
 
                 // Lock the memory to get a ptr to it
                 lpMemFcn = MyGlobalLock (hGlbFcn);
+
+                Assert (lpMemFcn->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE);
 
                 // Accumulate tokens
                 TknCount += lpMemFcn->tknNELM;
@@ -508,6 +521,7 @@ LPPL_YYSTYPE YYCopyFcn
                     YYFcn.TknCount                  = TknCount;
 ////////////////////YYFcn.YYInuse                   = FALSE;    // (Factored out below)
 ////////////////////YYFcn.YYIndirect                = FALSE;    // Already zero from = {0}
+                    YYFcn.YYCopyArray               = lpYYArg[i].YYCopyArray;
 ////////////////////YYFcn.YYAvail                   = 0;        // Already zero from = {0}
 ////////////////////YYFcn.YYIndex                   = 0;        // (Factored out below)
 ////////////////////YYFcn.YYFlag                    = 0;        // Already zero from = {0}
@@ -569,7 +583,14 @@ LPPL_YYSTYPE YYCopyFcn
                 bGlbFcn = TRUE;
             } else
             {
-                lpYYCopy = CopyPL_YYSTYPE_EM_YY (&lpYYArg[i], FALSE);
+                // If the token type is a var or axis array, ...
+                if (lpToken->tkFlags.TknType EQ TKT_VARARRAY
+                 || lpToken->tkFlags.TknType EQ TKT_AXISARRAY)
+                    // Don't increment the refcnt as that was done
+                    //   when the var array was created in MakeVarStrand
+                    lpYYCopy = CopyPL_YYSTYPE_YY (&lpYYArg[i]);
+                else
+                    lpYYCopy = CopyPL_YYSTYPE_EM_YY (&lpYYArg[i], FALSE);
                 if (lpYYMem->YYInuse)
                     YYCopy (lpYYMem++, lpYYCopy);
                 else
@@ -597,6 +618,7 @@ LPPL_YYSTYPE YYCopyFcn
                         YYFcn.TknCount                  = TknCount;
 ////////////////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)
 ////////////////////////YYFcn.YYIndirect                = FALSE;            // Already zero from = {0}
+                        YYFcn.YYCopyArray               = lpYYArg[i].YYCopyArray;
 ////////////////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
 ////////////////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
 ////////////////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
@@ -714,13 +736,14 @@ void IncrFcnMem
             lpMemFcn = FcnArrayBaseToData (lpMemSrc);
 
             // Loop through the source function array
-            for (uCnt = 0; uCnt < TknCount; uCnt++)
+            for (uCnt = 0; uCnt < TknCount; uCnt++, lpMemFcn++)
             // Split cases based upon the item token type
-            switch (lpMemFcn[uCnt].tkToken.tkFlags.TknType)
+            switch (lpMemFcn->tkToken.tkFlags.TknType)
             {
                 case TKT_FCNARRAY:
+                case TKT_VARARRAY:
                     // Get the item global memory handle
-                    hGlbItm = lpMemFcn[uCnt].tkToken.tkData.tkGlbData;
+                    hGlbItm = lpMemFcn->tkToken.tkData.tkGlbData;
 
                     // Increment the reference count
                     DbgIncrRefCntDir (hGlbItm);
@@ -731,8 +754,10 @@ void IncrFcnMem
                     // Lock the memory to get a ptr to it
                     lpMemItm = MyGlobalLock (hGlbItm);
 
-                    // Recurse in case there are
-                    IncrFcnMem (lpMemItm);
+                    // If the item is a UDFO, avoid double increment
+                    if (GetSignatureMem (lpMemItm) NE DFN_HEADER_SIGNATURE)
+                        // Recurse in case there are more functions
+                        IncrFcnMem (lpMemItm);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
@@ -756,6 +781,11 @@ void IncrFcnMem
             break;
 
         case DFN_HEADER_SIGNATURE:
+            // Increment the reference count
+            DbgIncrRefCntDir (MakePtrTypeGlb (GlobalHandle (lpMemSrc)));
+
+            break;
+
         case VARARRAY_HEADER_SIGNATURE:
             break;
 

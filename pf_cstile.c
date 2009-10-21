@@ -243,7 +243,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     if (IsEmpty (aplNELMRht))
     {
         if (IsNested (aplTypeRht))
-            *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
+            *((LPAPLNESTED) lpMemRes) = CopySymGlbInd_PTB (lpMemRht);
         goto NORMAL_EXIT;
     } // End IF
 
@@ -392,7 +392,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    ((LPAPLNESTED) lpMemRes)[uDim +                 uAx  * uDimHi] = CopySymGlbDir
+                    ((LPAPLNESTED) lpMemRes)[uDim +                 uAx  * uDimHi] = CopySymGlbDir_PTB
                    (((LPAPLNESTED) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi]);
                 } // End FOR
             } // End FOR/FOR
@@ -701,7 +701,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
                 {
                     // stData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                    Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                     // If we ever get here, we must have missed a type demotion
                     DbgStop ();
@@ -788,7 +788,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
     // Handle empty nested array results (prototypes)
     if (IsEmpty (aplNELMRht) && IsNested (aplTypeRes))
-        *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbInd_PTB (lpMemRht);
     else
     // Copy the data to the result
     // Split cases based upon the right arg's storage type
@@ -935,7 +935,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    ((LPAPLNESTED) lpMemRes)[uDim +                  uAx           * uDimHi] = CopySymGlbDir
+                    ((LPAPLNESTED) lpMemRes)[uDim +                  uAx           * uDimHi] = CopySymGlbDir_PTB
                    (((LPAPLNESTED) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi]);
                 } // End FOR
             } // End FOR/FOR

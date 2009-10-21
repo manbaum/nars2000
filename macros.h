@@ -21,38 +21,38 @@
 ***************************************************************************/
 
 
-#define MB(a)                   MessageBox  (NULL, (a),    APPNAME, MB_OK)
-#define MBW(a)                  MessageBoxW (NULL, (a), WS_APPNAME, MB_OK)
-#define MBC(a)              if (MessageBox  (NULL, (a),    APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define MBWC(a)             if (MessageBoxW (NULL, (a), WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define IsGlbTypeVarDir(a)  (IsGlobalTypeArray (            (a), VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeVarInd(a)  (IsGlobalTypeArray (*(LPVOID *) (a), VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnDir(a)  (IsGlobalTypeArray (            (a), FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnInd(a)  (IsGlobalTypeArray (*(LPVOID *) (a), FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeDfnDir(a)  (IsGlobalTypeArray (            (a), DFN_HEADER_SIGNATURE))
-#define IsGlbTypeNamDir(a)  (IsGlobalTypeArray (            (a), VARNAMED_HEADER_SIGNATURE))
-#define IsGlbTypeLstDir(a)  (IsGlobalTypeArray (            (a), LSTARRAY_HEADER_SIGNATURE))
-#define IsSymNoValue(a)     ((a)->stFlags.Value EQ FALSE)
-#define IsTokenNoValue(a)   ((a)                                    \
-                          && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
-                          && IsSymNoValue ((a)->tkData.tkSym))
-#define IsMFOName(a)        ((a)[0] EQ L'#')
-#define IsSysName(a)        ((a)[0] EQ UTF16_QUAD  || (a)[0] EQ UTF16_QUOTEQUAD)
-#define IsDirectName(a)     ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA)
+#define MB(a)                       MessageBox  (NULL, (a),    APPNAME, MB_OK)
+#define MBW(a)                      MessageBoxW (NULL, (a), WS_APPNAME, MB_OK)
+#define MBC(a)                  if (MessageBox  (NULL, (a),    APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define MBWC(a)                 if (MessageBoxW (NULL, (a), WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define IsGlbTypeVarDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeVarInd_PTB(a)  (IsGlobalTypeArray_PTB (*(LPVOID *) (a), VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnInd_PTB(a)  (IsGlobalTypeArray_PTB (*(LPVOID *) (a), FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeDfnDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), DFN_HEADER_SIGNATURE))
+#define IsGlbTypeNamDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), VARNAMED_HEADER_SIGNATURE))
+#define IsGlbTypeLstDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), LSTARRAY_HEADER_SIGNATURE))
+#define IsSymNoValue(a)         ((a)->stFlags.Value EQ FALSE)
+#define IsTokenNoValue(a)       ((a)                                    \
+                              && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
+                              && IsSymNoValue ((a)->tkData.tkSym))
+#define IsMFOName(a)            ((a)[0] EQ L'#')
+#define IsSysName(a)            ((a)[0] EQ UTF16_QUAD  || (a)[0] EQ UTF16_QUOTEQUAD)
+#define IsDirectName(a)         ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA)
 
-#define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
-#define ByteDiff(a,b)       (((LPBYTE) (a)) - (LPBYTE) (b))
+#define ByteAddr(a,b)           (&(((LPBYTE) (a))[b]))
+#define ByteDiff(a,b)           (((LPBYTE) (a)) - (LPBYTE) (b))
 
 #define AplModI(m,a) PrimFnDydStileIisIvI ((m), (a), NULL)
 #define AplModF(m,a) PrimFnDydStileFisFvF ((m), (a), NULL)
 
-#define LODWORD(x)          ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
-#define HIDWORD(x)          ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
+#define LODWORD(x)              ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
+#define HIDWORD(x)              ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
 
-#define LOSHORT(l)  ((short)((DWORD)(l) & 0xffff))
-#define HISHORT(l)  ((short)((DWORD)(l) >> 16))
+#define LOSHORT(l)              ((short)((DWORD)(l) & 0xffff))
+#define HISHORT(l)              ((short)((DWORD)(l) >> 16))
 
-#define CheckSymEntries()   _CheckSymEntries (FNLN)
+#define CheckSymEntries()       _CheckSymEntries (FNLN)
 
 #ifdef DEBUG
   #define YYAlloc()     _YYAlloc(FNLN)
@@ -73,33 +73,33 @@
   #endif
 
   #ifdef DEBUG_REFCNT
-    #define DbgIncrRefCntDir(hGlbData) \
+    #define DbgIncrRefCntDir_PTB(hGlbData) \
     dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    IncrRefCntDir (hGlbData)
+    IncrRefCntDir_PTB (hGlbData)
 
-    #define DbgIncrRefCntInd(hGlbData) \
+    #define DbgIncrRefCntInd_PTB(hGlbData) \
     dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    IncrRefCntInd (hGlbData)
+    IncrRefCntInd_PTB (hGlbData)
 
-    #define DbgDecrRefCntDir(hGlbData) \
+    #define DbgDecrRefCntDir_PTB(hGlbData) \
     dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    DecrRefCntDir (hGlbData)
+    DecrRefCntDir_PTB (hGlbData)
 
-    #define DbgDecrRefCntInd(hGlbData) \
+    #define DbgDecrRefCntInd_PTB(hGlbData) \
     dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    DecrRefCntInd (hGlbData)
+    DecrRefCntInd_PTB (hGlbData)
   #else
-    #define DbgIncrRefCntDir(hGlbData) \
-    IncrRefCntDir (hGlbData)
+    #define DbgIncrRefCntDir_PTB(hGlbData) \
+    IncrRefCntDir_PTB (hGlbData)
 
-    #define DbgIncrRefCntInd(hGlbData) \
-    IncrRefCntInd (hGlbData)
+    #define DbgIncrRefCntInd_PTB(hGlbData) \
+    IncrRefCntInd_PTB (hGlbData)
 
-    #define DbgDecrRefCntDir(hGlbData) \
-    DecrRefCntDir (hGlbData)
+    #define DbgDecrRefCntDir_PTB(hGlbData) \
+    DecrRefCntDir_PTB (hGlbData)
 
-    #define DbgDecrRefCntInd(hGlbData) \
-    DecrRefCntInd (hGlbData)
+    #define DbgDecrRefCntInd_PTB(hGlbData) \
+    DecrRefCntInd_PTB (hGlbData)
   #endif
 
   #define DbgMsgW2(a)                     {if (gDbgLvl > 2) {DbgMsgW(a);}}
@@ -115,11 +115,11 @@
 
   #define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken)
 
-  #define DbgIncrRefCntDir(hGlbData)      IncrRefCntDir (hGlbData)
+  #define DbgIncrRefCntDir_PTB(hGlbData)  IncrRefCntDir_PTB (hGlbData)
 
   #define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData)
 
-  #define DbgDecrRefCntDir(hGlbData)      DecrRefCntDir (hGlbData)
+  #define DbgDecrRefCntDir_PTB(hGlbData)  DecrRefCntDir_PTB (hGlbData)
 
   #define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData)
 
@@ -281,8 +281,8 @@
 #define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to copy direct and indirect ptrs, incrementing the reference count
-#define CopySymGlbDirAsGlb(hGlb)    CopySymGlbDir (MakePtrTypeGlb (hGlb))
-#define CopySymGlbInd(lpSymGlb)     CopySymGlbDir (*(LPAPLNESTED) lpSymGlb)
+#define CopySymGlbDirAsGlb(hGlb)    CopySymGlbDir_PTB (MakePtrTypeGlb (hGlb))
+#define CopySymGlbInd_PTB(lpSymGlb) CopySymGlbDir_PTB (*(LPAPLNESTED) lpSymGlb)
 
 // Macros to check on PTR_REUSED
 #define PtrReusedDir(lpMem)                     ((lpMem) EQ PTR_REUSED)

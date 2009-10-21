@@ -331,7 +331,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
                 {
                     // stData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                    Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                     // If we ever get here, we must have missed a type demotion
                     DbgStop ();
@@ -457,7 +457,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     // Handle empty nested array results (prototypes)
     if (IsEmpty (aplNELMRes) && IsNested (aplTypeRes))
     {
-        *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbInd_PTB (lpMemRht);
 
         goto PROTO_EXIT;
     } // End IF
@@ -677,7 +677,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLHETERO) lpMemRes)[uRes] = CopySymGlbDir (((LPAPLHETERO) lpMemRht)[uRht]);
+                ((LPAPLHETERO) lpMemRes)[uRes] = CopySymGlbDir_PTB (((LPAPLHETERO) lpMemRht)[uRht]);
             } // End FOR
 
             break;

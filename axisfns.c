@@ -260,7 +260,7 @@ UBOOL CheckAxisGlb
     bQuadIO = GetQuadIO ();
 
     // st/tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbData));
+    Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (ClrPtrTypeDir (hGlbData));

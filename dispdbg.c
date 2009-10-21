@@ -471,7 +471,7 @@ void DisplayGlobals
                  || !lpHeader->SysVar)
                 {
                     // It's a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlb)));
+                    Assert (IsGlbTypeVarDir_PTB (MakePtrTypeGlb (hGlb)));
 
                     if (IsScalar (lpHeader->Rank))
                         aplDim = (APLDIM) -1;
@@ -628,7 +628,7 @@ void DisplayGlobals
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
             case FCNARRAY_HEADER_SIGNATURE:
                 // It's a valid HGLOBAL function array
-                Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlb)));
+                Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlb)));
 
                 lpAplChar =
                   DisplayFcnGlb (aplArrChar,        // Ptr to output save area
@@ -662,7 +662,7 @@ void DisplayGlobals
                 APLUINT      uNameLen;              // User-defined function/operator name length
 
                 // It's a valid HGLOBAL user-defined function/operator
-                Assert (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlb)));
+                Assert (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlb)));
 
                 // Lock to get a ptr to it
                 lpMemDfnHdr = MyGlobalLock (hGlb);
@@ -984,8 +984,8 @@ void DisplayFcnStrand
                 // stData is an internal function or a HGLOBAL function array
                 //   or user-defined function/operator
                 Assert (lptkFunc->tkData.tkSym->stFlags.FcnDir
-                     || IsGlbTypeFcnDir (hGlbData)
-                     || IsGlbTypeDfnDir (hGlbData));
+                     || IsGlbTypeFcnDir_PTB (hGlbData)
+                     || IsGlbTypeDfnDir_PTB (hGlbData));
 
                 // Check for internal functions
                 if (lptkFunc->tkData.tkSym->stFlags.FcnDir)
@@ -1028,7 +1028,7 @@ void DisplayFcnStrand
             hGlbData = lptkFunc->tkData.tkGlbData;
 
             // tkData is an HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (hGlbData));
+            Assert (IsGlbTypeFcnDir_PTB (hGlbData));
 
             lpaplChar =
               DisplayFcnGlb (lpaplChar,                 // Ptr to output save area
@@ -1280,7 +1280,7 @@ LPWCHAR DisplayFcnSub
                     hGlbData = lpYYMem->tkToken.tkData.tkSym->stData.stGlbData;
 
                     // Split cases based upon the array signature
-                    switch (GetSignatureGlb (hGlbData))
+                    switch (GetSignatureGlb_PTB (hGlbData))
                     {
                         LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
 
@@ -1364,7 +1364,7 @@ LPWCHAR DisplayFcnSub
             hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
             // Clear the ptr type bits
             hGlbData = ClrPtrTypeDir (hGlbData);
@@ -1401,7 +1401,7 @@ LPWCHAR DisplayFcnSub
             hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
             // If there's a callback function, use it
             if (lpSavedWsGlbVarConv)
@@ -1425,8 +1425,8 @@ LPWCHAR DisplayFcnSub
 
             // tkData is a valid HGLOBAL function array
             //   or user-defined function/operator
-            Assert (IsGlbTypeFcnDir (hGlbData)
-                 || IsGlbTypeDfnDir (hGlbData));
+            Assert (IsGlbTypeFcnDir_PTB (hGlbData)
+                 || IsGlbTypeDfnDir_PTB (hGlbData));
 
             // Clear the ptr type bits
             hGlbData = ClrPtrTypeDir (hGlbData);
@@ -1435,7 +1435,7 @@ LPWCHAR DisplayFcnSub
             lpMemData = MyGlobalLock (hGlbData);
 
             // Split cases based upon the array signature
-            switch (((LPHEADER_SIGNATURE) lpMemData)->nature)
+            switch (GetSignatureMem (lpMemData))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     lpMemData = FcnArrayBaseToData (lpMemData);
@@ -1575,7 +1575,7 @@ LPWCHAR DisplayFcnSub
                 hGlbData = lpYYMem->tkToken.tkData.tkSym->stData.stGlbData;
 
                 // tkData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData));
             } // End IF
 
             // If there's a callback function, use it
@@ -1650,7 +1650,7 @@ void DisplayFcnArr
 {
     WCHAR wszTemp[1024];            // Ptr to temporary output area
 
-    Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbStr)));
+    Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlbStr)));
 
     // Check debug level
     if (gDbgLvl < gFcnLvl)

@@ -480,7 +480,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         aplNELM = max (aplNELMRes, 1);
 
         for (uRes = 0; uRes < aplNELM; uRes++)
-            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemRht);
+            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd_PTB (lpMemRht);
 
         goto PROTO_EXIT;
     } // End IF
@@ -704,9 +704,9 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
             aplNestProto =
-              MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
-                                   lptkFunc,                // Ptr to function token
-                                   MP_CHARS);               // CHARs allowed
+              MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                       lptkFunc,                // Ptr to function token
+                                       MP_CHARS);               // CHARs allowed
             if (!aplNestProto)
                 goto ERROR_EXIT;
 
@@ -729,14 +729,14 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                     if (uLen)
                     {
                         if (IsSingleton (aplNELMRht))
-                            ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir (aplNestRht);
+                            ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir_PTB (aplNestRht);
                         else
                         {
                             aplNestRep = ((LPAPLNESTED) lpMemRht)[uDimRht + uAcc++ * uDimHi];
-                            ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir (aplNestRep);
+                            ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir_PTB (aplNestRep);
                         } // End IF/ELSE
                     } else
-                        ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir (aplNestProto);
+                        ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir_PTB (aplNestProto);
                 } // End FOR
             } // End FOR/FOR
 

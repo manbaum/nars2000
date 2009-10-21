@@ -209,9 +209,9 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
 
             // Make the prototype
             hSymGlbProto =
-              MakeMonPrototype_EM (hGlbTmp,     // Proto arg handle
-                                   lptkFunc,    // Ptr to function token
-                                   MP_CHARS);   // CHARs allowed
+              MakeMonPrototype_EM_PTB (hGlbTmp,     // Proto arg handle
+                                       lptkFunc,    // Ptr to function token
+                                       MP_CHARS);   // CHARs allowed
             if (!hSymGlbProto)
             {
                 YYFree (lpYYRes); lpYYRes = NULL;
@@ -278,9 +278,9 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
 
         // Make the prototype
         hSymGlbRes =
-          MakeMonPrototype_EM (MakePtrTypeGlb (hGlbRht),    // Proto arg handle
-                               lptkFunc,                    // Ptr to function token
-                               MP_NUMONLY);                 // Numerics only
+          MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbRht),    // Proto arg handle
+                                   lptkFunc,                    // Ptr to function token
+                                   MP_NUMONLY);                 // Numerics only
     } else
     {
         //***************************************************************
@@ -318,12 +318,12 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
 
         // Handle as dyadic prototype
         hSymGlbRes =
-          MakeDydPrototype_EM (hGlbLft,                     // Left arg global memory handle (may be NULL if immediate)
-                               GetImmedType (lptkLftArg),   // Left arg immediate type
-                               lptkFunc,                    // Ptr to function token
-                               hGlbRht,                     // Right arg global memory handle
-                               GetImmedType (lptkRhtArg),   // Left arg immediate type
-                               lptkAxis);                   // Ptr to axis value token (may be NULL)
+          MakeDydPrototype_EM_PTB (hGlbLft,                     // Left arg global memory handle (may be NULL if immediate)
+                                   GetImmedType (lptkLftArg),   // Left arg immediate type
+                                   lptkFunc,                    // Ptr to function token
+                                   hGlbRht,                     // Right arg global memory handle
+                                   GetImmedType (lptkRhtArg),   // Left arg immediate type
+                                   lptkAxis);                   // Ptr to axis value token (may be NULL)
     } // End IF
 
     if (!hSymGlbRes)
@@ -426,7 +426,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 hGlbRes = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbRes));
+                Assert (IsGlbTypeVarDir_PTB (hGlbRes));
 
                 // In order to make roll atomic, save the current []RL into lpPrimSpec
                 SavePrimSpecRL (lpPrimSpec);
@@ -766,7 +766,7 @@ RESTART_EXCEPTION_VARIMMED:
             hGlbRes = lptkRhtArg->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbRes));
+            Assert (IsGlbTypeVarDir_PTB (hGlbRes));
 
             // In order to make roll atomic, save the current []RL into lpPrimSpec
             SavePrimSpecRL (lpPrimSpec);
@@ -2578,7 +2578,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     DBGENTER;
 
     // The left arg data is a valid HGLOBAL array
-    Assert (IsGlbTypeVarDir (aplNestedLft));
+    Assert (IsGlbTypeVarDir_PTB (aplNestedLft));
 
     // Clear the identifying bits
     hGlbLft = ClrPtrTypeDir (aplNestedLft);
@@ -2789,25 +2789,25 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $FillToken
+//  $FillToken_PTB
 //
-//  Fill in a token
+//  Fill in a token from a Sym/Glb whose value is sensitive to Ptr Type Bits.
 //***************************************************************************
 
-void FillToken
+void FillToken_PTB
     (LPTOKEN lptkArg,           // Ptr to arg token
-     LPVOID  lpMem,             // Ptr to either HGLOBAL or LPSYMENTRY
+     LPVOID  lpSymGlb,          // Ptr to either HGLOBAL or LPSYMENTRY
      UINT    tkCharIndex)       // Character index in case of error
 
 {
     // Split cases based upon the ptr type
-    switch (GetPtrTypeDir (lpMem))
+    switch (GetPtrTypeDir (lpSymGlb))
     {
         case PTRTYPE_STCONST:
             lptkArg->tkFlags.TknType   = TKT_VARIMMED;
-            lptkArg->tkFlags.ImmType   = ((LPSYMENTRY) lpMem)->stFlags.ImmType;
+            lptkArg->tkFlags.ImmType   = ((LPSYMENTRY) lpSymGlb)->stFlags.ImmType;
 ////////////lptkArg->tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
-            lptkArg->tkData.tkLongest  = ((LPSYMENTRY) lpMem)->stData.stLongest;
+            lptkArg->tkData.tkLongest  = ((LPSYMENTRY) lpSymGlb)->stData.stLongest;
             lptkArg->tkCharIndex       = tkCharIndex;
 
             break;
@@ -2816,7 +2816,7 @@ void FillToken
             lptkArg->tkFlags.TknType   = TKT_VARARRAY;
 ////////////lptkArg->tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////lptkArg->tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-            lptkArg->tkData.tkGlbData  = lpMem;
+            lptkArg->tkData.tkGlbData  = lpSymGlb;
             lptkArg->tkCharIndex       = tkCharIndex;
 
             break;
@@ -2824,7 +2824,7 @@ void FillToken
         defstop
             break;
     } // End SWITCH
-} // End FillToken
+} // End FillToken_PTB
 
 
 //***************************************************************************
@@ -2906,13 +2906,13 @@ UBOOL PrimFnDydNestNest_EM
                   tkRht = {0};
 
         // Fill in the left arg token
-        FillToken (&tkLft,
-                    ((LPAPLNESTED) lpMemLft)[uRes % aplNELMLft],
-                    lptkLftArg->tkCharIndex);
+        FillToken_PTB (&tkLft,
+                        ((LPAPLNESTED) lpMemLft)[uRes % aplNELMLft],
+                        lptkLftArg->tkCharIndex);
         // Fill in the right arg token
-        FillToken (&tkRht,
-                    ((LPAPLNESTED) lpMemRht)[uRes % aplNELMRht],
-                    lptkRhtArg->tkCharIndex);
+        FillToken_PTB (&tkRht,
+                        ((LPAPLNESTED) lpMemRht)[uRes % aplNELMRht],
+                        lptkRhtArg->tkCharIndex);
         // Call as dyadic function
         lpYYRes2 =
           (*lpPrimSpec->PrimFnDyd_EM_YY) (&tkLft,           // Ptr to left arg token
@@ -5147,7 +5147,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     DBGENTER;
 
     // The right arg data is a valid HGLOBAL array
-    Assert (IsGlbTypeVarDir (aplNestedRht));
+    Assert (IsGlbTypeVarDir_PTB (aplNestedRht));
 
     // Clear the identifying bits
     hGlbRht = ClrPtrTypeDir (aplNestedRht);

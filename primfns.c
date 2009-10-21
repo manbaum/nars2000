@@ -226,7 +226,7 @@ void AttrsOfToken
                 hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                 break;      // Continue with HGLOBAL case
             } // End IF
@@ -261,7 +261,7 @@ void AttrsOfToken
             hGlbData = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
             break;      // Continue with HGLOBAL case
 
@@ -270,7 +270,7 @@ void AttrsOfToken
             hGlbData = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL list array
-            Assert (IsGlbTypeLstDir (hGlbData));
+            Assert (IsGlbTypeLstDir_PTB (hGlbData));
 
             break;      // Continue with HGLOBAL case
 
@@ -631,19 +631,20 @@ WSFULL_EXIT:
 
 
 //***************************************************************************
-//  $MakeMonPrototype_EM
+//  $MakeMonPrototype_EM_PTB
 //
 //  Make a prototype copy of a single global memory object
+//    whose value is sensitive to Ptr Type Bits.
 //  The result might be a LPSYMENTRY or HGLOBAL
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeMonPrototype_EM"
+#define APPEND_NAME     L" -- MakeMonPrototype_EM_PTB"
 #else
 #define APPEND_NAME
 #endif
 
-HGLOBAL MakeMonPrototype_EM
+HGLOBAL MakeMonPrototype_EM_PTB
     (HGLOBAL    hGlbArr,            // Incoming array handle
      LPTOKEN    lptkFunc,           // Ptr to function token
      MAKE_PROTO mpEnum)             // See MAKE_PROTO
@@ -879,12 +880,12 @@ HGLOBAL MakeMonPrototype_EM
                     Assert (IsNested (aplType));
 
                     // It's a valid HGLOBAL array
-                    Assert (IsGlbTypeVarInd (lpMemArr));
+                    Assert (IsGlbTypeVarInd_PTB (lpMemArr));
 
                     hSymGlbProto =
-                      MakeMonPrototype_EM (*(LPAPLNESTED) lpMemArr, // Proto arg handle
-                                           lptkFunc,                // Ptr to function token
-                                           mpEnum);                 // Pass flag through
+                      MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemArr, // Proto arg handle
+                                               lptkFunc,                // Ptr to function token
+                                               mpEnum);                 // Pass flag through
                     if (hSymGlbProto)
                     {
                         // We no longer need this storage
@@ -940,15 +941,16 @@ NORMAL_EXIT:
     DBGLEAVE;
 
     return MakePtrTypeGlb (hGlbArr);
-} // End MakeMonPrototype_EM
+} // End MakeMonPrototype_EM_PTB
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $MakeDydPrototype_EM
+//  $MakeDydPrototype_EM_PTB
 //
 //  Make a prototype from a dyadic scalar function between
-//    two global memory objects
+//    two global memory objects whose values are sensitive
+//    to Ptr Type Bits.
 //
 //  Instead of returning one of the args as the result,
 //    we create a result by trundling through the args
@@ -963,12 +965,12 @@ NORMAL_EXIT:
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeDydPrototype_EM"
+#define APPEND_NAME     L" -- MakeDydPrototype_EM_PTB"
 #else
 #define APPEND_NAME
 #endif
 
-HGLOBAL MakeDydPrototype_EM
+HGLOBAL MakeDydPrototype_EM_PTB
     (HGLOBAL   hGlbLft,                 // Left arg global memory handle (may be NULL if immediate)
      IMM_TYPES immTypeLft,              // Left arg storage type if immediate (see IMM_TYPES)
      LPTOKEN   lptkFunc,                // Ptr to function token
@@ -1184,15 +1186,15 @@ HGLOBAL MakeDydPrototype_EM
     // If the left arg is immediate, the result is the prototype of the other arg
     if (hGlbLft EQ NULL)
         hGlbRes =
-          MakeMonPrototype_EM (hGlbRht,     // Proto arg handle
-                               lptkFunc,    // Ptr to function token
-                               bBoolFn ? MP_NUMCONV : MP_NUMONLY);
+          MakeMonPrototype_EM_PTB (hGlbRht,     // Proto arg handle
+                                   lptkFunc,    // Ptr to function token
+                                   bBoolFn ? MP_NUMCONV : MP_NUMONLY);
     else
     if (hGlbRht EQ NULL)
         hGlbRes =
-          MakeMonPrototype_EM (hGlbLft,     // Proto arg handle
-                               lptkFunc,    // Ptr to function token
-                               bBoolFn ? MP_NUMCONV : MP_NUMONLY);
+          MakeMonPrototype_EM_PTB (hGlbLft,     // Proto arg handle
+                                   lptkFunc,    // Ptr to function token
+                                   bBoolFn ? MP_NUMCONV : MP_NUMONLY);
     else
     {
         // Neither arg is immediate
@@ -1324,9 +1326,9 @@ HGLOBAL MakeDydPrototype_EM
                  || GetPtrTypeDir (lpMemLft[uLft]) EQ PTRTYPE_STCONST)
                 {
                     hGlbSub =
-                      MakeMonPrototype_EM (lpMemRht[uRht],                  // Proto arg handle
-                                           lptkFunc,                        // Ptr to function token
-                                           bBoolFn ? MP_NUMCONV : MP_NUMONLY);
+                      MakeMonPrototype_EM_PTB (lpMemRht[uRht],                  // Proto arg handle
+                                               lptkFunc,                        // Ptr to function token
+                                               bBoolFn ? MP_NUMCONV : MP_NUMONLY);
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     *lpMemRes++ = hGlbSub;
@@ -1338,9 +1340,9 @@ HGLOBAL MakeDydPrototype_EM
                  || GetPtrTypeDir (lpMemRht[uRht]) EQ PTRTYPE_STCONST)
                 {
                     hGlbSub =
-                      MakeMonPrototype_EM (lpMemLft[uLft],                  // Proto arg handle
-                                           lptkFunc,                        // Ptr to function token
-                                           bBoolFn ? MP_NUMCONV : MP_NUMONLY);
+                      MakeMonPrototype_EM_PTB (lpMemLft[uLft],                  // Proto arg handle
+                                               lptkFunc,                        // Ptr to function token
+                                               bBoolFn ? MP_NUMCONV : MP_NUMONLY);
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     *lpMemRes++ = hGlbSub;
@@ -1348,12 +1350,12 @@ HGLOBAL MakeDydPrototype_EM
                 {
                     // Both args are nested HGLOBALs
                     hGlbSub =
-                      MakeDydPrototype_EM (lpMemLft[uLft],  // Left arg proto handle
-                                           0,               // Left arg immediate type (irrelevant as it's an HGLOBAL)
-                                           lptkFunc,        // Ptr to function token
-                                           lpMemRht[uRht],  // Right arg proto handle
-                                           0,               // Right arg immediate type (irrelevant as it's an HGLOBAL)
-                                           NULL);           // Ptr to axis token (may be NULL)
+                      MakeDydPrototype_EM_PTB (lpMemLft[uLft],  // Left arg proto handle
+                                               0,               // Left arg immediate type (irrelevant as it's an HGLOBAL)
+                                               lptkFunc,        // Ptr to function token
+                                               lpMemRht[uRht],  // Right arg proto handle
+                                               0,               // Right arg immediate type (irrelevant as it's an HGLOBAL)
+                                               NULL);           // Ptr to axis token (may be NULL)
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     *lpMemRes++ = hGlbSub;
@@ -1448,7 +1450,7 @@ NORMAL_EXIT:
     } // End IF
 
     return hGlbRes;
-} // End MakeDydPrototype_EM
+} // End MakeDydPrototype_EM_PTB
 #undef  APPEND_NAME
 
 
@@ -1471,7 +1473,7 @@ UBOOL IsFirstSimpleGlb
     HGLOBAL    hGlbFirst;
 
     // It's a valid HGLOBAL array
-    Assert (IsGlbTypeVarDir (*lphGlbRht));
+    Assert (IsGlbTypeVarDir_PTB (*lphGlbRht));
 
     *lphGlbRht = ClrPtrTypeDir (*lphGlbRht);
 
@@ -1526,7 +1528,7 @@ UBOOL IsFirstSimpleGlb
 
 
 //***************************************************************************
-//  $CopySymGlbDir
+//  $CopySymGlbDir_PTB
 //
 //  Copy a direct LPSYMENTRY or HGLOBAL incrementing the reference count
 //***************************************************************************
@@ -1537,7 +1539,7 @@ UBOOL IsFirstSimpleGlb
 #define APPEND_NAME
 #endif
 
-HGLOBAL CopySymGlbDir
+HGLOBAL CopySymGlbDir_PTB
     (LPVOID lpSymGlb)
 
 {
@@ -1549,14 +1551,14 @@ HGLOBAL CopySymGlbDir
 
         case PTRTYPE_HGLOBAL:
             // Increment the reference count in global memory
-            DbgIncrRefCntDir ((HGLOBAL) lpSymGlb);
+            DbgIncrRefCntDir_PTB ((HGLOBAL) lpSymGlb);
 
             return lpSymGlb;
 
         defstop
             return NULL;
     } // End SWITCH
-} // End CopySymGlbDir
+} // End CopySymGlbDir_PTB
 #undef  APPEND_NAME
 
 
@@ -1688,7 +1690,7 @@ HGLOBAL CopyArray_EM
                                 Assert (IsNested (aplType));
 
                                 // It's a valid HGLOBAL array
-                                Assert (IsGlbTypeVarInd (lpMemSrc));
+                                Assert (IsGlbTypeVarInd_PTB (lpMemSrc));
 
                                 // Copy the array
                                 hGlbTmp = CopyArray_EM (*(LPAPLNESTED) lpMemSrc,
@@ -1736,7 +1738,7 @@ HGLOBAL CopyArray_EM
                 {
                     case TKT_VARARRAY:
                     case TKT_FCNARRAY:
-                        DbgIncrRefCntDir (lpMemFcn->tkToken.tkData.tkGlbData);
+                        DbgIncrRefCntDir_PTB (lpMemFcn->tkToken.tkData.tkGlbData);
 
                         break;
 
@@ -2162,13 +2164,13 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $IsGlobalTypeArray
+//  $IsGlobalTypeArray_PTB
 //
 //  Confirm that an HGLOBAL is a valid variable or function array, or a
 //    user-defined function/operator.
 //***************************************************************************
 
-UBOOL IsGlobalTypeArray
+UBOOL IsGlobalTypeArray_PTB
     (HGLOBAL hGlb,
      UINT    Signature)
 
@@ -2250,7 +2252,7 @@ UBOOL IsGlobalTypeArray
     } // End IF
 
     return bRet;
-} // End IsGlobalTypeArray
+} // End IsGlobalTypeArray_PTB
 
 
 //***************************************************************************
@@ -3003,7 +3005,7 @@ UBOOL IsTknUsrDfn
     if (hGlb EQ NULL)
         return FALSE;
 
-    return (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlb)));
+    return (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlb)));
 } // End IsTknUsrDfn
 
 

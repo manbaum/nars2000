@@ -85,7 +85,7 @@ UBOOL ArrayDisplay_EM
             if (!lptkRes->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRes->tkData.tkSym->stData.stVoid));
+                Assert (IsGlbTypeVarDir_PTB (lptkRes->tkData.tkSym->stData.stVoid));
 
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)

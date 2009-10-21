@@ -116,8 +116,8 @@ void FreeResultSub
 
                 // Data is an valid HGLOBAL named primitive
                 //   or user-defined function/operator
-                Assert (IsGlbTypeFcnDir (hGlbData)
-                     || IsGlbTypeDfnDir (hGlbData));
+                Assert (IsGlbTypeFcnDir_PTB (hGlbData)
+                     || IsGlbTypeDfnDir_PTB (hGlbData));
 
                 if (FreeResultGlobalDFLV (hGlbData))
                 {
@@ -166,9 +166,9 @@ void FreeResultSub
 
                 // stData is a valid HGLOBAL variable or function array
                 //   or user-defined function/operator
-                Assert (IsGlbTypeVarDir (hGlbData)
-                     || IsGlbTypeFcnDir (hGlbData)
-                     || IsGlbTypeDfnDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData)
+                     || IsGlbTypeFcnDir_PTB (hGlbData)
+                     || IsGlbTypeDfnDir_PTB (hGlbData));
 
                 // The call to FreeResult after ArrayDisplay_EM needs the
                 //   following if-statement.
@@ -222,10 +222,10 @@ void FreeResultSub
             if (!PtrReusedDir (hGlbData))
             {
                 // tkData is a valid HGLOBAL variable or function array or list
-                Assert (IsGlbTypeVarDir (hGlbData)
-                     || IsGlbTypeFcnDir (hGlbData)
-                     || IsGlbTypeDfnDir (hGlbData)
-                     || IsGlbTypeLstDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData)
+                     || IsGlbTypeFcnDir_PTB (hGlbData)
+                     || IsGlbTypeDfnDir_PTB (hGlbData)
+                     || IsGlbTypeLstDir_PTB (hGlbData));
 
                 if (FreeResultGlobalDFLV (hGlbData))
                 {
@@ -327,7 +327,7 @@ UBOOL FreeResultGlobalLst
     DBGENTER;
 
     // Data is an valid HGLOBAL variable array
-    Assert (IsGlbTypeLstDir (MakePtrTypeGlb (hGlbData)));
+    Assert (IsGlbTypeLstDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Clear the type bits in case they are set on the way in
     hGlbData = ClrPtrTypeDir (hGlbData);
@@ -436,7 +436,7 @@ UBOOL FreeResultGlobalVarSub
     DBGENTER;
 
     // Data is an valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlbData)));
+    Assert (IsGlbTypeVarDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Clear the type bits in case they are set on the way in
     hGlbData = ClrPtrTypeDir (hGlbData);
@@ -459,7 +459,8 @@ UBOOL FreeResultGlobalVarSub
         Assert (RefCnt > 0);
 
         // Decrement
-        RefCnt = DbgDecrRefCntDir (MakePtrTypeGlb (hGlbData));
+        RefCnt =
+          DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
 
         // If the RefCnt is zero, free the globals
         if (RefCnt EQ 0)
@@ -569,7 +570,7 @@ UBOOL FreeResultGlobalFcn
     DBGENTER;
 
     // Data is an valid HGLOBAL function array
-    Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbData)));
+    Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Clear the type bits in case they are set on the way in
     hGlbData = ClrPtrTypeDir (hGlbData);
@@ -586,7 +587,8 @@ UBOOL FreeResultGlobalFcn
     Assert (RefCnt > 0);
 
     // Decrement
-    RefCnt = DbgDecrRefCntDir (MakePtrTypeGlb (hGlbData));
+    RefCnt =
+      DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
 
     // If the RefCnt is zero, free the globals
     if (RefCnt EQ 0)
@@ -628,8 +630,8 @@ UBOOL FreeResultGlobalFcn
 
                 // tkData is a valid HGLOBAL function array
                 //   or user-defined function/operator
-                Assert (IsGlbTypeFcnDir (hGlbLcl)
-                     || IsGlbTypeDfnDir (hGlbLcl));
+                Assert (IsGlbTypeFcnDir_PTB (hGlbLcl)
+                     || IsGlbTypeDfnDir_PTB (hGlbLcl));
 
                 // Clear the ptr type bits
                 hGlbLcl = ClrPtrTypeDir (hGlbLcl);
@@ -654,8 +656,8 @@ UBOOL FreeResultGlobalFcn
 
                 // tkData is a valid HGLOBAL function array
                 //   or user-defined function/operator
-                Assert (IsGlbTypeFcnDir (hGlbLcl)
-                     || IsGlbTypeDfnDir (hGlbLcl));
+                Assert (IsGlbTypeFcnDir_PTB (hGlbLcl)
+                     || IsGlbTypeDfnDir_PTB (hGlbLcl));
 
                 // Clear the ptr type bits
                 hGlbLcl = ClrPtrTypeDir (hGlbLcl);
@@ -682,7 +684,7 @@ UBOOL FreeResultGlobalFcn
                 hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
 
                 // tkData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbLcl));
+                Assert (IsGlbTypeVarDir_PTB (hGlbLcl));
 
                 // Clear the ptr type bits
                 hGlbLcl = ClrPtrTypeDir (hGlbLcl);
@@ -712,7 +714,7 @@ UBOOL FreeResultGlobalFcn
                     hGlbLcl = lpYYToken->tkToken.tkData.tkSym->stData.stGlbData;
 
                     // stData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (hGlbLcl));
+                    Assert (IsGlbTypeVarDir_PTB (hGlbLcl));
 
                     // Clear the ptr type bits
                     hGlbLcl = ClrPtrTypeDir (hGlbLcl);
@@ -779,7 +781,7 @@ UBOOL FreeResultGlobalDfn
     DBGENTER;
 
     // Data is an valid HGLOBAL user-defined function/operator
-    Assert (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlbData)));
+    Assert (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Clear the type bits in case they are set on the way in
     hGlbData = ClrPtrTypeDir (hGlbData);
@@ -797,7 +799,8 @@ UBOOL FreeResultGlobalDfn
         Assert (RefCnt > 0);
 
         // Decrement
-        RefCnt = DbgDecrRefCntDir (MakePtrTypeGlb (hGlbData));
+        RefCnt =
+          DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
 
         // If the RefCnt is zero, free the globals
         if (RefCnt EQ 0)

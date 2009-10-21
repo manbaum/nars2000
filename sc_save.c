@@ -742,8 +742,8 @@ LPAPLCHAR SavedWsFormGlbFcn
     LPSYMENTRY        lpSymLink;            // Ptr to SYMENTRY temp for *lplpSymLink
     SAVEDWSGLBVARPARM SavedWsGlbVarParm;    // Extra parms for SavedWsGlbVarConv
 
-    Assert (IsGlbTypeFcnDir (hGlbObj)
-         || IsGlbTypeDfnDir (hGlbObj));
+    Assert (IsGlbTypeFcnDir_PTB (hGlbObj)
+         || IsGlbTypeDfnDir_PTB (hGlbObj));
 
     // Skip over the 'F ' to point to the section name
     lpwszSectName = &lpwszFcnTypeName[2];
@@ -775,7 +775,7 @@ LPAPLCHAR SavedWsFormGlbFcn
     lpMemObj = MyGlobalLock (hGlbObj);
 
     // Split cases based upon the object's signature
-    switch (((LPHEADER_SIGNATURE) lpMemObj)->nature)
+    switch (GetSignatureMem (lpMemObj))
     {
         case FCNARRAY_HEADER_SIGNATURE:
             // Fill in the extra parms
@@ -1187,11 +1187,11 @@ LPAPLCHAR SavedWsFormGlbVar
     lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Check on user-defined functions/operators
-    bUsrDfn = IsGlbTypeDfnDir (hGlbObj);
+    bUsrDfn = IsGlbTypeDfnDir_PTB (hGlbObj);
 
     // stData is a valid HGLOBAL variable array
     //   or user-defined function/operator
-    Assert (IsGlbTypeVarDir (hGlbObj)
+    Assert (IsGlbTypeVarDir_PTB (hGlbObj)
          || bUsrDfn);
 
     // Clear the ptr type bits

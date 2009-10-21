@@ -588,7 +588,7 @@ RESTART_INNERPROD_RES:
                             tkItmLft.tkFlags.TknType   = TKT_VARARRAY;
                             tkItmLft.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                            tkItmLft.tkData.tkGlbData  = CopySymGlbDir (hGlbItm);
+                            tkItmLft.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbItm);
                         } else
                         {
                             // Fill in the left arg item token
@@ -619,7 +619,7 @@ RESTART_INNERPROD_RES:
                     tkItmLft.tkFlags.TknType   = TKT_VARARRAY;
                     tkItmLft.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                    tkItmLft.tkData.tkGlbData  = CopySymGlbDir (hGlbItm);
+                    tkItmLft.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbItm);
                 } else
                 {
                     // Fill in the left arg item token
@@ -674,7 +674,7 @@ RESTART_INNERPROD_RES:
                             tkItmRht.tkFlags.TknType   = TKT_VARARRAY;
                             tkItmRht.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                            tkItmRht.tkData.tkGlbData  = CopySymGlbDir (hGlbItm);
+                            tkItmRht.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbItm);
                         } else
                         {
                             // Fill in the left arg item token
@@ -758,7 +758,7 @@ RESTART_INNERPROD_RES:
                         goto ERROR_EXIT;
                 } else
                     *((LPAPLNESTED) lpMemRes)++ =
-                      CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
+                      CopySymGlbDir_PTB (lpYYRes->tkToken.tkData.tkGlbData);
             } // End IF
 
             // Free the result item
@@ -1001,7 +1001,7 @@ RESTART_INNERPROD_RES:
         // Save the identity element in the result
         *((LPAPLNESTED) lpMemRes)++ = hGlbPro;
         for (uRes = 1; uRes < aplNELMRes; uRes++)
-            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hGlbPro);
+            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbPro);
         // Zap the name so we don't free it at the end
         hGlbPro = NULL;
     } else
@@ -1103,10 +1103,10 @@ RESTART_INNERPROD_RES:
             goto ERROR_EXIT;
 
         // Save the identity element in the result
-        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hSymGlbIdn);
+        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hSymGlbIdn);
 
         for (uRes = 1; uRes < aplNELMRes; uRes++)
-            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hSymGlbIdn);
+            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hSymGlbIdn);
     } else
     // If this is primitive scalar dyadic function identity element, ...
     if (bNrmIdent)
@@ -1471,7 +1471,7 @@ RESTART_INNERPROD_RES:
                         tkItmLft.tkFlags.TknType = TKT_VARARRAY;
                         tkItmLft.tkFlags.ImmType = IMMTYPE_ERROR;
 ////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                        tkItmLft.tkData.tkGlbData = CopySymGlbDir (hGlbItm);
+                        tkItmLft.tkData.tkGlbData = CopySymGlbDir_PTB (hGlbItm);
                     } else
                     {
                         // Fill in the left arg item token
@@ -1498,7 +1498,7 @@ RESTART_INNERPROD_RES:
                         tkItmRht.tkFlags.TknType = TKT_VARARRAY;
                         tkItmRht.tkFlags.ImmType = IMMTYPE_ERROR;
 ////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
-                        tkItmRht.tkData.tkGlbData = CopySymGlbDir (hGlbItm);
+                        tkItmRht.tkData.tkGlbData = CopySymGlbDir_PTB (hGlbItm);
                     } else
                     {
                         // Fill in the right arg item token
@@ -1599,7 +1599,7 @@ RESTART_INNERPROD_RES:
                     goto ERROR_EXIT;
             } else
                 *((LPAPLNESTED) lpMemRes)++ =
-                  CopySymGlbDir (tkItmRed.tkData.tkGlbData);
+                  CopySymGlbDir_PTB (tkItmRed.tkData.tkGlbData);
             // Free the accumulated reduction token
             FreeResult (&tkItmRed);
         } // End FOR/FOR

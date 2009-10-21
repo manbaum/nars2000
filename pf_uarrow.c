@@ -142,7 +142,7 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpSymGlb);
+        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpSymGlb);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         // See if it fits into a lower (but not necessarily smaller) datatype
@@ -632,7 +632,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             case ARRAY_NESTED:
             case ARRAY_HETERO:
                 // Copy element # uRhtWVec from the right arg to lpMemRes
-                ((LPAPLNESTED) lpMemRes)[uResWVec] = CopySymGlbDir (((LPAPLNESTED) lpMemRht)[uRhtWVec]);
+                ((LPAPLNESTED) lpMemRes)[uResWVec] = CopySymGlbDir_PTB (((LPAPLNESTED) lpMemRht)[uRhtWVec]);
 
                 break;
 
@@ -692,9 +692,9 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         case ARRAY_NESTED:
             // Get the right arg prototype
             aplProtoGlb =
-              MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
-                                   lptkFunc,                // Ptr to function token
-                                   MP_CHARS);               // CHARS allowed
+              MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                       lptkFunc,                // Ptr to function token
+                                       MP_CHARS);               // CHARS allowed
             if (!aplProtoGlb)
                 goto ERROR_EXIT;
 
@@ -706,7 +706,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                     goto ERROR_EXIT;
 
                 if (((LPAPLNESTED) lpMemRes)[uRes] EQ NULL)
-                    ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (aplProtoGlb);
+                    ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir_PTB (aplProtoGlb);
             } // End FOR
 
             // If the prototype is a global memory handle, ...

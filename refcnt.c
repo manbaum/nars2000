@@ -32,19 +32,19 @@ extern HGLOBAL hGlbRC1,
 
 
 //***************************************************************************
-//  $ChangeRefCntDir
+//  $ChangeRefCntDir_PTB
 //
 //  Increment or decrement the reference count
 //    of a direct reference to an LPSYMENTRY or an HGLOBAL
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ChangeRefCntDir"
+#define APPEND_NAME     L" -- ChangeRefCntDir_PTB"
 #else
 #define APPEND_NAME
 #endif
 
-int ChangeRefCntDir
+int ChangeRefCntDir_PTB
     (HGLOBAL hGlb,              // Global memory handle
      int     iIncr)             // Increment/decrement amount
 
@@ -72,7 +72,7 @@ int ChangeRefCntDir
             lpSig = MyGlobalLock (hGlb);
 
             // Split cases based upon the array signature
-            switch (((LPHEADER_SIGNATURE) lpSig)->nature)
+            switch (GetSignatureMem (lpSig))
             {
                 case VARARRAY_HEADER_SIGNATURE:
 #define lpHeader        ((LPVARARRAY_HEADER) lpSig)
@@ -169,68 +169,68 @@ int ChangeRefCntDir
         defstop
             return -1;
     } // End SWITCH
-} // End ChangeRefCntDir
+} // End ChangeRefCntDir_PTB
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $IncrRefCntDir
+//  $IncrRefCntDir_PTB
 //
 //  Increment the reference count of a direct reference
 //    to an LPSYMENTRY or an HGLOBAL.
 //***************************************************************************
 
-int IncrRefCntDir
+int IncrRefCntDir_PTB
     (HGLOBAL hGlb)
 
 {
-    return ChangeRefCntDir (hGlb, 1);
-} // End IncrRefCntDir
+    return ChangeRefCntDir_PTB (hGlb, 1);
+} // End IncrRefCntDir_PTB
 
 
 //***************************************************************************
-//  $IncrRefCntInd
+//  $IncrRefCntInd_PTB
 //
 //  Increment the reference count of an indirect reference
 //    to an LPSYMENTRY or an HGLOBAL.
 //***************************************************************************
 
-int IncrRefCntInd
+int IncrRefCntInd_PTB
     (LPVOID lpMem)
 
 {
-    return ChangeRefCntDir (*(HGLOBAL *) lpMem, 1);
-} // End IncrRefCntInd
+    return ChangeRefCntDir_PTB (*(HGLOBAL *) lpMem, 1);
+} // End IncrRefCntInd_PTB
 
 
 //***************************************************************************
-//  $DecrRefCntDir
+//  $DecrRefCntDir_PTB
 //
 //  Decrement the reference count of a direct reference
 //    to an LPSYMENTRY or an HGLOBAL.
 //***************************************************************************
 
-int DecrRefCntDir
+int DecrRefCntDir_PTB
     (HGLOBAL hGlb)
 
 {
-    return ChangeRefCntDir (hGlb, -1);
-} // End DecrRefCntDir
+    return ChangeRefCntDir_PTB (hGlb, -1);
+} // End DecrRefCntDir_PTB
 
 
 //***************************************************************************
-//  $DecrRefCntInd
+//  $DecrRefCntInd_PTB
 //
 //  Decrement the reference count of an indirect reference
 //    to an LPSYMENTRY or an HGLOBAL.
 //***************************************************************************
 
-int DecrRefCntInd
+int DecrRefCntInd_PTB
     (LPVOID lpMem)
 
 {
-    return ChangeRefCntDir (*(HGLOBAL *) lpMem, -1);
-} // End DecrRefCntInd
+    return ChangeRefCntDir_PTB (*(HGLOBAL *) lpMem, -1);
+} // End DecrRefCntInd_PTB
 
 
 //***************************************************************************
@@ -253,7 +253,7 @@ UINT GetRefCntGlb
     lpMemHdr = MyGlobalLock (hGlbArg);
 
     // Split cases based upon the signature
-    switch (((LPHEADER_SIGNATURE) lpMemHdr)->nature)
+    switch (GetSignatureMem (lpMemHdr))
     {
         case DFN_HEADER_SIGNATURE:
             // Get the reference count

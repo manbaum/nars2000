@@ -130,7 +130,7 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
                 hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbRht));
+                Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
                 break;          // Join common global code
             } // End IF
@@ -149,7 +149,7 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
                     lptkFunc);                                      // Ptr to function token
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             // Get the global memory handle
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
@@ -639,7 +639,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
             // Loop through the right arg
             for (uRht = 0; uRht < aplNELM; uRht++)
-                DbgIncrRefCntDir (((LPAPLNESTED) lpMemRht)[uRht]);
+                DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
         } // End IF
 
         // Account for the header and dimensions
@@ -846,8 +846,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     // Note that APLNESTED elements are a mixture of LPSYMENTRYs
                     //   and HGLOBALs, so we need to run the HGLOBALs through
-                    //   CopySymGlbDir so as to increment the reference count.
-                    ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (((LPAPLNESTED) lpMemRht)[uRht]);
+                    //   CopySymGlbDir_PTB so as to increment the reference count.
+                    ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
                 } // End FOR
 
                 break;
@@ -2075,7 +2075,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
             // If the result is empty, use the prototype of the right arg
             if (IsEmpty (aplNELMRes))
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
             else
             // Loop through the leading dimensions
             for (uBeg = 0; uBeg < aplDimBeg; uBeg++)
@@ -2093,7 +2093,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -2133,7 +2133,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -2164,7 +2164,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -2195,7 +2195,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -2247,7 +2247,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -2257,7 +2257,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (*((LPAPLNESTED) lpMemLft)++);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (*((LPAPLNESTED) lpMemLft)++);
                             } // End FOR
                         break;
 
@@ -2278,7 +2278,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -2319,7 +2319,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -2350,7 +2350,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -2381,7 +2381,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -2433,7 +2433,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -2443,7 +2443,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (*((LPAPLNESTED) lpMemRht)++);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (*((LPAPLNESTED) lpMemRht)++);
                             } // End FOR
                         break;
 

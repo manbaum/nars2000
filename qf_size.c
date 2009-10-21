@@ -386,8 +386,8 @@ APLINT CalcSymentrySize
         hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
         // stData is a valid HGLOBAL function array or user-defined function/operator
-        Assert (IsGlbTypeFcnDir (hGlbDfnHdr)
-             || IsGlbTypeDfnDir (hGlbDfnHdr));
+        Assert (IsGlbTypeFcnDir_PTB (hGlbDfnHdr)
+             || IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
         // Clear the ptr type bits
         hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
@@ -471,7 +471,7 @@ APLUINT CalcGlbSize
     APLUINT     uData;              // Loop counter
 
     // stData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbData));
+    Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
     hGlbData = ClrPtrTypeDir (hGlbData);
 

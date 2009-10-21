@@ -539,8 +539,8 @@ LPPL_YYSTYPE YYCopyFcn
 
                     // stData is a valid HGLOBAL function array
                     //   or user-defined function/operator
-                    Assert (IsGlbTypeFcnDir (hGlbFcn)
-                         || IsGlbTypeDfnDir (hGlbFcn));
+                    Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
+                         || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
                     // Mark as using hGlbFcn
                     bGlbFcn = TRUE;
@@ -576,8 +576,8 @@ LPPL_YYSTYPE YYCopyFcn
 
                 // stData is a valid HGLOBAL function array
                 //   or user-defined function/operator
-                Assert (IsGlbTypeFcnDir (hGlbFcn)
-                     || IsGlbTypeDfnDir (hGlbFcn));
+                Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
+                     || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
                 // Mark as using hGlbFcn
                 bGlbFcn = TRUE;
@@ -603,11 +603,11 @@ LPPL_YYSTYPE YYCopyFcn
             if (bGlbFcn)
             {
                 // Split cases based upon the function signature
-                switch (GetSignatureGlb (hGlbFcn))
+                switch (GetSignatureGlb_PTB (hGlbFcn))
                 {
                     case DFN_HEADER_SIGNATURE:
                         // Increment the reference count in global memory
-                        DbgIncrRefCntDir (hGlbFcn);
+                        DbgIncrRefCntDir_PTB (hGlbFcn);
 
                         // Fill in the token
                         YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
@@ -726,7 +726,7 @@ void IncrFcnMem
     LPVOID       lpMemItm;              // Ptr to item global memory
 
     // Split cases based upon the array signature
-    switch (((LPHEADER_SIGNATURE) lpMemSrc)->nature)
+    switch (GetSignatureMem (lpMemSrc))
     {
         case FCNARRAY_HEADER_SIGNATURE:
             // Get the token count
@@ -746,7 +746,7 @@ void IncrFcnMem
                     hGlbItm = lpMemFcn->tkToken.tkData.tkGlbData;
 
                     // Increment the reference count
-                    DbgIncrRefCntDir (hGlbItm);
+                    DbgIncrRefCntDir_PTB (hGlbItm);
 
                     // Clear the ptr type bits
                     hGlbItm = ClrPtrTypeDir (hGlbItm);
@@ -782,7 +782,7 @@ void IncrFcnMem
 
         case DFN_HEADER_SIGNATURE:
             // Increment the reference count
-            DbgIncrRefCntDir (MakePtrTypeGlb (GlobalHandle (lpMemSrc)));
+            DbgIncrRefCntDir_PTB (MakePtrTypeGlb (GlobalHandle (lpMemSrc)));
 
             break;
 

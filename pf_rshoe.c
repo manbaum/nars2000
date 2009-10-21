@@ -115,7 +115,7 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonRightShoeGlb_EM_YY
                        (ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData), // HGLOBAL
@@ -137,7 +137,7 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonRightShoeGlb_EM_YY
                    (ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),   // HGLOBAL
@@ -556,7 +556,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
 
                     // Save first item as prototype
-                    *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemSub);
+                    *((LPAPLNESTED) lpMemRes) = CopySymGlbInd_PTB (lpMemSub);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
@@ -913,7 +913,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             goto ERROR_EXIT;
 
                         ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                           CopySymGlbDir (lpSymProto);
+                           CopySymGlbDir_PTB (lpSymProto);
                     } // End FOR/FOR
 
                     // Overtake this scalar
@@ -992,7 +992,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's rows)
@@ -1000,7 +1000,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             break;
 
                         case ARRAY_INT:
@@ -1033,7 +1033,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's rows)
@@ -1046,7 +1046,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             break;
@@ -1086,7 +1086,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's rows)
@@ -1099,7 +1099,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             break;
@@ -1134,7 +1134,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's rows)
@@ -1147,7 +1147,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             break;
@@ -1182,7 +1182,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's rows)
@@ -1195,7 +1195,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (lpSymProto);
+                                  CopySymGlbDir_PTB (lpSymProto);
                             } // End FOR/FOR
 
                             break;
@@ -1216,9 +1216,9 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 case PTRTYPE_HGLOBAL:
                                     // Calculate the right arg's first element's prototype
                                     hSymGlbProto =
-                                      MakeMonPrototype_EM (*(LPAPLNESTED) lpMemSub, // Proto arg handle
-                                                           lptkFunc,                // Ptr to function token
-                                                           MP_CHARS);               // CHARs allowed
+                                      MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemSub, // Proto arg handle
+                                                               lptkFunc,                // Ptr to function token
+                                                               MP_CHARS);               // CHARs allowed
                                     if (!hSymGlbProto)
                                         goto WSFULL_EXIT;
 
@@ -1238,7 +1238,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (*((LPAPLNESTED) lpMemSub)++);
+                                  CopySymGlbDir_PTB (*((LPAPLNESTED) lpMemSub)++);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's cols)
@@ -1251,7 +1251,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (hSymGlbProto);
+                                  CopySymGlbDir_PTB (hSymGlbProto);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's rows)
@@ -1264,7 +1264,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
-                                  CopySymGlbDir (hSymGlbProto);
+                                  CopySymGlbDir_PTB (hSymGlbProto);
                             } // End FOR/FOR
 
                             // If the prototype is a global memory handle, ...
@@ -1505,7 +1505,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
                                                     ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData),
@@ -1527,7 +1527,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
                                                 lptkFunc);
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
                                                 ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),
@@ -1768,7 +1768,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                 hGlbLft = lptkLftArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbLft));
+                Assert (IsGlbTypeVarDir_PTB (hGlbLft));
 
                 lpYYRes =
                   PrimFnDydRightShoeGlbGlb_EM_YY
@@ -1803,7 +1803,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
             hGlbLft = lptkLftArg->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbLft));
+            Assert (IsGlbTypeVarDir_PTB (hGlbLft));
 
             lpYYRes =
               PrimFnDydRightShoeGlbGlb_EM_YY
@@ -1911,7 +1911,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (hGlbRes);
+                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbRes);
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
             } else
             {
@@ -2335,7 +2335,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         goto ERROR_EXIT;
                 } else
                     ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
-                      CopySymGlbDir (hGlbSet);
+                      CopySymGlbDir_PTB (hGlbSet);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbRht); lpMemRht = NULL;

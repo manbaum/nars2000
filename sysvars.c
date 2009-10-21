@@ -800,7 +800,7 @@ UBOOL ValidateInteger_EM
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbRht));
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Clear the type bits
     hGlbRht = ClrPtrTypeDir (hGlbRht);
@@ -1135,7 +1135,7 @@ UBOOL ValidateFloat_EM
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbRht));
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Clear the type bits
     hGlbRht = ClrPtrTypeDir (hGlbRht);
@@ -1367,7 +1367,7 @@ UBOOL ValidateCharVector_EM
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbRht));
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Clear the type bits
     hGlbRht = ClrPtrTypeDir (hGlbRht);
@@ -1734,7 +1734,7 @@ UBOOL ValidateIntegerVector_EM
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbRht));
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Clear the type bits
     hGlbRht = ClrPtrTypeDir (hGlbRht);
@@ -2602,7 +2602,7 @@ UBOOL ValidSetPR_EM
     } // End SWITCH
 
     // tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbRht));
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Clear the type bits
     hGlbRht = ClrPtrTypeDir (hGlbRht);
@@ -2913,7 +2913,7 @@ UBOOL ValidSetSA_EM
     } // End SWITCH
 
     // tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbRht));
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Clear the type bits
     hGlbRht = ClrPtrTypeDir (hGlbRht);

@@ -708,7 +708,7 @@ UBOOL ParseSavedWsFcn_EM
         if (hGlbOld)
             // Increment its reference count to keep it around
             //   in case it gets freed by LoadWorkspaceGlobal_EM
-            DbgIncrRefCntDir (hGlbOld);
+            DbgIncrRefCntDir_PTB (hGlbOld);
 
         // Find the trailing L' '
         lpwCharEnd = SkipToCharW (lpwSrc, L' ');
@@ -745,7 +745,7 @@ UBOOL ParseSavedWsFcn_EM
         lpSymObj->stData.stGlbData = hGlbObj;
 
         // Increment the reference count
-        DbgIncrRefCntDir (hGlbObj);
+        DbgIncrRefCntDir_PTB (hGlbObj);
 
         // If there's an old value, ...
         if (hGlbOld)
@@ -893,7 +893,7 @@ LPWCHAR ParseSavedWsVar_EM
         *((LPAPLNESTED) *lplpMemObj)++ = hGlbObj;
 
         // Increment the reference count
-        DbgIncrRefCntDir (hGlbObj);
+        DbgIncrRefCntDir_PTB (hGlbObj);
 
         // Skip to the next field
         lpwSrc = &lpwCharEnd[1];
@@ -904,7 +904,7 @@ LPWCHAR ParseSavedWsVar_EM
             LPVOID  lpMemObj;           // Ptr to object global memory
 
             // stData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbObj));
+            Assert (IsGlbTypeVarDir_PTB (hGlbObj));
 
             // Clear the type bits
             hGlbObj = ClrPtrTypeDir (hGlbObj);
@@ -1705,10 +1705,10 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Copy the HGLOBAL
             hGlbObj = lpSymEntry->stData.stGlbData;
 
-            // If it's not a user-defined function, ...
-            if (!bUserDefined)
+            // If it's not a function/operator/train/, ...
+            if (!IsNameTypeFnOp (lpSymEntry->stFlags.stNameType))
                 // Increment the reference count
-                DbgIncrRefCntDir (hGlbObj);
+                DbgIncrRefCntDir_PTB (hGlbObj);
             break;
 
         defstop

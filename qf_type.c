@@ -190,13 +190,13 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
     // HGLOBAL case
 
     // tk/stData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbRht));
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Make the prototype
     hSymGlbRes =
-      MakeMonPrototype_EM (hGlbRht,     // Proto arg handle
-                           lptkFunc,    // Ptr to function token
-                           MP_CHARS);   // CHARs allowed
+      MakeMonPrototype_EM_PTB (hGlbRht,     // Proto arg handle
+                               lptkFunc,    // Ptr to function token
+                               MP_CHARS);   // CHARs allowed
     if (!hSymGlbRes)
         return NULL;
 

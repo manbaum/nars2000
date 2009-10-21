@@ -4043,9 +4043,9 @@ void Untokenize
                     // stData is an internal function, a valid HGLOBAL variable or function array,
                     //   or user-defined function/operator
                     Assert (lpToken->tkData.tkSym->stFlags.FcnDir
-                         || IsGlbTypeVarDir (lpToken->tkData.tkSym->stData.stGlbData)
-                         || IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData)
-                         || IsGlbTypeDfnDir (lpToken->tkData.tkSym->stData.stGlbData));
+                         || IsGlbTypeVarDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
+                         || IsGlbTypeFcnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
+                         || IsGlbTypeDfnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData));
                 } // End IF
 
                 // Don't free a name's contents

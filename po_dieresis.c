@@ -340,7 +340,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                         tkRhtArg.tkFlags.ImmType = IMMTYPE_ERROR;
 
                         // Copy the value to the arg token
-                        tkRhtArg.tkData.tkGlbData = CopySymGlbInd ((LPAPLNESTED) lpMemRht);
+                        tkRhtArg.tkData.tkGlbData = CopySymGlbInd_PTB ((LPAPLNESTED) lpMemRht);
 
                         break;
 
@@ -543,7 +543,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                             tkRhtArg.tkFlags.ImmType = IMMTYPE_ERROR;
 
                             // Copy the value to the arg token
-                            tkRhtArg.tkData.tkGlbData = CopySymGlbInd ((LPAPLNESTED) lpMemRht);
+                            tkRhtArg.tkData.tkGlbData = CopySymGlbInd_PTB ((LPAPLNESTED) lpMemRht);
 
                             break;
 
@@ -701,7 +701,7 @@ UBOOL ExecFuncOnToken_EM
                 // Copy (increment the reference count of) the global object,
                 //   and save into the result
                 *((LPAPLNESTED) *lplpMemRes)++ =
-                  CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
+                  CopySymGlbDir_PTB (lpYYRes->tkToken.tkData.tkGlbData);
                 break;
 
             defstop

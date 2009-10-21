@@ -57,7 +57,7 @@ void GetFirstItemToken
                 hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                 break;      // Continue below with global case
             } // End IF
@@ -89,7 +89,7 @@ void GetFirstItemToken
             hGlbData = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
             break;      // Continue below with global case
 
@@ -146,7 +146,7 @@ void GetNextValueTokenIntoToken
                 hGlbData = lptkArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                 break;      // Continue below with global case
             } // End IF
@@ -196,7 +196,7 @@ void GetNextValueTokenIntoToken
             hGlbData = lptkArg->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
             break;      // Continue below with global case
 
@@ -274,7 +274,7 @@ void GetNextValueTokenIntoNamedVarToken
                 hGlbData = lptkArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                 break;      // Continue below with global case
             } // End IF
@@ -334,7 +334,7 @@ void GetNextValueTokenIntoNamedVarToken
             hGlbData = lptkArg->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
             break;      // Continue below with global case
 
@@ -373,7 +373,7 @@ void GetNextValueTokenIntoNamedVarToken
         lptkRes->tkData.tkSym->stFlags.Value      = TRUE;
         lptkRes->tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
         lptkRes->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
-        lptkRes->tkData.tkSym->stData.stGlbData   = CopySymGlbDir (hGlbSub);
+        lptkRes->tkData.tkSym->stData.stGlbData   = CopySymGlbDir_PTB (hGlbSub);
 ////////lptkRes->tkCharIndex                      =     // Filled in above
     } // End IF/ELSE
 } // End GetNextValueTokenIntoNamedVarToken
@@ -423,7 +423,7 @@ void GetNextValueToken
                 hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                 break;      // Continue below with global case
             } // End IF
@@ -459,7 +459,7 @@ void GetNextValueToken
             hGlbData = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
             break;      // Continue below with global case
 
@@ -536,7 +536,7 @@ void GetFirstValueToken
                 hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbData));
+                Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                 break;      // Continue below with global case
             } // End IF
@@ -568,7 +568,7 @@ void GetFirstValueToken
             hGlbData = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
             break;      // Continue below with global case
 
@@ -1000,7 +1000,7 @@ void GetNextValueMemIntoToken
                 case PTRTYPE_HGLOBAL:
                     lptkArg->tkFlags.TknType  = TKT_VARARRAY;
                     lptkArg->tkFlags.ImmType  = IMMTYPE_ERROR;
-                    lptkArg->tkData.tkGlbData = CopySymGlbDir (((LPAPLNESTED) lpMemArg)[uArg]);
+                    lptkArg->tkData.tkGlbData = CopySymGlbDir_PTB (((LPAPLNESTED) lpMemArg)[uArg]);
 
                     break;
 
@@ -1528,7 +1528,7 @@ APLLONGEST GetGlbPtrs_LOCK
                 *lphGlb = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (*lphGlb));
+                Assert (IsGlbTypeVarDir_PTB (*lphGlb));
 
                 // Handle the HGLOBAL case
                 *lphGlb = ClrPtrTypeDir (*lphGlb);
@@ -1584,7 +1584,7 @@ APLLONGEST GetGlbPtrs_LOCK
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (*lphGlb));
+            Assert (IsGlbTypeVarDir_PTB (*lphGlb));
 
             // Handle the HGLOBAL case
             *lphGlb = ClrPtrTypeDir (*lphGlb);
@@ -1603,7 +1603,7 @@ APLLONGEST GetGlbPtrs_LOCK
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL list array
-            Assert (IsGlbTypeLstDir (*lphGlb));
+            Assert (IsGlbTypeLstDir_PTB (*lphGlb));
 
             // Handle the HGLOBAL case
             *lphGlb = ClrPtrTypeDir (*lphGlb);
@@ -2056,6 +2056,54 @@ UINT GetSignatureGlb
 
     return Sig;
 } // End GetSignatureGlb
+
+
+//***************************************************************************
+//  $GetSignatureGlb_PTB
+//
+//  Get the signature of a global object whose value is sensitive to Ptr Type Bits
+//***************************************************************************
+
+UINT GetSignatureGlb_PTB
+    (LPVOID lpSymGlbLcl)
+
+{
+    LPHEADER_SIGNATURE lpMemLcl;            // Ptr to signature global memory
+    UINT               Sig;                 // The signature
+    HGLOBAL            hGlbLcl;             // Global memory handle
+
+    // Split cases based upon the ptr bits
+    switch (GetPtrTypeDir (lpSymGlbLcl))
+    {
+        case PTRTYPE_STCONST:
+            Assert (((LPSYMENTRY) lpSymGlbLcl)->stFlags.Imm EQ FALSE);
+
+            // Clear the ptr type bits
+            hGlbLcl = ClrPtrTypeDir (((LPSYMENTRY) lpSymGlbLcl)->stData.stGlbData);
+
+            break;
+
+        case PTRTYPE_HGLOBAL:
+            // Clear the ptr type bits
+            hGlbLcl = ClrPtrTypeDir (lpSymGlbLcl);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Lock the memory to get a ptr to it
+    lpMemLcl = MyGlobalLock (hGlbLcl);
+
+    // Get the signature
+    Sig = lpMemLcl->nature;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbLcl); lpMemLcl = NULL;
+
+    return Sig;
+} // End GetSignatureGlb_PTB
 
 
 //***************************************************************************

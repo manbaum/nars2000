@@ -160,7 +160,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
                 hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbRht));
+                Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
                 break;          // Join common global code
             } // End IF
@@ -177,7 +177,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             // Get the global memory handle
             hGlbRht = lptkRhtArg->tkData.tkGlbData;

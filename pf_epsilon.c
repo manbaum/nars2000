@@ -142,7 +142,7 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonEpsilonGlb_EM_YY
                        (ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData), // HGLOBAL
@@ -161,7 +161,7 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
                     lptkFunc);                                                  // Ptr to function token
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonEpsilonGlb_EM_YY
                    (ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),   // HGLOBAL
@@ -483,7 +483,7 @@ void PrimFnMonEpsilonGlbCount
 
                 case PTRTYPE_HGLOBAL:
                     // It's a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarInd (lpMemRht));
+                    Assert (IsGlbTypeVarInd_PTB (lpMemRht));
 
                     PrimFnMonEpsilonGlbCount (ClrPtrTypeInd (lpMemRht), // Right arg global memory handle
                                               lpaplTypeRes,             // Ptr to result storage type
@@ -672,7 +672,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                             case PTRTYPE_HGLOBAL:       // Res = BOOL  , Rht = NESTED:NESTED
                                 // It's a valid HGLOBAL variable array
-                                Assert (IsGlbTypeVarInd (lpMemRht));
+                                Assert (IsGlbTypeVarInd_PTB (lpMemRht));
 
                                 // Copy the data to the result
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
@@ -788,7 +788,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                             case PTRTYPE_HGLOBAL:       // Res = INT   , Rht = NESTED:NESTED
                                 // It's a valid HGLOBAL variable array
-                                Assert (IsGlbTypeVarInd (lpMemRht));
+                                Assert (IsGlbTypeVarInd_PTB (lpMemRht));
 
                                 // Copy the data to the result
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
@@ -919,7 +919,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                             case PTRTYPE_HGLOBAL:       // Res = FLOAT , Rht = NESTED:NESTED
                                 // It's a valid HGLOBAL variable array
-                                Assert (IsGlbTypeVarInd (lpMemRht));
+                                Assert (IsGlbTypeVarInd_PTB (lpMemRht));
 
                                 // Copy the data to the result
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
@@ -992,7 +992,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                             case PTRTYPE_HGLOBAL:       // Res = CHAR  , Rht = NESTED:NESTED
                                 // It's a valid HGLOBAL variable array
-                                Assert (IsGlbTypeVarInd (lpMemRht));
+                                Assert (IsGlbTypeVarInd_PTB (lpMemRht));
 
                                 // Copy the data to the result
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
@@ -1213,7 +1213,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                             case PTRTYPE_HGLOBAL:       // Res = HETERO, Rht = NESTED:NESTED
                                 // It's a valid HGLOBAL variable array
-                                Assert (IsGlbTypeVarInd (lpMemRht));
+                                Assert (IsGlbTypeVarInd_PTB (lpMemRht));
 
                                 // Copy the data to the result
                                 if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,

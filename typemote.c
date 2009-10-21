@@ -835,7 +835,7 @@ UBOOL TypePromote_EM
     } // End SWITCH
 
     // tk/stData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (*lphGlbArg));
+    Assert (IsGlbTypeVarDir_PTB (*lphGlbArg));
 
     // Handle the HGLOBAL case
     return TypePromoteGlb_EM (lphGlbArg, aplTypeRes, lptkFunc);

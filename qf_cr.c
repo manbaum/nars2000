@@ -212,7 +212,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
             lpMemData = MyGlobalLock (hGlbData);
 
             // Split cases based upon the array type
-            switch (((LPHEADER_SIGNATURE) lpMemData)->nature)
+            switch (GetSignatureMem (lpMemData))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Get the line text global memory handle
@@ -664,6 +664,10 @@ LPAPLCHAR CopySteName
 {
     LPAPLCHAR lpMemName;        // Ptr to function name global memory
     UINT      uNameLen;         // Length of STE name
+
+    Assert (IsValidPtr    (lpSymEntry                       , sizeof (lpSymEntry)            ));
+    Assert (IsValidPtr    (lpSymEntry->stHshEntry           , sizeof (lpSymEntry->stHshEntry)));
+    Assert (IsValidHandle (lpSymEntry->stHshEntry->htGlbName                                 ));
 
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);

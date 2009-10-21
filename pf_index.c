@@ -375,7 +375,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                         case ARRAY_NESTED:
                             // Save the value in the result
-                            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (((LPAPLNESTED) lpMemNam)[aplLongestItm]);
+                            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (((LPAPLNESTED) lpMemNam)[aplLongestItm]);
 
                             break;
 
@@ -724,7 +724,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
                          NULL,              // Ptr to result immediate value (may be NULL)
                          NULL);             // Ptr to result immediate type (may be NULL)
         // Copy the global memory handle to the result
-        *((LPAPLNESTED) lpMemRes) = CopySymGlbDir (hGlbSub);
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (hGlbSub);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -882,9 +882,9 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 
         // Make a prototype for the result
         hSymGlbProto =
-          MakeMonPrototype_EM (*(LPAPLNESTED) lpMemNam, // Proto arg handle
-                               lptkFunc,                // Ptr to function token
-                               MP_CHARS);               // CHARs allowed
+          MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemNam, // Proto arg handle
+                                   lptkFunc,                // Ptr to function token
+                                   MP_CHARS);               // CHARs allowed
         // We no longer this ptr
         MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
 
@@ -970,7 +970,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 
             case ARRAY_HETERO:
             case ARRAY_NESTED:
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hGlbSub);
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
 
                 break;
 
@@ -1164,15 +1164,15 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
                 HGLOBAL hSymGlbProto;       // Prototype global memory handle
 
                 hSymGlbProto =
-                  MakeMonPrototype_EM (*(LPAPLNESTED) lpMemNam, // Proto arg handle
-                                       lptkFunc,                // Ptr to function token
-                                       MP_CHARS);               // CHARs allowed
+                  MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemNam, // Proto arg handle
+                                           lptkFunc,                // Ptr to function token
+                                           MP_CHARS);               // CHARs allowed
                 if (!hSymGlbProto)
                     goto ERROR_EXIT;
                 *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
             } else
             for (uRes = 0; uRes < aplNELMLst; uRes++)
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemNam);
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd_PTB (lpMemNam);
             break;
 
         case ARRAY_HETERO:
@@ -1398,7 +1398,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
 
             case TKT_VARARRAY:
                 *lpMemLstNew++ = lpMemLst[uLst];
-                DbgIncrRefCntDir (lpMemLst[uLst].tkData.tkGlbData);
+                DbgIncrRefCntDir_PTB (lpMemLst[uLst].tkData.tkGlbData);
 
                 break;
 
@@ -1971,7 +1971,7 @@ UBOOL ArrayIndexSetNamScalar_EM
         lpMemRes = VarArrayBaseToData (lpMemRes, 0);
 
         // Fill in the data
-        *((LPAPLNESTED) lpMemRes) = CopySymGlbDir (hGlbSubRht);
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (hGlbSubRht);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -2557,7 +2557,7 @@ UBOOL ArrayIndexSetSingLst_EM
                 //   it in place
                 if (GetRefCntGlb (hGlbNam) EQ 1)
                 {
-                    DbgIncrRefCntDir (hGlbNam);
+                    DbgIncrRefCntDir_PTB (hGlbNam);
                     *lphGlbRes = hGlbNam;
                 } else
                     // Because this operation changes the named array,
@@ -2652,7 +2652,7 @@ UBOOL ArrayIndexSetSingLst_EM
                 } // End SWITCH
 
                 if (hGlbSubRht)
-                    ((LPAPLHETERO) lpMemNam)[aplLongestSubLst] = CopySymGlbDir (hGlbSubRht);
+                    ((LPAPLHETERO) lpMemNam)[aplLongestSubLst] = CopySymGlbDir_PTB (hGlbSubRht);
                 else
                 {
                     ((LPAPLHETERO) lpMemNam)[aplLongestSubLst] =
@@ -3193,7 +3193,7 @@ UBOOL ArrayIndexSetVector_EM
             if (hGlbSubRht)
                 // Replace the corresponding item in the result
                 ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] =
-                  CopySymGlbDir (hGlbSubRht);
+                  CopySymGlbDir_PTB (hGlbSubRht);
             else
             {
                 // Replace the corresponding item in the result
@@ -3360,7 +3360,7 @@ UBOOL ArrayIndexSetRect_EM
 
             case TKT_VARARRAY:
                 *lpMemLstNew++ = lpMemLst[uLst];
-                DbgIncrRefCntDir (lpMemLst[uLst].tkData.tkGlbData);
+                DbgIncrRefCntDir_PTB (lpMemLst[uLst].tkData.tkGlbData);
 
                 break;
 

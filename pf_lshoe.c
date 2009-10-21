@@ -120,7 +120,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
                 hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbRht));
+                Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
                 return PrimFnMonLeftShoeGlb_EM_YY
                        (ClrPtrTypeDir (hGlbRht),    // Right arg global memory handle
@@ -145,7 +145,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbRht));
+            Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
             return PrimFnMonLeftShoeGlb_EM_YY
                    (ClrPtrTypeDir (hGlbRht),    // Right arg global memory handle
@@ -464,9 +464,9 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     if (IsEmpty (aplNELMSub))
                     {
                         hSymGlbProto =
-                          MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
-                                               lptkFunc,                // Ptr to function token
-                                               MP_CHARS);               // CHARs allowed
+                          MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                                   lptkFunc,                // Ptr to function token
+                                                   MP_CHARS);               // CHARs allowed
                         if (!hSymGlbProto)
                             goto WSFULL_EXIT;
                     } else
@@ -503,7 +503,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         // Fill in the values
                         for (uRes = 0; uRes < aplNELMSub; uRes++)
                             // Save the value in the prototype
-                            *((LPAPLNESTED) lpMemProto)++ = CopySymGlbInd (lpMemRht);
+                            *((LPAPLNESTED) lpMemProto)++ = CopySymGlbInd_PTB (lpMemRht);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hSymGlbProto); lpMemProto = NULL;
@@ -577,7 +577,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                             goto ERROR_EXIT;
 
                         // Save the value in the prototype
-                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemRht);
+                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd_PTB (lpMemRht);
                     } // End FOR
 
                     break;
@@ -975,8 +975,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     // Note that APLNESTED elements are a mixture of LPSYMENTRYs
                     //   and HGLOBALs, so we need to run the HGLOBALs through
-                    //   CopySymGlbDir to increment the reference count.
-                    ((LPAPLNESTED) lpMemSub)[uSub] = CopySymGlbDir (((LPAPLNESTED) lpMemRht)[uRht]);
+                    //   CopySymGlbDir_PTB to increment the reference count.
+                    ((LPAPLNESTED) lpMemSub)[uSub] = CopySymGlbDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
                 } // End FOR
 
                 // We no longer need this ptr
@@ -1321,7 +1321,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydLeftShoeGlb_EM (lptkLftArg,
                                                 ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData),
@@ -1338,7 +1338,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
 
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnDydLeftShoeGlb_EM (lptkLftArg,
                                             ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),
@@ -1653,9 +1653,9 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
             case ARRAY_NESTED:
                 // Make the prototype
                 hSymGlbProto =
-                  MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
-                                       lptkFunc,                // Ptr to function token
-                                       MP_CHARS);               // CHARs allowed
+                  MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                           lptkFunc,                // Ptr to function token
+                                           MP_CHARS);               // CHARs allowed
                 if (!hSymGlbProto)
                     goto WSFULL_EXIT;
                 break;
@@ -2036,7 +2036,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
 
                     // Save the subitem in the item
                     *((LPAPLNESTED) lpMemItm)++ =
-                      CopySymGlbDir (hGlbSub);
+                      CopySymGlbDir_PTB (hGlbSub);
                 } // End FOR
 
                 break;

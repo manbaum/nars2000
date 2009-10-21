@@ -151,7 +151,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
                 hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbRht));
+                Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
                 // Clear the ptr type bits
                 hGlbRht = ClrPtrTypeDir (hGlbRht);
@@ -186,7 +186,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbRht));
+            Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
             // Clear the ptr type bits
             hGlbRht = ClrPtrTypeDir (hGlbRht);
@@ -417,7 +417,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         {
             // The prototype for the left arg must be
             //   a nested numeric array or an empty list
-            if (!IsGlbTypeLstDir (MakePtrTypeGlb (hGlbLft)))
+            if (!IsGlbTypeLstDir_PTB (MakePtrTypeGlb (hGlbLft)))
             {
                 // Get next value from the left arg
                 GetNextValueMem (lpMemLft,      // Ptr to left arg global memory
@@ -979,7 +979,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                             &immTypeSub);       // Ptr to right arg immediate type
             // If the right arg item is a global, ...
             if (hGlbSub)
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hGlbSub);
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
             else
             // The right arg item is immediate
             //   (in <aplLongestSub> of immediate type <immTypeSub>)

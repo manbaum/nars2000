@@ -154,7 +154,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
                 hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbRht));
+                Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
                 break;          // Continue with global case
 
@@ -163,7 +163,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
                 hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
                 // tkData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbRht));
+                Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
                 break;          // Continue with global case
 
@@ -173,7 +173,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
         } // End SWITCH
 
         // Recursively run through the elements of the nested array
-        aplIntegerRes = PrimFnMonEqualUnderBarGlb (hGlbRht);
+        aplIntegerRes = PrimFnMonEqualUnderBarGlb_PTB (hGlbRht);
     } // End IF/ELSE
 
     // Check for Ctrl-Break
@@ -202,12 +202,13 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnMonEqualUnderBarGlb
+//  $PrimFnMonEqualUnderBarGlb_PTB
 //
-//  Common subroutine to determine the depth of a global memory handle.
+//  Common subroutine to determine the depth of a global memory handle
+//    whose value is sensitive to Ptr Type Bits.
 //***************************************************************************
 
-APLINT PrimFnMonEqualUnderBarGlb
+APLINT PrimFnMonEqualUnderBarGlb_PTB
     (HGLOBAL hGlbRht)
 
 {
@@ -235,7 +236,7 @@ APLINT PrimFnMonEqualUnderBarGlb
 
         case PTRTYPE_HGLOBAL:
             // It's a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbRht));
+            Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
             // Clear the ptr type bits
             hGlbRht = ClrPtrTypeDir (hGlbRht);
@@ -278,7 +279,7 @@ APLINT PrimFnMonEqualUnderBarGlb
                             break;
 
                         case PTRTYPE_HGLOBAL:
-                            uTmp = 1 + PrimFnMonEqualUnderBarGlb (lpMemRht[uRht]);
+                            uTmp = 1 + PrimFnMonEqualUnderBarGlb_PTB (lpMemRht[uRht]);
                             uRes = max (uRes, uTmp);
 
                             break;
@@ -301,7 +302,7 @@ APLINT PrimFnMonEqualUnderBarGlb
     return uRes;
 ERROR_EXIT:
     return -1;
-} // End PrimFnMonEqualUnderBarGlb
+} // End PrimFnMonEqualUnderBarGlb_PTB
 
 
 //***************************************************************************

@@ -606,7 +606,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         // Save the identity element in the result
         *((LPAPLNESTED) lpMemRes)++ = hGlbPro;
         for (uRes = 1; uRes < aplNELMRes; uRes++)
-            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hGlbPro);
+            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbPro);
     } else
     // If this is user-defined function/operator identity element, ...
     if (bUsrDfnOpr)
@@ -681,10 +681,10 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             goto ERROR_EXIT;
 
         // Save the identity element in the result
-        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hSymGlbIdn);
+        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hSymGlbIdn);
 
         for (uRes = 1; uRes < aplNELMRes; uRes++)
-            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hSymGlbIdn);
+            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hSymGlbIdn);
     } else
     // If this is primitive scalar dyadic function identity element, ...
     if (bNrmIdent)
@@ -746,7 +746,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             // Loop through the right arg/result
             for (uRes = 0; uRes < aplNELMNst; uRes++)
                 // Copy the right arg's prototype
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemRht);
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd_PTB (lpMemRht);
         else
         {
             LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -1338,15 +1338,15 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
             // Make a copy of the right arg
             hGlbPro =
             hGlbRht =
-              MakeMonPrototype_EM (MakePtrTypeGlb (hGlbRht),    // Proto arg global memory handle
-                                  &lpYYFcnStrOpr->tkToken,      // Ptr to function token
-                                   MP_NUMONLY);                 // Numerics only
+              MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbRht),    // Proto arg global memory handle
+                                      &lpYYFcnStrOpr->tkToken,      // Ptr to function token
+                                       MP_NUMONLY);                 // Numerics only
             if (!hGlbRht)
                 goto WSFULL_EXIT;
 
             Assert (GetPtrTypeDir (hGlbRht) EQ PTRTYPE_HGLOBAL);
         } else
-            DbgIncrRefCntDir (MakePtrTypeGlb (hGlbRht));
+            DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbRht));
     } else  // It's an immediate
     {
         // If we're prototyping, ...
@@ -1395,44 +1395,6 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimOpMonSlashScalar_EM_YY
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $SymGlbToToken
-//
-//  Move a Sym/Glb value to a token
-//***************************************************************************
-
-void SymGlbToToken
-    (LPTOKEN lptkArg,
-     HGLOBAL hSymGlb)
-
-{
-    // Split cases based upon the element's ptr type
-    switch (GetPtrTypeDir (hSymGlb))
-    {
-        case PTRTYPE_STCONST:
-            lptkArg->tkFlags.TknType   = TKT_VARIMMED;
-            lptkArg->tkFlags.ImmType   = ((LPSYMENTRY) hSymGlb)->stFlags.ImmType;
-////////////lptkArg->tkFlags.NoDisplay = FALSE;         // Already zero by the caller
-            lptkArg->tkData.tkLongest  = ((LPSYMENTRY) hSymGlb)->stData.stLongest;
-////////////lptkArg->tkCharIndex       =                // Filled in by the caller
-
-            break;
-
-        case PTRTYPE_HGLOBAL:
-            lptkArg->tkFlags.TknType   = TKT_VARARRAY;
-////////////lptkArg->tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero by caller
-////////////lptkArg->tkFlags.NoDisplay = FALSE;         // Already zero by the caller
-            lptkArg->tkData.tkGlbData  = hSymGlb;
-////////////lptkArg->tkCharIndex       =                // Filled in by the caller
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-} // End SymGlbToToken
 
 
 //***************************************************************************
@@ -2374,7 +2336,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
     // Get the global memory handle
     hGlbTmp = lpYYRes->tkToken.tkData.tkGlbData;
 
-    Assert (IsGlbTypeVarDir (hGlbTmp));
+    Assert (IsGlbTypeVarDir_PTB (hGlbTmp));
 
     // Clear the ptr type bits
     hGlbTmp = ClrPtrTypeDir (hGlbTmp);

@@ -495,9 +495,9 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     if (IsEmpty (aplNELMRes) && IsNested (aplTypeRht))
     {
         *((LPAPLNESTED) lpMemRes) =
-          MakeMonPrototype_EM (*(LPAPLNESTED) lpMemRht, // Proto arg handle
-                               lptkFunc,                // Ptr to function token
-                               MP_CHARS);               // CHARs allowed
+          MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                   lptkFunc,                // Ptr to function token
+                                   MP_CHARS);               // CHARs allowed
         goto PROTO_EXIT;
     } // End IF
 
@@ -705,7 +705,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        ((LPAPLNESTED) lpMemRes)[uDimRes + uAcc * uDimHi] = CopySymGlbDir
+                        ((LPAPLNESTED) lpMemRes)[uDimRes + uAcc * uDimHi] = CopySymGlbDir_PTB
                        (IsSingleton (aplNELMRht) ? aplNestRht : aplNestRep);
                     } // End FOR
                 } // End FOR

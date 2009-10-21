@@ -42,7 +42,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
     // Get the user-defined function/operator global memory handle
     hGlbProto = lptkFcnStr->tkData.tkGlbData;
 
-    Assert (GetSignatureGlb (hGlbProto) EQ DFN_HEADER_SIGNATURE);
+    Assert (GetSignatureGlb_PTB (hGlbProto) EQ DFN_HEADER_SIGNATURE);
 
     // Execute the user-defined function/operator on the arg using the []PROTOTYPE entry point
     return ExecDfnGlb_EM_YY (hGlbProto,             // User-defined function/operator global memory handle
@@ -1006,7 +1006,7 @@ NEXTLINE:
                     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Set below
-                    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir ((*lplpSymEntry)->stData.stGlbData);
+                    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB ((*lplpSymEntry)->stData.stGlbData);
                     lpYYRes->tkToken.tkCharIndex       = NEG1U;
                 } // End IF/ELSE
 
@@ -1058,10 +1058,10 @@ NEXTLINE:
             {
                 // If it's immediate, copy the LPSYMENTRY
                 if (lplpSymEntry[numRes]->stFlags.Imm)
-                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lplpSymEntry[numRes]);
+                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lplpSymEntry[numRes]);
                 else
                 // Otherwise, copy the HGLOBAL
-                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lplpSymEntry[numRes]->stData.stGlbData);
+                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lplpSymEntry[numRes]->stData.stGlbData);
             } // End FOR
 
             // We no longer need this ptr
@@ -1369,7 +1369,7 @@ void UnlocalizeSTEs
                 {
                     case NAMETYPE_VAR:
                         // stData is a valid HGLOBAL variable array
-                        Assert (IsGlbTypeVarDir (hGlbData));
+                        Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                         // Free the global var
                         FreeResultGlobalVar (hGlbData); hGlbData = NULL;
@@ -1641,7 +1641,7 @@ void InitVarSTEs
         } // End SWITCH
 
         // st/tkData is a valid HGLOBAL variable array
-        Assert (IsGlbTypeVarDir (hGlbArg));
+        Assert (IsGlbTypeVarDir_PTB (hGlbArg));
 
         // If there's only one STE, it gets the whole arg
         if (numArgSTE EQ 1)
@@ -1655,7 +1655,7 @@ void InitVarSTEs
             (*lplpSymEntry)->stFlags.Value      = TRUE;
             (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
             (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
-            (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir (hGlbArg);
+            (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (hGlbArg);
         } else
         {
             APLSTYPE aplTypeArg;            // Arg storage type
@@ -1785,7 +1785,7 @@ void InitVarSTEs
                                 (*lplpSymEntry)->stFlags.Value      = TRUE;
                                 (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                                 (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
-                                (*lplpSymEntry)->stData.stGlbData   = CopySymGlbInd (lpMemArg);
+                                (*lplpSymEntry)->stData.stGlbData   = CopySymGlbInd_PTB (lpMemArg);
 
                                 // Skip to next element in arg
                                 ((LPAPLNESTED) lpMemArg)++;
@@ -1870,8 +1870,8 @@ UBOOL InitFcnSTEs
 ////////////////(*lplpSymEntry)->stFlags.Value      = TRUE;             // Set above
 ////////////////(*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;      // ...
 ////////////////(*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;    // ...
-                (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb (lpYYArg->tkToken.tkData.tkSym) EQ DFN_HEADER_SIGNATURE);
-                (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir (lpYYArg->tkToken.tkData.tkGlbData);
+                (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkSym) EQ DFN_HEADER_SIGNATURE);
+                (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
             } // End IF/ELSE
         } else
         {
@@ -1882,7 +1882,7 @@ UBOOL InitFcnSTEs
             LPFCNARRAY_HEADER lpHeader;         // Ptr to function array header
 
             Assert (IsTknImmed (&lpYYArg->tkToken)
-                 || GetSignatureGlb (lpYYArg->tkToken.tkData.tkSym) EQ FCNARRAY_HEADER_SIGNATURE);
+                 || GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkSym) EQ FCNARRAY_HEADER_SIGNATURE);
 
             // Calculate space needed for the result
             ByteRes = CalcFcnSize (TknCount);
@@ -1927,13 +1927,13 @@ UBOOL InitFcnSTEs
                     // If it's not an immediate, ...
                     if (!lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
                         // Increment the RefCnt
-                        DbgIncrRefCntDir (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
+                        DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
 
                     break;
 
                 case TKT_FCNARRAY:
                     // Increment the RefCnt
-                    DbgIncrRefCntDir (lpYYArg->tkToken.tkData.tkGlbData);
+                    DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
 
                     break;
 
@@ -1993,7 +1993,7 @@ LPSYMENTRY LocalizeSymEntries
             if (!lpSymEntryNxt->stFlags.Imm)
                 // Increment the reference count in global memory
                 //   as we retain the value over localization
-                DbgIncrRefCntDir (lpSymEntryNxt->stData.stGlbData);
+                DbgIncrRefCntDir_PTB (lpSymEntryNxt->stData.stGlbData);
         } else
             // Erase the Symbol Table Entry
             //   unless it's a []var

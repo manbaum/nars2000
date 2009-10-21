@@ -51,11 +51,11 @@ LPPL_YYSTYPE ExecuteFn0
                              NULL);                     // Ptr to axis token (may be NULL)
     else
         // tkData is a valid HGLOBAL function array or user-defined function/operator
-        Assert (IsGlbTypeFcnDir (lpNameFcn)
-             || IsGlbTypeDfnDir (lpNameFcn));
+        Assert (IsGlbTypeFcnDir_PTB (lpNameFcn)
+             || IsGlbTypeDfnDir_PTB (lpNameFcn));
 
         // Split cases based upon the array signature
-        switch (GetSignatureGlb (lpNameFcn))
+        switch (GetSignatureGlb_PTB (lpNameFcn))
         {
             case FCNARRAY_HEADER_SIGNATURE:
                 // Execute a function array global memory handle
@@ -126,9 +126,9 @@ LPPL_YYSTYPE ExecFunc_EM_YY
     //   the case where the function suspends, and the user
     //   erases the global name.
     if (hGlbLft)
-        DbgIncrRefCntDir (MakePtrTypeGlb (hGlbLft));
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbLft));
     if (hGlbRht)
-        DbgIncrRefCntDir (MakePtrTypeGlb (hGlbRht));
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbRht));
 
     // Check for NoValue
     if (IsTokenNoValue (lptkLftArg)
@@ -280,8 +280,8 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
                 // stData is a valid HGLOBAL function array
                 //   or user-defined function/operator
-                Assert (IsGlbTypeFcnDir (hGlbFcn)
-                     || IsGlbTypeDfnDir (hGlbFcn));
+                Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
+                     || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
                 // If it's a user-defined function/operator, ...
                 if (stFlags.UsrDfn)
@@ -340,11 +340,11 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
             // tkData is a valid HGLOBAL function array
             //   or user-defined function/operator
-            Assert (IsGlbTypeFcnDir (hGlbFcn)
-                 || IsGlbTypeDfnDir (hGlbFcn));
+            Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
+                 || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
             // If it's a user-defined function/operator, ...
-            switch (GetSignatureGlb (hGlbFcn))
+            switch (GetSignatureGlb_PTB (hGlbFcn))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Execute a function array global memory handle
@@ -806,11 +806,11 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
 
             // tkData is a valid HGLOBAL function array
             //   or user-defined function/operator
-            Assert (IsGlbTypeFcnDir (hGlbFcn)
-                 || IsGlbTypeDfnDir (hGlbFcn));
+            Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
+                 || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
             // Split cases based upon the array signature
-            switch (GetSignatureGlb (hGlbFcn))
+            switch (GetSignatureGlb_PTB (hGlbFcn))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Check for axis operator
@@ -857,11 +857,11 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                                     lptkAxis);              // Ptr to axis token (may be NULL)
             // tkData is a valid HGLOBAL function array
             //   or user-defined function/operator
-            Assert (IsGlbTypeFcnDir (hGlbFcn)
-                 || IsGlbTypeDfnDir (hGlbFcn));
+            Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
+                 || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
             // Split cases based upon the array signature
-            switch (GetSignatureGlb (hGlbFcn))
+            switch (GetSignatureGlb_PTB (hGlbFcn))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Execute a function array global memory handle

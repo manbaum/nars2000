@@ -240,9 +240,9 @@ void FreeStrand
                     // stData is an internal function, a valid HGLOBAL variable or function array,
                     //   or user-defined function/operator
                     Assert (lpYYToken->tkToken.tkData.tkSym->stFlags.FcnDir
-                         || IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
-                         || IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
-                         || IsGlbTypeDfnDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData));
+                         || IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
+                         || IsGlbTypeFcnDir_PTB (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
+                         || IsGlbTypeDfnDir_PTB (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData));
                 } // End IF
 
                 break;          // Don't free names
@@ -256,7 +256,7 @@ void FreeStrand
                  && !PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
                 {
                     // tkData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
+                    Assert (IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
 
                     if (FreeResultGlobalVar (lpYYToken->tkToken.tkData.tkGlbData))
                     {
@@ -277,7 +277,7 @@ void FreeStrand
                  && !PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
                 {
                     // tkData is a valid HGLOBAL function array
-                    Assert (IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkGlbData));
+                    Assert (IsGlbTypeFcnDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
 
                     if (FreeResultGlobalFcn (lpYYToken->tkToken.tkData.tkGlbData))
                     {
@@ -439,7 +439,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     hGlbData = lpYYToken->tkToken.tkData.tkSym->stData.stGlbData;
 
                     // stData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (hGlbData));
+                    Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                     // Lock the memory to get a ptr to it
                     lpMemStr = MyGlobalLock (ClrPtrTypeDir (hGlbData));
@@ -602,7 +602,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         {
                             // stData is a NoValue entry or a valid HGLOBAL variable array
                             Assert (IsSymNoValue (lpYYRes->tkToken.tkData.tkSym)
-                                 || IsGlbTypeVarDir (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData));
+                                 || IsGlbTypeVarDir_PTB (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData));
                             // Make a copy of the token within if not a NoValue entry
                             if (!IsSymNoValue (lpYYRes->tkToken.tkData.tkSym))
                                 lpYYRes->tkToken = *CopyToken_EM (&lpYYRes->tkToken, FALSE);
@@ -622,7 +622,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYStrand->tkToken.tkData.tkGlbData);
+                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                         break;
@@ -646,7 +646,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         Assert (!lpYYStrand->tkToken.tkData.tkSym->stFlags.Imm);
 
                         // stData is a valid HGLOBAL variable array
-                        Assert (IsGlbTypeVarDir (lpYYStrand->tkToken.tkData.tkSym->stData.stGlbData));
+                        Assert (IsGlbTypeVarDir_PTB (lpYYStrand->tkToken.tkData.tkSym->stData.stGlbData));
 
                         // Pass through the entire token
                         YYCopy (lpYYRes, lpYYStrand);
@@ -658,13 +658,13 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
                     case TKT_VARARRAY:      // e.g., {zilde}
                         // tkData is a valid HGLOBAL variable array
-                        Assert (IsGlbTypeVarDir (lpYYStrand->tkToken.tkData.tkGlbData));
+                        Assert (IsGlbTypeVarDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData));
 
                         // Fill in the result token
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYStrand->tkToken.tkData.tkGlbData);
+                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                         break;
@@ -680,7 +680,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYStrand->tkToken.tkData.tkGlbData);
+                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
                 lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                 break;
@@ -1119,9 +1119,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     } else
                     {
                         // stData is a valid HGLOBAL variable array
-                        Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData));
+                        Assert (IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData));
 
-                        *LPAPL.Nested++ = CopySymGlbDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData);
+                        *LPAPL.Nested++ = CopySymGlbDir_PTB (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData);
                     } // End IF/ELSE
 
                     break;
@@ -1137,7 +1137,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
                 case TKT_VARARRAY:  // 1('ab')
                     // tkData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
+                    Assert (IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
 
                     // Copy the nested entry to the result, w/o incrementing the RefCnt
                     //   as it is a temp with no other reference whose value is passed on
@@ -1147,10 +1147,10 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
                 case TKT_CHRSTRAND: // 1 'ab'
                     // tkData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
+                    Assert (IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
 
                     // Copy the nested entry to the result, incrementing the RefCnt
-                    *LPAPL.Nested++ = CopySymGlbDir (lpYYToken->tkToken.tkData.tkGlbData);
+                    *LPAPL.Nested++ = CopySymGlbDir_PTB (lpYYToken->tkToken.tkData.tkGlbData);
 
                     break;
 
@@ -1590,13 +1590,13 @@ LPPL_YYSTYPE CopyString_EM_YY
     lpYYRes = YYAlloc ();
 
     // tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (lpYYStr->tkToken.tkData.tkGlbData));
+    Assert (IsGlbTypeVarDir_PTB (lpYYStr->tkToken.tkData.tkGlbData));
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = lpYYStr->tkToken.tkFlags.TknType;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYStr->tkToken.tkData.tkGlbData);
+    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStr->tkToken.tkData.tkGlbData);
     lpYYRes->tkToken.tkCharIndex       = lpYYStr->tkToken.tkCharIndex;
 
     DBGLEAVE;
@@ -1643,7 +1643,7 @@ LPPL_YYSTYPE MakeAxis_YY
             if (!lpYYAxis->tkToken.tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lpYYAxis->tkToken.tkData.tkSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir_PTB (lpYYAxis->tkToken.tkData.tkSym->stData.stGlbData));
 
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISARRAY;
@@ -1851,7 +1851,7 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
 
         // If we're to reset the base of a function array, ...
         if (bResetBase
-         && GetSignatureGlb (hGlbData) EQ FCNARRAY_HEADER_SIGNATURE)
+         && GetSignatureGlb_PTB (hGlbData) EQ FCNARRAY_HEADER_SIGNATURE)
         {
             UINT tknNELM,                   // # tokens in the named function
                  uCnt,                      // Loop counter
@@ -2366,7 +2366,7 @@ LPPL_YYSTYPE MakeList_EM_YY
             case TKT_VARARRAY:
                 // Set the new token type
                 lpYYRes->tkToken.tkFlags.TknType = TKT_LSTARRAY;
-                DbgIncrRefCntDir (lpYYRes->tkToken.tkData.tkGlbData);
+                DbgIncrRefCntDir_PTB (lpYYRes->tkToken.tkData.tkGlbData);
 
                 break;
 
@@ -2381,7 +2381,7 @@ LPPL_YYSTYPE MakeList_EM_YY
                     lpYYRes->tkToken.tkFlags.TknType   = TKT_LSTARRAY;
 ////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Set by lpYYRes->tkToken =
 ////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Set by lpYYRes->tkToken =
-////                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData);   // #1A
+////                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData);   // #1A
                     lpYYRes->tkToken.tkData.tkGlbData  =                lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;    // #1B
 ////////////////////lpYYRes->tkToken.tkCharIndex       =                // Set by lpYYRes->tkToken =
                 } else
@@ -2456,7 +2456,7 @@ LPPL_YYSTYPE MakeList_EM_YY
                 lpMemLst->tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpMemLst->tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from GHND
 ////////////////lpMemLst->tkFlags.NoDisplay = FALSE;            // Already zero from GHND
-////            lpMemLst->tkData.tkGlbData  = CopySymGlbDir (lpSymEntry->stData.stGlbData);     // #2A
+////            lpMemLst->tkData.tkGlbData  = CopySymGlbDir_PTB (lpSymEntry->stData.stGlbData);     // #2A
                 lpMemLst->tkData.tkGlbData  =                lpSymEntry->stData.stGlbData;      // #2B
                 lpMemLst->tkCharIndex       = lpYYToken->tkToken.tkCharIndex;
             } // End IF/ELSE
@@ -2475,7 +2475,7 @@ LPPL_YYSTYPE MakeList_EM_YY
             lpMemLst->tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpMemLst->tkFlags.ImmType   = IMMTYPE_ERROR;        // Already zero from GHND
 ////////////lpMemLst->tkFlags.NoDisplay = FALSE;                // Already zero from GHND
-            lpMemLst->tkData.tkGlbData  = CopySymGlbDir (lpYYToken->tkToken.tkData.tkGlbData);  // #3A
+            lpMemLst->tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYToken->tkToken.tkData.tkGlbData);  // #3A
 ////        lpMemLst->tkData.tkGlbData  =                lpYYToken->tkToken.tkData.tkGlbData;   // #3B
             lpMemLst->tkCharIndex       = lpYYToken->tkToken.tkCharIndex;
 
@@ -2618,10 +2618,10 @@ LPTOKEN CopyToken_EM
             if (!lpSymEntry->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lpSymEntry->stData.stGlbData));
+                Assert (IsGlbTypeVarDir_PTB (lpSymEntry->stData.stGlbData));
 
                 // Increment the reference count in global memory
-                DbgIncrRefCntDir (lpSymEntry->stData.stGlbData);
+                DbgIncrRefCntDir_PTB (lpSymEntry->stData.stGlbData);
 
                 break;          // We're done
             } // End IF
@@ -2642,13 +2642,13 @@ LPTOKEN CopyToken_EM
                 //   or HGLOBAL function array
                 //   or user-defined function/operator
                 Assert (lpToken->tkData.tkSym->stFlags.FcnDir
-                     || IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData)
-                     || IsGlbTypeDfnDir (lpToken->tkData.tkSym->stData.stGlbData));
+                     || IsGlbTypeFcnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
+                     || IsGlbTypeDfnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData));
 
                 // If it's not a direct function/operator, ...
                 if (!lpToken->tkData.tkSym->stFlags.FcnDir)
                     // Increment the reference count in global memory
-                    DbgIncrRefCntDir (lpToken->tkData.tkSym->stData.stGlbData);
+                    DbgIncrRefCntDir_PTB (lpToken->tkData.tkSym->stData.stGlbData);
 
                 break;          // We're done
             } // End IF
@@ -2660,19 +2660,19 @@ LPTOKEN CopyToken_EM
         case TKT_CHRSTRAND:     // ...
         case TKT_NUMSTRAND:     // ...
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lpToken->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir_PTB (lpToken->tkData.tkGlbData));
 
             // Increment the reference count in global memory
-            DbgIncrRefCntDir (lpToken->tkData.tkGlbData);
+            DbgIncrRefCntDir_PTB (lpToken->tkData.tkGlbData);
 
             break;
 
         case TKT_FCNARRAY:      // tkData is HGLOBAL
             // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lpToken->tkData.tkGlbData));
+            Assert (IsGlbTypeFcnDir_PTB (lpToken->tkData.tkGlbData));
 
             // Increment the reference count in global memory
-            DbgIncrRefCntDir (lpToken->tkData.tkGlbData);
+            DbgIncrRefCntDir_PTB (lpToken->tkData.tkGlbData);
 
             break;
 

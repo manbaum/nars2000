@@ -514,7 +514,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
             case ARRAY_NESTED:
             case ARRAY_HETERO:
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (((LPAPLNESTED) lpMemRht)[uRht]);
+                ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
 
                 break;
 

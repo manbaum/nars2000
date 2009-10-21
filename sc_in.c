@@ -593,7 +593,7 @@ UBOOL TransferInverseFcn2_EM
             // Get the function's global memory handle
             hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
-            Assert (IsGlbTypeDfnDir (hGlbDfnHdr));
+            Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
             // Clear the type bits for lock/unlock
             hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);

@@ -131,9 +131,9 @@ UBOOL AssignName_EM
                 // stData is an internal function, a valid HGLOBAL variable or function array,
                 //   or user-defined function/operator
                 Assert (lptkSrc->tkData.tkSym->stFlags.FcnDir
-                     || IsGlbTypeVarDir (lptkSrc->tkData.tkSym->stData.stGlbData)
-                     || IsGlbTypeFcnDir (lptkSrc->tkData.tkSym->stData.stGlbData)
-                     || IsGlbTypeDfnDir (lptkSrc->tkData.tkSym->stData.stGlbData));
+                     || IsGlbTypeVarDir_PTB (lptkSrc->tkData.tkSym->stData.stGlbData)
+                     || IsGlbTypeFcnDir_PTB (lptkSrc->tkData.tkSym->stData.stGlbData)
+                     || IsGlbTypeDfnDir_PTB (lptkSrc->tkData.tkSym->stData.stGlbData));
 
                 // Get the source global memory handle
                 hGlbSrc = lptkSrc->tkData.tkSym->stData.stGlbData;
@@ -163,7 +163,7 @@ UBOOL AssignName_EM
                 {
                     // Copy the source global memory handle
                     //   and save it as the new global memory ptr
-                    lptkNam->tkData.tkSym->stData.stGlbData = CopySymGlbDir (hGlbSrc);
+                    lptkNam->tkData.tkSym->stData.stGlbData = CopySymGlbDir_PTB (hGlbSrc);
 
                     // Transfer user-defined function/operator flag
                     lptkNam->tkData.tkSym->stFlags.UsrDfn =
@@ -253,7 +253,7 @@ UBOOL AssignName_EM
 
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable
-            Assert (IsGlbTypeVarDir (lptkSrc->tkData.tkVoid));
+            Assert (IsGlbTypeVarDir_PTB (lptkSrc->tkData.tkVoid));
 
             // Call function common to TKT_VARARRAY and TKT_FCNARRAY
             AssignArrayCommon (lptkNam, lptkSrc, TKT_VARNAMED);
@@ -262,7 +262,7 @@ UBOOL AssignName_EM
 
         case TKT_FCNARRAY:
             // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lptkSrc->tkData.tkVoid));
+            Assert (IsGlbTypeFcnDir_PTB (lptkSrc->tkData.tkVoid));
 
             // Call function common to TKT_VARARRAY and TKT_FCNARRAY
             AssignArrayCommon (lptkNam, lptkSrc, TKT_FCNNAMED);
@@ -482,8 +482,8 @@ NAME_TYPES GetNameType
 
     // stData/tkData is a valid HGLOBAL function array
     //   or user-defined function/operator
-    Assert (IsGlbTypeFcnDir (hGlbData)
-         || IsGlbTypeDfnDir (hGlbData));
+    Assert (IsGlbTypeFcnDir_PTB (hGlbData)
+         || IsGlbTypeDfnDir_PTB (hGlbData));
 
     // Clear the ptr type bits
     hGlbData = ClrPtrTypeDir (hGlbData);
@@ -492,7 +492,7 @@ NAME_TYPES GetNameType
     lpMem = MyGlobalLock (hGlbData);
 
     // Split cases based upon the signature
-    switch (((LPHEADER_SIGNATURE) lpMem)->nature)
+    switch (GetSignatureMem (lpMem))
     {
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
         case FCNARRAY_HEADER_SIGNATURE:
@@ -544,7 +544,7 @@ void AssignArrayCommon
     lptkName->tkFlags.TknType = TknType;
 
     // Copy the HGLOBAL
-    lptkName->tkData.tkSym->stData.stGlbData = CopySymGlbDir (lptkSrc->tkData.tkGlbData);
+    lptkName->tkData.tkSym->stData.stGlbData = CopySymGlbDir_PTB (lptkSrc->tkData.tkGlbData);
 } // End AssignArrayCommon
 #undef  APPEND_NAME
 
@@ -649,7 +649,7 @@ UBOOL AssignNamedVars_EM
     // Handle global case
 
     // st/tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbVal));
+    Assert (IsGlbTypeVarDir_PTB (hGlbVal));
 
     // Clear the ptr type bits
     hGlbVal = ClrPtrTypeDir (hGlbVal);
@@ -837,7 +837,7 @@ UBOOL AssignNamedVars_EM
                         hGlbSub = (HGLOBAL) lpVal;
 
                         // It's a valid HGLOBAL variable array
-                        Assert (IsGlbTypeVarDir (hGlbSub));
+                        Assert (IsGlbTypeVarDir_PTB (hGlbSub));
 
                         // Fill in the value token
                         tkToken.tkFlags.TknType  = TKT_VARARRAY;
@@ -944,7 +944,7 @@ UBOOL ModifyAssignNameVals_EM
     hGlbName = lptkStrN->tkData.tkGlbData;
 
     // tkData is a valid HGLOBAL name strand
-    Assert (IsGlbTypeNamDir (hGlbName));
+    Assert (IsGlbTypeNamDir_PTB (hGlbName));
 
     // Clear the ptr type bits
     hGlbName = ClrPtrTypeDir (hGlbName);

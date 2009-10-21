@@ -10053,7 +10053,7 @@ UBOOL CheckSelSpec_EM
         // Get the global memory handle
         hGlbNameVars = lptkNameVars->tkData.tkGlbData;
 
-        Assert (IsGlbTypeNamDir (hGlbNameVars));
+        Assert (IsGlbTypeNamDir_PTB (hGlbNameVars));
 
         // Clear the type bits
         hGlbNameVars = ClrPtrTypeDir (lptkNameVars->tkData.tkGlbData);

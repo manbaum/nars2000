@@ -2833,6 +2833,11 @@ SingVar:
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+
+                                             // Because there's no matching DecrRefCnt to the IncrRefCnt
+                                             //   in MakeVarStrand_EM_YY, we mark this array as skipping
+                                             //   the next IncrRefCnt.
+                                             SetVarArraySRCIFlag (&$$.tkToken);
                                          } // End IF
                                         }
     |     SYSFN0                        {DbgMsgWP (L"%%SingVar:  SYSFN0");
@@ -2849,6 +2854,11 @@ SingVar:
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+
+                                             // Because there's no matching DecrRefCnt to the IncrRefCnt
+                                             //   in MakeVarStrand_EM_YY, we mark this array as skipping
+                                             //   the next IncrRefCnt.
+                                             SetVarArraySRCIFlag (&$$.tkToken);
                                          } // End IF
                                         }
     |     CHRSTRAND                     {DbgMsgWP (L"%%SingVar:  CHRSTRAND");
@@ -2876,8 +2886,12 @@ SingVar:
     | ')' ArrExpr '('                   {DbgMsgWP (L"%%SingVar:  (ArrExpr)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             SetVarArraySkipRefCntFlag (&$2.tkToken);
                                              $$ = $2;
+
+                                             // Because there's no matching DecrRefCnt to the IncrRefCnt
+                                             //   in MakeVarStrand_EM_YY, we mark this array as skipping
+                                             //   the next IncrRefCnt.
+                                             SetVarArraySRCIFlag (&$$.tkToken);
                                          } // End IF
                                         }
     ;

@@ -30,6 +30,8 @@
 CDB_THREAD cdbThread;               // Temporary global
 WNDPROC    lpfnOldListboxWndProc;   // Save area for old Listbox window proc
 
+#define BKCOLOR_REFCNT_GT1      DEF_SCN_RED
+#define FGCOLOR_REFCNT_GT1      DEF_SCN_WHITE
 
 #ifdef DEBUG
 //***************************************************************************
@@ -266,6 +268,8 @@ LRESULT APIENTRY DBWndProc
                            | LBS_NOINTEGRALHEIGHT
                            | LBS_EXTENDEDSEL
                            | LBS_MULTIPLESEL
+                           | LBS_OWNERDRAWFIXED
+                           | LBS_HASSTRINGS
                              ,                      // Styles
                              0,                     // X-position
                              0,                     // Y-...
@@ -347,6 +351,179 @@ LRESULT APIENTRY DBWndProc
 #undef  nWidth
 #undef  fwSizeType
 
+        case WM_MEASUREITEM:
+////////{
+////////    LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT) lParam;
+////////
+////////    // Set the height of the list box items
+////////    lpmis->itemHeight = 20;
+////////
+            goto NORMAL_EXIT;       // We handled the msg
+////////} // End WM_MEASUREITEM
+
+        case WM_ERASEBKGND:
+            return TRUE;                // Tell 'em we erased the background
+
+        case WM_DRAWITEM:
+        {
+            LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT) lParam; // Ptr to DRAWITEMSTRUCT
+            WCHAR            wszText[1024];     // Save area for text
+            int              iOffset,           // 1 if the text starts with UTF16_REFCNT_GT1, 0 otherwise
+                             bkMode;            // Background mode
+            COLORREF         bkColor,           // Background color
+                             fgColor;           // Foreground ...
+
+            // Get the corresponding line
+            SendMessageW (hWndLB, LB_GETTEXT, lpdis->itemID, (LPARAM) wszText);
+
+            bkColor = GetBkColor   (lpdis->hDC);
+            fgColor = GetTextColor (lpdis->hDC);
+            bkMode  = GetBkMode    (lpdis->hDC);
+
+            // Check for leading UTF16_REFCNT_GT1
+            iOffset = (wszText[0] EQ UTF16_REFCNT_GT1);
+
+            // Split cases based upon the item action
+            switch (lpdis->itemAction)
+            {
+                case ODA_DRAWENTIRE:
+                case ODA_SELECT:
+                    // If the string is to be drawn as selected, ...
+                    if (lpdis->itemState & ODS_SELECTED)
+                    {
+                        SetBkColor   (lpdis->hDC, GetSysColor (COLOR_HIGHLIGHT));
+                        SetTextColor (lpdis->hDC, GetSysColor (COLOR_HIGHLIGHTTEXT));
+                        SetBkMode    (lpdis->hDC, OPAQUE);
+
+                        // Draw the text
+                        DrawTextW (lpdis->hDC,
+                                  &wszText[iOffset],
+                                   lstrlenW (&wszText[iOffset]),
+                                  &lpdis->rcItem,
+                                   DT_VCENTER | DT_SINGLELINE);
+                    } else
+                    // If the string is to be drawn with xxCOLOR_REFCNT_GT1, ...
+                    if (iOffset)
+                    {
+                        SetBkColor   (lpdis->hDC, BKCOLOR_REFCNT_GT1);
+                        SetTextColor (lpdis->hDC, FGCOLOR_REFCNT_GT1);
+                        SetBkMode    (lpdis->hDC, OPAQUE);
+
+                        // Draw the text
+                        DrawTextW (lpdis->hDC,
+                                  &wszText[iOffset],
+                                   lstrlenW (&wszText[iOffset]),
+                                  &lpdis->rcItem,
+                                   DT_VCENTER | DT_SINGLELINE);
+                    } else
+                    {
+#if TRUE
+                        HDC     hDCMem;             // Handle to memory device context
+                        HBITMAP hBitmap,            // Handle to compatible bitmap
+                                hBitmapOld;         // Handle to memory DC old bitmap
+                        RECT    rcItem;             // Rectangle for use when double buffering
+                        HFONT   hFontOld;           // Handle to old font
+                        RECT    rcClient;           // Rectangle for Listbox's client area
+                        HBRUSH  hBrush;             // Handle to brush for painting the background
+
+                        // Get the Listbox's client area
+                        GetClientRect (hWndLB, &rcClient);
+
+                        // Copy the orginal rectangle
+                        rcItem = lpdis->rcItem;
+
+                        // Move the rectangle to the upper left corner
+////////////////////////rcItem.right  -= rcItem.left;       // Overridden below
+                        rcItem.bottom -= rcItem.top;
+                        rcItem.top     =
+                        rcItem.left    = 0;
+
+                        // Set the width to that of the client area
+                        //   so we can fill out the entire line with FillRect
+                        rcItem.right   = rcClient.right - rcClient.left;
+
+                        // Create a compatible memory DC and bitmap
+                        hDCMem  = MyCreateCompatibleDC     (lpdis->hDC);
+                        hBitmap = MyCreateCompatibleBitmap (lpdis->hDC,
+                                                            rcItem.right,
+                                                            rcItem.bottom);
+                        hBitmapOld = SelectObject (hDCMem, hBitmap);
+
+                        // Set the memory DC attributes
+                        SetBkColor   (hDCMem, bkColor);
+                        SetTextColor (hDCMem, fgColor);
+                        SetBkMode    (hDCMem, bkMode);
+                        hFontOld = SelectObject (hDCMem, GetCurrentObject (lpdis->hDC, OBJ_FONT));
+
+                        // Get the current background color brush
+                        hBrush = MyCreateSolidBrush (bkColor);
+
+                        // Handle WM_ERASEBKGND here by filling in
+                        //   the memory DC with the background brush
+                        FillRect (hDCMem, &rcItem, hBrush);
+
+                        // We no longer need this resource
+                        MyDeleteObject (hBrush); hBrush = NULL;
+
+                        // Draw the text into the memory DC
+                        DrawTextW (hDCMem,
+                                  &wszText[iOffset],
+                                   lstrlenW (&wszText[iOffset]),
+                                  &rcItem,
+                                   DT_VCENTER | DT_SINGLELINE);
+                        // Copy the memory DC to the screen DC
+                        BitBlt (lpdis->hDC,
+                                lpdis->rcItem.left,
+                                lpdis->rcItem.top,
+                                rcItem.right,
+                                rcItem.bottom,
+                                hDCMem,
+                                rcItem.left,
+                                rcItem.top,
+                                SRCCOPY);
+                        // Restore the old resources
+                        SelectObject (hDCMem, hBitmapOld);
+                        SelectObject (hDCMem, hFontOld);
+
+                        // We no longer need these resources
+                        MyDeleteObject (hBitmap); hBitmap = NULL;
+                        MyDeleteDC (hDCMem); hDCMem = NULL;
+#else
+//                      // Get the current background color brush
+//                      hBrush = MyCreateSolidBrush (bkColor);
+//
+//                      // Fill the client area background in the memory DC
+//                      FillRect (lpdis->hDC, &lpdis->rcItem, hBrush);
+//
+//                      // We no longer need this resource
+//                      MyDeleteObject (hBrush); hBrush = NULL;
+//
+                        // Draw the text into the memory DC
+                        DrawTextW (lpdis->hDC,
+                                  &wszText[iOffset],
+                                   lstrlenW (&wszText[iOffset]),
+                                  &lpdis->rcItem,
+                                   DT_VCENTER | DT_SINGLELINE);
+#endif
+                    } // End IF/ELSE
+
+                    break;
+
+                case ODA_FOCUS:     // Ignore changes in focus
+                    break;
+
+                default:
+                    break;
+            } // End SWITCH
+
+            // Restore the original attributes
+            SetBkColor   (lpdis->hDC, bkColor);
+            SetTextColor (lpdis->hDC, fgColor);
+            SetBkMode    (lpdis->hDC, bkMode);
+
+            goto NORMAL_EXIT;       // We handled the msg
+        } // End WM_DRAWITEM
+
         case MYWM_DBGMSGA:          // Single-char message
             iLineNum = HandleToUlong (GetPropW (hWnd, PROP_LINENUM));
 
@@ -371,11 +548,15 @@ LRESULT APIENTRY DBWndProc
         case MYWM_DBGMSGW:          // Double-char message
             iLineNum = HandleToULong (GetPropW (hWnd, PROP_LINENUM));
 
+            // Determine whether or not this line is in xxCOLOR_REFCNT_GT1
+            iIndex = (UTF16_REFCNT_GT1 EQ (*(LPWCHAR *) &lParam)[0]);
+
             // Format the string with a preceding line #
             wsprintfW (wszTemp,
-                       L"%4d:  %s",
+                       L"%s%4d:  %s",
+                       iIndex ? WS_UTF16_REFCNT_GT1 : L"",
                        ++iLineNum,
-                       *(LPWCHAR *) &lParam);
+                       &(*(LPWCHAR *) &lParam)[iIndex]);
 
             SetPropW (hWnd, PROP_LINENUM, ULongToHandle (iLineNum));
 
@@ -482,6 +663,9 @@ LRESULT WINAPI LclListboxWndProc
     // Split cases
     switch (message)
     {
+        case WM_ERASEBKGND:
+            return TRUE;                // Tell 'em we erased the background
+
 #define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
 #define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
 #define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)

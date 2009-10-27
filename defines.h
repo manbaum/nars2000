@@ -22,6 +22,8 @@
 
 #ifdef DEBUG
   ////#define DEBUG_REFCNT
+  #define    UTF16_REFCNT_GT1      UTF16_REPLACEMENTCHAR
+  #define WS_UTF16_REFCNT_GT1   WS_UTF16_REPLACEMENTCHAR
 #endif
 
 // Default definitions

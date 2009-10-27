@@ -605,13 +605,13 @@ void DisplayGlobals
                   && (lpHeader->bMFOvar EQ FALSE)))
                     {
                         wsprintfW (wszTemp,
-                                   L"hGlb=%p AType=%c%c NELM=%3d RC=%1d%cRnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
+                                   L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
+                                   (lpHeader->RefCnt > 1) ? WS_UTF16_REFCNT_GT1 : L"",
                                    hGlb,
                                    ArrayTypeAsChar[lpHeader->ArrType],
                                    L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
                                    LODWORD (lpHeader->NELM),
                                    lpHeader->RefCnt,
-                                   L" *"[lpHeader->RefCnt > 1],
                                    LODWORD (lpHeader->Rank),
                                    LODWORD (aplDim),
                                    (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
@@ -640,12 +640,12 @@ void DisplayGlobals
                 *lpAplChar = WC_EOS;
 
                 wsprintfW (wszTemp,
-                           L"hGlb=%p NType=%sNELM=%3d RC=%1d%c                Lck=%d (%S#%4d) (%s)",
+                           L"%shGlb=%p NType=%sNELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
+                           (lpHeader->RefCnt > 1) ? WS_UTF16_REFCNT_GT1 : L"",
                            hGlb,
                            lpwNameTypeStr[lpHeader->fnNameType],
                            lpHeader->tknNELM,
                            lpHeader->RefCnt,
-                           L" *"[lpHeader->RefCnt > 1],
                            (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
                            lpaFileNameGLBALLOC[i],
                            auLinNumGLBALLOC[i],
@@ -684,12 +684,12 @@ void DisplayGlobals
                     aplArrChar[min (MAX_VAL_LEN, uNameLen)] = WC_EOS;
 
                     wsprintfW (wszTemp,
-                               L"hGlb=%p DType=%c  NELM=%3d RC=%1d%c                Lck=%d (%S#%4d) (%s)",
+                               L"%shGlb=%p DType=%c  NELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
+                               (lpHeader->RefCnt > 1) ? WS_UTF16_REFCNT_GT1 : L"",
                                hGlb,
                                cDfnTypeStr[lpHeader->DfnType],
                                lpHeader->numFcnLines,
                                lpHeader->RefCnt,
-                               L" *"[lpHeader->RefCnt > 1],
                                (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
                                lpaFileNameGLBALLOC[i],
                                auLinNumGLBALLOC[i],
@@ -1083,13 +1083,15 @@ LPWCHAR DisplayFcnGlb
     tknNELM    = lpHeader->tknNELM;
     fnNameType = lpHeader->fnNameType;
 
+#ifdef DEBUG
     if (bDispHeader)
         lpaplChar += wsprintfW (lpaplChar,
-                                L"fnNameType=%s, NELM=%3d, RC=%2d%c, Fn:  ",
+                                L"%sfnNameType=%s, NELM=%3d, RC=%2d, Fn:  ",
+                                (lpHeader->RefCnt > 1) ? WS_UTF16_REFCNT_GT1 : L"",
                                 lpwNameTypeStr[lpHeader->fnNameType],
                                 tknNELM,
-                                lpHeader->RefCnt,
-                                L" *"[lpHeader->RefCnt > 1]);
+                                lpHeader->RefCnt);
+#endif
     // Skip over the function array header
     lpMemFcnArr = FcnArrayBaseToData (lpHeader);
 

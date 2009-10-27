@@ -927,6 +927,11 @@ HGLOBAL SF_UndoBufferLW
         // Split cases based upon the # fields scanned
         switch (uFields)
         {
+            case 3:
+                Assert (lpMemUndoBin->Action EQ undoSel);
+
+                break;
+
             case 4:
                 Assert (lpMemUndoBin->Action NE undoIns
                      && lpMemUndoBin->Action NE undoRep);

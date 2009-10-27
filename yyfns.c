@@ -710,6 +710,34 @@ LPPL_YYSTYPE YYCopyFcn
 
 
 //***************************************************************************
+//  $IncrFcnTkn
+//
+//  Increment reference counts in a function array
+//***************************************************************************
+
+void IncrFcnTkn
+    (LPTOKEN lptkSrc)                   // Ptr to source token
+
+{
+    HGLOBAL hGlbMem;                    // Source global memory handle
+    LPVOID  lpMemFcn;                   // Ptr to source global memory
+
+    // Get the global memory handle
+    //   and clear the ptr type bits
+    hGlbMem = ClrPtrTypeDir (lptkSrc->tkData.tkGlbData);
+
+    // Lock the memory to get a ptr to it
+    lpMemFcn = MyGlobalLock (hGlbMem);
+
+    // Increment function array reference counts
+    IncrFcnMem (lpMemFcn);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbMem); lpMemFcn = NULL;
+} // End IncrFcnTkn
+
+
+//***************************************************************************
 //  $IncrFcnMem
 //
 //  Increment reference counts in a function array
@@ -742,6 +770,8 @@ void IncrFcnMem
             {
                 case TKT_FCNARRAY:
                 case TKT_VARARRAY:
+                case TKT_NUMSTRAND:
+                case TKT_CHRSTRAND:
                     // Get the item global memory handle
                     hGlbItm = lpMemFcn->tkToken.tkData.tkGlbData;
 

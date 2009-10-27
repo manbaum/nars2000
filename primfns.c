@@ -1737,8 +1737,16 @@ HGLOBAL CopyArray_EM
                 switch (lpMemFcn->tkToken.tkFlags.TknType)
                 {
                     case TKT_VARARRAY:
-                    case TKT_FCNARRAY:
+                    case TKT_NUMSTRAND:
+                    case TKT_CHRSTRAND:
+                        // Increment the reference count
                         DbgIncrRefCntDir_PTB (lpMemFcn->tkToken.tkData.tkGlbData);
+
+                        break;
+
+                    case TKT_FCNARRAY:
+                        // Increment function array reference counts
+                        IncrFcnTkn (&lpMemFcn->tkToken);
 
                         break;
 

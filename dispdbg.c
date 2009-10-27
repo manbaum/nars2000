@@ -1181,6 +1181,7 @@ LPWCHAR DisplayFcnSub
     LPVOID  lpMemData;          // Ptr to function array global memory
     UINT    TknCount;           // Token count
     UBOOL   bIsImmed;           // TRUE if the named var is an immediate
+    APLUINT aplNELM;            // NELM of NUM/CHRSTRAND
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1398,6 +1399,77 @@ LPWCHAR DisplayFcnSub
                 lpaplChar--;            // Back over the trailing blank
             break;
 
+        case TKT_NUMSTRAND:
+            // Get the variable array global memory handle
+            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
+
+            // Clear the ptr type bits
+            hGlbData = ClrPtrTypeDir (hGlbData);
+
+            // Lock the memory to get a ptr to it
+            lpMemData = MyGlobalLock (hGlbData);
+
+            // Get the strand count
+            aplNELM = ((LPVARARRAY_HEADER) lpMemData)->NELM;
+
+            // Skip over the header and dimensions to the data
+            lpMemData = VarArrayBaseToData (lpMemData, ((LPVARARRAY_HEADER) lpMemData)->Rank);
+
+            // Loop through the elements
+            while (aplNELM--)
+                lpaplChar =
+                  FormatAplint (lpaplChar,                  // Ptr to output save area
+                                *((LPAPLINT) lpMemData)++);  // The value to format
+
+            if (lpaplChar[-1] EQ L' ')
+                *--lpaplChar = WC_EOS;  // Overwrite the trailing blank
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbData); lpMemData = NULL;
+
+            break;
+
+        case TKT_CHRSTRAND:
+            // Get the variable array global memory handle
+            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir_PTB (hGlbData));
+
+            // Clear the ptr type bits
+            hGlbData = ClrPtrTypeDir (hGlbData);
+
+            // Lock the memory to get a ptr to it
+            lpMemData = MyGlobalLock (hGlbData);
+
+            // Get the strand count
+            aplNELM = ((LPVARARRAY_HEADER) lpMemData)->NELM;
+
+            // Skip over the header and dimensions to the data
+            lpMemData = VarArrayBaseToData (lpMemData, ((LPVARARRAY_HEADER) lpMemData)->Rank);
+
+            // Append a leading quote marker
+            *lpaplChar++ = WC_DQ;
+
+            // Loop through the elements
+            while (aplNELM--)
+            {
+                if (((LPAPLCHAR) lpMemData)[0] EQ WC_DQ)
+                    *lpaplChar++ = WC_DQ;
+                *lpaplChar++ = *((LPAPLCHAR) lpMemData)++;
+            } // End WHILE
+
+            // Append a trailing quote marker
+            *lpaplChar++ = WC_DQ;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbData); lpMemData = NULL;
+
+            break;
+
         case TKT_VARARRAY:
             // Get the variable array global memory handle
             hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
@@ -1530,6 +1602,8 @@ LPWCHAR DisplayFcnSub
                                            lpSavedWsGlbVarParm);    // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                             if (lpYYMem[TknCount].TknCount > 1)
                                 *lpaplChar++ = L'(';
+                            else
+                                *lpaplChar++ = L' ';
                             lpaplChar =
                               DisplayFcnSub (lpaplChar,                                                 // Rfcn
                                             &lpYYMem[TknCount],

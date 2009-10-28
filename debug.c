@@ -372,6 +372,9 @@ LRESULT APIENTRY DBWndProc
                              bkMode;            // Background mode
             COLORREF         bkColor,           // Background color
                              fgColor;           // Foreground ...
+            RECT             rcClient,          // Rectangle for Listbox's client area
+                             rcItem;            // Rectangle for use when double buffering
+            HBRUSH           hBrush;            // Handle to brush for painting the background
 
             // Get the corresponding line
             SendMessageW (hWndLB, LB_GETTEXT, lpdis->itemID, (LPARAM) wszText);
@@ -383,129 +386,113 @@ LRESULT APIENTRY DBWndProc
             // Check for leading UTF16_REFCNT_GT1
             iOffset = (wszText[0] EQ UTF16_REFCNT_GT1);
 
+            // Copy the orginal rectangle
+            rcItem = lpdis->rcItem;
+
+            // Get the Listbox's client area
+            GetClientRect (hWndLB, &rcClient);
+
             // Split cases based upon the item action
             switch (lpdis->itemAction)
             {
+                HDC     hDCMem;             // Handle to memory device context
+                HBITMAP hBitmap,            // Handle to compatible bitmap
+                        hBitmapOld;         // Handle to memory DC old bitmap
+                HFONT   hFontOld;           // Handle to old font
+
                 case ODA_DRAWENTIRE:
                 case ODA_SELECT:
+                    // Move the rectangle to the upper left corner
+////////////////////rcItem.right  -= rcItem.left;       // Overridden below
+                    rcItem.bottom -= rcItem.top;
+                    rcItem.top     =
+                    rcItem.left    = 0;
+
+                    // Set the width to that of the client area
+                    //   so we can fill out the entire line with FillRect
+                    rcItem.right   = rcClient.right - rcClient.left;
+
+                    // Create a compatible memory DC and bitmap
+                    hDCMem  = MyCreateCompatibleDC     (lpdis->hDC);
+                    hBitmap = MyCreateCompatibleBitmap (lpdis->hDC,
+                                                        rcItem.right,
+                                                        rcItem.bottom);
+                    hBitmapOld = SelectObject (hDCMem, hBitmap);
+
                     // If the string is to be drawn as selected, ...
                     if (lpdis->itemState & ODS_SELECTED)
                     {
-                        SetBkColor   (lpdis->hDC, GetSysColor (COLOR_HIGHLIGHT));
-                        SetTextColor (lpdis->hDC, GetSysColor (COLOR_HIGHLIGHTTEXT));
-                        SetBkMode    (lpdis->hDC, OPAQUE);
-
-                        // Draw the text
-                        DrawTextW (lpdis->hDC,
-                                  &wszText[iOffset],
-                                   lstrlenW (&wszText[iOffset]),
-                                  &lpdis->rcItem,
-                                   DT_VCENTER | DT_SINGLELINE);
+                        // Set the memory DC attributes
+                        SetBkColor   (hDCMem, GetSysColor (COLOR_HIGHLIGHT));
+                        SetTextColor (hDCMem, GetSysColor (COLOR_HIGHLIGHTTEXT));
+                        SetBkMode    (hDCMem, OPAQUE);
                     } else
                     // If the string is to be drawn with xxCOLOR_REFCNT_GT1, ...
                     if (iOffset)
                     {
-                        SetBkColor   (lpdis->hDC, BKCOLOR_REFCNT_GT1);
-                        SetTextColor (lpdis->hDC, FGCOLOR_REFCNT_GT1);
-                        SetBkMode    (lpdis->hDC, OPAQUE);
-
-                        // Draw the text
-                        DrawTextW (lpdis->hDC,
-                                  &wszText[iOffset],
-                                   lstrlenW (&wszText[iOffset]),
-                                  &lpdis->rcItem,
-                                   DT_VCENTER | DT_SINGLELINE);
+                        // Set the memory DC attributes
+                        SetBkColor   (hDCMem, BKCOLOR_REFCNT_GT1);
+                        SetTextColor (hDCMem, FGCOLOR_REFCNT_GT1);
+                        SetBkMode    (hDCMem, OPAQUE);
                     } else
                     {
-#if TRUE
-                        HDC     hDCMem;             // Handle to memory device context
-                        HBITMAP hBitmap,            // Handle to compatible bitmap
-                                hBitmapOld;         // Handle to memory DC old bitmap
-                        RECT    rcItem;             // Rectangle for use when double buffering
-                        HFONT   hFontOld;           // Handle to old font
-                        RECT    rcClient;           // Rectangle for Listbox's client area
-                        HBRUSH  hBrush;             // Handle to brush for painting the background
-
-                        // Get the Listbox's client area
-                        GetClientRect (hWndLB, &rcClient);
-
-                        // Copy the orginal rectangle
-                        rcItem = lpdis->rcItem;
-
-                        // Move the rectangle to the upper left corner
-////////////////////////rcItem.right  -= rcItem.left;       // Overridden below
-                        rcItem.bottom -= rcItem.top;
-                        rcItem.top     =
-                        rcItem.left    = 0;
-
-                        // Set the width to that of the client area
-                        //   so we can fill out the entire line with FillRect
-                        rcItem.right   = rcClient.right - rcClient.left;
-
-                        // Create a compatible memory DC and bitmap
-                        hDCMem  = MyCreateCompatibleDC     (lpdis->hDC);
-                        hBitmap = MyCreateCompatibleBitmap (lpdis->hDC,
-                                                            rcItem.right,
-                                                            rcItem.bottom);
-                        hBitmapOld = SelectObject (hDCMem, hBitmap);
-
                         // Set the memory DC attributes
                         SetBkColor   (hDCMem, bkColor);
                         SetTextColor (hDCMem, fgColor);
                         SetBkMode    (hDCMem, bkMode);
-                        hFontOld = SelectObject (hDCMem, GetCurrentObject (lpdis->hDC, OBJ_FONT));
+                    } // End IF/ELSE/...
 
-                        // Get the current background color brush
+                    hFontOld = SelectObject (hDCMem, GetCurrentObject (lpdis->hDC, OBJ_FONT));
+
+                    // Create a background color brush
+                    hBrush = MyCreateSolidBrush (GetBkColor (lpdis->hDC));
+
+                    // Handle WM_ERASEBKGND here by filling in
+                    //   the memory DC with the background brush
+                    FillRect (hDCMem, &rcItem, hBrush);
+
+                    // We no longer need this resource
+                    MyDeleteObject (hBrush); hBrush = NULL;
+
+                    // Draw the text into the memory DC
+                    DrawTextW (hDCMem,
+                              &wszText[iOffset],
+                               lstrlenW (&wszText[iOffset]),
+                              &rcItem,
+                               DT_VCENTER | DT_SINGLELINE);
+                    // Copy the memory DC to the screen DC
+                    BitBlt (lpdis->hDC,
+                            lpdis->rcItem.left,
+                            lpdis->rcItem.top,
+                            rcItem.right,
+                            rcItem.bottom,
+                            hDCMem,
+                            rcItem.left,
+                            rcItem.top,
+                            SRCCOPY);
+                    // Restore the old resources
+                    SelectObject (hDCMem, hBitmapOld);
+                    SelectObject (hDCMem, hFontOld);
+
+                    // We no longer need these resources
+                    MyDeleteObject (hBitmap); hBitmap = NULL;
+                    MyDeleteDC (hDCMem); hDCMem = NULL;
+
+                    // If this is the last item in the Listbox, ...
+                    if (lpdis->itemID EQ (UINT) (SendMessageW (hWndLB, LB_GETCOUNT, 0, 0) - 1))
+                    {
+                        // Set the unpainted rectangle at the bottom of the client area
+                        rcItem.top    = lpdis->rcItem.bottom;
+                        rcItem.bottom = rcClient.bottom;
+
+                        // Create a background color brush
                         hBrush = MyCreateSolidBrush (bkColor);
 
-                        // Handle WM_ERASEBKGND here by filling in
-                        //   the memory DC with the background brush
-                        FillRect (hDCMem, &rcItem, hBrush);
+                        FillRect (lpdis->hDC, &rcItem, hBrush);
 
                         // We no longer need this resource
                         MyDeleteObject (hBrush); hBrush = NULL;
-
-                        // Draw the text into the memory DC
-                        DrawTextW (hDCMem,
-                                  &wszText[iOffset],
-                                   lstrlenW (&wszText[iOffset]),
-                                  &rcItem,
-                                   DT_VCENTER | DT_SINGLELINE);
-                        // Copy the memory DC to the screen DC
-                        BitBlt (lpdis->hDC,
-                                lpdis->rcItem.left,
-                                lpdis->rcItem.top,
-                                rcItem.right,
-                                rcItem.bottom,
-                                hDCMem,
-                                rcItem.left,
-                                rcItem.top,
-                                SRCCOPY);
-                        // Restore the old resources
-                        SelectObject (hDCMem, hBitmapOld);
-                        SelectObject (hDCMem, hFontOld);
-
-                        // We no longer need these resources
-                        MyDeleteObject (hBitmap); hBitmap = NULL;
-                        MyDeleteDC (hDCMem); hDCMem = NULL;
-#else
-//                      // Get the current background color brush
-//                      hBrush = MyCreateSolidBrush (bkColor);
-//
-//                      // Fill the client area background in the memory DC
-//                      FillRect (lpdis->hDC, &lpdis->rcItem, hBrush);
-//
-//                      // We no longer need this resource
-//                      MyDeleteObject (hBrush); hBrush = NULL;
-//
-                        // Draw the text into the memory DC
-                        DrawTextW (lpdis->hDC,
-                                  &wszText[iOffset],
-                                   lstrlenW (&wszText[iOffset]),
-                                  &lpdis->rcItem,
-                                   DT_VCENTER | DT_SINGLELINE);
-#endif
-                    } // End IF/ELSE
+                    } // End IF
 
                     break;
 
@@ -520,6 +507,9 @@ LRESULT APIENTRY DBWndProc
             SetBkColor   (lpdis->hDC, bkColor);
             SetTextColor (lpdis->hDC, fgColor);
             SetBkMode    (lpdis->hDC, bkMode);
+
+            // Set the result to indciate we processed the message
+            lResult = TRUE;
 
             goto NORMAL_EXIT;       // We handled the msg
         } // End WM_DRAWITEM

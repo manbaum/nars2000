@@ -8787,6 +8787,7 @@ UBOOL LookbehindOp
         case TKT_LEFTPAREN:
         case TKT_RIGHTPAREN:
         case TKT_FCNIMMED:
+        case TKT_OPJOTDOT:
         case TKT_EOS:
         case TKT_EOL:
         case TKT_SOS:
@@ -8853,7 +8854,6 @@ UBOOL LookbehindOp
         case TKT_OP2NAMED:
         case TKT_OP3IMMED:
         case TKT_OP3NAMED:
-        case TKT_OPJOTDOT:
             bRet = TRUE;
 
             goto NORMAL_EXIT;

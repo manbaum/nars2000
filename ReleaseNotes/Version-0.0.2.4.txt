@@ -1,6 +1,19 @@
 Version 0.0.2.4 consists of the following Builds:
 
 
+Build #572 -- Version 0.0.2.4
+-----------------------------
+
+* Fix Bug With Outer Product And Lefthand Numeric/Character Strands
+
+Directory trunk:
+
+PL_PARSE.Y:
+  Fix Bug:  In <LookbehindOp> when a numeric or character strand
+    is to the left of an outer product, the entry for <TKT_OPJOTDOT>
+    is in the wrong switch case.
+
+
 Build #571 -- Version 0.0.2.4
 -----------------------------
 

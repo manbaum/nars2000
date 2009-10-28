@@ -304,10 +304,8 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
 
     // Check for LENGTH ERROR
     if (aplColsLft NE aplFrstRht
-     && (IsMultiRank (aplRankLft)
-      || IsSingleton (aplNELMLft))
-     && (IsMultiRank (aplRankRht)
-      || IsSingleton (aplNELMRht)))
+     && !IsUnitDim (aplColsLft)     // Note that the EAS extends scalars or one-element vectors only
+     && !IsUnitDim (aplFrstRht))    // ...
         goto LENGTH_EXIT;
 
     // Calc larger of inner dimensions (in case of scalar extension)

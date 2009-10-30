@@ -2980,6 +2980,11 @@ StrandRec:
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Because there's no matching DecrRefCnt to the IncrRefCnt
+                                             //   in MakeVarStrand_EM_YY, we mark this array as skipping
+                                             //   the next IncrRefCnt.
+                                             SetVarArraySRCIFlag (&$1.tkToken);
+
                                              InitVarStrand (&$1);
 
                                              lpplLocalVars->lpYYRes =

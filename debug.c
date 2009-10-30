@@ -30,8 +30,8 @@
 CDB_THREAD cdbThread;               // Temporary global
 WNDPROC    lpfnOldListboxWndProc;   // Save area for old Listbox window proc
 
-#define BKCOLOR_REFCNT_GT1      DEF_SCN_RED
-#define FGCOLOR_REFCNT_GT1      DEF_SCN_WHITE
+#define BKCOLOR_REFCNT_NE1      DEF_SCN_RED
+#define FGCOLOR_REFCNT_NE1      DEF_SCN_WHITE
 
 #ifdef DEBUG
 //***************************************************************************
@@ -368,7 +368,7 @@ LRESULT APIENTRY DBWndProc
         {
             LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT) lParam; // Ptr to DRAWITEMSTRUCT
             WCHAR            wszText[1024];     // Save area for text
-            int              iOffset,           // 1 if the text starts with UTF16_REFCNT_GT1, 0 otherwise
+            int              iOffset,           // 1 if the text starts with UTF16_REFCNT_NE1, 0 otherwise
                              bkMode;            // Background mode
             COLORREF         bkColor,           // Background color
                              fgColor;           // Foreground ...
@@ -383,8 +383,8 @@ LRESULT APIENTRY DBWndProc
             fgColor = GetTextColor (lpdis->hDC);
             bkMode  = GetBkMode    (lpdis->hDC);
 
-            // Check for leading UTF16_REFCNT_GT1
-            iOffset = (wszText[0] EQ UTF16_REFCNT_GT1);
+            // Check for leading UTF16_REFCNT_NE1
+            iOffset = (wszText[0] EQ UTF16_REFCNT_NE1);
 
             // Copy the orginal rectangle
             rcItem = lpdis->rcItem;
@@ -427,12 +427,12 @@ LRESULT APIENTRY DBWndProc
                         SetTextColor (hDCMem, GetSysColor (COLOR_HIGHLIGHTTEXT));
                         SetBkMode    (hDCMem, OPAQUE);
                     } else
-                    // If the string is to be drawn with xxCOLOR_REFCNT_GT1, ...
+                    // If the string is to be drawn with xxCOLOR_REFCNT_NE1, ...
                     if (iOffset)
                     {
                         // Set the memory DC attributes
-                        SetBkColor   (hDCMem, BKCOLOR_REFCNT_GT1);
-                        SetTextColor (hDCMem, FGCOLOR_REFCNT_GT1);
+                        SetBkColor   (hDCMem, BKCOLOR_REFCNT_NE1);
+                        SetTextColor (hDCMem, FGCOLOR_REFCNT_NE1);
                         SetBkMode    (hDCMem, OPAQUE);
                     } else
                     {
@@ -538,13 +538,13 @@ LRESULT APIENTRY DBWndProc
         case MYWM_DBGMSGW:          // Double-char message
             iLineNum = HandleToULong (GetPropW (hWnd, PROP_LINENUM));
 
-            // Determine whether or not this line is in xxCOLOR_REFCNT_GT1
-            iIndex = (UTF16_REFCNT_GT1 EQ (*(LPWCHAR *) &lParam)[0]);
+            // Determine whether or not this line is in xxCOLOR_REFCNT_NE1
+            iIndex = (UTF16_REFCNT_NE1 EQ (*(LPWCHAR *) &lParam)[0]);
 
             // Format the string with a preceding line #
             wsprintfW (wszTemp,
                        L"%s%4d:  %s",
-                       iIndex ? WS_UTF16_REFCNT_GT1 : L"",
+                       iIndex ? WS_UTF16_REFCNT_NE1 : L"",
                        ++iLineNum,
                        &(*(LPWCHAR *) &lParam)[iIndex]);
 

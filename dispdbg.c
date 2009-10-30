@@ -606,7 +606,7 @@ void DisplayGlobals
                     {
                         wsprintfW (wszTemp,
                                    L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
-                                   (lpHeader->RefCnt > 1) ? WS_UTF16_REFCNT_GT1 : L"",
+                                   (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                    hGlb,
                                    ArrayTypeAsChar[lpHeader->ArrType],
                                    L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
@@ -641,7 +641,7 @@ void DisplayGlobals
 
                 wsprintfW (wszTemp,
                            L"%shGlb=%p NType=%sNELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
-                           (lpHeader->RefCnt > 1) ? WS_UTF16_REFCNT_GT1 : L"",
+                           (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                            hGlb,
                            lpwNameTypeStr[lpHeader->fnNameType],
                            lpHeader->tknNELM,
@@ -685,7 +685,7 @@ void DisplayGlobals
 
                     wsprintfW (wszTemp,
                                L"%shGlb=%p DType=%c  NELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
-                               (lpHeader->RefCnt > 1) ? WS_UTF16_REFCNT_GT1 : L"",
+                               (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                hGlb,
                                cDfnTypeStr[lpHeader->DfnType],
                                lpHeader->numFcnLines,
@@ -1087,7 +1087,7 @@ LPWCHAR DisplayFcnGlb
     if (bDispHeader)
         lpaplChar += wsprintfW (lpaplChar,
                                 L"%sfnNameType=%s, NELM=%3d, RC=%2d, Fn:  ",
-                                (lpHeader->RefCnt > 1) ? WS_UTF16_REFCNT_GT1 : L"",
+                                (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                 lpwNameTypeStr[lpHeader->fnNameType],
                                 tknNELM,
                                 lpHeader->RefCnt);

@@ -1119,8 +1119,8 @@ LPWCHAR DisplayFcnGlb
 LPWCHAR DisplayFcnMem
     (LPWCHAR             lpaplChar,             // Ptr to output save area
      LPPL_YYSTYPE        lpMemFcnArr,           // Ptr to function array data
-     NAME_TYPES          fnNameType,            // Function array name type
      UINT                tknNELM,               // Token NELM
+     NAME_TYPES          fnNameType,            // Function array name type
      LPSAVEDWSGLBVARCONV lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
      LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
 

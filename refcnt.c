@@ -105,7 +105,13 @@ int ChangeRefCntDir_PTB
                         // Clear the flag
                         lpHeader->SkipRefCntIncr = FALSE;
                     else
+                    {
+                        // Clear the flag
+                        lpHeader->SkipRefCntIncr = FALSE;
+
                         lpHeader->RefCnt += iIncr;
+                    } // End IF/ELSE
+
                     RefCnt = lpHeader->RefCnt;
 #undef  lpHeader
                     break;
@@ -231,6 +237,52 @@ int DecrRefCntInd_PTB
 {
     return ChangeRefCntDir_PTB (*(HGLOBAL *) lpMem, -1);
 } // End DecrRefCntInd_PTB
+
+
+//***************************************************************************
+//  $IncrRefCntTkn
+//
+//  Increment the reference count of a token
+//***************************************************************************
+
+int IncrRefCntTkn
+    (LPTOKEN lptkVar)
+
+{
+    HGLOBAL hGlbVar;
+
+    // Get the global memory handle (if it's a global)
+    hGlbVar = GetGlbHandle (lptkVar);
+
+    // If it's a global, ...
+    if (hGlbVar)
+        return ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbVar), 1);
+    else
+        return -1;
+} // End IncrRefCntTkn
+
+
+//***************************************************************************
+//  $DecrRefCntTkn
+//
+//  Decrement the reference count of a token
+//***************************************************************************
+
+int DecrRefCntTkn
+    (LPTOKEN lptkVar)
+
+{
+    HGLOBAL hGlbVar;
+
+    // Get the global memory handle (if it's a global)
+    hGlbVar = GetGlbHandle (lptkVar);
+
+    // If it's a global, ...
+    if (hGlbVar)
+        return ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbVar), -1);
+    else
+        return -1;
+} // End DecrRefCntTkn
 
 
 //***************************************************************************

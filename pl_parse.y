@@ -2396,7 +2396,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);
+/////////////////////////////////////////////FreeResult (&$3.tkToken);   // DO NOT FREE:  RefCnt not incremented in StrandOp1
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -2492,6 +2492,11 @@ ArrExpr:
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Increment the RefCnt because StrandOp1 doesn't
+                                             //   go through MakeFcnStrand_EM_YY as this is a
+                                             //   function not an operator.
+                                             DbgIncrRefCntTkn (&$3.tkToken);
+
                                              // Change the first token from ambiguous operator to a function
                                              //   and swap the first two tokens
                                              if (!AmbOpSwap_EM (&$2))

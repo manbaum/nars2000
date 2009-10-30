@@ -81,6 +81,10 @@
     dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     IncrRefCntInd_PTB (hGlbData)
 
+    #define DbgIncrRefCntTkn(lptkVar) \
+    dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", lptkVar, FNLN); \
+    IncrRefCntTkn (lptkVar)
+
     #define DbgDecrRefCntDir_PTB(hGlbData) \
     dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntDir_PTB (hGlbData)
@@ -88,6 +92,10 @@
     #define DbgDecrRefCntInd_PTB(hGlbData) \
     dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntInd_PTB (hGlbData)
+
+    #define DbgDecrRefCntTkn(lptkVar) \
+    dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", lptkVar, FNLN); \
+    DecrRefCntTkn (lptkVar)
   #else
     #define DbgIncrRefCntDir_PTB(hGlbData) \
     IncrRefCntDir_PTB (hGlbData)
@@ -95,11 +103,17 @@
     #define DbgIncrRefCntInd_PTB(hGlbData) \
     IncrRefCntInd_PTB (hGlbData)
 
+    #define DbgIncrRefCntTkn(lptkVar) \
+    IncrRefCntTkn (lptkVar)
+
     #define DbgDecrRefCntDir_PTB(hGlbData) \
     DecrRefCntDir_PTB (hGlbData)
 
     #define DbgDecrRefCntInd_PTB(hGlbData) \
     DecrRefCntInd_PTB (hGlbData)
+
+    #define DbgDecrRefCntTkn(lptkVar) \
+    DecrRefCntTkn (lptkVar)
   #endif
 
   #define DbgMsgW2(a)                     {if (gDbgLvl > 2) {DbgMsgW(a);}}
@@ -119,9 +133,13 @@
 
   #define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData)
 
+  #define DbgIncrRefCntTkn(lptkVar)       IncrRefCntTkn (lptkVar)
+
   #define DbgDecrRefCntDir_PTB(hGlbData)  DecrRefCntDir_PTB (hGlbData)
 
   #define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData)
+
+  #define DbgDecrRefCntTkn(lptkVar)       DecrRefCntTkn (lptkVar)
 
   #define DbgMsg(a)
   #define DbgMsgW(a)

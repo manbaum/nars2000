@@ -173,16 +173,12 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                   aplRestRht,               // Right arg product of remaining dims
                   aplInnrMax;               // Larger of inner dimensions
     APLLONGEST    aplLongestLft,            // Left arg immediate value
-                  aplLongestRht,            // Right ...
-                  aplLongestProLft,         // Left arg prototype immediate value
-                  aplLongestProRht;         // Right ...
+                  aplLongestRht;            // Right ...
     HGLOBAL       hGlbLft = NULL,           // Left arg global memory handle
                   hGlbRht = NULL,           // Right ...
                   hGlbRes = NULL,           // Result   ...
                   hGlbItm,                  // Arg item ...
-                  hGlbPro = NULL,           // Prototype global memory handle
-                  hGlbProLft,               // Left arg prototype global memory handle
-                  hGlbProRht;               // Right ...
+                  hGlbPro = NULL;           // Prototype global memory handle
     LPVOID        lpMemLft = NULL,          // Ptr to left arg global memory
                   lpMemRht = NULL,          // Ptr to right ...
                   lpMemRes = NULL;          // Ptr to result   ...
@@ -212,9 +208,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                   tkItmRed,                 // Reduction ...
                   tkProLft = {0},           // Left arg prototype token
                   tkProRht = {0};           // Right ...
-    IMM_TYPES     immTypeItm,               // Arg item immediate type
-                  immTypeProLft,            // Left arg prototype immediate type
-                  immTypeProRht;            // Right ...
+    IMM_TYPES     immTypeItm;               // Arg item immediate type
     LPSYMENTRY    lpSymTmp;                 // Ptr to temporary LPSYMENTRY
     LPPLLOCALVARS lpplLocalVars;            // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;             // Ptr to Ctrl-Break flag
@@ -387,7 +381,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         bUsrDfnOpr = TRUE;
     } else
     // If the result is empty or the axis dimension is zero,
-    //   and the function is catenate, ...
+    //   and the reduction function is catenate, ...
     if ((IsEmpty (aplNELMRes)
       || IsZeroDim (aplInnrMax))
      && (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
@@ -715,7 +709,7 @@ RESTART_INNERPROD_RES:
             } // End IF/ELSE
         } // End IF
 
-        // Get the right operand prototype function
+        // If the right operand has no prototype function, ...
         if (!lpPrimProtoRht)
         {
             // Get the appropriate prototype function ptr
@@ -816,76 +810,20 @@ RESTART_INNERPROD_RES:
 
         // If the right operand has no prototype function, ...
         if (!lpPrimProtoRht)
-            goto RIGHT_NONCE_EXIT;
-
-        // Get the prototype of the left arg ({take} L)
-        GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
-                            NULL,               // Ptr to integer result
-                            NULL,               // Ptr to float ...
-                            NULL,               // Ptr to WCHAR ...
-                           &aplLongestProLft,   // Ptr to longest ...
-                           &hGlbProLft,         // Ptr to lpSym/Glb ...
-                           &immTypeProLft,      // Ptr to ...immediate type ...
-                            NULL);              // Ptr to array type ...
-        // If the prototype is a global, ...
-        if (hGlbProLft)
         {
-            // Setup a token for the left arg prototype to pass to the function
-            tkProLft.tkFlags.TknType   = TKT_VARARRAY;
-////////////tkProLft.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
-////////////tkProLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkProLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbProLft);
-            tkProLft.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-        } else
-        {
-            // Setup a token for the left arg prototype to pass to the function
-            tkProLft.tkFlags.TknType   = TKT_VARIMMED;
-            tkProLft.tkFlags.ImmType   = immTypeProLft;
-////////////tkProLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkProLft.tkData.tkLongest  = aplLongestProLft;
-            tkProLft.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-        } // End IF/ELSE
-
-        // Get the prototype of the right arg ({take} R)
-        GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
-                            NULL,               // Ptr to integer result
-                            NULL,               // Ptr to float ...
-                            NULL,               // Ptr to WCHAR ...
-                           &aplLongestProRht,   // Ptr to longest ...
-                           &hGlbProRht,         // Ptr to lpSym/Glb ...
-                           &immTypeProRht,      // Ptr to ...immediate type ...
-                            NULL);              // Ptr to array type ...
-        // If the prototype is a global, ...
-        if (hGlbProRht)
-        {
-            // Setup a token for the right arg prototype to pass to the function
-            tkProRht.tkFlags.TknType   = TKT_VARARRAY;
-////////////tkProRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
-////////////tkProRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkProRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbProRht);
-            tkProRht.tkCharIndex       = lpYYFcnStrRht->tkToken.tkCharIndex;
-        } else
-        {
-            // Setup a token for the right arg prototype to pass to the function
-            tkProRht.tkFlags.TknType   = TKT_VARIMMED;
-            tkProRht.tkFlags.ImmType   = immTypeProRht;
-////////////tkProRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkProRht.tkData.tkLongest  = aplLongestProRht;
-            tkProRht.tkCharIndex       = lpYYFcnStrRht->tkToken.tkCharIndex;
-        } // End IF/ELSE
+            // Get the appropriate prototype function ptr
+            lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+            if (!lpPrimProtoRht)
+                goto RIGHT_NONCE_EXIT;
+        } // End IF
 
         // Execute the right operand between the left & right prototypes
-        //   (({take} L) RhtOpr {take} R)
-        // Note that we cast the function strand to LPTOKEN
-        //   to bridge the two types of calls -- one to a primitive
-        //   function which takes a function token, and one to a
-        //   primitive operator which takes a function strand
-        lpYYRes =
-          (*lpPrimProtoRht) (&tkProLft,         // Ptr to left arg token
-                    (LPTOKEN) lpYYFcnStrRht,    // Ptr to right operand function strand
-                             &tkProRht,         // Ptr to right arg token
-                              NULL);            // Ptr to axis token (may be NULL)
-        if (!lpYYRes)
+        if (!ExecDydProto_EM (lptkLftArg,           // Ptr to left arg token
+                              lpYYFcnStrLft,        // Ptr to left operand function strand (for tkCharIndex only)
+                              lptkRhtArg,           // Ptr to right arg token
+                              lpYYFcnStrRht,        // Ptr to right operand function strand
+                              lpPrimProtoRht,       // Ptr to right operand prototype function
+                             &lpYYRes))             // Ptr to ptr to the result
             goto ERROR_EXIT;
 
         // Get the attributes (Type, NELM, and Rank) of the last calc
@@ -1011,73 +949,46 @@ RESTART_INNERPROD_RES:
         LPVOID     hSymGlbIdn;          // ...               LPSYMENTRY or HGLOBAL
         APLSTYPE   aplTypeIdn;          // ...               storage type
 
-        // Get the prototype of the left arg ({take} L)
-        GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
-                            NULL,               // Ptr to integer result
-                            NULL,               // Ptr to float ...
-                            NULL,               // Ptr to WCHAR ...
-                           &aplLongestProLft,   // Ptr to longest ...
-                           &hGlbProLft,         // Ptr to lpSym/Glb ...
-                           &immTypeProLft,      // Ptr to ...immediate type ...
-                            NULL);              // Ptr to array type ...
-        // If the prototype is a global, ...
-        if (hGlbProLft)
+        // If the right operand has no prototype function, ...
+        if (!lpPrimProtoRht)
         {
-            // Setup a token for the left arg prototype to pass to the function
-            tkProLft.tkFlags.TknType   = TKT_VARARRAY;
-////////////tkProLft.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
-////////////tkProLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkProLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbProLft);
-            tkProLft.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-        } else
-        {
-            // Setup a token for the left arg prototype to pass to the function
-            tkProLft.tkFlags.TknType   = TKT_VARIMMED;
-            tkProLft.tkFlags.ImmType   = immTypeProLft;
-////////////tkProLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkProLft.tkData.tkLongest  = aplLongestProLft;
-            tkProLft.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-        } // End IF/ELSE
+            // Get the appropriate prototype function ptr
+            lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+            if (!lpPrimProtoRht)
+                goto RIGHT_NONCE_EXIT;
+        } // End IF
 
-        // Get the prototype of the right arg ({take} R)
-        GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
-                            NULL,               // Ptr to integer result
-                            NULL,               // Ptr to float ...
-                            NULL,               // Ptr to WCHAR ...
-                           &aplLongestProRht,   // Ptr to longest ...
-                           &hGlbProRht,         // Ptr to lpSym/Glb ...
-                           &immTypeProRht,      // Ptr to ...immediate type ...
-                            NULL);              // Ptr to array type ...
-        // If the prototype is a global, ...
-        if (hGlbProRht)
-        {
-            // Setup a token for the right arg prototype to pass to the function
-            tkProRht.tkFlags.TknType   = TKT_VARARRAY;
-////////////tkProRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
-////////////tkProRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkProRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbProRht);
-            tkProRht.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-        } else
-        {
-            // Setup a token for the right arg prototype to pass to the function
-            tkProRht.tkFlags.TknType   = TKT_VARIMMED;
-            tkProRht.tkFlags.ImmType   = immTypeProRht;
-////////////tkProRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkProRht.tkData.tkLongest  = aplLongestProRht;
-            tkProRht.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-        } // End IF/ELSE
-
+        // Execute the right operand between the left & right prototypes
+        if (!ExecDydProto_EM (lptkLftArg,           // Ptr to left arg token
+                              lpYYFcnStrLft,        // Ptr to left operand function strand (for tkCharIndex only)
+                              lptkRhtArg,           // Ptr to right arg token
+                              lpYYFcnStrRht,        // Ptr to right operand function strand
+                              lpPrimProtoRht,       // Ptr to right operand prototype function
+                             &lpYYRes))             // Ptr to ptr to the result
+            goto ERROR_EXIT;
+#ifdef DEBUG
+        // Decrement the SI level of lpYYRes so YYResIsEmpty won't complain
+        lpYYRes->SILevel--;
+#endif
         // Get the user-defined function/operator's identity element
-        lpYYRes =
-          ExecFuncStrLine_EM_YY (&tkProLft,             // Ptr to left arg token (may be NULL)
-                                  lpYYFcnStrLft,        // Ptr to left operand function strand
-                                 &tkProRht,             // Ptr to right arg token
-                                  NULL,                 // Ptr to axis token (may be NULL)
-                                  LINENUM_IDENTITY);    // Starting line # (see LINE_NUMS)
-        if (!lpYYRes)
+        lpYYRes2 =
+          ExecFuncStrLine_EM_YY (NULL,                  // Ptr to left arg token (may be NULL)
+                                 lpYYFcnStrLft,         // Ptr to left operand function strand
+                                &lpYYRes->tkToken,      // Ptr to right arg token
+                                 NULL,                  // Ptr to axis token (may be NULL)
+                                 LINENUM_IDENTITY);     // Starting line # (see LINE_NUMS)
+#ifdef DEBUG
+        // Restore the SI level of lpYYRes
+        lpYYRes->SILevel++;
+#endif
+        // Free the YYRes (and the storage)
+        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+
+        // If it failed, ...
+        if (!lpYYRes2)
             goto ERROR_EXIT;
         // Get identity element's global ptr (if any)
-        aplLongestIdn = GetGlbPtrs (&lpYYRes->tkToken, &hGlbIdn);
+        aplLongestIdn = GetGlbPtrs (&lpYYRes2->tkToken, &hGlbIdn);
 
         // If the result is global, ...
         if (hGlbIdn)
@@ -1085,7 +996,7 @@ RESTART_INNERPROD_RES:
         else
         {
             // Get the attributes (Type, NELM, and Rank) of the identity element
-            AttrsOfToken (&lpYYRes->tkToken, &aplTypeIdn, NULL, NULL, NULL);
+            AttrsOfToken (&lpYYRes2->tkToken, &aplTypeIdn, NULL, NULL, NULL);
 
             // Convert the immediate value to a SYMENTRY
             hSymGlbIdn =
@@ -1095,13 +1006,13 @@ RESTART_INNERPROD_RES:
         } // End IF/ELSE
 
         // Free the YYRes (and the storage)
-        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+        FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
 
         if (!hSymGlbIdn)
             goto ERROR_EXIT;
 
         // Save the identity element in the result
-        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hSymGlbIdn);
+        *((LPAPLNESTED) lpMemRes)++ = hSymGlbIdn;
 
         for (uRes = 1; uRes < aplNELMRes; uRes++)
             *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hSymGlbIdn);
@@ -1576,7 +1487,7 @@ RESTART_INNERPROD_RES:
                 } else
                 {
                     // If this is not the first time, free the reduction result
-                    if (iInnMax EQ (APLINT) (aplInnrMax - 1))
+                    if (iInnMax NE (APLINT) (aplInnrMax - 1))
                         FreeResult (&tkItmRed);
 
                     goto ERROR_EXIT;
@@ -1705,6 +1616,107 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimOpDydDotCommon_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ExecDydProto_EM
+//
+//  Execute a dyadic function (strand) between left & right prototypes
+//***************************************************************************
+
+UBOOL ExecDydProto_EM
+    (LPTOKEN       lptkLftArg,              // Ptr to left arg token
+     LPPL_YYSTYPE  lpYYFcnStrLft,           // Ptr to left operand function strand (for tkCharIndex only)
+     LPTOKEN       lptkRhtArg,              // Ptr to right arg token
+     LPPL_YYSTYPE  lpYYFcnStrRht,           // Ptr to right operand function strand
+     LPPRIMFNS     lpPrimProtoRht,          // Ptr to right operand prototype function
+     LPPL_YYSTYPE *lplpYYRes)               // Ptr to ptr to the result
+
+{
+    APLLONGEST    aplLongestProLft,         // Left arg prototype immediate value
+                  aplLongestProRht;         // Right ...
+    HGLOBAL       hGlbProLft,               // Left arg prototype global memory handle
+                  hGlbProRht;               // Right ...
+    TOKEN         tkProLft = {0},           // Left arg prototype token
+                  tkProRht = {0};           // Right ...
+    IMM_TYPES     immTypeProLft,            // Left arg prototype immediate type
+                  immTypeProRht;            // Right ...
+
+    // Get the prototype of the left arg ({take} L)
+    GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
+                        NULL,               // Ptr to integer result
+                        NULL,               // Ptr to float ...
+                        NULL,               // Ptr to WCHAR ...
+                       &aplLongestProLft,   // Ptr to longest ...
+                       &hGlbProLft,         // Ptr to lpSym/Glb ...
+                       &immTypeProLft,      // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
+    // If the prototype is a global, ...
+    if (hGlbProLft)
+    {
+        // Setup a token for the left arg prototype to pass to the function
+        tkProLft.tkFlags.TknType   = TKT_VARARRAY;
+////////tkProLft.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////tkProLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkProLft.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbProLft);
+        tkProLft.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
+    } else
+    {
+        // Setup a token for the left arg prototype to pass to the function
+        tkProLft.tkFlags.TknType   = TKT_VARIMMED;
+        tkProLft.tkFlags.ImmType   = immTypeProLft;
+////////tkProLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkProLft.tkData.tkLongest  = aplLongestProLft;
+        tkProLft.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
+    } // End IF/ELSE
+
+    // Get the prototype of the right arg ({take} R)
+    GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
+                        NULL,               // Ptr to integer result
+                        NULL,               // Ptr to float ...
+                        NULL,               // Ptr to WCHAR ...
+                       &aplLongestProRht,   // Ptr to longest ...
+                       &hGlbProRht,         // Ptr to lpSym/Glb ...
+                       &immTypeProRht,      // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
+    // If the prototype is a global, ...
+    if (hGlbProRht)
+    {
+        // Setup a token for the right arg prototype to pass to the function
+        tkProRht.tkFlags.TknType   = TKT_VARARRAY;
+////////tkProRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////tkProRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkProRht.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbProRht);
+        tkProRht.tkCharIndex       = lpYYFcnStrRht->tkToken.tkCharIndex;
+    } else
+
+    {
+        // Setup a token for the right arg prototype to pass to the function
+        tkProRht.tkFlags.TknType   = TKT_VARIMMED;
+        tkProRht.tkFlags.ImmType   = immTypeProRht;
+////////tkProRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkProRht.tkData.tkLongest  = aplLongestProRht;
+        tkProRht.tkCharIndex       = lpYYFcnStrRht->tkToken.tkCharIndex;
+    } // End IF/ELSE
+
+    // Execute the right operand between the left & right prototypes
+    //   (({take} L) RhtOpr {take} R)
+    // Note that we cast the function strand to LPTOKEN
+    //   to bridge the two types of calls -- one to a primitive
+    //   function which takes a function token, and one to a
+    //   primitive operator which takes a function strand
+    *lplpYYRes =
+      (*lpPrimProtoRht) (&tkProLft,         // Ptr to left arg token
+                (LPTOKEN) lpYYFcnStrRht,    // Ptr to right operand function strand
+                         &tkProRht,         // Ptr to right arg token
+                          NULL);            // Ptr to axis token (may be NULL)
+    // Free the left & right arg tokens
+    FreeResult (&tkProLft);
+    FreeResult (&tkProRht);
+
+    // Return TRUE if it worked, FALSE otherwise
+    return (*lplpYYRes NE NULL);
+} // End ExecDydProto_EM
 
 
 //***************************************************************************

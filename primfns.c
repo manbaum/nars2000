@@ -3088,5 +3088,40 @@ void SetVarArraySRCIFlag
 
 
 //***************************************************************************
+//  $ClrVarArraySRCIFlag
+//
+//  Clear SkipRefCntIncr flag in a variable array.
+//***************************************************************************
+
+void ClrVarArraySRCIFlag
+    (LPTOKEN lptkVar)                   // Ptr to var token
+
+{
+    HGLOBAL           hGlbVar;
+    LPVARARRAY_HEADER lpMemVar;
+
+    // If the token is named and has no value, ...
+    if (IsTknTypeNamed (lptkVar->tkFlags.TknType)
+     && IsSymNoValue (lptkVar->tkData.tkSym))
+        return;
+
+    // Get the array's global ptrs (if any)
+    //   and lock it
+    GetGlbPtrs_LOCK (lptkVar, &hGlbVar, &lpMemVar);
+
+    // Is the array global?
+    if (hGlbVar)
+    {
+        // Clear the flag which says to skip the next
+        //   IncrRefCnt
+        lpMemVar->SkipRefCntIncr = FALSE;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbVar); lpMemVar = NULL;
+    } // End IF
+} // End ClrVarArraySRCIFlag
+
+
+//***************************************************************************
 //  End of File: primfns.c
 //***************************************************************************

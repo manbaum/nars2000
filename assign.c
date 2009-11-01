@@ -255,13 +255,6 @@ UBOOL AssignName_EM
             // tkData is a valid HGLOBAL variable
             Assert (IsGlbTypeVarDir_PTB (lptkSrc->tkData.tkVoid));
 
-            // If the source array has the SkipRefCntIncr flag set,
-            //   in an item at any level, make a copy of that item,
-            //   clear the flag in the copy of the source and assign
-            //   the copy to the name.
-            if (!CheckSRCI_EM_PTB (&lptkSrc->tkData.tkGlbData, lptkNam))
-                goto ERROR_EXIT;
-
             // Call function common to TKT_VARARRAY and TKT_FCNARRAY
             AssignArrayCommon (lptkNam, lptkSrc, TKT_VARNAMED);
 
@@ -390,98 +383,6 @@ NORMAL_EXIT:
     return bRet;
 } // End AssignName_EM
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $CheckSRCI_EM_PTB
-//
-//  Check on the SkipRefCntIncr flag
-//***************************************************************************
-
-UBOOL CheckSRCI_EM_PTB
-    (HGLOBAL *lphGlbData,       // Ptr to global memory handle
-     LPTOKEN  lptkFunc)         // Ptr to function token
-
-{
-    LPVARARRAY_HEADER lpMemHdr;
-    UBOOL bRet = FALSE;         // TRUE iff the result is valid
-
-    // Split cases based upon the ptr type bits
-    switch (GetPtrTypeDir (*lphGlbData))
-    {
-        case PTRTYPE_STCONST:
-            return TRUE;
-
-        case PTRTYPE_HGLOBAL:
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (ClrPtrTypeDir (*lphGlbData));
-
-    // Check the topmost flag
-    if (lpMemHdr->SkipRefCntIncr)
-    {
-        // If the refCnt is > 1, ...
-        if (lpMemHdr->RefCnt > 1)
-        {
-            HGLOBAL hGlbCopy;
-
-            // Copy the array as we're changing it
-            hGlbCopy =
-              CopyArray_EM (*lphGlbData, lptkFunc);
-
-            if (!hGlbCopy)
-                goto ERROR_EXIT;
-            // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDir (*lphGlbData)); lpMemHdr = NULL;
-
-            // Save the new global memory handle
-            *lphGlbData = hGlbCopy;
-
-            // Lock the memory to get a ptr to it
-            lpMemHdr = MyGlobalLock (ClrPtrTypeDir (*lphGlbData));
-        } // End IF
-
-        // Clear the flag
-        lpMemHdr->SkipRefCntIncr = FALSE;
-    } // End IF
-
-    // If there's a lower level, check it too.
-    if (IsNested (lpMemHdr->ArrType))
-    {
-        APLNELM     aplNELM;
-        LPAPLNESTED lpMemData;
-
-        // Get the array NELM
-        aplNELM = lpMemHdr->NELM;
-
-        // In case the array is empty
-        aplNELM = max (aplNELM, 1);
-
-        // Skip over the header and dimensions to the data
-        lpMemData = VarArrayBaseToData (lpMemHdr, lpMemHdr->Rank);
-
-        while (aplNELM--)
-            if (!CheckSRCI_EM_PTB (lpMemData++, lptkFunc))
-                goto ERROR_EXIT;
-    } // End IF
-
-    // Mark as successful
-    bRet = TRUE;
-
-    goto NORMAL_EXIT;
-
-ERROR_EXIT:
-NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDir (*lphGlbData)); lpMemHdr = NULL;
-
-    return bRet;
-} // End CheckSRCI_EM_PTB
 
 
 //***************************************************************************

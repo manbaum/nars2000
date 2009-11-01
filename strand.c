@@ -1139,6 +1139,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // tkData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
 
+                    // Clear the SkipRefCntIncr flag as it's no longer applicable
+                    ClrVarArraySRCIFlag (&lpYYToken->tkToken);
+
                     // Copy the nested entry to the result, w/o incrementing the RefCnt
                     //   as it is a temp with no other reference whose value is passed on
                     *LPAPL.Nested++ = lpYYToken->tkToken.tkData.tkGlbData;

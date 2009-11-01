@@ -606,7 +606,7 @@ void DisplayGlobals
                     {
                         wsprintfW (wszTemp,
                                    L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
-                                   (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
+                                   (lpHeader->RefCnt NE 1 || lpHeader->SkipRefCntIncr) ? WS_UTF16_REFCNT_NE1 : L"",
                                    hGlb,
                                    ArrayTypeAsChar[lpHeader->ArrType],
                                    L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
@@ -675,9 +675,9 @@ void DisplayGlobals
                 MyGlobalUnlock (hGlb); lpMemDfnHdr = NULL;
 
                 // If we're to display all globals or
-            //   this one is not a Magic Function/Operator, ...
+                //   this one is not a Magic Function/Operator, ...
                 if (uDispGlb EQ 2
-             || !IsMFOName (lpMemPTD->lpwszTemp))
+                 || !IsMFOName (lpMemPTD->lpwszTemp))
                 {
                     // Copy the name to local storage
                     lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));

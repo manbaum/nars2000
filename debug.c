@@ -395,13 +395,22 @@ LRESULT APIENTRY DBWndProc
             // Split cases based upon the item action
             switch (lpdis->itemAction)
             {
+// Define the following name to use a memory DC in WM_PAINT
+//   for drawing operations so as to reduce screen flicker.
+// Otherwise, use a memory DC inside the WM_DRAWITEM message.
+#define   USEMEMDC_WM_PAINT
+
+#ifndef USEMEMDC_WM_PAINT
                 HDC     hDCMem;             // Handle to memory device context
                 HBITMAP hBitmap,            // Handle to compatible bitmap
                         hBitmapOld;         // Handle to memory DC old bitmap
                 HFONT   hFontOld;           // Handle to old font
-
+#else
+  #define hDCMem        (lpdis->hDC)
+#endif
                 case ODA_DRAWENTIRE:
                 case ODA_SELECT:
+#ifndef USEMEMDC_WM_PAINT
                     // Move the rectangle to the upper left corner
 ////////////////////rcItem.right  -= rcItem.left;       // Overridden below
                     rcItem.bottom -= rcItem.top;
@@ -418,7 +427,7 @@ LRESULT APIENTRY DBWndProc
                                                         rcItem.right,
                                                         rcItem.bottom);
                     hBitmapOld = SelectObject (hDCMem, hBitmap);
-
+#endif
                     // If the string is to be drawn as selected, ...
                     if (lpdis->itemState & ODS_SELECTED)
                     {
@@ -441,9 +450,9 @@ LRESULT APIENTRY DBWndProc
                         SetTextColor (hDCMem, fgColor);
                         SetBkMode    (hDCMem, bkMode);
                     } // End IF/ELSE/...
-
+#ifndef USEMEMDC_WM_PAINT
                     hFontOld = SelectObject (hDCMem, GetCurrentObject (lpdis->hDC, OBJ_FONT));
-
+#endif
                     // Create a background color brush
                     hBrush = MyCreateSolidBrush (GetBkColor (lpdis->hDC));
 
@@ -460,6 +469,7 @@ LRESULT APIENTRY DBWndProc
                                lstrlenW (&wszText[iOffset]),
                               &rcItem,
                                DT_VCENTER | DT_SINGLELINE);
+#ifndef USEMEMDC_WM_PAINT
                     // Copy the memory DC to the screen DC
                     BitBlt (lpdis->hDC,
                             lpdis->rcItem.left,
@@ -477,7 +487,9 @@ LRESULT APIENTRY DBWndProc
                     // We no longer need these resources
                     MyDeleteObject (hBitmap); hBitmap = NULL;
                     MyDeleteDC (hDCMem); hDCMem = NULL;
-
+#else
+  #undef  hDCMem
+#endif
                     // If this is the last item in the Listbox, ...
                     if (lpdis->itemID EQ (UINT) (SendMessageW (hWndLB, LB_GETCOUNT, 0, 0) - 1))
                     {
@@ -653,6 +665,68 @@ LRESULT WINAPI LclListboxWndProc
     // Split cases
     switch (message)
     {
+#ifdef USEMEMDC_WM_PAINT
+#define hDC     ((HDC) wParam)
+        case WM_PAINT:              // hDC = (HDC) wParam
+        {
+            RECT    rcUpdate;           // Update rectangle
+            HDC     hDCMem;             // Handle to memory device context
+            HBITMAP hBitmap,            // Handle to compatible bitmap
+                    hBitmapOld;         // Handle to memory DC old bitmap
+
+            // If there's an incoming DC, pass the message on
+            if (hDC)
+                break;
+
+            // Get the update rectangle; if none, exit
+            if (!GetUpdateRect (hWnd, &rcUpdate, FALSE))
+                break;
+
+            // Allocate a DC for painting the client area
+            hDC = MyGetDC (hWnd);
+
+            // Set the bounding rectangle
+            SetBoundsRect (hDC, &rcUpdate, DCB_SET);
+
+            // Create a compatible memory DC and bitmap
+            hDCMem  = MyCreateCompatibleDC     (hDC);
+            hBitmap = MyCreateCompatibleBitmap (hDC,
+                                                rcUpdate.right,
+                                                rcUpdate.bottom);
+            hBitmapOld = SelectObject (hDCMem, hBitmap);
+
+            // Pass on down the line
+            lResult =
+              CallWindowProcW (lpfnOldListboxWndProc,
+                               hWnd,
+                               message,
+                      (WPARAM) hDCMem,
+                               lParam);
+            // Copy the memory DC to the screen DC
+            BitBlt (hDC,
+                    rcUpdate.left,
+                    rcUpdate.top,
+                    rcUpdate.right,
+                    rcUpdate.bottom,
+                    hDCMem,
+                    rcUpdate.left,
+                    rcUpdate.top,
+                    SRCCOPY);
+            // Validate the window
+            ValidateRect (hWnd, &rcUpdate);
+
+            // Restore the old resources
+            SelectObject (hDCMem, hBitmapOld);
+
+            // We no longer need these resources
+            MyDeleteObject (hBitmap); hBitmap = NULL;
+            MyDeleteDC (hDCMem); hDCMem = NULL;
+            MyReleaseDC (hWnd, hDC); hDC = NULL;
+
+            return FALSE;               // We handled the msg
+        } // End WM_PAINT
+#undef  hDC
+#endif
         case WM_ERASEBKGND:
             return TRUE;                // Tell 'em we erased the background
 

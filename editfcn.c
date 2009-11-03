@@ -1283,38 +1283,28 @@ int LclECPaintHook
     if (hGlbClr)
     {
         UINT     uClr;                      // Loop counter
-        HDC      hDCClient;                 // Client Area DC
         COLORREF clrBackDef;                // Default background color
 
         // Get the default background color for this DC
         clrBackDef = GetBkColor (hDC);
 
-        // If we're printing, ...
-        if (lFlags & PRF_PRINTCLIENT)
-            // Use the incoming DC as it has no clipping region
-            hDCClient = hDC;
-        else
-            // Get a DC of the entire client area so we
-            //   can draw outside the clipping region
-            hDCClient = MyGetDC (hWndEC);
-
         // Select the current font into the DC
-        SelectObject (hDCClient, GetCurrentObject (hDC, OBJ_FONT));
+        SelectObject (hDC, GetCurrentObject (hDC, OBJ_FONT));
 
         // Loop through the characters
         for (uClr = 0; uClr < uLen; uClr++)
         {
             // Set the foreground color
-            SetTextColor (hDCClient, lpMemClrIni[uCol + uClr].syntClr.crFore);
+            SetTextColor (hDC, lpMemClrIni[uCol + uClr].syntClr.crFore);
 
             // Set the background color
             if (lpMemClrIni[uCol + uClr].syntClr.crBack EQ DEF_SCN_TRANSPARENT)
-                SetBkColor (hDCClient, clrBackDef);
+                SetBkColor (hDC, clrBackDef);
             else
-                SetBkColor (hDCClient, lpMemClrIni[uCol + uClr].syntClr.crBack);
+                SetBkColor (hDC, lpMemClrIni[uCol + uClr].syntClr.crBack);
 
             // Draw the line for real
-            DrawTextW (hDCClient,
+            DrawTextW (hDC,
                       &lpwsz[uCol + uClr],
                        1,
                       &rcAct,
@@ -1325,13 +1315,6 @@ int LclECPaintHook
             // Advance the left edge of the rectangle
             rcAct.left += cxAveChar;
         } // End FOR
-
-        // If we're not printing, ...
-        if (!(lFlags & PRF_PRINTCLIENT))
-        {
-            // We no longer need this resource
-            MyReleaseDC (hWndEC, hDCClient); hDCClient = NULL;
-        } // End IF
     } else
         // Draw the line for real
         DrawTextW (hDC,
@@ -3190,6 +3173,9 @@ LRESULT WINAPI LclEditCtrlWndProc
             break;
 
         case WM_PAINT:              // hdc = (HDC) wParam; // the device context to draw in
+        {
+            RECT rcUpdate;          // Update rectangle
+
             // If from MF, pass on this message
             if (lpMemPTD EQ NULL)
                 break;
@@ -3210,10 +3196,26 @@ LRESULT WINAPI LclEditCtrlWndProc
                 return FALSE;       // We ignored the msg
             } // End IF
 
+            // Get the update rectangle
+            if (!GetUpdateRect (hWnd, &rcUpdate, FALSE))
+                return FALSE;       // We handled the msg
+
+            // If the rectangle doesn't already include the left edge, ...
+            if (rcUpdate.left NE 0)
+            {
+                // Ensure the rectangle starts at the beginning of the line
+                //   so Syntax Coloring can change the color of a preceding char
+                rcUpdate.left = 0;
+
+                // Add this rectangle to the window's update region
+                InvalidateRect (hWnd, &rcUpdate, FALSE);
+            } // End IF
+
             // Tell the ending code to draw the line #s afterwards
             bDrawLineNums = TRUE;
 
             break;
+        } // End WM_PAINT
 
         case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
         case WM_LBUTTONDOWN:        // fwKeys = wParam;         // key flags

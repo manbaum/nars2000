@@ -1145,12 +1145,12 @@ SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
    {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"              },  // 13:  Unmatched Grouping Symbols [] () {} ' "
    {{DEF_SC_UNNESTED   }, L"Improper Nesting"             },  // 14:  Improperly Nested Grouping Symbols [] () {}
    {{DEF_SC_UNK        }, L"Unknown Symbols"              },  // 15:  Unknown symbol
-   {{DEF_SC_WINBG      }, L"Window Background"            },  // 16:  Window background
+   {{DEF_SC_WINTEXT    }, L"Window Text"                  },  // 16:  Window text
   }
 #endif
 ;
 
-#define gSyntaxColorBG      gSyntaxColorName[SC_WINBG].syntClr
+#define gSyntaxColorText    gSyntaxColorName[SC_WINTEXT].syntClr
 
 EXTERN
 HBRUSH ghBrushBG;           // Window background brush

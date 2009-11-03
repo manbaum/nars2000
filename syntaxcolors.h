@@ -44,7 +44,7 @@
 #define DEF_SC_UNMATCHGRP      DEF_SCN_BLUE         , DEF_SCN_LIGHTCYAN
 #define DEF_SC_UNNESTED        DEF_SCN_BLUE         , DEF_SCN_LIGHTPINK
 #define DEF_SC_UNK             DEF_SCN_BLUE         , DEF_SCN_VIOLET
-#define DEF_SC_WINBG           CLR_INVALID          , DEF_SCN_WHITE
+#define DEF_SC_WINTEXT         DEF_SCN_BLACK        , DEF_SCN_WHITE
 
 // Syntax Coloring categories
 typedef enum tagSC_TYPE
@@ -72,7 +72,7 @@ typedef enum tagSC_TYPE
     SC_UNMATCHGRP,      // 13:  Unmatched Grouping Symbols [] () {} ' "
     SC_UNNESTED,        // 14:  Improperly Nested Grouping Symbols [] () {}
     SC_UNK,             // 15:  Unknown symbol
-    SC_WINBG,           // 16:  Window background
+    SC_WINTEXT,         // 16:  Window text
     SC_LENGTH           // 17:  Length
                         //      Because this enum is origin-0, this value is the # valid columns.
 } SCTYPE, *LPSCTYPE;

@@ -1039,7 +1039,7 @@ UBOOL SyntaxColor
 
         // Save the color
         tkLocalVars.lpMemClrNxt++->syntClr =
-          gSyntaxColorBG;
+          gSyntaxColorText;
     } else
         break;
 
@@ -1212,8 +1212,9 @@ int LclECPaintHook
                     // It's a system command, so we don't color that line
                     DbgGlobalFree (hGlbClr); hGlbClr = NULL;
 
-                    // Set the Window background color
-                    SetBkColor (hDC, gSyntaxColorName[SC_WINBG].syntClr.crBack);
+                    // Set the Window text colors
+                    SetTextColor (hDC, gSyntaxColorText.crFore);
+                    SetBkColor   (hDC, gSyntaxColorText.crBack);
                 } // End IF
             } // End IF
         } // End IF

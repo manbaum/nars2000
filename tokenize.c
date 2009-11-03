@@ -3469,7 +3469,7 @@ UBOOL fnSyntWhite
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorBG;
+          gSyntaxColorText;
     } // End IF
 
     // Mark as successful

@@ -106,7 +106,7 @@
 #define KEYNAME_SC_UNMATCHGRP           L"UnmatchGrp"
 #define KEYNAME_SC_UNNESTED             L"UnnestedGrp"
 #define KEYNAME_SC_UNK                  L"Unk"
-#define KEYNAME_SC_WINBG                L"WinBG"
+#define KEYNAME_SC_WINTEXT              L"WinText"
 
 #define KEYNAME_CUSTOMCOLORS            L"CustomColors"
 
@@ -145,7 +145,7 @@ LPWCHAR aColorKeyNames[] =
  KEYNAME_SC_UNMATCHGRP  ,       // 13:  Unmatched Grouping Symbols [] () {} ' "
  KEYNAME_SC_UNNESTED    ,       // 14:  Improperly Nested Grouping Symbols [] () {}
  KEYNAME_SC_UNK         ,       // 15:  Unknown symbol
- KEYNAME_SC_WINBG       ,       // 16:  Window background
+ KEYNAME_SC_WINTEXT     ,       // 16:  Window text
 };
 
 
@@ -700,13 +700,13 @@ void RedoWinBG
     } // End IF
 
     // Initialize the window background brush
-    ghBrushBG = CreateSolidBrush (gSyntaxColorBG.crBack);
+    ghBrushBG = CreateSolidBrush (gSyntaxColorText.crBack);
 
     // Loop through the Syntax Colors
     for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
     // If the background is transparent, change it
     if (gSyntClrBGTrans[uCnt])
-        gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorBG.crBack;
+        gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorText.crBack;
 } // End RedoWinBG
 
 

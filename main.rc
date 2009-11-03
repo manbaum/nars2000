@@ -530,9 +530,9 @@ BEGIN
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR22,160,230, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS22,215,230,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT23      ,  5,240, 75,  9    // "Window Background"
-////LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK23, 97,240,  8,  8, SS_BITMAP
-////PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR23,105,240, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
+    LTEXT           ""                          , IDC_SYNTCLR_LT23      ,  5,240, 75,  9    // "Window Text"
+    LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK23, 97,240,  8,  8, SS_BITMAP
+    PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR23,105,240, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK23,152,240,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR23,160,240, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
 ////AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS23,215,240,  8, 10

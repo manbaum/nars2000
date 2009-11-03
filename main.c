@@ -3137,7 +3137,7 @@ UBOOL InitInstance
     hCursorIdle = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
 
     // Initialize the window background brush
-    ghBrushBG = CreateSolidBrush (gSyntaxColorBG.crBack);
+    ghBrushBG = CreateSolidBrush (gSyntaxColorText.crBack);
 
     return TRUE;
 } // End InitInstance

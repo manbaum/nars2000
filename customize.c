@@ -668,16 +668,13 @@ APLU3264 CALLBACK CustomizeDlgProc
                                                  0,
                                                  (LPARAM) (HANDLE_PTR) gSyntaxColorName[uCnt].lpwSCName);
                             // Fill in the dynamic text field
-                            if (uCnt NE SC_WINBG)
-                            {
-                                ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
+                            ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
 
-                                // Register a tooltip for the Syntax Coloring Foreground button
-                                SendMessageW (hWndTT,
-                                              TTM_ADDTOOL,
-                                              0,
-                                              (LPARAM) (LPTOOLINFO) &ti);
-                            } // End IF
+                            // Register a tooltip for the Syntax Coloring Foreground button
+                            SendMessageW (hWndTT,
+                                          TTM_ADDTOOL,
+                                          0,
+                                          (LPARAM) (LPTOOLINFO) &ti);
 
                             // Fill in the dynamic field
                             ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt);
@@ -701,8 +698,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                             // Show/hide the Background Color button
                             ShowWindow (GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt), uShow);
 
-                            // Set the "Background Transparent" button initial states
-                            CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt, gSyntClrBGTrans[uCnt]);
+                            // The Window text label forces the background to be displayed,
+                            //   hence there is no checkbox to disable it
+                            if (uCnt NE SC_WINTEXT)
+                                // Set the "Background Transparent" button initial states
+                                CheckDlgButton (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt, gSyntClrBGTrans[uCnt]);
                         } // End FOR
 
                         // Check the "Enable ... Coloring" boxes
@@ -1576,7 +1576,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // Determine if the Window background changes
                         bWinBGDiff =
-                          (gSyntaxColorName[SC_WINBG].syntClr.crBack NE lclSyntaxColors[SC_WINBG].crBack);
+                          (gSyntaxColorText.crBack NE lclSyntaxColors[SC_WINTEXT].crBack);
 
                         // Loop through the Syntax Colors
                         for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
@@ -1585,11 +1585,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                             gSyntClrBGTrans[uCnt] = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt);
 
                             // Copy the local Foreground/Background Colors to the global var
-                            gSyntaxColorName[uCnt].syntClr = lclSyntaxColors[uCnt];
+                            gSyntaxColorText = lclSyntaxColors[uCnt];
 
                             // If the background is transparent, change it
                             if (gSyntClrBGTrans[uCnt])
-                                gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorBG.crBack;
+                                gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorText.crBack;
                         } // End IF
 
                         // Copy the state of the "Enable ... Coloring" checkboxes to the OptionFlags

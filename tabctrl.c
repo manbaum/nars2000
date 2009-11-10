@@ -231,6 +231,36 @@ UBOOL CreateNewTab
 
 
 //***************************************************************************
+//  $CalcWindowRectMC
+//
+//  Calculate the window rectangle for the MDI client windows
+//***************************************************************************
+
+void CalcWindowRectMC
+    (LPRECT lprc)
+
+{
+    int rcLeft, rcRight, rcBottom;
+
+    // Get the size and position of the parent window.
+    GetClientRect (hWndMF, lprc);
+
+    // Calculate the display rectangle, assuming the
+    // tab control is the size of the client area.
+    // Because I don't like the look of the tab control border,
+    //   the following code saves and restores all but the
+    //   top border (where the tabs are).
+    rcLeft    = lprc->left;
+    rcRight   = lprc->right;
+    rcBottom  = lprc->bottom;
+    TabCtrl_AdjustRect (hWndTC, FALSE, lprc);
+    lprc->left   = rcLeft;
+    lprc->right  = rcRight;
+    lprc->bottom = rcBottom;
+} // End CalcWindowRectMC
+
+
+//***************************************************************************
 //  $CreateNewTabInThread
 //
 //  Create a new tab within a thread
@@ -251,7 +281,6 @@ UBOOL WINAPI CreateNewTabInThread
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     UBOOL        bRet = FALSE;      // TR$UE iff the result is valid
     RECT         rc;                // Rectangle for setting size of window
-    int          rcLeft, rcRight, rcBottom;
     CLIENTCREATESTRUCT ccs;         // For MDI Client window
     SM_CREATESTRUCTW csSM;          // For Session Manager window
     HANDLE       hThread;           // Handle to this thread
@@ -273,9 +302,6 @@ UBOOL WINAPI CreateNewTabInThread
     iTabIndex     = lpcntThread->iTabIndex;
     bExecLX       = lpcntThread->bExecLX;
     hThread       = lpcntThread->hThread;
-
-    // Get the size and position of the parent window.
-    GetClientRect (hWndParent, &rc);
 
     if (gCurTabID NE -1)
     {
@@ -332,18 +358,8 @@ UBOOL WINAPI CreateNewTabInThread
     else
         lpMemPTD->PrvTabID = TranslateTabIndexToID (iTabIndex - 1);
 
-    // Calculate the display rectangle, assuming the
-    // tab control is the size of the client area.
-    // Because I don't like the look of the tab control border,
-    //   the following code saves and restores all but the
-    //   top border (where the tabs are).
-    rcLeft    = rc.left;
-    rcRight   = rc.right;
-    rcBottom  = rc.bottom;
-    TabCtrl_AdjustRect (hWndTC, FALSE, &rc);
-    rc.left   = rcLeft;
-    rc.right  = rcRight;
-    rc.bottom = rcBottom;
+    // Calculate the window rectangle for the MDI Client windows
+    CalcWindowRectMC (&rc);
 
     // Fill in the CLIENTCREATESTRUCT for the MDI Client window
     ccs.hWindowMenu = GetSubMenu (GetMenu (hWndParent), IDMPOS_SM_WINDOW);

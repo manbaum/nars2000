@@ -778,7 +778,7 @@ LRESULT APIENTRY FEWndProc
                     //   the possible change in syntax colors.
                     if (0 EQ SendMessageW (hWndEC, EM_LINEINDEX, -1, 0))
                     {
-                        // If the Chanegd flag didn't change, ...
+                        // If the Changed flag didn't change, ...
                         if (bChanged)
                             // Write out the FE window title
                             SetFETitle (hWnd);
@@ -4221,6 +4221,24 @@ UBOOL IzitSM
 
     return (lstrcmpW (wszClassName, LSMWNDCLASS) EQ 0);
 } // End IzitSM
+
+
+//***************************************************************************
+//  $IzitMC
+//
+//  Is the window MCWNDCLASS?
+//***************************************************************************
+
+UBOOL IzitMC
+    (HWND hWnd)
+
+{
+    WCHAR wszClassName[32];
+
+    GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
+
+    return (lstrcmpW (wszClassName, LMCWNDCLASS) EQ 0);
+} // End IzitMC
 
 
 //***************************************************************************

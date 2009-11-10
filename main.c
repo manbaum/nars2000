@@ -500,7 +500,12 @@ void InitChooseFont
         iLogPixelsY = GetDeviceCaps (hDC, LOGPIXELSY);
 
         // Convert from point size to pixels
-        fontStruc[fontEnum].lplf->lfHeight = -MulDiv (fontStruc[fontEnum].iDefPtSize, iLogPixelsY, 72);
+        //   unless already set in which case
+        //   calculate the point size
+        if (fontStruc[fontEnum].lplf->lfHeight EQ 0)
+            fontStruc[fontEnum].lplf->lfHeight = -MulDiv (fontStruc[fontEnum].iDefPtSize, iLogPixelsY, 72);
+        else
+            fontStruc[fontEnum].iDefPtSize = MulDiv (-fontStruc[fontEnum].lplf->lfHeight, 72, iLogPixelsY);
 
         // Restore the mapping mode
         SetMapMode (hDC, iOldMode);

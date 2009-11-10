@@ -1537,6 +1537,18 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                             // Call the appropriate ApplyNewFontXX for this fontEnum
                             ApplyNewFontEnum (uCnt);
+
+                            // If this is the Tab Ctrl font, ...
+                            if (uCnt EQ FONTENUM_TC)
+                            {
+                                RECT rc;                // Rectangle for the MDI Client windows
+
+                                // Calculate the window rectangle for the MDI Client windows
+                                CalcWindowRectMC (&rc);
+
+                                // Resize each of the MDI Client windows
+                                EnumChildWindows (hWndMF, EnumCallbackResizeMC, (LPARAM) &rc);
+                            } // End IF
                         } // End IF
                     } // End IF
 
@@ -2554,6 +2566,46 @@ APLU3264 CALLBACK CustomizeDlgProc
 
     return FALSE;           // We didn't handle the msg
 } // End CustomizeDlgProc
+
+
+//***************************************************************************
+//  $EnumCallbackResizeMC
+//
+//  EnumChildWindows callback to resize all MC windows
+//***************************************************************************
+
+UBOOL CALLBACK EnumCallbackResizeMC
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    // If it's a MDI Client window, ...
+    if (IzitMC (hWnd))
+    {
+#ifdef DEBUG
+        LPRECT lprc = (LPRECT) lParam;      // Window rectangle for MDI Client in MF client area coords
+#else
+  #define lprc    ((LPRECT) lParam)         // Window rectangle for MDI Client in MF client area coords
+#endif
+        // Resize the MDI Client window to match the new MF size
+        SetWindowPos (hWnd,                         // Window handle to position
+                      NULL,                         // Placement order handle (ignored due to SWP_NOZORDER)
+                      lprc->left,                   // X-position
+                      lprc->top,                    // Y-...
+                      lprc->right  - lprc->left,    // Width
+                      lprc->bottom - lprc->top,     // Height
+                      0                             // Flags
+                    | SWP_NOACTIVATE
+                    | SWP_NOZORDER
+                    | SWP_SHOWWINDOW
+                     );
+#ifndef DEBUG
+  #undef  lprc
+#endif
+    } // End IF
+
+    return TRUE;        // Keep on truckin'
+} // End EnumCallbackResizeMC
 
 
 //***************************************************************************

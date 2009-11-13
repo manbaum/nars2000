@@ -1177,11 +1177,13 @@ LPWCHAR DisplayFcnSub
      LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
 
 {
-    HGLOBAL hGlbData;           // Function array global memory handle
-    LPVOID  lpMemData;          // Ptr to function array global memory
-    UINT    TknCount;           // Token count
-    UBOOL   bIsImmed;           // TRUE if the named var is an immediate
-    APLUINT aplNELM;            // NELM of NUM/CHRSTRAND
+    HGLOBAL  hGlbData;          // Function array global memory handle
+    LPVOID   lpMemData;         // Ptr to function array global memory
+    UINT     TknCount;          // Token count
+    UBOOL    bIsImmed;          // TRUE if the named var is an immediate
+    APLUINT  aplNELM,           // NELM of NUM/CHRSTRAND
+             uCnt;              // Loop counter
+    APLSTYPE aplType;           // The array storage type
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1414,16 +1416,18 @@ LPWCHAR DisplayFcnSub
 
             // Get the strand count
             aplNELM = ((LPVARARRAY_HEADER) lpMemData)->NELM;
+            aplType = ((LPVARARRAY_HEADER) lpMemData)->ArrType;
 
             // Skip over the header and dimensions to the data
             lpMemData = VarArrayBaseToData (lpMemData, ((LPVARARRAY_HEADER) lpMemData)->Rank);
 
             // Loop through the elements
-            while (aplNELM--)
+            for (uCnt = 0; uCnt < aplNELM; uCnt++)
                 lpaplChar =
                   FormatAplint (lpaplChar,                  // Ptr to output save area
-                                *((LPAPLINT) lpMemData)++);  // The value to format
-
+                                GetNextInteger (lpMemData,  // Ptr to the data
+                                                aplType,    // The array type
+                                                uCnt));     // The loop counter
             if (lpaplChar[-1] EQ L' ')
                 *--lpaplChar = WC_EOS;  // Overwrite the trailing blank
 

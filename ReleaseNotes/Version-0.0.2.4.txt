@@ -1,6 +1,24 @@
 Version 0.0.2.4 consists of the following Builds:
 
 
+Build #589 -- Version 0.0.2.4
+-----------------------------
+
+* Fix Bug With )RESET
+
+Directory trunk:
+
+EXECDFN.C:
+  Improve comments.
+  In <ExecuteFunction_EM_YY> when returning from the function,
+    if we're resetting all levels, don't bother creating a
+    No Value result.
+
+SC_RESET.C:
+  In <CmdReset_EM>, set the immediate execution exit type so
+    that <ExecuteFunction_EM_YY> can use it.
+
+
 Build #588 -- Version 0.0.2.4
 -----------------------------
 

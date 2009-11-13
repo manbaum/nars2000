@@ -892,17 +892,15 @@ NEXTLINE:
     {
         case EXITTYPE_RESET_ONE:
         case EXITTYPE_RESET_ONE_INIT:
-            // Change the reset flag as we're done with
+            // Change the reset flag as we're done with it
             lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
-            // Fall through to common code
-
-        case EXITTYPE_RESET_ALL:
             // Make a PL_YYSTYPE NoValue entry
             lpYYRes = MakeNoValue_YY (lptkFunc);
 
             break;
 
+        case EXITTYPE_RESET_ALL:
         case EXITTYPE_GOTO_ZILDE:
         case EXITTYPE_GOTO_LINE:
         case EXITTYPE_QUADERROR_INIT:

@@ -8924,15 +8924,19 @@ PL_YYLEX_START:
               lpplLocalVars->lptkNext->tkCharIndex);
 #endif
 
+    // Clear the fields
+    ZeroMemory (lpYYLval, sizeof (lpYYLval[0]));
+
     // Return the current token
     lpYYLval->tkToken        = *lpplLocalVars->lptkNext;
 
     // Initialize the rest of the fields
-    lpYYLval->TknCount       =
-    lpYYLval->YYInuse        =
-    lpYYLval->YYIndirect     = 0;
-    lpYYLval->lpYYFcnBase    = NULL;
-    lpYYLval->lpYYStrandBase = NULL;
+////lpYYLval->TknCount       =              // Already zero from ZeroMemory
+////lpYYLval->YYInuse        =              // ...
+////lpYYLval->YYIndirect     = 0;           // ...
+////lpYYLval->YYCopyArray    = FALSE;       // ...
+////lpYYLval->lpYYFcnBase    = NULL;        // ...
+////lpYYLval->lpYYStrandBase = NULL;        // ...
 #ifdef DEBUG
     // Get ptr to PerTabData global memory
     lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));

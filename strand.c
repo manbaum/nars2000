@@ -1485,8 +1485,8 @@ NORMAL_EXIT:
 
     // If the arg was CopyArray'ed, ...
     if (lpYYArg->YYCopyArray)
-        // Free the tokens on this portion of the strand stack
-        FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_FCN], lpplLocalVars->lpYYStrArrBase[STRAND_FCN]);
+        // Free the storage
+        FreeResult (&lpYYArg->tkToken);
 
     // Strip the tokens on this portion of the strand stack
     StripStrand (lpplLocalVars, lpYYRes, STRAND_FCN);

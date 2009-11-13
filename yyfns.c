@@ -73,12 +73,6 @@ LPPL_YYSTYPE _YYAlloc
         // Mark as inuse
         lpYYRes->YYInuse = TRUE;
 #ifdef DEBUG
-        lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
-        lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
-
-        // Save unique number for debugging/tracking purposes
-        lpYYRes->YYIndex = ++YYIndex;
-
         // Save the ptr to the filename where allocated
         lpYYRes->lpFileName = lpFileName;
 
@@ -97,6 +91,7 @@ LPPL_YYSTYPE _YYAlloc
 
     // Mark as inuse
     lpYYRes->YYInuse = TRUE;
+NORMAL_EXIT:
 #ifdef DEBUG
     lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
     lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
@@ -104,7 +99,6 @@ LPPL_YYSTYPE _YYAlloc
     // Save unique number for debugging/tracking purposes
     lpYYRes->YYIndex = ++YYIndex;
 #endif
-NORMAL_EXIT:
     return lpYYRes;
 } // End _YYAlloc
 #undef  APPEND_NAME

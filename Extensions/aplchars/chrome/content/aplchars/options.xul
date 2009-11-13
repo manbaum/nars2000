@@ -44,10 +44,11 @@
       <groupbox>
         <caption label="&prefwindow.aplfontfamily;" />
         <radiogroup id="aplfontfamily">
-          <radio id="APL385"       label="APL385 Unicode"        value="APL385 Unicode" />
-          <radio id="MicroAPL"     label="MicroAPL APLX Upright" value="APLX Upright"   />
-          <radio id="SImPL"        label="SImPL"                 value="SImPL"          />
-          <radio id="SImPL-medium" label="SImPL Medium"          value="SImPL medium"   />
+          <radio id="APL2"         label="APL2 Unicode"          value="APL2 Unicode Italic" />
+          <radio id="APL385"       label="APL385 Unicode"        value="APL385 Unicode"      />
+          <radio id="MicroAPL"     label="MicroAPL APLX Upright" value="APLX Upright"        />
+          <radio id="SImPL"        label="SImPL"                 value="SImPL"               />
+          <radio id="SImPL-medium" label="SImPL Medium"          value="SImPL medium"        />
         </radiogroup>
       </groupbox>
 

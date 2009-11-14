@@ -1484,7 +1484,7 @@ NORMAL_EXIT:
 #endif
 
     // If the arg was CopyArray'ed, ...
-    if (lpYYArg->YYCopyArray)
+    if (IsSingleton (uIniLen) && lpYYArg->YYCopyArray)
         // Free the storage
         FreeResult (&lpYYArg->tkToken);
 

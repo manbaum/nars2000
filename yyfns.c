@@ -655,6 +655,16 @@ LPPL_YYSTYPE YYCopyFcn
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
 
+                        // If the arg was YYCopyArrayed, ...
+                        if (lpYYArg[i].YYCopyArray)
+                        {
+                            // Clear the flag
+                            lpYYArg[i].YYCopyArray = FALSE;
+
+                            // Free the arg
+                            FreeResult (&lpYYArg[i].tkToken);
+                        } // End IF
+
                         // Mark as not using YYFcn
                         bYYFcn = FALSE;
 

@@ -1,6 +1,19 @@
 Version 0.0.2.4 consists of the following Builds:
 
 
+Build #592 -- Version 0.0.2.4
+-----------------------------
+
+* Fix Bug:  Handle -1(2 3)
+
+Directory trunk:
+
+PRIMSPEC.C:
+  Fix Bug:  In <PrimFnMonGlb_EM>, -1(2) fails because of a missed case.
+  Fix Bug:  When extracting a Boolean from a STE, always mask with BIT0
+    in case there are extra bits set.
+
+
 Build #591 -- Version 0.0.2.4
 -----------------------------
 
@@ -97,7 +110,7 @@ DISPDBG.C:
 Build #585 -- Version 0.0.2.4
 -----------------------------
 
-* Define Window Text Foreground Color Customize Attribute
+* Resize the Tab Ctrl Window When Changing the Tab Ctrl Font
 
 Directory trunk:
 
@@ -871,7 +884,7 @@ PRIMFNS.C:
 Build #553 -- Version 0.0.2.4
 -----------------------------
 
-* Fx Bug:  When Indexed Assigning A Character Scalar To A
+* Fix Bug:  When Indexed Assigning A Character Scalar To A
   Numeric Vector, The System Crashes
 
 Directory trunk:
@@ -963,7 +976,7 @@ PF_EPSILON.C:
 Build #547 -- Version 0.0.2.4
 -----------------------------
 
-* Fix Bug:  Double-clicking on a name spelt with an underbar fails
+* Fix Bug:  Double-clicking on a name spelled with an underbar fails
 
 Directory trunk:
 

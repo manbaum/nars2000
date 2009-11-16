@@ -480,7 +480,7 @@ RESTART_EXCEPTION_VARNAMED:
                         {
                             case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkBoolean  =
-                                  (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
+                                  (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkSym->stData.stBoolean & BIT0,
                                                        lpPrimSpec);
                                 break;
 
@@ -508,7 +508,7 @@ RESTART_EXCEPTION_VARNAMED:
                         {
                             case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkInteger  =
-                                  (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
+                                  (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean & BIT0,
                                                        lpPrimSpec);
                                 break;
 
@@ -536,7 +536,7 @@ RESTART_EXCEPTION_VARNAMED:
                         {
                             case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkFloat  =
-                                  (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
+                                  (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean & BIT0,
                                                        lpPrimSpec);
                                 break;
 
@@ -1307,7 +1307,7 @@ RESTART_EXCEPTION:
                                         {
                                             case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
                                                 lpSymDst->stData.stBoolean =
-                                                  (*lpPrimSpec->BisB) (lpSymSrc->stData.stBoolean,
+                                                  (*lpPrimSpec->BisB) (lpSymSrc->stData.stBoolean & BIT0,
                                                                        lpPrimSpec);
                                                 break;
 
@@ -1336,10 +1336,8 @@ RESTART_EXCEPTION:
                                         switch (lpSymSrc->stFlags.ImmType)
                                         {
                                             case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
-                                                DbgBrk ();  // ***TESTME*** -- No such primitive
-
                                                 lpSymDst->stData.stInteger =
-                                                  (*lpPrimSpec->IisI) (lpSymSrc->stData.stBoolean,
+                                                  (*lpPrimSpec->IisI) (lpSymSrc->stData.stBoolean & BIT0,
                                                                        lpPrimSpec);
                                                 break;
 
@@ -1367,7 +1365,7 @@ RESTART_EXCEPTION:
                                         {
                                             case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
                                                 lpSymDst->stData.stFloat =
-                                                  (*lpPrimSpec->FisI) (lpSymSrc->stData.stBoolean,
+                                                  (*lpPrimSpec->FisI) (lpSymSrc->stData.stBoolean & BIT0,
                                                                        lpPrimSpec);
                                                 break;
 

@@ -2152,6 +2152,38 @@ ArrExpr:
                                              YYERROR2
                                         }
 ////| ArrExpr error                     //--Conflicts
+    | StrandOp2 LeftOper                {DbgMsgWP (L"%%ArrExpr:  LeftOper StrandOp2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Increment the RefCnt because StrandOp2 doesn't
+                                             //   go through MakeFcnStrand_EM_YY as this is a
+                                             //   variable not an operand.
+                                             DbgIncrRefCntTkn (&$1.tkToken);
+
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF/ELSE/...
+                                        }
     | ArrExpr LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper ArrExpr");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)

@@ -1,6 +1,24 @@
 Version 0.0.2.5 consists of the following Builds:
 
 
+Build #595 -- Version 0.0.2.5
+-----------------------------
+
+* Fix Bug:  Ommitted Case Of Dyadic Operator And Jot.
+
+Directory trunk:
+
+PL_PARSE.Y:
+  Define omitted case of <LeftOper StrandOp2> which occurs when
+    calling something like +op2{jot}1 2 where the righthand strand
+    may be numeric, character, a constant, or a named var.
+
+Directory trunk\htdocs:
+
+INDEX-BODY.AHTML:
+  Note changes in Version 0.0.2.4.
+
+
 Build #594 -- Version 0.0.2.5
 -----------------------------
 
@@ -9,7 +27,7 @@ Build #594 -- Version 0.0.2.5
 Directory trunk:
 
 EDITFCN.C:
-  Fix Bug:  When Syntax Coloring and the last char opn the previous line
+  Fix Bug:  When Syntax Coloring and the last char on the previous line
     has a non-default background color, it leaks through to the next line
     as its default background color.
 

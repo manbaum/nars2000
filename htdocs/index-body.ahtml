@@ -158,10 +158,13 @@ Welcome to NARS2000</h1>
           &mdash; matrix inverse/divide extended to use Moore-Penrose pseudo-inverse algorithm via Singular Value
           Decomposition</li>
         <li>Prototypes for all primitive functions and operators</li>
+        <li>Jot may be used as either operand to a user-defined operator in which case
+          the name associated with the jot inside the operator is undefined, that is,
+          <span class="APL">{quad}NC</span> on the name returns <span class="APL">0</span></li>
         <li>Catenate identity function for reduction and inner product</li>
         <li>Control structures on one line or split across multiple lines
           (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).
-          A one line control structure may be used in immediate execution mode.</li>
+          A one line control structure may be used in immediate execution mode</li>
         <li>Trains are supported, e.g., <span class="APL">avg{is}(+/ {divide} {rho})</span> creates a
           function that calculates the average of a numeric vector</li>
         <li>Partitioned Enclose:  dyadic left shoe (<span class="APL">L{leftshoe}R</span>)</li>

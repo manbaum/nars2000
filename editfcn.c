@@ -1211,11 +1211,11 @@ int LclECPaintHook
 
                     // It's a system command, so we don't color that line
                     DbgGlobalFree (hGlbClr); hGlbClr = NULL;
-
-                    // Set the Window text colors
-                    SetTextColor (hDC, gSyntaxColorText.crFore);
-                    SetBkColor   (hDC, gSyntaxColorText.crBack);
                 } // End IF
+
+                // Set the Window text colors
+                SetTextColor (hDC, gSyntaxColorText.crFore);
+                SetBkColor   (hDC, gSyntaxColorText.crBack);
             } // End IF
         } // End IF
     } // End IF

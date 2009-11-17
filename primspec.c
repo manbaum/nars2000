@@ -625,7 +625,7 @@ RESTART_EXCEPTION_VARIMMED:
                         {
                             case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkBoolean =
-                                  (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkBoolean,
+                                  (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkBoolean & BIT0,
                                                        lpPrimSpec);
                                 break;
 
@@ -653,7 +653,7 @@ RESTART_EXCEPTION_VARIMMED:
                         {
                             case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkInteger =
-                                  (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkBoolean,
+                                  (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkBoolean & BIT0,
                                                        lpPrimSpec);
                                 break;
 
@@ -681,7 +681,7 @@ RESTART_EXCEPTION_VARIMMED:
                         {
                             case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkFloat   =
-                                  (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkBoolean,
+                                  (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkBoolean & BIT0,
                                                        lpPrimSpec);
                                 break;
 

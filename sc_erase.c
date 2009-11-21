@@ -75,12 +75,31 @@ UBOOL CmdErase_EM
             {
                 // Attempt to expunge the global value
                 if (!ExpungeName (GetGlobalSTE (lpSymEntry)))
-                    ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
+                {
+                    HGLOBAL   htGlbName;            // STE name global memory handle
+                    LPAPLCHAR lpwGlbName;           // Ptr to STE name
+
+                    // Get the STE name global memory handle
+                    htGlbName = lpSymEntry->stHshEntry->htGlbName;
+
+                    // Lock the memory to get a ptr to it
+                    lpwGlbName = MyGlobalLock (htGlbName);
+
+                    // Display an error message
+                    ExpungeError (lpwGlbName,                       // Ptr to name in global memory
+                                  lstrlenW (lpwGlbName),            // Length of the name
+                                 &bNotErasedHeader,                 // TRUE iff the NotErased header has been displayed
+                                 &iNotErasedWidth);                 // Current width of the NotErased line
+                    // We no longer need this ptr
+                    MyGlobalUnlock (htGlbName); lpwGlbName = NULL;
+                } // End IF
             } else
             {
-                if (!IsValidName (lpMemDataStart,
-                                 (APLU3264) (&lpwszTail[uRht] - lpMemDataStart)))
-                    ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
+                // Display an error message
+                ExpungeError (lpMemDataStart,                       // Ptr to name in global memory
+                   (APLU3264) (&lpwszTail[uRht] - lpMemDataStart),  // Length of the name
+                             &bNotErasedHeader,                     // TRUE iff the NotErased header has been displayed
+                             &iNotErasedWidth);                     // Current width of the NotErased line
             } // End IF/ELSE
         } else
             break;
@@ -101,35 +120,24 @@ UBOOL CmdErase_EM
 //***************************************************************************
 
 void ExpungeError
-    (LPSYMENTRY lpSymEntry,         // Ptr to the STE
-     LPUBOOL    lpbNotErasedHeader, // TRUE iff the NotErased header has been displayed
-     LPINT      lpiNotErasedWidth)  // Current width of the NotErased line
+    (LPAPLCHAR lpwGlbName,          // Ptr to name in global memory
+     int       iLen,                // Length of the name
+     LPUBOOL   lpbNotErasedHeader,  // TRUE iff the NotErased header has been displayed
+     LPINT     lpiNotErasedWidth)   // Current width of the NotErased line
 
 {
-    HGLOBAL   htGlbName;            // STE name global memory handle
-    LPAPLCHAR lpwGlbName;           // Ptr to STE name
-    int       iLen;                 // Length of the STE name
     APLUINT   uQuadPW;              // []PW
 
     // Get the current value of []PW
     uQuadPW = GetQuadPW ();
 
     // If the header has not been displayed as yet, do so now
-    if (!lpbNotErasedHeader)
+    if (!*lpbNotErasedHeader)
     {
         AppendLine (ERRMSG_NOT_ERASED, FALSE, FALSE);
         *lpbNotErasedHeader = TRUE;
         *lpiNotErasedWidth = strcountof (ERRMSG_NOT_ERASED);
     } // End IF
-
-    // Get the STE name global memory handle
-    htGlbName = lpSymEntry->stHshEntry->htGlbName;
-
-    // Lock the memory to get a ptr to it
-    lpwGlbName = MyGlobalLock (htGlbName);
-
-    // Get the length of the name
-    iLen = lstrlenW (lpwGlbName);
 
     if ((*lpiNotErasedWidth + 2 + iLen) > uQuadPW)
     {
@@ -148,9 +156,6 @@ void ExpungeError
     // Output the STE name
     AppendLine (lpwGlbName, TRUE, FALSE);
     *lpiNotErasedWidth += iLen;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (htGlbName); lpwGlbName = NULL;
 } // End ExpungeError
 
 

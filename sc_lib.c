@@ -79,7 +79,7 @@ UBOOL CmdLib_EM
     // ***FIXME*** -- Display in columns
 
     // Get length of workspace extension
-    uExtLen = lstrlenW (WS_WKSEXT);
+    uExtLen = strcountof (WS_WKSEXT);
 
     // Find the first (if any) workspace
     hFind = FindFirstFileW (lpwszTemp, &FindData);

@@ -548,7 +548,6 @@ UBOOL PrimScalarFnDydAllocate_EM
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, *lpaplRankRes);
 
     // Allocate space for the result.
-    // N.B. Conversion from APLUINT to UINT.
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
     *lphGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
@@ -754,7 +753,6 @@ HGLOBAL MakeMonPrototype_EM_PTB
                     ByteRes = CalcArraySize (ARRAY_BOOL, aplNELM, aplRank);
 
                     // Allocate space for the result.
-                    // N.B. Conversion from APLUINT to UINT.
                     if (ByteRes NE (APLU3264) ByteRes)
                         goto WSFULL_EXIT;
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
@@ -940,7 +938,10 @@ NORMAL_EXIT:
 
     DBGLEAVE;
 
-    return MakePtrTypeGlb (hGlbArr);
+    if (hGlbArr)
+        return MakePtrTypeGlb (hGlbArr);
+    else
+        return hGlbArr;
 } // End MakeMonPrototype_EM_PTB
 #undef  APPEND_NAME
 
@@ -1125,7 +1126,6 @@ HGLOBAL MakeDydPrototype_EM_PTB
         ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
         // Allocate space for the result.
-        // N.B. Conversion from APLUINT to UINT.
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
@@ -1243,7 +1243,6 @@ HGLOBAL MakeDydPrototype_EM_PTB
                 //***************************************************************
                 // Allocate space for the weighting vector which is
                 //   {times}{backscan}1{drop}({rho}Z),1
-                // N.B.  Conversion from APLUINT to UINT.
                 //***************************************************************
                 ByteRes = aplRankRes * sizeof (APLUINT);
                 if (ByteRes NE (APLU3264) ByteRes)
@@ -1270,7 +1269,6 @@ HGLOBAL MakeDydPrototype_EM_PTB
                 //***************************************************************
                 // Allocate space for the odometer array, one value per dimension
                 //   in the right arg, with values initially all zero (thanks to GHND).
-                // N.B.  Conversion from APLUINT to UINT.
                 //***************************************************************
                 ByteRes = aplRankRes * sizeof (APLUINT);
                 if (ByteRes NE (APLU3264) ByteRes)
@@ -1824,7 +1822,6 @@ HGLOBAL CopyGlbAsType_EM
     ByteRes = CalcArraySize (aplTypeRes, aplNELMArg, aplRankArg);
 
     // Allocate space for the result
-    // N.B.:  Conversion from APLUINT to UINT
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);

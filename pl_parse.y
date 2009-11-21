@@ -1092,7 +1092,7 @@ StmtSing:
                                          } else
                                              YYERROR2
                                         }
-    |     AmbOp   EOL                   {DbgMsgWP (L"%%StmtSing:  EOL AmbOp");
+    |     AmbOpX  EOL                   {DbgMsgWP (L"%%StmtSing:  EOL AmbOpX");
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->plNameType = NAMETYPE_OP3;
@@ -1538,7 +1538,7 @@ FcnSpec:
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    | AmbOp Drv1Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func AmbOp");
+    | AmbOpX Drv1Func ASSIGN NameAnyOpN {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func AmbOpX");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -1605,7 +1605,7 @@ FcnSpec:
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    | AmbOp Drv2Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func AmbOp");
+    | AmbOpX Drv2Func ASSIGN NameAnyOpN {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func AmbOpX");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -1672,7 +1672,7 @@ FcnSpec:
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    | AmbOp Drv3Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv3Func AmbOp");
+    | AmbOpX Drv3Func ASSIGN NameAnyOpN {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv3Func AmbOpX");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -1739,7 +1739,7 @@ FcnSpec:
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    | AmbOp Drv4Func ASSIGN NameAnyOpN  {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv4Func AmbOp");
+    | AmbOpX Drv4Func ASSIGN NameAnyOpN {DbgMsgWP (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv4Func AmbOpX");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -1960,7 +1960,6 @@ AmbOpAssign:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$1);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -2002,7 +2001,7 @@ AmbOpAssign:
                                              YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
                                          } // End IF
                                         }
-    | AmbOp                             {DbgMsgWP (L"%%AmbOpAssign:  (AmbOp)");
+    | AmbOpX                            {DbgMsgWP (L"%%AmbOpAssign:  AmbOpX");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
@@ -2013,7 +2012,6 @@ AmbOpAssign:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$2);
-                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
@@ -2406,7 +2404,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AmbOp    error            {DbgMsgWP (L"%%ArrExpr:  error AmbOp ArrExpr");
+    | ArrExpr AmbOpX   error            {DbgMsgWP (L"%%ArrExpr:  error AmbOpX ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2415,7 +2413,7 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | error   AmbOp StrandInst          {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOp error");
+    | error   AmbOpX StrandInst         {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOpX error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -2424,7 +2422,7 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | error   AmbOp StrandOp1           {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOp error");
+    | error   AmbOpX StrandOp1          {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -2433,13 +2431,13 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr AmbOp NAMEOP3ASSIGN       {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOp ArrExpr");
+    | ArrExpr AmbOpX NAMEOP3ASSIGN      {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOpX ArrExpr");
                                          DbgBrk ();     // ***FIXME*** -- Can we ever get here??
 
 
 
                                         }
-    | error   AmbOp NAMEOP3ASSIGN       {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOp error");
+    | error   AmbOpX NAMEOP3ASSIGN      {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOpX error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -2448,13 +2446,12 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr AmbOp OP3ASSIGN           {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOp ArrExpr");
+    | ArrExpr AmbOpX OP3ASSIGN          {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOpX ArrExpr");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$3);
-                                             FreeResult (&$3.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
@@ -2520,7 +2517,78 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AmbOp StrandOp1           {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOp ArrExpr");
+
+    | ArrExpr AmbOpX AmbOpX StrandOp1   {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX AmbOpX ArrExpr");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Increment the RefCnt because StrandOp1 doesn't
+                                             //   go through MakeFcnStrand_EM_YY as this is a
+                                             //   function not an operator.
+                                             DbgIncrRefCntTkn (&$4.tkToken);
+
+                                             // Change the first token in the function strand
+                                             //   from ambiguous operator to a function
+                                             AmbOpToFcn (&$3);
+
+                                             // Change the first token in the function strand
+                                             //   from ambiguous operator to a monadic operator
+                                             AmbOpToOp1 (&$2);
+
+                                             lpplLocalVars->lpYYOp3 =
+                                               PushFcnStrand_YY (&$2, 2, INDIRECT);  // Monadic operator (Indirect)
+
+                                             if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 FreeResult (&$4.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$3, 1, INDIRECT);  // Function (Indirect)
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 FreeResult (&$4.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeFcnStrand_EM_YY (lpplLocalVars->lpYYOp3, NAMETYPE_FN12, FALSE);
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 FreeResult (&$4.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp3); lpplLocalVars->lpYYOp3 = NULL;
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
+                                             FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    | ArrExpr AmbOpX StrandOp1          {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX ArrExpr");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2570,7 +2638,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AmbOp StrandInst          {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOp ArrExpr");
+    | ArrExpr AmbOpX StrandInst         {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOpX ArrExpr");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5211,7 +5279,7 @@ Drv4Func:
 //    valid in ArrExpr:  ArrExpr Drv5Func StrandInst
 //             LeftOper:  (Drv5Func)
 Drv5Func:
-      MonOp AmbOp                       {DbgMsgWP (L"%%Drv5Func:  AmbOp MonOp");
+      MonOp AmbOpX                      {DbgMsgWP (L"%%Drv5Func:  AmbOpX MonOp");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5276,7 +5344,7 @@ Drv5Func:
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    | AmbOp Drv5Func                    {DbgMsgWP (L"%%Drv5Func:  Drv5Func AmbOp");
+    | AmbOpX Drv5Func                   {DbgMsgWP (L"%%Drv5Func:  Drv5Func AmbOpX");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5766,8 +5834,8 @@ LeftOper:
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-////|                  AmbOp error      //--Conflicts
-    |                  AmbOp LeftOper   {DbgMsgWP (L"%%LeftOper:  LeftOper AmbOp"); //***FIXME***
+////|                  AmbOpX error     //--Conflicts
+    |                  AmbOpX LeftOper  {DbgMsgWP (L"%%LeftOper:  LeftOper AmbOpX"); //***FIXME***
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -6458,7 +6526,6 @@ RightOper:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimFcn_YY (&$1);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -6484,7 +6551,6 @@ RightOper:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimFcn_YY (&$1);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -6658,7 +6724,6 @@ AxisFunc:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimFcn_YY (&$4);
-                                             FreeResult (&$4.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
@@ -6711,7 +6776,6 @@ AxisFunc:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimFcn_YY (&$4);
-                                             FreeResult (&$4.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
@@ -7047,7 +7111,6 @@ AmbOp:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp3_YY (&$1);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -7087,12 +7150,7 @@ AmbOp:
                                          } // End IF
                                         }
 ////|     error                         //--Conflicts
-    |     AmbOpAxis                     {DbgMsgWP (L"%%AmbOp:  AmbOpAxis");
-                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
-                                         if (!lpplLocalVars->bLookAhead)
-                                             $$ = $1;
-                                        }
-    | '>' AmbOp '('                     {DbgMsgWP (L"%%AmbOp:  (AmbOp)");
+    | '>' AmbOpX '('                    {DbgMsgWP (L"%%AmbOp:  (AmbOpX)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
@@ -7129,19 +7187,8 @@ AmbOpAxis:
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->lpYYMak =
-                                               MakePrimOp3_YY (&$4);
-                                             FreeResult (&$4.tkToken);
-
-                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR3
-                                             } // End IF
-
                                              lpplLocalVars->lpYYOp3 =
-                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 2, DIRECT); // Ambiguous operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak);
+                                               PushFcnStrand_YY (&$4, 2, INDIRECT);  // Ambiguous operator (Indirect)
 
                                              if (!lpplLocalVars->lpYYOp3)            // If not defined, free args and YYERROR
                                              {
@@ -7177,6 +7224,18 @@ AmbOpAxis:
                                         }
     ;
 
+// Ambiguous operator with or w/o axis
+AmbOpX:
+      AmbOp                             {DbgMsgWP (L"%%AmbX:  AmbOp");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
+    | AmbOpAxis                         {DbgMsgWP (L"%%AmbX:  AmbOpAxis");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
+    ;
+
 // Monadic operator
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 MonOp:
@@ -7186,7 +7245,6 @@ MonOp:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp1_YY (&$1);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -7209,7 +7267,6 @@ MonOp:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp1_YY (&$1);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -7337,7 +7394,6 @@ DydOp:
                                          {
                                              lpplLocalVars->lpYYMak =
                                                MakePrimOp2_YY (&$1);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                                  YYERROR3

@@ -44,7 +44,7 @@ UBOOL CmdErase_EM
     STFLAGS      stFlags;           // STE flags
     UBOOL        bNotErasedHeader = FALSE; // TRUE iff the NotErased header
                                     //   has been displayed
-    int          iNotErasedWidth = 0; // Width (so far) of NotErased line
+    APLU3264     iNotErasedWidth = 0; // Width (so far) of NotErased line
 
     // Loop through the right arg looking for identifiers
     uRht = 0;
@@ -121,9 +121,9 @@ UBOOL CmdErase_EM
 
 void ExpungeError
     (LPAPLCHAR lpwGlbName,          // Ptr to name in global memory
-     int       iLen,                // Length of the name
+     APLU3264  iLen,                // Length of the name
      LPUBOOL   lpbNotErasedHeader,  // TRUE iff the NotErased header has been displayed
-     LPINT     lpiNotErasedWidth)   // Current width of the NotErased line
+     APLU3264 *lpiNotErasedWidth)   // Current width of the NotErased line
 
 {
     APLUINT   uQuadPW;              // []PW

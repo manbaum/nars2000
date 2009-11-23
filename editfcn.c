@@ -4269,8 +4269,13 @@ void DrawLineNumsFE
     (HWND hWndEC)           // Edit Ctrl window handle
 
 {
-    HDC     hDC;            // Device context
+    HDC     hDC,            // Device context
+            hDCMem;         // Handle to memory device context
+    HBITMAP hBitmap,        // Handle to compatible bitmap
+            hBitmapOld;     // Handle to memory DC old bitmap
+    HFONT   hFontOld;       // Handle to old font
     RECT    rcPaint,        // Paint rectangle
+            rcItem,         // Rectangle for use when double buffering
             rcClient;       // Client area
     UINT    uLen,           // Length of string
             uLineCnt,       // # lines in the Edit Ctrl
@@ -4287,11 +4292,26 @@ void DrawLineNumsFE
     if (!IzitFE (hWndParent))
         return;
 
+    // Get the client rectangle
+    GetClientRect (hWndEC, &rcClient);
+
+    // Set the line number rectangle using the EC left margin as our right side
+    rcItem = rcClient;
+    rcItem.right = LOWORD (SendMessageW (hWndEC, EM_GETMARGINS, 0, 0));
+
     // Get a device context
     hDC = MyGetDC (hWndEC);
 
+    // Create a compatible memory DC and bitmap
+    hDCMem  = MyCreateCompatibleDC     (hDC);
+    hBitmap = MyCreateCompatibleBitmap (hDC,
+                                        rcItem.right,
+                                        rcItem.bottom);
+    hBitmapOld = SelectObject (hDCMem, hBitmap);
+    hFontOld   = SelectObject (hDCMem, GetCurrentObject (hDC, OBJ_FONT));
+
     // Set our DC attributes
-    SetAttrs (hDC,
+    SetAttrs (hDCMem,
               GetFSIndFontHandle (FONTENUM_FE),
               gSyntaxColorName[SC_FCNLINENUMS].syntClr.crFore,
               gSyntaxColorName[SC_FCNLINENUMS].syntClr.crBack);
@@ -4320,10 +4340,10 @@ void DrawLineNumsFE
 
         // Calculate the rectangle size of the line #s
         SetRectEmpty (&rcPaint);
-        DrawTextW (hDC,
+        DrawTextW (hDCMem,
                    wszLineNum,
                    uLen,
-                   &rcPaint,
+                  &rcPaint,
                    0
                  | DT_CALCRECT
                  | DT_NOPREFIX);
@@ -4332,10 +4352,10 @@ void DrawLineNumsFE
         rcPaint.bottom += uCnt * GetFSIndAveCharSize (FONTENUM_FE)->cy;
 
         // Draw the line #s
-        DrawTextW (hDC,
+        DrawTextW (hDCMem,
                    wszLineNum,
                    uLen,
-                   &rcPaint,
+                  &rcPaint,
                    0
                  | DT_LEFT
                  | DT_NOPREFIX);
@@ -4346,9 +4366,6 @@ void DrawLineNumsFE
     //   WM_ERASEBKGND message (so as to reduce screen flicker),
     //   we need to fill the bottom of the page with blanks
 
-    // Get the client rectangle
-    GetClientRect (hWndEC, &rcClient);
-
     // Set to the same top as the next line #
     rcClient.top = rcPaint.top + GetFSIndAveCharSize (FONTENUM_FE)->cy;
 
@@ -4356,10 +4373,28 @@ void DrawLineNumsFE
     hBrush = MyCreateSolidBrush (gSyntaxColorName[SC_FCNLINENUMS].syntClr.crBack);
 
     // Pour on the white out
-    FillRect (hDC, &rcClient, hBrush);
+    FillRect (hDCMem, &rcClient, hBrush);
 
     // We no longer need this resource
     MyDeleteObject (hBrush);
+
+    // Copy the memory DC to the screen DC
+    BitBlt (hDC,
+            rcItem.left,
+            rcItem.top,
+            rcItem.right,
+            rcItem.bottom,
+            hDCMem,
+            rcItem.left,
+            rcItem.top,
+            SRCCOPY);
+    // Restore the old resources
+    SelectObject (hDCMem, hBitmapOld);
+    SelectObject (hDCMem, hFontOld);
+
+    // We no longer need these resources
+    MyDeleteObject (hBitmap); hBitmap = NULL;
+    MyDeleteDC (hDCMem); hDCMem = NULL;
 
     // We no longer need this DC
     MyReleaseDC (hWndEC, hDC); hDC = NULL;

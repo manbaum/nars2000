@@ -4200,54 +4200,62 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
     // Get the incoming DC
     hDCInc = hdc ? hdc : BeginPaint(es->hwndSelf, &ps);
 
-    // Get the background brush
-    hBrush = EDIT_NotifyCtlColor(es, hDCInc);
+    // Skip over the left margin
+    rcUpdate.left = max (rcUpdate.left, es->left_margin);
+
+    // Continue iff the rectangle is valid
+    if (rcUpdate.left < rcUpdate.right)
+    {
+        // Get the background brush
+        hBrush = EDIT_NotifyCtlColor(es, hDCInc);
 
 #ifdef USEMEMDC
-    // Create a compatible DC and bitmap
-    hDCMem = CreateCompatibleDC (hDCInc);
-    hBitmap = CreateCompatibleBitmap (hDCInc,
-                                      rcUpdate.right,
-                                      rcUpdate.bottom);
-    hBitmapOld = SelectObject (hDCMem, hBitmap);
-  #define hDCSub  hDCMem
+        // Create a compatible DC and bitmap
+        hDCMem = CreateCompatibleDC (hDCInc);
+        hBitmap = CreateCompatibleBitmap (hDCInc,
+                                          rcUpdate.right,
+                                          rcUpdate.bottom);
+        hBitmapOld = SelectObject (hDCMem, hBitmap);
+      #define hDCSub  hDCMem
 #else
-  #define hDCSub  hDCInc
+      #define hDCSub  hDCInc
 #endif
-    // Handle WM_ERASEBKGND here by filling in the client area
-    //   with the class background brush
-    FillRect (hDCSub, &rcUpdate, hBrush);
+        // Handle WM_ERASEBKGND here by filling in the client area
+        //   with the class background brush
+        FillRect (hDCSub, &rcUpdate, hBrush);
 
 #ifdef USEMEMDC
-    // Copy various attributes from the screen DC to the memory DC
-    SetBkMode    (hDCMem, GetBkMode    (hDCInc));
-    SetBkColor   (hDCMem, GetBkColor   (hDCInc));
-    SetTextColor (hDCMem, GetTextColor (hDCInc));
+        // Copy various attributes from the screen DC to the memory DC
+        SetBkMode    (hDCMem, GetBkMode    (hDCInc));
+        SetBkColor   (hDCMem, GetBkColor   (hDCInc));
+        SetTextColor (hDCMem, GetTextColor (hDCInc));
 #endif
 
-    // Call the original handler
-    EDIT_WM_Paint2 (es, hDCSub, hDCInc, lFlags);
+        // Call the original handler
+        EDIT_WM_Paint2 (es, hDCSub, hDCInc, lFlags);
 
 #undef  hDCSub
 
 #ifdef USEMEMDC
-    // Copy the memory DC to the screen DC
-    BitBlt (hDCInc,
-            rcUpdate.left,
-            rcUpdate.top,
-            rcUpdate.right,
-            rcUpdate.bottom,
-            hDCMem,
-            rcUpdate.left,
-            rcUpdate.top,
-            SRCCOPY);
-    // Restore the old resources
-    SelectObject (hDCMem, hBitmapOld);
+        // Copy the memory DC to the screen DC
+        BitBlt (hDCInc,
+                rcUpdate.left,
+                rcUpdate.top,
+                rcUpdate.right,
+                rcUpdate.bottom,
+                hDCMem,
+                rcUpdate.left,
+                rcUpdate.top,
+                SRCCOPY);
+        // Restore the old resources
+        SelectObject (hDCMem, hBitmapOld);
 
-    // We no longer need these resources
-    DeleteObject (hBitmap); hBitmap = NULL;
-    DeleteDC (hDCMem); hDCMem = NULL;
+        // We no longer need these resources
+        DeleteObject (hBitmap); hBitmap = NULL;
+        DeleteDC (hDCMem); hDCMem = NULL;
 #endif
+    } // End IF
+
     // If we called BeginPaint at the start, ...
     if (!hdc)
         EndPaint(es->hwndSelf, &ps);

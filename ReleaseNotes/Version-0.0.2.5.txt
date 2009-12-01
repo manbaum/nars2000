@@ -1,7 +1,7 @@
 Version 0.0.2.5 consists of the following Builds:
 
 
-Build #599 -- Version 0.0.2.5
+Build #600 -- Version 0.0.2.5
 -----------------------------
 
 * Avoid Screen Flicker With Function Line Numbers

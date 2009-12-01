@@ -1,4 +1,4 @@
-Build #599 -- Version 0.0.2.5
+Build #600 -- Version 0.0.2.5
 -----------------------------
 
 * Avoid Screen Flicker With Function Line Numbers

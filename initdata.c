@@ -59,10 +59,6 @@ extern PRIMSPEC PrimSpecUpStile;
 #define PrimFnUpShoe_EM_YY          PrimFn_EM       // ERROR            ERROR
 
 
-// Primitive functions TO DO                           Monadic          Dyadic
-#define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR            Mixed (*)
-
-
 // Monadic Operators TO DO                             Monadic          Dyadic
 /////// PrimOpStileTilde_EM_YY                      // ERROR            Partition (*)
 

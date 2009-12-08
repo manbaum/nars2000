@@ -1,4 +1,4 @@
-Build #601 -- Version 0.0.2.5
+Build #601 -- Version 0.0.2.6
 -----------------------------
 
 * Fix Bug:  Define New Terminal To Handle Another Dyadic Case With StrandOp1

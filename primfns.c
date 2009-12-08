@@ -429,9 +429,10 @@ APLSTYPE StorageType
 //  Increment the odometer in lpMemOdo subject to the
 //    limits in lpMemDim[lpMemAxis] or lpMemDim, all
 //    of length <aplRank>.
+//  Return TRUE iff we wrapped back to all 0s.
 //***************************************************************************
 
-void IncrOdometer
+UBOOL IncrOdometer
     (LPAPLUINT lpMemOdo,    // Ptr to the values to increment
      LPAPLDIM  lpMemDim,    // Ptr to the limits on each dimension
      LPAPLINT  lpMemAxis,   // Ptr to optional index vector (may be NULL)
@@ -451,15 +452,17 @@ void IncrOdometer
         if (++lpMemOdo[iOdo] EQ lpMemDim[lpMemAxis[iOdo]])
             lpMemOdo[iOdo] = 0;
         else
-            break;
+            return FALSE;
     } else
     {
         for (iOdo = aplRank - 1; iOdo >= 0; iOdo--)
         if (++lpMemOdo[iOdo] EQ lpMemDim[iOdo])
             lpMemOdo[iOdo] = 0;
         else
-            break;
+            return FALSE;
     } // End IF/ELSE
+
+    return (iOdo < 0);
 } // End IncrOdometer
 
 

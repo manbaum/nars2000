@@ -451,7 +451,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
             aplIntegerRes =
               PrimFnDydEqualUnderbarSimple (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
                                             lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
-                                            lpbCtrlBreak);
+                                            TRUE, lpbCtrlBreak);
             break;
 
         case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
@@ -462,7 +462,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
             aplIntegerRes =
               PrimFnDydEqualUnderbarNested (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
                                             lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
-                                            lpbCtrlBreak);
+                                            TRUE, lpbCtrlBreak);
             break;
 
         defstop
@@ -516,14 +516,16 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL PrimFnDydEqualUnderbarSimple
-    (LPVOID   lpMemLft,
-     APLSTYPE aplTypeLft,
-     APLNELM  aplNELMLft,
-     APLRANK  aplRankLft,
-     LPVOID   lpMemRht,
-     APLSTYPE aplTypeRht,
-     APLNELM  aplNELMRht,
-     APLRANK  aplRankRht,
+    (LPVOID   lpMemLft,         // Ptr to left arg header
+     APLSTYPE aplTypeLft,       // Left arg storage type
+     APLNELM  aplNELMLft,       // ...      NELM
+     APLRANK  aplRankLft,       // ...      rank
+     LPVOID   lpMemRht,         // Ptr to right arg header
+     APLSTYPE aplTypeRht,       // Right arg storage type
+     APLNELM  aplNELMRht,       // ...       NELM
+     APLRANK  aplRankRht,       // ...       rank
+     UBOOL    bHeader,          // TRUE iff lpMemLft/Rht point to header
+                                //   otherwise they point to data
      LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
@@ -548,7 +550,8 @@ UBOOL PrimFnDydEqualUnderbarSimple
         return FALSE;
 
     // Ensure the dimensions are the same
-    if (!IsScalar (aplRankLft))
+    if (!IsScalar (aplRankLft)
+     && bHeader)
     {
         // Skip over the headers to the dimensions
         lpMemLft = VarArrayBaseToDim (lpMemLft);
@@ -1137,14 +1140,16 @@ ERROR_EXIT:
 //***************************************************************************
 
 UBOOL PrimFnDydEqualUnderbarNested
-    (LPVOID   lpMemLft,
-     APLSTYPE aplTypeLft,
-     APLNELM  aplNELMLft,
-     APLRANK  aplRankLft,
-     LPVOID   lpMemRht,
-     APLSTYPE aplTypeRht,
-     APLNELM  aplNELMRht,
-     APLRANK  aplRankRht,
+    (LPVOID   lpMemLft,         // Ptr to left arg header or data
+     APLSTYPE aplTypeLft,       // Left arg storage type
+     APLNELM  aplNELMLft,       // ...      NELM
+     APLRANK  aplRankLft,       // ...      rank
+     LPVOID   lpMemRht,         // Ptr to right arg header or data
+     APLSTYPE aplTypeRht,       // Right arg storage type
+     APLNELM  aplNELMRht,       // ...       NELM
+     APLRANK  aplRankRht,       // ...       rank
+     UBOOL    bHeader,          // TRUE iff lpMemLft/Rht point to header
+                                //   otherwise they point to data
      LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
@@ -1179,14 +1184,18 @@ UBOOL PrimFnDydEqualUnderbarNested
     // Save as loop limit
     aplNELMLoop = aplNELMLft;
 
-    // Skip over the headers to the dimensions (data if scalar)
-    lpMemLft = VarArrayBaseToDim (lpMemLft);
-    lpMemRht = VarArrayBaseToDim (lpMemRht);
+    // If lpMemLft/Rht point to their respective headers, ...
+    if (bHeader)
+    {
+        // Skip over the headers to the dimensions (data if scalar)
+        lpMemLft = VarArrayBaseToDim (lpMemLft);
+        lpMemRht = VarArrayBaseToDim (lpMemRht);
 
-    // Ensure the dimensions are the same
-    for (uDim = 0; uDim < aplRankLft; uDim++)
-    if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
-        return FALSE;
+        // Ensure the dimensions are the same
+        for (uDim = 0; uDim < aplRankLft; uDim++)
+        if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
+            return FALSE;
+    } // End IF
 
     // lpMemLft and lpMemRht now point to the data
 
@@ -1271,11 +1280,11 @@ UBOOL PrimFnDydEqualUnderbarNested
                         if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
                             bRet = PrimFnDydEqualUnderbarSimple (lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
                                                                  lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
-                                                                 lpbCtrlBreak);
+                                                                 TRUE, lpbCtrlBreak);
                         else
                             bRet = PrimFnDydEqualUnderbarSimple (lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
                                                                  lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
-                                                                 lpbCtrlBreak);
+                                                                 TRUE, lpbCtrlBreak);
                         break;
 
                     case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
@@ -1287,7 +1296,7 @@ UBOOL PrimFnDydEqualUnderbarNested
                     case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
                         bRet = PrimFnDydEqualUnderbarNested (lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
                                                              lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
-                                                             lpbCtrlBreak);
+                                                             TRUE, lpbCtrlBreak);
                         break;
 
                     defstop

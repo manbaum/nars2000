@@ -4315,6 +4315,15 @@ void DrawLineNumsFE
               GetFSIndFontHandle (FONTENUM_FE),
               gSyntaxColorName[SC_FCNLINENUMS].syntClr.crFore,
               gSyntaxColorName[SC_FCNLINENUMS].syntClr.crBack);
+    // Create a brush for the function line numbers background
+    hBrush = MyCreateSolidBrush (gSyntaxColorName[SC_FCNLINENUMS].syntClr.crBack);
+
+    // Fill in the background
+    FillRect (hDCMem, &rcItem, hBrush);
+
+    // We no longer need this resource
+    MyDeleteObject (hBrush);
+
     // Get the # lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 

@@ -194,6 +194,7 @@ typedef enum tagIMM_TYPES
     IMMTYPE_PRIMOP2,        // 07:  ...       dyadic  ...
     IMMTYPE_PRIMOP3,        // 08:  ...       ambiguous ...
                             // 09-0F:  Available entries (4 bits)
+    IMMTYPE_SAME = -1,      // -1:  Use same type as source
 } IMM_TYPES, *LPIMM_TYPES;
 
 // N.B.:  Whenever changing the above enum (IMM_TYPES),

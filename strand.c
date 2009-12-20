@@ -1108,9 +1108,10 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     {
                         // Make a copy of the symbol table entry as we can't use the
                         //   one in the STNAME.
-                        lpSymEntry = CopyImmSymEntry_EM (lpYYToken->tkToken.tkData.tkSym,
-                                                         -1,
-                                                        &lpYYToken->tkToken);
+                        lpSymEntry =
+                          CopyImmSymEntry_EM (lpYYToken->tkToken.tkData.tkSym,
+                                              IMMTYPE_SAME,
+                                             &lpYYToken->tkToken);
                         if (lpSymEntry)
                             // Save the symbol table entry and skip past it
                             *LPAPL.Sym++ = MakePtrTypeSym (lpSymEntry);
@@ -1130,7 +1131,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // Copy the immediate token as an LPSYMENTRY
                     lpSymEntry = CopyImmToken_EM (&lpYYToken->tkToken);
                     if (lpSymEntry)
-                        *LPAPL.Nested++ = lpSymEntry;
+                        *LPAPL.Nested++ = MakePtrTypeSym (lpSymEntry);
                     else
                         bRet = FALSE;
                     break;
@@ -1190,7 +1191,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                                                      &aplLongestNum,        // Ptr to immediate value
                                                      &lpYYArg->tkToken);    // Ptr to function token
                         if (lpSymEntry)
-                            *LPAPL.Nested++ = lpSymEntry;
+                            *LPAPL.Nested++ = MakePtrTypeSym (lpSymEntry);
                         else
                         {
                             bRet = FALSE;

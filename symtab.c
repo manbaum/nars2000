@@ -1882,8 +1882,8 @@ LPSYMENTRY MakeSymEntry_EM
             break;
     } // End SWITCH
 
-    // If it failed, set the error token
-    if (!lpSymDst)
+    // If it failed and there's a function token, set the error token
+    if (!lpSymDst && lptkFunc)
         ErrorMessageSetToken (lptkFunc);
 
     return lpSymDst;
@@ -1898,8 +1898,8 @@ LPSYMENTRY MakeSymEntry_EM
 
 LPSYMENTRY CopyImmSymEntry_EM
     (LPSYMENTRY lpSymSrc,   // LPSYMENTRY to use
-     IMM_TYPES  immType,    // ImmType to use (unless -1) (see IMM_TYPES)
-     LPTOKEN    lpToken)    // Ptr to token to use in case of error
+     IMM_TYPES  immType,    // ImmType to use (unless IMMTYPE_SAME) (see IMM_TYPES)
+     LPTOKEN    lptkFunc)   // Ptr to token to use in case of error
 
 {
     LPSYMENTRY lpSymDst;
@@ -1908,7 +1908,7 @@ LPSYMENTRY CopyImmSymEntry_EM
     Assert (lpSymSrc->stFlags.Imm);
 
     // If unspecified, use the one in the SYMENTRY
-    if (immType EQ -1)
+    if (immType EQ IMMTYPE_SAME)
         immType = lpSymSrc->stFlags.ImmType;
 
     // Split cases based upon the immediate data type
@@ -1938,9 +1938,9 @@ LPSYMENTRY CopyImmSymEntry_EM
             return NULL;
     } // End SWITCH
 
-    // If it failed, set the error token
-    if (!lpSymDst)
-        ErrorMessageSetToken (lpToken);
+    // If it failed and there's a function token, set the error token
+    if (!lpSymDst && lptkFunc)
+        ErrorMessageSetToken (lptkFunc);
 
     return lpSymDst;
 } // End CopyImmSymEntry_EM

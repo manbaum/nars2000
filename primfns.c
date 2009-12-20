@@ -837,7 +837,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
                         case IMMTYPE_FLOAT:
-                            lpSymRes = GetSteZero ();
+                            lpSymRes = lpMemPTD->steZero;
 
                             break;
 
@@ -872,7 +872,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
 
                     if (lpSymRes)
                         // Save back into array
-                        *((LPAPLHETERO) lpMemArr)++ = lpSymRes;
+                        *((LPAPLHETERO) lpMemArr)++ = MakePtrTypeSym (lpSymRes);
                     else
                         goto SYMTAB_ERROR_EXIT;
                     break;
@@ -1541,13 +1541,20 @@ UBOOL IsFirstSimpleGlb
 #endif
 
 HGLOBAL CopySymGlbDir_PTB
-    (LPVOID lpSymGlb)
+    (LPSYMENTRY lpSymGlb)
 
 {
     // Split cases based upon the ptr type
     switch (GetPtrTypeDir (lpSymGlb))
     {
         case PTRTYPE_STCONST:
+            // If the SYMENTRY is named, ...
+            if (lpSymGlb->stHshEntry->htGlbName)
+                // Copy it to an unnamed value-specific entry
+                lpSymGlb =
+                  CopyImmSymEntry_EM (lpSymGlb,
+                                      IMMTYPE_SAME,
+                                      NULL);
             return lpSymGlb;
 
         case PTRTYPE_HGLOBAL:
@@ -1677,12 +1684,13 @@ HGLOBAL CopyArray_EM
                                 Assert (lpSymSrc->stFlags.Imm);
 
                                 // Copy it
-                                lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
-                                                               -1,
-                                                               lptkFunc);
+                                lpSymDst =
+                                  CopyImmSymEntry_EM (lpSymSrc,
+                                                      IMMTYPE_SAME,
+                                                      lptkFunc);
                                 if (lpSymDst)
                                     // Save into the destin
-                                    *((LPAPLHETERO) lpMemDst) = lpSymDst;
+                                    *((LPAPLHETERO) lpMemDst) = MakePtrTypeSym (lpSymDst);
                                 else
                                     bRet = FALSE;
                                 break;

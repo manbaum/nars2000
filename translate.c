@@ -681,6 +681,10 @@ void TranslateNARSToAPL2
         if (lpwTemp)
             *lpMemRht++ = (WCHAR) (lpwTemp - &lpwTranslate[-1]);
         else
+        // If the char is UpCaret, ...
+        if (*lpMemRht EQ UTF16_UPCARET)
+            *lpMemRht++ = L'^';
+        else
             *lpMemRht++ = L'\xFF';
     } // End WHILE
 } // End TranslateNARSToAPL2

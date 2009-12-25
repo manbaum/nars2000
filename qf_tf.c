@@ -340,8 +340,8 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                     goto EMPTY_EXIT;
                 break;
 
-            defstop
-                break;
+            default:
+                goto EMPTY_EXIT;
         } // End SWITCH
 
         // Return the name of the var we just created

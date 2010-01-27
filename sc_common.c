@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -192,7 +192,7 @@ void MakeWorkspaceBackup
         goto WSNOTFOUND_EXIT;
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to a temporary save area
     lpwszTemp = lpMemPTD->lpwszTemp;
@@ -275,7 +275,7 @@ UBOOL SaveNewWsid_EM
     UBOOL        bRet = FALSE;          // TRUE iff result is valid
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the length of the []WSID (including WS_WKSEXT)
     iLen = lstrlenW (lpMemSaveWSID);

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3633,7 +3633,7 @@ HGLOBAL Tokenize_EM
         gbInUse = TRUE;
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Save local vars in struct which we pass to each FSA action routine
     tkLocalVars.State[2] =

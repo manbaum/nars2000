@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -133,9 +133,7 @@ HWND GetThreadSMEC
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
-        lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC));
+    lpMemPTD = GetMemPTD ();
 
     // Return the handle to the Edit Ctrl
     return (HWND) GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
@@ -466,9 +464,7 @@ void DisplayPrompt
         dprintfWL9 (L"~~DisplayPrompt (%d)", uCaller);
 #endif
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
-        lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC));
+    lpMemPTD = GetMemPTD ();
 
     // Mark as no longer executing
     lpMemPTD->bExecuting = FALSE;
@@ -706,7 +702,7 @@ LRESULT APIENTRY SMWndProc
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
 ////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
@@ -1836,7 +1832,7 @@ NORMAL_EXIT:
                     LPSYMENTRY lpSym = NULL;
 
                     // Get ptr to PerTabData global memory
-                    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+                    lpMemPTD = GetMemPTD ();
 
                     // Signal a breakpoint to invoke the debugger
                     DbgBrk ();

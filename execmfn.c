@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
     HSHTABSTR    htsPTD;                // Old copy of HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // If this magic function/operator uses a separate HTS, ...
     if (lphtsPTD)
@@ -129,7 +129,7 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
     HSHTABSTR    htsPTD;                // Old copy of HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // If this magic function/operator uses a separate HTS, ...
     if (lphtsPTD)

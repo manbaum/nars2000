@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1530,7 +1530,7 @@ void MakeTxtLine
     LPPL_YYSTYPE   lpMemFcnArr;     // ...                   global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Use a temp var
     lpMemTxtSrc = lpMemPTD->lpwszTemp;

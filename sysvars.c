@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -473,7 +473,7 @@ UBOOL InitSystemNames_EM
     UBOOL        bRet = TRUE;       // TRUE iff result is valid
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
@@ -1288,7 +1288,7 @@ UBOOL ValidateCharVector_EM
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
@@ -2527,7 +2527,7 @@ UBOOL ValidSetPR_EM
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Ensure the argument is either a character scalar, or
     //   one-element vector (demoted to a scalar), or
@@ -2866,7 +2866,7 @@ UBOOL ValidSetSA_EM
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Ensure the argument is either a character scalar (promoted to a vector)
     //   or vector, and a valid Stop Action value
@@ -3172,7 +3172,7 @@ UBOOL InitSystemVars
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Set the array set validation routines
     aSysVarValidSet[SYSVAR_ALX ] = ValidSetALX_EM ;

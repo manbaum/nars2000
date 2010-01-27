@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ void BreakMessage
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Mark as suspended
     lpMemPTD->lpSISCur->Suspended = TRUE;
@@ -157,7 +157,7 @@ void ErrorMessageDirect
 #define ERROR_CARET     UTF16_UPCARET   // UTF16_CIRCUMFLEX
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to current SI stack
     lpSISCur = lpMemPTD->lpSISCur;
@@ -460,7 +460,7 @@ void ErrorMessageIndirect
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Save in global for later reference
     lpMemPTD->lpwszErrorMessage = lpwszMsg;

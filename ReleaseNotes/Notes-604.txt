@@ -11,7 +11,7 @@ PRIMFNS.C:
   In <MakeMonPrototype_EM_PTB>, use macro around a LPSYMENTRY before
     saving in result.
   Fix Bug:  In <CopySymGlbDir_PTB>, when given a named STE, convert
-    it to an value-specific unnamed STE.  That way, the named STE
+    it to a value-specific unnamed STE.  That way, the named STE
     may be changed without affecting the return value.
   Change <CopyImmSymEntry_EM> to use a named equate instead of -1.
   In <CopyArray_EM>, use macro around a LPSYMENTRY before saving in

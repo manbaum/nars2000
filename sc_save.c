@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ UBOOL CmdSave_EM
         *lpw = WC_EOS;
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to formatting save area & temporary storage
     lpwszFormat = lpMemPTD->lpwszFormat;
@@ -1184,7 +1184,7 @@ LPAPLCHAR SavedWsFormGlbVar
     UBOOL        bUsrDfn;               // TRUE iff the object is a user-defined function/operator
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Check on user-defined functions/operators
     bUsrDfn = IsGlbTypeDfnDir_PTB (hGlbObj);

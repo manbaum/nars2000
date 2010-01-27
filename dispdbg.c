@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -201,7 +201,7 @@ void DisplaySymTab
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     if (bDispAll)
     {
@@ -399,7 +399,7 @@ void UpdateDBWindow
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     UpdateWindow (lpMemPTD->hWndDB);
 } // End UpdateDBWindow
@@ -432,7 +432,7 @@ void DisplayGlobals
     IMM_TYPES    immType;           // Immediate type of the incoming array
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     DbgMsgW (L"********** Globals *************************************");
 
@@ -760,7 +760,7 @@ void DisplayTokens
     lpToken = MyGlobalLock (hGlbToken);
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
 #define lpHeader    ((LPTOKEN_HEADER) lpToken)
     wsprintfW (wszTemp,
@@ -935,7 +935,7 @@ void DisplayFcnStrand
         return;
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to a temporary save area
     lpaplChar = lpaplCharIni = lpMemPTD->lpwszTemp;
@@ -1852,7 +1852,7 @@ void DisplayStrand
     } // End SWITCH
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get this thread's LocalVars ptr
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
@@ -1957,7 +1957,7 @@ void DisplayUndo
         return;
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     DbgMsgW (L"********** Undo Buffer *********************************");
 

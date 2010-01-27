@@ -1,6 +1,85 @@
 Version 0.0.2.7 consists of the following Builds:
 
 
+Build #608 -- Version 0.0.2.7
+-----------------------------
+
+* Obtain PTD Ptr Via Subroutine So We Can Handle Odd Cases
+
+Directory trunk:
+
+ASSIGN.C:
+DEBUG.C:
+DISPDBG.C:
+DISPLAY.C:
+EDITFCN.C
+ERRMSG.C:
+EXCEPT.C:
+EXECDFN.C:
+EXECFNS.C:
+EXECMFN.C:
+GETFNS.C:
+GOTO.C:
+IMMEXEC.C:
+PF_DSHOE.C:
+PF_DTACKJOT.C:
+PF_IOTA.C:
+PF_TILDE.C:
+PF_UARROW.C:
+PF_UTACKJOT.C:
+PL_PARSE.Y:
+PO_DIJOT.C:
+PO_SLASH.C:
+PRIMFNS.C:
+QF_CR.C:
+QF_DL.C:
+QF_DM.C:
+QF_EM.C:
+QF_ERROR.C:
+QF_ES.C:
+QF_ET.C:
+QF_EX.C:
+QF_FMT.C:
+QF_FX.C:
+QF_LC.C:
+QF_MF.C:
+QF_NL.C:
+QF_TF.C:
+QF_VR.C:
+SAVEFCN.C:
+SC_COMMON.C:
+SC_COPY.C:
+SC_FNOV.C:
+SC_IN.C:
+SC_LIB.C:
+SC_LOAD.C:
+SC_OUT.C:
+SC_RESET.C:
+SC_SAVE.C:
+SC_SI.C:
+SC_WSID.C:
+SESSMAN.C:
+STRAND.C:
+SYMTAB.C:
+SYSVARS.C:
+TABCTRL.C:
+TOKENIZE.C:
+YYFNS.C:
+  Update copyright year.
+  Obtain PTD Ptr via subroutine so we can handle odd cases.
+
+
+Build #607 -- Version 0.0.2.7
+-----------------------------
+
+* Define Tools Directory
+
+Directory \:
+
+TOOLS:
+  Define Tools directory to hold global tools.
+
+
 Build #606 -- Version 0.0.2.7
 -----------------------------
 
@@ -41,7 +120,7 @@ PRIMFNS.C:
   In <MakeMonPrototype_EM_PTB>, use macro around a LPSYMENTRY before
     saving in result.
   Fix Bug:  In <CopySymGlbDir_PTB>, when given a named STE, convert
-    it to an value-specific unnamed STE.  That way, the named STE
+    it to a value-specific unnamed STE.  That way, the named STE
     may be changed without affecting the return value.
   Change <CopyImmSymEntry_EM> to use a named equate instead of -1.
   In <CopyArray_EM>, use macro around a LPSYMENTRY before saving in

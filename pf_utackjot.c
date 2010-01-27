@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -328,7 +328,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     EXIT_TYPES     exitType;        // Exit type from CSPLParse
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get hWndEC for the Session Manager from the current thread
     hWndEC = GetThreadSMEC ();

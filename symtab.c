@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1429,7 +1429,7 @@ LPSYMENTRY SymTabLookupChar
     LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
@@ -1501,7 +1501,7 @@ LPSYMENTRY SymTabLookupNumber
     LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
@@ -1576,7 +1576,7 @@ LPSYMENTRY SymTabLookupFloat
     LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
@@ -1716,7 +1716,7 @@ LPSYMENTRY SymTabLookupNameLength
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
     lpHTS = &lpMemPTD->htsPTD;
@@ -1964,7 +1964,7 @@ LPSYMENTRY SymTabAppendInteger_EM
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
@@ -2080,7 +2080,7 @@ LPSYMENTRY SymTabAppendFloat_EM
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
@@ -2176,7 +2176,7 @@ LPSYMENTRY SymTabAppendChar_EM
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
@@ -2336,7 +2336,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;

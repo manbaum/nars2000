@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,7 +102,7 @@ UBOOL CreateFcnWindow
     UINT             uLen;              // Length of the function name
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Skip over the initial UTF16_DEL, if present
     if (lpwszLine[0] EQ UTF16_DEL)
@@ -315,7 +315,7 @@ LRESULT APIENTRY FEWndProc
             LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
 
             // Get ptr to PerTabData global memory
-            lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+            lpMemPTD = GetMemPTD ();
 
             // Initialize variables
             cfFE.hwndOwner = hWnd;
@@ -591,7 +591,7 @@ LRESULT APIENTRY FEWndProc
             LPWCHAR  lpwszTemp;     // Ptr to temporary storage
 
             // Get ptr to PerTabData global memory
-            lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+            lpMemPTD = GetMemPTD ();
 
             // Get ptr to temporary storage
             lpwszTemp = lpMemPTD->lpwszTemp;
@@ -934,7 +934,7 @@ void SetFETitle
     APLU3264     uNameLen;          // Function name length
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
@@ -985,7 +985,7 @@ UBOOL SyntaxColor
 ////LCLODS ("Entering <SyntaxColor>\r\n");
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Save local vars in struct which we pass to each FSA action routine
     tkLocalVars.State[2]         =
@@ -1181,7 +1181,7 @@ int LclECPaintHook
     LPPERTABDATA     lpMemPTD;              // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 #endif
     // Syntax Color the line
     if (!rev
@@ -1595,7 +1595,7 @@ LRESULT WINAPI LclEditCtrlWndProc
     } else
     {
         // Get ptr to PerTabData global memory
-        lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+        lpMemPTD = GetMemPTD ();
 
         // Get ptr to temporary storage
         lpwszTemp = lpMemPTD->lpwszTemp;
@@ -3338,9 +3338,7 @@ void ForceSendCursorMsg
     UBOOL        bOldExecuting; // TRUE iff the old value was executing
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
-        lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC));
+    lpMemPTD = GetMemPTD ();
 
     // Indicate the new execution state
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = bExecuting;
@@ -3437,7 +3435,7 @@ void CopyAPLChars_EM
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to temp save area
     lpwszTemp = lpMemPTD->lpwszTemp;
@@ -4456,7 +4454,7 @@ void ErrorHandler
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Save in global for later reference
     lpMemPTD->lpwszErrorMessage = lpwszMsg;
@@ -4632,7 +4630,7 @@ void ActivateMDIMenu
     HMENU        hMenuView;         // View menu handle
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     SendMessageW (lpMemPTD->hWndMC,
                   WM_MDISETMENU,

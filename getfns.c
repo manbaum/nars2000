@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1666,7 +1666,7 @@ LPSYMENTRY GetSteZero
     Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the STE
     return lpMemPTD->steZero;
@@ -1689,7 +1689,7 @@ LPSYMENTRY GetSteOne
     Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the STE
     return lpMemPTD->steOne;
@@ -1712,7 +1712,7 @@ LPSYMENTRY GetSteBlank
     Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the STE
     return lpMemPTD->steBlank;
@@ -1732,7 +1732,7 @@ APLFLOAT GetQuadCT
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_CT]->stData.stFloat;
 } // End GetQuadCT
@@ -1751,7 +1751,7 @@ APLBOOL GetQuadIO
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IO]->stData.stBoolean;
 } // End GetQuadIO
@@ -1770,7 +1770,7 @@ void SetQuadIO
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IO]->stData.stBoolean = bQuadIO;
 } // End SetQuadIO
@@ -1789,7 +1789,7 @@ APLUINT GetQuadPP
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
 } // End GetQuadPP
@@ -1808,7 +1808,7 @@ APLUINT GetQuadPW
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PW]->stData.stInteger;
 } // End GetQuadPW
@@ -1827,7 +1827,7 @@ APLUINT GetQuadRL
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the current value
     return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_RL]->stData.stInteger;
@@ -1847,7 +1847,7 @@ void SetQuadRL
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Set the new value
     lpMemPTD->htsPTD.lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
@@ -2104,6 +2104,27 @@ UINT GetSignatureGlb_PTB
 
     return Sig;
 } // End GetSignatureGlb_PTB
+
+
+//***************************************************************************
+//  $GetMemPTD
+//
+//  Return the current lpMemPTD
+//***************************************************************************
+
+LPPERTABDATA GetMemPTD
+    (void)
+
+{
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
+
+    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+        lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC));
+    Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+    return lpMemPTD;
+} // End GetMemPTD
 
 
 //***************************************************************************

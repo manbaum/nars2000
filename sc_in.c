@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ UBOOL CmdIn_EM
                   hWndEC;                   // Edit Ctrl    ...
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage & maximum size
     lpwszTemp   = lpMemPTD->lpwszTemp;
@@ -308,7 +308,7 @@ UBOOL TransferInverseArr2_EM
     UBOOL         bRet = FALSE;             // TRUE iff result is valid
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get window handle of the Session Manager
     hWndSM = lpMemPTD->hWndSM;
@@ -486,7 +486,7 @@ UBOOL TransferInverseFcn2_EM
     UBOOL         bRet = FALSE;             // TRUE iff the result is valid
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get window handle of the Session Manager
     hWndSM = lpMemPTD->hWndSM;
@@ -664,7 +664,7 @@ UBOOL TransferInverseChr1_EM
     WCHAR         wch;                      // Temporary char
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary format save area
     lpwszFormat = lpMemPTD->lpwszFormat;
@@ -911,7 +911,7 @@ UBOOL TransferInverseNum1_EM
     WCHAR         wch;                      // Temporary char
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary format save area
     lpwszFormat = lpMemPTD->lpwszFormat;

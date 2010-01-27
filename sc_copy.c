@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ UBOOL CmdCopy_EM
                                             //   so we may delete them easily
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage & maximum size
     lpwszTemp = lpMemPTD->lpwszTemp;
@@ -506,7 +506,7 @@ int CopyWsVars
                 Assert (IsSimpleChar (aplTypeObj));
 
                 // Get ptr to PerTabData global memory
-                lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+                lpMemPTD = GetMemPTD ();
 
                 // Out with the old
                 FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;

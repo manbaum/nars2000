@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ UBOOL CmdLoadCom_EM
     lstrcatW (wszTailDPFE, WS_WKSEXT);
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the tab index from which this command was issued
     iTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
@@ -171,7 +171,7 @@ UBOOL LoadWorkspace_EM
                                         //   so we may delete them easily
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Check for CLEAR WS
     if (hGlbDPFE EQ NULL)
@@ -841,7 +841,7 @@ LPWCHAR ParseSavedWsVar_EM
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
@@ -1123,7 +1123,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     LPVARARRAY_HEADER lpHeader;             // Ptr to the array header
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
@@ -1659,7 +1659,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LoadWsGlbVarParm.lplpwErrMsg   = lplpwErrMsg;
 
                 // Get ptr to PerTabData global memory
-                lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+                lpMemPTD = GetMemPTD ();
 
                 // Save in PerTabData struc
                 lpMemPTD->lpLoadWsGlbVarParm = &LoadWsGlbVarParm;

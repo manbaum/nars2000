@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -671,7 +671,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
     DBGENTER;
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Split cases based upon the ptr type
     switch (GetPtrTypeDir (hGlbArr))
@@ -2026,7 +2026,7 @@ HGLOBAL CopyGlbAsType_EM
             {
                 case ARRAY_BOOL:
                     // Get ptr to PerTabData global memory
-                    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+                    lpMemPTD = GetMemPTD ();
 
                     lpSym0 = lpMemPTD->steZero;
                     lpSym1 = lpMemPTD->steOne;
@@ -2712,7 +2712,7 @@ LPPL_YYSTYPE MakeNoValue_YY
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();

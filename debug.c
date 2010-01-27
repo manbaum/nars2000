@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -287,7 +287,7 @@ LRESULT APIENTRY DBWndProc
             ShowWindow (hWnd,   SW_SHOWNORMAL);
 
             // Get ptr to PerTabData global memory
-            lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+            lpMemPTD = GetMemPTD ();
 
             // Subclass the List Box so we can pass
             //   certain WM_KEYDOWN messages to the
@@ -913,7 +913,7 @@ LRESULT WINAPI LclListboxWndProc
                 case VK_F11:
                 case VK_F12:
                     // Get ptr to PerTabData global memory
-                    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+                    lpMemPTD = GetMemPTD ();
 
                     PostMessageW (lpMemPTD->hWndSM, message, wParam, lParam);
 
@@ -1013,7 +1013,7 @@ void DbgClr
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     if (lpMemPTD->hWndDB)
         PostMessageW (lpMemPTD->hWndDB, MYWM_DBGMSG_CLR, 0, 0);

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -183,7 +183,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     UINT         startLineNum;      // Starting line #
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the Edit Ctrl window handle
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
@@ -711,7 +711,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPTOKEN_HEADER lpMemTknLine;    // Ptr to tokenized line global memory
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the user-defined function/operator header global memory handle
     hGlbDfnHdr = lpMemPTD->lpSISCur->hGlbDfnHdr;
@@ -1335,7 +1335,7 @@ void UnlocalizeSTEs
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS level
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // If the SI is non-empty, ...
     if (lpMemPTD->SILevel)

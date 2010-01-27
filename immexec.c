@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ void ImmExecLine
                  uLineLen;      // Line length
 
     // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+    lpMemPTD = GetMemPTD ();
 
     // Get the position of the start of the line
     uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
@@ -260,7 +260,7 @@ EXIT_TYPES ImmExecStmt
 
     // Save args in struc to pass to thread func
     ieThread.hWndEC         = hWndEC;
-    ieThread.lpMemPTD       = TlsGetValue (dwTlsPerTabData); Assert (IsValidPtr (ieThread.lpMemPTD, sizeof (ieThread.lpMemPTD)));
+    ieThread.lpMemPTD       = GetMemPTD ();
     ieThread.lpwszCompLine  = lpwszCompLine;
     ieThread.aplNELM        = aplNELM;
     ieThread.hGlbWFSO       = hGlbWFSO;

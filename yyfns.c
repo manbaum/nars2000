@@ -816,7 +816,7 @@ void IncrFcnMem
 
         case DFN_HEADER_SIGNATURE:
             // Increment the reference count
-            DbgIncrRefCntDir_PTB (MakePtrTypeGlb (GlobalHandle (lpMemSrc)));
+            DbgIncrRefCntDir_PTB (MakePtrTypeGlb (MyGlobalHandle (lpMemSrc)));
 
             break;
 

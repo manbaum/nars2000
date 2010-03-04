@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -928,6 +928,41 @@ LPVOID _MyGlobalAlloc
 
     return lpMem;
 } // End _MyGlobalAlloc
+
+
+//***************************************************************************
+//  $MyGlobalHandle
+//
+//  Return the global handle coresponding to a global memory ptr
+//***************************************************************************
+
+HGLOBAL _MyGlobalHandle
+    (LPVOID lpVoid)         // Address of the global memory object
+
+{
+    HGLOBAL hGlb;           // Handle of the global memory object
+    char    szTemp[1024];
+
+    CheckMemStat ();
+
+    // Call the Windows function
+    hGlb = GlobalHandle (lpVoid);
+
+    if (!hGlb)
+    {
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
+        MBC (szTemp);
+        DbgBrk ();
+    } // End IF
+
+    return hGlb;
+} // End _MyGlobalHandle
 
 
 //***************************************************************************

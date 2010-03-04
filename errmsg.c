@@ -422,7 +422,7 @@ void ErrorMessageDirect
     if (lpMemTxtLine)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (GlobalHandle (lpMemTxtLine));
+        MyGlobalUnlock (MyGlobalHandle (lpMemTxtLine));
     } // End IF
 
     return;

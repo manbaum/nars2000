@@ -320,9 +320,11 @@ typedef struct tagVARNAMED_HEADER
 // Variable/Function/Operator Header ptrs union
 typedef union tagVFOHDRPTRS
 {
-    LPVOID            lpMemVFO;
-    LPVARARRAY_HEADER lpMemVar;
-    LPFCNARRAY_HEADER lpMemFcn;
+    LPVOID            lpMemVFO;         // 00:  Generic ptr
+    LPVARARRAY_HEADER lpMemVar;         // 00:  Ptr to a variable
+    LPFCNARRAY_HEADER lpMemFcn;         // 00:  ...      function array
+    struct tagDFN_HEADER *
+                      lpMemDfn;         // 00:  ...      UDFO
 } VFOHDRPTRS, *LPVFOHDRPTRS;
 
 // Distinguish between immediate LPSYMENTRY and HGLOBAL in an array

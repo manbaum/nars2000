@@ -31,6 +31,12 @@
 //  Execute a user-defined function/operator on a prototype
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecDfnGlbProto_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFcnStr,            // Ptr to function strand
@@ -57,6 +63,15 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
     // If the result is valid, ...
     if (lpYYRes2)
     {
+        // Check for NoValue
+        if (IsTokenNoValue (&lpYYRes2->tkToken))
+        {
+            // Free the YYRes (but not the storage)
+            YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+            goto VALUE_EXIT;
+        } // End IF
+
         // Convert the result into a prototype
         lpYYRes =
           SysFnMonTYPE_EM_YY (lptkFcnStr,           // Ptr to function token
@@ -67,7 +82,13 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
         lpYYRes = lpYYRes2;
 
     return lpYYRes;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                               lptkFcnStr);
+    return lpYYRes2;
 } // End ExecDfnGlbProto_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

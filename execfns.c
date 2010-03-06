@@ -529,6 +529,14 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                           NULL);            // Ptr to axis token
             if (lpYYRes1)
             {
+                // Check for NoValue
+                if (IsTokenNoValue (&lpYYRes1->tkToken))
+                {
+                    // Free the YYRes (but not the storage)
+                    YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+                    goto VALUE_EXIT;
+                } // End IF
 #ifdef DEBUG
                 // Decrement the SI level of lpYYRes1
                 //   so YYResIsEmpty won't complain
@@ -552,6 +560,8 @@ LPPL_YYSTYPE ExecTrain_EM_YY
 
             break;
 
+                    //  Monadic             Dyadic
+                    //  ---------------------------
         case 3:     //  (f R) g (h R)       (L f R) g (L h R)
             // Execute the righthand function between
             //   the left and right args
@@ -561,6 +571,14 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                           NULL);            // Ptr to axis token
             if (lpYYRes1)
             {
+                // Check for NoValue
+                if (IsTokenNoValue (&lpYYRes1->tkToken))
+                {
+                    // Free the YYRes (but not the storage)
+                    YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+                    goto VALUE_EXIT;
+                } // End IF
 #ifdef DEBUG
                 // Decrement the SI level of lpYYRes1
                 //   so YYResIsEmpty won't complain
@@ -574,6 +592,14 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                               NULL);            // Ptr to axis token
                 if (lpYYRes2)
                 {
+                    // Check for NoValue
+                    if (IsTokenNoValue (&lpYYRes2->tkToken))
+                    {
+                        // Free the YYRes (but not the storage)
+                        YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+                        goto VALUE_EXIT;
+                    } // End IF
 #ifdef DEBUG
                     // Decrement the SI level of lpYYRes2
                     //   so YYResIsEmpty won't complain
@@ -611,6 +637,14 @@ LPPL_YYSTYPE ExecTrain_EM_YY
 
                 if (lpYYRes1)
                 {
+                    // Check for NoValue
+                    if (IsTokenNoValue (&lpYYRes1->tkToken))
+                    {
+                        // Free the YYRes (but not the storage)
+                        YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+                        goto VALUE_EXIT;
+                    } // End IF
 #ifdef DEBUG
                     // Decrement the SI level of lpYYRes1
                     //   so YYResIsEmpty won't complain
@@ -624,6 +658,14 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                                   NULL);                    // Ptr to axis token
                     if (lpYYRes2)
                     {
+                        // Check for NoValue
+                        if (IsTokenNoValue (&lpYYRes2->tkToken))
+                        {
+                            // Free the YYRes (but not the storage)
+                            YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+                            goto VALUE_EXIT;
+                        } // End IF
 #ifdef DEBUG
                         // Decrement the SI level of lpYYRes2
                         //   so YYResIsEmpty won't complain
@@ -660,6 +702,14 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                             tknNELM - 1);   // # elements in the Train
                 if (lpYYRes1)
                 {
+                    // Check for NoValue
+                    if (IsTokenNoValue (&lpYYRes1->tkToken))
+                    {
+                        // Free the YYRes (but not the storage)
+                        YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+                        goto VALUE_EXIT;
+                    } // End IF
 #ifdef DEBUG
                     // Decrement the SI level of lpYYRes1
                     //   so YYResIsEmpty won't complain
@@ -681,6 +731,15 @@ LPPL_YYSTYPE ExecTrain_EM_YY
             break;
     } // End SWITCH
 
+    goto NORMAL_EXIT;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYFcnStr->tkToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
     // If a previous result is active, ...
     if (lpYYRes1)
     {

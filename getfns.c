@@ -1552,6 +1552,40 @@ APLLONGEST GetGlbPtrs_LOCK
 
             return lpToken->tkData.tkSym->stData.stLongest;
 
+        case TKT_FCNNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, we must traverse the array
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
+            {
+                *lphGlb = lpToken->tkData.tkSym->stData.stGlbData;
+
+                // stData is a valid HGLOBAL function array
+                Assert (IsGlbTypeFcnDir_PTB (*lphGlb)
+                     || IsGlbTypeDfnDir_PTB (*lphGlb));
+
+                // Handle the HGLOBAL case
+                *lphGlb = ClrPtrTypeDir (*lphGlb);
+
+                // Lock the memory to get a ptr to it
+                lpMem = MyGlobalLock (*lphGlb);
+
+                // Get the pseudo-type & NELM
+                aplTypeMem = ARRAY_LIST;
+                aplNELMMem = 0;
+
+                break;      // Continue with common HGLOBAL code
+            } // End IF
+
+            // Handle the immediate case
+            *lphGlb  = NULL;
+
+            if (lplpMem)
+                *lplpMem = NULL;
+
+            return lpToken->tkData.tkSym->stData.stLongest;
+
         case TKT_VARIMMED:
         case TKT_AXISIMMED:
         case TKT_LSTIMMED:
@@ -1572,11 +1606,11 @@ APLLONGEST GetGlbPtrs_LOCK
             // Lock the memory to get a ptr to it
             lpMem = MyGlobalLock (*lphGlb);
 
-            // Get the type & NELM
+            // Get the pseudo-type & NELM
             aplTypeMem = ARRAY_LIST;
             aplNELMMem = 0;
 
-            break;
+            break;      // Continue with common HGLOBAL code
 
         case TKT_NUMSTRAND:
         case TKT_VARARRAY:

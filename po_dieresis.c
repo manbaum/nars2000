@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -215,6 +215,15 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           lptkAxis);        // Ptr to axis token
         if (lpYYRes2)
         {
+            // Check for NoValue
+            if (IsTokenNoValue (&lpYYRes2->tkToken))
+            {
+                // Free the YYRes (but not the storage)
+                YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+                goto VALUE_EXIT;
+            } // End IF
+
             // Enclose the item
             lpYYRes = PrimFnMonLeftShoe_EM_YY (&lpYYFcnStrLft->tkToken,     // Ptr to function token
                                                &lpYYRes2->tkToken,          // Ptr to right arg token
@@ -610,6 +619,11 @@ NONCE_EXIT:
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
@@ -651,6 +665,12 @@ NORMAL_EXIT:
 //  Execute a monadic or dyadic derived function strand
 //    on a token or between tokens
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecFuncOnToken_EM"
+#else
+#define APPEND_NAME
+#endif
 
 UBOOL ExecFuncOnToken_EM
     (LPVOID      *lplpMemRes,           // Ptr to ptr to result memory
@@ -704,6 +724,15 @@ UBOOL ExecFuncOnToken_EM
                   CopySymGlbDir_PTB (lpYYRes->tkToken.tkData.tkGlbData);
                 break;
 
+            case TKT_VARNAMED:
+                // Check for NoValue
+                Assert (IsTokenNoValue (&lpYYRes->tkToken));
+
+                // Free the YYRes (but not the storage)
+                YYFree (lpYYRes); lpYYRes = NULL;
+
+                goto VALUE_EXIT;
+
             defstop
                 break;
         } // End SWITCH
@@ -713,6 +742,11 @@ UBOOL ExecFuncOnToken_EM
 
         return TRUE;
     } // End IF
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYFcnStr->tkToken);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (lpYYRes)
     {
@@ -722,6 +756,7 @@ ERROR_EXIT:
 
     return FALSE;
 } // End ExecFuncOnToken_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

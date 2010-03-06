@@ -961,6 +961,15 @@ RESTART_EXCEPTION:
                     // If it succeeded, ...
                     if (lpYYRes)
                     {
+                        // Check for NoValue
+                        if (IsTokenNoValue (&lpYYRes->tkToken))
+                        {
+                            // Free the YYRes (but not the storage)
+                            YYFree (lpYYRes); lpYYRes = NULL;
+
+                            goto VALUE_EXIT;
+                        } // End IF
+
                         // Copy the result to the right arg token
                         tkRhtArg = lpYYRes->tkToken;
 
@@ -1102,6 +1111,11 @@ LEFT_NONCE_EXIT:
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
@@ -2222,6 +2236,12 @@ RESTART_EXCEPTION:
 
                         break;
 
+                    case TKT_VARNAMED:
+                        // Check for NoValue
+                        Assert (IsTokenNoValue (&tkRhtArg));
+
+                        goto VALUE_EXIT;
+
                     defstop
                         break;
                 } // End SWITCH
@@ -2277,6 +2297,11 @@ LEFT_LENGTH_EXIT:
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
 LEFT_DOMAIN_EXIT:

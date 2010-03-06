@@ -77,48 +77,49 @@ typedef enum tagFCN_VALENCES        // User-Defined Function/Operator Valence
 // User-defined function/operator header signature
 #define DFN_HEADER_SIGNATURE   'SNFD'
 
-typedef struct tagDFN_HEADER        // Function header structure
+typedef struct tagDFN_HEADER            // Function header structure
 {
-    HEADER_SIGNATURE Sig;           // 00:  User-defined function/operator header signature
-    UINT             Version;       // 04:  Version # of this header
-    UINT             DfnType:4,     // 08:  0000000F:  User-defined function/operator type (see DFN_TYPES)
-                     FcnValence:3,  //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
-                     DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
-                     PermFn:1,      //      00000100:  Permanent function (i.e. Magic Function/Operator)
-                     NoDispRes:1,   //      00000200:  TRUE iff the result is non-displayable
-                     ListRes:1,     //      00000400:  TRUE iff the result is a list (unused so far)
-                     ListLft:1,     //      00000800:  TRUE iff the left arg is a list
-                     ListRht:1,     //      00001000:  TRUE iff the right arg is a list
-                     MonOn:1,       //      00002000:  TRUE iff function line monitoring is on for this function
-                     SaveSTEFlags:1,//      00004000:  TRUE iff on free were to save the function name STE flags
-                     :17;           //      FFFF8000:  Available bits
-    UINT             RefCnt,        // 0C:  Reference count
-                     nInverseLine,  // 10:  Line # of the []IDENTITY label (0 if not present)
-                     nIdentityLine, // 14:  Line # of the []INVERSE label (0 if not present)
-                     nPrototypeLine,// 18:  Line # of the []PROTOTYPE label (0 if not present)
-                     nSingletonLine,// 1C:  Line # of the []SINGLETON label (0 if not present)
-                     numResultSTE,  // 20:  # result STEs (may be zero if no result)
-                     offResultSTE,  // 24:  Offset to result STEs (ignored if numResultSTE is zero)
-                     numLftArgSTE,  // 28:  # left arg STEs (may be zero if niladic/monadic)
-                     offLftArgSTE,  // 2C:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
-                     numRhtArgSTE,  // 30:  # right arg STEs (may be zero if niladic)
-                     offRhtArgSTE,  // 34   Offset to right arg STEs (ignored if numRhtArgSTE is zero)
-                     numLocalsSTE,  // 38:  # right arg STEs (may be zero if niladic)
-                     offLocalsSTE,  // 3C:  Offset to start of function lines (FCNLINE[nLines])
-                     numFcnLines,   // 40:  # lines in the function (not counting the header)
-                     offFcnLines;   // 44:  Offset to start of function lines (FCNLINE[nLines])
-    LPSYMENTRY       steLftOpr,     // 48:  Left operand STE (may be NULL if not an operator)
-                     steFcnName,    // 4C:  Function name STE
-                     steAxisOpr,    // 50:  Axis operator STE
-                     steRhtOpr;     // 54:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,    // 58:  Text of function header (APLCHAR) global memory handle
-                     hGlbTknHdr,    // 5C:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff,  // 60:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-                     hGlbMonInfo;   // 64:  Function line monitor info (MONINFO)
-    FILETIME         ftCreation,    // 68:  Time of creation (8 bytes)
-                     ftLastMod;     // 70:  Time of last modification (8 bytes)
-                                    // 78:  Length
-                                    // 78:  Array of function line structures (FCNLINE[nLines])
+    HEADER_SIGNATURE Sig;               // 00:  User-defined function/operator header signature
+    UINT             Version;           // 04:  Version # of this header
+    UINT             DfnType:4,         // 08:  0000000F:  User-defined function/operator type (see DFN_TYPES)
+                     FcnValence:3,      //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
+                     DfnAxis:1,         //      00000080:  User-defined function/operator accepts axis value
+                     PermFn:1,          //      00000100:  Permanent function (i.e. Magic Function/Operator)
+                     NoDispRes:1,       //      00000200:  TRUE iff the result is non-displayable
+                     ListRes:1,         //      00000400:  TRUE iff the result is a list (unused so far)
+                     ListLft:1,         //      00000800:  TRUE iff the left arg is a list
+                     ListRht:1,         //      00001000:  TRUE iff the right arg is a list
+                     MonOn:1,           //      00002000:  TRUE iff function line monitoring is on for this function
+                     SaveSTEFlags:1,    //      00004000:  TRUE iff on free were to save the function name STE flags
+                     SkipRefCntIncr:1,  //      00008000:  Skip the next RefCnt increment
+                     :16;               //      FFFF0000:  Available bits
+    UINT             RefCnt,            // 0C:  Reference count
+                     nInverseLine,      // 10:  Line # of the []IDENTITY label (0 if not present)
+                     nIdentityLine,     // 14:  Line # of the []INVERSE label (0 if not present)
+                     nPrototypeLine,    // 18:  Line # of the []PROTOTYPE label (0 if not present)
+                     nSingletonLine,    // 1C:  Line # of the []SINGLETON label (0 if not present)
+                     numResultSTE,      // 20:  # result STEs (may be zero if no result)
+                     offResultSTE,      // 24:  Offset to result STEs (ignored if numResultSTE is zero)
+                     numLftArgSTE,      // 28:  # left arg STEs (may be zero if niladic/monadic)
+                     offLftArgSTE,      // 2C:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
+                     numRhtArgSTE,      // 30:  # right arg STEs (may be zero if niladic)
+                     offRhtArgSTE,      // 34   Offset to right arg STEs (ignored if numRhtArgSTE is zero)
+                     numLocalsSTE,      // 38:  # right arg STEs (may be zero if niladic)
+                     offLocalsSTE,      // 3C:  Offset to start of function lines (FCNLINE[nLines])
+                     numFcnLines,       // 40:  # lines in the function (not counting the header)
+                     offFcnLines;       // 44:  Offset to start of function lines (FCNLINE[nLines])
+    LPSYMENTRY       steLftOpr,         // 48:  Left operand STE (may be NULL if not an operator)
+                     steFcnName,        // 4C:  Function name STE
+                     steAxisOpr,        // 50:  Axis operator STE
+                     steRhtOpr;         // 54:  Right operand STE (may be NULL if monadic operator or not an operator)
+    HGLOBAL          hGlbTxtHdr,        // 58:  Text of function header (APLCHAR) global memory handle
+                     hGlbTknHdr,        // 5C:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff,      // 60:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo;       // 64:  Function line monitor info (MONINFO)
+    FILETIME         ftCreation,        // 68:  Time of creation (8 bytes)
+                     ftLastMod;         // 70:  Time of last modification (8 bytes)
+                                        // 78:  Length
+                                        // 78:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a

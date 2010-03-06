@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -735,6 +735,15 @@ RESTART_INNERPROD_RES:
         // If it succeeded, ...
         if (lpYYRes)
         {
+            // Check for NoValue
+            if (IsTokenNoValue (&lpYYRes->tkToken))
+            {
+                // Free the YYRes (but not the storage)
+                YYFree (lpYYRes); lpYYRes = NULL;
+
+                goto VALUE_EXIT;
+            } // End IF
+
             // If the result is nested, ...
             if (IsNested (aplTypeRes))
             {
@@ -1340,6 +1349,15 @@ RESTART_INNERPROD_RES:
                 // If it succeeded, ...
                 if (lpYYRes)
                 {
+                    // Check for NoValue
+                    if (IsTokenNoValue (&lpYYRes->tkToken))
+                    {
+                        // Free the YYRes (but not the storage)
+                        YYFree (lpYYRes); lpYYRes = NULL;
+
+                        goto VALUE_EXIT;
+                    } // End IF
+
                     // If this is the first time, there's no reduction
                     if (iInnMax EQ (APLINT) (aplInnrMax - 1))
                     {
@@ -1374,6 +1392,15 @@ RESTART_INNERPROD_RES:
                         // If it succeeded, ...
                         if (lpYYRes2)
                         {
+                            // Check for NoValue
+                            if (IsTokenNoValue (&lpYYRes2->tkToken))
+                            {
+                                // Free the YYRes (but not the storage)
+                                YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+                                goto VALUE_EXIT;
+                            } // End IF
+
                             // Copy the result to the accumulated reduction token
                             tkItmRed = lpYYRes2->tkToken;
 
@@ -1468,6 +1495,11 @@ LEFTOPR_DOMAIN_EXIT:
 RIGHTOPR_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 WSFULL_EXIT:

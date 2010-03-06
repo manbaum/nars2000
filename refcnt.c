@@ -172,7 +172,20 @@ int ChangeRefCntDir_PTB
                         DbgStop ();
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
-                    lpHeader->RefCnt += iIncr;
+
+                    // If we're to skip this RefCnt increment, ...
+                    if (iIncr EQ 1
+                     && lpHeader->SkipRefCntIncr)
+                        // Clear the flag
+                        lpHeader->SkipRefCntIncr = FALSE;
+                    else
+                    {
+                        // Clear the flag
+                        lpHeader->SkipRefCntIncr = FALSE;
+
+                        lpHeader->RefCnt += iIncr;
+                    } // End IF/ELSE
+
                     RefCnt = lpHeader->RefCnt;
 #undef  lpHeader
                     break;

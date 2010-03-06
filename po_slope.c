@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -750,6 +750,15 @@ RESTART_EXCEPTION:
                     // If it succeeded, ...
                     if (lpYYRes)
                     {
+                        // Check for NoValue
+                        if (IsTokenNoValue (&lpYYRes->tkToken))
+                        {
+                            // Free the YYRes (but not the storage)
+                            YYFree (lpYYRes); lpYYRes = NULL;
+
+                            goto VALUE_EXIT;
+                        } // End IF
+
                         // Copy the result to the right arg token
                         tkRhtArg = lpYYRes->tkToken;
 
@@ -886,6 +895,11 @@ WSFULL_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (hGlbRes)
     {
@@ -948,7 +962,7 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE if prototyping
 
 {
-    return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken);
 } // End PrimOpDydSlopeCommon_EM_YY
 
 

@@ -3012,6 +3012,30 @@ UBOOL IsTknTypeFcnOpr
 
 
 //***************************************************************************
+//  $IsTknTypeVar
+//
+//  Return TRUE iff the given token type is a var
+//***************************************************************************
+
+UBOOL IsTknTypeVar
+    (TOKEN_TYPES tknType)
+
+{
+    // Split cases based upon the token type
+    switch (tknType)
+    {
+        case TKT_VARNAMED:
+        case TKT_VARIMMED:
+        case TKT_VARARRAY:
+            return TRUE;
+
+        default:
+            return FALSE;
+    } // End SWITCH
+} // End IsTknTypeVar
+
+
+//***************************************************************************
 //  $IsTknTypeNamedVar
 //
 //  Return TRUE iff the given token type is a named var
@@ -3119,15 +3143,25 @@ void SetVFOArraySRCIFlag
     // Is the array global?
     if (hGlbVFO)
     {
+        // If the array is a UDFO, ...
+        if (IsTknUsrDfn (lptkVFO))
+            // Set the UDFO flag which says to skip the next
+            //   IncrRefCnt
+            vfoHdrPtrs.lpMemDfn->SkipRefCntIncr = TRUE;
+        else
         // If the array is a fcn/opr, ...
         if (IsTknTypeFcnOpr (lptkVFO->tkFlags.TknType))
-            // Set the flag which says to skip the next
+            // Set the Function Array flag which says to skip the next
             //   IncrRefCnt
             vfoHdrPtrs.lpMemFcn->SkipRefCntIncr = TRUE;
         else
-            // Set the flag which says to skip the next
+        // If the array is a var?
+        if (IsTknTypeVar (lptkVFO->tkFlags.TknType))
+            // Set the Variable flag which says to skip the next
             //   IncrRefCnt
             vfoHdrPtrs.lpMemVar->SkipRefCntIncr = TRUE;
+        else
+            DbgStop ();
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;
@@ -3160,15 +3194,25 @@ void ClrVFOArraySRCIFlag
     // Is the array global?
     if (hGlbVFO)
     {
+        // If the array is a UDFO, ...
+        if (IsTknUsrDfn (lptkVFO))
+            // Set the UDFO flag which says to skip the next
+            //   IncrRefCnt
+            vfoHdrPtrs.lpMemDfn->SkipRefCntIncr = FALSE;
+        else
         // If the array is a fcn/opr, ...
         if (IsTknTypeFcnOpr (lptkVFO->tkFlags.TknType))
-            // Set the flag which says to skip the next
+            // Set the Function Array flag which says to skip the next
             //   IncrRefCnt
             vfoHdrPtrs.lpMemFcn->SkipRefCntIncr = FALSE;
         else
-            // Set the flag which says to skip the next
+        // If the array is a var?
+        if (IsTknTypeVar (lptkVFO->tkFlags.TknType))
+            // Set the Variable flag which says to skip the next
             //   IncrRefCnt
             vfoHdrPtrs.lpMemVar->SkipRefCntIncr = FALSE;
+        else
+            DbgStop ();
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;

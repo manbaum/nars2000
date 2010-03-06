@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -297,7 +297,8 @@ typedef struct tagFCNARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;               // 00:  Array header signature
     UINT             fnNameType:4,      // 04:  0000000F:  The type of the array (see NAME_TYPES)
-                     :28;               //      FFFFFFF0:  Available bits
+                     SkipRefCntIncr:1,  //      00000010:  Skip the next RefCnt increment
+                     :27;               //      FFFFFFE0:  Available bits
     UINT             RefCnt,            // 08:  Reference count
                      tknNELM;           // 0C:  # tokens in the array (each of which may point to additional arrays)
     HGLOBAL          hGlbTxtLine;       // 10:  Line text global memory handle (may be NULL)
@@ -315,6 +316,14 @@ typedef struct tagVARNAMED_HEADER
     APLNELM          NELM;              // 04:  # elements in the array (8 bytes)
                                         // 0C:  Length
 } VARNAMED_HEADER, *LPVARNAMED_HEADER;
+
+// Variable/Function/Operator Header ptrs union
+typedef union tagVFOHDRPTRS
+{
+    LPVOID            lpMemVFO;
+    LPVARARRAY_HEADER lpMemVar;
+    LPFCNARRAY_HEADER lpMemFcn;
+} VFOHDRPTRS, *LPVFOHDRPTRS;
 
 // Distinguish between immediate LPSYMENTRY and HGLOBAL in an array
 typedef enum tagPTR_TYPES

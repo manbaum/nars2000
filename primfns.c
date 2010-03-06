@@ -1754,7 +1754,10 @@ HGLOBAL CopyArray_EM
                         break;
 
                     case TKT_FCNARRAY:
-                        // Increment function array reference counts
+                        // Increment the reference count
+                        DbgIncrRefCntDir_PTB (lpMemFcn->tkToken.tkData.tkGlbData);
+
+                        // Increment function array item reference counts
                         IncrFcnTkn (&lpMemFcn->tkToken);
 
                         break;
@@ -2978,6 +2981,37 @@ UBOOL IsTknTypeNamedFcnOpr
 
 
 //***************************************************************************
+//  $IsTknTypeFcnOpr
+//
+//  Return TRUE iff the given token type is a fcn/opr
+//***************************************************************************
+
+UBOOL IsTknTypeFcnOpr
+    (TOKEN_TYPES tknType)
+
+{
+    // Split cases based upon the token type
+    switch (tknType)
+    {
+        case TKT_FCNNAMED:
+        case TKT_OP1NAMED:
+        case TKT_OP2NAMED:
+        case TKT_OP3NAMED:
+        case TKT_FCNIMMED:
+        case TKT_OP1IMMED:
+        case TKT_OP2IMMED:
+        case TKT_OP3IMMED:
+        case TKT_OPJOTDOT:
+        case TKT_FCNARRAY:
+            return TRUE;
+
+        default:
+            return FALSE;
+    } // End SWITCH
+} // End IsTknTypeFcnOpr
+
+
+//***************************************************************************
 //  $IsTknTypeNamedVar
 //
 //  Return TRUE iff the given token type is a named var
@@ -3061,73 +3095,85 @@ UBOOL IsTknImmed
 
 
 //***************************************************************************
-//  $SetVarArraySRCIFlag
+//  $SetVFOArraySRCIFlag
 //
-//  Set SkipRefCntIncr flag in a variable array.
+//  Set SkipRefCntIncr flag in a variable/function/operator array.
 //***************************************************************************
 
-void SetVarArraySRCIFlag
-    (LPTOKEN lptkVar)                   // Ptr to var token
+void SetVFOArraySRCIFlag
+    (LPTOKEN lptkVFO)                   // Ptr to var/fcn/opr token
 
 {
-    HGLOBAL           hGlbVar;
-    LPVARARRAY_HEADER lpMemVar;
+    HGLOBAL    hGlbVFO;
+    VFOHDRPTRS vfoHdrPtrs;
 
     // If the token is named and has no value, ...
-    if (IsTknTypeNamed (lptkVar->tkFlags.TknType)
-     && IsSymNoValue (lptkVar->tkData.tkSym))
+    if (IsTknTypeNamed (lptkVFO->tkFlags.TknType)
+     && IsSymNoValue (lptkVFO->tkData.tkSym))
         return;
 
     // Get the array's global ptrs (if any)
     //   and lock it
-    GetGlbPtrs_LOCK (lptkVar, &hGlbVar, &lpMemVar);
+    GetGlbPtrs_LOCK (lptkVFO, &hGlbVFO, &vfoHdrPtrs.lpMemVFO);
 
     // Is the array global?
-    if (hGlbVar)
+    if (hGlbVFO)
     {
-        // Set the flag which says to skip the next
-        //   IncrRefCnt
-        lpMemVar->SkipRefCntIncr = TRUE;
+        // If the array is a fcn/opr, ...
+        if (IsTknTypeFcnOpr (lptkVFO->tkFlags.TknType))
+            // Set the flag which says to skip the next
+            //   IncrRefCnt
+            vfoHdrPtrs.lpMemFcn->SkipRefCntIncr = TRUE;
+        else
+            // Set the flag which says to skip the next
+            //   IncrRefCnt
+            vfoHdrPtrs.lpMemVar->SkipRefCntIncr = TRUE;
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbVar); lpMemVar = NULL;
+        MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;
     } // End IF
-} // End SetVarArraySRCIFlag
+} // End SetVFOArraySRCIFlag
 
 
 //***************************************************************************
-//  $ClrVarArraySRCIFlag
+//  $ClrVFOArraySRCIFlag
 //
-//  Clear SkipRefCntIncr flag in a variable array.
+//  Clear SkipRefCntIncr flag in a variable/function/operator array.
 //***************************************************************************
 
-void ClrVarArraySRCIFlag
-    (LPTOKEN lptkVar)                   // Ptr to var token
+void ClrVFOArraySRCIFlag
+    (LPTOKEN lptkVFO)                   // Ptr to var/fcn/opr token
 
 {
-    HGLOBAL           hGlbVar;
-    LPVARARRAY_HEADER lpMemVar;
+    HGLOBAL    hGlbVFO;
+    VFOHDRPTRS vfoHdrPtrs;
 
     // If the token is named and has no value, ...
-    if (IsTknTypeNamed (lptkVar->tkFlags.TknType)
-     && IsSymNoValue (lptkVar->tkData.tkSym))
+    if (IsTknTypeNamed (lptkVFO->tkFlags.TknType)
+     && IsSymNoValue (lptkVFO->tkData.tkSym))
         return;
 
     // Get the array's global ptrs (if any)
     //   and lock it
-    GetGlbPtrs_LOCK (lptkVar, &hGlbVar, &lpMemVar);
+    GetGlbPtrs_LOCK (lptkVFO, &hGlbVFO, &vfoHdrPtrs.lpMemVFO);
 
     // Is the array global?
-    if (hGlbVar)
+    if (hGlbVFO)
     {
-        // Clear the flag which says to skip the next
-        //   IncrRefCnt
-        lpMemVar->SkipRefCntIncr = FALSE;
+        // If the array is a fcn/opr, ...
+        if (IsTknTypeFcnOpr (lptkVFO->tkFlags.TknType))
+            // Set the flag which says to skip the next
+            //   IncrRefCnt
+            vfoHdrPtrs.lpMemFcn->SkipRefCntIncr = FALSE;
+        else
+            // Set the flag which says to skip the next
+            //   IncrRefCnt
+            vfoHdrPtrs.lpMemVar->SkipRefCntIncr = FALSE;
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbVar); lpMemVar = NULL;
+        MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;
     } // End IF
-} // End ClrVarArraySRCIFlag
+} // End ClrVFOArraySRCIFlag
 
 
 //***************************************************************************

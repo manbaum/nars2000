@@ -419,14 +419,14 @@ void DisplayGlobals
                         // 2 = ...     all globals
 
 {
-    int          i;
-    HGLOBAL      hGlb;
-    LPVOID       lpMem;
-    APLDIM       aplDim;
-    LPVOID       lpData;
+    int          i;                 // Loop counter
+    HGLOBAL      hGlb;              // Current global memory handle
+    LPVOID       lpMem;             // Ptr to current global memory (static header)
+    APLDIM       aplDim;            // Dimension
+    LPVOID       lpData;            // Ptr to global memory data (dynamic data)
     APLCHAR      aplArrChar[1024];
-    LPAPLCHAR    lpAplChar;
-    LPAPLCHAR    lpwsz;
+    LPAPLCHAR    lpaplChar,         // Ptr to output save area
+                 lpwsz;
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
     IMM_TYPES    immType;           // Immediate type of the incoming array
@@ -630,17 +630,36 @@ void DisplayGlobals
                 // It's a valid HGLOBAL function array
                 Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlb)));
 
-                lpAplChar =
-                  DisplayFcnGlb (aplArrChar,        // Ptr to output save area
-                                 hGlb,              // Function array global memory handle
-                                 FALSE,             // TRUE iff we're to display the header
-                                 NULL,              // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
-                                 NULL);             // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                lpaplChar =
+                  DisplayFcnGlb (&aplArrChar[1],    // Ptr to output save area
+                                  hGlb,             // Function array global memory handle
+                                  FALSE,            // TRUE iff we're to display the header
+                                  NULL,             // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                                  NULL);            // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                 // Ensure properly terminated
-                *lpAplChar = WC_EOS;
+                *lpaplChar = WC_EOS;
+
+                // Surround with parens if not a Train
+                //   (already surrounded by parens)
+                if (lpHeader->fnNameType NE NAMETYPE_TRN)
+                {
+                    // Prepend a leading left paren
+                    aplArrChar[0] = L'(';
+
+                    // Append a trailing right paren
+                    *lpaplChar++ = L')';
+
+                    // Ensure properly terminated
+                    *lpaplChar = WC_EOS;
+
+                    // Point to leading left paren
+                    lpaplChar = &aplArrChar[0];
+                } else
+                    // Point to leading left paren
+                    lpaplChar = &aplArrChar[1];
 
                 wsprintfW (wszTemp,
-                           L"%shGlb=%p NType=%sNELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
+                           L"%shGlb=%p NType=%sNELM=%3d RC=%2d                 Lck=%d (%S#%4d) %s",
                            (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                            hGlb,
                            lpwNameTypeStr[lpHeader->fnNameType],
@@ -649,7 +668,7 @@ void DisplayGlobals
                            (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
                            lpaFileNameGLBALLOC[i],
                            auLinNumGLBALLOC[i],
-                           aplArrChar);
+                           lpaplChar);
                 DbgMsgW (wszTemp);
 
                 break;
@@ -1080,6 +1099,7 @@ LPWCHAR DisplayFcnGlb
     // Lock the memory to get a ptr to it
     lpHeader = MyGlobalLock (hGlbFcnArr);
 
+    // Get the NELM and NAMETYPE_xxx
     tknNELM    = lpHeader->tknNELM;
     fnNameType = lpHeader->fnNameType;
 
@@ -1137,10 +1157,13 @@ LPWCHAR DisplayFcnMem
         // Loop through the function array entries
         while (tknNELM--)
         {
+            // Back off to next item
+            lpMemFcnArr--;
+
             lpaplChar =
               DisplayFcnSub (lpaplChar,             // Ptr to output save area
-                           --lpMemFcnArr,           // Ptr to function array data
-                             1,                     // Token NELM
+                             lpMemFcnArr,           // Ptr to function array data
+                             lpMemFcnArr->TknCount, // Token NELM
                              lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbVarParm);  // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
             // Append visual separator
@@ -1177,13 +1200,14 @@ LPWCHAR DisplayFcnSub
      LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
 
 {
-    HGLOBAL  hGlbData;          // Function array global memory handle
-    LPVOID   lpMemData;         // Ptr to function array global memory
-    UINT     TknCount;          // Token count
-    UBOOL    bIsImmed;          // TRUE if the named var is an immediate
-    APLUINT  aplNELM,           // NELM of NUM/CHRSTRAND
-             uCnt;              // Loop counter
-    APLSTYPE aplType;           // The array storage type
+    HGLOBAL    hGlbData;        // Function array global memory handle
+    LPVOID     lpMemData;       // Ptr to function array global memory
+    UINT       TknCount;        // Token count
+    UBOOL      bIsImmed;        // TRUE if the named var is an immediate
+    APLUINT    aplNELM,         // NELM of NUM/CHRSTRAND
+               uCnt;            // Loop counter
+    APLSTYPE   aplType;         // The array storage type
+    NAME_TYPES fnNameType;      // Function array name type
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1516,12 +1540,19 @@ LPWCHAR DisplayFcnSub
             switch (GetSignatureMem (lpMemData))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
+                    // Get the NELM and NAMETYPE_xxx
+                    tknNELM    = ((LPFCNARRAY_HEADER) lpMemData)->tknNELM;
+                    fnNameType = ((LPFCNARRAY_HEADER) lpMemData)->fnNameType;
+
+                    // Skip over the header to the data
                     lpMemData = FcnArrayBaseToData (lpMemData);
 
+                    // Display the function array in global memory
                     lpaplChar =
-                      DisplayFcnSub (lpaplChar,             // Ptr to output save area
+                      DisplayFcnMem (lpaplChar,             // Ptr to output save area
                                      lpMemData,             // Ptr to function array data
                                      tknNELM,               // Token NELM
+                                     fnNameType,            // Function array name type
                                      lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
                                      lpSavedWsGlbVarParm);  // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                     break;

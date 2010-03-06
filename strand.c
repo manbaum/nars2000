@@ -1141,7 +1141,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     Assert (IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
 
                     // Clear the SkipRefCntIncr flag as it's no longer applicable
-                    ClrVarArraySRCIFlag (&lpYYToken->tkToken);
+                    ClrVFOArraySRCIFlag (&lpYYToken->tkToken);
 
                     // Copy the nested entry to the result, w/o incrementing the RefCnt
                     //   as it is a temp with no other reference whose value is passed on
@@ -1358,10 +1358,10 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // Calculate the # bytes we'll need for the header and data
     ByteRes = CalcFcnSize (uIniLen);
 
-    // Allocate global memory for the function array
-    // N.B.: Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+    // Allocate global memory for the function array
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
         goto WSFULL_EXIT;

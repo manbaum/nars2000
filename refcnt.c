@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -129,7 +129,20 @@ int ChangeRefCntDir_PTB
                         DbgStop ();
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
-                    lpHeader->RefCnt += iIncr;
+
+                    // If we're to skip this RefCnt increment, ...
+                    if (iIncr EQ 1
+                     && lpHeader->SkipRefCntIncr)
+                        // Clear the flag
+                        lpHeader->SkipRefCntIncr = FALSE;
+                    else
+                    {
+                        // Clear the flag
+                        lpHeader->SkipRefCntIncr = FALSE;
+
+                        lpHeader->RefCnt += iIncr;
+                    } // End IF/ELSE
+
                     RefCnt = lpHeader->RefCnt;
 #undef  lpHeader
                     break;

@@ -1555,6 +1555,7 @@ APLLONGEST GetGlbPtrs_LOCK
         case TKT_VARIMMED:
         case TKT_AXISIMMED:
         case TKT_LSTIMMED:
+        case TKT_FCNIMMED:
             *lphGlb  = NULL;
 
             if (lplpMem)

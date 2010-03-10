@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,45 +35,7 @@ UINT FcnTrans
     (WCHAR wchFcn)          // Function symbol
 
 {
-    // Split cases based upon the function symbol
-    switch (wchFcn)
-    {
-////////case UTF16_DOWNSTILE:               // 0x230A
-////////    return (UCHAR) wchFcn;          // Use the low-order byte
-
-        case UTF16_EPSILON:                 // 0x220A
-            return INDEX_EPSILON;           // Use special index
-
-////////case UTF16_STAR:                    // 0x002A
-////////    return (UCHAR) wchFcn;          // Use the low-order byte
-
-        case UTF16_DOWNSHOE:                // 0x222A
-            return INDEX_DOWNSHOE;          // Use special index
-
-////////case UTF16_EQUAL:                   // 0x003D
-////////    return (UCHAR) wchFcn;          // Use the low-order byte
-
-        case UTF16_CIRCLESTILE:             // 0x233D
-            return INDEX_CIRCLESTILE;       // Use special index
-
-////////case UTF16_QUERY:                   // 0x003F
-////////    return (UCHAR) wchFcn;          // Use the low-order byte
-
-        case UTF16_SLASHBAR:                // 0x233F
-            return INDEX_SLASHBAR;          // Use special index
-
-////////case UTF16_EQUALUNDERBAR:           // 0x2261
-////////    return (UCHAR) wchFcn;          // Use the low-order byte
-
-////////case UTF16_LEFTCARETUNDERBAR:       // 0x2264
-////////    return (UCHAR) wchFcn;          // Use the low-order byte
-
-////////case UTF16_RIGHTCARETUNDERBAR:      // 0x2265
-////////    return (UCHAR) wchFcn;          // Use the low-order byte
-
-        default:                            // All others
-            return (UCHAR) wchFcn;          // Use the low-order byte
-    } // End SWITCH
+    return (PRIMTAB_MASK & wchFcn);
 } // End FcnTrans
 
 
@@ -102,17 +64,12 @@ UINT OprTrans
         case UTF16_SLOPEBAR:                // 0x2340
             return INDEX_OPSLOPEBAR;        // Use special index
 
-        case UTF16_DIERESISDOWNTACK:        // 0x2361
-            return INDEX_DIERESISDOWNTACK;  // Use special index
-
-        case UTF16_DIERESISJOT:             // 0x2364
-            return INDEX_DIERESISJOT;       // Use special index
-
         case UTF16_JOTDOT:                  // 0x0001
             return INDEX_JOTDOT;            // Use special index
 
         default:                            // All others
-            return (UCHAR) wchOpr;          // Use the low-order byte
+            // Return the low-order bits
+            return (PRIMTAB_MASK & wchOpr);
     } // End SWITCH
 } // End OprTrans
 

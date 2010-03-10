@@ -38,8 +38,7 @@ LPPL_YYSTYPE PrimOpDieresisJot_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESISJOT
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_DIERESISJOT);
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESISJOT);
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))

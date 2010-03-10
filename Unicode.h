@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,22 +27,11 @@
 //   equates instead of the low-order byte of the corresponding UTF16_xxx
 //   so as to avoid a conflict.
 #define INDEX_JOTDOT             0x01           // Index for {jot}{dot}
-#define INDEX_EPSILON            0x02           // ...       {epsilon}
-#define INDEX_DOWNSHOE           0x03           // ...       {downshoe}
-#define INDEX_CIRCLESTILE        0x04           // ...       {circlestile}
-#define INDEX_SLASHBAR           0x05           // ...       {slashbar}
-///////                          0x06           // ...       {delta}
-///////                          0x07           // ...       {del}
-///////                          0x08           // ...       {upstile}
-#define INDEX_DIERESISJOT        0x09           // ...       {dieresisjot}
-///////                          0x0A           // ...       {epsilon}/{downstile}
-#define INDEX_DIERESISDOWNTACK   0x0B           // ...       {dieresisdowntack}
-#define INDEX_OPSLASH            0x0C           // ...       {slash} as an operator
-#define INDEX_OPSLASHBAR         0x0D           // ...       {slashbar} ...
-#define INDEX_OPSLOPE            0x0E           // ...       {slope}    ...
-#define INDEX_OPSLOPEBAR         0x0F           // ...       {slopebar} ...
-///////                          0x10-0x17      // (available)
-///////                          0x18           // ...       {jot}
+#define INDEX_OPSLASH            0x02           // ...       {slash} as an operator
+#define INDEX_OPSLASHBAR         0x03           // ...       {slashbar} ...
+#define INDEX_OPSLOPE            0x04           // ...       {slope}    ...
+#define INDEX_OPSLOPEBAR         0x05           // ...       {slopebar} ...
+///////                          0x06-0x18      // (available)
 
 // N.B.:  Whenever changing any of the UTF16_xxx symbol
 //   names below, be sure to make a corresponding change

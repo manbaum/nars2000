@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -536,42 +536,17 @@ APLCHAR TranslateFcnOprToChar
 
             return UTF16_JOT;
 
-        case INDEX_EPSILON:                     // 0x02           // ...       {epsilon}
-            return UTF16_EPSILON;
-
-        case INDEX_DOWNSHOE:                    // 0x03           // ...       {downshoe}
-            return UTF16_DOWNSHOE;
-
-        case INDEX_CIRCLESTILE:                 // 0x04           // ...       {circlestile}
-            return UTF16_CIRCLESTILE;
-
-        case INDEX_SLASHBAR:                    // 0x05           // ...       {slashbar}
-            return UTF16_SLASHBAR;
-
-////////case                                    // 0x06           // ...       {delta}
-////////case                                    // 0x07           // ...       {del}
-////////case                                    // 0x08           // ...       {upstile}
-        case INDEX_DIERESISJOT:                 // 0x09           // ...       {dieresisjot}
-            return UTF16_DIERESISJOT;
-
-////////case                                    // 0x0A           // ...       {epsilon}/{downstile}
-        case INDEX_DIERESISDOWNTACK:            // 0x0B           // ...       {dieresisdowntack}
-            return UTF16_DIERESISDOWNTACK;
-
-        case INDEX_OPSLASH:                     // 0x0C           // ...       {slash} as an operator
+        case INDEX_OPSLASH:                     // 0x02           // ...       {slash} as an operator
             return UTF16_SLASH;
 
-        case INDEX_OPSLASHBAR:                  // 0x0D           // ...       {slashbar} ...
+        case INDEX_OPSLASHBAR:                  // 0x03           // ...       {slashbar} ...
             return UTF16_SLASHBAR;
 
-        case INDEX_OPSLOPE:                     // 0x0E           // ...       {slope}    ...
+        case INDEX_OPSLOPE:                     // 0x04           // ...       {slope}    ...
             return UTF16_SLOPE;
 
-        case INDEX_OPSLOPEBAR:                  // 0x0F           // ...       {slopebar} ...
+        case INDEX_OPSLOPEBAR:                  // 0x05           // ...       {slopebar} ...
             return UTF16_SLOPEBAR;
-
-////////case                                    // 0x10-0x17      // (available)
-////////case                                    // 0x18           // ...       {jot}
 
         default:
             return fcnOpr;

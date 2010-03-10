@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -229,7 +229,7 @@ void InitPrimFns
     InitPrimFn (UTF16_UPTACK            , &PrimFnUpTack_EM_YY            ); // Alt-'b' - up tack
     InitPrimFn (UTF16_UPSHOE            , &PrimFnUpShoe_EM_YY            ); // Alt-'c' - up shoe
     InitPrimFn (UTF16_DOWNSTILE         , &PrimFnDownStile_EM_YY         ); // Alt-'d' - down stile
-    InitPrimFn (INDEX_EPSILON           , &PrimFnEpsilon_EM_YY           ); // Alt-'e' - epsilon
+    InitPrimFn (UTF16_EPSILON           , &PrimFnEpsilon_EM_YY           ); // Alt-'e' - epsilon
 ////                                                                        // Alt-'f' - infinity
 ////                                                                        // Alt-'g' - del
 ////                                                                        // Alt-'h' - delta
@@ -246,7 +246,7 @@ void InitPrimFns
     InitPrimFn (UTF16_UPSTILE           , &PrimFnUpStile_EM_YY           ); // Alt-'s' - up stile
     InitPrimFn (UTF16_TILDE             , &PrimFnTilde_EM_YY             ); // Alt-'t' - tilde
     InitPrimFn (UTF16_DOWNARROW         , &PrimFnDownArrow_EM_YY         ); // Alt-'u' - down arrow
-    InitPrimFn (INDEX_DOWNSHOE          , &PrimFnDownShoe_EM_YY          ); // Alt-'v' - down shoe
+    InitPrimFn (UTF16_DOWNSHOE          , &PrimFnDownShoe_EM_YY          ); // Alt-'v' - down shoe
     InitPrimFn (UTF16_OMEGA             , &PrimFnOmega_EM_YY             ); // Alt-'w' - omega
     InitPrimFn (UTF16_RIGHTSHOE         , &PrimFnRightShoe_EM_YY         ); // Alt-'x' - right shoe
     InitPrimFn (UTF16_UPARROW           , &PrimFnUpArrow_EM_YY           ); // Alt-'y' - up arrow
@@ -255,7 +255,7 @@ void InitPrimFns
 ////                                                                        // Alt-'"' - (none)
     InitPrimFn (UTF16_DELSTILE          , &PrimFnDelStile_EM_YY          ); // Alt-'#' - grade-down
     InitPrimFn (UTF16_DELTASTILE        , &PrimFnDeltaStile_EM_YY        ); // Alt-'$' - grade-up
-    InitPrimFn (INDEX_CIRCLESTILE       , &PrimFnCircleStile_EM_YY       ); // Alt-'%' - rotate
+    InitPrimFn (UTF16_CIRCLESTILE       , &PrimFnCircleStile_EM_YY       ); // Alt-'%' - rotate
     InitPrimFn (UTF16_CIRCLESLOPE       , &PrimFnCircleSlope_EM_YY       ); // Alt-'^' - transpose
     InitPrimFn (UTF16_CIRCLEBAR         , &PrimFnCircleBar_EM_YY         ); // Alt-'&' - circle-bar
     InitPrimFn (UTF16_UPTACKJOT         , &PrimFnUpTackJot_EM_YY         ); // Alt-'\''- execute
@@ -266,7 +266,7 @@ void InitPrimFns
 ////                                                                        // Alt-',' - lamp
     InitPrimFn (UTF16_TIMES             , &PrimFnTimes_EM_YY             ); // Alt-'-' - times
     InitPrimFn (UTF16_SLOPEBAR          , &PrimFnSlopeBar_EM_YY          ); // Alt-'.' - slope-bar
-    InitPrimFn (INDEX_SLASHBAR          , &PrimFnSlashBar_EM_YY          ); // Alt-'/' - slash-bar
+    InitPrimFn (UTF16_SLASHBAR          , &PrimFnSlashBar_EM_YY          ); // Alt-'/' - slash-bar
     InitPrimFn (UTF16_UPCARET           , &PrimFnUpCaret_EM_YY           ); // Alt-'0' - and (94??)
     InitPrimFn (UTF16_DIERESIS          , (LPPRIMFNS) -1                 ); // Alt-'1' - dieresis
 ////                                                                        // Alt-'2' - overbar
@@ -293,11 +293,11 @@ void InitPrimFns
     InitPrimFn (UTF16_DIERESISDEL       , (LPPRIMFNS) -1                 ); // Alt-'G' - dieresis-del (dual)
 ////                                                                        // Alt-'H' - delta-underbar
     InitPrimFn (UTF16_IOTAUNDERBAR      , &PrimFnIotaUnderbar_EM_YY      ); // Alt-'I' - iota-underbar
-    InitPrimFn (INDEX_DIERESISJOT       , (LPPRIMFNS) -1                 ); // Alt-'J' - dieresis-jot (rank)
+    InitPrimFn (UTF16_DIERESISJOT       , (LPPRIMFNS) -1                 ); // Alt-'J' - dieresis-jot (rank)
 ////                                                                        // Alt-'K' - (none)
     InitPrimFn (UTF16_SQUAD             , &PrimFnSquad_EM_YY             ); // Alt-'L' - squad
     InitPrimFn (UTF16_STILETILDE        , (LPPRIMFNS) -1                 ); // Alt-'M' - stile-tilde (partition)
-    InitPrimFn (INDEX_DIERESISDOWNTACK  , (LPPRIMFNS) -1                 ); // Alt-'N' - dieresis-downtack (convolution)
+    InitPrimFn (UTF16_DIERESISDOWNTACK  , (LPPRIMFNS) -1                 ); // Alt-'N' - dieresis-downtack (convolution)
 ////                                                                     ); // Alt-'O' - (none)
     InitPrimFn (UTF16_DIERESISSTAR      , (LPPRIMFNS) -1                 ); // Alt-'P' - dieresis-star (power)
 ////                                                                        // Alt-'Q' - (none)
@@ -343,10 +343,10 @@ void InitPrimFn
      LPPRIMFNS lpPrimFn)
 
 {
-    if (PrimFnsTab[(UCHAR) wchFn])
+    if (PrimFnsTab[PRIMTAB_MASK & wchFn])
         DbgStop ();
     else
-        PrimFnsTab[(UCHAR) wchFn] = lpPrimFn;
+        PrimFnsTab[PRIMTAB_MASK & wchFn] = lpPrimFn;
 } // End InitPrimFn
 
 
@@ -494,7 +494,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_UPTACK            , &PrimProtoFnUpTack_EM_YY            );   // Alt-'b' - up tack
     InitPrimProtoFn (UTF16_UPSHOE            , &PrimProtoFnUpShoe_EM_YY            );   // Alt-'c' - up shoe
     InitPrimProtoFn (UTF16_DOWNSTILE         , &PrimProtoFnDownStile_EM_YY         );   // Alt-'d' - down stile
-    InitPrimProtoFn (INDEX_EPSILON           , &PrimProtoFnEpsilon_EM_YY           );   // Alt-'e' - epsilon
+    InitPrimProtoFn (UTF16_EPSILON           , &PrimProtoFnEpsilon_EM_YY           );   // Alt-'e' - epsilon
 ////                                                                                    // Alt-'f' - infinity
 ////                                                                                    // Alt-'g' - del
 ////                                                                                    // Alt-'h' - delta
@@ -511,7 +511,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_UPSTILE           , &PrimProtoFnUpStile_EM_YY           );   // Alt-'s' - up stile
     InitPrimProtoFn (UTF16_TILDE             , &PrimProtoFnTilde_EM_YY             );   // Alt-'t' - tilde
     InitPrimProtoFn (UTF16_DOWNARROW         , &PrimProtoFnDownArrow_EM_YY         );   // Alt-'u' - down arrow
-    InitPrimProtoFn (INDEX_DOWNSHOE          , &PrimProtoFnDownShoe_EM_YY          );   // Alt-'v' - down shoe
+    InitPrimProtoFn (UTF16_DOWNSHOE          , &PrimProtoFnDownShoe_EM_YY          );   // Alt-'v' - down shoe
     InitPrimProtoFn (UTF16_OMEGA             , &PrimProtoFnOmega_EM_YY             );   // Alt-'w' - omega
     InitPrimProtoFn (UTF16_RIGHTSHOE         , &PrimProtoFnRightShoe_EM_YY         );   // Alt-'x' - right shoe
     InitPrimProtoFn (UTF16_UPARROW           , &PrimProtoFnUpArrow_EM_YY           );   // Alt-'y' - up arrow
@@ -520,7 +520,7 @@ void InitPrimProtoFns
 ////                                                                                    // Alt-'"' - (none)
     InitPrimProtoFn (UTF16_DELSTILE          , &PrimProtoFnDelStile_EM_YY          );   // Alt-'#' - grade-down
     InitPrimProtoFn (UTF16_DELTASTILE        , &PrimProtoFnDeltaStile_EM_YY        );   // Alt-'$' - grade-up
-    InitPrimProtoFn (INDEX_CIRCLESTILE       , &PrimProtoFnCircleStile_EM_YY       );   // Alt-'%' - rotate
+    InitPrimProtoFn (UTF16_CIRCLESTILE       , &PrimProtoFnCircleStile_EM_YY       );   // Alt-'%' - rotate
     InitPrimProtoFn (UTF16_CIRCLESLOPE       , &PrimProtoFnCircleSlope_EM_YY       );   // Alt-'^' - transpose
     InitPrimProtoFn (UTF16_CIRCLEBAR         , &PrimProtoFnCircleBar_EM_YY         );   // Alt-'&' - circle-bar
     InitPrimProtoFn (UTF16_UPTACKJOT         , &PrimProtoFnUpTackJot_EM_YY         );   // Alt-'\''- execute
@@ -532,7 +532,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_TIMES             , &PrimProtoFnTimes_EM_YY             );   // Alt-'-' - times
     InitPrimProtoFn (UTF16_SLOPEBAR          , &PrimProtoFnSlopeBar_EM_YY          );   // Alt-'.' - slope-bar as Function
     InitPrimProtoOp (INDEX_OPSLOPEBAR        , &PrimProtoOpSlopeBar_EM_YY          );   // Alt-'.' - ...          Operator
-    InitPrimProtoFn (INDEX_SLASHBAR          , &PrimProtoFnSlashBar_EM_YY          );   // Alt-'/' - slash-bar as Function
+    InitPrimProtoFn (UTF16_SLASHBAR          , &PrimProtoFnSlashBar_EM_YY          );   // Alt-'/' - slash-bar as Function
     InitPrimProtoOp (INDEX_OPSLASHBAR        , &PrimProtoOpSlashBar_EM_YY          );   // Alt-'/' - ...          Operator
     InitPrimProtoFn (UTF16_UPCARET           , &PrimProtoFnUpCaret_EM_YY           );   // Alt-'0' - and (94??)
     InitPrimProtoOp (UTF16_DIERESIS          , &PrimProtoOpDieresis_EM_YY          );   // Alt-'1' - dieresis
@@ -560,11 +560,11 @@ void InitPrimProtoFns
     InitPrimProtoOp (UTF16_DIERESISDEL       , &PrimProtoOpDieresisDel_EM_YY       );   // Alt-'G' - dieresis-del (dual)
 ////                                                                                    // Alt-'H' - delta-underbar
     InitPrimProtoFn (UTF16_IOTAUNDERBAR      , &PrimProtoFnIotaUnderbar_EM_YY      );   // Alt-'I' - iota-underbar
-    InitPrimProtoOp (INDEX_DIERESISJOT       , &PrimProtoOpDieresisJot_EM_YY       );   // Alt-'J' - dieresis-jot (rank)
+    InitPrimProtoOp (UTF16_DIERESISJOT       , &PrimProtoOpDieresisJot_EM_YY       );   // Alt-'J' - dieresis-jot (rank)
 ////                                                                                    // Alt-'K' - (none)
     InitPrimProtoFn (UTF16_SQUAD             , &PrimProtoFnSquad_EM_YY             );   // Alt-'L' - squad
     InitPrimProtoOp (UTF16_STILETILDE        , &PrimProtoOpStileTilde_EM_YY        );   // Alt-'M' - stile-tilde (partition)
-    InitPrimProtoOp (INDEX_DIERESISDOWNTACK  , &PrimProtoOpDieresisDownTack_EM_YY  );   // Alt-'N' - dieresis-downtack (convolution)
+    InitPrimProtoOp (UTF16_DIERESISDOWNTACK  , &PrimProtoOpDieresisDownTack_EM_YY  );   // Alt-'N' - dieresis-downtack (convolution)
 ////                                                                                    // Alt-'O' - (none)
     InitPrimProtoOp (UTF16_DIERESISSTAR      , &PrimProtoOpDieresisStar_EM_YY      );   // Alt-'P' - dieresis-star (power)
 ////                                                                                    // Alt-'Q' - (none)
@@ -612,10 +612,10 @@ void InitPrimProtoFn
      LPPRIMFNS lpPrimFn)
 
 {
-    if (PrimProtoFnsTab[(UCHAR) wchFn])
+    if (PrimProtoFnsTab[PRIMTAB_MASK & wchFn])
         DbgStop ();
     else
-        PrimProtoFnsTab[(UCHAR) wchFn] = lpPrimFn;
+        PrimProtoFnsTab[PRIMTAB_MASK & wchFn] = lpPrimFn;
 } // End InitPrimProtoFn
 
 
@@ -630,7 +630,7 @@ void InitPrimProtoOp
      LPPRIMOPS lpPrimOp)
 
 {
-    if (PrimProtoFnsTab[(UCHAR) wchFn])
+    if (PrimProtoFnsTab[PRIMTAB_MASK & wchFn])
         DbgStop ();
     else
         // Note the white lie we tell here (LPPRIMFNS) instead of
@@ -640,7 +640,7 @@ void InitPrimProtoOp
         //   to the primitive function token.  When the prototype
         //   function for a primitive operator is called, the same
         //   parameter is a ptr to the function strand.
-        PrimProtoFnsTab[(UCHAR) wchFn] = (LPPRIMFNS) lpPrimOp;
+        PrimProtoFnsTab[PRIMTAB_MASK & wchFn] = (LPPRIMFNS) lpPrimOp;
 } // End InitPrimProtoOp
 
 
@@ -746,10 +746,10 @@ void InitPrimSpec
      LPPRIMSPEC lpPrimSpec)
 
 {
-    if (PrimSpecTab[(UCHAR) wchFn])
+    if (PrimSpecTab[PRIMTAB_MASK & wchFn])
         DbgStop ();
     else
-        PrimSpecTab[(UCHAR) wchFn] = lpPrimSpec;
+        PrimSpecTab[PRIMTAB_MASK & wchFn] = lpPrimSpec;
 } // End InitPrimSpec
 
 
@@ -820,7 +820,7 @@ void InitPrimFlag
      UINT  uFlag)
 
 {
-    *((WORD *) &PrimFlags[(UCHAR) wchFn]) |= uFlag;
+    *((WORD *) &PrimFlags[PRIMTAB_MASK & wchFn]) |= uFlag;
 } // End InitPrimFlag
 
 

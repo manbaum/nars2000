@@ -1069,7 +1069,7 @@ LPPL_YYSTYPE ExecOp2_EM_YY
 
             return NULL;
 
-        case INDEX_DIERESISJOT:     // Rank (as dyadic op)
+        case UTF16_DIERESISJOT:     // Rank (as dyadic op)
             return PrimOpDieresisJot_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
                                             lpYYFcnStrOpr,  // Ptr to operator function strand
                                             lptkRhtArg);    // Ptr to right arg token

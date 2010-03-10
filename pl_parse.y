@@ -9304,11 +9304,6 @@ PL_YYLEX_START:
             // Split cases based upon the operator symbol
             switch (lpYYLval->tkToken.tkData.tkChar)
             {
-                case UTF16_DIERESISJOT:
-                    lpYYLval->tkToken.tkData.tkChar = INDEX_DIERESISJOT;
-
-                    break;
-
                 case UTF16_JOT:
                     // If either the next or previous token is OP2NAMED,
                     //   or the previous token is OP1NAMED, ...

@@ -339,14 +339,17 @@ LPWCHAR lpwObjNameStr[]
 //  Primitive function and operator tables
 //***************************************************************************
 
-EXTERN
-LPPRIMFNS PrimFnsTab[256];              // The jump table for all primitive functions
+#define PRIMTAB_MASK    0x3FF
+#define PRIMTAB_LEN     (PRIMTAB_MASK + 1)
 
 EXTERN
-LPPRIMFNS PrimProtoFnsTab[256];         // The jump table for all primitive functions/operator prototypes
+LPPRIMFNS PrimFnsTab[PRIMTAB_LEN];      // The jump table for all primitive functions
 
 EXTERN
-LPPRIMSPEC PrimSpecTab[256];            // The table of corresponding LPPRIMSPECs
+LPPRIMFNS PrimProtoFnsTab[PRIMTAB_LEN]; // The jump table for all primitive functions/operator prototypes
+
+EXTERN
+LPPRIMSPEC PrimSpecTab[PRIMTAB_LEN];    // The table of corresponding LPPRIMSPECs
                                         //   for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
@@ -368,7 +371,7 @@ PRIMFLAGS PrimFlags0                    // All zero PrimFlags for global R/O use
  = {0}
 #endif
 ,
-          PrimFlags[256];               // The flag tables for all primitive functions/operators
+          PrimFlags[PRIMTAB_LEN];       // The flag tables for all primitive functions/operators
 
 
 //***************************************************************************

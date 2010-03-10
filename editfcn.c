@@ -356,9 +356,7 @@ LRESULT APIENTRY FEWndProc
             //    Redo entries are between _NXT and _LST[-1], inclusive.
 
             // Allocate virtual memory for the Undo Buffer
-#ifdef DEBUG
             lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].lpText   = "lpUndoBeg in <FEWndProc>";
-#endif
             lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].IncrSize = DEF_UNDOBUF_INCRNELM * sizeof (UNDO_BUF);
             lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].MaxSize  = DEF_UNDOBUF_MAXNELM  * sizeof (UNDO_BUF);
             lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].IniAddr  = (LPUCHAR)
@@ -2828,13 +2826,13 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // We no longer need this ptr
                 GlobalUnlock (hGlbClip); lpMemClip = NULL;
 
-                    // Append the undo action (delete inserted (pasted) chars)
-                    AppendUndo (hWndParent,                     // SM/FE Window handle
+                // Append the undo action (delete inserted (pasted) chars)
+                AppendUndo (hWndParent,                     // SM/FE Window handle
                             GWLSF_UNDO_NXT,                 // Offset in hWnd extra bytes of lpUndoNxt
-                                undoDel,                        // Action
-                                uCharPosBeg,                    // Beginning char position
+                            undoDel,                        // Action
+                            uCharPosBeg,                    // Beginning char position
                             uCharPosEnd,                    // Ending    ...
-                                uGroupIndex,                    // Group index
+                            uGroupIndex,                    // Group index
                             0);                             // Character
             } // End IF
 
@@ -4503,9 +4501,7 @@ LPSYMENTRY ParseFunctionName
         goto ERROR_EXIT;
 
     // Allocate virtual memory for the Variable Strand accumulator
-#ifdef DEBUG
     lclMemVirtStr[0].lpText   = "fhLocalvars.lpYYStrandStart in <ParseFunctionName>";
-#endif
     lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)

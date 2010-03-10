@@ -210,9 +210,9 @@ HGLOBAL Init1MagicFunction
         {
             // Check on Start < End
             Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
-#ifdef DEBUG
+
             lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpHshTab in <Init1MagicFunction>";
-#endif
+
             // Allocate virtual memory for the hash table
             if (!AllocHshTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
                                lpInitMFO->lpHTS,                                            // Ptr ot this HSHTABSTR
@@ -227,9 +227,9 @@ HGLOBAL Init1MagicFunction
         {
             // Check on Start < End
             Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
-#ifdef DEBUG
+
             lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpSymTab in <Init1MagicFunction>";
-#endif
+
             // Allocate virtual memory for the symbol table
             if (!AllocSymTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
                                lpMemPTD,                                                    // PerTabData global memory handle
@@ -340,9 +340,7 @@ HGLOBAL Init1MagicFunction
     } // End IF
 
     // Allocate virtual memory for the Variable Strand accumulator
-#ifdef DEBUG
     lclMemVirtStr[0].lpText   = "fhLocalVars.lpYYStrandStart in <Init1MagicFunction>";
-#endif
     lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)

@@ -234,9 +234,7 @@ UBOOL DisplayGlbArr_EM
     uQuadPW = GetQuadPW ();
 
     // Allocate space for the display
-#ifdef DEBUG
     lclMemVirtStr[0].lpText   = "lpaplCharIni in <DisplayGlbArr_EM>";
-#endif
     lclMemVirtStr[0].IncrSize = DEF_DISPLAY_INCRNELM * sizeof (APLCHAR);
     lclMemVirtStr[0].MaxSize  = DEF_DISPLAY_MAXNELM  * sizeof (APLCHAR);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)

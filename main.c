@@ -1,10 +1,10 @@
 //***************************************************************************
-//  NARS2000 -- Free Software APL Interpreter
+//  NARS2000 -- Free Open Source Software APL Interpreter
 //***************************************************************************
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -600,7 +600,7 @@ void CreateNewFontCom
     // Create the font
     *lphFont = MyCreateFontIndirectW (lplf);
 
-    // Get a new device context or use the give one
+    // Get a new device context or use the given one
     hDCTmp = hDC ? hDC : MyGetDC (HWND_DESKTOP);
 
     // Set the mapping mode
@@ -641,7 +641,7 @@ void CreateNewFontCom
     if (lpcyAveChar)
         *lpcyAveChar = lptm->tmHeight;
 
-    // Now that we've caclulated the correct height & width,
+    // Now that we've calculated the correct height & width,
     //   delete the font and re-create it
     MyDeleteObject (*lphFont); *lphFont = NULL;
 
@@ -1315,6 +1315,7 @@ LRESULT APIENTRY MFWndProc
 ////                           IDC_HELP2,        IDH_HELP2,
 ////                           0,             0,
 ////                          };
+
 ////LCLODSAPI ("MF: ", hWnd, message, wParam, lParam);
     switch (message)
     {
@@ -1391,7 +1392,7 @@ LRESULT APIENTRY MFWndProc
             // Initialize window-specific resources
             MF_Create (hWnd);
 
-            // Load a CLEAR WS or the worksapce named on the command line
+            // Load a CLEAR WS or the workspace named on the command line
             if (!CreateNewTab (hWnd,
                                wszLoadFile,
                                TabCtrl_GetItemCount (hWndTC),
@@ -1465,8 +1466,8 @@ LRESULT APIENTRY MFWndProc
                 // Calculate the display rectangle, assuming the
                 // tab control is the size of the client area.
                 SetRect (&rc,
-                         0, 0,
-                         LOWORD (lParam), HIWORD (lParam));
+                          0, 0,
+                          LOWORD (lParam), HIWORD (lParam));
                 // Run through all tabs (and hence all MDI Client Windows)
                 uTabCnt = TabCtrl_GetItemCount (hWndTC);
 
@@ -1613,9 +1614,9 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;
                 } // End TTN_NEEDTEXTW
 
-                case TCN_SELCHANGING:   // idTabCtl = (int) LOWORD(wParam);
-                                        // lpnmhdr = (LPNMHDR) lParam;
-                    DestroyCaret ();    // 'cause we just lost the focus
+                case TCN_SELCHANGING:       // idTabCtl = (int) LOWORD(wParam);
+                                            // lpnmhdr = (LPNMHDR) lParam;
+                    DestroyCaret ();        // 'cause we just lost the focus
 
                     // If the user clicked on the close button,
                     //   disallow this change so as to avoid
@@ -1627,8 +1628,8 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;
 
-                case TCN_SELCHANGE:     // idTabCtl = (int) LOWORD(wParam);
-                                        // lpnmhdr = (LPNMHDR) lParam;
+                case TCN_SELCHANGE:         // idTabCtl = (int) LOWORD(wParam);
+                                            // lpnmhdr = (LPNMHDR) lParam;
                 {
                     int iCurTabIndex,       // Index of the current tab
                         iLstTabIndex;       // Index of the previous tab
@@ -3020,9 +3021,7 @@ UBOOL InitInstance
     //***************************************************************
     // Allocate virtual memory for the WCHAR temporary storage
     //***************************************************************
-#ifdef DEBUG
     memVirtStr[MEMVIRT_WSZGLBTEMP].lpText   = "lpwszGlbTemp in <InitInstance>";
-#endif
     memVirtStr[MEMVIRT_WSZGLBTEMP].IncrSize = DEF_WGLBTEMP_INCRNELM * sizeof (WCHAR);
     memVirtStr[MEMVIRT_WSZGLBTEMP].MaxSize  = DEF_WGLBTEMP_MAXNELM  * sizeof (WCHAR);
     memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr  = (LPUCHAR)
@@ -3048,9 +3047,7 @@ UBOOL InitInstance
     //***************************************************************
     // Allocate virtual memory for the HshTab for {symbol} names & values
     //***************************************************************
-#ifdef DEBUG
     memVirtStr[MEMVIRT_GLBHSHTAB].lpText   = "htsGLB.lpHshTab in <InitInstance>";
-#endif
     memVirtStr[MEMVIRT_GLBHSHTAB].IncrSize = DEF_GLBHSHTAB_INCRNELM * sizeof (htsGLB.lpHshTab[0]);
     memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize  = DEF_GLBHSHTAB_MAXNELM  * sizeof (htsGLB.lpHshTab[0]);
     memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr  = (LPUCHAR)

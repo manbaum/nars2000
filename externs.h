@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1049,17 +1049,13 @@ typedef enum tagMEMVIRTENUM
 
 typedef struct tagMEMVIRTSTR
 {
-    MVS     *lpPrvMVS,                  // 00:  Ptr to previous link (NULL = none)
-            *lpNxtMVS;                  // 04:  Ptr to next     ...
+    MVS    *lpPrvMVS,                   // 00:  Ptr to previous link (NULL = none)
+           *lpNxtMVS;                   // 04:  Ptr to next     ...
     LPUCHAR IniAddr;                    // 08:  Initial address
     UINT    IncrSize,                   // 0C:  Incremental size in bytes
             MaxSize;                    // 10:  Maximum     ...
-#ifdef DEBUG
     LPCHAR  lpText;                     // 14:  Ptr to (const) description of this item
                                         // 18:  Length
-#else
-                                        // 14:  Length
-#endif
 } MEMVIRTSTR, *LPMEMVIRTSTR;
 
 EXTERN
@@ -1413,6 +1409,7 @@ typedef struct
 //     ' Single Quote             Alt-'k'
 //     | Stile                    Alt-'m'
 //     ~ Tilde                    Alt-'t'
+//     _ Underbar                 Alt-'f'
 //     ^ Up Caret (Circumflex)    Alt-'0'
 
 EXTERN
@@ -1422,7 +1419,7 @@ CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
 =
 {
 //Nrm Alt
-{' ', 0                       },  // Space             32
+{' ', L' '                    },  // Space             32
 {'!', UTF16_EQUALUNDERBAR     },  // Quote-dot         33
 {'"', 0                       },  // Quotation mark    34
 {'#', UTF16_DELSTILE          },  // Number sign       35

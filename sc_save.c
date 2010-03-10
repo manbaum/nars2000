@@ -487,8 +487,20 @@ UBOOL CmdSave_EM
         // Clean up after )SAVE
         CleanupAfterSave (lpMemPTD, lpMemCnt, lpMemSaveWSID, uGlbCnt);
 
-        // Display message for unhandled exception
-        DisplayException ();
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
+        {
+            case EXCEPTION_LIMIT_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto LIMIT_EXIT;
+
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+        } // End SWITCH
     } // End __try/__except
 
     // Delete the FMTSTR_GLBOBJ=FMTSTR_GLBCNT references in the [Globals] section
@@ -571,6 +583,12 @@ UBOOL CmdSave_EM
 WSFULL_EXIT:
     // Display the error message
     ReplaceLastLineCRPmt (ERRMSG_WS_FULL APPEND_NAME);
+
+    goto ERROR_EXIT;
+
+LIMIT_EXIT:
+    // Display the error message
+    ReplaceLastLineCRPmt (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
     goto ERROR_EXIT;
 

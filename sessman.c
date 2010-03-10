@@ -779,9 +779,7 @@ WM_NCCREATE_FAIL:
             // *************** []ERROR/[]ES ****************************
 
             // Allocate virtual memory for the []ERROR/[]ES buffer
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].lpText   = "lpMemPTD->lpwszQuadErrorMsg in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IncrSize = DEF_QUADERROR_INCRNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
             lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize  = DEF_QUADERROR_MAXNELM  * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
             lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr  = (LPVOID)
@@ -815,9 +813,7 @@ WM_NCCREATE_FAIL:
             // *********************************************************
 
             // Allocate virtual memory for the Undo Buffer
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].lpText   = "lpUndoBeg in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IncrSize = DEF_UNDOBUF_INCRNELM * sizeof (UNDO_BUF);
             lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].MaxSize  = DEF_UNDOBUF_MAXNELM  * sizeof (UNDO_BUF);
             lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IniAddr  = (LPVOID)
@@ -883,9 +879,8 @@ WM_NCCREATE_FAIL:
 
             // *************** htsPTD.lpHshTab *************************
 
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].lpText = "lpMemPTD->htsPTD.lpHshTab in <SMWndProc>";
-#endif
+
             // Allocate virtual memory for the hash table
             bRet = AllocHshTab (&lpLclMemVirtStr[PTDMEMVIRT_HSHTAB],    // Ptr to this entry in MemVirtStr
                                 &lpMemPTD->htsPTD,                      // Ptr to this HSHTABSTR
@@ -902,9 +897,8 @@ WM_NCCREATE_FAIL:
 
             // *************** htsPTD.lpSymTab *************************
 
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].lpText = "lpMemPTD->htsPTD.lpSymTab in <SMWndProc>";
-#endif
+
             // Allocate virtual memory for the symbol table
             bRet = AllocSymTab (&lpLclMemVirtStr[PTDMEMVIRT_SYMTAB],    // Ptr to this entry in MemVirtStr
                                  lpMemPTD,                              // Ptr to PerTabData global memory
@@ -924,9 +918,7 @@ WM_NCCREATE_FAIL:
             // *************** State Indicator Stack *******************
 
             // Allocate virtual memory for the State Indicator Stack
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_SIS].lpText   = "lpMemPTD->lpSISBeg in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_SIS].IncrSize = DEF_SIS_INCRNELM * sizeof (SYMENTRY);
             lpLclMemVirtStr[PTDMEMVIRT_SIS].MaxSize  = DEF_SIS_MAXNELM  * sizeof (SYMENTRY);
             lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr  = (LPVOID)
@@ -955,9 +947,7 @@ WM_NCCREATE_FAIL:
             // *************** Control Structure Stack *****************
 
             // Allocate virtual memory for the Control Structure Stack
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_CS].lpText   = "lpMemPTD->lptkCSIni in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_CS].IncrSize = DEF_CS_INCRNELM * sizeof (TOKEN);
             lpLclMemVirtStr[PTDMEMVIRT_CS].MaxSize  = DEF_CS_MAXNELM  * sizeof (TOKEN);
             lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr  = (LPVOID)
@@ -986,9 +976,7 @@ WM_NCCREATE_FAIL:
             // *************** YYRes Buffer ****************************
 
             // Allocate virtual memory for the YYRes buffer
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_YYRES].lpText   = "lpMemPTD->lpYYRes in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_YYRES].IncrSize = DEF_YYRES_INCRNELM * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_YYRES].MaxSize  = DEF_YYRES_MAXNELM  * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr  = (LPVOID)
@@ -1021,9 +1009,7 @@ WM_NCCREATE_FAIL:
             //***************************************************************
             // Allocate virtual memory for the VAR strand accumulator
             //***************************************************************
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].lpText   = "lpMemPTD->lpStrand[STRAND_VAR] in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr  = (LPVOID)
@@ -1051,9 +1037,7 @@ WM_NCCREATE_FAIL:
             //***************************************************************
             // Allocate virtual memory for the FCN strand accumulator
             //***************************************************************
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].lpText   = "lpMemPTD->lpStrand[STRAND_FCN] in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr  = (LPVOID)
@@ -1082,9 +1066,7 @@ WM_NCCREATE_FAIL:
             //***************************************************************
             // Allocate virtual memory for the LST strand accumulator
             //***************************************************************
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].lpText   = "lpMemPTD->lpStrand[STRAND_LST] in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IniAddr  = (LPVOID)
@@ -1113,9 +1095,7 @@ WM_NCCREATE_FAIL:
             //***************************************************************
             // Allocate virtual memory for the NAM strand accumulator
             //***************************************************************
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].lpText   = "lpMemPTD->lpStrand[STRAND_NAM] in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
             lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IniAddr  = (LPVOID)
@@ -1144,9 +1124,7 @@ WM_NCCREATE_FAIL:
             // *************** lpwszFormat *****************************
 
             // Allocate virtual memory for the WCHAR Formatting storage
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].lpText   = "lpMemPTD->lpwszFormat in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IncrSize = DEF_WFORMAT_INCRNELM * sizeof (WCHAR);
             lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].MaxSize  = DEF_WFORMAT_MAXNELM  * sizeof (WCHAR);
             lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr  = (LPVOID)
@@ -1175,9 +1153,7 @@ WM_NCCREATE_FAIL:
             // *************** lpwszTemp *******************************
 
             // Allocate virtual memory for the WCHAR Formatting storage
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].lpText   = "lpMemPTD->lpwszTemp in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IncrSize = DEF_WPTDTEMP_INCRNELM * sizeof (WCHAR);
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize  = DEF_WPTDTEMP_MAXNELM  * sizeof (WCHAR);
             lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr  = (LPVOID)
@@ -1210,9 +1186,7 @@ WM_NCCREATE_FAIL:
             // *************** lpForStmt *******************************
 
             // Allocate virtual memory for the WCHAR Formatting storage
-#ifdef DEBUG
             lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].lpText   = "lpMemPTD->lpForStmt in <SMWndProc>";
-#endif
             lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IncrSize = DEF_FORSTMT_INCRNELM * sizeof (FORSTMT);
             lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].MaxSize  = DEF_FORSTMT_MAXNELM  * sizeof (FORSTMT);
             lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr  = (LPVOID)

@@ -709,19 +709,13 @@ void DisplayException
     for (uMem = 0; uMem < uMemVirtCnt; uMem++)
     {
         wsprintfW (wszTemp,
-#ifdef DEBUG
                    L"%p %08X %08X %p %S",
-#else
-                   L"%p %08X %08X %p",
-#endif
                    memVirtStr[uMem].IniAddr,
                    memVirtStr[uMem].IncrSize,
                    memVirtStr[uMem].MaxSize,
-                   memVirtStr[uMem].IniAddr + memVirtStr[uMem].MaxSize
-#ifdef DEBUG
-                 , memVirtStr[uMem].lpText
-#endif
-                   );
+                   memVirtStr[uMem].IniAddr + memVirtStr[uMem].MaxSize,
+                   memVirtStr[uMem].lpText
+                  );
         NewMsg (wszTemp);
     } // End FOR
 
@@ -739,19 +733,13 @@ void DisplayException
     while (lpLstMVS)
     {
         wsprintfW (wszTemp,
-#ifdef DEBUG
                    L"%p %08X %08X %p %S",
-#else
-                   L"%p %08X %08X %p",
-#endif
                    lpLstMVS->IniAddr,
                    lpLstMVS->IncrSize,
                    lpLstMVS->MaxSize,
-                   lpLstMVS->IniAddr + lpLstMVS->MaxSize
-#ifdef DEBUG
-                 , lpLstMVS->lpText
-#endif
-                   );
+                   lpLstMVS->IniAddr + lpLstMVS->MaxSize,
+                   lpLstMVS->lpText
+                  );
         NewMsg (wszTemp);
 
         // Get the previous ptr in the chain

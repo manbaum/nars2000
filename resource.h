@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,18 +49,20 @@
 #define IDWC_WCN_BN                                9    // Used in <ccHookProc>
 #define IDWC_WCN_WN                               10    // Used in <ccHookProc>
 
+// Menu IDs
 #define IDR_MFMENU                                20
 #define IDR_SMMENU                                21
 #define IDR_FEMENU                                22
 #define IDR_VEMENU                                23
 #define IDR_MEMENU                                24
 
+// Accelerator IDs
 #define IDR_ACCEL                                 30
 
+// Bitmap IDs
 #define IDB_LINECONT                              90
 
-#define IDI_OF_LARGE                             100
-#define IDI_OF_SMALL                             101
+// Icon IDs
 #define IDI_MF_LARGE                             102
 #define IDI_MF_SMALL                             103
 #define IDI_SM_LARGE                             104
@@ -103,6 +105,7 @@
 #define IDD_PROPPAGE_TAB_COLORS                         157 // Not implemented as yet
 #define IDD_PROPPAGE_USER_PREFS                  155
 
+// Message IDs
 #define IDM_EXIT                                 102
 #define IDM_STATUSBAR                            103
 
@@ -160,6 +163,7 @@
 
 #define IDM_CUSTOMIZE                            750
 
+// Control IDs
 #define IDC_VERSION                              800
 #define IDC_LINK                                 801
 #define IDC_WEBVER                               802
@@ -298,6 +302,7 @@
 #define IDC_USER_PREFS_XB_CHECKGROUP            1110
 #define IDC_USER_PREFS_XB_INSSTATE              1111
 #define IDC_USER_PREFS_XB_REVDBLCLK             1112
+#define IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS    1113
 
 #define IDC_SYNTCLR_LT1                         1400    // 00:  Global Name
 #define IDC_SYNTCLR_LT2                         1401    // 01:  Local  ...

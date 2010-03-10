@@ -141,6 +141,7 @@
 #define DEF_INSSTATE                TRUE
 #define DEF_REVDBLCLK               FALSE
 #define DEF_VIEWSTATUSBAR           TRUE
+#define DEF_DISPFCNLINENUMS         TRUE
 
 
 // Range limits for []vars
@@ -313,7 +314,8 @@ default:        \
 #define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (HANDLE_PTR)    // Value of next Undo group index
 #define GWLSF_LASTKEY   GWLSF_UNDO_GRP + 1 * sizeof (long)          // Value of last WM_KEYDOWN key
 #define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)          // Boolean of whether or not the text has changed
-#define GWLSF_LPMVS     GWLSF_CHANGED  + 1 * sizeof (long)          // Ptr to LPMEMVIRTSTR
+#define GWLSF_FLN       GWLSF_CHANGED  + 1 * sizeof (long)          // Boolean of whether or not function line #s are to be displayed
+#define GWLSF_LPMVS     GWLSF_FLN      + 1 * sizeof (long)          // Ptr to LPMEMVIRTSTR
 
 // Define offsets in SMWNDCLASS window extra bytes
 #define GWLSM_EXTRA     GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes

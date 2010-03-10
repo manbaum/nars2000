@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,6 +83,7 @@
 #define KEYNAME_INSSTATE                L"InsState"
 #define KEYNAME_REVDBLCLK               L"RevDblClk"
 #define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
+#define KEYNAME_DEFDISPFCNLINENUMS      L"DefDispFcnLineNums"
 
 #define KEYNAME_SC_GLBNAME              L"GlbName"
 #define KEYNAME_SC_LCLNAME              L"LclName"
@@ -408,6 +409,12 @@ void ReadIniFileGlb
                              KEYNAME_VIEWSTATUSBAR, // Ptr to the key name
                              DEF_VIEWSTATUSBAR,     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    // Read in bDefDispFcnLineNums
+    OptionFlags.bDefDispFcnLineNums =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_DEFDISPFCNLINENUMS, // Ptr to the key name
+                             DEF_DISPFCNLINENUMS,   // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
     //***************************************************************
     // Read in the [SysVars] section -- default values for system
     //                                  variables in a CLEAR WS
@@ -490,7 +497,7 @@ void ReadIniFileGlb
                               KEYNAME_QUADPR,       // Ptr to the key name
                               DEF_QUADPR_CWS,       // Ptr to the default value
                               wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
+                              TEMPBUFLEN,           // Count of the output buffer
                               lpwszIniFile);        // Ptr to the file name
     // Convert any {name}s to symbols
     ConvertNameInPlace (wszTemp);
@@ -644,7 +651,7 @@ void ReadIniFileGlb
                                   aColorKeyNames[uCnt], // Ptr to the key name
                                   L"",                  // Ptr to the default value
                                   wszTemp,              // Ptr to the output buffer
-                                  TEMPBUFLEN,           // Byte size of the output buffer
+                                  TEMPBUFLEN,           // Count of the output buffer
                                   lpwszIniFile);        // Ptr to the file name
         // Check for value
         if (wszTemp[0] NE WC_EOS)
@@ -665,7 +672,7 @@ void ReadIniFileGlb
                               KEYNAME_CUSTOMCOLORS, // Ptr to the key name
                               L"",                  // Ptr to the default value
                               wszTemp,              // Ptr to the output buffer
-                              TEMPBUFLEN,           // Byte size of the output buffer
+                              TEMPBUFLEN,           // Count of the output buffer
                               lpwszIniFile);        // Ptr to the file name
     // Check for value
     if (wszTemp[0] NE WC_EOS)
@@ -728,7 +735,7 @@ void GetPrivateProfileLogFontW
                               wszKeyName,           // Ptr to the key name
                               L"",                  // Ptr to the default value
                               wszTemp,              // Ptr to the output buffer
-                              sizeof (wszTemp) - 1, // Byte size of the output buffer
+                              countof (wszTemp) - 1,// Count of the output buffer
                               lpwszIniFile);        // Ptr to the file name
     // If the new value is present, ...
     if (wszTemp[0])
@@ -784,7 +791,7 @@ APLFLOAT GetPrivateProfileFloatW
                               lpwKeyName,           // Ptr to the key name
                               L"",                  // Ptr to the default value
                               wszTemp,              // Ptr to the output buffer
-                              sizeof (wszTemp),     // Byte size of the output buffer
+                              countof (wszTemp),    // Count of the output buffer
                               lpwszIniFile);        // Ptr to the file name
     // If the new value is present, ...
     if (wszTemp[0])
@@ -883,7 +890,7 @@ HGLOBAL GetPrivateProfileGlbComW
                               lpwKeyName,           // Ptr to the key name
                               L"\x0001",            // Ptr to the default value
                               wszTemp,              // Ptr to the output buffer
-                              sizeof (wszTemp),     // Byte size of the output buffer
+                              countof (wszTemp),    // Count of the output buffer
                               lpwszIniFile);        // Ptr to the file name
     // If the new value is present, ...
     if (wszTemp[0] NE L'\x0001')
@@ -1447,6 +1454,16 @@ void SaveIniFile
     // Write out bViewStatusBar
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_VIEWSTATUSBAR,      // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+
+    //******************* bDefDispFcnLineNums *****************
+    wszTemp[0] = L'0' + OptionFlags.bDefDispFcnLineNums;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bViewStatusBar
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_DEFDISPFCNLINENUMS, // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
 

@@ -1605,7 +1605,8 @@ typedef struct tagOPTIONFLAGS
          bInsState           :1,    // 00100000:  ...      Initial state of Ins key in each WS is ON
          bRevDblClk:1,       :1,    // 00200000:  ...      Reverse double-click:  left=edit, right=select
          bViewStatusBar      :1,    // 00400000:  ...      Status Bar is displayed
-                             :9;    // FF800000:  Available bits
+         bDefDispFcnLineNums :1,    // 00800000:  ...      Default is to display function line #s
+                             :8;    // FF000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),

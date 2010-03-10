@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,10 +30,10 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #define APSTUDIO_HIDDEN_SYMBOLS
-#include "windows.h"
-#include "dlgs.h"
+#include <windows.h>
+#include <dlgs.h>
 #include "defines.h"
-#include "commctrl.h"
+#include <commctrl.h>
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
@@ -64,10 +64,10 @@ END
 2 TEXTINCLUDE DISCARDABLE
 BEGIN
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "#include ""windows.h""\r\n"
-    "#include ""dlgs.h""\r\n"
+    "#include <windows.h>\r\n"
+    "#include <dlgs.h>\r\n"
     "#include ""defines.h""\r\n"
-    "#include ""commctrl.h""\r\n"
+    "#include <commctrl.h>\r\n"
     "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "\0"
 END
@@ -615,12 +615,14 @@ BEGIN
                     IDC_USER_PREFS_XB_INSSTATE           , 10,143,200, 10
     AUTOCHECKBOX    "Reverse double-click:  left=edit, right=select",
                     IDC_USER_PREFS_XB_REVDBLCLK          , 10,156,200, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,169, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+    AUTOCHECKBOX    "Default is to display function line numbers",
+                    IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , 10,169,200, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,182, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC                           ,100,169,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,185, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,182,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,198, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
-                    IDC_STATIC                           ,100,185,160, 10
+                    IDC_STATIC                           ,100,198,160, 10
 END
 
 

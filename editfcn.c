@@ -213,6 +213,9 @@ void SetMarginsFE
      UINT uLeft)            // Left margin
 
 {
+    // If we're not displaying function line #s, ...
+    if (!GetWindowLongW (GetParent (hWndEC), GWLSF_FLN))
+        uLeft = 0;
     SendMessageW (hWndEC, EM_SETMARGINS, EC_LEFTMARGIN, MAKELONG (uLeft, 0));
 } // End SetMarginsFE
 
@@ -301,8 +304,11 @@ LRESULT APIENTRY FEWndProc
                 return -1;
             } // End IF
 
-            // Save in window extra bytes
+            // Save the ptr in window extra bytes
             SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) lpLclMemVirtStr);
+
+            // Save the initial function line # display state in window extra bytes
+            SetWindowLongW (hWnd, GWLSF_FLN, OptionFlags.bDefDispFcnLineNums);
 
             break;
 #undef  lpMDIcs
@@ -4286,6 +4292,10 @@ void DrawLineNumsFE
 
     // Ensure this is the function editor
     if (!IzitFE (hWndParent))
+        return;
+
+    // If we're not displaying function line #s, ...
+    if (!GetWindowLongW (GetParent (hWndEC), GWLSF_FLN))
         return;
 
     // Get the client rectangle

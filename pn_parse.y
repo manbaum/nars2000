@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ void pn_yyfprintf   (FILE *hfile, LPCHAR lpszFmt, ...);
 %name-prefix="pn_yy"
 %parse-param {LPPNLOCALVARS lppnLocalVars}
 %lex-param   {LPPNLOCALVARS lppnLocalVars}
-%token EXT INF
+%token EXT INF OVR
 
 %start Number
 
@@ -111,12 +111,12 @@ Integer:
 
                                      $$ = $1;
                                     }
-    | '-'     Digit                 {DbgMsgWP (L"%%Integer:  '-' Digit");
+    | OVR     Digit                 {DbgMsgWP (L"%%Integer:  " WS_UTF16_OVERBAR L" Digit");
                                      // Mark starting offset
                                      $1.uNumOff = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the negative sign
-                                     PN_NumAcc (lppnLocalVars, '-');
+                                     PN_NumAcc (lppnLocalVars, OVERBAR1);
 
                                      // Accumulate the digit
                                      PN_NumAcc (lppnLocalVars, $2.chCur);
@@ -157,12 +157,12 @@ Decimal:
 
                                      $$ = $1;
                                     }
-    | '-'     '.' Digit             {DbgMsgWP (L"%%Decimal:  '-' '.' Digit");
+    | OVR     '.' Digit             {DbgMsgWP (L"%%Decimal:  '" WS_UTF16_OVERBAR L"' '.' Digit");
                                      // Mark starting offset
                                      $1.uNumOff = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the negative sign
-                                     PN_NumAcc (lppnLocalVars, '-');
+                                     PN_NumAcc (lppnLocalVars, OVERBAR1);
 
                                      // Accumulate the decimal point
                                      PN_NumAcc (lppnLocalVars, '.');
@@ -232,7 +232,7 @@ DecPoint:
 
                                      $$ = $1;
                                     }
-    | '-' INF                       {DbgMsgWP (L"%%DecPoint:  " WS_UTF16_OVERBAR WS_UTF16_INFINITY);
+    | OVR INF                       {DbgMsgWP (L"%%DecPoint:  " WS_UTF16_OVERBAR WS_UTF16_INFINITY);
                                      // Terminate the argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
@@ -469,7 +469,7 @@ Rational:
 
                                      $$ = $1;
                                     }
-    | Integer  'r' '-' Digit        {DbgMsgWP (L"%%Rational:  Integer 'r' '-' Digit");
+    | Integer  'r' OVR Digit        {DbgMsgWP (L"%%Rational:  Integer 'r' '" WS_UTF16_OVERBAR L"' Digit");
                                      // Terminate the argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
@@ -486,7 +486,7 @@ Rational:
                                      $1.uNumOff = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the negative sign
-                                     PN_NumAcc (lppnLocalVars, '-');
+                                     PN_NumAcc (lppnLocalVars, OVERBAR1);
 
                                      // Accumulate the digit
                                      PN_NumAcc (lppnLocalVars, $4.chCur);
@@ -744,7 +744,7 @@ void PN_NumCalc
             uLen = lstrlen (&lppnLocalVars->lpszNumAccum[uOff]);
 
             // Handle negative sign
-            uAcc = bSigned = (lppnLocalVars->lpszNumAccum[uOff] EQ '-');
+            uAcc = bSigned = (lppnLocalVars->lpszNumAccum[uOff] EQ OVERBAR1);
 
             // Loop through the digits
             for (; bRet && uAcc < uLen; uAcc++)
@@ -1173,8 +1173,12 @@ int pn_yylex
      && lppnLocalVars->uNumCur EQ lppnLocalVars->uNumLen)
         return EXT;
 
+    // If the character is overbar, ...
+    if (lpYYLval->chCur EQ OVERBAR1)
+        return OVR;
+
     // If the character is infinity, ...
-    if (lpYYLval->chCur EQ '~')
+    if (lpYYLval->chCur EQ INFINITY1)
         return INF;
 
     // Return it

@@ -409,6 +409,10 @@ default:        \
 
 #define WS_CRLF         L"\r\n"     // 0D0A:  CR/LF
 
+#define INFINITY1       '~'         // Use when translating to non-WCHAR code
+                                    //   in <pn_parse.y>
+#define OVERBAR1        '-'         // ...
+
 
 //***************************************************************************
 // Wide-char routines From <string.h>

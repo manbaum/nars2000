@@ -84,7 +84,7 @@
 #define UTF16_QUERY              0x003F         // Alt-'q' - question-mark
 #define UTF16_RHO                0x2374         // Alt-'r' - rho
 #define UTF16_UPSTILE            0x2308         // Alt-'s' - ceiling
-#define UTF16_TILDE              0x007E         // Alt-'t' - tilde
+#define UTF16_TILDE              0x223C         // Alt-'t' - tilde
 #define UTF16_DOWNARROW          0x2193         // Alt-'u' - down arrow
 #define UTF16_DOWNSHOE           0x222A         // Alt-'v' - union
 #define UTF16_OMEGA              0x2375         // Alt-'w' - omega
@@ -131,7 +131,7 @@
 #define UTF16_RIGHTCARET         0x003E         // Alt-'7' - more
 #define UTF16_NOTEQUAL           0x2260         // Alt-'8' - not equal
 #define UTF16_DOWNCARET          0x2228         // Alt-'9' - or
-#define UTF16_UPCARET            0x2227         // Alt-'0' - and (not 0x005E)
+#define UTF16_UPCARET            0x2227         // Alt-'0' - and (a.k.a. 0x005E)
 #define UTF16_TIMES              0x00D7         // Alt-'-' - times
 #define UTF16_COLONBAR           0x00F7         // Alt-'=' - divide
 
@@ -199,12 +199,13 @@
 #define UTF16_LEFTBRACKET        0x005B         // Left bracket
 #define UTF16_SLOPE              0x005C         // Slope
 #define UTF16_RIGHTBRACKET       0x005D         // Right bracket
-#define UTF16_CIRCUMFLEX         0x005E         // Circumflex
+#define UTF16_CIRCUMFLEX         0x005E         // Circumflex (a.k.a. 0x2227)
 #define UTF16_UNDERBAR           0x005F         // Underbar
 #define UTF16_BACKTICK           0x0060         // Backtick
 #define UTF16_LEFTBRACE          0x007B         // Left brace
 #define UTF16_STILE2             0x007C         // Stile (a.k.a. 0x2223)
 #define UTF16_RIGHTBRACE         0x007D         // Right brace
+#define UTF16_TILDE2             0x007E         // Tilde (a.k.a. 0x223C)
 #define UTF16_COPYRIGHT          0x00A9         // Copyright
 
 #define UTF16_A_                 0xE036         // A underbar
@@ -274,7 +275,7 @@
 #define WS_UTF16_IOTA               L"\x2373"   // Alt-'i' - iota
 #define WS_UTF16_JOT                L"\x2218"   // Alt-'j' - jot
 #define WS_UTF16_APOSTROPHE         L"\x0027"   // Alt-'k' - single quote
-#define WS_UTF16_QUAD               L"\x2395"   // Alt-'l' - quad (was \x25AF)
+#define WS_UTF16_QUAD               L"\x2395"   // Alt-'l' - quad (not \x25AF)
 #define WS_UTF16_STILE              L"\x2223"   // Alt-'m' - modulus
 #define WS_UTF16_DOWNTACK           L"\x22A4"   // Alt-'n' - representation
 #define WS_UTF16_CIRCLE             L"\x25CB"   // Alt-'o' - circle
@@ -282,7 +283,7 @@
 #define WS_UTF16_QUERY              L"\x003F"   // Alt-'q' - question-mark
 #define WS_UTF16_RHO                L"\x2374"   // Alt-'r' - rho
 #define WS_UTF16_UPSTILE            L"\x2308"   // Alt-'s' - ceiling
-#define WS_UTF16_TILDE              L"\x007E"   // Alt-'t' - tilde
+#define WS_UTF16_TILDE              L"\x223C"   // Alt-'t' - tilde
 #define WS_UTF16_DOWNARROW          L"\x2193"   // Alt-'u' - down arrow
 #define WS_UTF16_DOWNSHOE           L"\x222A"   // Alt-'v' - union
 #define WS_UTF16_OMEGA              L"\x2375"   // Alt-'w' - omega
@@ -329,7 +330,7 @@
 #define WS_UTF16_RIGHTCARET         L"\x003E"   // Alt-'7' - more
 #define WS_UTF16_NOTEQUAL           L"\x2260"   // Alt-'8' - not equal
 #define WS_UTF16_DOWNCARET          L"\x2228"   // Alt-'9' - or
-#define WS_UTF16_UPCARET            L"\x2227"   // Alt-'0' - and (not \x005E)
+#define WS_UTF16_UPCARET            L"\x2227"   // Alt-'0' - and (a.k.a. \x005E)
 #define WS_UTF16_TIMES              L"\x00D7"   // Alt-'-' - times
 #define WS_UTF16_COLONBAR           L"\x00F7"   // Alt-'=' - divide
 
@@ -397,12 +398,13 @@
 #define WS_UTF16_LEFTBRACKET        L"\x005B"   // Left bracket
 #define WS_UTF16_SLOPE              L"\x005C"   // Slope
 #define WS_UTF16_RIGHTBRACKET       L"\x005D"   // Right bracket
-#define WS_UTF16_CIRCUMFLEX         L"\x005E"   // Circumflex
+#define WS_UTF16_CIRCUMFLEX         L"\x005E"   // Circumflex (a.k.a. \x2227)
 #define WS_UTF16_UNDERBAR           L"\x005F"   // Underbar
 #define WS_UTF16_BACKTICK           L"\x0060"   // Backtick
 #define WS_UTF16_LEFTBRACE          L"\x007B"   // Left brace
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. \x2223)
 #define WS_UTF16_RIGHTBRACE         L"\x007D"   // Right brace
+#define WS_UTF16_TILDE2             L"\x007E"   // Tilde (a.k.a. \x223C)
 #define WS_UTF16_COPYRIGHT          L"\x00A9"   // Copyright
 
 #define WS_UTF16_A_                 L"\xE036"   // A underbar

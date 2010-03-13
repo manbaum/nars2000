@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -250,6 +250,7 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_LEFTBRACE            , L"{leftbrace}"          },  // 7B:  Left brace
   {UTF16_STILE2               , L"{stile2}"             },  // 7C:  Stile (a.k.a. 0x2223)
   {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 7D:  Right brace
+  {UTF16_TILDE2               , L"{tilde2}"             },  // 7E:  Stile (a.k.a. 0x223C)
 }
 #endif
 ;

@@ -323,6 +323,7 @@ void InitPrimFns
     InitPrimFn (UTF16_BAR               , &PrimFnBar_EM_YY               );
     InitPrimFn (UTF16_PLUS              , &PrimFnPlus_EM_YY              );
     InitPrimFn (UTF16_STILE2            , &PrimFnStile_EM_YY             );
+    InitPrimFn (UTF16_TILDE2            , &PrimFnTilde_EM_YY             );
     InitPrimFn (UTF16_COMMA             , &PrimFnComma_EM_YY             );
     InitPrimFn (UTF16_SLASH             , &PrimFnSlash_EM_YY             );
     InitPrimFn (UTF16_SLOPE             , &PrimFnSlope_EM_YY             );
@@ -590,6 +591,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_BAR               , &PrimProtoFnBar_EM_YY               );   //         -
     InitPrimProtoFn (UTF16_PLUS              , &PrimProtoFnPlus_EM_YY              );   //         -
     InitPrimProtoFn (UTF16_STILE2            , &PrimProtoFnStile_EM_YY             );   //         -
+    InitPrimProtoFn (UTF16_TILDE2            , &PrimProtoFnTilde_EM_YY             );   //         -
     InitPrimProtoFn (UTF16_COMMA             , &PrimProtoFnComma_EM_YY             );   //         -
     InitPrimProtoFn (UTF16_SLASH             , &PrimProtoFnSlash_EM_YY             );   //         - slash as Function
     InitPrimProtoOp (INDEX_OPSLASH           , &PrimProtoOpSlash_EM_YY             );   //         - ...      Operator
@@ -728,6 +730,7 @@ void InitPrimSpecs
     InitPrimSpec (UTF16_STILE             , &PrimSpecStile             );
     InitPrimSpec (UTF16_STILE2            , &PrimSpecStile             );
     InitPrimSpec (UTF16_TILDE             , &PrimSpecTilde             );
+    InitPrimSpec (UTF16_TILDE2            , &PrimSpecTilde             );
     InitPrimSpec (UTF16_TIMES             , &PrimSpecTimes             );
     InitPrimSpec (UTF16_UPCARET           , &PrimSpecUpCaret           );
     InitPrimSpec (UTF16_UPCARETTILDE      , &PrimSpecUpCaretTilde      );
@@ -802,6 +805,7 @@ void InitPrimFlags
     InitPrimFlag (UTF16_STILE             , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
     InitPrimFlag (UTF16_STILE2            , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
     InitPrimFlag (UTF16_TILDE             , 0                             | PF_MS                                    ); // Identity element:  {enclose}{zilde} ??
+    InitPrimFlag (UTF16_TILDE2            , 0                             | PF_MS                                    ); // Identity element:  {enclose}{zilde} ??
     InitPrimFlag (UTF16_TIMES             , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
     InitPrimFlag (UTF16_UPCARET           , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
     InitPrimFlag (UTF16_UPCARETTILDE      , PF_FB                         | PF_MS | PF_DS         | PF_INDEX_NAND    );

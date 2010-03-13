@@ -1831,13 +1831,19 @@ UBOOL fnPointAcc
     // Get the current char
     wchCur = *lptkLocalVars->lpwszCur;
 
+    //***************************************************************
+    // The following two tests (and substitutions to one-byte chars)
+    //   are necessary because <fnPointSub> in <pn_parse.y> doesn't
+    //   handle WCHARs.
+    //***************************************************************
+
     // Check for Overbar
     if (wchCur EQ UTF16_OVERBAR)
-        wchCur = L'-';
+        wchCur = OVERBAR1;
     else
     // Check for Infinity
     if (wchCur EQ UTF16_INFINITY)
-        wchCur = L'~';
+        wchCur = INFINITY1;
 
     // Use subroutine
     bRet = fnPointSub (lptkLocalVars, lpMemPTD, wchCur);
@@ -4688,7 +4694,7 @@ TKCOLINDICES CharTransTK
         case UTF16_RIGHTTACK:           // Alt-'|' - right tack
 ////////case UTF16_ZILDE:               // Alt-'}' - zilde (TKCOL_PRIM_FN0)
         case UTF16_COMMABAR:            // Alt-'~' - comma-bar
-////////case UTF16_TILDE:               //     '~' - tilde
+        case UTF16_TILDE2:              //     '~' - tilde
 ////////case UTF16_QUOTEDOT:            //     '!' - shreik
         case UTF16_CIRCUMFLEX:          //     '^' - up caret
 ////////case UTF16_STAR:                //     '*' - star
@@ -4707,6 +4713,7 @@ TKCOLINDICES CharTransTK
         case UTF16_SLASH:               //     '/' - slash
         case UTF16_SLASHBAR:            // Alt-'/' - slash-bar
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
+        case UTF16_STILETILDE:          // Alt-'M' - partition (dagger)
         case UTF16_DIERESISTILDE:       // Alt-'T' - commute/duplicate
         case UTF16_CIRCLEMIDDLEDOT:     // Alt-'@' - circle-middle-dot
             return TKCOL_PRIM_OP1;

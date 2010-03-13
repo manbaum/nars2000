@@ -660,6 +660,14 @@ void TranslateNARSToAPL2
         if (*lpMemRht EQ UTF16_UPCARET)
             *lpMemRht++ = L'^';
         else
+        // If the char is Tilde, ...
+        if (*lpMemRht EQ UTF16_TILDE)
+            *lpMemRht++ = L'~';
+        else
+        // If the char is Stile, ...
+        if (*lpMemRht EQ UTF16_STILE)
+            *lpMemRht++ = L'|';
+        else
             *lpMemRht++ = L'\xFF';
     } // End WHILE
 } // End TranslateNARSToAPL2

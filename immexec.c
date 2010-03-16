@@ -438,7 +438,7 @@ DWORD WINAPI ImmExecStmtInThread
         if (hGlbToken EQ NULL)
         {
             // If we should act on this error, ...
-            exitType = bActOnErrors ? ActOnError (hWndSM) : EXITTYPE_ERROR;
+            exitType = bActOnErrors ? ActOnError (hWndSM, lpMemPTD) : EXITTYPE_ERROR;
 
             goto ERROR_EXIT;
         } // End IF
@@ -467,7 +467,7 @@ DWORD WINAPI ImmExecStmtInThread
                                 lpwszCompLine,                      // Ptr to the line which generated the error
                                 csLocalVars.tkCSErr.tkCharIndex);   // Position of caret (origin-0)
             // If we should act on this error, ...
-            exitType = bActOnErrors ? ActOnError (hWndSM) : EXITTYPE_ERROR;
+            exitType = bActOnErrors ? ActOnError (hWndSM, lpMemPTD) : EXITTYPE_ERROR;
 
             goto UNTOKENIZE_EXIT;
         } // End IF
@@ -516,14 +516,12 @@ DWORD WINAPI ImmExecStmtInThread
                                         lpwszCompLine,                  // Ptr to the line which generated the error
                                         lpMemPTD->tkErrorCharIndex);    // Position of caret (origin-0)
                     if (bActOnErrors)
-                        // Execute []ELX in immediate execution mode
-////////////////////////exitType =
-                          ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
-                                       5,               // NELM of line to execute
-                                       FALSE,           // TRUE iff free the line on completion
-                                       TRUE,            // TRUE iff wait until finished
-                                       (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
-                                       TRUE);           // TRUE iff errors are acted upon
+                        // Execute []ELX
+                        exitType =
+                          PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
+                                                       lpMemPTD,                                // Ptr to PerTabData global memory
+                                                       WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                                       NULL);                                   // Ptr to function token
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
@@ -557,14 +555,12 @@ DWORD WINAPI ImmExecStmtInThread
 
             case EXITTYPE_QUADERROR_EXEC:
                 if (bActOnErrors)
-                    // Execute []ELX in immediate execution mode
-////////////////////exitType =
-                      ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
-                                   5,               // NELM of line to execute
-                                   FALSE,           // TRUE iff free the line on completion
-                                   TRUE,            // TRUE iff wait until finished
-                                   (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),// Edit Ctrl window handle
-                                   TRUE);           // TRUE iff errors are acted upon
+                    // Execute []ELX
+                    exitType =
+                      PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
+                                                   lpMemPTD,                                // Ptr to PerTabData global memory
+                                                   WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                                   NULL);                                   // Ptr to function token
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
@@ -751,19 +747,18 @@ ERROR_EXIT:
 //***************************************************************************
 
 EXIT_TYPES ActOnError
-    (HWND hWndSM)                       // Session Manager window handle
+    (HWND         hWndSM,               // Session Manager window handle
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
     EXIT_TYPES exitType;                // Exit type
 
-    // Execute the statement in immediate execution mode
+    // Execute []ELX
     exitType =
-      ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
-                   5,                   // NELM of line to execute
-                   FALSE,               // TRUE iff free the line on completion
-                   TRUE,                // TRUE iff wait until finished
-                   (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),  // Edit Ctrl window handle
-                   TRUE);               // TRUE iff errors are acted upon
+      PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
+                                   lpMemPTD,                                // Ptr to PerTabData global memory
+                                   WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                   NULL);                                   // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)
     {

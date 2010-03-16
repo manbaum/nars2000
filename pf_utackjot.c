@@ -484,9 +484,14 @@ ERROR_EXIT:
 
     // Display the default prompt if there's a suspension
     if (hSigaphore EQ NULL
+     && exitType NE EXITTYPE_RETURNxLX
      && (lpMemPTD->lpSISCur EQ NULL
       || lpMemPTD->lpSISCur->Suspended))
         DisplayPrompt (hWndEC, 5);
+    // If the return is EXITTYPE_RETURNxLX, ...
+    if (exitType EQ EXITTYPE_RETURNxLX)
+        // Make it the real exit type
+        exitType =  EXITTYPE_NODISPLAY;
 
     // If there's a semaphore to signal, ...
     if (hSigaphore)
@@ -578,6 +583,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
         case EXITTYPE_STOP:
         case EXITTYPE_DISPLAY:
         case EXITTYPE_NOVALUE:
+        case EXITTYPE_RETURNxLX:
             break;
 
         defstop

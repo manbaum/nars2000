@@ -1969,7 +1969,7 @@ LRESULT APIENTRY MFWndProc
                         hWndEC = (HWND) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
                         // Display the default prompt
-                        DisplayPrompt (hWndEC, 4);
+                        DisplayPrompt (hWndEC, 9);
                     } // End IF/ELSE/...
 
                     return FALSE;   // We handled the msg

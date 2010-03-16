@@ -8332,14 +8332,12 @@ NORMAL_EXIT:
         // Get the Edit Ctrl window handle
         hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),
 
-        // Execute the statement in immediate execution mode
+        // Execute the statement
         exitType =
-          ImmExecStmt (lpwszLine,           // Ptr to line to execute
-                       lstrlenW (lpwszLine),// NELM of line to execute
-                       FALSE,               // TRUE iff free the lpwszLine on completion
-                       TRUE,                // TRUE iff wait until finished
-                       hWndEC,              // Edit Ctrl window handle
-                       TRUE);               // TRUE iff errors are acted upon
+          PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
+                                       lpMemPTD,    // Ptr to PerTabData global memory
+                                       lpwszLine,   // Ptr to text of line to execute
+                                       NULL);       // Ptr to function token
         // Split cases based upon the exit type
         switch (exitType)
         {
@@ -8370,6 +8368,14 @@ NORMAL_EXIT:
                 if (lpSISPrv
                  && lpSISPrv->DfnType EQ DFNTYPE_EXEC)
                 {
+                    // If the result of {execute}[]xLX is a normal
+                    //   result (EXITTYPE_NODISPLAY),
+                    //   return  EXITTYPE_RETURNxLX so the caller
+                    //   can avoid displaying a prompt until the
+                    //   result of executing []xLX is handled
+                    if (exitType EQ EXITTYPE_NODISPLAY)
+                        exitType =  EXITTYPE_RETURNxLX;
+
                     // Pass on this exit type to the caller
                     plLocalVars.ExitType = exitType;
 

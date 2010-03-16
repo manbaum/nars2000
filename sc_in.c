@@ -378,20 +378,18 @@ UBOOL TransferInverseArr2_EM
     while (lpSymEntry->stPrvEntry)
         lpSymEntry = lpSymEntry->stPrvEntry;
 
-    // Restore the zapped char
-    *lpwNameEnd = wch;
-
     // ***FIXME*** -- Ensure we change the global not local value
     // ***FIXME*** -- Ensure we don't change []DM/[]ES
 
     // Exceute the statement starting with lpwName
     exitType =
-      ImmExecStmt (lpwName,         // Ptr to line to execute
-                   aplNELM,         // NELM of lpwName
-                   FALSE,           // TRUE iff free lpwName on completion
-                   TRUE,            // TRUE iff wait until finished
-                   hWndEC,          // Edit Ctrl window handle
-                   FALSE);          // TRUE iff errors are acted upon
+      PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
+                                   lpMemPTD,    // Ptr to PerTabData global memory
+                                   lpwName,     // Ptr to text of line to execute
+                                   NULL);       // Ptr to function token
+    // Restore the zapped char
+    *lpwNameEnd = wch;
+
     Assert (exitType EQ EXITTYPE_NODISPLAY
          || exitType EQ EXITTYPE_ERROR);
     if (exitType EQ EXITTYPE_ERROR)
@@ -512,12 +510,10 @@ UBOOL TransferInverseFcn2_EM
 
     // Execute the statement starting with lpwData
     exitType =
-      ImmExecStmt (lpwData,             // Ptr to line to execute
-                   lstrlenW (lpwData),  // NELM of lpwData
-                   FALSE,               // TRUE iff free lpwData on completion
-                   TRUE,                // TRUE iff wait until finished
-                   hWndEC,              // Edit Ctrl window handle
-                   FALSE);              // TRUE iff errors are acted upon
+      PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
+                                   lpMemPTD,    // Ptr to PerTabData global memory
+                                   lpwData,     // Ptr to text of line to execute
+                                   NULL);       // Ptr to function token
     Assert (exitType EQ EXITTYPE_NODISPLAY
          || exitType EQ EXITTYPE_ERROR);
     // Copy the ptr to the name end
@@ -1042,12 +1038,10 @@ UBOOL TransferInverseNum1_EM
 
         // Exceute the statement starting with lpwName
         exitType =
-          ImmExecStmt (lpwName,             // Ptr to line to execute
-                       lstrlenW (lpwName),  // NELM of lpwName
-                       FALSE,               // TRUE iff free lpwName on completion
-                       TRUE,                // TRUE iff wait until finished
-                       hWndEC,              // Edit Ctrl window handle
-                       FALSE);              // TRUE iff errors are acted upon
+          PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
+                                       lpMemPTD,    // Ptr to PerTabData global memory
+                                       lpwName,     // Ptr to text of line to execute
+                                       NULL);       // Ptr to function token
         Assert (exitType EQ EXITTYPE_NODISPLAY
              || exitType EQ EXITTYPE_ERROR);
         if (exitType EQ EXITTYPE_ERROR)

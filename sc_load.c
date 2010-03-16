@@ -1673,12 +1673,10 @@ HGLOBAL LoadWorkspaceGlobal_EM
 #ifdef DEBUG
                 exitType =
 #endif
-                  ImmExecStmt (lpwLine,             // Ptr to line to execute
-                               lstrlenW (lpwLine),  // NELM of lpwLine
-                               FALSE,               // Free lpwLine on completion
-                               TRUE,                // TRUE iff wait until finished
-                               hWndEC,              // Edit Ctrl window handle
-                               FALSE);              // TRUE iff errors are acted upon
+                PrimFnMonUpTackJotCSPLParse (hWndEC,    // Edit Ctrl window handle
+                                             lpMemPTD,  // Ptr to PerTabData global memory
+                                             lpwLine,   // Ptr to text of line to execute
+                                             NULL);     // Ptr to function token
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 
                 // Restore lpMemPTD->lpwszTemp

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,7 +64,8 @@ typedef enum tagEXIT_TYPES
     EXITTYPE_DISPLAY,           // 0A:  Value not already displayed
     EXITTYPE_NODISPLAY,         // 0B:  Value already displayed
     EXITTYPE_NOVALUE,           // 0C:  No value returned
-                                // 0D-0F:  Available entries (4 bits)
+    EXITTYPE_RETURNxLX,         // 0D:  Return from []ELX/[]ALX
+                                // 0E-0F:  Available entries (4 bits)
 } EXIT_TYPES, *LPEXITTYPES;
 
 // Define UBOOL as an unsigned int

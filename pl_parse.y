@@ -2203,7 +2203,11 @@ ArrExpr:
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                             {
+                                                 if (lpplLocalVars->ExitType EQ EXITTYPE_RETURNxLX)
+                                                     YYABORT;
                                                  YYERROR3
+                                             } // End IF
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
@@ -7913,6 +7917,8 @@ EXIT_TYPES ParseLine
     ERROR_CODES   uError;               // Error code
     UBOOL         bOldExecuting;        // Old value of bExecuting
     HWND          hWndEC;               // Edit Ctrl window handle
+    LPSIS_HEADER  lpSISCur,             // Ptr to current SI Stack Header
+                  lpSISPrv;             // Ptr to previous ...
 
     // Save the previous value of dwTlsType
     oldTlsType = PtrToUlong (TlsGetValue (dwTlsType));
@@ -8155,8 +8161,6 @@ EXIT_TYPES ParseLine
         case EXITTYPE_ERROR:        // Mark user-defined function/operator as suspended
         case EXITTYPE_STOP:
         {
-            LPSIS_HEADER lpSISCur;
-
             // Get a ptr to the current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
 
@@ -8206,6 +8210,11 @@ EXIT_TYPES ParseLine
 
             break;
 
+        case EXITTYPE_RETURNxLX:
+            uRet = 0;
+
+            break;
+
         defstop
             break;
     } // End IF/SWITCH
@@ -8213,8 +8222,6 @@ EXIT_TYPES ParseLine
     // If Ctrl-Break was pressed, ...
     if (plLocalVars.bCtrlBreak)
     {
-        LPSIS_HEADER lpSISCur;
-
         // Mark as in error
         uError = ERRORCODE_ALX;
 
@@ -8281,9 +8288,6 @@ NORMAL_EXIT:
 
     LeaveCriticalSection (&CSOPL);
 
-    // Restore the previous value of dwTlsPlLocalVars
-    TlsSetValue (dwTlsPlLocalVars, oldTlsPlLocalVars);
-
     // Restore the previous value of dwTlsType
     TlsSetValue (dwTlsType, ULongToPtr (oldTlsType));
 
@@ -8291,10 +8295,7 @@ NORMAL_EXIT:
     if (uError NE ERRORCODE_NONE
      && bActOnErrors)
     {
-        EXIT_TYPES   exitType;      // Return code from ImmExecStmt
-        HWND         hWndEC;        // Edit Ctrl window handle
-        LPSIS_HEADER lpSISCur,      // Ptr to current SIS header
-                     lpSISPrv;      // Ptr to previous ...
+        EXIT_TYPES exitType;        // Return code from ImmExecStmt
 
 #ifdef DEBUG
         if (uError EQ ERRORCODE_ELX)
@@ -8329,9 +8330,6 @@ NORMAL_EXIT:
         else
             lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ALX";
 
-        // Get the Edit Ctrl window handle
-        hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC),
-
         // Execute the statement
         exitType =
           PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
@@ -8350,9 +8348,24 @@ NORMAL_EXIT:
 
                 break;
 
-            case EXITTYPE_ERROR:        // Display the prompt unless called by Quad or User fcn/opr
+            case EXITTYPE_NODISPLAY:    // Display the result (if any)
             case EXITTYPE_DISPLAY:      // ...
-            case EXITTYPE_NODISPLAY:    // ...
+                // If the Execute/Quad result is present, display it
+                if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+                {
+                    // Display the array
+                    ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &plLocalVars.bCtrlBreak);
+
+                    // Free the result
+                    FreeResult (&lpMemPTD->YYResExec.tkToken);
+
+                    // We no longer need these values
+                    ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+                } // End IF
+
+                // Fall through to common code
+
+            case EXITTYPE_ERROR:        // Display the prompt unless called by Quad or User fcn/opr
             case EXITTYPE_NOVALUE:      // ...
                 // Get the ptr to the current SIS header
                 lpSISPrv =
@@ -8389,18 +8402,6 @@ NORMAL_EXIT:
                     && (lpSISPrv->DfnType EQ DFNTYPE_EXEC
                      || lpSISPrv->DfnType EQ DFNTYPE_IMM))
                     lpSISPrv = lpSISPrv->lpSISPrv;
-
-                // If we're back to the beginning,
-                //   or in Immediate Execution Mode
-                //   or the caller is neither Quad or a User fcn/opr,
-                //   display the prompt
-                if (lpSISCur EQ NULL
-                 || lpSISPrv EQ NULL
-                 || lpSISCur->DfnType EQ DFNTYPE_IMM
-                 || (lpSISPrv->DfnType NE DFNTYPE_QUAD
-                  && lpSISPrv->DfnType NE DFNTYPE_FCN))
-                    DisplayPrompt (hWndEC, 7);
-
                 break;
 
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these
@@ -8411,6 +8412,9 @@ NORMAL_EXIT:
                 break;
         } // End SWITCH
     } // End IF
+
+    // Restore the previous value of dwTlsPlLocalVars
+    TlsSetValue (dwTlsPlLocalVars, oldTlsPlLocalVars);
 
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
@@ -10208,7 +10212,7 @@ void ArrExprCheckCaller
         // Copy the result
         lpplLocalVars->lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
 
-    // If the Execute/Quad result is already filled, display it
+    // If the Execute/Quad result is present, display it
     if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
         lpplLocalVars->bRet =
           ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);

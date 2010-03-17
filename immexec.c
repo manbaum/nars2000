@@ -31,6 +31,7 @@ typedef struct tagWFSO          // Struct for WaitForSingleObject
     HANDLE       WaitHandle,    // WaitHandle from RegisterWaitForSingleObject
                  hSigaphore,    // Handle to signal next (may be NULL)
                  hThread;       // Thread handle
+    HWND         hWndEC;        // Edit Ctrl window handle
 } WFSO, *LPWFSO;
 
 
@@ -86,6 +87,8 @@ VOID CALLBACK WaitForImmExecStmt
     // Signal the next level (if appropriate)
     if (lpMemWFSO->hSigaphore)
         ReleaseSemaphore (lpMemWFSO->hSigaphore, 1, NULL);
+    else
+        DisplayPrompt (lpMemWFSO->hWndEC, 10);
     // We no longer need this ptr
     MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
 
@@ -273,6 +276,7 @@ EXIT_TYPES ImmExecStmt
 
     // Fill in the struct
     lpMemWFSO->lpMemPTD = ieThread.lpMemPTD;
+    lpMemWFSO->hWndEC   = hWndEC;
 
     // Create a new thread
     hThread = CreateThread (NULL,                   // No security attrs
@@ -375,16 +379,12 @@ DWORD WINAPI ImmExecStmtInThread
     RESET_FLAGS   resetFlag;            // Reset flag (see RESET_FLAGS)
     UBOOL         bFreeLine,            // TRUE iff we should free lpszCompLine on completion
                   bWaitUntilFini,       // TRUE iff wait until finished
-                  bActOnErrors,         // TRUE iff errors are acted upon
-                  bDispPrompt = TRUE;   // TRUE iff prompt should be displayed
+                  bActOnErrors;         // TRUE iff errors are acted upon
     EXIT_TYPES    exitType;             // Return code from ParseLine
     LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
     LPSIS_HEADER  lpSISPrv;             // Ptr to previous SIS header
     LPTOKEN       lptkCSBeg;            // Ptr to next token on the CS stack
     CSLOCALVARS   csLocalVars = {0};    // CS local vars
-#ifdef DEBUG
-    UINT          uDispPrompt = 0;
-#endif
 
     __try
     {
@@ -568,17 +568,10 @@ DWORD WINAPI ImmExecStmtInThread
 
                 break;
 
-            case EXITTYPE_ERROR:
-                // Do not display the prompt again
-                bDispPrompt = FALSE;
-#ifdef DEBUG
-                uDispPrompt = 1;
-#endif
-                break;
-
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
             case EXITTYPE_DISPLAY:      // ...
             case EXITTYPE_NONE:         // ...
+            case EXITTYPE_ERROR:        // ...
                 break;
 
             case EXITTYPE_NODISPLAY:    // Signal previous SI layer's semaphore if it's Quad input
@@ -591,16 +584,9 @@ DWORD WINAPI ImmExecStmtInThread
                     if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ 0
                      || (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ TKT_VARNAMED
                       && lpMemPTD->YYResExec.tkToken.tkData.tkSym->stFlags.Value EQ FALSE))
-                    {
                         // Tell SM to display the Quad Prompt
                         PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 104);
-
-                        // Do not display the prompt again
-                        bDispPrompt = FALSE;
-#ifdef DEBUG
-                        uDispPrompt = 4;
-#endif
-                    } else
+                    else
                     // else, signal it to receive this value
                     {
                         // Lock the memory to get a ptr to it
@@ -634,17 +620,7 @@ DWORD WINAPI ImmExecStmtInThread
                 // If there are no more SI layers, ...
                 if (lpSISPrv EQ NULL
                  && bActOnErrors)
-                {
-                    // Display the default prompt
-                    DisplayPrompt (hWndEC, 6);
-
-                    // Do not display the prompt again
-                    bDispPrompt = FALSE;
-#ifdef DEBUG
-                    uDispPrompt = 2;
-#endif
                     break;
-                } // End IF
 
                 // Fall through to common code
 
@@ -668,12 +644,6 @@ DWORD WINAPI ImmExecStmtInThread
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
-
-                    // Do not display the prompt again
-                    bDispPrompt = FALSE;
-#ifdef DEBUG
-                    uDispPrompt = 3;
-#endif
                 } // End IF
 
                 break;
@@ -705,29 +675,6 @@ ERROR_EXIT:
             MyVirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
         } // End IF
 
-        // Display the default prompt
-        //   if we're not resetting, and
-        //   the caller isn't waiting for us to finish, and
-//////////   the exit type isn't error, and
-        //   Quad Prompt was not displayed, and
-        //   there's no semaphore to signal
-#ifdef DEBUG
-        dprintfWL9 (L"--Before DisplayPrompt (3):  resetFlag = %d, bWaitUntilFini = %d, exitType = %d, bDispPrompt = %d",
-                  resetFlag,
-                  bWaitUntilFini,
-                  exitType,
-                  bDispPrompt);
-        dprintfWL9 (L"--                           uDispPrompt = %d, hSigaphore = %p",
-                  uDispPrompt,
-                  hSigaphore);
-#endif
-        if (resetFlag EQ RESETFLAG_NONE
-         && !bWaitUntilFini
-/////////&& exitType NE EXITTYPE_ERROR
-         && bDispPrompt
-         && bActOnErrors
-         && hSigaphore EQ NULL)
-            DisplayPrompt (hWndEC, 3);
         return exitType;
     } __except (CheckException (GetExceptionInformation (), L"ImmExecStmtInThread"))
     {
@@ -752,6 +699,7 @@ EXIT_TYPES ActOnError
 
 {
     EXIT_TYPES exitType;                // Exit type
+    UBOOL      bFALSE = FALSE;
 
     // Execute []ELX
     exitType =
@@ -768,9 +716,21 @@ EXIT_TYPES ActOnError
         case EXITTYPE_RESET_ONE_INIT:   // ...
             break;
 
-        case EXITTYPE_ERROR:            // Mark as in error (from the error in Tokenize_EM)
+        case EXITTYPE_NODISPLAY:        // Display the result (if any)
         case EXITTYPE_DISPLAY:          // ...
-        case EXITTYPE_NODISPLAY:        // ...
+            // If the Execute/Quad result is present, display it
+            if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+            {
+                // Display the result
+                ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &bFALSE);
+
+                // Zap the token type
+                lpMemPTD->YYResExec.tkToken.tkFlags.TknType = 0;
+            } // End IF
+
+            // Fall through to common code
+
+        case EXITTYPE_ERROR:            // Mark as in error (from the error in Tokenize_EM)
         case EXITTYPE_NOVALUE:          // ...
         case EXITTYPE_GOTO_ZILDE:       // ...
             exitType = EXITTYPE_ERROR;

@@ -334,7 +334,8 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     hWndEC = GetThreadSMEC ();
 
     // Call common function which calls ParseCtrlStruc & ParseLine
-    exitType = PrimFnMonUpTackJotCSPLParse (hWndEC, lpMemPTD, lpwszCompLine, lptkFunc);
+    exitType =
+      PrimFnMonUpTackJotCSPLParse (hWndEC, lpMemPTD, lpwszCompLine, lptkFunc);
 
     // Split cases based upon the exit type
     switch (exitType)
@@ -369,6 +370,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 
         case EXITTYPE_NONE:
         case EXITTYPE_ERROR:
+        case EXITTYPE_RETURNxLX:
             // Mark as in error
             lpYYRes = NULL;
 
@@ -482,17 +484,6 @@ ERROR_EXIT:
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;
 
-    // Display the default prompt if there's a suspension
-    if (hSigaphore EQ NULL
-     && exitType NE EXITTYPE_RETURNxLX
-     && (lpMemPTD->lpSISCur EQ NULL
-      || lpMemPTD->lpSISCur->Suspended))
-        DisplayPrompt (hWndEC, 5);
-    // If the return is EXITTYPE_RETURNxLX, ...
-    if (exitType EQ EXITTYPE_RETURNxLX)
-        // Make it the real exit type
-        exitType =  EXITTYPE_NODISPLAY;
-
     // If there's a semaphore to signal, ...
     if (hSigaphore)
     {
@@ -527,12 +518,8 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
      UBOOL        bExec1Stmt)           // TRUE iff executing only one stmt
 
 {
-    HWND          hWndSM;               // Session Manager window handle
     EXIT_TYPES    exitType;             // Return code from ParseLine
     LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
-
-    // Get the window handle of the Session Manager
-    hWndSM = lpMemPTD->hWndSM;
 
     // Fill in the SIS header for Execute
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
@@ -544,7 +531,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
                 TRUE);                  // LinkIntoChain
     // Execute the line
     exitType =
-      ParseLine (hWndSM,                // Session Manager window handle
+      ParseLine (lpMemPTD->hWndSM,      // Session Manager window handle
                  hGlbToken,             // Tokenized line global memory handle
                  hGlbTxtLine,           // Text      ...
                  lpwszCompLine,         // Ptr to the complete line
@@ -555,7 +542,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
                  TRUE,                  // TRUE iff errors are acted upon
                  bExec1Stmt);           // TRUE iff executing only one stmt
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); Assert (lpplLocalVars NE NULL);
 
     // Save the exit type in the plLocalVars
     lpplLocalVars->ExitType = exitType;

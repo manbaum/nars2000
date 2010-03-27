@@ -37,18 +37,20 @@ UBOOL CmdLib_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {
-    LPPERTABDATA     lpMemPTD;  // Ptr to PerTabData global memory
-    HANDLE           hFind;     // Handle to FindData
-    WIN32_FIND_DATAW FindData;  // FindFirstFile return data struc
-    UINT             uExtLen;   // Length of workspace extension
-    LPWCHAR          lpw,       // Temporary ptr
-                     lpwszTemp; // Ptr to temporary storage
+    LPPERTABDATA     lpMemPTD;      // Ptr to PerTabData global memory
+    HANDLE           hFind;         // Handle to FindData
+    WIN32_FIND_DATAW FindData;      // FindFirstFile return data struc
+    UINT             uExtLen;       // Length of workspace extension
+    LPWCHAR          lpw,           // Temporary ptr
+                     lpwszTemp,     // Ptr to temporary storage
+                     lpwszFormat;   // ...
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage
-    lpwszTemp = lpMemPTD->lpwszTemp;
+    lpwszTemp   = lpMemPTD->lpwszTemp;
+    lpwszFormat = lpMemPTD->lpwszFormat;
 
     // Skip to the next blank
     lpw = SkipToCharW (lpwszTail, L' ');
@@ -59,15 +61,18 @@ UBOOL CmdLib_EM
     // If there's a command line tail, use it
     if (lpwszTail[0] NE WC_EOS)
     {
-        lstrcpyW (lpwszTemp, lpwszTail);
+        lstrcpyW (lpwszFormat, lpwszTail);
 
         // Ensure there's a trailing backslash
-        uExtLen = lstrlenW (lpwszTemp);
-        if (lpwszTemp[uExtLen - 1] NE WC_SLOPE)
+        uExtLen = lstrlenW (lpwszFormat);
+        if (lpwszFormat[uExtLen - 1] NE WC_SLOPE)
         {
-            lpwszTemp[uExtLen + 0] = WC_SLOPE;
-            lpwszTemp[uExtLen + 1] = WC_EOS;
+            lpwszFormat[uExtLen + 0] = WC_SLOPE;
+            lpwszFormat[uExtLen + 1] = WC_EOS;
         } // End IF
+
+        // Convert the given workspace name into a canonical form (without WS_WKSEXT)
+        MakeWorkspaceNameCanonical (lpwszTemp, lpwszFormat, lpwszWorkDir);
     } else
         lstrcpyW (lpwszTemp, lpwszWorkDir);
 

@@ -2972,8 +2972,10 @@ LRESULT WINAPI LclEditCtrlWndProc
         case WM_SETFONT:
         {
             HBITMAP hBitMap;        // Handle of the replace caret bitmap
-            USHORT  bits[28];       // We need cxAveCharXX by cyAveCharXX bits
-            UINT    fontEnum;       // FONTENUM_xx value
+            USHORT  bits[1024];     // We need (cxAveCharXX x cyAveCharXX) / 8 bytes
+            UINT    fontEnum,       // FONTENUM_xx value
+                    uLen,           // # words in each row of the text caret (1+(sizeChar.cx-1)/16)
+                    uCnt;           // Loop counter
             HWND    hWndParent;     // Handle of parent window
             SIZE    sizeChar;       // cx & cy of the average char
 
@@ -3006,17 +3008,28 @@ LRESULT WINAPI LclEditCtrlWndProc
             sizeChar = *GetFSIndAveCharSize (fontEnum);
 
             // Set the bits
-            // ***FIXME*** -- If cx is more than 16, we need to use two words
-            //                in bits to specify the caret line
             ZeroMemory (bits, sizeof (bits));
 
-            // Use a caret two lines tall
-            bits[sizeChar.cy - 2] = -1;
-            bits[sizeChar.cy - 1] = -1;
+            // Calculate the # words in each row of the text caret,
+            //  typically this value ranges from 1 to 5.
+            uLen = 1 + ((sizeChar.cx - 1) / 16);
+
+            // Loop through the text caret width
+            for (uCnt = 0; uCnt < uLen; uCnt++)
+            {
+                // First row
+                bits[(sizeChar.cy - 2) * uLen + uCnt] = -1;
+
+                // Second row
+                bits[(sizeChar.cy - 1) * uLen + uCnt] = -1;
+            } // End FOR
 
             // Create a bitmap for replace mode
-            hBitMap = CreateBitmap (sizeChar.cx, sizeChar.cy, 1, 1, &bits);
-
+            hBitMap = CreateBitmap (sizeChar.cx,    // Bitmap width, in pixels
+                                    sizeChar.cy,    // ...    height, ...
+                                    1,              // # color planes used by device
+                                    1,              // # bits requried to identify a color
+                                   &bits);          // Ptr to array containing color data
             // Save the handle
             SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
 

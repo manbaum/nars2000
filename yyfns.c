@@ -260,7 +260,8 @@ UINT YYCountFcnStr
     LPTOKEN           lpToken;      // Ptr to token
     TOKEN_TYPES       tknType;      // Token type
     HGLOBAL           hGlbFcn;      // Function array global memory handle
-    LPFCNARRAY_HEADER lpMemFcn;     // Ptr to function array global memory
+    LPFCNARRAY_HEADER lpMemHdrFcn;  // Ptr to function array header global memory
+    LPPL_YYSTYPE      lpMemFcn;     // Ptr to function array global memory
 
     // Get the token count at the top level in this function strand
     uLen = lpYYArg->TknCount;
@@ -280,10 +281,7 @@ UINT YYCountFcnStr
             tknType = lpToken->tkFlags.TknType;
 
             // If it's named and not immediate and not an internal function, ...
-            if ((tknType EQ TKT_FCNNAMED
-              || tknType EQ TKT_OP1NAMED
-              || tknType EQ TKT_OP2NAMED
-              || tknType EQ TKT_OP3NAMED)
+            if (IsTknTypeNamedFcnOpr (tknType)
              && !lpToken->tkData.tkSym->stFlags.Imm     // not an immediate, and
              && !lpToken->tkData.tkSym->stFlags.UsrDfn  // not a user-defined function/operator, and
              && !lpToken->tkData.tkSym->stFlags.FcnDir) // not an internal function
@@ -292,31 +290,67 @@ UINT YYCountFcnStr
                 hGlbFcn = ClrPtrTypeDir (lpToken->tkData.tkSym->stData.stGlbData);
 
                 // Lock the memory to get a ptr to it
-                lpMemFcn = MyGlobalLock (hGlbFcn);
+                lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
-                Assert (lpMemFcn->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE);
+                Assert (lpMemHdrFcn->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE);
 
                 // Accumulate tokens
-                TknCount += lpMemFcn->tknNELM;
+                TknCount += lpMemHdrFcn->tknNELM;
 
                 // We no longer need this ptr
-                MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+                MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
             } else
             if (tknType EQ TKT_FCNARRAY)
             {
+                UINT uCnt2,             // Loop counter
+                     uLen2;             // # tokens at top level
+
                 // Get the global memory handle
                 hGlbFcn = ClrPtrTypeDir (lpToken->tkData.tkGlbData);
 
                 // Lock the memory to get a ptr to it
-                lpMemFcn = MyGlobalLock (hGlbFcn);
+                lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
-                Assert (lpMemFcn->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE);
+                // Split cases based upon the signature
+                switch (lpMemHdrFcn->Sig.nature)
+                {
+                    case DFN_HEADER_SIGNATURE:
+                        // Count in one UDFO
+                        TknCount++;
 
-                // Accumulate tokens
-                TknCount += lpMemFcn->tknNELM;
+                        break;
+
+                    case FCNARRAY_HEADER_SIGNATURE:
+                        // If this function array is a Train, ...
+                        if (lpMemHdrFcn->fnNameType EQ NAMETYPE_TRN)
+                            // Count in one token
+                            TknCount++;
+                        else
+                        {
+                            // Get the token count
+                            uLen2 = lpMemHdrFcn->tknNELM;
+
+                            // Skip over the header to the data
+                            lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
+
+                            // Loop through the function array
+                            for (uCnt2 = 0; uCnt2 < uLen2; uCnt2++, lpMemFcn++)
+                            // Split off immediates so as not to double count TKT_OP1IMMED/INDEX_OPTRAINs
+                            if (IsTknImmed (&lpMemFcn->tkToken))
+                                TknCount++;
+                            else
+                                // Recurse down through this function array item
+                                TknCount += YYCountFcnStr (lpMemFcn);
+                        } // End IF/ELSE
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
 
                 // We no longer need this ptr
-                MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+                MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL; lpMemFcn = NULL;
             } else
                 TknCount++;
         } // End IF/ELSE
@@ -338,7 +372,8 @@ UBOOL YYIsFcnStrAxis
 {
     UBOOL             bRet;         // TRUE iff the result is valid
     HGLOBAL           hGlbFcn;      // Function array global memory handle
-    LPFCNARRAY_HEADER lpMemFcn;     // Ptr to function array global memory
+    LPFCNARRAY_HEADER lpMemHdrFcn;  // Ptr to function array header global memory
+    LPPL_YYSTYPE      lpMemFcn;     // Ptr to function array global memory
 
     /*
         The only cases we need to consider are as follows:
@@ -389,19 +424,19 @@ UBOOL YYIsFcnStrAxis
             hGlbFcn = ClrPtrTypeDir (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
 
             // Lock the memory to get a ptr to it
-            lpMemFcn = MyGlobalLock (hGlbFcn);
+            lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
-            Assert (lpMemFcn->tknNELM > 1);
+            Assert (lpMemHdrFcn->tknNELM > 1);
 
             // Skip over the function array header
-            lpMemFcn = FcnArrayBaseToData (lpMemFcn);
+            lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
 
             // Is the next token an axis value?
             bRet = (((LPPL_YYSTYPE) lpMemFcn)[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
                  || ((LPPL_YYSTYPE) lpMemFcn)[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY);
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+            MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL; lpMemFcn = NULL;
 
             return bRet;
 
@@ -427,23 +462,23 @@ LPPL_YYSTYPE YYCopyFcn
     (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
      LPPL_YYSTYPE  lpYYArg,             // Ptr to function arg
      LPPL_YYSTYPE *lplpYYBase,          // Ptr to ptr to YY base address
-     LPINT         lpTknCount,          // Ptr to resulting token count
-     UBOOL         bResUsed)            // TRUE iff the result is used
+     LPINT         lpTknCount)          // Ptr to resulting token count
 
 {
-    int          i,                     // Loop counter
-                 iLen,                  // Token count in this function strand
-                 TknCount,              // # tokens added for this element of the function strand
-                 TotalTknCount = 0;     // Total token count
-    PL_YYSTYPE   YYFcn = {0};           // Temporary YYSTYPE
-    HGLOBAL      hGlbFcn;               // Function array global memory handle
-    LPPL_YYSTYPE lpMemFcn;              // Ptr to function array global memory
-    LPTOKEN      lpToken;               // Ptr to temporary token
-    LPPL_YYSTYPE lpYYMem0,              // Ptr to temporary YYSTYPE
-                 lpYYMem1,              // ...
-                 lpYYCopy;              // ...
-    UBOOL        bYYFcn,                // TRUE iff we're using YYFcn
-                 bGlbFcn;               // TRUE iff we're using hGlbFcn
+    int               i,                    // Loop counter
+                      iLen,                 // Token count in this function strand
+                      TknCount,             // # tokens added for this element of the function strand
+                      TotalTknCount = 0;    // Total token count
+    PL_YYSTYPE        YYFcn = {0};          // Temporary YYSTYPE
+    HGLOBAL           hGlbFcn;              // Function array global memory handle
+    LPFCNARRAY_HEADER lpMemHdrFcn;          // Ptr to function array header global memory
+    LPPL_YYSTYPE      lpMemFcn;             // Ptr to function array global memory
+    LPTOKEN           lpToken;              // Ptr to temporary token
+    LPPL_YYSTYPE      lpYYMem0,             // Ptr to temporary YYSTYPE
+                      lpYYMem1,             // ...
+                      lpYYCopy;             // ...
+    UBOOL             bYYFcn,               // TRUE iff we're using YYFcn
+                      bGlbFcn;              // TRUE iff we're using hGlbFcn
 
     // Get the token count in this function strand
     iLen = lpYYArg->TknCount;
@@ -462,8 +497,10 @@ LPPL_YYSTYPE YYCopyFcn
 #endif
         Assert (YYCheckInuse (&lpYYArg[i]));
 
-        // Calculate the earlier function base
-        *lplpYYBase = min (*lplpYYBase, lpYYArg[i].lpYYFcnBase);
+        // If the function base is valid, ...
+        if (lpYYArg[i].lpYYFcnBase)
+            // Calculate the earlier function base
+            *lplpYYBase = min (*lplpYYBase, lpYYArg[i].lpYYFcnBase);
 
         // If the function is indirect, recurse
         if (lpYYArg[i].YYIndirect)
@@ -472,7 +509,7 @@ LPPL_YYSTYPE YYCopyFcn
             lpYYMem1 = lpYYMem;
 
             TknCount = 0;   // Initialize as it is incremented in YYCopyFcn
-            lpYYMem = YYCopyFcn (lpYYMem, lpYYArg[i].lpYYFcnBase, lplpYYBase, &TknCount, TRUE);
+            lpYYMem = YYCopyFcn (lpYYMem, lpYYArg[i].lpYYFcnBase, lplpYYBase, &TknCount);
 
             Assert (TknCount EQ (lpYYMem - lpYYMem1));
 
@@ -626,34 +663,78 @@ LPPL_YYSTYPE YYCopyFcn
 
                     case FCNARRAY_HEADER_SIGNATURE:
                     {
-#ifdef DEBUG
-                        LPFCNARRAY_HEADER lpMemHdrFcn;
-#endif
+                        UINT uLen,              // # tokens in the array
+                             uCnt;              // Loop counter
+
+                        Assert (GetPtrTypeDir (hGlbFcn) EQ PTRTYPE_HGLOBAL);
+
+                        // In case this is a Train with SRCIFlag set, ...
+                        DbgIncrRefCntDir_PTB (hGlbFcn);
+
                         // Clear the ptr type bits
                         hGlbFcn = ClrPtrTypeDir (hGlbFcn);
-#ifdef DEBUG
-                        lpMemHdrFcn = (LPVOID)
-#endif
+
                         // Lock the memory to get a ptr to it
-                        lpMemFcn = MyGlobalLock (hGlbFcn);
+                        lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
                         // Get the token count
-                        TknCount = ((LPFCNARRAY_HEADER) lpMemFcn)->tknNELM;
-
-                        // Increment function array reference counts
-                        IncrFcnMem (lpMemFcn);
+                        uLen = lpMemHdrFcn->tknNELM;
 
                         // Skip over the header to the data
-                        lpMemFcn = FcnArrayBaseToData (lpMemFcn);
+                        lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
 
-                        // Copy the contents of the function array to global memory
-                        CopyMemory (lpYYMem, lpMemFcn, TknCount * sizeof (lpYYMem[0]));
+                        // If this function array is a Train, ...
+                        if (lpMemHdrFcn->fnNameType EQ NAMETYPE_TRN)
+                        {
+                            // Count in one token
+                            TknCount = 1;
 
-                        // Skip over the copied function array
-                        lpYYMem += TknCount;
+                            // Count in another use
+                            DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbFcn));
+
+                            // Fill in the token
+                            YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+////////////////////////////YYFcn.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
+////////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+                            YYFcn.tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbFcn);
+                            YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
+                            YYFcn.TknCount                  = TknCount;
+////////////////////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)
+////////////////////////////YYFcn.YYIndirect                = FALSE;            // Already zero from = {0}
+                            YYFcn.YYCopyArray               = lpYYArg[i].YYCopyArray;
+////////////////////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
+////////////////////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
+////////////////////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
+////////////////////////////YYFcn.lpYYFcnBase               = NULL;             // Already zero from = {0}
+                            YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
+
+                            // Mark as using YYFcn
+                            bYYFcn = TRUE;
+                        } else
+                        {
+                            // Initialize the token count
+                            TknCount = 0;
+
+                            // Loop through the function array
+                            for (uCnt = 0; uCnt < uLen; uCnt++, lpMemFcn++)
+                            // Split off immediates so as not to double count TKT_OP1IMMED/INDEX_OPTRAINs
+                            if (IsTknImmed (&lpMemFcn->tkToken))
+                            {
+                                // Copy the item to the result
+                                *lpYYMem++ = *lpMemFcn;
+                                TknCount++;
+                            } else
+                                // Recurse down through this function array item
+                                lpYYMem = YYCopyFcn (lpYYMem, lpMemFcn, lplpYYBase, &TknCount);
+                            // Mark as not using YYFcn
+                            bYYFcn = FALSE;
+                        } // End IF/ELSE
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+                        MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL; lpMemFcn = NULL;
+
+                        // In case this is a Train with SRCIFlag set, ...
+                        FreeResultGlobalDFLV (hGlbFcn);
 
                         // If the arg was YYCopyArrayed, ...
                         if (lpYYArg[i].YYCopyArray)
@@ -664,9 +745,6 @@ LPPL_YYSTYPE YYCopyFcn
                             // Free the arg
                             FreeResult (&lpYYArg[i].tkToken);
                         } // End IF
-
-                        // Mark as not using YYFcn
-                        bYYFcn = FALSE;
 
                         break;
                     } // End FCNARRAY_HEADER_SIGNATURE
@@ -702,17 +780,16 @@ LPPL_YYSTYPE YYCopyFcn
     lpYYMem0->TknCount = TotalTknCount;
 
     // Return as the overall total
-    *lpTknCount = TotalTknCount;
+    *lpTknCount += TotalTknCount;
 
-#ifdef DEBUG
-    if (bResUsed)
-        Assert (YYCheckInuse (lpYYMem));
-#endif
+    Assert (YYCheckInuse (lpYYMem));
+
     return lpYYMem;
 } // End YYCopyFcn
 #undef  APPEND_NAME
 
 
+#if 0
 //***************************************************************************
 //  $IncrFcnTkn
 //
@@ -723,24 +800,26 @@ void IncrFcnTkn
     (LPTOKEN lptkSrc)                   // Ptr to source token
 
 {
-    HGLOBAL hGlbMem;                    // Source global memory handle
-    LPVOID  lpMemFcn;                   // Ptr to source global memory
+    HGLOBAL           hGlbFcn;          // Source global memory handle
+    LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to function array header global memory
 
     // Get the global memory handle
     //   and clear the ptr type bits
-    hGlbMem = ClrPtrTypeDir (lptkSrc->tkData.tkGlbData);
+    hGlbFcn = ClrPtrTypeDir (lptkSrc->tkData.tkGlbData);
 
     // Lock the memory to get a ptr to it
-    lpMemFcn = MyGlobalLock (hGlbMem);
+    lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
     // Increment function array reference counts
-    IncrFcnMem (lpMemFcn);
+    IncrFcnMem (lpMemHdrFcn);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbMem); lpMemFcn = NULL;
+    MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
 } // End IncrFcnTkn
+#endif
 
 
+#if 0
 //***************************************************************************
 //  $IncrFcnMem
 //
@@ -748,7 +827,7 @@ void IncrFcnTkn
 //***************************************************************************
 
 void IncrFcnMem
-    (LPVOID lpMemSrc)                   // Source array
+    (LPVOID lpMemSrc)                   // Ptr to source array
 
 {
     UINT         TknCount,              // # tokens in the function array
@@ -808,6 +887,29 @@ void IncrFcnMem
                 case TKT_FILLJOT:
                     break;
 
+                case TKT_FCNNAMED:
+                    // Get the item global memory handle
+                    hGlbItm = lpMemFcn->tkToken.tkData.tkSym->stData.stGlbData;
+
+                    // Increment the reference count
+                    DbgIncrRefCntDir_PTB (hGlbItm);
+
+                    // Clear the ptr type bits
+                    hGlbItm = ClrPtrTypeDir (hGlbItm);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemItm = MyGlobalLock (hGlbItm);
+
+                    // If the item is a UDFO, avoid double increment
+                    if (GetSignatureMem (lpMemItm) NE DFN_HEADER_SIGNATURE)
+                        // Recurse in case there are more functions
+                        IncrFcnMem (lpMemItm);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
+
+                    break;
+
                 defstop
                     break;
             } // End FOR/SWITCH
@@ -827,6 +929,7 @@ void IncrFcnMem
             break;
     } // End SWITCH
 } // End IncrFcnMem
+#endif
 
 
 #ifdef DEBUG

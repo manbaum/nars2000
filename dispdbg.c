@@ -1106,11 +1106,12 @@ LPWCHAR DisplayFcnGlb
 #ifdef DEBUG
     if (bDispHeader)
         lpaplChar += wsprintfW (lpaplChar,
-                                L"%sfnNameType=%s, NELM=%3d, RC=%2d, Fn:  ",
+                                L"%sfnNameType=%s, NELM=%3d, RC=%2d%s, Fn:  ",
                                 (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                 lpwNameTypeStr[lpHeader->fnNameType],
                                 tknNELM,
-                                lpHeader->RefCnt);
+                                lpHeader->RefCnt,
+                                lpHeader->SkipRefCntIncr ? L"*" : L" ");
 #endif
     // Skip over the function array header
     lpMemFcnArr = FcnArrayBaseToData (lpHeader);
@@ -1155,7 +1156,8 @@ LPWCHAR DisplayFcnMem
         *lpaplChar++ = L'(';
 
         // Loop through the function array entries
-        while (tknNELM--)
+        //   skipping the first (TKT_OP1IMMED/INDEX_OPTRAIN) entry
+        while (tknNELM-- > 1)
         {
             // Back off to next item
             lpMemFcnArr--;
@@ -1163,15 +1165,20 @@ LPWCHAR DisplayFcnMem
             lpaplChar =
               DisplayFcnSub (lpaplChar,             // Ptr to output save area
                              lpMemFcnArr,           // Ptr to function array data
-                             lpMemFcnArr->TknCount, // Token NELM
+                             1,                     // Token NELM
                              lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbVarParm);  // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
             // Append visual separator
             *lpaplChar++ = L' ';
         } // End WHILE
 
+        // If there's a trailing blank, ...
+        if (lpaplChar[-1] EQ L' ')
+            // Back up over it
+            lpaplChar--;
+
         // Ending paren
-        lpaplChar[-1] = L')';
+        *lpaplChar++ = L')';
 
         // Ensure properly terminated
         *lpaplChar = WC_EOS;
@@ -1200,14 +1207,15 @@ LPWCHAR DisplayFcnSub
      LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
 
 {
-    HGLOBAL    hGlbData;        // Function array global memory handle
-    LPVOID     lpMemData;       // Ptr to function array global memory
-    UINT       TknCount;        // Token count
-    UBOOL      bIsImmed;        // TRUE if the named var is an immediate
-    APLUINT    aplNELM,         // NELM of NUM/CHRSTRAND
-               uCnt;            // Loop counter
-    APLSTYPE   aplType;         // The array storage type
-    NAME_TYPES fnNameType;      // Function array name type
+    HGLOBAL      hGlbData;          // Function array global memory handle
+    LPVOID       lpMemData;         // Ptr to function array global memory
+    UINT         TknCount;          // Token count
+    UBOOL        bIsImmed;          // TRUE if the named var is an immediate
+    APLUINT      aplNELM,           // NELM of NUM/CHRSTRAND
+                 uCnt;              // Loop counter
+    APLSTYPE     aplType;           // The array storage type
+    NAME_TYPES   fnNameType;        // Function array name type
+    LPPL_YYSTYPE lpMemFcnArr;       // Ptr to function array data
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1236,6 +1244,8 @@ LPWCHAR DisplayFcnSub
                                  lpSavedWsGlbVarConv,
                                  lpSavedWsGlbVarParm);
             } else
+            // If the monadic operator is not INDEX_OPTRAIN, ...
+            if (lpYYMem[0].tkToken.tkData.tkChar NE INDEX_OPTRAIN)
             {
                 if (tknNELM > 1)
                     lpaplChar =
@@ -1244,9 +1254,41 @@ LPWCHAR DisplayFcnSub
                                      tknNELM - 1,
                                      lpSavedWsGlbVarConv,
                                      lpSavedWsGlbVarParm);
-                // Translate from INDEX_xxx to UTF16_xxx
-                *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);// Op1
-            } // End IF/ELSE
+                    // Translate from INDEX_xxx to UTF16_xxx
+                    *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);// Op1
+            } else
+            {
+                // Skip to the next entry
+                lpMemFcnArr = &lpYYMem[tknNELM];
+
+                // Start with surrounding parens
+                *lpaplChar++ = L'(';
+
+                // Loop through the function array entries
+                //   skipping the first (TKT_OP1IMMED/INDEX_OPTRAIN) entry
+                while (tknNELM-- > 1)
+                {
+                    // Back off to next item
+                    lpMemFcnArr--;
+
+                    lpaplChar =
+                      DisplayFcnSub (lpaplChar,                                         // Fcn
+                                     lpMemFcnArr,
+                                     1,
+                                     lpSavedWsGlbVarConv,
+                                     lpSavedWsGlbVarParm);
+                    // Append visual separator
+                    *lpaplChar++ = L' ';
+                } // End WHILE
+
+                // If there's a trailing blank, ...
+                if (lpaplChar[-1] EQ L' ')
+                    // Back up over it
+                    lpaplChar--;
+
+                // Ending paren
+                *lpaplChar++ = L')';
+            } // End IF/ELSE/...
 
             break;
 
@@ -1840,7 +1882,7 @@ void DisplayFcnLine
 //***************************************************************************
 
 void DisplayStrand
-    (int strType)               // Strand type (see STRAND_INDS)
+    (STRAND_INDS strType)           // Strand type (see STRAND_INDS)
 
 {
     LPPL_YYSTYPE  lp,
@@ -1886,7 +1928,7 @@ void DisplayStrand
     lpMemPTD = GetMemPTD ();
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     switch (strType)
     {
@@ -1934,8 +1976,10 @@ void DisplayStrand
         // Get token immediate status
         bIsTknImmed = IsTknImmed (&lp->tkToken);
 
+        // Get the function array
+
         wsprintfW (wszTemp,
-                   L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
+                   L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d%s IN=%1d F=%p B=%p",
                    lp,
                    GetTokenTypeName (lp->tkToken.tkFlags.TknType),
                    bIsTknImmed
@@ -1943,6 +1987,7 @@ void DisplayStrand
                  : (APLUINT) lp->tkToken.tkData.tkGlbData,
                    lp->tkToken.tkCharIndex,
                    lp->TknCount,
+                   GetVFOArraySRCIFlag (&lp->tkToken) ? L"*" : L" ",
                    lp->YYIndirect,
                    lp->lpYYFcnBase,
                    lpLast);

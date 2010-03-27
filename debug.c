@@ -268,7 +268,7 @@ LRESULT APIENTRY DBWndProc
                            | LBS_NOINTEGRALHEIGHT
                            | LBS_EXTENDEDSEL
                            | LBS_MULTIPLESEL
-                           | LBS_OWNERDRAWFIXED
+                           | LBS_OWNERDRAWVARIABLE
                            | LBS_HASSTRINGS
                              ,                      // Styles
                              0,                     // X-position
@@ -352,14 +352,15 @@ LRESULT APIENTRY DBWndProc
 #undef  fwSizeType
 
         case WM_MEASUREITEM:
-////////{
-////////    LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT) lParam;
-////////
-////////    // Set the height of the list box items
-////////    lpmis->itemHeight = 20;
-////////
+        {
+            LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT) lParam;
+
+            // Set the height of the list box items
+            //   less a little so as to cram more into the ListBox
+            lpmis->itemHeight = GetFSDirAveCharSize (FONTENUM_SM)->cy - 2;
+
             goto NORMAL_EXIT;       // We handled the msg
-////////} // End WM_MEASUREITEM
+        } // End WM_MEASUREITEM
 
         case WM_ERASEBKGND:
             return TRUE;                // Tell 'em we erased the background

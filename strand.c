@@ -60,7 +60,7 @@ void InitVarStrand
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     // Set the base of this strand to the next available location
     lpYYArg->lpYYStrandBase                   =
@@ -85,7 +85,7 @@ LPPL_YYSTYPE PushVarStrand_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -135,7 +135,7 @@ LPPL_YYSTYPE PushFcnStrand_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     lpYYArg->TknCount   = TknCount;
     lpYYArg->YYIndirect = bIndirect;
@@ -177,7 +177,7 @@ LPPL_YYSTYPE PushFcnStrand_YY
 void StripStrand
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
      LPPL_YYSTYPE  lpYYStrand,      // Ptr to base of strand to strip
-     int           strType)         // Strand type (see STRAND_INDS)
+     STRAND_INDS   strType)         // Strand type (see STRAND_INDS)
 
 {
     // If we're not back at the beginning, set the new base
@@ -187,7 +187,7 @@ void StripStrand
         Assert (lpplLocalVars->lpYYStrArrStart[strType] <= lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase);
         Assert (                                           lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase < lpplLocalVars->lpYYStrArrNext[strType]);
 
-        lpplLocalVars->lpYYStrArrBase[strType] =  lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase;
+        lpplLocalVars->lpYYStrArrBase[strType] = lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase;
     } // End IF
 
     // Set next available slot to this YYtoken's base
@@ -378,7 +378,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
     LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     DBGENTER;
 
@@ -1303,7 +1303,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         fnNameType = NAMETYPE_TRN;
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1428,7 +1428,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         TknCount = 0;
 
         // Copy the PL_YYSTYPEs to the global memory object
-        lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, TRUE);
+        lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount);
     } // End IF/ELSE
 
     // Calculate the actual length
@@ -1792,16 +1792,10 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
      UBOOL        bResetBase)           // TRUE iff we're to reset the tkCharIndex base
 
 {
-    HGLOBAL      hGlbData;              // Named function global memory handle
-    LPVOID       lpMemData;             // Ptr to named function global memory
-    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
-#ifdef DEBUG
-    LPFCNARRAY_HEADER lpMemFcnHdr;      // Ptr to named function header
-    LPPL_YYSTYPE lpMemFcnData;          // Ptr to named function data
-#else
-  #define lpMemFcnHdr ((LPFCNARRAY_HEADER) lpMemData)
-  #define lpMemFcnData ((LPPL_YYSTYPE) lpMemData)
-#endif
+    HGLOBAL           hGlbData;         // Named function global memory handle
+    LPPL_YYSTYPE      lpYYRes;          // Ptr to the result
+    LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to named function header
+    LPPL_YYSTYPE      lpMemFcn;         // Ptr to named function data
 
     // If the SYMENTRY is an immediate, ...
     if (lpYYFcnOpr->tkToken.tkData.tkSym->stFlags.Imm)
@@ -1873,9 +1867,10 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
             hGlbData = CopyArray_EM (hGlbData, &lpYYRes->tkToken);
 
             // Lock the memory to get a ptr to it
-            lpMemFcnHdr = lpMemData = MyGlobalLock (hGlbData);
+            lpMemHdrFcn = MyGlobalLock (hGlbData);
 
-            // Change the token type and data to an array
+            // Change the token type and data from a named function array
+            //   to an unnamed function array
             lpYYRes->tkToken.tkFlags.TknType = TKT_FCNARRAY;
             lpYYRes->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbData);
 
@@ -1883,20 +1878,20 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
             lpYYRes->YYCopyArray = TRUE;
 
             // Get the # function tokens
-            tknNELM = lpMemFcnHdr->tknNELM;
+            tknNELM = lpMemHdrFcn->tknNELM;
 
             // Skip over the the header to the data
-            lpMemFcnData = lpMemData = FcnArrayBaseToData (lpMemData);
+            lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
 
             // Get the current token's tkCharIndex
             uInd = lpYYFcnOpr->tkToken.tkCharIndex;
 
             // Trundle through the arg rebasing each tkCharIndex
-            for (uCnt = 0; uCnt < tknNELM; uCnt++, lpMemFcnData++)
-                lpMemFcnData->tkToken.tkCharIndex = uInd;
+            for (uCnt = 0; uCnt < tknNELM; uCnt++, lpMemFcn++)
+                lpMemFcn->tkToken.tkCharIndex = uInd;
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbData); lpMemFcnHdr = lpMemData = NULL;
+            MyGlobalUnlock (hGlbData); lpMemHdrFcn = NULL; lpMemFcn = NULL;
         } else
             lpYYRes = CopyPL_YYSTYPE_YY (lpYYFcnOpr);
     } // End IF/ELSE
@@ -1910,6 +1905,58 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
 #endif
     return lpYYRes;
 } // End MakeNameFcnOpr_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MakeTrainOp_YY
+//
+//  Make a primitive monadic Train operator
+//
+//  On exit:
+//      No change in RefCnt.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakeTrainOp_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE MakeTrainOp_YY
+    (LPPL_YYSTYPE lpYYArg1)
+
+{
+    LPPL_YYSTYPE lpYYRes,           // Ptr to the result
+                 lpYYRes2;          // ...
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    if (!lpYYRes)
+        return NULL;
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_OP1IMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_PRIMOP1;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;             // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkChar     = INDEX_OPTRAIN;
+    lpYYRes->tkToken.tkCharIndex       = lpYYArg1->tkToken.tkCharIndex;
+////lpYYRes->TknCount                  = 0;                 // Already zero from YYAlloc
+
+    lpYYRes2 =
+      MakePrimOp123_YY (lpYYRes, IMMTYPE_PRIMOP1);
+
+    // Free the allocated result as MakePrimOp123_YY
+    //   will allocate a result
+    YYFree (lpYYRes); lpYYRes = NULL;
+
+    if (lpYYRes2)
+        // Initialize the token count (TrainOp Arg1 Arg2)
+        lpYYRes2->TknCount = 3;
+
+    return lpYYRes2;
+} // End MakeTrainOp_YY
 #undef  APPEND_NAME
 
 
@@ -2007,6 +2054,8 @@ LPPL_YYSTYPE MakePrimOp123_YY
 {
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
+    Assert (lpYYOp123->tkToken.tkFlags.ImmType EQ immType);
+
     lpYYRes = CopyPL_YYSTYPE_YY (lpYYOp123);
     lpYYRes->lpYYFcnBase = NULL;
     lpYYRes->TknCount    = 0;
@@ -2032,7 +2081,7 @@ void InitNameStrand
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     // Set the base of this strand to the next available location
     lpYYArg->lpYYStrandBase                   =
@@ -2057,7 +2106,7 @@ LPPL_YYSTYPE PushNameStrand_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2113,7 +2162,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     DBGENTER;
 
@@ -2206,7 +2255,7 @@ LPPL_YYSTYPE InitList0_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2266,7 +2315,7 @@ LPPL_YYSTYPE PushList_YY
     PL_YYSTYPE    YYTmp = {0};      // Temporary PL_YYSTYPE
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2337,7 +2386,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
     DBGENTER;
 

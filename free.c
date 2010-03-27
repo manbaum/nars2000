@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -271,36 +271,32 @@ UBOOL FreeResultGlobalDFLV
     (HGLOBAL hGlbData)
 
 {
-    BOOL bRet;                      // TRUE iff result is valid
-
     // Split cases based upon the signature
     switch (GetSignatureGlb (hGlbData))
     {
         case DFN_HEADER_SIGNATURE:
-            bRet = FreeResultGlobalDfn (hGlbData); hGlbData = NULL;
+            return FreeResultGlobalDfn (hGlbData);
 
             break;
 
         case FCNARRAY_HEADER_SIGNATURE:
-            bRet = FreeResultGlobalFcn (hGlbData); hGlbData = NULL;
+            return FreeResultGlobalFcn (hGlbData);
 
             break;
 
         case LSTARRAY_HEADER_SIGNATURE:
-            bRet = FreeResultGlobalLst (hGlbData); hGlbData = NULL;
+            return FreeResultGlobalLst (hGlbData);
 
             break;
 
         case VARARRAY_HEADER_SIGNATURE:
-            bRet = FreeResultGlobalVar (hGlbData); hGlbData = NULL;
+            return FreeResultGlobalVar (hGlbData);
 
             break;
 
         defstop
-            bRet = FALSE;
+            return FALSE;
     } // End SWITCH
-
-    return bRet;
 } // End FreeResultGlobalDFLV
 
 

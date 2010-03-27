@@ -463,19 +463,23 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
     if (fnNameType EQ NAMETYPE_TRN)
     {
         if (lptkAxis NE NULL)
-            lpYYRes = PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
+            lpYYRes =
+              PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
         else
-            lpYYRes = ExecTrain_EM_YY   (lptkLftArg,    // Ptr to left arg token
-                                         lpYYFcnStr,    // Ptr to function strand
-                                         lptkRhtArg,    // Ptr to right arg token
-                                         tknNELM);      // # elements in the train
+            // Execute as Train, skipping over the monadic operator
+            lpYYRes =
+              ExecTrain_EM_YY (lptkLftArg,      // Ptr to left arg token
+                              &lpYYFcnStr[1],   // Ptr to function strand
+                               lptkRhtArg,      // Ptr to right arg token
+                               tknNELM - 1);    // # elements in the train
     } else
         // The contents of the global memory object consist of
         //   a series of PL_YYSTYPEs in RPN order.
-        lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
-                                     lpYYFcnStr,    // Ptr to function strand
-                                     lptkRhtArg,    // Ptr to right arg token
-                                     lptkAxis);     // Ptr to axis token
+        lpYYRes =
+          ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
+                             lpYYFcnStr,    // Ptr to function strand
+                             lptkRhtArg,    // Ptr to right arg token
+                             lptkAxis);     // Ptr to axis token
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
 
@@ -1012,6 +1016,12 @@ LPPL_YYSTYPE ExecOp1_EM_YY
             return PrimOpCircleMiddleDot_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
                                                 lpYYFcnStrOpr,  // Ptr to operator function strand
                                                 lptkRhtArg);    // Ptr to right arg token
+        case INDEX_OPTRAIN:         // Train
+            // Execute as Train, skipping over the monadic operator
+            return ExecTrain_EM_YY (lptkLftArg,                     // Ptr to left arg token
+                                   &lpYYFcnStrOpr[1],               // Ptr to function strand
+                                    lptkRhtArg,                     // Ptr to right arg token
+                                    lpYYFcnStrOpr->TknCount - 1);   // # elements in the train
         defstop
             return NULL;
     } // End SWITCH

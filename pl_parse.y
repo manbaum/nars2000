@@ -6232,8 +6232,12 @@ Train:
                                              lpplLocalVars->lpYYRht =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
 
+                                             lpplLocalVars->lpYYMak =
+                                               MakeTrainOp_YY (&$1);
+
                                              if (!lpplLocalVars->lpYYLft             // If not defined, free args and YYERROR
-                                              || !lpplLocalVars->lpYYRht)
+                                              || !lpplLocalVars->lpYYRht
+                                              || !lpplLocalVars->lpYYMak)
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
@@ -6248,8 +6252,17 @@ Train:
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
+                                                 if (lpplLocalVars->lpYYMak)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                                 } // End IF
+
                                                  YYERROR3
                                              } // End IF
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 3, DIRECT); // Monadic operator (Direct)
+                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              lpplLocalVars->lpYYStrR =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYRht, 1, DIRECT); // Righthand function (Direct)
@@ -6270,10 +6283,11 @@ Train:
                                              SetVFOArraySRCIFlag (&lpplLocalVars->lpYYStrR->tkToken);
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYStrR;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
                                              YYFree (lpplLocalVars->lpYYStrR); lpplLocalVars->lpYYStrR = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1 ); lpplLocalVars->lpYYOp1  = NULL;
 #ifdef DEBUG
                                              // Display the strand stack
                                              DisplayStrand (STRAND_FCN);
@@ -6295,8 +6309,12 @@ Train:
                                              lpplLocalVars->lpYYRht =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
 
+                                             lpplLocalVars->lpYYMak =
+                                               MakeTrainOp_YY (&$1);
+
                                              if (!lpplLocalVars->lpYYLft             // If not defined, free args and YYERROR
-                                              || !lpplLocalVars->lpYYRht)
+                                              || !lpplLocalVars->lpYYRht
+                                              || !lpplLocalVars->lpYYMak)
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
@@ -6311,8 +6329,17 @@ Train:
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
+                                                 if (lpplLocalVars->lpYYMak)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                                 } // End IF
+
                                                  YYERROR3
                                              } // End IF
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 3, DIRECT); // Monadic operator (Direct)
+                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              lpplLocalVars->lpYYStrR =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYRht, 1, DIRECT); // Righthand function (Direct)
@@ -6333,10 +6360,11 @@ Train:
                                              SetVFOArraySRCIFlag (&lpplLocalVars->lpYYStrR->tkToken);
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYStrR;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
                                              YYFree (lpplLocalVars->lpYYStrR); lpplLocalVars->lpYYStrR = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1 ); lpplLocalVars->lpYYOp1  = NULL;
 #ifdef DEBUG
                                              // Display the strand stack
                                              DisplayStrand (STRAND_FCN);
@@ -6358,8 +6386,12 @@ Train:
                                              lpplLocalVars->lpYYRht =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
 
+                                             lpplLocalVars->lpYYMak =
+                                               MakeTrainOp_YY (&$1);
+
                                              if (!lpplLocalVars->lpYYLft             // If not defined, free args and YYERROR
-                                              || !lpplLocalVars->lpYYRht)
+                                              || !lpplLocalVars->lpYYRht
+                                              || !lpplLocalVars->lpYYMak)
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
@@ -6374,8 +6406,17 @@ Train:
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
+                                                 if (lpplLocalVars->lpYYMak)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                                 } // End IF
+
                                                  YYERROR3
                                              } // End IF
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 3, DIRECT); // Monadic operator (Direct)
+                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              lpplLocalVars->lpYYStrR =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYRht, 1, DIRECT); // Righthand function (Direct)
@@ -6396,10 +6437,11 @@ Train:
                                              SetVFOArraySRCIFlag (&lpplLocalVars->lpYYStrR->tkToken);
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYStrR;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
                                              YYFree (lpplLocalVars->lpYYStrR); lpplLocalVars->lpYYStrR = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1 ); lpplLocalVars->lpYYOp1  = NULL;
 #ifdef DEBUG
                                              // Display the strand stack
                                              DisplayStrand (STRAND_FCN);
@@ -6421,8 +6463,12 @@ Train:
                                              lpplLocalVars->lpYYRht =
                                                MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
 
+                                             lpplLocalVars->lpYYMak =
+                                               MakeTrainOp_YY (&$1);
+
                                              if (!lpplLocalVars->lpYYLft             // If not defined, free args and YYERROR
-                                              || !lpplLocalVars->lpYYRht)
+                                              || !lpplLocalVars->lpYYRht
+                                              || !lpplLocalVars->lpYYMak)
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
@@ -6437,8 +6483,17 @@ Train:
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
+                                                 if (lpplLocalVars->lpYYMak)
+                                                 {
+                                                     FreeYYFcn1 (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+                                                 } // End IF
+
                                                  YYERROR3
                                              } // End IF
+
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 3, DIRECT); // Monadic operator (Direct)
+                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
 
                                              lpplLocalVars->lpYYStrR =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYRht, 1, DIRECT); // Righthand function (Direct)
@@ -6459,10 +6514,11 @@ Train:
                                              SetVFOArraySRCIFlag (&lpplLocalVars->lpYYStrR->tkToken);
 
                                              // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYStrR;
+                                             $$ = *lpplLocalVars->lpYYOp1;
 
                                              YYFree (lpplLocalVars->lpYYStrL); lpplLocalVars->lpYYStrL = NULL;
                                              YYFree (lpplLocalVars->lpYYStrR); lpplLocalVars->lpYYStrR = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp1 ); lpplLocalVars->lpYYOp1  = NULL;
 #ifdef DEBUG
                                              // Display the strand stack
                                              DisplayStrand (STRAND_FCN);
@@ -6483,6 +6539,9 @@ Train:
     | Train    LeftOper                 {DbgMsgWP (L"%%Train:  LeftOper Train");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Increment the token count
+                                             $1.TknCount++; $1.lpYYFcnBase->TknCount++;
+
                                              // Initialize the function strand (Train) base
                                              $2.lpYYStrandBase = $2.lpYYFcnBase;
 
@@ -6546,6 +6605,9 @@ Train:
     | Train    AxisFunc                 {DbgMsgWP (L"%%Train:  AxisFunc Train");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Increment the token count
+                                             $1.TknCount++; $1.lpYYFcnBase->TknCount++;
+
                                              // Initialize the function strand (Train) base
                                              $2.lpYYStrandBase = $2.lpYYFcnBase;
 

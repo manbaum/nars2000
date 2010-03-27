@@ -1583,15 +1583,15 @@ HGLOBAL CopySymGlbDir_PTB
 #endif
 
 HGLOBAL CopyArray_EM
-    (HGLOBAL hGlbSrc,       // Source handle
-     LPTOKEN lptkFunc)      // Ptr to function token
+    (HGLOBAL hGlbSrc,                       // Source handle
+     LPTOKEN lptkFunc)                      // Ptr to function token
 
 {
     SIZE_T       dwSize;
     LPVOID       lpMemSrc, lpMemSrcBase,
                  lpMemDst, lpMemDstBase;
-    HGLOBAL      hGlbDst,
-                 hGlbTmp;
+    HGLOBAL      hGlbDst,                   // Dest global memory handle
+                 hGlbItm;                   // Item ...
     APLSTYPE     aplType;
     APLNELM      aplNELM;
     APLRANK      aplRank;
@@ -1702,11 +1702,11 @@ HGLOBAL CopyArray_EM
                                 Assert (IsGlbTypeVarInd_PTB (lpMemSrc));
 
                                 // Copy the array
-                                hGlbTmp = CopyArray_EM (*(LPAPLNESTED) lpMemSrc,
+                                hGlbItm = CopyArray_EM (*(LPAPLNESTED) lpMemSrc,
                                                         lptkFunc);
-                                if (hGlbTmp)
+                                if (hGlbItm)
                                     // Save into the destin
-                                    *((LPAPLNESTED) lpMemDst) = MakePtrTypeGlb (hGlbTmp);
+                                    *((LPAPLNESTED) lpMemDst) = MakePtrTypeGlb (hGlbItm);
                                 else
                                     bRet = FALSE;
                                 break;
@@ -1745,26 +1745,71 @@ HGLOBAL CopyArray_EM
                 // Split cases based upon the token type
                 switch (lpMemFcn->tkToken.tkFlags.TknType)
                 {
+                    case TKT_FCNARRAY:
                     case TKT_VARARRAY:
                     case TKT_NUMSTRAND:
                     case TKT_CHRSTRAND:
-                        // Increment the reference count
-                        DbgIncrRefCntDir_PTB (lpMemFcn->tkToken.tkData.tkGlbData);
+                        // Get the item global memory handle
+                        hGlbItm = lpMemFcn->tkToken.tkData.tkGlbData;
 
+                        // If it's a UDFO, ...
+                        if (GetSignatureGlb (hGlbItm) EQ DFN_HEADER_SIGNATURE)
+                            // No need to copy the UDFO body, just increment the RefCnt
+                            DbgIncrRefCntDir_PTB (hGlbItm);
+                        else
+                            // Copy the array
+                            hGlbItm = CopyArray_EM (hGlbItm,
+                                                    lptkFunc);
+                        if (hGlbItm)
+                            // Save back into the destin
+                            lpMemFcn->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbItm);
+                        else
+                            bRet = FALSE;
                         break;
 
-                    case TKT_FCNARRAY:
-                        // Increment the reference count
-                        DbgIncrRefCntDir_PTB (lpMemFcn->tkToken.tkData.tkGlbData);
-
-                        // Increment function array item reference counts
-                        IncrFcnTkn (&lpMemFcn->tkToken);
-
+                    case TKT_AXISIMMED:
+                    case TKT_VARIMMED:
+                    case TKT_FCNIMMED:
+                    case TKT_OP1IMMED:
+                    case TKT_OP2IMMED:
+                    case TKT_OP3IMMED:
+                    case TKT_OPJOTDOT:
+                    case TKT_FILLJOT:
                         break;
 
-                    default:
+                    case TKT_FCNNAMED:
+                        // Get the item global memory handle
+                        hGlbItm = lpMemFcn->tkToken.tkData.tkSym->stData.stGlbData;
+
+                        // If it's a UDFO, ...
+                        if (lpMemFcn->tkToken.tkData.tkSym->stFlags.UsrDfn)
+                            // No need to copy the UDFO body, just increment the RefCnt
+                            DbgIncrRefCntDir_PTB (hGlbItm);
+                        else
+                            // Copy the array
+                            hGlbItm = CopyArray_EM (hGlbItm,
+                                                    lptkFunc);
+                        if (hGlbItm)
+                        {
+                            // Save back into the destin
+                            lpMemFcn->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbItm);
+
+                            // Change the token type and data from a named function array
+                            //   to an unnamed function array
+                            lpMemFcn->tkToken.tkFlags.TknType  = TKT_FCNARRAY;
+                        } else
+                            bRet = FALSE;
+                        break;
+
+                    defstop
                         break;
                 } // End FOR/SWITCH
+
+                break;
+
+            case DFN_HEADER_SIGNATURE:
+                // Increment the reference count
+                DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbDst));
 
                 break;
 
@@ -3136,6 +3181,10 @@ void SetVFOArraySRCIFlag
      && IsSymNoValue (lptkVFO->tkData.tkSym))
         return;
 
+    // If the token is immediate, ...
+    if (IsTknImmed (lptkVFO))
+        return;
+
     // Get the array's global ptrs (if any)
     //   and lock it
     GetGlbPtrs_LOCK (lptkVFO, &hGlbVFO, &vfoHdrPtrs.lpMemVFO);
@@ -3169,6 +3218,66 @@ void SetVFOArraySRCIFlag
 } // End SetVFOArraySRCIFlag
 
 
+#ifdef DEBUG
+//***************************************************************************
+//  $GetVFOArraySRCIFlag
+//
+//  Get the SkipRefCntIncr flag in a variable/function/operator array.
+//***************************************************************************
+
+UBOOL GetVFOArraySRCIFlag
+    (LPTOKEN lptkVFO)                   // Ptr to var/fcn/opr token
+
+{
+    HGLOBAL    hGlbVFO;
+    VFOHDRPTRS vfoHdrPtrs;
+    UBOOL      bRet = FALSE;        // Return value
+
+    // If the token is named and has no value, ...
+    if (IsTknTypeNamed (lptkVFO->tkFlags.TknType)
+     && IsSymNoValue (lptkVFO->tkData.tkSym))
+        return FALSE;
+
+    // If the token is immediate, ...
+    if (IsTknImmed (lptkVFO))
+        return FALSE;
+
+    // Get the array's global ptrs (if any)
+    //   and lock it
+    GetGlbPtrs_LOCK (lptkVFO, &hGlbVFO, &vfoHdrPtrs.lpMemVFO);
+
+    // Is the array global?
+    if (hGlbVFO)
+    {
+        // If the array is a UDFO, ...
+        if (IsTknUsrDfn (lptkVFO))
+            // Set the UDFO flag which says to skip the next
+            //   IncrRefCnt
+            bRet = vfoHdrPtrs.lpMemDfn->SkipRefCntIncr;
+        else
+        // If the array is a fcn/opr, ...
+        if (IsTknTypeFcnOpr (lptkVFO->tkFlags.TknType))
+            // Set the Function Array flag which says to skip the next
+            //   IncrRefCnt
+            bRet = vfoHdrPtrs.lpMemFcn->SkipRefCntIncr;
+        else
+        // If the array is a var?
+        if (IsTknTypeVar (lptkVFO->tkFlags.TknType))
+            // Set the Variable flag which says to skip the next
+            //   IncrRefCnt
+            bRet = vfoHdrPtrs.lpMemVar->SkipRefCntIncr;
+        else
+            DbgStop ();
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;
+    } // End IF
+
+    return bRet;
+} // End GetVFOArraySRCIFlag
+#endif
+
+
 //***************************************************************************
 //  $ClrVFOArraySRCIFlag
 //
@@ -3185,6 +3294,10 @@ void ClrVFOArraySRCIFlag
     // If the token is named and has no value, ...
     if (IsTknTypeNamed (lptkVFO->tkFlags.TknType)
      && IsSymNoValue (lptkVFO->tkData.tkSym))
+        return;
+
+    // If the token is immediate, ...
+    if (IsTknImmed (lptkVFO))
         return;
 
     // Get the array's global ptrs (if any)

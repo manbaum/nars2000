@@ -1424,6 +1424,7 @@ void UnlocalizeSTEs
                     case NAMETYPE_OP1:
                     case NAMETYPE_OP2:
                     case NAMETYPE_OP3:
+                    case NAMETYPE_TRN:
                         if (lpSymEntryCur->stFlags.UsrDfn)
                             // Free the global user-defined function/operator
                             FreeResultGlobalDfn (hGlbData);

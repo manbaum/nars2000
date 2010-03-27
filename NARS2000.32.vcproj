@@ -997,6 +997,14 @@
 			<File
 				RelativePath=".\compro.h"
 				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\cs_parse.h"

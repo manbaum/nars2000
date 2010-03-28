@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -795,14 +795,18 @@ LPAPLUINT AttributeObjSize
      LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
 
 {
-    APLINT aplObjSize;                      // The object's size
+    APLINT aplObjSize,                      // The object's size (header and data)
+           aplDataSize;                     // The object's data size
+
+    // Initialize the value
+    aplDataSize = 0;
 
     // Get the object's size
-    aplObjSize = CalcSymentrySize (lpSymEntry);
+    aplObjSize = CalcSymEntrySize (lpSymEntry, &aplDataSize);
 
     // Save it in the result
-    *lpMemDataRes++ = aplObjSize;           // [1] Object size
-    *lpMemDataRes++ = aplObjSize;           // [2]   "     "
+    *lpMemDataRes++ = aplObjSize;           // [1] Header and data
+    *lpMemDataRes++ = aplDataSize;          // [2] Data
 
     return lpMemDataRes;
 } // End AttributeObjSize

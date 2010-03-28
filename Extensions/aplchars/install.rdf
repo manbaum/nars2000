@@ -9,7 +9,7 @@
       em:creator="Bob Smith"
       em:description="A mechanism for entering APL characters into a message."
       em:homepageURL="http://www.sudleyplace.com/APL/AplInEmail.ahtml"
-      em:updateURL="http://www.sudleyplace.com/APL/aplchars/update.rdf"
+      em:updateURL="https://ssl4.westserver.net/qualitas.biz/sudleyplace.com/APL/aplchars/update.rdf"
       em:aboutURL="chrome://aplchars/content/about.xul"
       em:optionsURL="chrome://aplchars/content/options.xul"
       em:iconURL="chrome://aplchars/content/icon.png" >

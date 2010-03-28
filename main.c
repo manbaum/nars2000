@@ -26,10 +26,7 @@
 #define OEMRESOURCE         // To get OBM_CHECK define
 #include <windows.h>
 #include <windowsx.h>
-#include <windowsx.h16>
 //#include <multimon.h>   // Multiple monitor support
-#include <limits.h>
-#include <direct.h>
 #include <wininet.h>
 
 #define DEFINE_VARS
@@ -66,19 +63,20 @@ typedef struct tagUPDATESDLGSTR
 int  nMinState,                         // Minimized state as per WinMain
      iScrollSize;                       // Width of a vertical scrollbar
 UBOOL fHelp = FALSE,                    // TRUE iff we displayed help
-      bCommandLine = FALSE,             // ...      there is a filename on the command line
-      bAPLFont = FALSE;                 // TRUE iff we found our default APL font
+      bCommandLine = FALSE;             // ...      there is a filename on the command line
 
 HMODULE user32_module;                  // Needed by WineHQ\EDITCTRL.C
 
-HICON hIconMF_Large, hIconMF_Small,     // Icon handles
-      hIconSM_Large, hIconSM_Small,
-      hIconFE_Large, hIconFE_Small,
-      hIconME_Large, hIconME_Small,
-      hIconVE_Large, hIconVE_Small,
-      hIconCC_Large, hIconCC_Small,
-      hIconWC_Large, hIconWC_Small,
-      hIconAbout, hIconClose, hIconCustom;
+HICON hIconMF_Large,    hIconMF_Small,      // Icon handles
+      hIconSM_Large,    hIconSM_Small,
+      hIconFE_Large,    hIconFE_Small,
+      hIconME_Large,    hIconME_Small,
+      hIconVE_Large,    hIconVE_Small,
+      hIconCC_Large,    hIconCC_Small,
+      hIconWC_Large,    hIconWC_Small,
+      hIconAbout,
+      hIconClose,
+      hIconCustom;
 #ifdef DEBUG
 HICON hIconDB_Large, hIconDB_Small;
 #endif
@@ -86,12 +84,9 @@ HICON hIconDB_Large, hIconDB_Small;
 HICON hIconPM_Large, hIconPM_Small;
 #endif
 
-#define  MFWNDCLASS          "MFClass"                                      // Master Frame Window class
-#define LMFWNDCLASS         L"MFClass"                                      // Master Frame Window class
-
-WCHAR wszMFTitle[]          = WS_APPNAME WS_APPEND_DEBUG,                   // Master frame window title
-      wszCCTitle[]          = WS_APPNAME L" Crash Control Window" WS_APPEND_DEBUG, // Crash Control window title
-      wszTCTitle[]          = WS_APPNAME L" Tab Control Window" WS_APPEND_DEBUG;// Tab Control ... (for debugging purposes only)
+WCHAR wszMFTitle[]          = WS_APPNAME WS_APPEND_DEBUG,                           // Master frame window title
+      wszCCTitle[]          = WS_APPNAME L" Crash Control Window" WS_APPEND_DEBUG,  // Crash Control window title
+      wszTCTitle[]          = WS_APPNAME L" Tab Control Window" WS_APPEND_DEBUG;    // Tab Control ... (for debugging purposes only)
 
 char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.",
      pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS ">.",
@@ -99,7 +94,9 @@ char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.
      pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
      pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.",
      pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS ">.",
-     pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS ">.";
+     pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS ">.",
+     pszNoRegFW_RBWndClass[]= "Unable to register window class <" FW_RBWNDCLASS ">.",
+     pszNoRegLW_RBWndClass[]= "Unable to register window class <" LW_RBWNDCLASS ">.";
 #ifdef DEBUG
 char pszNoRegDBWndClass[]   = "Unable to register window class <" DBWNDCLASS ">.";
 #endif
@@ -115,6 +112,9 @@ char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
 int glbStatusPartsWidth[SP_LENGTH] = {0};
 int glbStatusBorders[3];
 WNDPROC lpfnOldStatusWndProc;           // Save area for old Status Window procedure
+#ifdef DEBUG
+WNDPROC lpfnOldTooltipCtrlWndProc;      //
+#endif
 
 
 //***************************************************************************
@@ -152,9 +152,7 @@ void SetStatusParts
     int         lclStatusPartsRight[SP_LENGTH];
     STATUSPARTS iCnt;           // Loop counter
     SIZE        sText;
-    HWND        hWndMC,         // Active hWndMC
-                hWndAct,        // Active window handle
-                hWndEC;         // Edit Ctrl window handle
+    HWND        hWndEC;         // Edit Ctrl window handle
 
     // Get a Client Area DC for the Status Window
     hDC = MyGetDC (hWndStatus);
@@ -259,15 +257,10 @@ void SetStatusParts
     MyReleaseDC (hWndStatus, hDC); hDC = NULL;
 
     // Get the active MDI Child window handle (if any)
-    hWndMC  = GetActiveMC (hWndTC);
-    if (hWndMC)
-    {
-        hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
-        (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC);
-
+    hWndEC  = GetActiveEC (hWndTC);
+    if (hWndEC)
         // Tell the Status Window about the new positions
         SetStatusPos (hWndEC);
-    } // End IF
 } // End SetStatusParts
 
 
@@ -452,9 +445,13 @@ int CALLBACK EnumCallbackFindAplFont
      int            iFontType,  // Font type
      LPARAM         lParam)     // Application-defined data
 {
+#ifdef DEBUG
+    LPWCHAR lpwFontName = (LPWCHAR) lParam;
+#else
+  #define lpwFontName   ((LPWCHAR) lParam)
+#endif
     // If the name does not match our name, ...
-////if (lstrcmpiW (lpELF->elfFullFaceName, (LPWCHAR) lParam) NE 0)
-    if (lstrcmpiW (lpELF->elfLogFont.lfFaceName, (LPWCHAR) lParam) NE 0)
+    if (lstrcmpiW (lpELF->elfFullName, lpwFontName) NE 0)
         // Continue enumerating
         return TRUE;
 
@@ -462,6 +459,9 @@ int CALLBACK EnumCallbackFindAplFont
     bAPLFont = TRUE;
 
     return FALSE;               // Stop enumerating
+#ifndef DEBUG
+  #undef  lpwFontName
+#endif
 } // End EnumCallbackFindAplFont
 
 
@@ -709,6 +709,21 @@ HFONT GetFSIndFontHandle
 
 
 //***************************************************************************
+//  $GetFSIndLogfontW
+//
+//  From FontStruc, get the indirect logfont taking into account
+//    <glbSameFontAs>.
+//***************************************************************************
+
+LPLOGFONTW GetFSIndLogfontW
+    (FONTENUM fontEnum)                 // FONTENUM_xxx index
+
+{
+    return fontStruc[glbSameFontAs[fontEnum]].lplf;
+} // End GetFSIndLogfontW
+
+
+//***************************************************************************
 //  $GetFSIndAveCharSize
 //
 //  From FontStruc, get the indirect average char size taking into account
@@ -770,8 +785,8 @@ void CreateNewFontCC
                       &lfCC,
                       &cfCC,
                       &tmCC,
-                       NULL,
-                       NULL,
+                      &GetFSDirAveCharSize (FONTENUM_CC)->cx,
+                      &GetFSDirAveCharSize (FONTENUM_CC)->cy,
                        NULL);
     // If we are also applying the font, ...
     if (bApply)
@@ -798,6 +813,51 @@ void ApplyNewFontCC
 
 
 //***************************************************************************
+//  $CreateNewFontLW
+//
+//  Create a new font for the LW window.
+//***************************************************************************
+
+void CreateNewFontLW
+    (UBOOL bApply)                      // TRUE iff we should apply the new font
+
+{
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontLW,
+                      &lfLW,
+                      &cfLW,
+                      &tmLW,
+                      &GetFSDirAveCharSize (FONTENUM_LW)->cx,
+                      &GetFSDirAveCharSize (FONTENUM_LW)->cy,
+                       NULL);
+    // If we are also applying the font, ...
+    if (bApply)
+        ApplyNewFontEnum (FONTENUM_LW);
+} // End CreateNewFontLW
+
+
+//***************************************************************************
+//  $ApplyNewFontLW
+//
+//  Apply the LW font to the Language Window
+//***************************************************************************
+
+void ApplyNewFontLW
+    (HFONT hFont)                   // Font handle to use
+
+{
+    APLU3264 uItem;                 // Index of current item
+
+    // Get the index of the existing Language Bar
+    uItem =
+      SendMessageW (hWndRB, RB_IDTOINDEX, IDWC_LW_RB, 0);
+
+    // Update the Language Bar
+    InitLanguageBand (uItem);
+} // End ApplyNewFontLW
+
+
+//***************************************************************************
 //  $CreateNewFontSM
 //
 //  Create a new font for the SM windows.
@@ -815,10 +875,82 @@ void CreateNewFontSM
                       &GetFSDirAveCharSize (FONTENUM_SM)->cx,
                       &GetFSDirAveCharSize (FONTENUM_SM)->cy,
                        NULL);
+    // Change the font name in the Comboxbox in the Font Window
+    InitFontName ();
+
+    // Change the font style in the Comboxbox in the Font Window
+    InitFontStyle ();
+
+    // Change the point size in the Listbox/UpDown Controls in the Font Window
+    InitPointSize ();
+
     // If we are also applying the font, ...
     if (bApply)
         ApplyNewFontEnum (FONTENUM_SM);
 } // End CreateNewFontSM
+
+
+//***************************************************************************
+//  $InitFontName
+//
+//  Initialize the Font Name in the Font Window Combobox
+//***************************************************************************
+
+void InitFontName
+    (void)
+
+{
+    APLU3264 uItem;                 // Index of the current item
+
+    // Find the default SM font
+    uItem =
+      SendMessageW (hWndCBFN_FW, CB_FINDSTRINGEXACT, (WPARAM) -1, (LPARAM) lfSM.lfFaceName);
+
+    // If the default SM font is not found, ...
+    if (uItem EQ CB_ERR)
+        // Add it into the Listbox
+        uItem =
+          SendMessageW (hWndCBFN_FW, CB_ADDSTRING, 0, (LPARAM) lfSM.lfFaceName);
+    // Set the current selection
+    SendMessageW (hWndCBFN_FW, CB_SETCURSEL, uItem, 0);
+} // End InitFontName
+
+
+//***************************************************************************
+//  $InitFontStyle
+//
+//  Initialize the Font Style in the Font Window Combobox
+//***************************************************************************
+
+void InitFontStyle
+    (void)
+
+{
+    UINT uItem;         // Index of the current item
+
+    // Calculate the current selection
+    //   (0 = Regular, 1 = Italic, 2 = Bold, 3 = Bold Italic)
+    uItem = (lfSM.lfWeight >= FW_BOLD) * 2
+          +  lfSM.lfItalic;
+
+    // Change the font style in the Comboxbox in the Font Window
+    SendMessageW (hWndCBFS_FW, CB_SETCURSEL, uItem, 0);
+} // End InitFontStyle
+
+
+//***************************************************************************
+//  $InitPointSize
+//
+//  Initialize the Point Size in the Font Window Listbox/UpDown Controls
+//***************************************************************************
+
+void InitPointSize
+    (void)
+
+{
+    // Set the UpDown Ctrl position
+    SendMessageW (hWndUD_FW, UDM_SETPOS, 0, MAKELONG (cfSM.iPointSize / 10, 0));
+} // End InitPointSize
 
 
 //***************************************************************************
@@ -843,6 +975,9 @@ void ApplyNewFontSM
 
     // Refont the SM windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
+
+    // Refont the Language Window in the Rebar Ctrl
+    InvalidateRect (hWndLW_RB, NULL, FALSE);
 
     // Is the Customize dialog active?
     if (ghDlgCustomize)
@@ -1096,32 +1231,32 @@ void ApplyNewFontVE
 //***************************************************************************
 
 HWND CreateToolTip
-    (HWND hWndParent)
+    (void)
 
 {
     HWND hWnd;
 
     // Create the ToolTip window
     hWnd =
-      CreateWindowExW (0L,              // Extended styles
-#ifdef QTT
-                       WC_TOOLTIPS,     // Class for Qcontrols
-#else
-                       TOOLTIPS_CLASSW, // Class for MS Controls
-#endif
-                       NULL,            // Window title
+      CreateWindowExW (0L,                  // Extended styles
+                       TOOLTIPS_CLASSW,     // Class for MS Controls
+                       NULL,                // Window title
                        0
+                     | WS_POPUP
+
                      | TTS_NOANIMATE
                      | TTS_ALWAYSTIP
-                       ,                // Styles
-                       CW_USEDEFAULT,   // X-coord
-                       CW_USEDEFAULT,   // Y-...
-                       CW_USEDEFAULT,   // Width
-                       CW_USEDEFAULT,   // Height
-                       NULL,            // Parent window
-                       NULL,            // Menu
-                       _hInstance,      // Instance
-                       NULL);           // No extra data
+                     | TTS_BALLOON
+                     | TTS_NOPREFIX
+                       ,                    // Styles
+                       CW_USEDEFAULT,       // X-coord
+                       CW_USEDEFAULT,       // Y-...
+                       CW_USEDEFAULT,       // Width
+                       CW_USEDEFAULT,       // Height
+                       NULL,                // Parent window
+                       NULL,                // Menu (should not have an ID)
+                       _hInstance,          // Instance
+                       NULL);               // No extra data
     if (hWnd EQ NULL)
     {
         MB (pszNoCreateTTWnd);
@@ -1139,22 +1274,25 @@ HWND CreateToolTip
 //***************************************************************************
 
 UBOOL CreateChildWindows
-    (HWND hWnd)             // Master Frame window handle
+    (HWND hWndParent)           // Parent (Master Frame) window handle
 
 {
-    RECT rc;                // Rectangle for setting size of window
+    RECT rc;                    // Rectangle for setting size of window
 
     // Get the size and position of the parent window.
-    GetClientRect (hWnd, &rc);
+    GetClientRect (hWndParent, &rc);
 
+    //***************************************************************
     // Create the ToolTip window first so that
     // the other windows can reference it.
-    hWndTT = CreateToolTip (hWnd);
-
+    //***************************************************************
+    hWndTT = CreateToolTip ();
     if (hWndTT EQ NULL)
         return FALSE;       // Stop the whole process
 
+    //***************************************************************
     // Create the crash control window
+    //***************************************************************
     hWndCC =
       CreateWindowExW (0L,                  // Extended styles
                        LCCWNDCLASS,         // Class
@@ -1164,7 +1302,7 @@ UBOOL CreateChildWindows
                        ,                    // Styles
                        CW_USEDEFAULT, CW_USEDEFAULT,    // X- and Y-coord
                        CW_USEDEFAULT, CW_USEDEFAULT,    // X- and Y-size
-                       hWnd,                // Parent window
+                       hWndParent,          // Parent window
                        NULL,                // Menu
                        _hInstance,          // Instance
                        NULL);               // No extra data
@@ -1174,23 +1312,34 @@ UBOOL CreateChildWindows
         return FALSE;
     } // End IF
 
+    //***************************************************************
+    // Create the Rebar control and all its bands
+    //***************************************************************
+    if (!CreateEntireRebarCtrl (hWndParent))
+        return FALSE;
+
+    //***************************************************************
     // Create the tab control window
+    //***************************************************************
     hWndTC =
       CreateWindowExW (0L,                  // Extended styles
                        WC_TABCONTROLW,      // Class
                        wszTCTitle,          // Window title (for debugging purposes only)
                        0
-                     | TCS_OWNERDRAWFIXED
                      | WS_CHILD
                      | WS_CLIPSIBLINGS
                      | WS_VISIBLE
+
+/////////////////////| TCS_FOCUSNEVER
+                     | TCS_OWNERDRAWFIXED
+                     | TCS_TOOLTIPS
                        ,                    // Styles
                        rc.left,             // X-coord
                        rc.top,              // Y-coord
                        rc.right - rc.left,  // X-size
                        rc.bottom - rc.top,  // Y-size
-                       hWnd,                // Parent window
-                       NULL,                // Menu
+                       hWndParent,          // Parent window
+               (HMENU) IDWC_TC,             // Window ID
                        _hInstance,          // Instance
                        NULL);               // No extra data
     if (hWndTC EQ NULL)
@@ -1208,12 +1357,12 @@ UBOOL CreateChildWindows
     ShowWindow (hWndTC, SW_SHOWNORMAL);
     UpdateWindow (hWndTC);
 
+    // Save as the owner in the CHOOSEFONT struc
     cfTC.hwndOwner = hWndTC;
 
-    // Tell it about our tooltip control
-    TabCtrl_SetToolTips (hWndTC, hWndTT);
-
+    //***************************************************************
     // Create the Status Window
+    //***************************************************************
     hWndStatus =
       CreateStatusWindowW (0
                          | WS_CHILD
@@ -1221,7 +1370,7 @@ UBOOL CreateChildWindows
                          | SBARS_SIZEGRIP
                            ,                // Styles
                            wszStatusIdle,   // Initial text
-                           hWnd,            // Parent window
+                           hWndParent,      // Parent window
                            IDWC_MF_ST);     // Window ID
     // Get the width of the borders of the Status Window
     SendStatusMsg (SB_GETBORDERS, 0, (LPARAM) glbStatusBorders);
@@ -1304,10 +1453,11 @@ LRESULT APIENTRY MFWndProc
 
 {
     RECT         rcDtop;        // Rectangle for desktop
-    HWND         hWndActive,
-                 hWndMC,
-                 hWndSM;
+    HWND         hWndActive,    // Active window handle
+                 hWndMC,        // MDI Client ...
+                 hWndSM;        // Session Manager ...
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    static HWND  hWndTC_TT;     // Window handle for TT in TC
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
 ////                           IDCANCEL,         IDH_CANCEL,
@@ -1356,22 +1506,22 @@ LRESULT APIENTRY MFWndProc
                 GetObjectW (hBitMapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
 
             // *************** Image Lists *****************************
-            hImageList =
-              ImageList_Create (IMAGE_CX,       // Common width in pixels
-                                IMAGE_CY,       // ...    height ...
+            hImageListTC =
+              ImageList_Create (IMAGE_TC_CX,    // Common width in pixels
+                                IMAGE_TC_CY,    // ...    height ...
                                 0
                               | ILC_COLOR32
                               | ILC_MASK,       // Flags
                                 1,              // Max # images
                                 0);             // # images by which the list can grow
-            if (!hImageList)
+            if (!hImageListTC)
                 return -1;          // Stop the whole process
 
             // Add the Close button icon to the image list
-            ImageList_AddIcon (hImageList, hIconClose);
+            ImageList_AddIcon (hImageListTC, hIconClose);
 
             // Assign the image list to the tab control
-            SendMessageW (hWndTC, TCM_SETIMAGELIST, 0, (LPARAM) hImageList);
+            SendMessageW (hWndTC, TCM_SETIMAGELIST, 0, (LPARAM) hImageListTC);
 
 ////        // Ensure the position is valid
 ////        if (MFPosCtr.x > rcDtop.right)  // If center is right of right, ...
@@ -1386,7 +1536,8 @@ LRESULT APIENTRY MFWndProc
             // Reposition the window to previous center & size
             MoveWindowPosSize (hWnd, MFPosCtr, MFSize);
 
-            ShowWindow (hWnd, nMinState);   // Show as per request
+            // Show and paint the window
+            ShowWindow (hWnd, SW_SHOWNORMAL);
             UpdateWindow (hWnd);
 
             // Initialize window-specific resources
@@ -1406,6 +1557,7 @@ LRESULT APIENTRY MFWndProc
             CreateNewFontPR (TRUE);
             CreateNewFontCC (TRUE);
             CreateNewFontTC (TRUE);
+            CreateNewFontLW (TRUE);
             CreateNewFontVE (TRUE);
             CreateNewFontME (TRUE);
 
@@ -1441,11 +1593,12 @@ LRESULT APIENTRY MFWndProc
         {
             RECT rc;
 
-            // Get the size of the MF Client Area
-            GetClientRect (hWndMF, &rc);
+            // Get the size of our Client Area
+            GetClientRect (hWnd, &rc);
 
-            // Resize the Master Frame so as to show the Status Window
-            PostMessageW (hWndMF, WM_SIZE, SIZE_RESTORED, MAKELPARAM (rc.right - rc.left, rc.bottom - rc.top));
+            // Resize the Master Frame so as to recalculate the size of the
+            //  child windows
+            PostMessageW (hWnd, WM_SIZE, SIZE_RESTORED, MAKELPARAM (rc.right - rc.left, rc.bottom - rc.top));
 
             return FALSE;           // We handled the msg
         } // End MYWM_RESIZE
@@ -1458,22 +1611,48 @@ LRESULT APIENTRY MFWndProc
             {
                 SIZE S;
                 HDWP hdwp;
-                RECT rc;
-                int  rcLeft, rcRight, rcBottom;
-                UINT uTabCnt,                   // # tabs in Tab Ctrl
-                     uCnt;                      // Loop counter
+                RECT rc,                    // Rectangle for new MF client area
+                     rcRB;                  // ...           Rebar Ctrl
+                UINT uHeightRB,             // Total height of Rebar ctrl
+                     uTabCnt,               // # tabs in Tab Ctrl
+                     uCnt;                  // Loop counter
 
                 // Calculate the display rectangle, assuming the
-                // tab control is the size of the client area.
+                //   tab control is the size of the client area
+                //   less the height of the Rebar Ctrl
                 SetRect (&rc,
                           0, 0,
                           LOWORD (lParam), HIWORD (lParam));
                 // Run through all tabs (and hence all MDI Client Windows)
                 uTabCnt = TabCtrl_GetItemCount (hWndTC);
 
-                hdwp = BeginDeferWindowPos (1 + uTabCnt);
+                // Start the defer process ("2 +" for Rebar Ctrl and Tab Ctrl)
+                hdwp = BeginDeferWindowPos (2 + uTabCnt);
 
-                // Size the tab control to fit the client area.
+                // Get the outer dimensions of the Rebar Ctrl
+                GetWindowRect (hWndRB, &rcRB);
+
+                // Get the height of the Rebar Ctrl
+                uHeightRB = rcRB.bottom - rcRB.top;
+
+                // Size the Rebar control
+                DeferWindowPos (hdwp,           // Handle to internal structure
+                                hWndRB,         // Handle of window to position
+                                NULL,           // Placement-order handle
+                                rc.left,        // X-position
+                                rc.top,         // Y-position
+                                rc.right - rc.left, // X-size
+                                uHeightRB,      // Y-size
+                                0
+                              | SWP_NOMOVE      // Ignore X- and Y-position
+                              | SWP_NOZORDER    // Window-positioning flags
+                              | SWP_SHOWWINDOW
+                               );
+
+                // Skip over the Rebar Ctrl
+                rc.top += uHeightRB;
+
+                // Size the tab control
                 DeferWindowPos (hdwp,           // Handle to internal structure
                                 hWndTC,         // Handle of window to position
                                 NULL,           // Placement-order handle
@@ -1481,20 +1660,14 @@ LRESULT APIENTRY MFWndProc
                                 rc.top,         // Y-position
                                 rc.right - rc.left, // X-size
                                 rc.bottom - rc.top, // Y-size
-                                SWP_NOMOVE | SWP_NOZORDER); // Window-positioning flags
-
-                // Calculate the display rectangle, assuming the
-                // tab control is the size of the client area.
-                // Because I don't like the look of the tab control border,
-                //   the following code saves and restores all but the
-                //   top border (where the tabs are).
-                rcLeft    = rc.left;
-                rcRight   = rc.right;
-                rcBottom  = rc.bottom;
-                TabCtrl_AdjustRect (hWndTC, FALSE, &rc);
-                rc.left   = rcLeft;
-                rc.right  = rcRight;
-                rc.bottom = rcBottom;
+                                0
+                              | SWP_NOZORDER    // Window-positioning flags
+                              | SWP_SHOWWINDOW
+                               );
+                //  Calculate the client rectangle for the MDI client windows
+                //    in Master Frame client area coords using the incoming
+                //   rectangle in <rc>.
+                CalcClientRectMC (&rc, FALSE);
 
                 // If the Status Bar is visible, ...
                 if (OptionFlags.bViewStatusBar)
@@ -1512,8 +1685,6 @@ LRESULT APIENTRY MFWndProc
                 // Loop through the tabs
                 for (uCnt = 0; uCnt < uTabCnt; uCnt++)
                 {
-                    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData
-
                     // Get the ptr to this tab's PerTabData global memory
                     lpMemPTD = GetPerTabPtr (uCnt);
 
@@ -1528,7 +1699,7 @@ LRESULT APIENTRY MFWndProc
                                         rc.top,             // Y-position
                                         rc.right - rc.left, // X-size
                                         rc.bottom - rc.top, // Y-size
-                                        0);                 // Window-positioning flags
+                                        SWP_NOZORDER);      // Window-positioning flags
                 } // End FOR
 
                 // Tell the status window about the new Status Parts right edge
@@ -1537,6 +1708,7 @@ LRESULT APIENTRY MFWndProc
                 // Position and size the Status Window
                 SendStatusMsg (WM_SIZE, wParam, lParam);
 
+                // Paint the windows
                 EndDeferWindowPos (hdwp);
 
                 // Save the current Maximized or Normal state
@@ -1576,44 +1748,248 @@ LRESULT APIENTRY MFWndProc
 
             break;                  // Continue with next handler
 
-#define lpnmh   (*(LPNMHDR *) &lParam)
         case WM_NOTIFY:             // idCtrl = (int) wParam;
-                                    // pnmh = (LPNMHDR) lParam;
-            // Split cases based upon the notification code
-            switch (lpnmh->code)
-            {
-                case TTN_NEEDTEXTW:     // idTT = (int) wParam;
-                                        // lpttt = (LPTOOLTIPTEXTW) lParam;
-                {
-                    static WCHAR TooltipText[_MAX_PATH];
-                    LPAPLCHAR    lpMemWSID;     // Ptr to []WSID global memory
-#define lpttt   (*(LPTOOLTIPTEXTW *) &lParam)
-
-                    // Get a ptr to the ws name
-                    lpMemWSID = PointToWsName ((APLU3264) (HANDLE_PTR) lpttt->hdr.idFrom);
-
-                    // Get ptr to PerTabData global memory
-                    lpMemPTD = GetPerTabPtr ((APLU3264) (HANDLE_PTR) lpttt->hdr.idFrom); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-#ifndef DEBUG
-                    // Return a ptr to the stored tooltip text
-                    lstrcpyW (TooltipText, lpMemWSID);
+                                    // lpnmhdr = (LPNMHDR) lParam;
+        {
+#ifdef DEBUG
+            LPNMHDR     lpnmhdr = (LPNMHDR) lParam;
+            LPNMTOOLBAR lpnmtb  = (LPNMTOOLBAR) lParam;
 #else
-                    // Return a ptr to the stored tooltip text
-                    wsprintfW (TooltipText,
-                               L"hWndMC=%p: %s",
-                               lpMemPTD->hWndMC,
-                               lpMemWSID);
+  #define lpnmhdr   ((LPNMHDR) lParam)
+  #define lpnmtb    ((LPNMTOOLBAR) lParam)
 #endif
-                    // If the tab is still executing, say so
-                    if (lpMemPTD->bExecuting)
-                        lstrcatW (TooltipText, L" (RUNNING)");
+            // Split cases based upon the notification code
+            switch (lpnmhdr->code)
+            {
+                APLI3264          nButtons,         // # buttons
+                                  iCnt;             // Loop counter
+                static APLI3264   nSavedButtons;    // # saved buttons
+                static LPTBBUTTON lpSavedButtons;   // Ptr to saved button state
 
-                    // Return the ptr to the caller
-                    lpttt->lpszText = TooltipText;
-#undef  lpttt
-                    return FALSE;
-                } // End TTN_NEEDTEXTW
+                //***************************************************************
+                // Rebar Ctrl Notifications
+                //***************************************************************
+                case RBN_HEIGHTCHANGE:
+                    // Resize the Master Frame so as to recalculate the size of the
+                    //  child windows
+                    PostMessageW (hWnd, MYWM_RESIZE, 0, 0);
 
+                    break;
+
+                //***************************************************************
+                // Toolbar Ctrl Notifications
+                //***************************************************************
+                case TBN_BEGINADJUST:       // Save the initial state
+                    // Get the current button count
+                    nSavedButtons =
+                      SendMessageW (lpnmtb->hdr.hwndFrom, TB_BUTTONCOUNT, 0, 0);
+
+                    // Allocate memory to store initial state info
+                    lpSavedButtons =
+                      MyGlobalAlloc (GPTR, nSavedButtons * sizeof (TBBUTTON));
+
+                    // Save the current state
+                    for (iCnt = 0; iCnt < nSavedButtons; iCnt++)
+                        SendMessageW (lpnmtb->hdr.hwndFrom, TB_GETBUTTON, iCnt, (LPARAM) &lpSavedButtons[iCnt]);
+
+                    return TRUE;
+
+                case TBN_ENDADJUST:         // Free initial state memory
+                    MyGlobalFree (lpSavedButtons); lpSavedButtons = NULL;
+
+                    return TRUE;
+
+                case TBN_INITCUSTOMIZE:     // Tell the ctrl to hide the Help button
+                    return TBNRF_HIDEHELP;
+
+                case TBN_QUERYINSERT:       // wParam unused
+                                            // lpnmtb = (LPNMTOOLBAR) lParam;
+                    return TRUE;            // Return TRUE iff the button can be inserted
+                                            //   be inserted
+                case TBN_QUERYDELETE:       // wParam unused
+                                            // lpnmtb = (LPNMTOOLBAR) lParam;
+                    return TRUE;            // Return TRUE iff the button can be deleted
+
+                case TBN_RESET:             // wParam unused
+                                            // lpnmtb = (LPNMTOOLBAR) lParam;
+                    // Split cases based upon the Window ID
+                    switch (lpnmtb->hdr.idFrom)
+                    {
+                        case IDWC_WS_RB:
+                        case IDWC_ED_RB:
+                        case IDWC_FN_RB:
+                            // Get the current button count
+                            nButtons =
+                              SendMessageW (lpnmtb->hdr.hwndFrom, TB_BUTTONCOUNT, 0, 0);
+
+                            // Remove all of the existing buttons starting with the
+                            // last and working down (because that's what MSDN does)
+                            for (iCnt = nButtons - 1; iCnt >= 0; iCnt--)
+                                SendMessageW (lpnmtb->hdr.hwndFrom, TB_DELETEBUTTON, iCnt, 0);
+
+                            // Restore the saved buttons
+                            SendMessageW (lpnmtb->hdr.hwndFrom, TB_ADDBUTTONS, nSavedButtons, (LPARAM) lpSavedButtons);
+
+                            return TRUE;
+
+                        default:
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case TBN_DROPDOWN:          // wParam unused
+                                            // lpnmtb = (LPNMTOOLBAR) lParam;
+                    // Split cases based upon the Window ID
+                    switch (lpnmtb->hdr.idFrom)
+                    {
+                        RECT      rc;                   // Button rectangle
+                        HMENU     hMenu;                // Popup menu handle
+                        TPMPARAMS tpm;                  // TrackPopupMenuEx data struc
+                        HWND      hWndEC;               // EditCtrl window handle
+                        DWORD     dwSelBeg,             // Selection beginning
+                                  dwSelEnd;             // ...       end
+                        UINT      mfState;              // Menu state
+                        HGLOBAL   hGlbClip;             // Handle to clipboard data
+
+                        case IDWC_WS_RB:
+                        case IDWC_ED_RB:
+                        case IDWC_FN_RB:
+                            // Get the coordinates of the button
+                            SendMessageW (lpnmtb->hdr.hwndFrom, TB_GETRECT, (WPARAM) lpnmtb->iItem, (LPARAM) &rc);
+
+                            // Convert to screen coordinates
+                            MapWindowPoints (lpnmtb->hdr.hwndFrom, HWND_DESKTOP, (LPPOINT) &rc, 2);
+
+                            // Create a popup menu
+                            hMenu = CreatePopupMenu ();
+
+                            // Split cases based upon the item
+                            switch (lpnmtb->iItem)
+                            {
+                                case IDM_LOAD_WS:
+                                case IDM_XLOAD_WS:
+                                case IDM_COPY_WS:
+                                    // Fill in the popup menu with a list of recently
+                                    //   )LOADed/)XLOADed/)COPYed WSs
+                                    // ***FINISHME***
+
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 MF_STRING              // Flags
+                                               | MF_ENABLED,
+                                                 0,                     // ID
+                                                 L"***TBD***");         // Text
+                                    break;
+
+                                case IDM_CUT:
+                                case IDM_COPY:
+                                    // Get the active EditCtrl window handle
+                                    hWndEC = GetActiveEC (hWndTC);
+
+                                    // Determine whether or not the EditCtrl has a selection
+                                    SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &dwSelBeg, (LPARAM) &dwSelEnd);
+
+                                    // Set the menu state depending upon whether or not there is a selection
+                                    mfState = MF_STRING | ((dwSelBeg NE dwSelEnd) ? MF_ENABLED : MF_GRAYED);
+
+                                    // Fill in the popup menu with a list of cut/copy choices
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_COPY_APLWIN,       // ID
+                                                 L"Copy APL+&Win");     // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_COPY_APL2,         // ID
+                                                 L"Copy APL&2");        // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_COPY_ISO,          // ID
+                                                 L"Copy &ISO");         // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_COPY_PC3270,       // ID
+                                                 L"Copy &PC3270");      // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_COPY_BRACES,       // ID
+                                                 L"Copy &Braces");      // Text
+                                    break;
+
+                                case IDM_PASTE:
+                                    // Open the clipboard so we can read from it
+                                    OpenClipboard (NULL);
+
+                                    // Get a handle to the clipboard data
+                                    hGlbClip = GetClipboardData (CF_PRIVATEFIRST);
+                                    if (!hGlbClip)
+                                        hGlbClip = GetClipboardData (CF_UNICODETEXT);
+
+                                    // We're done with the clipboard
+                                    CloseClipboard ();
+
+                                    // Set the menu state depending upon whether or not the clipboard has data
+                                    mfState = MF_STRING | (hGlbClip ? MF_ENABLED : MF_GRAYED);
+
+                                    // Fill in the popup menu with a list of cut/copy choices
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_PASTE_APLWIN,      // ID
+                                                 L"Paste APL+&Win");    // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_PASTE_APL2,        // ID
+                                                 L"Paste APL&2");       // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_PASTE_ISO,         // ID
+                                                 L"Paste &ISO");        // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_PASTE_PC3270,      // ID
+                                                 L"Paste &PC3270");     // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_PASTE_BRACES,      // ID
+                                                 L"Paste &Braces");     // Text
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Set up the popup menu
+                            // Set rcExclude equal to the button rectangle so that if the toolbar
+                            //   is too close to the bottom of the screen, the menu will appear above
+                            //   the button rather than below it.
+                            tpm.cbSize = sizeof (TPMPARAMS);
+                            tpm.rcExclude = rc;
+
+                            // Show the menu and wait for input
+                            // If the user selects an item, its WM_COMMAND is sent
+                            TrackPopupMenuEx (hMenu,                // Handle
+                                              0                     // Flags
+                                            | TPM_CENTERALIGN
+                                            | TPM_RIGHTBUTTON
+                                            | TPM_VERTICAL
+                                              ,
+                                              rc.left,              // X-position
+                                              rc.bottom,            // Y-position
+                                              hWnd,                 // Parent
+                                             &tpm);                 // Ptr to extra parameters (exclude region)
+                            // Free the menu resources
+                            DestroyMenu (hMenu);
+
+                            return FALSE;               // We handled the msg
+
+                        default:
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                //***************************************************************
+                // Tab Ctrl Notifications
+                //***************************************************************
                 case TCN_SELCHANGING:       // idTabCtl = (int) LOWORD(wParam);
                                             // lpnmhdr = (LPNMHDR) lParam;
                     DestroyCaret ();        // 'cause we just lost the focus
@@ -1652,12 +2028,114 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;       // We handled the msg
                 } // End TCN_SELCHANGE
 
+                //***************************************************************
+                // Tooltip Ctrl Notifications
+                //***************************************************************
+                case TTN_GETDISPINFOW:      // idTT = (int) wParam;
+                                            // lptdi = (LPNMTTDISPINFOW) lParam;
+                {
+                    static WCHAR TooltipText[_MAX_PATH];
+                    LPAPLCHAR    lpMemWSID;     // Ptr to []WSID global memory
+#ifdef DEBUG
+                    LPNMTTDISPINFOW lptdi = (LPNMTTDISPINFOW) lParam;
+#else
+  #define lptdi     ((LPNMTTDISPINFOW) lParam)
+#endif
+                    // In a Tooltip from a Tab Ctrl, the lptdi->hdr.idFrom
+                    //   is the Tab index starting at zero.
+                    // In order to distinguish a Tooltip from our Tab Ctrl
+                    //   from any other Tooltip we have the Tab Ctrl create
+                    //   its own Tooltip Ctrl (TCS_TOOLTIPS) and check for
+                    //   that window handle.
+
+                    // Ensure this is from our Tab Ctrl
+                    if (hWndTC_TT EQ lpnmhdr->hwndFrom)
+                    {
+                        // Get a ptr to the ws name
+                        lpMemWSID = PointToWsName ((APLU3264) (HANDLE_PTR) lptdi->hdr.idFrom);
+
+                        // Get ptr to PerTabData global memory
+                        lpMemPTD = GetPerTabPtr ((APLU3264) (HANDLE_PTR) lptdi->hdr.idFrom); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+#ifndef DEBUG
+                        // Return a ptr to the stored tooltip text
+                        lstrcpyW (TooltipText, lpMemWSID);
+#else
+                        // Return a ptr to the stored tooltip text
+                        wsprintfW (TooltipText,
+                                   L"hWndMC=%p  hWndSM=%p  TabID=%u  TabIndex=%d: %s",
+                                   lpMemPTD->hWndMC,
+                                   lpMemPTD->hWndSM,
+                                   TranslateTabIndexToID ((int) lptdi->hdr.idFrom),
+                                   lptdi->hdr.idFrom,
+                                   lpMemWSID);
+#endif
+                        // If the tab is still executing, say so
+                        if (lpMemPTD->bExecuting)
+                            lstrcatW (TooltipText, L" (RUNNING)");
+
+                        // Return the ptr to the caller
+                        lptdi->lpszText = TooltipText;
+                    } else
+                        // Clear the text
+                        lptdi->lpszText = L"";
+
+                    return FALSE;
+#ifndef DEBUG
+  #undef  lptdi
+#endif
+                } // End TTN_GETDISPINFOW
+
+                case NM_TOOLTIPSCREATED:        // idCtl = (UINT) wparam;
+                                                // lpnmttc = (LPNMTOOLTIPSCREATED) lParam;
+                {
+                    DWORD dwStyle;              // Styles for TT
+#ifdef DEBUG
+                    UINT                idCtl   = (UINT) wParam;
+                    LPNMTOOLTIPSCREATED lpnmttc = (LPNMTOOLTIPSCREATED) lParam;
+#else
+  #define idCtl     ((UINT) wParam)
+  #define lpnmttc   ((LPNMTOOLTIPSCREATED) lParam)
+#endif
+                    // Split cases based upon the Window ID
+                    switch (idCtl)
+                    {
+                        case IDWC_WS_RB:
+                        case IDWC_ED_RB:
+                        case IDWC_FN_RB:
+                            // Get and set the TT's styles
+                            dwStyle = GetWindowLong (lpnmttc->hwndToolTips, GWL_STYLE);
+
+                            // Include more styles
+                            dwStyle |= 0
+                                     | TTS_ALWAYSTIP
+                                     | TTS_BALLOON
+                                     | TTS_NOPREFIX
+                                       ;
+                            // Tell the TT about this change
+                            SetWindowLong (lpnmttc->hwndToolTips, GWL_STYLE, dwStyle);
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+#ifndef DEBUG
+  #undef  idCtl
+  #undef  lpnmttc
+#endif
+                } // End NM_TOOLTIPSCREATED
+
                 default:
                     break;
             } // End SWITCH
-
+#ifndef DEBUG
+  #undef  lpnmtb
+  #undef  lpnmhdr
+#endif
             break;                  // Continue with next handler
-#undef  lpnmh
+        } // End WM_NOTIFY
 
 #define lpdis   (*(LPDRAWITEMSTRUCT *) &lParam)
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // control identifier
@@ -1678,7 +2156,7 @@ LRESULT APIENTRY MFWndProc
                     return TRUE;    // We processed this msg
 
 ////////////////case ODA_FOCUS:     // These actions don't appear to occur with
-////////////////                    //   an owner-drawn tab ctrl
+////////////////                    //   an owner-drawn Tab Ctrl
 ////////////////case ODA_SELECT:    // ...
 ////////////////    break;
             } // End SWITCH
@@ -1706,7 +2184,9 @@ LRESULT APIENTRY MFWndProc
 ////////
 ////////} // End WM_HELP
 ////////
-////////case WM_CONTEXTMENU:
+////////case WM_CONTEXTMENU:        // hwnd = (HWND) wParam;
+////////                            // xPos = LOSHORT (lParam); // Horizontal position of cursor
+////////                            // yPos = HISHORT (lParam); // Vertical position of cursor
 ////////    if (hWndTreeView NE (HWND) wParam)
 ////////    {
 ////////        WinHelpW ((HWND) wParam,
@@ -1717,12 +2197,20 @@ LRESULT APIENTRY MFWndProc
 ////////    } // End IF
 ////////    return FALSE;           // We handled the message
 
-#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
-#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
-#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
         case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // notification code
                                     // wID = LOWORD (wParam);         // item, control, or accelerator identifier
                                     // hwndCtrl = (HWND) lParam;      // handle of control
+        {
+            UINT uCnt;              // Temporary counter
+#ifdef DEBUG
+            UINT idCtl    = GET_WM_COMMAND_ID   (wParam, lParam);
+            UINT cmdCtl   = GET_WM_COMMAND_CMD  (wParam, lParam);
+            HWND hwndCtrl = GET_WM_COMMAND_HWND (wParam, lParam);
+#else
+  #define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
+  #define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
+  #define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
+#endif
             // Get the window handle of the currently active MDI Client
             hWndMC = GetActiveMC (hWndTC);
 
@@ -1731,22 +2219,30 @@ LRESULT APIENTRY MFWndProc
 
             switch (idCtl)
             {
+                HMENU hMenu;                // Menu handle for View/Toolbars/...
+                GETIDMPOS_XX GetIDMPOS_xx;  // Ptr to GetIDMPOS_xx function
+
                 case IDM_EXIT:
                     PostMessageW (hWnd, WM_CLOSE, 0, 0);
 
                     return FALSE;       // We handled the msg
 
                 case IDM_STATUSBAR:
-                {
-                    HMENU hMenu;
-
                     // Toggle the state
                     OptionFlags.bViewStatusBar = !OptionFlags.bViewStatusBar;
 
+                    // Get the IDMPOS_xx translator function
+                    GetIDMPOS_xx = (GETIDMPOS_XX) GetPropW (hWndActive, PROP_IDMPOSFN);
+                    Assert (GetIDMPOS_xx NE NULL);
+
                     // Check/uncheck the View | Status Bar menu item as appropriate
                     hMenu = GetMenu (hWnd);
-                    hMenu = GetSubMenu (hMenu, IDMPOS_SM_VIEW);
-                    CheckMenuItem (hMenu, IDM_STATUSBAR, MF_BYCOMMAND | (OptionFlags.bViewStatusBar ? MF_CHECKED : MF_UNCHECKED));
+                    hMenu = GetSubMenu (hMenu, (*GetIDMPOS_xx) (IDMPOSNAME_VIEW));
+                    CheckMenuItem (hMenu,
+                                   idCtl,
+                                   MF_BYCOMMAND
+                                 | (OptionFlags.bViewStatusBar ? MF_CHECKED : MF_UNCHECKED)
+                                  );
                     ShowWindow (hWndStatus, OptionFlags.bViewStatusBar ? SW_SHOWNORMAL : SW_HIDE);
                     InvalidateRect (hWnd, NULL, FALSE);
 
@@ -1754,7 +2250,40 @@ LRESULT APIENTRY MFWndProc
                     PostMessageW (hWnd, MYWM_RESIZE, 0, 0);
 
                     return FALSE;       // We handled the msg
-                } // End IDM_STATUSBAR
+
+                case IDM_TOGGLE_LNS_FN:
+                    // Toggle the Fcn Line #s display value for the active (FE) window
+                    SetWindowLongW (hWndActive, GWLSF_FLN, !GetWindowLongW (hWndActive, GWLSF_FLN));
+
+                    // Set the current state of the Object Toolbar's Toggle Fcn Line #s button
+                    SetLineNumState (hWndActive);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_TB_WS:
+                case IDM_TB_ED:
+                case IDM_TB_FN:
+                case IDM_TB_FW:
+                case IDM_TB_LW:
+                    // Calculate zero-origin index
+                    uCnt = idCtl - IDM_TB_FIRST;
+
+                    // Toggle the Rebar bands state
+                    aRebarBands[uCnt].bShowBand = !aRebarBands[uCnt].bShowBand;
+
+                    // Get the IDMPOS_xx translator function
+                    GetIDMPOS_xx = (GETIDMPOS_XX) GetPropW (hWndActive, PROP_IDMPOSFN);
+                    Assert (GetIDMPOS_xx NE NULL);
+
+                    // Get the View menu handle
+                    hMenu = GetMenu (hWnd);
+                    hMenu = GetSubMenu (hMenu, (*GetIDMPOS_xx) (IDMPOSNAME_VIEW));
+
+                    // Set the corresponding Toolbars menu checkmark and
+                    //   show/hide the corresponding Rebar band
+                    SetToolbarsMenu (hMenu, uCnt);
+
+                    return FALSE;       // We handled the msg
 
                 case IDM_UNDO:
                     SendMessageW (hWndActive, WM_UNDO, 0, 0);
@@ -1906,29 +2435,127 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;   // We handled the msg
 
-                case IDM_LOAD_WS:
-#ifdef DEBUG
-                    DbgBrk ();      // ***FINISHME*** -- IDM_LOAD_WS
-#endif
+                case IDM_COPY_WS:   // )COPY  a workspace
+                case IDM_LOAD_WS:   // )LOAD  ...
+                case IDM_XLOAD_WS:  // )XLOAD ...
+                case IDM_DROP_WS:   // )DROP  ...
+                case IDM_SAVE_AS_WS:// )SAVE  ...         under a different name
+                {
+#define OPENFILE_LEN        _MAX_PATH
+#define INITDIR_LEN         _MAX_PATH
+                    static OPENFILENAMEW ofn;       // OpenFileName struc
+                    static WCHAR lpwszOpenFile[OPENFILE_LEN] = {WC_EOS};
+                    static WCHAR lpwszInitDir [INITDIR_LEN]  = {WC_EOS};
 
+                    // If we're )COPYing, check to see if the current workspace is executing
+                    if (idCtl EQ IDM_COPY_WS)
+                    {
+                        // Get ptr to PerTabData global memory
+                        lpMemPTD = GetMemPTD ();
+
+                        // If we're executing, ...
+                        if (lpMemPTD->bExecuting)
+                        {
+                            MessageBoxW (hWnd,
+                                         L"Unable to )COPY into an executing workspace.",
+                                         lpwszAppName,
+                                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                            return FALSE;   // We handled the msg
+                        } // End IF
+                    } // End IF
+
+                    // If the OpenFile is not initialized as yet, ...
+                    if (lpwszOpenFile[0] EQ WC_EOS)
+                    {
+                        lpwszOpenFile[0] = WC_DQ;
+                        lpwszOpenFile[1] = WC_EOS;
+                    } // End IF
+
+                    // If the initial directory is not set as yet, ...
+                    if (lpwszInitDir[0] EQ WC_EOS)
+                        lstrcpyW (lpwszInitDir, lpwszWorkDir);
+
+                    // If there's a trailing DQ, zap it
+                    *SkipToCharW (&lpwszOpenFile[1], WC_DQ) = WC_EOS;
+
+                    // Fill in the struc
+                    ZeroMemory (&ofn, sizeof (ofn));
+                    ofn.lStructSize       = sizeof (ofn);
+                    ofn.hwndOwner         = hWnd;
+////////////////////ofn.hInstance         = _hInstance;     // Used only w/OFN_ENABLETEMPLATEHANDLE or OFN_EMABLETEMPLATE
+                    ofn.lpstrFilter       = L"Workspaces (*.ws.nars)\0" L"*.ws.nars\0"
+                                            L"All files (*.*)\0"        L"*.*\0";
+////////////////////ofn.lpstrCustomFilter = NULL;           // Already zero from ZeroMemory
+////////////////////ofn.nMaxCustFilter    =                 // Used only if lpstrCustomFilter NE NULL
+                    ofn.nFilterIndex      = 1;
+                    ofn.lpstrFile         = &lpwszOpenFile[1];
+                    ofn.nMaxFile          = OPENFILE_LEN;
+                    ofn.lpstrFileTitle    = NULL;
+////////////////////ofn.nMaxFileTitle     =                 // Set only if lpstrFileTitle NE NULL
+                    ofn.lpstrInitialDir   = lpwszInitDir;
+                    ofn.lpstrTitle        = (idCtl EQ IDM_LOAD_WS    ) ? L"Open A Workspace"
+                                          : (idCtl EQ IDM_XLOAD_WS   ) ? L"XOpen A Workspace"
+                                          : (idCtl EQ IDM_COPY_WS    ) ? L"Copy A Workspace"
+                                          : (idCtl EQ IDM_DROP_WS    ) ? L"Delete A Workspace"
+                                          : (idCtl EQ IDM_SAVE_AS_WS ) ? L"Save As A Workspace"
+                                          :                              L"";
+                    ofn.Flags             = 0
+                                          | OFN_ENABLEHOOK
+                                          | OFN_ENABLESIZING
+                                          | OFN_EXPLORER
+                                          | OFN_HIDEREADONLY
+                                          | OFN_FILEMUSTEXIST
+                                            ;
+////////////////////ofn.nFileOffset       =                 // Set on output
+////////////////////ofn.nFileExtension    =                 // Set on output
+                    ofn.lpstrDefExt       = WS_WKSEXT + 1;  // Skipping over the leading dot
+                    ofn.lCustData         = (LPARAM) ((idCtl EQ IDM_LOAD_WS    ) ? L"Open"
+                                                    : (idCtl EQ IDM_XLOAD_WS   ) ? L"XOpen"
+                                                    : (idCtl EQ IDM_COPY_WS    ) ? L"Copy"
+                                                    : (idCtl EQ IDM_DROP_WS    ) ? L"Delete"
+                                                    : (idCtl EQ IDM_SAVE_AS_WS ) ? L"Save As"
+                                                    :                              L"");
+                    ofn.lpfnHook          = OFNHookProc;
+////////////////////ofn.lpTemplateName    =                 // Used only w/OFN_ENABLETEMPLATE
+////////////////////ofn.pvReserved        = NULL;           // Already zero from ZeroMemory
+////////////////////ofn.dwReserved        = 0;              // Already zero from ZeroMemory
+////////////////////ofn.FlagsEx           = 0;              // Already zero From ZeroMemory
+
+                    // Display an OPENFILENAME dialog
+                    if (GetOpenFileNameW (&ofn))
+                    {
+                        // Append a trailing DQ to match the leading one
+                        lstrcatW (lpwszOpenFile, WS_DQ);
+
+                        // Split cases based upon the operation
+                        switch (idCtl)
+                        {
+                            case IDM_COPY_WS:
+                                // )COPY the workspace
+                                CmdCopy_EM (lpwszOpenFile);
+
+                                break;
+
+                            case IDM_LOAD_WS:
+                            case IDM_XLOAD_WS:
+                                // )LOAD or )XLOAD the workspace
+                                CmdLoadCom_EM (lpwszOpenFile, idCtl EQ IDM_LOAD_WS);
+
+                                break;
+
+                            case IDM_DROP_WS:
+                                // )DROP the workspace
+                                CmdDrop_EM (lpwszOpenFile);
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End IF
 
                     return FALSE;   // We handled the msg
-
-                case IDM_XLOAD_WS:
-#ifdef DEBUG
-                    DbgBrk ();      // ***FINISHME*** -- IDM_XLOAD_WS
-#endif
-
-
-                    return FALSE;   // We handled the msg
-
-                case IDM_COPY_WS:
-#ifdef DEBUG
-                    DbgBrk ();      // ***FINISHME*** -- IDM_COPY_WS
-#endif
-
-
-                    return FALSE;   // We handled the msg
+                } // End IDM_COPY_WS/...
 
                 case IDM_PCOPY_WS:
 #ifdef DEBUG
@@ -1974,23 +2601,6 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;   // We handled the msg
 
-                case IDM_SAVE_AS_WS:
-#ifdef DEBUG
-                    DbgBrk ();      // ***FINISHME*** -- IDM_SAVE_AS_WS
-#endif
-
-
-                    return FALSE;   // We handled the msg
-
-                case IDM_DROP_WS:
-#ifdef DEBUG
-                    DbgBrk ();      // ***FINISHME*** -- IDM_DROP_WS
-#endif
-
-
-
-                    return FALSE;   // We handled the msg
-
                 case IDM_DUP_WS:
 #ifdef DEBUG
                     DbgBrk ();      // ***FINISHME*** -- IDM_DUP_WS
@@ -2003,17 +2613,13 @@ LRESULT APIENTRY MFWndProc
                 case IDM_PRINT_WS:
                 {
                     PRINTDLGEXW pdex;       // Struc used when printing
-                    HWND        hWndMC,     // Active hWndMC
-                                hWndAct,    // Active window handle
-                                hWndEC;     // Edit Ctrl window handle
+                    HWND        hWndEC;     // Edit Ctrl window handle
                     DWORD       dwSelBeg,   // Selection beginning
                                 dwSelEnd;   // ...       end
                     HRESULT     hResult;    // Result from PrintDlgExW
 
                     // Determine whether or not the Edit Ctrl has a selection
-                    hWndMC  = GetActiveMC (hWndTC);
-                    hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
-       (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC);
+                    hWndEC  = GetActiveEC (hWndTC);
                     SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &dwSelBeg, (LPARAM) &dwSelEnd);
 
                     // Fill in the PRINTDLGEXW struc
@@ -2087,6 +2693,8 @@ LRESULT APIENTRY MFWndProc
                                               &GetFSDirAveCharSize (FONTENUM_PR)->cx,
                                               &GetFSDirAveCharSize (FONTENUM_PR)->cy,
                                                pdex.hDC);
+                            // This font is put into the DC by LclECPaintHook
+
                             // Setup the DOCINFO struc for the print job
                             docInfo.cbSize       = sizeof (docInfo);
                             docInfo.lpszDocName  = WS_APPNAME;
@@ -2148,6 +2756,14 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;   // We handled the msg
 
+                case IDM_NEW_FN:
+                    // Get ptr to PerTabData global memory
+                    lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC)); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+                    if (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+                        // Create a new function window
+                        PostMessageW (lpMemPTD->hWndSM, MYWM_CREATEFCN, 0, 0);
+                    return FALSE;   // We handled the msg
+
                 case IDM_CLOSE_FN:
                     // Tell the active window to handle it
                     PostMessageW (hWndActive, MYWM_CLOSE_FN, wParam, lParam);
@@ -2175,9 +2791,12 @@ LRESULT APIENTRY MFWndProc
             } // End SWITCH
 
             break;                  // Continue with next handler ***MUST***
-#undef  hwndCtl
-#undef  cmdCtl
-#undef  idCtl
+#ifndef DEBUG
+  #undef  hwndCtl
+  #undef  cmdCtl
+  #undef  idCtl
+#endif
+        } // End WM_COMMAND
 
         case WM_ERASEBKGND:
             // In order to reduce screen flicker, we handle erase background
@@ -2228,9 +2847,19 @@ LRESULT APIENTRY MFWndProc
                 MyDeleteObject (hFontTC); hFontTC = NULL;
             } // End IF
 
+            if (hFontLW)
+            {
+                MyDeleteObject (hFontLW); hFontLW = NULL;
+            } // End IF
+
             if (hFontSM)
             {
                 MyDeleteObject (hFontSM); hFontSM = NULL;
+            } // End IF
+
+            if (hFontFB)
+            {
+                MyDeleteObject (hFontFB); hFontFB = NULL;
             } // End IF
 
             if (hFontCC)
@@ -2253,10 +2882,25 @@ LRESULT APIENTRY MFWndProc
                 MyDeleteObject (hFontVE); hFontVE = NULL;
             } // End IF
 
-            // Destroy the image list
-            if (hImageList)
+            // Destroy the image lists
+            if (hImageListFN)
             {
-                ImageList_Destroy (hImageList); hImageList = NULL;
+                ImageList_Destroy (hImageListFN); hImageListFN = NULL;
+            } // End IF
+
+            if (hImageListED)
+            {
+                ImageList_Destroy (hImageListED); hImageListED = NULL;
+            } // End IF
+
+            if (hImageListWS)
+            {
+                ImageList_Destroy (hImageListWS); hImageListWS = NULL;
+            } // End IF
+
+            if (hImageListTC)
+            {
+                ImageList_Destroy (hImageListTC); hImageListTC = NULL;
             } // End IF
 
             // *************** Bitmaps *********************************
@@ -2270,9 +2914,11 @@ LRESULT APIENTRY MFWndProc
                 MyDeleteObject (hBitMapCheck); hBitMapCheck = NULL;
             } // End IF
 
-            // Say goodbye
-            PostQuitMessage (0);
+            DeleteImageBitmaps ();
 
+            break;                  // Continue with default handler
+
+        default:
             break;                  // Continue with default handler
     } // End SWITCH
 
@@ -2285,6 +2931,68 @@ LRESULT APIENTRY MFWndProc
 ////LCLODSAPI ("MFZ:", hWnd, message, wParam, lParam);
     return DefFrameProcW (hWnd, hWndMC, message, wParam, lParam);
 } // End MFWndProc
+
+
+//***************************************************************************
+//  $OFNHookProc
+//
+//  Hook procedure for GetOpenFileName
+//***************************************************************************
+
+UINT_PTR CALLBACK OFNHookProc
+    (HWND   hDlg,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
+
+{
+    // Split cases based upon the message
+    switch (message)
+    {
+        LPOPENFILENAMEW lpofn;
+
+        case WM_INITDIALOG:         // lpofn = (LPOPENFILENAMEW) lParam;
+            // Address the arguments
+            lpofn = (LPOPENFILENAMEW) lParam;
+
+            // Set the window text for the Open button
+            SetWindowTextW (GetDlgItem (GetParent (hDlg), IDOK), (LPWSTR) lpofn->lCustData);
+
+            break;
+
+        default:
+            break;
+    } // End SWITCH
+
+    return FALSE;               // We didn't handle the message
+} // End OFNHookProc
+
+
+//***************************************************************************
+//  $GetActiveEC
+//
+//  Get the Edit Ctrl window handle of the currently active MDI Client
+//***************************************************************************
+
+HWND GetActiveEC
+    (HWND hWndTC)           // Window handle of Tab Control
+
+{
+    HWND hWndMC,
+         hWndAct;
+
+    // Get the active MDI Client window handle
+    hWndMC  = GetActiveMC (hWndTC);
+    if (hWndMC)
+    {
+        // Get the active MDI Child window handle
+        hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
+
+        // Return the EditCtrl window handle
+        return (HWND) GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC);
+    } else
+        return NULL;
+} // End GetActiveEC
 
 
 //***************************************************************************
@@ -2366,35 +3074,6 @@ UBOOL CALLBACK EnumCallbackQueryClose
 
     return (UINT) SendMessageW (hWnd, WM_QUERYENDSESSION, 0, 0);
 } // End EnumCallbackQueryClose
-
-
-//// #ifdef DEBUG
-//// //***************************************************************************
-//// //  $EnumCallbackCloseDebugger
-//// //
-//// //  EnumChildWindows callback to tell debugger windows to unhook its hooks
-//// //***************************************************************************
-////
-//// UBOOL CALLBACK EnumCallbackUnhookDebugger
-////     (HWND   hWnd,           // Handle to child window
-////      LPARAM lParam)         // Application-defined value
-////
-//// {
-////     // When an MDI child window is minimized, Windows creates two windows: an
-////     // icon and the icon title.  The parent of the icon title window is set to
-////     // the MDI client window, which confines the icon title to the MDI client
-////     // area.  The owner of the icon title is set to the MDI child window.
-////     if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
-////         return TRUE;                    // skip it, and continue enumerating
-////
-////     // If it's a debugger window, ...
-////     if (IzitDB (hWnd))
-////         // Tell it to unhook its hooks
-////         SendMessageW (hWnd, MYWM_UNHOOK, 0, 0);
-////
-////     return TRUE;
-//// } // End EnumCallbackUnhookDebugger
-//// #endif
 
 
 #ifdef DEBUG
@@ -2857,6 +3536,49 @@ UBOOL InitApplication
         return FALSE;
     } // End IF
 #endif
+
+    // Fill in Font Window in Rebar Ctrl class structure
+    wcw.style           = CS_DBLCLKS;
+    wcw.lpfnWndProc     = (WNDPROC) FW_RBWndProc;
+    wcw.cbClsExtra      = 0;
+    wcw.cbWndExtra      = GWLFW_RB_EXTRA;
+    wcw.hInstance       = _hInstance;
+    wcw.hIcon           =
+    wcw.hIconSm         = NULL;
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+    wcw.hbrBackground   = (HBRUSH) (COLOR_BTNFACE + 1);
+////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_PMMENU);
+    wcw.lpszMenuName    = NULL;
+    wcw.lpszClassName   = LFW_RBWNDCLASS;
+
+    // Register the Font Window window class
+    if (!RegisterClassExW (&wcw))
+    {
+        MB (pszNoRegFW_RBWndClass);
+        return FALSE;
+    } // End IF
+
+    // Fill in Language Window in Rebar Ctrl class structure
+    wcw.style           = CS_DBLCLKS;
+    wcw.lpfnWndProc     = (WNDPROC) LW_RBWndProc;
+    wcw.cbClsExtra      = 0;
+    wcw.cbWndExtra      = GWLLW_RB_EXTRA;
+    wcw.hInstance       = _hInstance;
+    wcw.hIcon           =
+    wcw.hIconSm         = NULL;
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+    wcw.hbrBackground   = (HBRUSH) (COLOR_BTNFACE + 1);
+////wcw.lpszMenuName    = MAKEINTRESOURCE (IDR_PMMENU);
+    wcw.lpszMenuName    = NULL;
+    wcw.lpszClassName   = LLW_RBWNDCLASS;
+
+    // Register the Language Window window class
+    if (!RegisterClassExW (&wcw))
+    {
+        MB (pszNoRegLW_RBWndClass);
+        return FALSE;
+    } // End IF
+
     return TRUE;
 } // End InitApplication
 
@@ -3226,6 +3948,23 @@ int PASCAL WinMain
 {
     MSG     Msg;                    // Message for GetMessageW loop
     UINT    uCnt;                   // Loop counter
+    INITCOMMONCONTROLSEX icex;      // Common control class struc
+
+    // Initialize common controls.
+    icex.dwSize = sizeof (INITCOMMONCONTROLSEX);
+    icex.dwICC   = 0
+                 | ICC_BAR_CLASSES
+                 | ICC_COOL_CLASSES
+                 | ICC_STANDARD_CLASSES
+                 | ICC_TAB_CLASSES
+                 | ICC_UPDOWN_CLASS
+                 ;
+    InitCommonControlsEx (&icex);
+    InitCommonControls ();
+
+#ifdef DEBUG
+////InitQualitasDebugControls (hInstance);
+#endif
 
 #ifdef PERFMONON
     MessageBeep (NEG1U);
@@ -3243,9 +3982,6 @@ int PASCAL WinMain
 
     // This is needed by Wine's EDITCTRL.C
     user32_module = hInstance;
-
-    // Ensure that the common control DLL is loaded.
-    InitCommonControls ();
 
     PERFMON
 
@@ -3351,7 +4087,9 @@ int PASCAL WinMain
 
     PERFMON
 
+    //***************************************************************
     // Create the Master Frame window
+    //***************************************************************
     hWndMF =
       CreateWindowExW (0L,                              // Extended styles
                        LMFWNDCLASS,                     // Class
@@ -3370,10 +4108,6 @@ int PASCAL WinMain
         MB (pszNoCreateMFWnd);
         goto EXIT4;
     } // End IF
-
-////// Make the window visible; update its client area
-////ShowWindow (hWndMF, nCmdShow);
-////UpdateWindow (hWndMF);
 
     PERFMON
 
@@ -3423,7 +4157,7 @@ EXIT3:
 EXIT2:
     UninitInstance (hInstance);
 EXIT1:
-    return 0;
+    return (int) Msg.wParam;
 } // End WinMain
 
 

@@ -255,6 +255,14 @@ SYMBOLNAMES aSymbolNames[]
 #endif
 ;
 
+// The # rows in the aSymbolNames table
+UINT aSymbolNames_NRows
+#ifdef DEFINE_VALUES
+= (sizeof (aSymbolNames) / sizeof (aSymbolNames[0]))
+#endif
+;
+
+
 //***************************************************************************
 //  End of File: symbolnames.h
 //***************************************************************************

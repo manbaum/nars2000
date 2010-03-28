@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,9 +43,11 @@ APLU3264 CALLBACK WebColorsDlgProc
      LPARAM lParam)     // ...
 
 {
-    static SYNTAXCOLORNAME scnMatch;        // Incoming color to match
-           UINT            idCtl;           // ID of the control
-           WCHAR           wszTemp[256];    // Temporary storage for IDC_WEBCLR_REP text
+    static TOOLINFOW       tti = {sizeof (tti)};    // Tooltip Info struc
+    static SYNTAXCOLORNAME scnMatch;                // Incoming color to match
+           UINT            idCtl;                   // ID of the control
+           WCHAR           wszTemp[256];            // Temporary storage for IDC_WEBCLR_REP text
+           UINT            uCnt;                    // Loop counter
 __try
 {
     // Split cases
@@ -55,9 +57,7 @@ __try
         case WM_INITDIALOG:                 // hwndFocus = (HWND) wParam; // Handle of control to receive focus
                                             // lInitParam = lParam;       // Initialization parameter
         {
-            TOOLINFO ti = {0};              // Tooltip Info struc
-            UINT     uCnt;                  // Loop counter
-            LPWCHAR  lpwName = NULL;        // Ptr to Web Color Name (if any)
+            LPWCHAR lpwName = NULL;         // Ptr to Web Color Name (if any)
 
             // Save the incoming values
             scnMatch = *lInitParam;
@@ -66,12 +66,16 @@ __try
             SendMessageW (hDlg, WM_SETICON, ICON_BIG, (LPARAM) (HANDLE_PTR) hIconWC_Large);
 
             // Fill in constant fields
-            ti.cbSize   = sizeof (TOOLINFO);
-            ti.uFlags   = TTF_IDISHWND | TTF_SUBCLASS;
-            ti.hwnd     = hDlg;
-////////////ti.hinst    =                       // Not used except with string resources
-            ti.lpszText = LPSTR_TEXTCALLBACK;
-////////////ti.rect     =                       // Not used with TTF_IDISHWND
+            tti.uFlags   = 0
+                         | TTF_IDISHWND
+                         | TTF_SUBCLASS
+                           ;
+            tti.hwnd     = hDlg;
+////////////tti.uId      =                      // Filled in below
+////////////tti.hinst    =                      // Not used except with string resources
+            tti.lpszText = LPSTR_TEXTCALLBACKW;
+////////////tti.rect     =                      // Not used with TTF_IDISHWND
+////////////tti.lParam   =                      // Not used by this code
 
             // Loop through the Web Color Names buttons
             for (uCnt = 0; uCnt < uColorNames; uCnt++)
@@ -88,13 +92,13 @@ __try
                                      0,
                                      (APLU3264) (HANDLE_PTR) aColorNames[uCnt].lpwName);
                 // Fill in the dynamic field
-                ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hDlg, IDC_WEBCLR_BN001 + uCnt);
+                tti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hDlg, IDC_WEBCLR_BN001 + uCnt);
 
                 // Register a tooltip for the Web Color Names button
                 SendMessageW (hWndTT,
-                              TTM_ADDTOOL,
+                              TTM_ADDTOOLW,
                               0,
-                              (LPARAM) (LPTOOLINFO) &ti);
+                              (LPARAM) (LPTOOLINFOW) &tti);
             } // End FOR
 
             // The color buttons are initialized in WM_DRAWITEM
@@ -273,6 +277,18 @@ __try
 
         case MYWM_CLOSE:                    // bSuccess = (UBOOL) wParam
                                             // clrRef = (COLORREF) lParam
+            // Loop through the Web Color Names buttons
+            for (uCnt = 0; uCnt < uColorNames; uCnt++)
+            {
+                // Fill in the dynamic field
+                tti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hDlg, IDC_WEBCLR_BN001 + uCnt);
+
+                // Unregister a tooltip for the Web Color Names button
+                SendMessageW (hWndTT,
+                              TTM_DELTOOLW,
+                              0,
+                              (LPARAM) (LPTOOLINFOW) &tti);
+            } // End FOR
             // Quit this dialog
             EndDialog (hDlg, ((UBOOL) lParam) ? (COLORREF) lParam : -1);
 

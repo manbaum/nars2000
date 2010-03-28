@@ -26,8 +26,8 @@
 
 
 // The width & height of an image as drawn on the tab
-#define IMAGE_WIDTH     (IMAGE_CX + 3)
-#define IMAGE_HEIGHT    (IMAGE_CY + 3)
+#define IMAGE_WIDTH     (IMAGE_TC_CX + 3)
+#define IMAGE_HEIGHT    (IMAGE_TC_CY + 3)
 
 // The left and right margins for a tab
 #define TABMARGIN_LEFT      8
@@ -231,33 +231,37 @@ UBOOL CreateNewTab
 
 
 //***************************************************************************
-//  $CalcWindowRectMC
+//  $CalcClientRectMC
 //
-//  Calculate the window rectangle for the MDI client windows
+//  Calculate the client rectangle for the MDI client windows
+//    in Master Frame client area coords
 //***************************************************************************
 
-void CalcWindowRectMC
-    (LPRECT lprc)
+void CalcClientRectMC
+    (LPRECT lprc,               // Ptr to in/out rect
+     UBOOL  bGetRect)           // TRUE iff we should fill in lprc
 
 {
     int rcLeft, rcRight, rcBottom;
 
-    // Get the size and position of the parent window.
-    GetClientRect (hWndMF, lprc);
+    // If we should fill in the rectangle, ...
+    if (bGetRect)
+        // Get the size and position of the parent window.
+        GetClientRect (hWndMF, lprc);
 
     // Calculate the display rectangle, assuming the
-    // tab control is the size of the client area.
+    //   tab control is the size of the client area.
     // Because I don't like the look of the tab control border,
     //   the following code saves and restores all but the
     //   top border (where the tabs are).
-    rcLeft    = lprc->left;
-    rcRight   = lprc->right;
-    rcBottom  = lprc->bottom;
+    rcLeft       = lprc->left;
+    rcRight      = lprc->right;
+    rcBottom     = lprc->bottom;
     TabCtrl_AdjustRect (hWndTC, FALSE, lprc);
     lprc->left   = rcLeft;
     lprc->right  = rcRight;
     lprc->bottom = rcBottom;
-} // End CalcWindowRectMC
+} // End CalcClientRectMC
 
 
 //***************************************************************************
@@ -348,8 +352,8 @@ UBOOL WINAPI CreateNewTabInThread
 
     // Save the next available color index and Tab ID
     lpMemPTD->CurTabID =
-    gCurTabID =
-    lpMemPTD->crIndex =
+    gCurTabID          =
+    lpMemPTD->crIndex  =
       GetNextTabColorIndex ();
 
     // Save the previous tab ID (if there is one)
@@ -358,8 +362,10 @@ UBOOL WINAPI CreateNewTabInThread
     else
         lpMemPTD->PrvTabID = TranslateTabIndexToID (iTabIndex - 1);
 
-    // Calculate the window rectangle for the MDI Client windows
-    CalcWindowRectMC (&rc);
+    // Calculate the client rectangle for the MDI Client windows
+    //   in Master Frame client area coords using the GetClientRect
+    //   value.
+    CalcClientRectMC (&rc, TRUE);
 
     // Fill in the CLIENTCREATESTRUCT for the MDI Client window
     ccs.hWindowMenu = GetSubMenu (GetMenu (hWndParent), IDMPOS_SM_WINDOW);
@@ -433,7 +439,7 @@ UBOOL WINAPI CreateNewTabInThread
     lpMemPTD->hWndSM = hWndTmp;
 
     // Get # current threads under the SM
-    nThreads = 1 + HandleToULong (GetPropW (lpMemPTD->hWndSM, L"NTHREADS"));
+    nThreads = 1 + HandleToULong (GetPropW (lpMemPTD->hWndSM, PROP_NTHREADS));
 
     // Format the next property name
     wsprintfW (wszTemp, L"Thread%d", hThread);
@@ -718,9 +724,10 @@ LRESULT WINAPI LclTabCtrlWndProc
                          L"&Close WS");
 
             TrackPopupMenu (hMenu,              // Handle
-                            TPM_CENTERALIGN
-                          | TPM_LEFTBUTTON
-                          | TPM_RIGHTBUTTON,    // Flags
+                            0                   // Flags
+                          | TPM_CENTERALIGN
+                          | TPM_RIGHTBUTTON
+                            ,
                             ptScr.x,            // x-position
                             ptScr.y,            // y-position
                             0,                  // Reserved (must be zero)
@@ -1365,10 +1372,10 @@ void DrawTab
         GetImageRect (&rcImage);
 
         // Draw transparently
-        ImageList_SetBkColor (hImageList, CLR_NONE);
+        ImageList_SetBkColor (hImageListTC, CLR_NONE);
 
         // Draw the image
-        ImageList_Draw (hImageList,         // Handle to the image list
+        ImageList_Draw (hImageListTC,       // Handle to the image list
                         0,                  // Index of the image to draw
                         hDCMem,             // Handle of the DC
                         rcImage.left,       // X-coordinate

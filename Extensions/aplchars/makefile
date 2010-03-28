@@ -5,14 +5,15 @@ CHR=chrome\content\$(EXNAM)\        # Directory for chrome files
 LCL=chrome\locale\en-US\$(EXNAM)\   # ...           locale ...
 SKN=chrome\skin\classic\$(EXNAM)\   # ...           skin   ...
 ###ZIPPRG=                          # Path and name of zip program (7-zip)
+LCLDIR=P:\SudleyPlace.com\htdocs\APL\aplchars\ # Local directory
 
 !ifndef ZIPPRG
 !error Environment variable ZIPPRG not defined.
 !endif
 
 ALL:    $(EXNAM).xpi                        \
-        ..\..\htdocs\$(EXNAM).xpi           \
-        ..\..\htdocs\update.rdf
+        $(LCLDIR)$(EXNAM).xpi               \
+        $(LCLDIR)update.rdf
 
 chrome\$(EXNAM).jar:    $(CHR)*.*           \
                         $(LCL)*.*           \
@@ -36,9 +37,9 @@ $(EXNAM).xpi:           chrome.manifest             \
         @$(ZIPPRG) a -tzip -r $(EXNAM).xpi defaults\preferences\*.js
         @$(ZIPPRG) a -tzip $(EXNAM).xpi chrome\$(EXNAM).jar
 
-..\..\htdocs\$(EXNAM).xpi:  $(EXNAM).xpi
-        @copy %s $@ >NUL
+$(LCLDIR)$(EXNAM).xpi:  $(EXNAM).xpi
+        copy %s $@ >NUL
 
-..\..\htdocs\update.rdf:    update.rdf
-        @copy %s $@ >NUL
+$(LCLDIR)update.rdf:    update.rdf
+        copy %s $@ >NUL
 

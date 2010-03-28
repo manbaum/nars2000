@@ -821,6 +821,56 @@ WCHAR wszStatusIdle[]
 
 
 //***************************************************************************
+//  Image list constants
+//***************************************************************************
+
+// Width and height of each image in the TC image list
+#define IMAGE_TC_CX     16
+#define IMAGE_TC_CY     16
+
+// Width and height of each image in the WS image list
+#define IMAGE_WS_CX     24
+#define IMAGE_WS_CY     24
+
+// Width and height of each image in the ED image list
+#define IMAGE_ED_CX     24
+#define IMAGE_ED_CY     24
+
+// Width and height of each image in the FN image list
+#define IMAGE_FN_CX     24
+#define IMAGE_FN_CY     24
+
+
+//***************************************************************************
+//  Toolbar Control vars
+//***************************************************************************
+
+typedef struct tagREBARBANDS
+{
+    UBOOL bShowBand ,
+          bApplyToSM,
+          bApplyToFE;
+    UINT  uWindowID;
+} REBARBANDS, *LPREBARBANDS;
+
+// Toolbar Show array
+EXTERN
+REBARBANDS aRebarBands[1 + IDM_TB_LAST - IDM_TB_FIRST]
+#ifdef DEFINE_VALUES
+// These entries must be in the same order as the <IDM_TB_xxx> and
+//   <IDR_SMMENU>/<IDR_FEMENU> entries
+//   Show?  SM?    FE?  WindowID
+ = {{TRUE, TRUE , TRUE, IDWC_WS_RB},   // Workspace
+    {TRUE, TRUE , TRUE, IDWC_ED_RB},   // Edit
+    {TRUE, FALSE, TRUE, IDWC_FN_RB},   // Objects
+    {TRUE, TRUE , TRUE, IDWC_FW_RB},   // SM Font
+    {TRUE, TRUE , TRUE, IDWC_LW_RB},   // Language
+   }
+#endif
+;
+
+
+//***************************************************************************
 //  Tab Control vars
 //***************************************************************************
 
@@ -865,7 +915,17 @@ HWND hWndTC,                            // Global Tab Control window handle
      hWndCC,                            // ...    Crash Control ...
      hWndCC_LB,                         // ...    Crash Control Listbox ...
      hWndStatus,                        // ...    Status       ...
-     hWndTT;                            // ...    ToolTip      ...
+     hWndTT,                            // ...    ToolTip      ...
+     hWndRB,                            // ...    Rebar Ctrl
+     hWndWS_RB,                         // ...    Workspace Window in Rebar Ctrl
+     hWndED_RB,                         // ...    Edit      ...
+     hWndFN_RB,                         // ...    Objects   ...
+     hWndFW_RB,                         // ...    Font      ...
+     hWndCBFN_FW,                       // ...    Combobox for Font Name in Font Window in Rebar Ctrl
+     hWndCBFS_FW,                       // ...    Combobox for Font Style ...
+     hWndEC_FW,                         // ...    EditCtrl for Font Size  ...
+     hWndUD_FW,                         // ...    Up/Down  ...
+     hWndLW_RB;                         // ...    Lang window in Rebar Ctrl
 
 EXTERN
 HGLOBAL hGlbQuadA,                      // []A
@@ -1075,7 +1135,10 @@ EXTERN
 HSHTABSTR htsGLB;                       // Global HshTab struc
 
 EXTERN
-HIMAGELIST hImageList;                  // Handle to the common image list
+HIMAGELIST hImageListTC,                // Handle to the common image list for TC
+           hImageListWS,                // ...                                 WS
+           hImageListED,                // ...                                 ED
+           hImageListFN;                // ...                                 FN
 
 // Same order as in ARRAY_TYPES
 // so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED
@@ -1524,14 +1587,6 @@ CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
 // The # rows in the above table
 #define ACHARCODES_NROWS    (sizeof (aCharCodes) / sizeof (aCharCodes[0]))
 
-// The # rows in the aSymbolNames table
-EXTERN
-UINT aSymbolNames_NRows
-#ifdef DEFINE_VALUES
-= (sizeof (aSymbolNames) / sizeof (aSymbolNames[0]))
-#endif
-;
-
 // Translate tables between APL2 and NARS charsets
 EXTERN
 WCHAR APL2_ASCIItoNARS[257]
@@ -1650,6 +1705,16 @@ LOGFONTW lfSM                           // LOGFONTW for the SM
  = {DEF_SMLOGFONT}
 #endif
 ,
+         lfFB                           // LOGFONTW for the FB
+#ifdef DEFINE_VALUES
+ = {DEF_FBLOGFONT}
+#endif
+,
+         lfLW                           // LOGFONTW for the LW
+#ifdef DEFINE_VALUES
+ = {DEF_LWLOGFONT}
+#endif
+,
          lfPR                           // LOGFONTW for the Printer
 #ifdef DEFINE_VALUES
  = {DEF_PRLOGFONT}
@@ -1687,6 +1752,8 @@ HFONT hFontTC,                          // Handle to font for the TC
       hFontAlt,                         // ...                    Alternate SM
 #endif
       hFontSM,                          // ...                    SM
+      hFontFB,                          // ...                    FB
+      hFontLW,                          // ...                    LW
       hFontPR,                          // ...                    Printer
       hFontCC,                          // ...                    CC
       hFontFE,                          // ...                    FE
@@ -1696,6 +1763,7 @@ HFONT hFontTC,                          // Handle to font for the TC
 EXTERN
 CHOOSEFONTW cfTC,                       // Global for ChooseFont for the TC
             cfSM,                       // ...                           SM
+            cfLW,                       // ...                           LW
             cfPR,                       // ...                           Printer
             cfCC,                       // ...                           CC
             cfFE,                       // ...                           FE
@@ -1705,6 +1773,7 @@ CHOOSEFONTW cfTC,                       // Global for ChooseFont for the TC
 EXTERN
 TEXTMETRICW tmTC,                       // Global for TEXTMETRICW for the TC
             tmSM,                       // ...                           SM
+            tmLW,                       // ...                           LW
             tmPR,                       // ...                           Printer
             tmCC,                       // ...                           CC
             tmFE,                       // ...                           FE
@@ -1718,15 +1787,17 @@ typedef enum tagFONTENUM
     FONTENUM_PR,                        // 02:  Printer
     FONTENUM_CC,                        // 03:  Crash Control window
     FONTENUM_TC,                        // 04:  Tab Control
-    FONTENUM_VE,                        // 05:  Vector Editor
-    FONTENUM_ME,                        // 06:  Matrix Editor
-    FONTENUM_LENGTH,                    // 07:  Length
+    FONTENUM_LW,                        // 05:  Language Bar
+    FONTENUM_VE,                        // 06:  Vector Editor
+    FONTENUM_ME,                        // 07:  Matrix Editor
+    FONTENUM_LENGTH,                    // 08:  Length
 } FONTENUM, *LPFONTENUM;
 
 EXTERN
 FONTENUM glbSameFontAs[FONTENUM_LENGTH];
 
 void CreateNewFontSM (UBOOL);
+void CreateNewFontLW (UBOOL);
 void CreateNewFontFE (UBOOL);
 void CreateNewFontPR (UBOOL);
 void CreateNewFontCC (UBOOL);
@@ -1735,6 +1806,7 @@ void CreateNewFontME (UBOOL);
 void CreateNewFontVE (UBOOL);
 
 void ApplyNewFontSM (HFONT);
+void ApplyNewFontLW (HFONT);
 void ApplyNewFontFE (HFONT);
 void ApplyNewFontPR (HFONT);
 void ApplyNewFontCC (HFONT);
@@ -1768,9 +1840,17 @@ FONTSTRUC fontStruc[FONTENUM_LENGTH]
    {&lfPR, &cfPR, &tmPR, DEF_PRPTSIZE, {0, 0}, TRUE , FALSE, FALSE, &hFontPR, &CreateNewFontPR, &ApplyNewFontPR, L"Printer Font"           },  // Printer
    {&lfCC, &cfCC, &tmCC, DEF_CCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontCC, &CreateNewFontCC, &ApplyNewFontCC, L"Crash Window Font"      },  // Crash window
    {&lfTC, &cfTC, &tmTC, DEF_TCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontTC, &CreateNewFontTC, &ApplyNewFontTC, L"Tab Control Font"       },  // Tab Control
+   {&lfLW, &cfLW, &tmLW, DEF_LWPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontLW, &CreateNewFontLW, &ApplyNewFontLW, L"Language Bar Font"      },  // Language Bar
    {&lfVE, &cfVE, &tmVE, DEF_VEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontME, &CreateNewFontME, &ApplyNewFontME, L"Vector Editor Font"     },  // Vector Editor
    {&lfME, &cfME, &tmME, DEF_MEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontVE, &CreateNewFontVE, &ApplyNewFontVE, L"Matrix Editor Font"     },  // Matrix Editor
   }
+#endif
+;
+
+EXTERN
+UBOOL bAPLFont                          // TRUE iff we found our default APL font
+#ifdef DEFINE_VALUES
+= FALSE
 #endif
 ;
 

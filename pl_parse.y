@@ -1174,6 +1174,10 @@ NameAnyOpN:
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
+    | NAMEVAR                           {DbgMsgWP (L"%%NameAnyOpN:  NAMEVAR");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
     | NAMEFCN                           {DbgMsgWP (L"%%NameAnyOpN:  NAMEFCN");
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
@@ -3304,7 +3308,7 @@ SimpExpr:
                                              $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | error   ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"error");
+    | error   ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAnyVar" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$3.tkToken);               // Validation only
@@ -3312,7 +3316,7 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAnyVar" WS_UTF16_LEFTARROW L"ArrExpr");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -9244,12 +9248,28 @@ PL_YYLEX_START:
                         return OP1NAMEVAR;
                     else
 
+////////////////////// Call this one TKT_VARNAMED
 ////////////////////lpYYLval->tkToken.tkFlags.TknType = TKT_VARNAMED;   // Already set
 
                     return NAMEVAR;
 
                 case NAMETYPE_FN0:
-////////////////////lpYYLval->tkToken.tkFlags.TknType = TKT_VARNAMED;   // Already set
+                    // If the previous token is TKT_ASSIGN, ...
+                    //   and the current one is not a system function
+                    //   and the next one is not TKT_VARNAMED (NAMETYPE_VAR),
+                    if (lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_ASSIGN
+                     && stFlags.ObjName NE OBJNAME_SYS
+                     && (lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_VARNAMED
+                      || lpplLocalVars->lptkNext[-1].tkData.tkSym->stFlags.stNameType NE NAMETYPE_VAR))
+                    {
+////////////////////////// Call this one TKT_VARNAMED
+////////////////////////lpYYLval->tkToken.tkFlags.TknType = TKT_VARNAMED;   // Already set
+
+                        return NAMEVAR;
+                    } // End IF
+
+                    // Call this one TKT_FCNNAMED
+                    lpYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
 
                     if (stFlags.ObjName EQ OBJNAME_SYS)
                         return SYSFN0;
@@ -9257,6 +9277,21 @@ PL_YYLEX_START:
                         return USRFN0;
 
                 case NAMETYPE_FN12:
+                    // If the previous token is TKT_ASSIGN, ...
+                    //   and the current one is not a system function
+                    //   and the next one is not TKT_VARNAMED (NAMETYPE_VAR),
+                    if (lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_ASSIGN
+                     && stFlags.ObjName NE OBJNAME_SYS
+                     && (lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_VARNAMED
+                      || lpplLocalVars->lptkNext[-1].tkData.tkSym->stFlags.stNameType NE NAMETYPE_VAR))
+                    {
+////////////////////////// Call this one TKT_VARNAMED
+////////////////////////lpYYLval->tkToken.tkFlags.TknType = TKT_VARNAMED;   // Already set
+
+                        return NAMEVAR;
+                    } // End IF
+
+                    // Call this one TKT_FCNNAMED
                     lpYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
 
                     if (stFlags.ObjName EQ OBJNAME_SYS)
@@ -9265,21 +9300,39 @@ PL_YYLEX_START:
                         return NAMEFCN;
 
                 case NAMETYPE_OP1:
+                    // Call this one TKT_OP1NAMED
                     lpYYLval->tkToken.tkFlags.TknType = TKT_OP1NAMED;
 
                     return NAMEOP1;
 
                 case NAMETYPE_OP2:
+                    // Call this one TKT_OP2NAMED
                     lpYYLval->tkToken.tkFlags.TknType = TKT_OP2NAMED;
 
                     return NAMEOP2;
 
                 case NAMETYPE_OP3:
+                    // Call this one TKT_OP3NAMED
                     lpYYLval->tkToken.tkFlags.TknType = TKT_OP3NAMED;
 
                     return NAMEOP3;
 
                 case NAMETYPE_TRN:
+                    // If the previous token is TKT_ASSIGN, ...
+                    //   and the current one is not a system function
+                    //   and the next one is not TKT_VARNAMED (NAMETYPE_VAR),
+                    if (lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_ASSIGN
+                     && stFlags.ObjName NE OBJNAME_SYS
+                     && (lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_VARNAMED
+                      || lpplLocalVars->lptkNext[-1].tkData.tkSym->stFlags.stNameType NE NAMETYPE_VAR))
+                    {
+////////////////////////// Call this one TKT_VARNAMED
+////////////////////////lpYYLval->tkToken.tkFlags.TknType = TKT_VARNAMED;   // Already set
+
+                        return NAMEVAR;
+                    } // End IF
+
+                    // Call this one TKT_FCNNAMED
                     lpYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
 
                     return NAMETRN;

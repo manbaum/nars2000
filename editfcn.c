@@ -209,13 +209,17 @@ UBOOL CreateFcnWindow
 //***************************************************************************
 
 void SetMarginsFE
-    (HWND hWndEC,           // Window handle to the Edit Ctrl
-     UINT uLeft)            // Left margin
+    (HWND hWndEC)           // Window handle to the Edit Ctrl
 
 {
+    UINT uLeft;             // Left margin
+
     // If we're not displaying function line #s, ...
     if (!GetWindowLongW (GetParent (hWndEC), GWLSF_FLN))
         uLeft = 0;
+    else
+        uLeft = FCN_INDENT * GetFSIndAveCharSize (FONTENUM_FE)->cx;
+    // Tell the Edit Ctrl about it
     SendMessageW (hWndEC, EM_SETMARGINS, EC_LEFTMARGIN, MAKELONG (uLeft, 0));
 } // End SetMarginsFE
 
@@ -325,6 +329,9 @@ LRESULT APIENTRY FEWndProc
 
             // Initialize variables
             cfFE.hwndOwner = hWnd;
+
+            // Save the ptr to this window's menu positions
+            SetPropW (hWnd, PROP_IDMPOSFN, (HANDLE) GetIDMPOS_FE);
 
             // See if there is an existing function
             lpSymName = ParseFunctionName (hWnd, (*(LPFE_CREATESTRUCTW *) &lpMDIcs->lParam)->lpwszLine);
@@ -693,7 +700,7 @@ LRESULT APIENTRY FEWndProc
 
             // Changing the font also means changing the size
             //   of the margins as the character width might change
-            SetMarginsFE (hWndEC, FCN_INDENT * GetFSIndAveCharSize (FONTENUM_FE)->cx);
+            SetMarginsFE (hWndEC);
 
             return FALSE;           // We handled the msg
 
@@ -715,7 +722,11 @@ LRESULT APIENTRY FEWndProc
         case WM_MDIACTIVATE:        // Activate/de-activate a child window
             // If we're being activated, ...
             if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
-                ActivateMDIMenu (hMenuFE, hMenuFEWindow, IDMPOS_FE_VIEW);
+            {
+                ActivateMDIMenu (WINDOWCLASS_FE, hWnd);
+                SetFocus (hWnd);
+            } // End IF
+
             break;                  // Continue with DefMDIChildProcW
 
         case WM_UNDO:
@@ -1247,11 +1258,8 @@ int LclECPaintHook
 
     if (lFlags & PRF_PRINTCLIENT)
     {
-        // Get the current font to restore later
-        hFontOld = GetCurrentObject (hDC, OBJ_FONT);
-
         // Use the printer font
-        SelectObject (hDC, hFontPR);
+        hFontOld = SelectObject (hDC, hFontPR);
 
         // Respecify the horizontal & vertical positions in printer coordinates
         rcAct.top  = GetFSIndAveCharSize (FONTENUM_PR)->cy * (rcAct.top  / line_height);
@@ -1508,6 +1516,77 @@ void OneDrawTextW
     } // End FOR
 } // End OneDrawTextW
 #endif
+
+
+//***************************************************************************
+//  $GetIDMPOS_SM
+//
+//  Translate menu enums into positions for SM
+//***************************************************************************
+
+UINT GetIDMPOS_SM
+    (ALLMENUPOS menuEnum)
+
+{
+    // Split cases based upon the menu enum
+    switch (menuEnum)
+    {
+        case IDMPOSNAME_FILE:
+            return IDMPOS_SM_FILE;
+
+        case IDMPOSNAME_EDIT:
+            return IDMPOS_SM_EDIT;
+
+        case IDMPOSNAME_VIEW:
+            return IDMPOS_SM_VIEW;
+
+        case IDMPOSNAME_WINDOW:
+            return IDMPOS_SM_WINDOW;
+
+        case IDMPOSNAME_HELP:
+            return IDMPOS_SM_HELP;
+
+        defstop
+            return -1;
+    } // End SWITCH
+} // End GetIDMPOS_SM
+
+
+//***************************************************************************
+//  $GetIDMPOS_FE
+//
+//  Translate menu enums into positions for FE
+//***************************************************************************
+
+UINT GetIDMPOS_FE
+    (ALLMENUPOS menuEnum)
+
+{
+    // Split cases based upon the menu enum
+    switch (menuEnum)
+    {
+        case IDMPOSNAME_FILE:
+            return IDMPOS_FE_FILE;
+
+        case IDMPOSNAME_EDIT:
+            return IDMPOS_FE_EDIT;
+
+        case IDMPOSNAME_VIEW:
+            return IDMPOS_FE_VIEW;
+
+        case IDMPOSNAME_WINDOW:
+            return IDMPOS_FE_WINDOW;
+
+        case IDMPOSNAME_OBJECTS:
+            return IDMPOS_FE_OBJECTS;
+
+        case IDMPOSNAME_HELP:
+            return IDMPOS_FE_HELP;
+
+        defstop
+            return -1;
+    } // End SWITCH
+} // End GetIDMPOS_FE
 
 
 //***************************************************************************
@@ -4308,7 +4387,7 @@ void DrawLineNumsFE
         return;
 
     // If we're not displaying function line #s, ...
-    if (!GetWindowLongW (GetParent (hWndEC), GWLSF_FLN))
+    if (!GetWindowLongW (hWndParent, GWLSF_FLN))
         return;
 
     // Get the client rectangle
@@ -4634,31 +4713,172 @@ UBOOL CloseFunction
 
 
 //***************************************************************************
+//  $ShowBand
+//
+//  Show/hide a Rebar band
+//***************************************************************************
+
+void ShowBand
+    (UINT  uCnt,            // Index into aRebarBands
+     UBOOL bShow)           // TRUE iff we're to show this band
+
+{
+    UINT uItem;                     // Index of this band
+
+    // Convert the Window ID to an index
+    uItem = (UINT)
+      SendMessageW (hWndRB, RB_IDTOINDEX, aRebarBands[uCnt].uWindowID, 0);
+
+    // Show/Hide the specified Toolbar
+    SendMessageW (hWndRB, RB_SHOWBAND, uItem, bShow);
+} // End ShowBand
+
+
+//***************************************************************************
+//  $SetToolbarsMenu
+//
+//  Set/reset the corresponding Toolbars menu checkmark and
+//    show/hide the corresponding Rebar band
+//***************************************************************************
+
+void SetToolbarsMenu
+    (HMENU hMenu,
+     UINT  uCnt)
+
+{
+    // Check/uncheck the Toolbars menu item
+    CheckMenuItem (hMenu,
+                   IDM_TB_FIRST + uCnt,
+                   MF_BYCOMMAND
+                 | MF_ENABLED
+                 | (aRebarBands[uCnt].bShowBand ? MF_CHECKED : MF_UNCHECKED)
+                  );
+    // Show/hide the band
+    ShowBand (uCnt, aRebarBands[uCnt].bShowBand);
+} // End SetToolbarsMenu
+
+
+//***************************************************************************
+//  $SetLineNumState
+//
+//  Set the state of the Toggle Function Line #s button
+//***************************************************************************
+
+void SetLineNumState
+    (HWND hWndFE)               // Handle of FE window
+
+{
+    UINT uFlags;                // Current flags of the Toggle Fcn Line #s button
+    HWND hWndEC;                // Handle of Edit Ctrl window
+
+    Assert (IzitFE (hWndFE));
+
+    // Get the current flags of the Object Toolbar's Toggle Fcn Line #s button
+    uFlags = SendMessageW (hWndFN_RB, TB_GETSTATE, IDM_TOGGLE_LNS_FN, 0);
+
+    // Set the flags of the Objects Toolbar's Toggle Fcn Line #s button
+    if (GetWindowLongW (hWndFE, GWLSF_FLN))
+        uFlags |=  TBSTATE_CHECKED;
+    else
+        uFlags &= ~TBSTATE_CHECKED;
+
+    // Tell the Objects Toolbar about the new state
+    SendMessageW (hWndFN_RB, TB_SETSTATE, IDM_TOGGLE_LNS_FN, (LPARAM) uFlags);
+
+    // Get the corresponding Edit Ctrl window handle
+    (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
+
+    // Set the margins for a Function Editor window
+    SetMarginsFE (hWndEC);
+} // End SetLineNumState
+
+
+//***************************************************************************
 //  $ActivateMDIMenu
 //
 //  Activate an MDI window menu
 //***************************************************************************
 
 void ActivateMDIMenu
-    (HMENU hMenuFrame,
-     HMENU hMenuWindow,
-     UINT  uViewPos)
+    (WINDOWCLASS  wndClass,         // SM or FE window class
+     HWND         hWnd)             // hWndSM or hWndFE
 
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    HMENU        hMenuView;         // View menu handle
+    HMENU        hMenuFrame,        // SM or FE menu handle
+                 hMenu;             // Window/View/toolbar/ ... menu handle
+    GETIDMPOS_XX GetIDMPOS_xx;      // Ptr to IDMPOS_xxx function
+    UINT         uCnt;              // Loop counter
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
+    // Split cases based upon the window class
+    switch (wndClass)
+    {
+        case WINDOWCLASS_SM:
+            hMenuFrame = hMenuSM;
+            GetIDMPOS_xx = GetIDMPOS_SM;
+
+            break;
+
+        case WINDOWCLASS_FE:
+            hMenuFrame = hMenuFE;
+            GetIDMPOS_xx = GetIDMPOS_FE;
+
+            // Set the current state of the Object Toolbar's Toggle Fcn Line #s button
+            SetLineNumState (hWnd);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Get the Window menu handle
+    hMenu = GetSubMenu (hMenuFrame, (*GetIDMPOS_xx) (IDMPOSNAME_WINDOW));
+
     SendMessageW (lpMemPTD->hWndMC,
                   WM_MDISETMENU,
-                  GET_WM_MDISETMENU_MPS (hMenuFrame, hMenuWindow));
+                  GET_WM_MDISETMENU_MPS (hMenuFrame, hMenu));
     DrawMenuBar (hWndMF);
 
+    // Get the View menu handle
+    hMenu = GetSubMenu (hMenuFrame, (*GetIDMPOS_xx) (IDMPOSNAME_VIEW));
+
     // Check/uncheck the View | Status Bar menu item as appropriate
-    hMenuView = GetSubMenu (hMenuFrame, IDMPOS_SM_VIEW);
-    CheckMenuItem (hMenuView, IDM_STATUSBAR, MF_BYCOMMAND | (OptionFlags.bViewStatusBar ? MF_CHECKED : MF_UNCHECKED));
+    CheckMenuItem (hMenu, IDM_STATUSBAR, MF_BYCOMMAND | (OptionFlags.bViewStatusBar ? MF_CHECKED : MF_UNCHECKED));
+
+    // Loop through the Toolbars
+    for (uCnt = 0; uCnt < countof (aRebarBands); uCnt++)
+    // Split cases based upon the window class
+    switch (wndClass)
+    {
+        case WINDOWCLASS_SM:
+            // If this Toolbar applies to SM, ...
+            if (aRebarBands[uCnt].bApplyToSM)
+                // Set/reset the corresponding Toolbars menu checkmark and
+                //   show/hide the corresponding Rebar band
+                SetToolbarsMenu (hMenu, uCnt);
+            else
+                // Hide the band
+                ShowBand (uCnt, FALSE);
+            break;
+
+        case WINDOWCLASS_FE:
+            // If this Toolbar applies to FE, ...
+            if (aRebarBands[uCnt].bApplyToFE)
+                // Set/reset the corresponding Toolbars menu checkmark and
+                //   show/hide the corresponding Rebar band
+                SetToolbarsMenu (hMenu, uCnt);
+            else
+                // Hide the band
+                ShowBand (uCnt, FALSE);
+            break;
+
+        defstop
+            break;
+    } // End FOR/SWITCH
 } // End ActivateMDIMenu
 
 

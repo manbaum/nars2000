@@ -107,19 +107,19 @@ IDR_SMMENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Open...",                    IDM_LOAD_WS     , INACTIVE GRAYED
-        MENUITEM "&Xload...",                   IDM_XLOAD_WS    , INACTIVE GRAYED
-        MENUITEM "&Copy...",                    IDM_COPY_WS     , INACTIVE GRAYED
-        MENUITEM "Pcopy...",                    IDM_PCOPY_WS    , INACTIVE GRAYED
+        MENUITEM "&Open..."                   , IDM_LOAD_WS
+        MENUITEM "&Xload..."                  , IDM_XLOAD_WS
+        MENUITEM "&Copy..."                   , IDM_COPY_WS
+        MENUITEM "Pcopy..."                   , IDM_PCOPY_WS        , INACTIVE GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "&Save",                       IDM_SAVE_WS
-        MENUITEM "Save &As...",                 IDM_SAVE_AS_WS  , INACTIVE GRAYED
-        MENUITEM "&Drop",                       IDM_DROP_WS     , INACTIVE GRAYED
-        MENUITEM "D&uplicate",                  IDM_DUP_WS      , INACTIVE GRAYED
+        MENUITEM "&Save"                      , IDM_SAVE_WS
+        MENUITEM "Save &As..."                , IDM_SAVE_AS_WS
+        MENUITEM "&Drop"                      , IDM_DROP_WS
+////////MENUITEM "D&uplicate"                 , IDM_DUP_WS          , INACTIVE GRAYED   // ***FIXME***
         MENUITEM SEPARATOR
-        MENUITEM "&Print\tCtrl+P",              IDM_PRINT_WS
+        MENUITEM "&Print\tCtrl+P"             , IDM_PRINT_WS
         MENUITEM SEPARATOR
-        MENUITEM "&Exit",                       IDM_EXIT
+        MENUITEM "&Exit"                      , IDM_EXIT
     END
     POPUP "&Edit"
     BEGIN
@@ -127,20 +127,27 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "Status Bar",                  IDM_STATUSBAR
+        MENUITEM "&Status Bar"                , IDM_STATUSBAR
+        MENUITEM SEPARATOR
+        // These menu items must be in the same order as the <IDM_TB_xxx> and
+        //   <aRebarBands> entries
+        MENUITEM "&Workspace Toolbar"         , IDM_TB_WS
+        MENUITEM "&Edit Toolbar"              , IDM_TB_ED
+        MENUITEM "SM &Font Toolbar"           , IDM_TB_FW
+        MENUITEM "&Language Toolbar"          , IDM_TB_LW
     END
     POPUP "&Window"
     BEGIN
-        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
+        MENUITEM "&Cascade\tShift+F6"         , IDM_CASCADE
         MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
-        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
-        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
+        MENUITEM "Tile &Vertically\tShift+F5" , IDM_TILE_VERT
+        MENUITEM "&Arrange Icons"             , IDM_ARRANGE_ICONS
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Contents...",                IDM_HELP_CONTENTS, INACTIVE GRAYED // ***FIXME***
-        MENUITEM "Check for &Updates",          IDM_UPDATES
-        MENUITEM "&About",                      IDM_ABOUT
+        MENUITEM "&Contents..."               , IDM_HELP_CONTENTS   , INACTIVE GRAYED   // ***FIXME***
+        MENUITEM "Check for &Updates"         , IDM_UPDATES
+        MENUITEM "&About"                     , IDM_ABOUT
     END
 END
 
@@ -148,37 +155,47 @@ IDR_FEMENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Exit",                       IDM_EXIT
+        MENUITEM "&Exit"                      , IDM_EXIT
     END
     POPUP "&Edit"
     BEGIN
 #include "edit.rch"
         MENUITEM SEPARATOR
-        MENUITEM "&Localize",                   IDM_LOCALIZE
-        MENUITEM "Unl&ocalize",                 IDM_UNLOCALIZE
+        MENUITEM "&Localize"                  , IDM_LOCALIZE
+        MENUITEM "Unl&ocalize"                , IDM_UNLOCALIZE
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "Status Bar",                  IDM_STATUSBAR
+        MENUITEM "&Status Bar"                , IDM_STATUSBAR
+        MENUITEM SEPARATOR
+        // These menu items must be in the same order as the <IDM_TB_xxx> and
+        //   <aRebarBands> entries
+        MENUITEM "&Workspace Toolbar"         , IDM_TB_WS
+        MENUITEM "&Edit Toolbar"              , IDM_TB_ED
+        MENUITEM "&Objects Toolbar"           , IDM_TB_FN
+        MENUITEM "SM &Font Toolbar"           , IDM_TB_FW
+        MENUITEM "&Language Toolbar"          , IDM_TB_LW
     END
     POPUP "&Window"
     BEGIN
-        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
+        MENUITEM "&Cascade\tShift+F6"         , IDM_CASCADE
         MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
-        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
-        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
+        MENUITEM "Tile &Vertically\tShift+F5" , IDM_TILE_VERT
+        MENUITEM "&Arrange Icons"             , IDM_ARRANGE_ICONS
     END
     POPUP "Ob&jects"
     BEGIN
-        MENUITEM "&Close\tCtrl+Q",              IDM_CLOSE_FN
-        MENUITEM "&Save\tCtrl+S",               IDM_SAVE_FN
-        MENUITEM "Save and &End\tCtrl+E",       IDM_SAVECLOSE_FN
-////////MENUITEM "Save &As\tCtrl+A",            IDM_SAVE_FN_AS      // ***FIXME*** -- Make this work??
+        MENUITEM "&New\tCtrl+N"               , IDM_NEW_FN
+        MENUITEM "&Quit\tCtrl+Q"              , IDM_CLOSE_FN
+        MENUITEM "&Save\tCtrl+S"              , IDM_SAVE_FN
+        MENUITEM "Save and &Quit\tCtrl+E"     , IDM_SAVECLOSE_FN
+        MENUITEM "Save &As\tCtrl+A"           , IDM_SAVE_AS_FN      , INACTIVE GRAYED   // ***FIXME***
+        MENUITEM "&Toggle Line Numbers"       , IDM_TOGGLE_LNS_FN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Contents...",                IDM_HELP_CONTENTS
-        MENUITEM "&About",                      IDM_ABOUT
+        MENUITEM "&Contents..."               , IDM_HELP_CONTENTS
+        MENUITEM "&About"                     , IDM_ABOUT
     END
 END
 
@@ -196,7 +213,7 @@ BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,130,5,50,14
     LTEXT           "NARS2000 (WinXX)\nVersion %u.%u%u",IDC_VERSION,10,
                     5,115,18,NOT WS_GROUP
-    LTEXT           "Copyright © 2006-9 Sudley Place Software\nAll rights reserved.",
+    LTEXT           "Copyright © 2006-10 Sudley Place Software\nAll rights reserved.",
                     IDC_STATIC,10,30,150,18,NOT WS_GROUP
     ICON            IDI_NARS,IDC_LOADEDFROM,145,25, 0, 0,SS_NOTIFY | SS_REALSIZEIMAGE
     LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see",
@@ -306,52 +323,63 @@ BEGIN
 
     PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT1        ,  5, 60,15,14,BS_OWNERDRAW
     LTEXT           "Session Manager",IDC_STATIC       , 25, 65,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO1A, 90, 65,16, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO1A, 90, 65,15, 8
 
     PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT2        ,  5, 75,15,14,BS_OWNERDRAW
     LTEXT           "Function Editor",IDC_STATIC       , 25, 80,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO2A, 90, 80,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO2B,105, 80,16, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO2A, 90, 80,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO2B,105, 80,15, 8
 
     PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT3        ,  5, 90,15,14,BS_OWNERDRAW
     LTEXT           "Printer"        ,IDC_STATIC       , 25, 95,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3A, 90, 95,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3B,105, 95,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3C,120, 95,16, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3A, 90, 95,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3B,105, 95,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3C,120, 95,15, 8
 
     PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT4        ,  5,105,15,14,BS_OWNERDRAW
     LTEXT           "Crash Window"   ,IDC_STATIC       , 25,110,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4A, 90,110,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4B,105,110,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4C,120,110,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4D,135,110,16, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4A, 90,110,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4B,105,110,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4C,120,110,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4D,135,110,15, 8
 
     PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT5        ,  5,120,15,14,BS_OWNERDRAW
     LTEXT           "Tab Control"    ,IDC_STATIC       , 25,125,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5A, 90,125,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5B,105,125,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5C,120,125,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5D,135,125,16, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5E,150,125,16, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5A, 90,125,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5B,105,125,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5C,120,125,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5D,135,125,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5E,150,125,15, 8
 
-////PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT6        ,  5,135,15,14,BS_OWNERDRAW
-////LTEXT           "Vector Editor"  ,IDC_STATIC       , 25,140,60, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6A, 90,140,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6B,105,140,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6C,120,140,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6D,135,140,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6E,150,140,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6F,165,140,16, 8
+    PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT6        ,  5,135,15,14,BS_OWNERDRAW
+    LTEXT           "Language Bar"   ,IDC_STATIC       , 25,140,60, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6A, 90,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6B,105,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6C,120,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6D,135,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6E,150,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6F,165,140,15, 8
 ////
 ////PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT7        ,  5,150,15,14,BS_OWNERDRAW
-////LTEXT           "Matrix Editor"  ,IDC_STATIC       , 25,155,60, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7A, 90,155,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7B,105,155,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7C,120,155,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7D,135,155,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7E,150,155,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7F,165,155,16, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7G,180,155,16, 8
+////LTEXT           "Vector Editor"  ,IDC_STATIC       , 25,155,60, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7A, 90,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7B,105,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7C,120,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7D,135,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7E,150,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7F,165,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7G,180,155,15, 8
+////
+////PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT7        ,  5,165,15,14,BS_OWNERDRAW
+////LTEXT           "Matrix Editor"  ,IDC_STATIC       , 25,170,60, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8A, 90,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8B,105,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8C,120,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8D,135,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8E,150,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8F,165,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8G,180,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8H,180,170,15, 8
 END
 
 IDD_PROPPAGE_RANGE_LIMITS DIALOGEX DISCARDABLE  0, 0, 255, 288
@@ -933,8 +961,8 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
 IDI_NARS                ICON    DISCARDABLE     "Images\\NARS.ico"
+IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
 IDI_CLOSE               ICON    DISCARDABLE     "Images\\Close.ico"
 IDI_CUSTOM              ICON    DISCARDABLE     "Images\\Custom.ico"
 IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF.ico"
@@ -963,9 +991,12 @@ IDI_PM_SMALL            ICON    DISCARDABLE     "Images\\PM.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Bitmap
+// Bitmaps
 //
-IDB_LINECONT    BITMAP  DISCARDABLE "Images\\LineCont.bmp"
+IDB_LINECONT            BITMAP  DISCARDABLE     "Images\\LineCont.bmp"
+IDB_WORKSPACE           BITMAP  DISCARDABLE     "Images\\Workspace.bmp"
+IDB_EDIT                BITMAP  DISCARDABLE     "Images\\Edit.bmp"
+IDB_OBJECTS             BITMAP  DISCARDABLE     "Images\\Objects.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////

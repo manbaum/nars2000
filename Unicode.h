@@ -36,7 +36,7 @@
 
 // N.B.:  Whenever changing any of the UTF16_xxx symbol
 //   names below, be sure to make a corresponding change
-//   to <aSymbolNames> in <externs.h>.
+//   to <aSymbolNames> in <symbolnames.h>.
 
 // No keystroke equivalents for these as yet
 #define UTF16_DIERESISDOT        0x2235         //
@@ -64,6 +64,7 @@
 #define UTF16_LDC_LT_VERT_L      0x2524         // LDC light vertical and left
 #define UTF16_LDC_LT_HORZ_D      0x252C         // LDC light horizontal and down
 #define UTF16_LDC_LT_HORZ_U      0x2534         // LDC light horizontal and up
+#define UTF16_LEFTRIGHTARROWS    0x2194         // Left-right arrows
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha
@@ -263,6 +264,7 @@
 #define WS_UTF16_LDC_LT_VERT_L      L"\x2524"   // LDC light vertical and left
 #define WS_UTF16_LDC_LT_HORZ_D      L"\x252C"   // LDC light horizontal and down
 #define WS_UTF16_LDC_LT_HORZ_U      L"\x2534"   // LDC light horizontal and up
+#define WS_UTF16_LEFTRIGHTARROWS    L"\x2194"   // Left-right arrows
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA              L"\x237A"   // Alt-'a' - alpha

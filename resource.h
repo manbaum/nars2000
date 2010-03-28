@@ -20,34 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-//{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by main.rc
-
-#define IDMPOS_SM_FILE                             0
-#define IDMPOS_SM_EDIT                             1
-#define IDMPOS_SM_VIEW                             2
-#define IDMPOS_SM_WINDOW                           3
-#define IDMPOS_SM_OPTIONS                          4
-#define IDMPOS_SM_HELP                             5
-
-#define IDMPOS_FE_FILE                             0
-#define IDMPOS_FE_EDIT                             1
-#define IDMPOS_FE_VIEW                             2
-#define IDMPOS_FE_WINDOW                           3
-#define IDMPOS_FE_OPTIONS                          4
-#define IDMPOS_FE_HELP                             5
-
-#define IDWC_DB_LB                                 1    // IDs to identify window controls
-#define IDWC_FE_EC                                 2    // ...
-#define IDWC_SM_EC                                 3    // ...
-#define IDWC_SM_DB                                 4    // ...
-#define IDWC_TC_MC                                 5    // ...
-#define IDWC_CC_LB                                 6    // ...
-#define IDWC_PM_LB                                 7    // ...
-#define IDWC_MF_ST                                 8    // ...
-#define IDWC_WCN_BN                                9    // Used in <ccHookProc>
-#define IDWC_WCN_WN                               10    // Used in <ccHookProc>
 
 // Menu IDs
 #define IDR_MFMENU                                20
@@ -60,7 +32,10 @@
 #define IDR_ACCEL                                 30
 
 // Bitmap IDs
-#define IDB_LINECONT                              90
+#define IDB_LINECONT                              40
+#define IDB_WORKSPACE                             41
+#define IDB_EDIT                                  42
+#define IDB_OBJECTS                               43
 
 // Icon IDs
 #define IDI_MF_LARGE                             102
@@ -132,6 +107,17 @@
 #define IDM_DROP_WS                              510
 #define IDM_PRINT_WS                             511
 
+// The following IDs must be consecutive
+// These entries must be in the same order as the <aRebarBands> and
+//   <IDR_SMMENU>/<IDR_FEMENU> entries
+#define IDM_TB_FIRST                             IDM_TB_WS
+#define IDM_TB_WS                                600
+#define IDM_TB_ED                                601
+#define IDM_TB_FN                                602
+#define IDM_TB_FW                                603
+#define IDM_TB_LW                                604
+#define IDM_TB_LAST                              IDM_TB_LW
+
 #define IDM_UNDO                                 700
 #define IDM_REDO                                 701
 #define IDM_CUT                                  702
@@ -156,10 +142,12 @@
 #define IDM_LOCALIZE                             730
 #define IDM_UNLOCALIZE                           731
 
-#define IDM_CLOSE_FN                             740
-#define IDM_SAVE_FN                              741
-#define IDM_SAVECLOSE_FN                         742
-#define IDM_SAVE_FN_AS                           743
+#define IDM_NEW_FN                               740
+#define IDM_CLOSE_FN                             741
+#define IDM_SAVE_FN                              742
+#define IDM_SAVE_AS_FN                           743
+#define IDM_SAVECLOSE_FN                         744
+#define IDM_TOGGLE_LNS_FN                        745
 
 #define IDM_CUSTOMIZE                            750
 
@@ -206,6 +194,8 @@
 #define IDC_FONT5                                844
 #define IDC_FONT6                                845
 #define IDC_FONT7                                846
+#define IDC_FONT8                                847
+#define IDC_FONT_LAST                            IDC_FONT8
 
 #define IDC_FONTS_RADIO1A                        850
 #define IDC_FONTS_RADIO2A                        851
@@ -235,8 +225,16 @@
 #define IDC_FONTS_RADIO7E                        875
 #define IDC_FONTS_RADIO7F                        876
 #define IDC_FONTS_RADIO7G                        877
+#define IDC_FONTS_RADIO8A                        878
+#define IDC_FONTS_RADIO8B                        879
+#define IDC_FONTS_RADIO8C                        880
+#define IDC_FONTS_RADIO8D                        881
+#define IDC_FONTS_RADIO8E                        882
+#define IDC_FONTS_RADIO8F                        883
+#define IDC_FONTS_RADIO8G                        884
+#define IDC_FONTS_RADIO8H                        885
 
-#define IDC_FONTS_TEXT                           880
+#define IDC_FONTS_TEXT                           889
 
 #define IDC_RANGE_XB_CT                          890
 #define IDC_RANGE_XB_IO                          891

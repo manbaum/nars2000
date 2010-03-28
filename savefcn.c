@@ -1141,9 +1141,7 @@ UBOOL SaveFunctionCom
     } // End IF
 
     // Allocate virtual memory for the Variable Strand accumulator
-#ifdef DEBUG
     lclMemVirtStr[0].lpText   = "fhLocalvars.lpYYStrandStart in <SaveFunctionCom>";
-#endif
     lclMemVirtStr[0].IncrSize = DEF_STRAND_INCRNELM * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].MaxSize  = DEF_STRAND_MAXNELM  * sizeof (PL_YYSTYPE);
     lclMemVirtStr[0].IniAddr  = (LPUCHAR)

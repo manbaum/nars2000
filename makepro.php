@@ -1,4 +1,23 @@
 <?php
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2010 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
 // Script to strip out all but prototype text from a .c file
 // Date:  15 December 2008
 // Author:  Bob Smith
@@ -168,13 +187,13 @@ function ProcessFile ($FileName, $OutFile)
     // Strip out #pragma lines
     $FileNew = preg_replace ('/#\s*pragma.*?\r\n/', '', $FileNew);
 
-    // Strip out #define .*
+    // Strip out #define .* lines
     $FileNew = preg_replace ('/#\s*define .*?\r\n/', '', $FileNew);
 
-    // Strip out typedef .*
+    // Strip out typedef .* lines
     $FileNew = preg_replace ('/typedef .*?\r\n/', '', $FileNew);
 
-    // Strip out #undef .*
+    // Strip out #undef .* lines
     $FileNew = preg_replace ('/#\s*undef .*?\r\n/', '', $FileNew);
 
     // Strip out blank lines
@@ -230,6 +249,9 @@ function ProcessFile ($FileName, $OutFile)
 
     // Replace "\r\n;" with ";"
     $FileNew = preg_replace ('/\r\n;/', ';', $FileNew);
+
+    // In lines that begin with a '#' and end with ");", replace the ");" with ")"
+    $FileNew = preg_replace ('/(#.*?\));\r\n/', "$1\r\n", $FileNew);
 
     // Strip out lines that do not begin with '#' and have no parens
     $FileNew = preg_replace ('/^[^#()]+;/m', '', $FileNew);

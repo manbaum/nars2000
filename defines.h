@@ -36,6 +36,8 @@
   #define DEF_ASFONTNAME    L"Code2000"         // Default Alternate SM font
 #endif
 #define DEF_SMFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_FBFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_LWFONTNAME      DEF_APLFONT_INTNAME
 #define DEF_PRFONTNAME      DEF_APLFONT_INTNAME
 #define DEF_CCFONTNAME      DEF_APLFONT_INTNAME
 #define DEF_FEFONTNAME      DEF_APLFONT_INTNAME
@@ -44,6 +46,8 @@
 
 #define DEF_TCLOGFONT       0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,DEF_TCFONTNAME
 #define DEF_SMLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_SMFONTNAME
+#define DEF_FBLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_FBFONTNAME
+#define DEF_LWLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_LWFONTNAME
 #define DEF_PRLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_PRFONTNAME
 #define DEF_CCLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_CCFONTNAME
 #define DEF_FELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_FEFONTNAME
@@ -52,6 +56,8 @@
 
 #define DEF_TCPTSIZE        9           // Point size for TC font
 #define DEF_SMPTSIZE       13           // ...            SM ...
+#define DEF_FBPTSIZE       13           // ...            FB ...
+#define DEF_LWPTSIZE       13           // ...            LW ...
 #define DEF_PRPTSIZE       13           // ...            PR ...
 #define DEF_CCPTSIZE       13           // ...            CC ...
 #define DEF_FEPTSIZE       13           // ...            FE ...
@@ -197,13 +203,15 @@
 //  Window Classes
 //***************************************************************************
 
-#define  MCWNDCLASS     "MDIClient"     // MDI Client window class
-#define LMCWNDCLASS    L"MDIClient"     // MDI Client ...
+#define  MFWNDCLASS     "MFClass"       // Master Frame Window class
+#define LMFWNDCLASS    L"MFClass"       // ...
+#define  MCWNDCLASS     "MDIClient"     // MDI Client ...
+#define LMCWNDCLASS    L"MDIClient"     // ...
 #define  SMWNDCLASS     "SMClass"       // Session Manager ...
-#define LSMWNDCLASS    L"SMClass"       // Session Manager ...
+#define LSMWNDCLASS    L"SMClass"       // ...
 #ifdef DEBUG
   #define  DBWNDCLASS   "DBClass"       // Debugger     ...
-  #define LDBWNDCLASS  L"DBClass"       // Debugger     ...
+  #define LDBWNDCLASS  L"DBClass"       // ...
 #endif
 #ifdef PERFMONON
   #define  PMWNDCLASS   "PMClass"       // Performance Monitoring ...
@@ -219,6 +227,10 @@
 #define LECWNDCLASS    L"ECClass"       // ...
 #define  CCWNDCLASS     "CCClass"       // Crash Control ...
 #define LCCWNDCLASS    L"CCClass"       // ...
+#define  FW_RBWNDCLASS  "FW_RBClass"    // Font Window in Rebar Ctrl ...
+#define LFW_RBWNDCLASS L"FW_RBClass"    // ...
+#define  LW_RBWNDCLASS  "LW_RBClass"    // Language Window in Rebar Ctrl ...
+#define LLW_RBWNDCLASS L"LW_RBClass"    // ...
 
 #define DIALOGCLASS    L"#32770"        // Dialog class
 
@@ -332,6 +344,12 @@ default:        \
 #define GWLPM_HWNDLB    0                                           // Window handle of Listbox
 #define GWLPM_EXTRA     GWLPM_HWNDLB   + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
+// Define offsets in FW_RBWNDCLASS window extra bytes
+#define GWLFW_RB_EXTRA  0                                           // Total # extra bytes
+
+// Define offsets in LW_RBWNDCLASS window extra bytes
+#define GWLLW_RB_EXTRA  0                                           // Total # extra bytes
+
 // Define offsets in VEWNDCLASS window extra bytes
 #define GWLVE_EXTRA     0                                           // Total # extra bytes
 
@@ -363,6 +381,10 @@ default:        \
 #define MYWM_NOTIFY         (WM_APP +13)    // EC (Pass on of WM_NOTIFY from EC)
 #define MYWM_CMPNAME        (WM_APP +14)    // FE (Compare function names)
 #define MYWM_RBUTTONDBLCLK  (WM_APP +15)    // FE/SM (Right-double-click)
+#define MYWM_NEWFONT        (WM_APP +16)    // WS_FW (Set a new font and point size)
+#define MYWM_GETCLIENTSIZE  (WM_APP +17)    // LW_FW (Get size of client area before the window is created)
+#define MYWM_CLEARCHAR      (WM_APP +18)    // LW_FW (Clear highlight around any previously outlined char)
+#define MYWM_CREATEFCN      (WM_APP +19)    // SM (Create a new function)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB
@@ -422,15 +444,6 @@ default:        \
 #define strncmpW        wcsncmp
 #define strpbrkW        wcspbrk
 #define strspnW         wcsspn
-
-
-//***************************************************************************
-//  Image list constants
-//***************************************************************************
-
-// Width and height of each image in the image list
-#define IMAGE_CX        16
-#define IMAGE_CY        16
 
 
 //***************************************************************************
@@ -503,6 +516,13 @@ default:        \
 
 #define MAXOBJ  128000
 
+
+//***************************************************************************
+//  Window Properties
+//***************************************************************************
+
+#define PROP_IDMPOSFN   L"PROP_IDMPOSFN"
+#define PROP_NTHREADS   L"PROP_NTHREADS"
 
 
 //***************************************************************************

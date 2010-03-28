@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -138,7 +138,9 @@ LRESULT APIENTRY CCWndProc
 
             break;                  // Continue with next handler
 
-        case WM_CONTEXTMENU:        //
+        case WM_CONTEXTMENU:        // hwnd = (HWND) wParam;
+                                    // xPos = LOSHORT (lParam); // Horizontal position of cursor
+                                    // yPos = HISHORT (lParam); // Vertical position of cursor
         case LB_ADDSTRING:          // 0 = wParam;
                                     // lpsz = (LPCTSTR) lParam;
         case WM_SETFONT:            // hFont = (HFONT) wParam;
@@ -285,7 +287,8 @@ LRESULT WINAPI LclCCListboxWndProc
 #undef  cmdCtl
 #undef  idCtl
 
-        case WM_CONTEXTMENU:                // xPos = LOSHORT (lParam); // Horizontal position of cursor
+        case WM_CONTEXTMENU:                // hwnd = (HWND) wParam;
+                                            // xPos = LOSHORT (lParam); // Horizontal position of cursor
                                             // yPos = HISHORT (lParam); // Vertical position of cursor
             // Ensure there are items selected
             iSelCnt = (UINT) SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
@@ -310,14 +313,16 @@ LRESULT WINAPI LclCCListboxWndProc
                         L"Select &All");
 
             TrackPopupMenu (hMenu,              // Handle
-                            TPM_CENTERALIGN
+                            0                   // Flags
+                          | TPM_CENTERALIGN
                           | TPM_LEFTBUTTON
-                          | TPM_RIGHTBUTTON,    // Flags
-                            ptScr.x,    // x-position
-                            ptScr.y,    // y-position
-                            0,          // Reserved (must be zero)
-                            hWnd,       // Handle of owner window
-                            NULL);      // Dismissal area outside rectangle (none)
+                          | TPM_RIGHTBUTTON
+                            ,
+                            ptScr.x,            // x-position
+                            ptScr.y,            // y-position
+                            0,                  // Reserved (must be zero)
+                            hWnd,               // Handle of owner window
+                            NULL);              // Dismissal area outside rectangle (none)
 
             // Free the menu resources
             DestroyMenu (hMenu);

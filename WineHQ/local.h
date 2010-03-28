@@ -4,13 +4,13 @@
 
 #undef  WM_KEYLAST
 
-#if(_WIN32_WINNT >= 0x0501)
+#ifndef WM_UNICHAR
 #define WM_UNICHAR                      0x0109
 #define WM_KEYLAST                      0x0109
 #define UNICODE_NOCHAR                  0xFFFF
 #else
 #define WM_KEYLAST                      0x0108
-#endif /* _WIN32_WINNT >= 0x0501 */
+#endif
 
 #ifdef _WIN64
   typedef          __int64 APLI3264;    // Widest native signed value
@@ -56,6 +56,7 @@ extern int gDbgLvl;
 #include "defines.h"
 #include "editctrl.h"
 #include "resource.h"
+#include "enums.h"
 
 #ifdef DEBUG
   #define   LCLODSAPI   ODSAPI

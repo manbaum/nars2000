@@ -119,14 +119,18 @@ APLU3264 CALLBACK CustomizeDlgProc
                         FontsRadio4[] = {IDC_FONTS_RADIO4A, IDC_FONTS_RADIO4B, IDC_FONTS_RADIO4C, IDC_FONTS_RADIO4D},
                         FontsRadio5[] = {IDC_FONTS_RADIO5A, IDC_FONTS_RADIO5B, IDC_FONTS_RADIO5C, IDC_FONTS_RADIO5D, IDC_FONTS_RADIO5E},
                         FontsRadio6[] = {IDC_FONTS_RADIO6A, IDC_FONTS_RADIO6B, IDC_FONTS_RADIO6C, IDC_FONTS_RADIO6D, IDC_FONTS_RADIO6E, IDC_FONTS_RADIO6F},
-                        FontsRadio7[] = {IDC_FONTS_RADIO7A, IDC_FONTS_RADIO7B, IDC_FONTS_RADIO7C, IDC_FONTS_RADIO7D, IDC_FONTS_RADIO7E, IDC_FONTS_RADIO7F, IDC_FONTS_RADIO7G};
+                        FontsRadio7[] = {IDC_FONTS_RADIO7A, IDC_FONTS_RADIO7B, IDC_FONTS_RADIO7C, IDC_FONTS_RADIO7D, IDC_FONTS_RADIO7E, IDC_FONTS_RADIO7F, IDC_FONTS_RADIO7G},
+                        FontsRadio8[] = {IDC_FONTS_RADIO8A, IDC_FONTS_RADIO8B, IDC_FONTS_RADIO8C, IDC_FONTS_RADIO8D, IDC_FONTS_RADIO8E, IDC_FONTS_RADIO8F, IDC_FONTS_RADIO8G, IDC_FONTS_RADIO8H}
+                        ;
     static LPUINT       FontsRadioPtr[] = {&FontsRadio1[0],
                                            &FontsRadio2[0],
                                            &FontsRadio3[0],
                                            &FontsRadio4[0],
                                            &FontsRadio5[0],
                                            &FontsRadio6[0],
-                                           &FontsRadio7[0]};
+                                           &FontsRadio7[0],
+                                           &FontsRadio8[0],
+                                          };
     static UINT         ResetRadioCT[] = {IDC_RESET_CT_RADIO1, IDC_RESET_CT_RADIO2},
                         ResetRadioFC[] = {IDC_RESET_FC_RADIO1, IDC_RESET_FC_RADIO2},
                         ResetRadioIC[] = {IDC_RESET_IC_RADIO1, IDC_RESET_IC_RADIO2},
@@ -140,7 +144,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                                            &ResetRadioIO[0],
                                            &ResetRadioPP[0],
                                            &ResetRadioPW[0],
-                                           &ResetRadioRL[0]};
+                                           &ResetRadioRL[0],
+                                          };
            HWND         hWndProp,               // Property page window handle
                         hWndProp1,              // ...
                         hWndProp2,              // ...
@@ -218,6 +223,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                                      L"value (User-controlled) or the System Default value (Fixed).  This dialog "
                                      L"allows you to choose which value is used.";
 
+    static TOOLINFOW tti = {sizeof (tti)};  // For Tooltip Ctrl
+
 #define MYWM_INITDIALOG                 (WM_APP + 100)
 #define MYWM_ENABLECHOOSEFONT           (WM_APP + 101)
 
@@ -288,6 +295,28 @@ APLU3264 CALLBACK CustomizeDlgProc
                 // ***FIXME*** -- Should we remember where it was the last time
                 //                and reposition it to there?
                 CenterWindow (hDlg);
+
+                // If not already done, create the IDC_FONTx Button font
+                if (hFontFB EQ NULL)
+                {
+                    HDC hDCTmp;                         // Temporary DC
+                    int iLogPixelsY;                    // # vertical pixels per inch in the DC
+
+                    // Get a new device context
+                    hDCTmp = MyGetDC (HWND_DESKTOP);
+
+                    // Get the # pixels per vertical inch
+                    iLogPixelsY = GetDeviceCaps (hDCTmp, LOGPIXELSY);
+
+                    // Release the one we just created
+                    MyReleaseDC (HWND_DESKTOP, hDCTmp); hDCTmp = NULL;
+
+                    // New height in pixels
+                    lfFB.lfHeight = -MulDiv (DEF_FBPTSIZE, iLogPixelsY, 72);
+
+                    // Create a new HFONT from the LOGFONTW
+                    hFontFB = MyCreateFontIndirectW (&lfFB);
+                } // End IF
 
                 // Tell the ListBox to change the current selection
                 SendMessageW (hWndListBox, LB_SETCURSEL, gInitCustomizeCategory, 0);
@@ -611,7 +640,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
                         {
                             // Set the font for the IDC_FONTx buttons
-                            SendMessageW (GetDlgItem (hWndProp, IDC_FONT1 + uCnt), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (TRUE, 0));
+                            SendMessageW (GetDlgItem (hWndProp, IDC_FONT1 + uCnt), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontFB, MAKELPARAM (TRUE, 0));
 
                             // Copy the global SameFontAs value to the local
                             lclSameFontAs[uCnt]      = glbSameFontAs[uCnt];
@@ -644,20 +673,21 @@ APLU3264 CALLBACK CustomizeDlgProc
                         break;
 
                     case IDD_PROPPAGE_SYNTAX_COLORING:                  // MYWM_INITDIALOG
-                    {
-                        TOOLINFO ti = {0};
-
                         // Copy the global Foreground and Background colors to the local var
                         for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
                             lclSyntaxColors[uCnt] = gSyntaxColorName[uCnt].syntClr;
 
                         // Fill in constant fields
-                        ti.cbSize   = sizeof (TOOLINFO);
-                        ti.uFlags   = TTF_IDISHWND | TTF_SUBCLASS;
-                        ti.hwnd     = hDlg;
-////////////////////////ti.hinst    =                       // Not used except with string resources
-                        ti.lpszText = LPSTR_TEXTCALLBACK;
-////////////////////////ti.rect     =                       // Not used with TTF_IDISHWND
+                        tti.uFlags   = 0
+                                     | TTF_IDISHWND
+                                     | TTF_SUBCLASS
+                                       ;
+                        tti.hwnd     = hDlg;
+////////////////////////tti.uId      =                      // Filled in below
+////////////////////////tti.rect     =                      // Not used with TTF_IDISHWND
+////////////////////////tti.hinst    =                      // Not used except with string resources
+                        tti.lpszText = LPSTR_TEXTCALLBACKW;
+////////////////////////tti.lParam   =                      // Not used by this code
 
                         // Loop through the Foreground and Background buttons
                         for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
@@ -668,23 +698,24 @@ APLU3264 CALLBACK CustomizeDlgProc
                                                  WM_SETTEXT,
                                                  0,
                                                  (LPARAM) (HANDLE_PTR) gSyntaxColorName[uCnt].lpwSCName);
-                            // Fill in the dynamic text field
-                            ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
+                            // Fill in the dynamic field
+                            tti.uId = (APLU3264) (HANDLE_PTR)
+                              GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
 
                             // Register a tooltip for the Syntax Coloring Foreground button
                             SendMessageW (hWndTT,
-                                          TTM_ADDTOOL,
+                                          TTM_ADDTOOLW,
                                           0,
-                                          (LPARAM) (LPTOOLINFO) &ti);
-
+                                          (LPARAM) (LPTOOLINFOW) &tti);
                             // Fill in the dynamic field
-                            ti.uId = (APLU3264) (HANDLE_PTR) GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt);
+                            tti.uId = (APLU3264) (HANDLE_PTR)
+                              GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt);
 
                             // Register a tooltip for the Syntax Coloring Background button
                             SendMessageW (hWndTT,
-                                          TTM_ADDTOOL,
+                                          TTM_ADDTOOLW,
                                           0,
-                                          (LPARAM) (LPTOOLINFO) &ti);
+                                          (LPARAM) (LPTOOLINFOW) &tti);
                         } // End FOR
 
                         // The color buttons are initialized in WM_DRAWITEM
@@ -724,7 +755,6 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////////cc.lpTemplateName = NULL;                   // Already zero from = {0}
 
                         break;
-                    } // End IDD_PROPPAGE_SYNTAX_COLORING
 
                     case IDD_PROPPAGE_SYSTEM_VAR_RESET:                 // MYWM_INITDIALOG
                         // Initialize the instructions
@@ -945,7 +975,7 @@ APLU3264 CALLBACK CustomizeDlgProc
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // Control identifier
                                     // lpdis = (LPDRAWITEMSTRUCT) lParam; // Item-drawing information
             // Check to see if this is one of our Font buttons
-            if (IDC_FONT1 <= idCtl && idCtl <= IDC_FONT7)
+            if (IDC_FONT1 <= idCtl && idCtl <= IDC_FONT_LAST)
             {
                 WCHAR  wszText[2];
                 RECT   rcItem;
@@ -961,7 +991,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 hWndFont = GetDlgItem (hWndProp, idCtl);
 
                 // Get the window text
-                GetWindowTextW (hWndFont, wszText, 1);
+                GetWindowTextW (hWndFont, wszText, 2);
 
                 // Copy the item rectangle
                 rcItem = lpdis->rcItem;
@@ -1551,8 +1581,10 @@ APLU3264 CALLBACK CustomizeDlgProc
                             {
                                 RECT rc;                // Rectangle for the MDI Client windows
 
-                                // Calculate the window rectangle for the MDI Client windows
-                                CalcWindowRectMC (&rc);
+                                // Calculate the client rectangle for the MDI Client windows
+                                //   in Master Frame client area coords using the GetClientRect
+                                //   value.
+                                CalcClientRectMC (&rc, TRUE);
 
                                 // Resize each of the MDI Client windows
                                 EnumChildWindows (hWndMF, EnumCallbackResizeMC, (LPARAM) &rc);
@@ -2028,6 +2060,21 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                     return TRUE;    // We handled the msg
 
+                case IDC_FONTS_RADIO8A:
+                case IDC_FONTS_RADIO8B:
+                case IDC_FONTS_RADIO8C:
+                case IDC_FONTS_RADIO8D:
+                case IDC_FONTS_RADIO8E:
+                case IDC_FONTS_RADIO8F:
+                case IDC_FONTS_RADIO8G:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[7] = idCtl - IDC_FONTS_RADIO8A;
+
+                    // Disable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT8, FALSE);
+
+                    return TRUE;    // We handled the msg
+
                 case IDC_FONTS_RADIO1A:
                     // Set the local SameFontAs value
                     lclSameFontAs[0] = idCtl - IDC_FONTS_RADIO1A;
@@ -2091,6 +2138,15 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                     return TRUE;    // We handled the msg
 
+                case IDC_FONTS_RADIO8H:
+                    // Set the local SameFontAs value
+                    lclSameFontAs[7] = idCtl - IDC_FONTS_RADIO8A;
+
+                    // Enable the corresponding ChooseFontW button
+                    SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT8, TRUE);
+
+                    return TRUE;    // We handled the msg
+
                 case IDC_FONT1:
                 case IDC_FONT2:
                 case IDC_FONT3:
@@ -2098,6 +2154,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 case IDC_FONT5:
                 case IDC_FONT6:
                 case IDC_FONT7:
+                case IDC_FONT8:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)
                     {
@@ -2257,16 +2314,19 @@ APLU3264 CALLBACK CustomizeDlgProc
                                              (LPARAM) (HANDLE) hBitMapCheck);
                         // Display the popup menu
                         uRetCmd =
-                          TrackPopupMenu (hMenu,
-                                          TPM_CENTERALIGN
-                                        | TPM_RETURNCMD
+                          TrackPopupMenu (hMenu,            // Handle
+                                          0                 // Flags
+                                        | TPM_CENTERALIGN
                                         | TPM_LEFTBUTTON
-                                        | TPM_RIGHTBUTTON,    // Flags
-                                          ptScr.x,    // x-position
-                                          ptScr.y,    // y-position
-                                          0,          // Reserved (must be zero)
-                                          hDlg,       // Handle of owner window
-                                          NULL);      // Dismissal area outside rectangle (none)
+                                        | TPM_RIGHTBUTTON
+                                        | TPM_NONOTIFY
+                                        | TPM_RETURNCMD
+                                          ,
+                                          ptScr.x,          // x-position
+                                          ptScr.y,          // y-position
+                                          0,                // Reserved (must be zero)
+                                          hDlg,             // Handle of owner window
+                                          NULL);            // Dismissal area outside rectangle (none)
                         // We no longer need this resource
                         DestroyMenu (hMenu); hMenu = NULL;
 
@@ -2574,6 +2634,40 @@ APLU3264 CALLBACK CustomizeDlgProc
 #undef  uIndex
 
         case WM_DESTROY:
+            // Set the index of the Syntax Coloring Property Page
+            wParam = IDD_PROPPAGE_SYNTAX_COLORING - IDD_PROPPAGE_START;
+
+            // If the struc has been initialized, ...
+            if (custStruc[wParam].bInitialized)
+            {
+                // Get the handle of the Syntax Coloring Property Page
+                hWndProp = (HWND)
+                  SendMessageW (hWndListBox, LB_GETITEMDATA, wParam, 0);
+
+                // Loop through the Foreground and Background buttons
+                for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
+                {
+                    // Fill in the dynamic text field
+                    tti.uId = (APLU3264) (HANDLE_PTR)
+                      GetDlgItem (hWndProp, IDC_SYNTCLR_BN_FGCLR1 + uCnt);
+
+                    // Unregister a tooltip for the Syntax Coloring Foreground button
+                    SendMessageW (hWndTT,
+                                  TTM_DELTOOLW,
+                                  0,
+                                  (LPARAM) (LPTOOLINFOW) &tti);
+                    // Fill in the dynamic field
+                    tti.uId = (APLU3264) (HANDLE_PTR)
+                      GetDlgItem (hWndProp, IDC_SYNTCLR_BN_BGCLR1 + uCnt);
+
+                    // Unregister a tooltip for the Syntax Coloring Background button
+                    SendMessageW (hWndTT,
+                                  TTM_DELTOOLW,
+                                  0,
+                                  (LPARAM) (LPTOOLINFOW) &tti);
+                } // End FOR
+            } // End IF
+
             // Free allocated resources
             if (hFontBold_ST)
             {

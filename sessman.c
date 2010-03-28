@@ -765,7 +765,10 @@ WM_NCCREATE_FAIL:
             PERFMON
 
             // Initialize # threads
-            SetPropW (hWnd, L"NTHREADS", 0);
+            SetPropW (hWnd, PROP_NTHREADS, 0);
+
+            // Save the ptr to this window's menu positions
+            SetPropW (hWnd, PROP_IDMPOSFN, (HANDLE) GetIDMPOS_SM);
 
             // Initialize variables
             cfSM.hwndOwner = hWnd;
@@ -1542,7 +1545,7 @@ NORMAL_EXIT:
             // If we're being activated, ...
             if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
             {
-                ActivateMDIMenu (hMenuSM, hMenuSMWindow, IDMPOS_SM_VIEW);
+                ActivateMDIMenu (WINDOWCLASS_SM, hWnd);
                 SetFocus (hWnd);
             } // End IF
 
@@ -1566,6 +1569,12 @@ NORMAL_EXIT:
             // Pass on to the Edit Ctrl
             SendMessageW (hWndEC, message, wParam, lParam);
 
+            return FALSE;           // We handled the msg
+
+        case MYWM_CREATEFCN:
+            // If there's an active program, ignore this message
+            if (!(lpMemPTD->lpSISCur && !lpMemPTD->lpSISCur->Suspended))
+                CreateFcnWindow (L"");
             return FALSE;           // We handled the msg
 
 #define nVirtKey    ((int) wParam)

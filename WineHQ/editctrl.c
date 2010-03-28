@@ -4183,22 +4183,33 @@ static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg, long lFlags)
 
 static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
 {
-    RECT        rcUpdate;          // Update rectangle
-    HBRUSH      hBrush;
-    HDC         hDCInc;
+    RECT        rcUpdate;           // Update rectangle
+    HBRUSH      hBrush;             // Background brush
+    HDC         hDCInc,             // Incoming DC, also used for non-client area
+                hDCSub;             // Substitute DC:  ifdef USEMEMDC and not printing,
+                                    //   then hDCMem else hDCInc
 #ifdef USEMEMDC
-    HDC         hDCMem;
-    HBITMAP     hBitmap,
-                hBitmapOld;
+    HDC         hDCMem;             // Memory DC
+    HBITMAP     hBitmap,            // Compatible Bitmap
+                hBitmapOld;         // Old 1x1 monochrome bitmap
 #endif
     PAINTSTRUCT ps;
 
-    // Get the update rectangle
-    if (!GetUpdateRect (es->hwndSelf, &rcUpdate, FALSE))
+    // If there's no incoming DC and the update rectangle is empty, ...
+    if (hdc EQ NULL && !GetUpdateRect (es->hwndSelf, &rcUpdate, FALSE))
         return;
 
-    // Get the incoming DC
-    hDCInc = hdc ? hdc : BeginPaint(es->hwndSelf, &ps);
+    // If there's an incoming DC, ...
+    if (hdc)
+    {
+        // Use the entire client area
+        GetClientRect (es->hwndSelf, &rcUpdate);
+
+        // Copy the DC
+        hDCInc = hdc;
+    } else
+        // Layout the dropcloths
+        hDCInc = BeginPaint(es->hwndSelf, &ps);
 
     // Skip over the left margin
     rcUpdate.left = max (rcUpdate.left, es->left_margin);
@@ -4210,49 +4221,60 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc, long lFlags)
         hBrush = EDIT_NotifyCtlColor(es, hDCInc);
 
 #ifdef USEMEMDC
-        // Create a compatible DC and bitmap
-        hDCMem = CreateCompatibleDC (hDCInc);
-        hBitmap = CreateCompatibleBitmap (hDCInc,
-                                          rcUpdate.right,
-                                          rcUpdate.bottom);
-        hBitmapOld = SelectObject (hDCMem, hBitmap);
-      #define hDCSub  hDCMem
+        // If we're not printing, ...
+        if (!(lFlags & PRF_PRINTCLIENT))
+        {
+            // Create a compatible DC and bitmap
+            hDCMem = CreateCompatibleDC (hDCInc);
+            hBitmap = CreateCompatibleBitmap (hDCInc,
+                                              rcUpdate.right,
+                                              rcUpdate.bottom);
+            hBitmapOld = SelectObject (hDCMem, hBitmap);
+            hDCSub = hDCMem;
+        } else
+            hDCSub = hDCInc;
 #else
-      #define hDCSub  hDCInc
+        hDCSub = hDCInc;
 #endif
         // Handle WM_ERASEBKGND here by filling in the client area
         //   with the class background brush
         FillRect (hDCSub, &rcUpdate, hBrush);
 
 #ifdef USEMEMDC
-        // Copy various attributes from the screen DC to the memory DC
-        SetBkMode    (hDCMem, GetBkMode    (hDCInc));
-        SetBkColor   (hDCMem, GetBkColor   (hDCInc));
-        SetTextColor (hDCMem, GetTextColor (hDCInc));
+        // If we're not printing, ...
+        if (!(lFlags & PRF_PRINTCLIENT))
+        {
+            // Copy various attributes from the screen DC to the memory DC
+            SetBkMode    (hDCMem, GetBkMode    (hDCInc));
+            SetBkColor   (hDCMem, GetBkColor   (hDCInc));
+            SetTextColor (hDCMem, GetTextColor (hDCInc));
+        } // End IF
 #endif
 
         // Call the original handler
         EDIT_WM_Paint2 (es, hDCSub, hDCInc, lFlags);
 
-#undef  hDCSub
-
 #ifdef USEMEMDC
-        // Copy the memory DC to the screen DC
-        BitBlt (hDCInc,
-                rcUpdate.left,
-                rcUpdate.top,
-                rcUpdate.right,
-                rcUpdate.bottom,
-                hDCMem,
-                rcUpdate.left,
-                rcUpdate.top,
-                SRCCOPY);
-        // Restore the old resources
-        SelectObject (hDCMem, hBitmapOld);
+        // If we're not printing, ...
+        if (!(lFlags & PRF_PRINTCLIENT))
+        {
+            // Copy the memory DC to the screen DC
+            BitBlt (hDCInc,
+                    rcUpdate.left,
+                    rcUpdate.top,
+                    rcUpdate.right,
+                    rcUpdate.bottom,
+                    hDCMem,
+                    rcUpdate.left,
+                    rcUpdate.top,
+                    SRCCOPY);
+            // Restore the old resources
+            SelectObject (hDCMem, hBitmapOld);
 
-        // We no longer need these resources
-        DeleteObject (hBitmap); hBitmap = NULL;
-        DeleteDC (hDCMem); hDCMem = NULL;
+            // We no longer need these resources
+            DeleteObject (hBitmap); hBitmap = NULL;
+            DeleteDC (hDCMem); hDCMem = NULL;
+        } // End IF
 #endif
     } // End IF
 

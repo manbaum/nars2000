@@ -1,7 +1,29 @@
+# /***************************************************************************
+#     NARS2000 -- An Experimental APL Interpreter
+#     Copyright (C) 2006-2010 Sudley Place Software
+#
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# ***************************************************************************/
+
 # Include file common to makefile.w32 and makefile.w64
 
 !ifndef ZIPPRG
 !error Environment variable ZIPPRG= not defined.
+!endif
+
+!ifndef MAKEPRO
+!error Environment variable MAKEPRO= not defined.
 !endif
 
 !ifndef PARGEN
@@ -16,13 +38,29 @@
 !error Environment variable SDK= not defined.
 !endif
 
+WDEF=_WIN$(WIN)
+MFEXT=w$(WIN)
+
+MV=makever
+
+!if "$(DEBUG)" == "1"
+RESDEBUG=1
+CFLAGS_DEBUG=/Zi /D "DEBUG"
+!else
+RESDEBUG=0
+CFLAGS_DEBUG=
+!endif
+
+CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"
+
 ## Load all source file names
 !include makefile.src
 
 GSL_LIB = gsl\libgsl$(WIN)-double.lib
 
+VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
 CFLAGS_WEXE = /nologo /GA /W3 /WX $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
-CFLAGS_WEXE = $(CFLAGS_WEXE) /D "WINVER=0x0501" /D "_WIN32_WINNT=0x0501" /D "_WIN32_IE=0x0701" /D "_MBCS"
+CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS"
 LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /GS- /D_AMD64_ /D_M_AMD64 /D_WIN64 /Gd
@@ -50,10 +88,11 @@ LIBS_WEXE = gdi32.lib           \
             libcmt.lib          \
             $(GSL_LIB)
 
+RCFLAGS = $(VERSION_FLAGS)
 !if "$(DEBUG)" == "1"
-RCFLAGS = /D "DEBUG"
+RCFLAGS = $(RCFLAGS) /D "DEBUG"
 !else
-RCFLAGS =
+RCFLAGS = $(RCFLAGS)
 !endif
 
 RUNFLAGS =
@@ -165,11 +204,12 @@ INITIAL_EXE:
 
 ####################### DEPENDENCY GENERATION #################
 
-DEP:    DIR             \
-        INITIAL_DEP     \
-        $(SRC:???=dep)  \
-        $(O)main.dev    \
-        $(O)ver.dev     \
+DEP:    DIR                     \
+        INITIAL_DEP             \
+        $(SRC:???=dep)          \
+        $(SRC_PARSE:???=dep)    \
+        $(O)main.dev            \
+        $(O)ver.dev             \
         $(O)version.dev
 
 {$(O)}.c{$(O)}.dep:
@@ -201,21 +241,22 @@ DEP:    DIR             \
 
 ####################### PROTOTYPE GENERATION #################
 
-PRO:    DIR             \
-        INITIAL_PRO     \
-        $(SRC:???=pro)
+PRO:    DIR                     \
+        INITIAL_PRO             \
+        $(SRC:???=pro)          \
+        $(SRC_PARSE:???=pro)
 
 {}.c{$(O)}.pro:
         @echo $(@F)
-        @php makepro.php %s $@
+        @php $(MAKEPRO) %s $@
 
 {$(O)}.c{$(O)}.pro:
         @echo $(@F)
-        @php makepro.php %s $@
+        @php $(MAKEPRO) %s $@
 
 {$(WS)}.c{$(O)}.pro:
         @echo $(@F)
-        @php makepro.php %s $@
+        @php $(MAKEPRO) %s $@
 
 
 ########################## UTILITY ROUTINES ##########################
@@ -240,7 +281,10 @@ ICONS=$(A)About.ico     \
       $(A)SM.ico        \
       $(A)VE.ico        \
       $(A)WC.ico        \
-      $(A)LineCont.bmp
+      $(A)LineCont.bmp  \
+      $(A)Workspace.bmp \
+      $(A)Edit.bmp      \
+      $(A)Objects.bmp
 
 ## Cygwin-specific files
 $(O)getreent.obj:       $(@B).c         $(GETREENT_DEP)
@@ -379,6 +423,7 @@ $(O)qf_type.obj:        $(@B).c         $(QF_TYPE_DEP)
 $(O)qf_ucs.obj:         $(@B).c         $(QF_UCS_DEP)
 $(O)qf_vr.obj:          $(@B).c         $(QF_VR_DEP)
 $(O)qf_wa.obj:          $(@B).c         $(QF_WA_DEP)
+$(O)rebar.obj:          $(@B).c         $(REBAR_DEP)
 $(O)refcnt.obj:         $(@B).c         $(REFCNT_DEP)
 !if "$(RESDEBUG)" == "1"
 $(O)resdebug.obj:       $(@B).c         $(RESDEBUG_DEP)
@@ -424,11 +469,16 @@ $(O)main.res:           $(@B).rc        $(MAIN_RCDEP)
 $(BC)$(ENAME).hlp:      $(ENAME).rtf
         $(HLP) -o $@ -xr %s
 
-$(WS)local.h:           editctrl.h   resource.h
+$(WS)local.h:           main.h          \
+                        defines.h       \
+                        editctrl.h      \
+                        resource.h      \
+                        enums.h
 
 # Build the Win32 version
-OBJS=   $(SRC:???=obj)          \
-        $(O)dbgbrk.obj          \
+OBJS=   $(SRC:???=obj)                  \
+        $(SRC_PARSE:???=obj)            \
+        $(O)dbgbrk.obj                  \
         $(O)main.res
 
 $(O)$(ENAME).exe:       $(OBJS)         \

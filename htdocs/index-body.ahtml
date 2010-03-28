@@ -168,6 +168,7 @@ Welcome to NARS2000</h1>
         <li>Trains are supported, e.g., <span class="APL">avg{is}(+/ {divide} {rho})</span> creates a
           function that calculates the average of a numeric vector</li>
         <li>Partitioned Enclose:  dyadic left shoe (<span class="APL">L{leftshoe}R</span>)</li>
+        <li>Primitive dyadic function epsilon underbar (<span class="APL">L{epsilon_}R</span>) (Find)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
@@ -255,7 +256,6 @@ Welcome to NARS2000</h1>
     <li>Primitive functions and operators user extensible via user-defined APL functions</li>
     <li>Primitive dyadic function down tack (<span class="APL">L{downtackjot}R</span>) with character left argument
       (Format By Example)</li>
-    <li>Primitive dyadic function epsilon underbar (<span class="APL">L{epsilon_}R</span>) (Find)</li>
     <li>Primitive dyadic operator dieresis-del (<span class="APL"><i>f</i>{deldieresis}<i>g</i></span>) (Dual)</li>
     <li>Primitive dyadic operator dieresis-star
      (<span class="APL"><i>f</i>{stardieresis}<i>g</i></span>,
@@ -356,6 +356,7 @@ Welcome to NARS2000</h1>
     <li><b>Alt-<i>nnnn</i></b> may be used to enter arbitrary Unicode characters in decimal.  For example,
       <b>Alt-9735</b> is a lightning bolt (<span class="APL">&#9735;</span>)</li>
     <li>Available as either a 32- or 64-bit executable</li>
+    <li>Language bar</li>
   </ul>
 
   <h3>Wish List of Miscellaneous Features</h3>
@@ -363,7 +364,6 @@ Welcome to NARS2000</h1>
     <li>Line continuation marker for easier display of long lines &mdash;
       this also allows comments within a line</li>
     <li>Idiom recognition at tokenization time</li>
-    <li>Language bar</li>
   </ul>
 </div>
 
@@ -387,8 +387,8 @@ Welcome to NARS2000</h1>
   <h2 id="Platforms">Platforms</h2>
 
     <p>At the moment, NARS2000 is available as a 32- or 64-bit Windows-based
-      executable only, initially designed to run on Windows 2000,
-      XP, and Vista.</p>
+      executable only, initially designed to run on Windows XP, Vista, and
+      Windows 7.</p>
 
     <p>However, thanks to a translation layer program such as
       <a class="linkleft" href="http://www.winehq.org">Wine</a>,

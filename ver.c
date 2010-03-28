@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ APLU3264 CALLBACK AboutDlgProc
 
 {
     static HFONT     hFont = NULL;
-    static TOOLINFOW ti = {0};
+    static TOOLINFOW tti = {sizeof (tti)};
     static WCHAR     wszLclAppDPFE[_MAX_PATH];
 
     // Split cases
@@ -152,20 +152,23 @@ APLU3264 CALLBACK AboutDlgProc
 #undef  TT_PREFIX
             } // End IF
 
-            // Fill in TOOLINFO fields
-            ti.cbSize   = sizeof (ti);
-            ti.uFlags   = TTF_IDISHWND | TTF_SUBCLASS;
-            ti.hwnd     = hDlg;
-            ti.uId      = (APLU3264) (HANDLE_PTR) GetDlgItem (hDlg, IDC_LOADEDFROM);
-////////////ti.rect     =                       // Not used with TTF_IDISHWND
-////////////ti.hinst    =                       // Not used except with string resources
-            ti.lpszText = wszLclAppDPFE;
+            // Fill in TOOLINFOW fields
+            tti.uFlags   = 0
+                         | TTF_IDISHWND
+                         | TTF_SUBCLASS
+                           ;
+            tti.hwnd     = hDlg;
+            tti.uId      = (APLU3264) (HANDLE_PTR) GetDlgItem (hDlg, IDC_LOADEDFROM);
+////////////tti.rect     =                      // Not used with TTF_IDISHWND
+////////////tti.hinst    =                      // Not used except with string resources
+            tti.lpszText = wszLclAppDPFE;
+////////////tti.lParam   =                      // Not used by this code
 
             // Register a tooltip for the Icon
             SendMessageW (hWndTT,
                           TTM_ADDTOOLW,
                           0,
-                          (LPARAM) (LPTOOLINFOW) &ti);
+                          (LPARAM) (LPTOOLINFOW) &tti);
             return TRUE;            // Use the focus in wParam
         } // End WM_INITDIALOG
 
@@ -222,9 +225,9 @@ APLU3264 CALLBACK AboutDlgProc
 
             // Unregister the tooltip for the Icon
             SendMessageW (hWndTT,
-                          TTM_DELTOOL,
+                          TTM_DELTOOLW,
                           0,
-                          (LPARAM) (LPTOOLINFOW) &ti);
+                          (LPARAM) (LPTOOLINFOW) &tti);
             EndDialog (hDlg, TRUE); // Quit this dialog
 
             return TRUE;            // We handled the msg

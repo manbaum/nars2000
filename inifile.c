@@ -30,11 +30,13 @@
 #define SECTNAME_GENERAL                L"General"
 #define SECTNAME_SYSVARS                L"SysVars"
 #define SECTNAME_FONTS                  L"Fonts"
+#define SECTNAME_APLFONTS               L"APL Fonts"
 #define SECTNAME_OPTIONS                L"Options"
 #define SECTNAME_RANGELIMITS            L"RangeLimits"
 #define SECTNAME_RESETVARS              L"ResetVars"
 #define SECTNAME_SAMEFONTAS             L"SameFontAs"
 #define SECTNAME_COLORS                 L"Colors"
+#define SECTNAME_TOOLBARS               L"Toolbars"
 
 // Key names
 #define KEYNAME_VERSION                 L"Version"
@@ -44,6 +46,7 @@
 #define KEYNAME_YPOS                    L"yPos"
 #define KEYNAME_YSIZE                   L"ySize"
 #define KEYNAME_INITIALCAT              L"InitialCategory"
+#define KEYNAME_COUNT                   L"Count"
 
 #define KEYNAME_QUADALX                 L"QuadALX"
 #define KEYNAME_QUADCT                  L"QuadCT"
@@ -111,6 +114,13 @@
 
 #define KEYNAME_CUSTOMCOLORS            L"CustomColors"
 
+#define KEYNAME_TOOLBAR_WS              L"Workspace"
+#define KEYNAME_TOOLBAR_ED              L"Edit"
+#define KEYNAME_TOOLBAR_FN              L"Objects"
+#define KEYNAME_TOOLBAR_FW              L"SMFont"
+#define KEYNAME_TOOLBAR_LW              L"Language"
+
+
 // Format string for [Fonts] section LOGFONTW
 #define FMTSTR_LOGFONT_INP      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
 #define FMTSTR_LOGFONT_OUT      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
@@ -147,6 +157,15 @@ LPWCHAR aColorKeyNames[] =
  KEYNAME_SC_UNNESTED    ,       // 14:  Improperly Nested Grouping Symbols [] () {}
  KEYNAME_SC_UNK         ,       // 15:  Unknown symbol
  KEYNAME_SC_WINTEXT     ,       // 16:  Window text
+};
+
+// Array of keynames for use in [Toolbars] section
+LPWCHAR aToolbarNames[] =
+{KEYNAME_TOOLBAR_WS,            // Workspace
+ KEYNAME_TOOLBAR_ED,            // Edit
+ KEYNAME_TOOLBAR_FN,            // Objects
+ KEYNAME_TOOLBAR_FW,            // SM Font
+ KEYNAME_TOOLBAR_LW,            // Language
 };
 
 
@@ -254,6 +273,144 @@ UBOOL CreateAppDataDirs
 
     return TRUE;
 } // End CreateAppDataDirs
+
+
+//***************************************************************************
+//  $ReadAplFontNames
+//
+//  Read the [APL Fonts] names and fill a Combobox with them
+//***************************************************************************
+
+void ReadAplFontNames
+    (HWND hWndCB)               // Window handle to Combobox
+
+{
+    UINT  uNumFonts,            // # APL Fonts
+          uCnt;                 // Loop counter
+    WCHAR wszTemp[1024],        // Temporary storage for string results
+          wszCount[8];          // Save area for formatted APL Fonts counter
+
+    // If there's an [APL Fonts] section, ...
+    uNumFonts =
+      GetPrivateProfileIntW (SECTNAME_APLFONTS,     // Ptr to the section name
+                             KEYNAME_COUNT,         // Ptr to the key name
+                             -1,                    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // If there is no [APL Fonts] section, ...
+    if (uNumFonts EQ -1)
+    {
+        // Fill with the default APL fonts
+        AppendAplFont (hWndCB, L"APL2 Unicode Italic"   );
+        AppendAplFont (hWndCB, L"APL385 Unicode"        );
+        AppendAplFont (hWndCB, L"APLX Upright"          );
+        AppendAplFont (hWndCB, L"Courier APL2 Unicode"  );
+        AppendAplFont (hWndCB, L"SImPL"                 );
+        AppendAplFont (hWndCB, L"SImPL medium"          );
+    } else
+    // Loop through the Font Names
+    for (uCnt = 0; uCnt < uNumFonts; uCnt++)
+    {
+        // Format the counter
+        wsprintfW (wszCount, L"%d", uCnt);
+
+        // Read in the Font Name
+        GetPrivateProfileStringW (SECTNAME_APLFONTS,    // Ptr to the section name
+                                  wszCount,             // Ptr to the key name
+                                  L"",                  // Ptr to the default value
+                                  wszTemp,              // Ptr to the output buffer
+                                  countof (wszTemp),    // Count of the output buffer
+                                  lpwszIniFile);        // Ptr to the file name
+        // If the name is present, ...
+        if (wszTemp[0])
+            // Append it to the Combobox
+            AppendAplFont (hWndCB, wszTemp);
+    } // End IF/ELSE/FOR
+} // End ReadAplFontNames
+
+
+//***************************************************************************
+//  $AppendAplFont
+//
+//  Append an APL font to a Combobox, first ensuring that it's present
+//***************************************************************************
+
+void AppendAplFont
+    (HWND    hWndCB,            // Window handle to Combobox
+     LPWCHAR lpwFontName)       // Ptr to APL font name
+
+{
+    HDC hDC;                    // Temporary Device Context
+
+    // Initialize the global var
+    bAPLFont = FALSE;
+
+    hDC = MyGetDC (HWND_DESKTOP);
+    SetAttrs (hDC, NULL, DEF_SCN_BLACK, DEF_SCN_WHITE);
+
+    // Enumerate fonts to ensure our default font is installed
+    EnumFontsW (hDC,
+                lpwFontName,
+                (FONTENUMPROCW) EnumCallbackFindAplFont,
+       (LPARAM) lpwFontName);
+    // Release the DC
+    MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
+
+    // If we found the font name, ...
+    if (bAPLFont)
+        // Add the Font Name to our list
+        SendMessageW (hWndCB, CB_ADDSTRING, 0, (LPARAM) lpwFontName);
+} // End AppendAplFont
+
+
+//***************************************************************************
+//  $WriteAplFontNames
+//
+//  Write out the APL Font Names from a given Combobox
+//    to the [APL Fonts] section
+//***************************************************************************
+
+void WriteAplFontNames
+    (HWND hWndCB)               // Window handle to Combobox
+
+{
+    UINT  uNumFonts,            // # APL Fonts
+          uCnt;                 // Loop counter
+    WCHAR wszTemp[1024],        // Temporary storage for string results
+          wszCount[8];          // Save area for formatted APL Fonts counter
+
+    // Clear the [APL Fonts] section
+    WritePrivateProfileSectionW (SECTNAME_APLFONTS, // Ptr to the section name
+                                 NULL,              // No data
+                                 lpwszIniFile);     // Ptr to the file name
+    // Get the # APL Fonts
+    uNumFonts = (UINT)
+      SendMessageW (hWndCB, CB_GETCOUNT, 0, 0);
+
+    // Loop through the Font Names
+    for (uCnt = 0; uCnt < uNumFonts; uCnt++)
+    {
+        // Get the next Font Name
+        SendMessageW (hWndCB, CB_GETLBTEXT, uCnt, (LPARAM) wszTemp);
+
+        // Format the counter
+        wsprintfW (wszCount, L"%d", uCnt);
+
+        // Write out the Font Name
+        WritePrivateProfileStringW (SECTNAME_APLFONTS,  // Ptr to the section name
+                                    wszCount,           // Ptr to the key name
+                                    wszTemp,            // Ptr to the key value
+                                    lpwszIniFile);      // Ptr to the file name
+    } // End FOR
+
+    // Format the counter
+    wsprintfW (wszCount, L"%d", uNumFonts);
+
+    // Write out the count
+    WritePrivateProfileStringW (SECTNAME_APLFONTS,  // Ptr to the section name
+                                KEYNAME_COUNT,      // Ptr to the key name
+                                wszCount,           // Ptr to the key value
+                                lpwszIniFile);      // Ptr to the file name
+} // End WriteAplFontNames
 
 
 //***************************************************************************
@@ -683,6 +840,19 @@ void ReadIniFileGlb
                 &aCustomColors[ 4], &aCustomColors[ 5], &aCustomColors[ 6], &aCustomColors[ 7],
                 &aCustomColors[ 8], &aCustomColors[ 9], &aCustomColors[10], &aCustomColors[11],
                 &aCustomColors[12], &aCustomColors[13], &aCustomColors[14], &aCustomColors[15]);
+
+    //***************************************************************
+    // Read in the [Toolbars] section
+    //***************************************************************
+
+    // Loop through the Toolbars
+    for (uCnt = 0; uCnt < countof (aRebarBands); uCnt++)
+        // Read in the Toolbars setting
+        aRebarBands[uCnt].bShowBand =
+          GetPrivateProfileIntW (SECTNAME_TOOLBARS,     // Ptr to the section name
+                                 aToolbarNames[uCnt],   // Ptr to the key name
+                                 TRUE,                  // Default value if not found
+                                 lpwszIniFile);         // Ptr to the file name
 #undef  TEMPBUFLEN
 } // End ReadIniFileGlb
 
@@ -1797,6 +1967,17 @@ void SaveIniFile
                                 KEYNAME_CUSTOMCOLORS,       // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
+    //*********************************************************
+    // Write out [Toolbars] section entries
+    //*********************************************************
+
+    // Loop through the Toolbars
+    for (uCnt = 0; uCnt < countof (aRebarBands); uCnt++)
+        // Write out the entry
+        WritePrivateProfileStringW (SECTNAME_TOOLBARS,          // Ptr to the section name
+                                    aToolbarNames[uCnt],        // Ptr to the key name
+                                    L"0" + aRebarBands[uCnt].bShowBand, // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
 } // End SaveIniFile
 
 

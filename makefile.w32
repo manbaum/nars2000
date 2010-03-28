@@ -2,7 +2,7 @@
 
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2009 Sudley Place Software
+#     Copyright (C) 2006-2010 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -32,8 +32,6 @@ GSLINC=gsl\include\             # Directory of GSL includes
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 
 WIN=32
-WDEF=_WIN$(WIN)
-MFEXT=w$(WIN)
 
 I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
 L98=$(SDK)LIB;$(MSVC)LIB;$(QDEBUG)
@@ -42,19 +40,6 @@ LD=$(MSVC)bin\link.exe
 CC=$(MSVC)bin\cl.exe
 RC=$(SDK)Bin\rc.exe
 ML=$(MSVC)bin\ml.exe
-
-MV=makever
-MP=makepro
-
-!if "$(DEBUG)" == "1"
-RESDEBUG=1
-CFLAGS_DEBUG=/Zi /D "DEBUG"
-!else
-RESDEBUG=0
-CFLAGS_DEBUG=
-!endif
-
-CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"
 
 ASMOPTS=/coff /DIS_32
 

@@ -19,25 +19,29 @@
 # This makefile generates the .pro files and is
 #   called from VC Express as a pre-build event.
 
-WS=WineHQ\                      # Wine source
+.SUFFIXES: .y
 
 !ifndef O
-!error makefile.pro:  Macro O is not defined.
+!error makefile.pro.parse:  Macro O is not defined.
 !endif
 
 !include makefile.src
 
+{}.y{$(O)}.c:
+        @$(PARGEN) -o$(O)$(@B).c -v -r all -l %s
+
 {}.c{$(O)}.pro:
-        @echo $(@F) #1
+        @echo $(@F) #2
         @php $(MAKEPRO) %s $@
 
 {$(O)}.c{$(O)}.pro:
-        @echo $(@F) #1
+        @echo $(@F) #2
         @php $(MAKEPRO) %s $@
 
-{$(WS)}.c{$(O)}.pro:
-        @echo $(@F) #1
-        @php $(MAKEPRO) %s $@
+ALL:$(SRC_PARSE:???=pro)
 
-ALL:$(SRC:???=pro)
+$(O)cs_parse.c:         $(@B).y
+$(O)fh_parse.c:         $(@B).y
+$(O)pl_parse.c:         $(@B).y
+$(O)pn_parse.c:         $(@B).y
 

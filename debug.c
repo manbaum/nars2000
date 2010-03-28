@@ -861,33 +861,35 @@ LRESULT WINAPI LclListboxWndProc
             AppendMenuW (hMenu,                 // Handle
                          mfState
                        | MF_STRING,             // Flags
-                         IDM_COPY,
-                         L"&Copy");
+                         IDM_COPY,              // ID
+                         L"&Copy");             // Text
             AppendMenuW (hMenu,                 // Handle
                          mfState
                        | MF_STRING,             // Flags
-                         IDM_DELETE,
-                         L"&Delete");
+                         IDM_DELETE,            // ID
+                         L"&Delete");           // Text
             AppendMenuW (hMenu,                 // Handle
                          MF_ENABLED
                        | MF_STRING,             // Flags
-                         IDM_DELETEALL,
-                         L"Delet&e All");
+                         IDM_DELETEALL,         // ID
+                         L"Delet&e All");       // Text
             AppendMenuW (hMenu,                 // Handle
                          MF_ENABLED
                        | MF_STRING,             // Flags
-                         IDM_SELECTALL,
-                         L"Selec&t All");
+                         IDM_SELECTALL,         // ID
+                         L"Selec&t All");       // Text
 
             TrackPopupMenu (hMenu,              // Handle
-                            TPM_CENTERALIGN
+                            0                   // Flags
+                          | TPM_CENTERALIGN
                           | TPM_LEFTBUTTON
-                          | TPM_RIGHTBUTTON,    // Flags
-                            ptScr.x,    // x-position
-                            ptScr.y,    // y-position
-                            0,          // Reserved (must be zero)
-                            hWnd,       // Handle of owner window
-                            NULL);      // Dismissal area outside rectangle (none)
+                          | TPM_RIGHTBUTTON
+                            ,
+                            ptScr.x,            // x-position
+                            ptScr.y,            // y-position
+                            0,                  // Reserved (must be zero)
+                            hWnd,               // Handle of owner window
+                            NULL);              // Dismissal area outside rectangle (none)
 
             // Free the menu resources
             DestroyMenu (hMenu);

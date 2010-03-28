@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -278,6 +278,48 @@ LPWCHAR SkipToCharW
 
     return lpw;
 } // End SkipToCharW
+
+
+//************************************************************************
+//  $SkipToCharDQW
+//
+//  Skip to a given WCHAR taking into account Double Quotes and EOL
+//************************************************************************
+
+LPWCHAR SkipToCharDQW
+    (LPWCHAR lpwChar,
+     WCHAR   wChar)
+
+{
+    LPWCHAR lpw;            // Temporary ptr
+    UBOOL   uState = FALSE; // DQ state:  FALSE = outside DQs,
+                            //            TRUE  = inside DQs
+    Assert (wChar NE WC_DQ);
+
+    // Loop through the string
+    for (lpw = lpwChar; *lpw; lpw++)
+    // Split cases based upon the char
+    switch (*lpw)
+    {
+        case WC_DQ:
+            // Toggle the DQ state
+            uState = !uState;
+
+            break;
+
+        default:
+            if (!uState         // If we're outside DQs
+             && *lpw EQ wChar)  // and it's a match, ...
+                return lpw;     // Return a ptr to the match
+            break;
+    } // End FOR/SWITCH
+
+    // If it's not found (EOL instead), ...
+    if (lpw EQ NULL)
+        lpw = &lpwChar[lstrlenW (lpwChar)];
+
+    return lpw;
+} // End SkipToCharDQW
 
 
 //************************************************************************

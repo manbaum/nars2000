@@ -75,7 +75,7 @@ UBOOL CmdSave_EM
                  lpwszTemp;             // Ptr to temporary storage
 
     // Skip to the next blank
-    lpw = SkipToCharW (lpwszTail, L' ');
+    lpw = SkipToCharDQW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
     if (*lpw)

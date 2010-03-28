@@ -34,16 +34,17 @@
 //***************************************************************************
 
 UBOOL CmdLib_EM
-    (LPWCHAR lpwszTail)         // Ptr to command line tail
+    (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
-    LPPERTABDATA     lpMemPTD;      // Ptr to PerTabData global memory
-    HANDLE           hFind;         // Handle to FindData
-    WIN32_FIND_DATAW FindData;      // FindFirstFile return data struc
-    UINT             uExtLen;       // Length of workspace extension
-    LPWCHAR          lpw,           // Temporary ptr
-                     lpwszTemp,     // Ptr to temporary storage
-                     lpwszFormat;   // ...
+    LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
+    HANDLE           hFind;             // Handle to FindData
+    WIN32_FIND_DATAW FindData;          // FindFirstFile return data struc
+    UINT             uExtLen;           // Length of workspace extension
+    LPWCHAR          lpw,               // Temporary ptr
+                     lpwszTemp,         // Ptr to temporary storage
+                     lpwszFormat;       // ...
+    UBOOL            bEndDQ = FALSE;    // TRUE iff the string ends with a Double Quote
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -53,7 +54,7 @@ UBOOL CmdLib_EM
     lpwszFormat = lpMemPTD->lpwszFormat;
 
     // Skip to the next blank
-    lpw = SkipToCharW (lpwszTail, L' ');
+    lpw = SkipToCharDQW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
     *lpw = WC_EOS;
@@ -63,12 +64,25 @@ UBOOL CmdLib_EM
     {
         lstrcpyW (lpwszFormat, lpwszTail);
 
-        // Ensure there's a trailing backslash
+        // Get the length to test for trailing backslash
         uExtLen = lstrlenW (lpwszFormat);
-        if (lpwszFormat[uExtLen - 1] NE WC_SLOPE)
+
+        // If it ends in a double quote, ...
+        bEndDQ = (lpwszFormat[uExtLen - 1] EQ WC_DQ);
+
+        // Ensure there's a trailing backslash
+        if (lpwszFormat[uExtLen - 1 - bEndDQ] NE WC_SLOPE)
         {
-            lpwszFormat[uExtLen + 0] = WC_SLOPE;
-            lpwszFormat[uExtLen + 1] = WC_EOS;
+            lpwszFormat[uExtLen + 0 - bEndDQ] = WC_SLOPE;
+            lpwszFormat[uExtLen + 1 - bEndDQ] = WC_EOS;
+
+            // If it ended with a double quote, ...
+            if (bEndDQ)
+            {
+                // Append it again
+                lpwszFormat[uExtLen + 0] = WC_DQ;
+                lpwszFormat[uExtLen + 1] = WC_EOS;
+            } // End IF
         } // End IF
 
         // Convert the given workspace name into a canonical form (without WS_WKSEXT)
@@ -76,9 +90,25 @@ UBOOL CmdLib_EM
     } else
         lstrcpyW (lpwszTemp, lpwszWorkDir);
 
+    // Get the length to append trailing *.ws.nars
+    uExtLen = lstrlenW (lpwszTemp);
+
+    // If it ends in a double quote, ...
+    bEndDQ = (lpwszTemp[uExtLen - 1] EQ WC_DQ);
+
     // Create the wildcard string to search for workspaces
-    lstrcatW (lpwszTemp, L"*");
-    lstrcatW (lpwszTemp, WS_WKSEXT);
+    lstrcpyW (&lpwszTemp[uExtLen - bEndDQ], L"*");
+    uExtLen++;
+    lstrcpyW (&lpwszTemp[uExtLen - bEndDQ], WS_WKSEXT);
+    uExtLen += strcountof (WS_WKSEXT);
+
+    // If it ended with a double quote, ...
+    if (bEndDQ)
+    {
+        // Append it again
+        lpwszTemp[uExtLen + 0] = WC_DQ;
+        lpwszTemp[uExtLen + 1] = WC_EOS;
+    } // End IF
 
     // ***FIXME*** -- Make sensitive to [first][-][last] in lpwszTail
     // ***FIXME*** -- Display in columns

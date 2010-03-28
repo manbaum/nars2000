@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ UBOOL CmdDrop_EM
     LPWCHAR lpw;                        // Temporary ptr
 
     // Skip to the next blank
-    lpw = SkipToCharW (lpwszTail, L' ');
+    lpw = SkipToCharDQW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
     *lpw = WC_EOS;

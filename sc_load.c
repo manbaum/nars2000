@@ -79,7 +79,7 @@ UBOOL CmdLoadCom_EM
     FILE        *fStream;               // Ptr to file stream for the plain text workspace file
 
     // Skip to the next blank
-    lpw = SkipToCharW (lpwszTail, L' ');
+    lpw = SkipToCharDQW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
     *lpw = WC_EOS;

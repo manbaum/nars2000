@@ -93,7 +93,7 @@ UBOOL CmdCopy_EM
             goto INCORRECT_COMMAND_EXIT;
 
         // Skip over the field
-        lpwCmd = SkipToCharW (lpwszTail, L' ');
+        lpwCmd = SkipToCharDQW (lpwszTail, L' ');
         wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
         if (wcTmp)
             lpwCmd = SkipWhiteW (lpwCmd);
@@ -125,9 +125,7 @@ UBOOL CmdCopy_EM
     // Copy from a workspace file
     {
         // Skip over the workspace name
-        // ***FIXME*** -- Handle workspace names enclosed in double quotes
-        //                  because they have embedded blanks.
-        lpwCmd = SkipToCharW (lpwszTail, L' ');
+        lpwCmd = SkipToCharDQW (lpwszTail, L' ');
         wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
         if (wcTmp)
             lpwCmd = SkipWhiteW (lpwCmd);
@@ -216,7 +214,7 @@ UBOOL CmdCopy_EM
 
                 // Find the next name
                 lpwNameInCmd = lpwCmd;
-                lpwCmd = SkipToCharW (lpwNameInCmd, L' ');
+                lpwCmd = SkipToCharDQW (lpwNameInCmd, L' ');
                 if (*lpwCmd NE WC_EOS)
                 {
                     *lpwCmd++ = WC_EOS;

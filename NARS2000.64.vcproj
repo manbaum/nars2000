@@ -35,7 +35,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="nmake /f makefile.pro O=$(OutDir)\"
+                                CommandLine="nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;echo Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -62,7 +62,7 @@
                         <Tool
                                 Name="VCCLCompilerTool"
                                 Optimization="0"
-                                AdditionalIncludeDirectories=".\;.\Debug64"
+                                AdditionalIncludeDirectories=".\;$(OutDir)"
                                 PreprocessorDefinitions="DEBUG;RESDEBUG=1;_CRT_SECURE_NO_WARNINGS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=0x0701;_AMD64_;_M_AMD64;_WIN64"
                                 StringPooling="false"
                                 MinimalRebuild="false"
@@ -125,7 +125,7 @@
                         <Tool
                                 Name="VCPostBuildEventTool"
                                 Description="Copy default APL font"
-                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL"
+                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL&#x0D;&#x0A;echo Solution directory is $(SolutionDir)"
                         />
                 </Configuration>
                 <Configuration
@@ -139,7 +139,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="nmake /f makefile.pro O=$(OutDir)\"
+                                CommandLine="nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;echo Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -167,7 +167,7 @@
                                 Name="VCCLCompilerTool"
                                 Optimization="1"
                                 FavorSizeOrSpeed="2"
-                                AdditionalIncludeDirectories=".\;.\Release64"
+                                AdditionalIncludeDirectories=".\;$(OutDir)"
                                 PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=0x0701;_AMD64_;_M_AMD64;_WIN64"
                                 StringPooling="false"
                                 MinimalRebuild="false"
@@ -230,7 +230,7 @@
                         <Tool
                                 Name="VCPostBuildEventTool"
                                 Description="Copy default APL font"
-                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL"
+                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL&#x0D;&#x0A;echo Solution directory is $(SolutionDir)"
                         />
                 </Configuration>
         </Configurations>

@@ -4774,7 +4774,8 @@ void SetLineNumState
     Assert (IzitFE (hWndFE));
 
     // Get the current flags of the Object Toolbar's Toggle Fcn Line #s button
-    uFlags = SendMessageW (hWndFN_RB, TB_GETSTATE, IDM_TOGGLE_LNS_FN, 0);
+    uFlags = (UINT)
+      SendMessageW (hWndFN_RB, TB_GETSTATE, IDM_TOGGLE_LNS_FN, 0);
 
     // Set the flags of the Objects Toolbar's Toggle Fcn Line #s button
     if (GetWindowLongW (hWndFE, GWLSF_FLN))

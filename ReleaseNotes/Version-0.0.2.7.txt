@@ -1,6 +1,17 @@
 Version 0.0.2.7 consists of the following Builds:
 
 
+Build #627 -- Version 0.0.2.7
+-----------------------------
+
+* Fix Cast For 64-bit Systems
+
+Directory trunk:
+
+EDITFCN.C:
+  Fix cast for 64-bit systems.
+
+
 Build #626 -- Version 0.0.2.7
 -----------------------------
 

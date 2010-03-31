@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ LPTOKEN CheckAxisOper
 #endif
 
 UBOOL CheckAxisImm
-    (UINT       immType,        // Type of the immediate value
+    (IMM_TYPES  immType,        // Type of the immediate value
      APLLONGEST aplLongest,     // The immediate value
      LPTOKEN    lptkAxis,       // The Axis values
      APLRANK    aplRankCmp,     // Comparison rank
@@ -699,7 +699,7 @@ UBOOL CheckAxis_EM
     UINT       u;               // Loop counter
     APLUINT    aplAxisContLo;   // Contiguous low axis
     HGLOBAL    hGlbData = NULL; //
-    UINT       immType;         //
+    IMM_TYPES  immType;         //
     APLLONGEST aplLongest;      //
 
     // If the caller requests, an axis vector is allocated

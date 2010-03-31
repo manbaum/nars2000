@@ -1036,6 +1036,7 @@ LPAPLCHAR CompileArrChar
         for (aplDimCol = uCurWidth = uCurPos = uMaxWidth = uItmWidth = 0;
              aplDimCol < aplDimNCols;
              aplDimCol++)
+        // Split cases based upon the char
         switch (lpMem[aplDimCol])
         {
             case TCDEL:         // []TCDEL -- Ignore this
@@ -1075,7 +1076,7 @@ LPAPLCHAR CompileArrChar
                 // Start at the leftmost position
                 uCurPos = 0;
 
-                break;
+                // Fall through to common LF code
 
             case TCLF:          // []TCLF -- Start a new line
                 // Skip over the item width
@@ -1312,12 +1313,14 @@ LPAPLCHAR CompileArrHetero
     LPAPLCHAR   lpwszOut;       // Ptr to output buffer
     LPWCHAR     lpwsz;          // ...
     LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to current FMTROWSTR
-    UINT        immTypeCur,     // Current immediate type
+    IMM_TYPES   immTypeCur,     // Current immediate type
                 immTypeLst;     // Last    ...
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
     {
+        UINT uTCLF = 0;         // # []TCLFs in a given row
+
         // Create a new FMTROWSTR
         lpFmtRowLcl = (LPFMTROWSTR) lpaplChar;
 #ifdef DEBUG
@@ -1346,9 +1349,6 @@ LPAPLCHAR CompileArrHetero
         // Loop through the cols
         for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
         {
-            UBOOL bZapBlank = TRUE;         // TRUE iff we should zap the trailing
-                                            //   blank from FormatImmed
-
 #define lpSymEntry      ((LPAPLHETERO) lpMem)
 
             // Save the immediate type
@@ -1358,6 +1358,8 @@ LPAPLCHAR CompileArrHetero
             lpFmtColStr[aplDimCol].colType =
               IsImmChr (immTypeCur) ? max (lpFmtColStr[aplDimCol].colType, COLTYPE_ALLCHAR)
                                     : COLTYPE_NOTCHAR;
+            // ***FIXME*** -- Handle other TC chars, esp. TCNL
+
             // If we're to handle []TCLF specially, ...
             if (bTCLF                                   // Handle specially, and
              && IsImmChr (immTypeCur)                   //   it's char, and
@@ -1409,70 +1411,77 @@ LPAPLCHAR CompileArrHetero
                     lpFmtRowLcl->uItemCount++;
                 } // End IF
 
-                // Avoid zapping last char
-                bZapBlank = FALSE;
+                // Count in another []TCLF
+                uTCLF++;
+
+                // Skip to next entry
+                lpSymEntry++;
+
+                // Count in another item (zero-width column)
+                lpFmtRowLcl->uItemCount++;
             } else
+            {
                 lpaplChar =
                   FormatImmed (lpwszOut = lpaplChar,
                                immTypeCur,
                               &(*lpSymEntry)->stData.stLongest);
 
-            // Skip to next entry
-            lpSymEntry++;
+                // Skip to next entry
+                lpSymEntry++;
 
 #undef  lpSymEntry
 
-            // Zap the trailing blank
-            if (bZapBlank)
+                // Zap the trailing blank
                 lpaplChar[-1] = WC_EOS;
 
-            // Count in another item
-            lpFmtRowLcl->uItemCount++;
+                // Count in another item
+                lpFmtRowLcl->uItemCount++;
 
-            // Include a leading blank if (first col and (nested or rank > 1))
-            //                          or (not first col) and either last or current is not a char
-            uLen = ((IsZeroDim (aplDimCol) && IsMultiRank (aplRank))
-                 || ((aplDimCol NE 0) && (immTypeLst NE IMMTYPE_CHAR || immTypeCur NE IMMTYPE_CHAR)));
-            // Max the current leading blanks with this
-            lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
+                // Include a leading blank if (first col and (nested or rank > 1))
+                //                          or (not first col) and either last or current is not a char
+                uLen = ((IsZeroDim (aplDimCol) && IsMultiRank (aplRank))
+                     || ((aplDimCol NE 0) && (immTypeLst NE IMMTYPE_CHAR || immTypeCur NE IMMTYPE_CHAR)));
+                // Max the current leading blanks with this
+                lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
 
-            // Check for decimal point, unless char
-            if (immTypeCur NE IMMTYPE_CHAR
-             && (lpwsz = strchrW (lpwszOut, L'.')))
-            {
-                // Calculate the length of the integer part
-                uLen = (UINT) (lpwsz - lpwszOut);
+                // Check for decimal point, unless char
+                if (immTypeCur NE IMMTYPE_CHAR
+                 && (lpwsz = strchrW (lpwszOut, L'.')))
+                {
+                    // Calculate the length of the integer part
+                    uLen = (UINT) (lpwsz - lpwszOut);
 
-                // Max the current integer width with this
-                lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
-
-                // Calculate the length of the fractional part
-                uLen = (UINT) (lpaplChar - lpwsz) - 1;
-
-                // Max the current fractional width with this
-                lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
-            } else  // No decimal point
-            {
-                // Calculate the length of the integer part
-                // We use the following odd construction because
-                //   if the previous SymEntry was a []TCLF,
-                //   lpaplChar EQ lpwszOut
-                uLen = (UINT) (lpaplChar - lpwszOut);
-                uLen = max (uLen, 1) - 1;
-
-                if (IsImmChr (immTypeCur))
-                    // Max the current integer width with this
-                    lpFmtColStr[aplDimCol].uChrs = max (lpFmtColStr[aplDimCol].uChrs, uLen);
-                else
                     // Max the current integer width with this
                     lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
+
+                    // Calculate the length of the fractional part
+                    uLen = (UINT) (lpaplChar - lpwsz) - 1;
+
+                    // Max the current fractional width with this
+                    lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
+                } else  // No decimal point
+                {
+                    // Calculate the length of the integer part
+                    // We use the following odd construction because
+                    //   if the previous SymEntry was a []TCLF,
+                    //   lpaplChar EQ lpwszOut
+                    uLen = (UINT) (lpaplChar - lpwszOut);
+                    uLen = max (uLen, 1) - 1;
+
+                    if (IsImmChr (immTypeCur))
+                        // Max the current integer width with this
+                        lpFmtColStr[aplDimCol].uChrs = max (lpFmtColStr[aplDimCol].uChrs, uLen);
+                    else
+                        // Max the current integer width with this
+                        lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
 
 ////////////////// Calculate the length of the fractional part
 ////////////////uLen = 0;
 ////////////////
 ////////////////// Max the current fractional width with this
 ////////////////lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
-            } // End IF/ELSE
+                } // End IF/ELSE
+            } // End IF
 
 ////////////// Include a trailing blank if (last col and nested)
 ////////////uLen = 0;
@@ -1483,6 +1492,10 @@ LPAPLCHAR CompileArrHetero
             // Save as last immediate type
             immTypeLst = immTypeCur;
         } // End FOR
+
+        // Fill in trailing zeros for each []TCLF
+        ZeroMemory (lpaplChar, uTCLF * sizeof (lpaplChar[0]));
+        lpaplChar += uTCLF;
 
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;

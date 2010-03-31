@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -5443,8 +5443,8 @@ UBOOL PrimFnDydSiScSiScSub_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    UINT immType;               // Result immediate type
-    UBOOL bRet = TRUE;          // TRUE iff result is valid
+    IMM_TYPES immType;          // Result immediate type
+    UBOOL     bRet = TRUE;      // TRUE iff result is valid
 RESTART_EXCEPTION_IMMED:
     // Get the immediate type for the token
     immType = TranslateArrayTypeToImmType (aplTypeRes);

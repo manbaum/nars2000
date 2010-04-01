@@ -68,8 +68,10 @@ void MakeWorkspaceNameCanonical
     // Get the outgoing workspace name string length
     uLen = lstrlenW (wszOut);
 
-    // If the workspace name ends with WSKEXT
-    if (lstrcmpiW (&wszOut[uLen - WS_WKSEXT_LEN], WS_WKSEXT) EQ 0)
+    // If the workspace name is long enough and
+    //   ends with WSKEXT
+    if (uLen >= WS_WKSEXT_LEN
+     && lstrcmpiW (&wszOut[uLen - WS_WKSEXT_LEN], WS_WKSEXT) EQ 0)
         wszOut[uLen - WS_WKSEXT_LEN] = WC_EOS;
 } //  End MakeWorkspaceNameCanonical
 

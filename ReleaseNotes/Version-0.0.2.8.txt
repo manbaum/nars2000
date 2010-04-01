@@ -1,6 +1,18 @@
 Version 0.0.2.8 consists of the following Builds:
 
 
+Build #629 -- Version 0.0.2.8
+-----------------------------
+
+* Fix Bug:  Handle Short Workspace Names
+
+Directory trunk:
+
+SC_COMMON.C:
+  In <MakeWorkspaceNameCanonical>, check to see if the workspace
+    name is too short before checking for the default extension.
+
+
 Build #628 -- Version 0.0.2.8
 -----------------------------
 

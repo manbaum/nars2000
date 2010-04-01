@@ -4123,13 +4123,20 @@ int PASCAL WinMain
             // Get the window handle of the currently active MDI Client
             hWndMC = GetActiveMC (hWndTC);
 
-            // Handle MDI messages and accelerators
-            if (!TranslateMDISysAccel (hWndMC, &Msg)
-             && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
+            // Pick off set of current lpMemPTD
+            if (Msg.message EQ MYWM_LPMEMPTD)
+                // Save ptr to PerTabData global memory
+                TlsSetValue (dwTlsPerTabData, (LPVOID) (LPPERTABDATA) Msg.lParam);
+            else
             {
-                TranslateMessage (&Msg);
-                DispatchMessageW (&Msg);
-            } // End IF
+                // Handle MDI messages and accelerators
+                if (!TranslateMDISysAccel (hWndMC, &Msg)
+                 && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
+                {
+                    TranslateMessage (&Msg);
+                    DispatchMessageW (&Msg);
+                } // End IF
+            } // End IF/ELSE
         } // End WHILE
     } __except (CheckException (GetExceptionInformation (), L"WinMain"))
     {

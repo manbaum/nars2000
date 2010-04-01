@@ -385,6 +385,7 @@ default:        \
 #define MYWM_GETCLIENTSIZE  (WM_APP +17)    // LW_FW (Get size of client area before the window is created)
 #define MYWM_CLEARCHAR      (WM_APP +18)    // LW_FW (Clear highlight around any previously outlined char)
 #define MYWM_CREATEFCN      (WM_APP +19)    // SM (Create a new function)
+#define MYWM_LPMEMPTD       (WM_APP +20)    // MF (Pass lpMemPTD for TLS)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB

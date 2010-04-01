@@ -4120,6 +4120,8 @@ void AppendUndo
 {
     LPUNDO_BUF lpUndoNxt;   // Ptr to next available slot in the Undo Buffer
 
+    Assert (IzitSM (hWnd) || IzitFE (hWnd));
+
     // Get the ptr to the next available slot in our Undo Buffer
     lpUndoNxt = (LPUNDO_BUF) GetWindowLongPtrW (hWnd, GWLxx_UNDO_NXT);
 
@@ -4161,6 +4163,8 @@ void InsRepCharStr
             uGroupIndex,    // Group index
             uStrLen;        // Incoming string length
     UBOOL   bSelection;     // TRUE iff there is a selection
+
+    Assert (IzitEC (hWnd));
 
     // Get the handle of the parent window (SM/FE)
     hWndParent = GetParent (hWnd);
@@ -4262,12 +4266,12 @@ void InsRepCharStr
                             GetCharValue (hWnd, uCharPos)); // Character
             // Undo deletes the inserted char string
                 AppendUndo (hWndParent,                     // SM/FE Window handle
-                        GWLSF_UNDO_NXT,                 // Offset in hWnd extra bytes of lpUndoNxt
+                            GWLSF_UNDO_NXT,                 // Offset in hWnd extra bytes of lpUndoNxt
                             undoDel,                        // Action
                             uCharPosBeg,                    // Beginning char position
-                        uCharPosBeg + uStrLen,          // Ending    ...
+                            uCharPosBeg + uStrLen,          // Ending    ...
                             uGroupIndex,                    // Group index
-                        0);                             // Character
+                            0);                             // Character
         } // End IF
     } // End IF/ELSE
 
@@ -4333,6 +4337,24 @@ UBOOL IzitMC
 
     return (lstrcmpW (wszClassName, LMCWNDCLASS) EQ 0);
 } // End IzitMC
+
+
+//***************************************************************************
+//  $IzitEC
+//
+//  Is the window ECWNDCLASS?
+//***************************************************************************
+
+UBOOL IzitEC
+    (HWND hWnd)
+
+{
+    WCHAR wszClassName[32];
+
+    GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
+
+    return (lstrcmpW (wszClassName, LECWNDCLASS) EQ 0);
+} // End IzitEC
 
 
 //***************************************************************************

@@ -325,6 +325,9 @@ UBOOL WINAPI CreateNewTabInThread
     if (lpMemPTD EQ NULL)
         goto ERROR_EXIT;    // Stop the whole process
 
+    // Tell the Master Frame about the current lpMemPTD
+    PostThreadMessage (dwMainThreadId, MYWM_LPMEMPTD, 0, (LPARAM) lpMemPTD);
+
     // Save ptr to PerTabData global memory
     TlsSetValue (dwTlsPerTabData, (LPVOID) lpMemPTD);
 
@@ -745,6 +748,28 @@ LRESULT WINAPI LclTabCtrlWndProc
             // If the user clicked on the icon, close the tab
             if (ClickOnClose ())
                 CloseTab (gOverTabIndex);
+            else
+            {
+                // Save the client coordinates
+                tcHit.pt.x = LOSHORT (lParam);
+                tcHit.pt.y = HISHORT (lParam);
+
+                // Ask the Tab Control if we're over a tab
+                gOverTabIndex = TabCtrl_HitTest (hWnd, &tcHit);
+
+                // If we're over a tab, ...
+                if (gOverTabIndex NE -1)
+                {
+                    // Get ptr to outgoing PerTabData global memory
+                    lpMemPTD = GetPerTabPtr (gOverTabIndex); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+                    // If it's valid, ...
+                    if (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+                        // Tell the Master Frame about the current lpMemPTD
+                        PostThreadMessage (dwMainThreadId, MYWM_LPMEMPTD, 0, (LPARAM) lpMemPTD);
+                } // End IF
+            } // End IF/ELSE
+
             break;
 
         case TCM_DELETEITEM:                    // itemID = (int) wParam;

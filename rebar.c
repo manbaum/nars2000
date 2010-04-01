@@ -2257,11 +2257,11 @@ typedef struct tagLANGCHARS
             for (uCnt = 0; uCnt < LANGCHARS_LENGTH; uCnt++)
             if (PtInRect (&langChars[uCnt].rcHit, pt))
             {
-                HWND         hWndEC;        // Edit Ctrl window handle
-                WCHAR        wszTemp[2];    // Temporary zero-terminated string
+                HWND  hWndEC;       // Edit Ctrl window handle
+                WCHAR wszTemp[2];   // Temporary zero-terminated string
 
                 // Get the handle to the Edit Ctrl
-                hWndEC  = GetActiveMC (hWndTC);
+                hWndEC  = GetActiveEC (hWndTC);
 
                 // Save the char in a zero-terminated string
                 wszTemp[0] = langChars[uCnt].wc;

@@ -7,7 +7,7 @@
 		<CustomBuildRule
 			Name="Bison Rule"
 			DisplayName="Bison Rule"
-			CommandLine="$(PARGEN) -o$(OutDir)\$(InputName).c -v -r all -l $(InputPath)&#x0D;&#x0A;nmake /f makefile.pro.parse O=$(OutDir)\"
+			CommandLine="$(PARGEN) -o$(OutDir)\$(InputName).c -v -r all -l $(InputPath)&#x0D;&#x0A;$(MSVC)bin\nmake /f makefile.pro.parse O=$(OutDir)\"
 			Outputs="$(OutDir)\$(InputName).c"
 			FileExtensions="*.y"
 			ExecutionDescription="Generate Parser for $(InputName)"

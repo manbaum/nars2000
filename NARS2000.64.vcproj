@@ -35,7 +35,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;echo Solution directory is $(SolutionDir)"
+                                CommandLine="$(MSVC)bin\nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -125,7 +125,7 @@
                         <Tool
                                 Name="VCPostBuildEventTool"
                                 Description="Copy default APL font"
-                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL&#x0D;&#x0A;echo Solution directory is $(SolutionDir)"
+                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                 </Configuration>
                 <Configuration
@@ -139,7 +139,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;echo Solution directory is $(SolutionDir)"
+                                CommandLine="$(MSVC)bin\nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -230,7 +230,7 @@
                         <Tool
                                 Name="VCPostBuildEventTool"
                                 Description="Copy default APL font"
-                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL&#x0D;&#x0A;echo Solution directory is $(SolutionDir)"
+                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                 </Configuration>
         </Configurations>

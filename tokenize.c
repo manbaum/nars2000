@@ -1950,7 +1950,7 @@ UBOOL fnPointDone
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
               gSyntaxColorName[SC_NUMCONST].syntClr;
-        } // End IF
+        } // End FOR
 
         // Mark as successful
         bRet = TRUE;

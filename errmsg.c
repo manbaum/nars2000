@@ -25,6 +25,10 @@
 #include "headers.h"
 
 
+// Length of a Newline
+#define NL_LEN      1
+
+
 //***************************************************************************
 //  $BreakMessage
 //
@@ -305,11 +309,11 @@ void ErrorMessageDirect
 
     // Calculate the length of the []DM vector
     aplNELMRes = uErrMsgLen
-               + EOL_LEN
+               + NL_LEN
                + uNameLen
                + uErrLinLen
                + ((uCaret EQ NEG1U) ? 0
-                                    : EOL_LEN
+                                    : NL_LEN
                                     + uCaretLen + 1);
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
@@ -347,7 +351,7 @@ void ErrorMessageDirect
     lpMemRes += uErrMsgLen;
 
     // Copy a line terminator to the result
-    *lpMemRes++ = WC_CR; *lpMemRes++ = WC_LF;
+    *lpMemRes++ = WC_CR;
 
     // Copy the function name[line #] to the result
     CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
@@ -363,7 +367,7 @@ void ErrorMessageDirect
         UINT uLen;  // Length
 
         // Close the last line
-        *lpMemRes++ = WC_CR; *lpMemRes++ = WC_LF;
+        *lpMemRes++ = WC_CR;
 
         // Get the # leading blanks
         uLen = uCaret + uNameLen;

@@ -542,10 +542,11 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
                  TRUE,                  // TRUE iff errors are acted upon
                  bExec1Stmt);           // TRUE iff executing only one stmt
     // Get this thread's LocalVars ptr
-    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); Assert (lpplLocalVars NE NULL);
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
-    // Save the exit type in the plLocalVars
-    lpplLocalVars->ExitType = exitType;
+    if (lpplLocalVars)
+        // Save the exit type in the plLocalVars
+        lpplLocalVars->ExitType = exitType;
 
     // If there's no result, ...
     if (!lpMemPTD->YYResExec.YYInuse)

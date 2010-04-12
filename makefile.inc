@@ -286,6 +286,8 @@ ICONS=$(A)About.ico     \
       $(A)Edit.bmp      \
       $(A)Objects.bmp
 
+MANIFEST=$(ENAME).exe.manifest$(WIN)
+
 ## Cygwin-specific files
 $(O)getreent.obj:       $(@B).c         $(GETREENT_DEP)
 
@@ -458,7 +460,7 @@ $(O)ver.obj:            $(@B).c         $(VER_DEP)
 $(O)webcolors.obj:      $(@B).c         $(WEBCOLORS_DEP)
 $(O)yyfns.obj:          $(@B).c         $(YYFNS_DEP)
 
-main.rc:                                $(MAIN_RCDEP)   $(ICONS)
+main.rc:                                $(MAIN_RCDEP) $(ICONS) $(MANIFEST)
 ver.rc:                                 $(VER_RCDEP)
 
 $(O)main.res:           $(@B).rc        $(MAIN_RCDEP)

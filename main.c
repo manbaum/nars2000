@@ -2102,6 +2102,7 @@ LRESULT APIENTRY MFWndProc
                         case IDWC_WS_RB:
                         case IDWC_ED_RB:
                         case IDWC_FN_RB:
+                        case IDWC_TC:
                             // Get and set the TT's styles
                             dwStyle = GetWindowLong (lpnmttc->hwndToolTips, GWL_STYLE);
 

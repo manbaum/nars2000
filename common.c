@@ -22,6 +22,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <stdio.h>
 #include <direct.h>
 #include "headers.h"
 
@@ -363,7 +364,8 @@ void GetModuleFileNames
     WCHAR wszDir  [_MAX_DIR],
           wszDrive[_MAX_DRIVE],
           wszFname[_MAX_FNAME],
-          wszExt  [_MAX_EXT];
+          wszExt  [_MAX_EXT],
+          wszComctl32FileVer[64];           // Comctl32.dll file version string
 
     if (GetModuleFileNameW (hInstance, wszAppDPFE, sizeof (wszAppDPFE)))
     {
@@ -378,6 +380,14 @@ void GetModuleFileNames
 
         // Read in the application's File Version String
         LclFileVersionStrW (wszAppDPFE, wszFileVer);
+
+        // Read in the COMCTL32.DLL File Version String
+        LclFileVersionStrW (L"comctl32.dll", wszComctl32FileVer);
+
+        // Get the Comctl32.dll major and minor file version #s
+        swscanf (wszComctl32FileVer,
+                 L"%f",
+                &fComctl32FileVer);
     } // End IF
 } // End GetModuleFileNames
 

@@ -416,11 +416,15 @@ HWND MakeWorkspaceWindow
         // Assign the image list to the Toolbar Ctrl
         SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_WS, (LPARAM) hImageListWS);
 
+        // Tell the Toolbar about the Tooltip Ctrl
+        SendMessageW (hWndRes, TB_SETTOOLTIPS, (WPARAM) hWndTT, 0);
+
         // Tell the Toolbar Ctrl to use the iString value as a Tooltip
         SendMessageW (hWndRes, TB_SETMAXTEXTROWS, 0, 0);
 
         // Tell the Toolbar Ctrl to use drop down arrows
-        SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
+        //   and use iString as tooltip
+        SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS | TBSTYLE_EX_MIXEDBUTTONS);
 
         // Add buttons to the Toolbar Ctrl
         SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_WS, (LPARAM) &tbButtonsWS);
@@ -494,7 +498,7 @@ void InitWorkspaceBand
 ////rbBand.iImage     =
     rbBand.hwndChild  = hWndWS_RB;
     rbBand.cxMinChild = uWidth;
-    rbBand.cyMinChild = dwBtnHeight;
+    rbBand.cyMinChild = 2 + dwBtnHeight + 2;    // Including top & bottom border
     rbBand.cxIdeal    = uWidth;
     rbBand.cx         = uWidth;
 ////rbBand.hbmBack    =
@@ -594,11 +598,15 @@ HWND MakeEditWindow
         // Assign the image list to the Toolbar Ctrl
         SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_ED, (LPARAM) hImageListED);
 
+        // Tell the Toolbar about the Tooltip Ctrl
+        SendMessageW (hWndRes, TB_SETTOOLTIPS, (WPARAM) hWndTT, 0);
+
         // Tell the Toolbar Ctrl to use the iString value as a Tooltip
         SendMessageW (hWndRes, TB_SETMAXTEXTROWS, 0, 0);
 
         // Tell the Toolbar Ctrl to use drop down arrows
-        SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
+        //   and use iString as tooltip
+        SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS | TBSTYLE_EX_MIXEDBUTTONS);
 
         // Add buttons to the Toolbar Ctrl
         SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_ED, (LPARAM) &tbButtonsED);
@@ -672,7 +680,7 @@ void InitEditBand
 ////rbBand.iImage     =
     rbBand.hwndChild  = hWndED_RB;
     rbBand.cxMinChild = uWidth;
-    rbBand.cyMinChild = dwBtnHeight;
+    rbBand.cyMinChild = 2 + dwBtnHeight + 2;    // Including top & bottom border
     rbBand.cxIdeal    = uWidth;
     rbBand.cx         = uWidth;
 ////rbBand.hbmBack    =
@@ -772,11 +780,15 @@ HWND MakeObjectsWindow
         // Assign the image list to the Toolbar Ctrl
         SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_FN, (LPARAM) hImageListFN);
 
+        // Tell the Toolbar about the Tooltip Ctrl
+        SendMessageW (hWndRes, TB_SETTOOLTIPS, (WPARAM) hWndTT, 0);
+
         // Tell the Toolbar Ctrl to use the iString value as a Tooltip
         SendMessageW (hWndRes, TB_SETMAXTEXTROWS, 0, 0);
 
         // Tell the Toolbar Ctrl to use drop down arrows
-        SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
+        //   and use iString as tooltip
+        SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS | TBSTYLE_EX_MIXEDBUTTONS);
 
         // Add buttons to the Toolbar Ctrl
         SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_FN, (LPARAM) &tbButtonsFN);
@@ -851,7 +863,7 @@ void InitObjectsBand
 ////rbBand.iImage     =
     rbBand.hwndChild  = hWndFN_RB;
     rbBand.cxMinChild = uWidth;
-    rbBand.cyMinChild = dwBtnHeight;
+    rbBand.cyMinChild = 2 + dwBtnHeight + 2;    // Including top & bottom border
     rbBand.cxIdeal    = uWidth;
     rbBand.cx         = uWidth;
 ////rbBand.hbmBack    =
@@ -968,13 +980,19 @@ LRESULT APIENTRY FW_RBWndProc
      LPARAM lParam)     // ...
 
 {
-    static TOOLINFOW tti = {sizeof (tti)};  // For Tooltip Ctrl
+    static TOOLINFOW tti = {0};             // For Tooltip Ctrl
     RECT             rc;                    // Temporary rectangle
 
 ////LCLODSAPI ("FW_RB: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_CREATE:
+            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            if (fComctl32FileVer >= 6)
+                tti.cbSize = sizeof (tti);
+            else
+                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+
             //***************************************************************
             // Create a Combobox Ctrl for the font name
             //***************************************************************
@@ -1070,7 +1088,7 @@ LRESULT APIENTRY FW_RBWndProc
             GetWindowRect (hWndCBFS_FW, &rc);
 
             //***************************************************************
-            // Create a Edit Ctrl for the font size
+            // Create an Edit Ctrl for the font size
             //***************************************************************
             hWndEC_FW =
               CreateWindowExW (0L,                  // Extended styles
@@ -1112,7 +1130,7 @@ LRESULT APIENTRY FW_RBWndProc
             InitPointSize ();
 
             //***************************************************************
-            // Create an UpDown Ctrl
+            // Create an UpDown Ctrl for the font size
             //***************************************************************
             hWndUD_FW =
               CreateWindowExW (0L,                  // Extended styles
@@ -1881,7 +1899,7 @@ typedef struct tagLANGCHARS
     static UBOOL      bTrackMouse = FALSE,      // TRUE iff tracking the mouse via tme
                       bAttrsTT = FALSE;         // TRUE iff we've initialized the TT attributes
     TRACKMOUSEEVENT   tme;                      // For Tooltip Ctrl tracking
-    static TOOLINFOW  tti = {sizeof (tti)};     // ...
+    static TOOLINFOW  tti = {0};                // ...
     static LOGFONTW   lfOldTT;                  // For Old TT
     static APLU3264   uTTWidth;                 // Original TT tip width
     static TTGETTITLE ttgti = {sizeof (ttgti)}; // Tooltip Get Title and Icon struc
@@ -1890,6 +1908,11 @@ typedef struct tagLANGCHARS
     switch (message)
     {
         case WM_CREATE:
+            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            if (fComctl32FileVer >= 6)
+                tti.cbSize = sizeof (tti);
+            else
+                tti.cbSize = TTTOOLINFOW_V2_SIZE;
             // Initialize window-specific resources
             LW_RB_Create (hWnd);
 
@@ -2073,9 +2096,18 @@ typedef struct tagLANGCHARS
                     uTTWidth =
                       SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, GetFSIndAveCharSize (FONTENUM_LW)->cx * MAXTIPWIDTHINCHARS);
 
-                    // Get the current Tooltip Title and Icon
-                    //   to restore later (WM_MOUSELEAVE)
-                    SendMessageW (hWndTT, TTM_GETTITLE, 0, (LPARAM) &ttgti);
+                    // If this version of Comctl32.dll supports this message, ...
+                    if (fComctl32FileVer >= 6)
+                        // Get the current Tooltip Title and Icon
+                        //   to restore later (WM_MOUSELEAVE)
+                        SendMessageW (hWndTT, TTM_GETTITLE, 0, (LPARAM) &ttgti);
+                    else
+                    {
+                        // Set default values so we may restore later (WM_MOUSELEAVE)
+                        ttgti.uTitleBitmap = TTI_NONE;
+                        ttgti.cch          = 0;
+                        ttgti.pszTitle     = NULL;
+                    } // End IF
 
                     // Get the TT's current font
                     hFontOldTT = (HFONT)

@@ -268,6 +268,9 @@ WCHAR wszAppDPFE [_MAX_PATH],           // .EXE drive, path, filename.ext
       wszFileVer[64];                   // File version string
 
 EXTERN
+float fComctl32FileVer;                 // Comctl32.dll file version #
+
+EXTERN
 LPWCHAR lpwszIniFile,                   // Ptr to "APPNAME.ini" file
         lpwszWorkDir;                   // Ptr to WS_WKSNAME dir
 

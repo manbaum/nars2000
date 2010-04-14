@@ -878,6 +878,17 @@ LRESULT APIENTRY FEWndProc
             if (hWndNxt)
                 SetWindowLongPtrW (hWndNxt, GWLFE_HWNDPRV, (APLU3264) (LONG_PTR) hWndPrv);
 
+            // Get ptr to PerTabData global memory
+            lpMemPTD = GetMemPTD ();
+
+            // If we're the current next, ...
+            if (lpMemPTD->hWndFENxt EQ hWnd)
+            {
+                Assert (hWndPrv EQ NULL);
+
+                lpMemPTD->hWndFENxt = hWndNxt;
+            } // End IF
+
             // Uninitialize window-specific resources
             FE_Delete (hWnd);
 

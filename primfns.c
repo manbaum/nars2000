@@ -3070,6 +3070,8 @@ UBOOL IsTknTypeVar
     switch (tknType)
     {
         case TKT_VARNAMED:
+        case TKT_CHRSTRAND:
+        case TKT_NUMSTRAND:
         case TKT_VARIMMED:
         case TKT_VARARRAY:
             return TRUE;

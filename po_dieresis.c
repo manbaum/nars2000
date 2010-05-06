@@ -742,6 +742,9 @@ UBOOL ExecFuncOnToken_EM
 
         return TRUE;
     } // End IF
+
+    goto ERROR_EXIT;
+
 VALUE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                               &lpYYFcnStr->tkToken);

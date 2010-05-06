@@ -43,6 +43,10 @@ MFEXT=w$(WIN)
 
 MV=makever
 
+## Set the following to 1 to debug linker error 0x460 as in
+##   mkn "LINKDEBUG=1"
+LINKDEBUG=0
+
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
 CFLAGS_DEBUG=/Zi /D "DEBUG"
@@ -477,7 +481,7 @@ $(WS)local.h:           main.h          \
                         resource.h      \
                         enums.h
 
-# Build the Win32 version
+# Build the Win32/Win64 version
 OBJS=   $(SRC:???=obj)                  \
         $(SRC_PARSE:???=obj)            \
         $(O)dbgbrk.obj                  \
@@ -495,11 +499,18 @@ $(OBJS)
 $(LIBS_WEXE) $(LIBS_EXT)
 /DEF:$(DEFFILE)
 /NODEFAULTLIB
+!if "$(LINKDEBUG)" == "1"
+/VERBOSE:LIB
+!endif
 <<KEEP
         @echo ---.exe File----
         @Set LIB=$(L98)
         @if exist $@ del $@
+!if "$(LINKDEBUG)" == "1"
+        @$(LD) $(LFLAGS_WEXE) @$(O)main.crf
+!else
         @$(LD) $(LFLAGS_WEXE) @$(O)main.crf >NUL
+!endif
         @del $(O)$(@B).exp
         @del $(O)$(@B).lib
         @copy $(O)$(ENAME).map $(B) >NUL

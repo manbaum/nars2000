@@ -1,6 +1,21 @@
 Version 0.0.2.9 consists of the following Builds:
 
 
+Build #636 -- Version 0.0.2.9
+-----------------------------
+
+* Document How To Debug Linker Errors
+
+Directory trunk:
+
+MAKEFILE.INC:
+  Define LINKDEBUG= equate to document how to debug problems with
+    symbols.
+
+MAKEFILE.SRC:
+  Fix typo in comment.
+
+
 Build #635 -- Version 0.0.2.9
 -----------------------------
 

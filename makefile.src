@@ -21,7 +21,7 @@
 #***************************************************************************/
 
 # This makefile assigns the SRC variable which is included
-#   in various otehr makefiles such as <makefile.inc>
+#   in various other makefiles such as <makefile.inc>
 #   <makefile.dep>, and <makefile.pro>.
 # If you change this file, be sure to run the above-mentioned
 #   dependent makefiles.

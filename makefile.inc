@@ -100,7 +100,7 @@ RCFLAGS = $(RCFLAGS)
 !endif
 
 RUNFLAGS =
-DEFFILE = main.def
+DEFFILE = main$(WIN).def
 OBJS_EXT =
 !if "$(DEBUG)" == "1"
 RCDEFINES = /D $(WDEF) /D BUILD_BETA

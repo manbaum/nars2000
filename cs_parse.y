@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -791,7 +791,7 @@ ForStmt:
                                                                         // If it's not ENDIF, ...
                                                                         if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
                                                                             // Chain together the LEAVE/CONTINUE token and the EndFor token
-                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptkCur);
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptk1st);
                                                                     } // End IF/FOR/IF
 
                                                                     // Save the same unique identifier in the FOR and EndFor
@@ -804,7 +804,7 @@ ForStmt:
                                                                     tkTmp = *$1.lptkCur;
 
                                                                     // Chain together the FOR token and the EndFor token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $6.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $6.lptk1st);
 
                                                                     // Chain together the EndFor token and the FOR token
                                                                     CS_ChainTokens (lpcsLocalVars, &$6.lptkCur->tkData, &tkTmp);
@@ -848,7 +848,7 @@ ForLclStmt:
                                                                         // If it's not ENDIF, ...
                                                                         if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
                                                                             // Chain together the LEAVE/CONTINUE token and the EndForLcl token
-                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptkCur);
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptk1st);
                                                                     } // End IF/FOR/IF
 
                                                                     // Save the same unique identifier in the FORLCL and EndForLcl
@@ -861,7 +861,7 @@ ForLclStmt:
                                                                     tkTmp = *$1.lptkCur;
 
                                                                     // Chain together the FORLCL token and the EndForLcl token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $6.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $6.lptk1st);
 
                                                                     // Chain together the EndForLcl token and the FORLCL token
                                                                     CS_ChainTokens (lpcsLocalVars, &$6.lptkCur->tkData, &tkTmp);
@@ -895,9 +895,6 @@ OrIfRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // Save as 1st token in sequence
-                                                                    $1.lptk1st = $1.lptkCur;
-
                                                                     $$ = $1;
                                                                 }
   | OrIfRec  NS  ORIF                                           {DbgMsgWP (L"%%OrIfRec:  OrIfRec NS ORIF");
@@ -908,8 +905,11 @@ OrIfRec:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // Chain together the last token in OrIfRec and the ORIF token
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptkIF1st);
+
                                                                     // In this partial sequence, pass on down a ptr to the first entry
-                                                                    $3.lptk1st = $1.lptk1st;
+                                                                    $3.lptkIF1st = $1.lptkIF1st;
 
                                                                     $$ = $3;
                                                                 }
@@ -924,9 +924,6 @@ AndIfRec:
                                                                         YYERROR;
                                                                     } // End IF
 
-                                                                    // Save as 1st token in sequence
-                                                                    $1.lptk1st = $1.lptkCur;
-
                                                                     $$ = $1;
                                                                 }
   | AndIfRec NS  ANDIF                                          {DbgMsgWP (L"%%AndIfRec:  AndIfRec NS ANDIF");
@@ -937,8 +934,11 @@ AndIfRec:
                                                                         YYERROR;
                                                                     } // End IF
 
+                                                                    // Chain together the last token in AndIfRec and the ANDIF token
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptkIF1st);
+
                                                                     // In this partial sequence, pass on down a ptr to the first entry
-                                                                    $3.lptk1st = $1.lptk1st;
+                                                                    $3.lptkIF1st = $1.lptkIF1st;
 
                                                                     $$ = $3;
                                                                 }
@@ -961,7 +961,7 @@ SkipEnd:
   ;
 
 ElseIf:
-            SkipEnd ELSEIF NSS                                  {DbgMsgWP (L"%%ElseIf:  ELSEIF NSS");
+            SkipEnd ELSEIF NSS                                  {DbgMsgWP (L"%%ElseIf:  SkipEnd ELSEIF NSS");
                                                                     // Ensure the ELSEIF token is SOS
                                                                     if (!$2.lptkCur->tkData.bSOS)
                                                                     {
@@ -973,11 +973,11 @@ ElseIf:
                                                                     CS_SetCLIndex (&$2);
 
                                                                     // Chain together the SkipEnd token and the ELSEIF token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $2.lptk1st);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $2.lptkIF1st);
 
                                                                     $$ = $2;
                                                                 }
-  |         SkipEnd ELSEIF NS  OrIfAndIf                        {DbgMsgWP (L"%%ElseIf:  ELSEIF NS OrIfAndIf");
+  |         SkipEnd ELSEIF NS  OrIfAndIf                        {DbgMsgWP (L"%%ElseIf:  SkipEnd ELSEIF NS OrIfAndIf");
                                                                     // Ensure the ELSEIF token is SOS
                                                                     if (!$2.lptkCur->tkData.bSOS)
                                                                     {
@@ -996,9 +996,13 @@ ElseIf:
                                                                         lptk1st->tkData.uCLIndex = $2.uCLIndex;
 
                                                                     // Chain together the SkipEnd token and the ELSEIF token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $2.lptk1st);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $2.lptkIF1st);
+
+                                                                    // Chain together the ELSEIF token and the first token in OrIfAndIf
+                                                                    CS_ChainTokens (lpcsLocalVars, &$2.lptkCur->tkData, $4.lptkIF1st);
 
                                                                     // In this partial sequence, pass on down a ptr to the first entry
+                                                                    $4.lptkIF1st                = $2.lptkIF1st;
                                                                     $4.lptk1st                  = $2.lptkCur;
                                                                     $4.uCLIndex                 =
                                                                     $4.lptkCur->tkData.uCLIndex = $2.uCLIndex;
@@ -1041,6 +1045,9 @@ ElseIfRec:
                                                                         $2.lptk1st                  = $1.lptkCL1st;
                                                                     } // End IF
 
+                                                                    // Chain together the last token in ElseIfRec and the first token in ElseIf
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptkIF1st);
+
                                                                     // Loop through $3's tokens converting that token's .uCLIndex to $1's
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     // If it's the same .uCLIndex
@@ -1048,6 +1055,7 @@ ElseIfRec:
                                                                         lptk1st->tkData.uCLIndex = $1.uCLIndex;
 
                                                                     // In this partial sequence, pass on down a ptr to the first entry
+                                                                    $3.lptkIF1st                = $1.lptkIF1st;
                                                                     $3.lptkCL1st                =
                                                                     $3.lptk1st                  = $1.lptkCL1st;
                                                                     $3.uCLIndex                 =
@@ -1069,7 +1077,30 @@ ElseIfElse:
                                                                     // Set the next .uCLIndex value
                                                                     CS_SetCLIndex (&$1);
 
+                                                                    // Save as 1st token in sequence
+                                                                    $1.lptkIF1st = $1.lptkCur;
+
                                                                     $$ = $1;
+                                                                }
+  | ElseIfRec       ELSE   SOSStmts                             {DbgMsgWP (L"%%ElseIfElse:  ElseIfRec ELSE SOSStmts");
+                                                                    // Ensure the ELSE token is SOS
+                                                                    if (!$2.lptkCur->tkData.bSOS)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    // Chain together the last token in ElseIfRec and the ELSE token
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $2.lptkIF1st);
+
+                                                                    // In this partial sequence, pass on down a ptr to the first entry
+                                                                    $2.lptkIF1st                = $1.lptkIF1st;
+                                                                    $2.lptkCL1st                =
+                                                                    $2.lptk1st                  = $1.lptkCL1st;
+                                                                    $2.uCLIndex                 =
+                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
+
+                                                                    $$ = $2;
                                                                 }
   | ElseIfRec CSRec ELSE   SOSStmts                             {DbgMsgWP (L"%%ElseIfElse:  ElseIfRec CSRec ELSE SOSStmts");
                                                                     // Ensure the ELSE token is SOS
@@ -1108,7 +1139,11 @@ ElseIfElse:
                                                                         $2.lptk1st                  = $1.lptkCL1st;
                                                                     } // End IF
 
+                                                                    // Chain together the last token in ElseIfRec and the ELSE token
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptk1st);
+
                                                                     // In this partial sequence, pass on down a ptr to the first entry
+                                                                    $3.lptkIF1st                = $1.lptkIF1st;
                                                                     $3.lptkCL1st                =
                                                                     $3.lptk1st                  = $1.lptkCL1st;
                                                                     $3.uCLIndex                 =
@@ -1130,10 +1165,11 @@ IfStmt:
                                                                     // N.B.:  $3 could be empty
 
                                                                     // Chain together the IF token and the EndIf token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptkIF1st);
 
                                                                     // In case there's an unmatched ContinueLeave in the IfBody,
                                                                     //   pass on the ptr and index
+                                                                    $4.lptkIF1st                = $1.lptkIF1st;
                                                                     $4.lptkCL1st                =
                                                                     $4.lptk1st                  = $3.lptkCL1st;
                                                                     $4.uCLIndex                 =
@@ -1184,30 +1220,15 @@ IfStmt:
                                                                         $5.lptk1st                  = $3.lptkCL1st;
                                                                     } // End IF
 
-                                                                    // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
-
-                                                                    // Loop through the tokens in ElseIfRec
-                                                                    for (lptk1st = $4.lptk1st; lptk1st <= $4.lptkCur; lptk1st++)
-                                                                    // If it's in the same sequence, ...
-                                                                    if (lptk1st->tkData.uCLIndex EQ $4.uCLIndex)
-                                                                    {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_ANDIF
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ELSEIF
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ORIF);
-
-                                                                        // Chain together lptkPrv and lptk1st
-                                                                        CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
-
-                                                                        // Save as the ptr to the previous token
-                                                                        lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
+                                                                    // Chain together the IF token and the first token in ElseIfRec
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptkIF1st);
 
                                                                     // Chain together the last token in ElseIfRec and the EndIf token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $6.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $6.lptkIF1st);
 
                                                                     // In case there's an unmatched ContinueLeave in the IfBody,
                                                                     //   pass on the ptr and index
+                                                                    $6.lptkIF1st                = $1.lptkIF1st;
                                                                     $6.lptkCL1st                =
                                                                     $6.lptk1st                  = $5.lptkCL1st;
                                                                     $6.uCLIndex                 =
@@ -1258,31 +1279,15 @@ IfStmt:
                                                                         $5.lptk1st                  = $3.lptkCL1st;
                                                                     } // End IF
 
-                                                                    // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
-
-                                                                    // Loop through the tokens in ElseIfElse
-                                                                    for (lptk1st = $4.lptk1st; lptk1st <= $4.lptkCur; lptk1st++)
-                                                                    // If it's in the same sequence, ...
-                                                                    if (lptk1st->tkData.uCLIndex EQ $4.uCLIndex)
-                                                                    {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_ANDIF
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ELSE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ELSEIF
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ORIF);
-
-                                                                        // Chain together lptkPrv and lptk1st
-                                                                        CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
-
-                                                                        // Save as the ptr to the previous token
-                                                                        lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
+                                                                    // Chain together the IF token and the first token in ElseIfElse
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptkIF1st);
 
                                                                     // Chain together the last token in ElseIfElse and the EndIf token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $6.lptk1st);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $6.lptkIF1st);
 
                                                                     // In case there's an unmatched ContinueLeave in the IfBody,
                                                                     //   pass on the ptr and index
+                                                                    $6.lptkIF1st                = $1.lptkIF1st;
                                                                     $6.lptkCL1st                =
                                                                     $6.lptk1st                  = $5.lptkCL1st;
                                                                     $6.uCLIndex                 =
@@ -1303,26 +1308,15 @@ IfStmt:
 
                                                                     // N.B.:  $4 could be empty
 
-                                                                    // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
-
-                                                                    // Loop through the tokens in OrIfAndIf
-                                                                    for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
-                                                                    if (lptk1st->tkFlags.TknType EQ TKT_CS_ANDIF
-                                                                     || lptk1st->tkFlags.TknType EQ TKT_CS_ORIF)
-                                                                    {
-                                                                        // Chain together lptkPrv and lptk1st
-                                                                        CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
-
-                                                                        // Save as the ptr to the previous token
-                                                                        lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
+                                                                    // Chain together the IF token and the first token in OrIfAndIf
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptkIF1st);
 
                                                                     // Chain together the last token in OrIfAndIf and the EndIf token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkIF1st);
 
                                                                     // In case there's an unmatched ContinueLeave in the IfBody,
                                                                     //   pass on the ptr and index
+                                                                    $5.lptkIF1st                = $1.lptkIF1st;
                                                                     $5.lptkCL1st                =
                                                                     $5.lptk1st                  = $4.lptkCL1st;
                                                                     $5.uCLIndex                 =
@@ -1373,29 +1367,18 @@ IfStmt:
                                                                         $6.lptk1st                  = $4.lptkCL1st;
                                                                     } // End IF
 
-                                                                    // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
+                                                                    // Chain together the IF token and the first token in OrIfAndIf
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptkIF1st);
 
-                                                                    // Loop through the tokens in OrIfAndIf
-                                                                    for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
-                                                                    if (lptk1st->tkFlags.TknType EQ TKT_CS_ANDIF
-                                                                     || lptk1st->tkFlags.TknType EQ TKT_CS_ORIF)
-                                                                    {
-                                                                        // Chain together lptkPrv and lptk1st
-                                                                        CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
-
-                                                                        // Save as the ptr to the previous token
-                                                                        lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
-
-                                                                    // Chain together the last token in OrIfAndIf and the 1st token in ElseIfRec
-                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptk1st);
+                                                                    // Chain together the last token in OrIfAndIf and the first token in ElseIfRec
+                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkIF1st);
 
                                                                     // Chain together the last token in ElseIfRec and the EndIf token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$5.lptkCur->tkData, $7.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$5.lptkCur->tkData, $7.lptkIF1st);
 
                                                                     // In case there's an unmatched ContinueLeave in the IfBody,
                                                                     //   pass on the ptr and index
+                                                                    $7.lptkIF1st                = $1.lptkIF1st;
                                                                     $7.lptkCL1st                =
                                                                     $7.lptk1st                  = $6.lptkCL1st;
                                                                     $7.uCLIndex                 =
@@ -1446,29 +1429,18 @@ IfStmt:
                                                                         $6.lptk1st                  = $4.lptkCL1st;
                                                                     } // End IF
 
-                                                                    // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
+                                                                    // Chain together the IF token and the first token in OrIfAndIf
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptkIF1st);
 
-                                                                    // Loop through the tokens in OrIfAndIf
-                                                                    for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
-                                                                    if (lptk1st->tkFlags.TknType EQ TKT_CS_ANDIF
-                                                                     || lptk1st->tkFlags.TknType EQ TKT_CS_ORIF)
-                                                                    {
-                                                                        // Chain together lptkPrv and lptk1st
-                                                                        CS_ChainTokens (lpcsLocalVars, &lptkPrv->tkData, lptk1st);
-
-                                                                        // Save as the ptr to the previous token
-                                                                        lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
-
-                                                                    // Chain together the last token in OrIfAndIf and the 1st token in ElseIfElse
-                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptk1st);
+                                                                    // Chain together the last token in OrIfAndIf and the first token in ElseIfElse
+                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkIF1st);
 
                                                                     // Chain together the last token in ElseIfElse and the EndIf token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$5.lptkCur->tkData, $7.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$5.lptkCur->tkData, $7.lptkIF1st);
 
                                                                     // In case there's an unmatched ContinueLeave in the IfBody,
                                                                     //   pass on the ptr and index
+                                                                    $7.lptkIF1st                = $1.lptkIF1st;
                                                                     $7.lptkCL1st                =
                                                                     $7.lptk1st                  = $6.lptkCL1st;
                                                                     $7.uCLIndex                 =
@@ -1482,7 +1454,7 @@ IfStmt:
   ;
 
 Until:
-    UNTIL NSS                                                    {DbgMsgWP (L"%%Until:  UNTIL NSS");
+    UNTIL NSS                                                   {DbgMsgWP (L"%%Until:  UNTIL NSS");
                                                                     // Ensure the UNTIL token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1499,6 +1471,12 @@ Until:
                                                                         lpcsLocalVars->tkCSErr = *$1.lptkCur;
                                                                         YYERROR;
                                                                     } // End IF
+
+                                                                    // Chain together the UNTIL token and the first token in OrIfAndIf
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptkIF1st);
+
+                                                                    // In this partial sequence, pass on down a ptr to the first entry
+                                                                    $3.lptkIF1st = $1.lptkIF1st;
 
                                                                     $$ = $3;
                                                                 }
@@ -1529,11 +1507,11 @@ RepeatStmt:
                                                                         // If it's not ENDIF, ...
                                                                         if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
                                                                             // Chain together the LEAVE/CONTINUE token and the EndRepeat token
-                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $4.lptkCur);
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $4.lptk1st);
                                                                     } // End IF/FOR/IF
 
                                                                     // Chain together the EndRepeat token and the REPEAT token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $1.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $1.lptk1st);
 
                                                                     // Unlink this stmt
                                                                     CS_UnlinkStmt (lpcsLocalVars, &$1);
@@ -1568,7 +1546,7 @@ RepeatStmt:
                                                                     } // End IF/FOR/IF
 
                                                                     // Chain together the last token in Until and the REPEAT token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $1.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $1.lptk1st);
 
                                                                     // Unlink this stmt
                                                                     CS_UnlinkStmt (lpcsLocalVars, &$1);
@@ -1787,7 +1765,7 @@ SelectStmt:
                                                                     } // End IF
 
                                                                     // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
+                                                                    lptkPrv = $1.lptk1st;
 
                                                                     // Loop through the tokens in CCListCS
                                                                     if ($3.lptk1st)
@@ -1802,7 +1780,7 @@ SelectStmt:
                                                                         // If it's LEAVE, ...
                                                                         if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
                                                                             // Chain together lptk1st and the EndSelect token
-                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $4.lptkCur);
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $4.lptk1st);
                                                                         else
                                                                         // It's CASE or CASELIST
                                                                         {
@@ -1815,7 +1793,7 @@ SelectStmt:
                                                                     } // End IF/FOR/IF
 
                                                                     // Chain together the last token in CCListCS and the EndSelect token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptk1st);
 
                                                                     // Unlink this stmt
                                                                     CS_UnlinkStmt (lpcsLocalVars, &$1);
@@ -1838,7 +1816,7 @@ SelectStmt:
                                                                     } // End IF
 
                                                                     // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
+                                                                    lptkPrv = $1.lptk1st;
 
                                                                     // Loop through the tokens in CCListCS
                                                                     if ($3.lptk1st)
@@ -1853,7 +1831,7 @@ SelectStmt:
                                                                         // If it's LEAVE, ...
                                                                         if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
                                                                             // Chain together lptk1st and the EndSelect token
-                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptkCur);
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptk1st);
                                                                         else
                                                                         // It's CASE or CASELIST
                                                                         {
@@ -1866,10 +1844,10 @@ SelectStmt:
                                                                     } // End IF/FOR/IF
 
                                                                     // Chain together the last token in CCListCS and the ELSE token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptk1st);
 
                                                                     // Chain together the ELSE token and the EndSelect token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $6.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $6.lptk1st);
 
                                                                     // Unlink this stmt
                                                                     CS_UnlinkStmt (lpcsLocalVars, &$1);
@@ -1899,7 +1877,7 @@ SelectStmt:
                                                                     } // End IF
 
                                                                     // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
+                                                                    lptkPrv = $1.lptk1st;
 
                                                                     // Loop through the tokens in CCListCS
                                                                     if ($3.lptk1st)
@@ -1914,7 +1892,7 @@ SelectStmt:
                                                                         // If it's LEAVE, ...
                                                                         if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
                                                                             // Chain together lptk1st and the EndSelect token
-                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $7.lptkCur);
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $7.lptk1st);
                                                                         else
                                                                         // It's CASE or CASELIST
                                                                         {
@@ -1927,10 +1905,10 @@ SelectStmt:
                                                                     } // End IF/FOR/IF
 
                                                                     // Chain together the last token in CCListCS and the ELSE token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptk1st);
 
                                                                     // Chain together the ELSE token and the EndSelect token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $7.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, $7.lptk1st);
 
                                                                     // Unlink this stmt
                                                                     CS_UnlinkStmt (lpcsLocalVars, &$1);
@@ -1964,14 +1942,14 @@ WhileStmt:
                                                                         // If it's not ENDIF, ...
                                                                         if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
                                                                             // Chain together the LEAVE/CONTINUE token and the EndWhile token
-                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $4.lptkCur);
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $4.lptk1st);
                                                                     } // End IF/FOR/IF
 
                                                                     // Copy the WHILE token as the next call to CS_ChainTokens clobbers it
-                                                                    tkTmp = *$1.lptkCur;
+                                                                    tkTmp = *$1.lptkIF1st;
 
                                                                     // Chain together the WHILE token and the EndWhile token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptkIF1st);
 
                                                                     // Chain together the EndWhile token and the WHILE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, &tkTmp);
@@ -2005,14 +1983,14 @@ WhileStmt:
                                                                         // If it's not ENDIF, ...
                                                                         if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
                                                                             // Chain together the LEAVE/CONTINUE token and the EndWhile token
-                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $5.lptkCur);
+                                                                            CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $5.lptk1st);
                                                                     } // End IF/FOR/IF
 
                                                                     // Copy the WHILE token as the next call to CS_ChainTokens clobbers it
-                                                                    tkTmp = *$1.lptkCur;
+                                                                    tkTmp = *$1.lptkIF1st;
 
                                                                     // Save as the ptr to the previous token
-                                                                    lptkPrv = $1.lptkCur;
+                                                                    lptkPrv = $1.lptk1st;
 
                                                                     // Loop through the tokens in OrIfAndIf
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
@@ -2027,7 +2005,7 @@ WhileStmt:
                                                                     } // End FOR/IF
 
                                                                     // Chain together the last token in OrIfAndIf and the EndWhile token
-                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkCur);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkIF1st);
 
                                                                     // Chain together the EndWhile token and the WHILE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$5.lptkCur->tkData, &tkTmp);
@@ -2065,10 +2043,10 @@ WhileStmt:
                                                                     } // End IF/FOR/IF
 
                                                                     // Copy the WHILE token as the next call to CS_ChainTokens clobbers it
-                                                                    tkTmp = *$1.lptkCur;
+                                                                    tkTmp = *$1.lptkIF1st;
 
                                                                     // Chain together the WHILE token and the 1st token in Until
-                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptk1st);
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $4.lptkIF1st);
 
                                                                     // Chain together the last token in Until and the WHILE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$4.lptkCur->tkData, &tkTmp);
@@ -2106,7 +2084,7 @@ WhileStmt:
                                                                     } // End IF/FOR/IF
 
                                                                     // Copy the WHILE token as the next call to CS_ChainTokens clobbers it
-                                                                    tkTmp = *$1.lptkCur;
+                                                                    tkTmp = *$1.lptkIF1st;
 
                                                                     // Save as the ptr to the previous token
                                                                     lptkPrv = $1.lptkCur;
@@ -2123,8 +2101,8 @@ WhileStmt:
                                                                         lptkPrv = lptk1st;
                                                                     } // End FOR/IF
 
-                                                                    // Chain together the last token in OrIfAndIf and the 1st token in Until
-                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptk1st);
+                                                                    // Chain together the last token in OrIfAndIf and the first token in Until
+                                                                    CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkIF1st);
 
                                                                     // Chain together the last token in Until and the WHILE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$5.lptkCur->tkData, &tkTmp);
@@ -2231,6 +2209,7 @@ CS_YYLEX_START:
 
     // Return the current token
     lpYYLval->lptkCur   =               // Mark as the current token
+    lpYYLval->lptkIF1st =               // Mark as the first in a sequence of IF/ELSE/.../ENDIF
     lpYYLval->lptk1st   =               // Mark as the first in a sequence
     lpYYLval->lptkNxt   = lptkCSCur;    // ...         next  ...
     lpYYLval->lptkCL1st = NULL;         // No ContinueLeave ptr
@@ -2440,7 +2419,7 @@ void cs_yyerror                         // Called for Bison syntax error
 
     // Get and save the character index position
     uLinePos = lpcsLocalVars->tkCSErr.tkCharIndex;
-    uLineNum = lpcsLocalVars->tkCSErr.tkData.uLineNum;
+    uLineNum = lpcsLocalVars->tkCSErr.tkData.Orig.c.uLineNum;
 
     // If the caller wants error messages displayed, ...
     if (lpcsLocalVars->DisplayErr)

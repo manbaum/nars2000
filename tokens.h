@@ -95,7 +95,7 @@ typedef enum tagTOKEN_TYPES
  TKT_LINECONT    ,          // 17: Line continuation                       (data is NULL)
  TKT_INPOUT      ,          // 18: Input/Output                            (data is UTF16_QUAD or UTF16_QUOTEQUAD symbol)
  TKT_VARARRAY    ,          // 19: Array of data                           (data is HGLOBAL)
- TKT_CS_ANDIF    ,          // 1A: Control Structure:  ANDIF               (Data is Line/Stmt #)
+ TKT_CS_ANDIF    ,          // 1A: Control Structure:  ANDIF               (data is Line/Stmt/Token #)
  TKT_CS_CASE     ,          // 1B: ...                 CASE       ...
  TKT_CS_CASELIST ,          // 1C: ...                 CASELIST   ...
  TKT_CS_CONTINUE ,          // 1D: ...                 CONTINUE   ...
@@ -176,12 +176,29 @@ typedef struct tagTKFLAGS
          :16;               // FFFF0000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
-#define ANON_CTRL_STRUC         \
-  struct {USHORT uLineNum;      \
-          USHORT uStmtNum;      \
-          USHORT uTknNum;       \
-          USHORT uCLIndex:15,   \
-                 bSOS:1;        \
+
+typedef struct tagLOCATION
+{
+    USHORT uLineNum,            // 00:  Line #      (origin-1)
+           uStmtNum,            // 04:  Statement # (origin-0)
+           uTknNum;             // 08:  Token #     (origin-0)
+                                // 0C:  Length
+} LOCATION, *LPLOCATION;
+
+typedef const LOCATION CLOCATION, *LPCLOCATION;
+
+typedef union tagULOCATION
+{
+    const LOCATION c;           // 00:  Constant LOCATION
+          LOCATION d;           // 00:  Dynamic  ...
+} ULOCATION, *LPULOCATION;
+
+#define ANON_CTRL_STRUC             \
+  struct {ULOCATION Orig;           \
+           LOCATION Next;           \
+           USHORT   uCLIndex:15,    \
+                    bSOS:1;         \
+           USHORT   :16;            \
          }
 
 typedef union tagTOKEN_DATA
@@ -200,15 +217,16 @@ typedef union tagTOKEN_DATA
     APLCHAR    tkChar;              // 00:  ...     an APLCHAR
     LPVOID     tkVoid;              // 00:  ...     an abritrary ptr
     APLLONGEST tkLongest;           // 00:  Longest datatype (so we can copy the entire data)
-                                    // 08:  Length
+    ANON_CTRL_STRUC tkCtrlStruc;    // 00:  Longest Ctrl Struc
+                                    // 10:  Length
 } TOKEN_DATA, *LPTOKEN_DATA;
 
 typedef struct tagTOKEN
 {
     TKFLAGS          tkFlags;       // 00:  The flags part
     TOKEN_DATA       tkData;        // 04:  The data part (8 bytes)
-    int              tkCharIndex;   // 0C:  Index into the input line of this token
-                                    // 10:  Length
+    int              tkCharIndex;   // 14:  Index into the input line of this token
+                                    // 18:  Length
 } TOKEN, *LPTOKEN;
 
 #define TOKEN_HEADER_SIGNATURE      'NKOT'

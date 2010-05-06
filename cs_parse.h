@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,9 +38,10 @@ typedef struct tagCS_YYSTYPE        // YYSTYPE for Control Structure parser
     LPTOKEN lptkCur,                // 00:  Ptr to current token on CS stack
             lptk1st,                // 04:  Ptr to 1st token in a sequence
             lptkNxt,                // 08:  Ptr to next token in a sequence
-            lptkCL1st;              // 0C:  Ptr to 1st unmatched ContinueLeave in this group
-    UINT    uCLIndex;               // 10:  ContinueLeave index common to this group
-                                    // 14:  Length
+            lptkIF1st,              // 0C:  Ptr to 1st token in a sequence of IF/ELSE/.../ENDIF
+            lptkCL1st;              // 10:  Ptr to 1st unmatched ContinueLeave in this group
+    UINT    uCLIndex;               // 14:  ContinueLeave index common to this group
+                                    // 18:  Length
 } CS_YYSTYPE, *LPCS_YYSTYPE;        // Data type of yacc stack
 
 #define YYSTYPE_IS_DECLARED 1

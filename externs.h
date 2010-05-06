@@ -202,6 +202,13 @@ RESET_VARS bResetVars
 //  Debug values
 //***************************************************************************
 
+EXTERN
+UCHAR gDbgLvl       // Debug level 0 = none
+#ifdef DEFINE_VALUES
+ = 0
+#endif
+;
+
 #ifdef DEBUG
 UINT gVarLvl        // Debug level for display of variable-related info
 #ifdef DEFINE_VALUES
@@ -219,6 +226,11 @@ UINT gVarLvl        // Debug level for display of variable-related info
 #endif
 ,
      gNamLvl        // ...                        name-related     ...
+#ifdef DEFINE_VALUES
+= 3
+#endif
+,
+     gChnLvl        // ...                        CS chain-related ...
 #ifdef DEFINE_VALUES
 = 3
 #endif
@@ -316,13 +328,6 @@ DWORD dwTlsType,                        // Thread type (e.g.
 
 EXTERN
 LPWCHAR lpwszGlbTemp;                   // Used for temporary WCHAR storage
-
-EXTERN
-UCHAR gDbgLvl                           // Debug level 0 = none
-#ifdef DEFINE_VALUES
- = 0
-#endif
-;
 
 EXTERN
 LPWCHAR lpwNameTypeStr[]

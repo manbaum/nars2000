@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,24 +63,34 @@ typedef struct tagSTART_ADDRESSES
     "CS_LinkStmt"               , (LPUCHAR) &CS_LinkStmt                ,
     "CS_UnlinkStmt"             , (LPUCHAR) &CS_UnlinkStmt              ,
     "CS_SetCLIndex"             , (LPUCHAR) &CS_SetCLIndex              ,
+    "CS_SetTokenCLIndex"        , (LPUCHAR) &CS_SetTokenCLIndex         ,
     "CS_CASE_Stmt"              , (LPUCHAR) &CS_CASE_Stmt               ,
     "CS_CONTINUE_Stmt"          , (LPUCHAR) &CS_CONTINUE_Stmt           ,
     "CS_ELSE_Stmt"              , (LPUCHAR) &CS_ELSE_Stmt               ,
+    "FindMatchingForStmt"       , (LPUCHAR) &FindMatchingForStmt        ,
     "CS_ENDFOR_Stmt"            , (LPUCHAR) &CS_ENDFOR_Stmt             ,
+    "CS_DoneFOR"                , (LPUCHAR) &CS_DoneFOR                 ,
     "CS_ENDREPEAT_Stmt"         , (LPUCHAR) &CS_ENDREPEAT_Stmt          ,
+    "CS_ENDWHILE_Stmt"          , (LPUCHAR) &CS_ENDWHILE_Stmt           ,
     "CS_FOR_Stmt_EM"            , (LPUCHAR) &CS_FOR_Stmt_EM             ,
     "CS_IF_Stmt_EM"             , (LPUCHAR) &CS_IF_Stmt_EM              ,
     "CS_LEAVE_Stmt"             , (LPUCHAR) &CS_LEAVE_Stmt              ,
     "CS_SELECT_Stmt_EM"         , (LPUCHAR) &CS_SELECT_Stmt_EM          ,
     "CS_SKIPCASE_Stmt"          , (LPUCHAR) &CS_SKIPCASE_Stmt           ,
     "CS_SKIPEND_Stmt"           , (LPUCHAR) &CS_SKIPEND_Stmt            ,
-    "CS_GetNextToken"           , (LPUCHAR) &CS_GetNextToken            ,
-    "CS_PointToSOSToken"        , (LPUCHAR) &CS_PointToSOSToken         ,
-    "CS_SetThisStmt"            , (LPUCHAR) &CS_SetThisStmt             ,
-    "CS_SetNextStmt"            , (LPUCHAR) &CS_SetNextStmt             ,
-    "CS_SetNextToken"           , (LPUCHAR) &CS_SetNextToken            ,
-    "CS_GetTokenType"           , (LPUCHAR) &CS_GetTokenType            ,
-    "CS_GetEOSTokenLen"         , (LPUCHAR) &CS_GetEOSTokenLen          ,
+    "CS_GetToken_ORIG"          , (LPUCHAR) &CS_GetToken_ORIG           ,
+    "CS_GetToken_NEXT"          , (LPUCHAR) &CS_GetToken_NEXT           ,
+    "GetDfnHdrHandle"           , (LPUCHAR) &GetDfnHdrHandle            ,
+    "CS_CopyOrigToNext"         , (LPUCHAR) &CS_CopyOrigToNext          ,
+    "CS_PointToSOSToken_NEXT"   , (LPUCHAR) &CS_PointToSOSToken_NEXT    ,
+    "CS_SetNextStmtToStmtAt_NEXT", (LPUCHAR) &CS_SetNextStmtToStmtAt_NEXT,
+////"CS_SetNextStmtToStmtAt_ORIG", (LPUCHAR) &CS_SetNextStmtToStmtAt_ORIG,
+    "CS_SetNextStmtToStmtAfter_NEXT", (LPUCHAR) &CS_SetNextStmtToStmtAfter_NEXT,
+    "CS_SetNextStmtToStmtAfter_ORIG", (LPUCHAR) &CS_SetNextStmtToStmtAfter_ORIG,
+    "CS_SetNextToken_NEXT"      , (LPUCHAR) &CS_SetNextToken_NEXT       ,
+    "CS_GetTokenType_ORIG"      , (LPUCHAR) &CS_GetTokenType_ORIG       ,
+    "CS_GetTokenType_NEXT"      , (LPUCHAR) &CS_GetTokenType_NEXT       ,
+    "CS_GetEOSTokenLen_NEXT"    , (LPUCHAR) &CS_GetEOSTokenLen_NEXT     ,
 
     // customize.c
 

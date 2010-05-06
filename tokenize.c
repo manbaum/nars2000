@@ -42,11 +42,6 @@ do the conversion.
 The parser then traverses the tokenized line executing
 functions, etc. as necessary.
 
-ToDo
-
-* Control structures
-*
-
  */
 
 UBOOL gbInUse = FALSE;
@@ -827,22 +822,19 @@ UBOOL fnSysNSInit
         return TRUE;
     } else
     {
-        APLINT  aplInteger;                 // A temporary integer
-        TKFLAGS tkFlags = {0};              // Token flags
+        TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+        TOKEN_DATA tkData = {0};            // Token data  ...
 
         // Mark the data as a system namespace
         tkFlags.TknType  = TKT_SYS_NS;
 ////////tkFlags.ImmType  = IMMTYPE_ERROR;   // Already zero from {0}
         tkFlags.SysNSLvl = 1;               // Initialize the system namespace level
 
-        // Initialize the unused tkData value
-        aplInteger = 0;
-
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         return AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
-                                 &aplInteger,
+                                 &tkData,
                                   0);
     } // End IF/ELSE
 } // End fnSysNSInit
@@ -1177,8 +1169,8 @@ UBOOL fnAlpDone
 {
     LPSYMENTRY   lpSymEntry;            // Ptr to the name's STE
     UBOOL        bRet = TRUE;           // TRUE iff the result is valid
-    APLINT       aplInteger;            // A temporary integer
-    TKFLAGS      tkFlags = {0};         // Token flags
+    TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
+    TOKEN_DATA   tkData = {0};          // Token data  ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
@@ -1213,13 +1205,13 @@ UBOOL fnAlpDone
             tkFlags.TknType = TKT_INPOUT;
 
             // Copy to local var so we may pass its address
-            aplInteger = lpwszStr[0];
+            tkData.tkInteger = lpwszStr[0];
 
             // Attempt to append as new token, check for TOKEN TABLE FULL,
             //   and resize as necessary.
             bRet = AppendNewToken_EM (lptkLocalVars,
                                      &tkFlags,
-                                     &aplInteger,
+                                     &tkData,
                                       -lptkLocalVars->iStrLen);
             goto NORMAL_EXIT;
         } else
@@ -1244,13 +1236,13 @@ UBOOL fnAlpDone
 ////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
 
     // Copy to local var so we may pass its address
-    (LPSYMENTRY) aplInteger = MakePtrTypeSym (lpSymEntry);
+    tkData.tkVoid = MakePtrTypeSym (lpSymEntry);
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     bRet = AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplInteger,
+                             &tkData,
                               -lptkLocalVars->iStrLen);
     goto NORMAL_EXIT;
 
@@ -1284,8 +1276,8 @@ UBOOL fnDirIdent
 {
     LPSYMENTRY   lpSymEntry;            // Ptr to the SYMENTRY for the name
     UBOOL        bRet;                  // TRUE iff the result is valid
-    APLINT       aplInteger;            // Temporary integer
-    TKFLAGS      tkFlags = {0};         // Token flags
+    TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
+    TOKEN_DATA   tkData = {0};          // Token data  ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
 
@@ -1334,13 +1326,13 @@ UBOOL fnDirIdent
 ////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
 
     // Copy to local var so we may pass its address
-    (LPSYMENTRY) aplInteger = MakePtrTypeSym (lpSymEntry);
+    tkData.tkVoid = MakePtrTypeSym (lpSymEntry);
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     bRet = AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplInteger,
+                             &tkData,
                               -lptkLocalVars->iStrLen);
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
@@ -1362,8 +1354,8 @@ UBOOL fnAsnDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS    tkFlags = {0};
-    APLLONGEST aplLongest;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnAsnDone");
@@ -1386,7 +1378,7 @@ UBOOL fnAsnDone
     } // End IF
 
     // Copy current WCHAR
-    aplLongest = *lptkLocalVars->lpwszCur;
+    tkData.tkChar = *lptkLocalVars->lpwszCur;
 
     // Mark the data as an assignment
     tkFlags.TknType = TKT_ASSIGN;
@@ -1395,7 +1387,7 @@ UBOOL fnAsnDone
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplLongest,
+                             &tkData,
                               0);
 } // End fnAsnDone
 
@@ -1410,8 +1402,8 @@ UBOOL fnLstDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS    tkFlags = {0};
-    APLLONGEST aplLongest;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (l"fnLstDone");
@@ -1434,7 +1426,7 @@ UBOOL fnLstDone
     } // End IF
 
     // Copy current WCHAR
-    aplLongest = *lptkLocalVars->lpwszCur;
+    tkData.tkChar = *lptkLocalVars->lpwszCur;
 
     // Mark the data as a list separator
     tkFlags.TknType = TKT_LISTSEP;
@@ -1443,7 +1435,7 @@ UBOOL fnLstDone
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplLongest,
+                             &tkData,
                               0);
 } // End fnLstDone
 
@@ -1458,8 +1450,8 @@ UBOOL fnClnDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS    tkFlags = {0};
-    APLLONGEST aplLongest;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnClnDone");
@@ -1521,7 +1513,7 @@ UBOOL fnClnDone
     } // End IF
 
     // Copy current WCHAR
-    aplLongest = *lptkLocalVars->lpwszCur;
+    tkData.tkChar = *lptkLocalVars->lpwszCur;
 
     // If the first token is a name, and
     //   this is the second token,
@@ -1541,30 +1533,6 @@ UBOOL fnClnDone
         // Skip over leading blanks
         while (IsWhiteW (lptkLocalVars->lpwszOrig[lptkLocalVars->uCharIni]))
             lptkLocalVars->uCharIni++;
-
-        // Check for Syntax Coloring
-        if (lptkLocalVars->lpMemClrNxt)
-        {
-            UINT uVar,              // Loop counter
-                 uLen;              // Loop length
-
-            // Get the # chars
-            uLen = (UINT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
-
-            // Loop through the chars
-            for (uVar = 0; uVar < uLen; uVar++)
-            {
-                // Save the column index
-                lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_ALPHA;
-
-                // Save the color
-                lptkLocalVars->lpMemClrNxt++->syntClr =
-                  gSyntaxColorName[SC_LABEL].syntClr;
-            } // End IF
-
-            // Mark as successful
-            return TRUE;
-        } // End IF
     } else
         // Mark the data as a colon
         tkFlags.TknType = TKT_COLON;
@@ -1573,7 +1541,7 @@ UBOOL fnClnDone
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplLongest,
+                             &tkData,
                               0);
 } // End fnClnDone
 
@@ -1588,8 +1556,8 @@ UBOOL fnCtrlDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS         tkFlags = {0};
-    ANON_CTRL_STRUC aplInteger;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnCtrlDone");
@@ -1624,35 +1592,39 @@ UBOOL fnCtrlDone
      || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_CASE
      || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_CASELIST)
     {
-        APLINT aplInteger2 = 0;
-
         // Mark as a special token
         tkFlags.TknType =
           (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_ELSEIF) ? TKT_CS_SKIPEND
                                                              : TKT_CS_SKIPCASE;
         // Save the line & stmt #s for later use
-        aplInteger.uLineNum = lptkLocalVars->uLineNum;
-        aplInteger.uStmtNum = lptkLocalVars->uStmtNum;
-        aplInteger.uTknNum  = (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
-        aplInteger.bSOS     = lptkLocalVars->bSOS;
-        aplInteger.uCLIndex = 0;
+        tkData.Orig.d.uLineNum = lptkLocalVars->Orig.c.uLineNum;
+        tkData.Orig.d.uStmtNum = lptkLocalVars->Orig.c.uStmtNum;
+        tkData.Orig.d.uTknNum  = (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
+        tkData.Next.uLineNum =
+        tkData.Next.uStmtNum =
+        tkData.Next.uTknNum  = -1;
+        tkData.bSOS            = lptkLocalVars->bSOS;
+        tkData.uCLIndex        = 0;
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         if (!AppendNewToken_EM (lptkLocalVars,
                                &tkFlags,
-                    (LPAPLINT) &aplInteger,
+                               &tkData,
                                 0))
             return FALSE;
 
         // Mark as an SOS
         tkFlags.TknType = TKT_SOS;
 
+        // Zero the token data
+        ZeroMemory (&tkData, sizeof (tkData));
+
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         if (!AppendNewToken_EM (lptkLocalVars,
                                &tkFlags,
-                               &aplInteger2,
+                               &tkData,
                                 0))
             return FALSE;
 
@@ -1665,17 +1637,20 @@ UBOOL fnCtrlDone
     tkFlags.TknType = lptkLocalVars->CtrlStrucTknType;
 
     // Save the line & stmt #s for later use
-    aplInteger.uLineNum = lptkLocalVars->uLineNum;
-    aplInteger.uStmtNum = lptkLocalVars->uStmtNum;
-    aplInteger.uTknNum  = (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
-    aplInteger.bSOS     = lptkLocalVars->bSOS;
-    aplInteger.uCLIndex = 0;
+    tkData.Orig.d.uLineNum = lptkLocalVars->Orig.c.uLineNum;
+    tkData.Orig.d.uStmtNum = lptkLocalVars->Orig.c.uStmtNum;
+    tkData.Orig.d.uTknNum  = (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
+    tkData.Next.uLineNum =
+    tkData.Next.uStmtNum =
+    tkData.Next.uTknNum  = -1;
+    tkData.bSOS            = lptkLocalVars->bSOS;
+    tkData.uCLIndex        = 0;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     if (!AppendNewToken_EM (lptkLocalVars,
                            &tkFlags,
-                (LPAPLINT) &aplInteger,
+                           &tkData,
                             0))
         return FALSE;
 
@@ -1687,8 +1662,6 @@ UBOOL fnCtrlDone
      || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_SELECT
      || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_WHILE)
     {
-        APLINT aplInteger = 0;
-
         // SpLit cases based upon the token type
         switch (lptkLocalVars->CtrlStrucTknType)
         {
@@ -1722,11 +1695,14 @@ UBOOL fnCtrlDone
                 break;
         } // End SWITCH
 
+        // Zero the token data
+        ZeroMemory (&tkData, sizeof (tkData));
+
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         if (!AppendNewToken_EM (lptkLocalVars,
                                &tkFlags,
-                               &aplInteger,
+                               &tkData,
                                 0))
             return FALSE;
     } // End IF
@@ -1749,8 +1725,8 @@ UBOOL fnPrmDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS tkFlags = {0};
-    APLINT  aplInteger;
+    TKFLAGS tkFlags = {0};              // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnPrmDone");
@@ -1773,17 +1749,17 @@ UBOOL fnPrmDone
     } // End IF
 
     // Copy current WCHAR
-    aplInteger = *lptkLocalVars->lpwszCur;
+    tkData.tkChar = *lptkLocalVars->lpwszCur;
 
     // For reasons which escape me now, this is
     //   where we handle {zilde}
-    if (aplInteger EQ UTF16_ZILDE)
+    if (tkData.tkChar EQ UTF16_ZILDE)
     {
         // Mark the data as a variable
         tkFlags.TknType   = TKT_VARARRAY;
 ////////tkFlags.ImmType   = IMMTYPE_ERROR;  // Already zero from {0}
 ////////tkFlags.NoDisplay = FALSE;          // Already zero from {0}
-        (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlbZilde);
+        tkData.tkVoid = MakePtrTypeGlb (hGlbZilde);
     } else
     {
         // Mark the data as a primitive function
@@ -1795,7 +1771,7 @@ UBOOL fnPrmDone
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplInteger,
+                             &tkData,
                               0);
 } // End fnPrmDone
 
@@ -1918,7 +1894,7 @@ UBOOL fnPointDone
     LPCHAR       lpszNum;               // Ptr to Num global memory
     PNLOCALVARS  pnLocalVars;           // PN Local vars
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
-    APLLONGEST   aplLongest;            // Temporary var
+    TOKEN_DATA   tkData = {0};          // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnPointDone");
@@ -1981,31 +1957,31 @@ UBOOL fnPointDone
             {
                 case PN_NUMTYPE_BOOL:
                     // Mark the data as an immediate Boolean variable
-                    tkFlags.TknType = TKT_VARIMMED;
-                    tkFlags.ImmType = IMMTYPE_BOOL;
+                    tkFlags.TknType  = TKT_VARIMMED;
+                    tkFlags.ImmType  = IMMTYPE_BOOL;
 
                     // Get the value
-                    aplLongest = pnLocalVars.aplInteger;
+                    tkData.tkInteger = pnLocalVars.aplInteger;
 
                     break;
 
                 case PN_NUMTYPE_INT:
                     // Mark the data as an immediate integer variable
-                    tkFlags.TknType = TKT_VARIMMED;
-                    tkFlags.ImmType = IMMTYPE_INT;
+                    tkFlags.TknType  = TKT_VARIMMED;
+                    tkFlags.ImmType  = IMMTYPE_INT;
 
                     // Get the value
-                    aplLongest = pnLocalVars.aplInteger;
+                    tkData.tkInteger = pnLocalVars.aplInteger;
 
                     break;
 
                 case PN_NUMTYPE_FLT:
                     // Mark the data as an immediate float variable
-                    tkFlags.TknType = TKT_VARIMMED;
-                    tkFlags.ImmType = IMMTYPE_FLOAT;
+                    tkFlags.TknType  = TKT_VARIMMED;
+                    tkFlags.ImmType  = IMMTYPE_FLOAT;
 
                     // Get the value
-                    aplLongest = *(LPAPLLONGEST) &pnLocalVars.aplFloat;
+                    tkData.tkFloat   = pnLocalVars.aplFloat;
 
                     break;
 
@@ -2024,7 +2000,7 @@ UBOOL fnPointDone
             //   and resize as necessary.
             bRet = AppendNewToken_EM (lptkLocalVars,
                                      &tkFlags,
-                                     &aplLongest,
+                                     &tkData,
                                       0);
         } // End IF
     } else
@@ -2057,9 +2033,8 @@ UBOOL fnOp1Done
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS    tkFlags = {0};
-    WCHAR      wch;
-    APLLONGEST aplLongest;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnOp1Done");
@@ -2080,12 +2055,12 @@ UBOOL fnOp1Done
     } // End IF
 
     // Copy current WCHAR
-    wch = *lptkLocalVars->lpwszCur;
+    tkData.tkChar = *lptkLocalVars->lpwszCur;
 
-    if (wch EQ UTF16_SLASH
-     || wch EQ UTF16_SLOPE
-     || wch EQ UTF16_SLASHBAR
-     || wch EQ UTF16_SLOPEBAR)
+    if (tkData.tkChar EQ UTF16_SLASH
+     || tkData.tkChar EQ UTF16_SLOPE
+     || tkData.tkChar EQ UTF16_SLASHBAR
+     || tkData.tkChar EQ UTF16_SLOPEBAR)
     {
         // Mark the data as an ambiguous primitive operator
         tkFlags.TknType = TKT_OP3IMMED;
@@ -2099,10 +2074,9 @@ UBOOL fnOp1Done
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    aplLongest = *lptkLocalVars->lpwszCur;
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplLongest,
+                             &tkData,
                               0);
 } // End fnOp1Done
 
@@ -2117,8 +2091,8 @@ UBOOL fnOp2Done
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS    tkFlags = {0};
-    APLLONGEST aplLongest;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnOp2Done");
@@ -2144,10 +2118,10 @@ UBOOL fnOp2Done
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    aplLongest = *lptkLocalVars->lpwszCur;
+    tkData.tkChar = *lptkLocalVars->lpwszCur;
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplLongest,
+                             &tkData,
                               0);
 } // End fnOp2Done
 
@@ -2162,8 +2136,8 @@ UBOOL fnDotDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS    tkFlags = {0};
-    APLLONGEST aplLongest;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnDotDone");
@@ -2192,10 +2166,10 @@ UBOOL fnDotDone
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    aplLongest = UTF16_DOT;
+    tkData.tkChar = UTF16_DOT;
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplLongest,
+                             &tkData,
                               0);
 } // End fnDotDone
 
@@ -2240,8 +2214,8 @@ UBOOL fnJotDoneSub
      UBOOL         bInitAcc)            // TRUE iff we shoudl initialize the accumulator vars
 
 {
-    TKFLAGS tkFlags = {0};
-    APLINT  aplInteger;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnJotDone");
@@ -2270,13 +2244,13 @@ UBOOL fnJotDoneSub
     tkFlags.ImmType = IMMTYPE_PRIMOP2;
 
     // Copy to local var so we may pass its address
-    aplInteger = UTF16_JOT;
+    tkData.tkChar = UTF16_JOT;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplInteger,
+                             &tkData,
                               -1);
 } // End fnJotDoneSub
 
@@ -2291,8 +2265,8 @@ UBOOL fnOutDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS tkFlags = {0};
-    APLINT  aplInteger;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnOutDone");
@@ -2319,13 +2293,13 @@ UBOOL fnOutDone
     tkFlags.TknType = TKT_OPJOTDOT;
 
     // Copy to local var so we may pass its address
-    aplInteger = UTF16_JOTDOT;
+    tkData.tkChar = UTF16_JOTDOT;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplInteger,
+                             &tkData,
                               -1);
 } // End fnOutDone
 
@@ -2347,7 +2321,6 @@ UBOOL fnComDone
 
 {
     APLI3264 iLen;
-    TKFLAGS  tkFlags = {0};
     LPWCHAR  wp;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2600,8 +2573,8 @@ UBOOL fnQuoDoneSub
 
 {
     HGLOBAL      hGlb;                  // Temporary global memory handle
-    TKFLAGS      tkFlags = {0};         // Token flags
-    APLINT       aplInteger;            // Temporary integer
+    TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
+    TOKEN_DATA   tkData = {0};          // Token data  ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet = TRUE;           // TRUE iff result is valid
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
@@ -2664,16 +2637,14 @@ UBOOL fnQuoDoneSub
         // Mark the data as a character strand in a global memory handle
         tkFlags.TknType = TKT_CHRSTRAND;
 
-        aplInteger = 0;     // Zero high-order dword
-
         // Copy to local var so we may pass its address
-        (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlbV0Char);
+        tkData.tkVoid = MakePtrTypeGlb (hGlbV0Char);
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
-                                 &aplInteger,
+                                 &tkData,
                                   0);
     } else
     // If this string is of length one, then store it as a char scalar
@@ -2684,13 +2655,13 @@ UBOOL fnQuoDoneSub
         tkFlags.ImmType = IMMTYPE_CHAR;
 
         // Copy to local var so we may pass its address
-        aplInteger = lpwszStr[1];
+        tkData.tkChar = lpwszStr[1];
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
-                                 &aplInteger,
+                                 &tkData,
                                   -lptkLocalVars->iStrLen);
     } else
     {
@@ -2740,13 +2711,13 @@ UBOOL fnQuoDoneSub
         tkFlags.TknType = TKT_CHRSTRAND;
 
         // Copy to local var so we may pass its address
-        (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlb);
+        tkData.tkVoid = MakePtrTypeGlb (hGlb);
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
-                                 &aplInteger,
+                                 &tkData,
                                   -lptkLocalVars->iStrLen);
     } // End IF
 
@@ -2840,10 +2811,10 @@ UBOOL GroupInitCom
      TOKEN_TYPES   tknType)             // Token type (see TOKEN_TYPES)
 
 {
-    TKFLAGS     tkFlags = {0};
+    TKFLAGS     tkFlags = {0};          // Token flags for AppendNewToken_EM
+    TOKEN_DATA  tkData = {0};           // Token data  ...
     UBOOL       bRet = TRUE;
     LPTOKEN     lptkNext;
-    APLLONGEST  aplLongest;
 
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
@@ -2876,10 +2847,10 @@ UBOOL GroupInitCom
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    aplLongest = lptkLocalVars->t2.lpHeader->PrevGroup;
+    tkData.tkIndex = lptkLocalVars->t2.lpHeader->PrevGroup;
     bRet = AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplLongest,
+                             &tkData,
                               0);
     // Save as location of previous left grouping symbol
     lptkLocalVars->t2.lpHeader->PrevGroup = (UINT) (lptkNext - lptkLocalVars->lptkStart);
@@ -2960,9 +2931,8 @@ UBOOL GroupDoneCom
      TOKEN_TYPES   tknTypePrev)         // ...           previous ...
 
 {
-    UINT        uPrevGroup;             // Index of the previous grouping symbol
-    UBOOL       bRet = TRUE;            // TRUE iff the result is valid
-    APLLONGEST  aplLongest;             // Temporary value
+    UINT  uPrevGroup;                   // Index of the previous grouping symbol
+    UBOOL bRet = TRUE;                  // TRUE iff the result is valid
 
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
@@ -3056,8 +3026,9 @@ UBOOL GroupDoneCom
         goto SYNTAX_EXIT;
     } else
     {
-        LPTOKEN lptkNext;
-        TKFLAGS tkFlags = {0};
+        LPTOKEN    lptkNext;
+        TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+        TOKEN_DATA tkData = {0};            // Token data  ...
 
         // Mark the data as a right grouping symbol
         tkFlags.TknType = tknTypeCurr;
@@ -3067,10 +3038,10 @@ UBOOL GroupDoneCom
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
-        aplLongest = uPrevGroup;
+        tkData.tkIndex = uPrevGroup;
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
-                                 &aplLongest,
+                                 &tkData,
                                   0);
         // Save index of previous grouping symbol
         lptkLocalVars->t2.lpHeader->PrevGroup = lptkLocalVars->lptkStart[uPrevGroup].tkData.tkIndex;
@@ -3370,8 +3341,8 @@ UBOOL fnDiaDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS tkFlags = {0};
-    APLINT  aplInteger;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnDiaDone");
@@ -3400,19 +3371,16 @@ UBOOL fnDiaDone
     // Mark as an SOS
     tkFlags.TknType = TKT_SOS;
 
-    // Copy to a local var so we may pass its address
-    aplInteger = 0;
-
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     if (!AppendNewToken_EM (lptkLocalVars,
                            &tkFlags,
-                           &aplInteger,
+                           &tkData,
                             0))
         return FALSE;
 NORMAL_EXIT:
     // Count in another stmt
-    lptkLocalVars->uStmtNum++;
+    lptkLocalVars->Orig.d.uStmtNum++;
 
     // Start the initial char over again
     lptkLocalVars->uCharIni = lptkLocalVars->uChar + 1;
@@ -3522,8 +3490,8 @@ UBOOL fnUnkDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    TKFLAGS    tkFlags = {0};
-    APLLONGEST aplLongest;
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnUnkDone");
@@ -3578,10 +3546,10 @@ UBOOL fnUnkDone
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    aplLongest = *lptkLocalVars->lpwszCur;
+    tkData.tkChar = *lptkLocalVars->lpwszCur;
     return AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
-                             &aplLongest,
+                             &tkData,
                               0);
 } // End fnUnkDone
 
@@ -3642,13 +3610,13 @@ HGLOBAL Tokenize_EM
     lpMemPTD = GetMemPTD ();
 
     // Save local vars in struct which we pass to each FSA action routine
-    tkLocalVars.State[2] =
-    tkLocalVars.State[1] =
-    tkLocalVars.State[0] = TKROW_SOS;
-    tkLocalVars.uLineNum = uLineNum;
-    tkLocalVars.uStmtNum = 0;
-    tkLocalVars.bMFO     = bMFO;            // TRUE iff this is a Magic Function/Operator
-    tkLocalVars.lpMemPTD = lpMemPTD;        // Ptr to PerTabData global memory
+    tkLocalVars.State[2]        =
+    tkLocalVars.State[1]        =
+    tkLocalVars.State[0]        = TKROW_SOS;
+    tkLocalVars.Orig.d.uLineNum = uLineNum;
+    tkLocalVars.Orig.d.uStmtNum = 0;
+    tkLocalVars.bMFO            = bMFO;             // TRUE iff this is a Magic Function/Operator
+    tkLocalVars.lpMemPTD        = lpMemPTD;         // Ptr to PerTabData global memory
 
     // If this is the function header (uLineNum EQ 0)
     //   save and restore the ptr to the next token
@@ -3764,20 +3732,17 @@ HGLOBAL Tokenize_EM
         // Check for line continuation char
         if (wchOrig EQ AC_LF)
         {
-            TKFLAGS tkFlags = {0};
-            APLINT  aplInteger;     // Temporary integer for AppendNewToken_EM
+            TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+            TOKEN_DATA tkData = {0};            // Token data  ...
 
             // Mark as a symbol table constant
             tkFlags.TknType = TKT_LINECONT;
-
-            // Copy to local var so we may pass its address
-            aplInteger = 0;
 
             // Attempt to append as new token, check for TOKEN TABLE FULL,
             //   and resize as necessary.
             if (AppendNewToken_EM (&tkLocalVars,
                                    &tkFlags,
-                                   &aplInteger,
+                                   &tkData,
                                     0))
                 continue;
             else
@@ -3833,9 +3798,9 @@ HGLOBAL Tokenize_EM
 
             case TKROW_EXIT:
             {
-                UINT    uNext;              // Offset from Start to Next in units of sizeof (TOKEN)
-                APLINT  aplInteger;         // Temporary integer for SOS token
-                TKFLAGS tkFlags = {0};      // Token flags for SOS token
+                UINT       uNext;               // Offset from Start to Next in units of sizeof (TOKEN)
+                TKFLAGS    tkFlags = {0};       // Token flags for AppendNewToken_EM
+                TOKEN_DATA tkData = {0};        // Token data
 
                 // Test for mismatched or improperly nested grouping symbols
                 if (!CheckGroupSymbols_EM (&tkLocalVars))
@@ -3844,14 +3809,11 @@ HGLOBAL Tokenize_EM
                 // Mark as an SOS
                 tkFlags.TknType = TKT_SOS;
 
-                // Copy to a local var so we may pass its address
-                aplInteger = 0;
-
                 // Attempt to append as new token, check for TOKEN TABLE FULL,
                 //   and resize as necessary.
                 if (!AppendNewToken_EM (&tkLocalVars,
                                         &tkFlags,
-                                        &aplInteger,
+                                        &tkData,
                                          0))
                     goto ERROR_EXIT;
 
@@ -4178,8 +4140,6 @@ UBOOL AppendEOSToken_EM
      UBOOL         bAppend)             // TRUE iff append EOS token
 
 {
-    APLINT aplInteger;                  // Temporary integer
-
     // Calculate the # tokens in this stmt
     lptkLocalVars->lptkLastEOS->tkData.tkIndex = (UINT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkLastEOS);
 
@@ -4199,19 +4159,17 @@ UBOOL AppendEOSToken_EM
     // Append EOS token, if requested
     if (bAppend)
     {
-        TKFLAGS tkFlags = {0};
+        TKFLAGS    tkFlags = {0};       // Token flags for AppendNewToken_EM
+        TOKEN_DATA tkData = {0};        // Token data  ...
 
         // Mark as an EOS
         tkFlags.TknType = TKT_EOS;
-
-        // Copy to a local var so we may pass its address
-        aplInteger = 0;
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         return AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
-                                 &aplInteger,
+                                 &tkData,
                                   0);
     } else
         return TRUE;
@@ -4237,7 +4195,7 @@ UBOOL AppendEOSToken_EM
 UBOOL AppendNewToken_EM
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      LPTKFLAGS     lptkFlags,           // Ptr to token flags
-     LPAPLLONGEST  lptkData,            // Ptr to token data (may be NULL)
+     LPTOKEN_DATA  lptkData,            // Ptr to token data (may be NULL)
      int           iCharOffset)         // Offset from lpwszCur of the token (where the caret goes)
 
 {
@@ -4274,10 +4232,10 @@ UBOOL AppendNewToken_EM
 
     // Insert this token into the stream:
     if (lptkData)
-        lptkLocalVars->lptkNext->tkData.tkLongest = *lptkData;
+        lptkLocalVars->lptkNext->tkData.tkCtrlStruc = lptkData->tkCtrlStruc;
     else
         lptkLocalVars->lptkNext->tkData.tkLongest = 0;
-    lptkLocalVars->lptkNext->tkFlags        = *lptkFlags;// Append the flags
+    lptkLocalVars->lptkNext->tkFlags        = *lptkFlags;   // Append the flags
 
     // Save index in input line of this token
     lptkLocalVars->lptkNext->tkCharIndex = iCharOffset + (UINT) (lptkLocalVars->lpwszCur - lptkLocalVars->lpwszOrig);
@@ -4320,8 +4278,8 @@ UBOOL AppendNewToken_EM
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (TKT_CS_NEC,
                                  lptkLocalVars->lpMemPTD,
-                                 lptkLocalVars->uLineNum,
-                                 lptkLocalVars->uStmtNum,
+                                 lptkLocalVars->Orig.c.uLineNum,
+                                 lptkLocalVars->Orig.c.uStmtNum,
                        (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart),
                                  FALSE,
                                  lptkLocalVars->uChar);
@@ -4338,8 +4296,8 @@ UBOOL AppendNewToken_EM
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (lptkFlags->TknType,
                                  lptkLocalVars->lpMemPTD,
-                                 lptkLocalVars->uLineNum,
-                                 lptkLocalVars->uStmtNum,
+                                 lptkLocalVars->Orig.c.uLineNum,
+                                 lptkLocalVars->Orig.c.uStmtNum,
                        (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart),
                                  TRUE,
                                  lptkLocalVars->uChar);
@@ -4380,9 +4338,9 @@ UBOOL AppendNewToken_EM
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (lptkFlags->TknType,
                                  lptkLocalVars->lpMemPTD,
-                                 lptdAnon->uLineNum,
-                                 lptdAnon->uStmtNum,
-                                 lptdAnon->uTknNum,
+                                 lptdAnon->Orig.c.uLineNum,
+                                 lptdAnon->Orig.c.uStmtNum,
+                                 lptdAnon->Orig.c.uTknNum,
                                  lptdAnon->bSOS,
                                  lptkLocalVars->uChar);
 #undef  lptdAnon
@@ -4454,13 +4412,13 @@ UBOOL AppendNewCSToken_EM
     } // End IF
 
     // Fill in the token values
-    tkCS.tkFlags.TknType = TknType;
-    tkCS.tkData.uLineNum = uLineNum;
-    tkCS.tkData.uStmtNum = uStmtNum;
-    tkCS.tkData.uTknNum  = uTknNum;
-    tkCS.tkData.bSOS     = bSOS;
-    tkCS.tkData.uCLIndex = 0;
-    tkCS.tkCharIndex     = tkCharIndex;
+    tkCS.tkFlags.TknType        = TknType;
+    tkCS.tkData.Orig.d.uLineNum = uLineNum;
+    tkCS.tkData.Orig.d.uStmtNum = uStmtNum;
+    tkCS.tkData.Orig.d.uTknNum  = uTknNum;
+    tkCS.tkData.bSOS            = bSOS;
+    tkCS.tkData.uCLIndex        = 0;
+    tkCS.tkCharIndex            = tkCharIndex;
 
     // Save the token on the CS stack
     *lpMemPTD->lptkCSNxt++ = tkCS;

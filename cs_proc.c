@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ void CS_ChangeTokenType
     // If this is execute or immexec, ...
     if (lpcsLocalVars->hGlbImmExec NE NULL)
     {
-        Assert (lptkArg1->tkData.uLineNum EQ 1);
+        Assert (lptkArg1->tkData.Orig.c.uLineNum EQ 1);
 
         // Get the execute/immexec global memory handle
         hGlbTknLine = lpcsLocalVars->hGlbImmExec;
@@ -58,10 +58,10 @@ void CS_ChangeTokenType
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lptkArg1->tkData.uLineNum > 0);
+        Assert (lptkArg1->tkData.Orig.c.uLineNum > 0);
 
         // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptkArg1->tkData.uLineNum - 1].hGlbTknLine;
+        hGlbTknLine = lpFcnLines[lptkArg1->tkData.Orig.c.uLineNum - 1].hGlbTknLine;
 
         // We no longer need this ptr
         MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -74,7 +74,7 @@ void CS_ChangeTokenType
     lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
     // Change the given token number's type
-    lpMemTknLine[lptkArg1->tkData.uTknNum].tkFlags.TknType = TknType;
+    lpMemTknLine[lptkArg1->tkData.Orig.c.uTknNum].tkFlags.TknType = TknType;
 
     // Change the value on the CS stack
     lptkArg1->tkFlags.TknType = TknType;
@@ -92,8 +92,8 @@ void CS_ChangeTokenType
 
 void CS_ChainTokens
     (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc local vars
-     LPTOKEN_DATA  lptdArg1,            // Ptr to 1st argument TOKEN_DATA
-     LPTOKEN       lptkArg2)            // Ptr to 2nd argument TOKEN
+     LPTOKEN_DATA  lptdArg1,            // Ptr to 1st argument TOKEN_DATA (Reading Orig.c)
+     LPTOKEN       lptkArg2)            // Ptr to 2nd argument TOKEN      (Setting Next)
 
 {
     LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
@@ -104,8 +104,8 @@ void CS_ChainTokens
     // If this is execute or immexec, ...
     if (lpcsLocalVars->hGlbImmExec NE NULL)
     {
-        Assert (lptdArg1->uLineNum EQ 1
-             && lptkArg2->tkData.uLineNum EQ 1);
+        Assert (lptdArg1->Orig.c.uLineNum EQ 1
+             && lptkArg2->tkData.Orig.c.uLineNum EQ 1);
 
         // Get the execute/immexec global memory handle
         hGlbTknLine = lpcsLocalVars->hGlbImmExec;
@@ -118,10 +118,10 @@ void CS_ChainTokens
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lptdArg1->uLineNum > 0);
+        Assert (lptdArg1->Orig.c.uLineNum > 0);
 
         // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTknLine;
+        hGlbTknLine = lpFcnLines[lptdArg1->Orig.c.uLineNum - 1].hGlbTknLine;
 
         // We no longer need this ptr
         MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -134,21 +134,27 @@ void CS_ChainTokens
     lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
 #ifdef DEBUG
-    dprintfWL9 (L"!!Chaining %s to %s (%S#%d)",
-              GetTokenTypeName (lpMemTknLine[lptdArg1->uTknNum].tkFlags.TknType),
-              GetTokenTypeName (lptkArg2->tkFlags.TknType),
-              FNLN);
+    // Check debug level
+    if (gDbgLvl >= gChnLvl)
+        dprintfWL0 (L"!!Chaining %S (%u,%u) to %S (%u,%u) (%S#%d)",
+                  GetTokenTypeName (lpMemTknLine[lptdArg1->Orig.c.uTknNum].tkFlags.TknType),
+                  lptdArg1->Orig.c.uLineNum,
+                  lptdArg1->Orig.c.uTknNum,
+                  GetTokenTypeName (lptkArg2->tkFlags.TknType),
+                  lptkArg2->tkData.Orig.c.uLineNum,
+                  lptkArg2->tkData.Orig.c.uTknNum,
+                  FNLN);
 #endif
 
     // Point the 1st token to the 2nd token
-    lpMemTknLine[lptdArg1->uTknNum].tkData.uLineNum = lptkArg2->tkData.uLineNum;
-    lpMemTknLine[lptdArg1->uTknNum].tkData.uStmtNum = lptkArg2->tkData.uStmtNum;
-    lpMemTknLine[lptdArg1->uTknNum].tkData.uTknNum  = lptkArg2->tkData.uTknNum;
+    lpMemTknLine[lptdArg1->Orig.c.uTknNum].tkData.Next.uLineNum = lptkArg2->tkData.Orig.c.uLineNum;
+    lpMemTknLine[lptdArg1->Orig.c.uTknNum].tkData.Next.uStmtNum = lptkArg2->tkData.Orig.c.uStmtNum;
+    lpMemTknLine[lptdArg1->Orig.c.uTknNum].tkData.Next.uTknNum  = lptkArg2->tkData.Orig.c.uTknNum;
 
     // Change the values on the CS stack
-    lptdArg1->uLineNum = lptkArg2->tkData.uLineNum;
-    lptdArg1->uStmtNum = lptkArg2->tkData.uStmtNum;
-    lptdArg1->uTknNum  = lptkArg2->tkData.uTknNum;
+    lptdArg1->Next.uLineNum = lptkArg2->tkData.Orig.c.uLineNum;
+    lptdArg1->Next.uStmtNum = lptkArg2->tkData.Orig.c.uStmtNum;
+    lptdArg1->Next.uTknNum  = lptkArg2->tkData.Orig.c.uTknNum;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
@@ -228,8 +234,7 @@ void CS_SetCLIndex
 //***************************************************************************
 //  $CS_SetTokenCLIndex
 //
-//  Set the CLIndex of the token pointed to by
-//    a given token to a given value (cs_yyparse)
+//  Set the CLIndex of a given token to a given value (cs_yyparse)
 //***************************************************************************
 
 void CS_SetTokenCLIndex
@@ -246,7 +251,7 @@ void CS_SetTokenCLIndex
     // If this is execute or immexec, ...
     if (lpcsLocalVars->hGlbImmExec NE NULL)
     {
-        Assert (lptdArg->uLineNum EQ 1);
+        Assert (lptdArg->Orig.c.uLineNum EQ 1);
 
         // Get the execute/immexec global memory handle
         hGlbTknLine = lpcsLocalVars->hGlbImmExec;
@@ -259,10 +264,10 @@ void CS_SetTokenCLIndex
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lptdArg->uLineNum > 0);
+        Assert (lptdArg->Orig.c.uLineNum > 0);
 
         // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg->uLineNum - 1].hGlbTknLine;
+        hGlbTknLine = lpFcnLines[lptdArg->Orig.c.uLineNum - 1].hGlbTknLine;
 
         // We no longer need this ptr
         MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -275,7 +280,7 @@ void CS_SetTokenCLIndex
     lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
     // Set the CLIndex
-    lpMemTknLine[lptdArg->uTknNum].tkData.uCLIndex = uCLIndex;
+    lpMemTknLine[lptdArg->Orig.c.uTknNum].tkData.uCLIndex = uCLIndex;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
@@ -336,11 +341,12 @@ UBOOL CS_CONTINUE_Stmt
 
 {
     // Tell the lexical analyzer to get the next token from
-    //   the stmt at the token pointed to by the CONTINUE stmt
-    CS_SetThisStmt (lpplLocalVars, &lpYYContinueArg->tkToken.tkData);
+    //   the start of the stmt at the token pointed to by
+    //   the CONTINUE stmt
+    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &lpYYContinueArg->tkToken.tkData);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYContinueArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+    if (lpYYContinueArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -364,23 +370,25 @@ UBOOL CS_ELSE_Stmt
      LPPL_YYSTYPE  lpYYElseArg)         // Ptr to ELSE arg
 
 {
-#ifdef DEBUG
-    TOKEN_TYPES TknType;
-#endif
     // Entry into this function means that we dropped through from above
     //   and should branch to the matching ENDIF/ENDSELECT stmt
 
     // Tell the lexical analyzer to get the next token from
     //   the stmt after the token pointed to by the ELSE stmt
-    CS_SetNextStmt (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
+    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
 
 #ifdef DEBUG
-    TknType = CS_GetTokenType (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
-    Assert (TknType EQ TKT_CS_ENDIF
-         || TknType EQ TKT_CS_ENDSELECT);
+    {
+        TOKEN_TYPES TknType;
+
+        // Get the token type of the stmt pointed to by the ELSE stmt
+        TknType = CS_GetTokenType_NEXT (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
+        Assert (TknType EQ TKT_CS_ENDIF
+             || TknType EQ TKT_CS_ENDSELECT);
+    }
 #endif
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYElseArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+    if (lpYYElseArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -457,10 +465,10 @@ UBOOL CS_ENDFOR_Stmt
                                             &lpForStmtNext->tkForI);
         // Tell the lexical analyzer to get the next token from
         //   the stmt after the token pointed to by the ENDFOR/ENDFORLCL stmt
-        CS_SetNextStmt (lpplLocalVars, &lpYYEndForArg->tkToken.tkData);
+        CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYEndForArg->tkToken.tkData);
 
         // If the starting and ending stmts are not on the same line, ...
-        if (lpYYEndForArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+        if (lpYYEndForArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
             // Tell the parser to stop executing this line
             lpplLocalVars->bStopExec = TRUE;
     } else
@@ -525,10 +533,10 @@ UBOOL CS_ENDREPEAT_Stmt
 {
     // Tell the lexical analyzer to get the next token from
     //   the stmt after the token pointed to by the ENDREPEAT stmt
-    CS_SetNextStmt (lpplLocalVars, &lpYYEndRepeatArg->tkToken.tkData);
+    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYEndRepeatArg->tkToken.tkData);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYEndRepeatArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+    if (lpYYEndRepeatArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -548,11 +556,12 @@ UBOOL CS_ENDWHILE_Stmt
 
 {
     // Tell the lexical analyzer to get the next token from
-    //   the stmt at the token pointed to by the ENDWHILE stmt
-    CS_SetThisStmt (lpplLocalVars, &lpYYEndWhileArg->tkToken.tkData);
+    //   the start of the stmt at the token pointed to by
+    //   the ENDWHILE stmt
+    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &lpYYEndWhileArg->tkToken.tkData);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYEndWhileArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+    if (lpYYEndWhileArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -630,11 +639,10 @@ UBOOL CS_FOR_Stmt_EM
         // Mark as not valid
         lpForStmtNext->symForI.stFlags.Inuse = FALSE;
 
-
-
     // Tell the lexical analyzer to get the next token from
-    //   the stmt at the token pointed to by the FOR/FORLCL stmt (the ENDFOR/ENDFORLCL stmt)
-    CS_SetThisStmt (lpplLocalVars, &lpYYForArg->tkToken.tkData);
+    //   the start of the stmt at the token pointed to by
+    //   the FOR/FORLCL stmt (the ENDFOR/ENDFORLCL stmt)
+    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &lpYYForArg->tkToken.tkData);
 
     // If we're not stopping execution, ...
     if (!lpplLocalVars->bStopExec)
@@ -668,9 +676,8 @@ UBOOL CS_IF_Stmt_EM
     APLNELM    aplNELMRht;              // Right arg NELM
     APLRANK    aplRankRht;              // Right arg rank
     APLLONGEST aplLongestRht;           // Right arg longest if immediate
-    UBOOL      bRet,                    // TRUE iff the result is valid
-               bWhile;                  // TRUE iff the next token is REPEAT/WHILE
-    TOKEN_DATA tdNxt,                   // TOKEN_DATA of the IF/... stmt
+    UBOOL      bRet;                    // TRUE iff the result is valid
+    TOKEN_DATA tdCur,                   // TOKEN_DATA of the IF/... stmt
                tdPrv;                   // ...               previous stmt
     TOKEN      tkNxt;                   // Next token
 
@@ -734,55 +741,96 @@ UBOOL CS_IF_Stmt_EM
          goto DOMAIN_EXIT;
 
     // Copy the token data
-    tdNxt = lpYYIfArg->tkToken.tkData;
+    tdCur = lpYYIfArg->tkToken.tkData;
 
     // Get the contents of the token pointed to by
     //   the IF/... token
-    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
-
-    // Set contrary value
-    bWhile = (tkNxt.tkFlags.TknType EQ TKT_CS_REPEAT
-           || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
+    CS_GetToken_NEXT (lpplLocalVars, &tdCur, &tkNxt);
 
     // Split cases based upon the type of the token to which the IF/... stmt points
     switch (tkNxt.tkFlags.TknType)
     {
         case TKT_CS_ANDIF:
-            // If the IF/... arg is 0, ...
+            //***************************************************************
+            // tdCur/tkNxt are chained as in
+            //   IF ...         ELSEIF ...      UNTIL ...   WHILE ...   ANDIF ...
+            //   ANDIF ...      ANDIF ...       ANDIF ...   ANDIF ...   ANDIF ...
+            //***************************************************************
+#ifdef DEBUG
+            {
+                TOKEN_TYPES TknType;
+
+                // Get the token type of the stmt which contains the tdCur token
+                TknType = CS_GetTokenType_ORIG (lpplLocalVars, &tdCur);
+                Assert (TknType EQ TKT_CS_IF
+                     || TknType EQ TKT_CS_ELSEIF
+                     || TknType EQ TKT_CS_UNTIL
+                     || TknType EQ TKT_CS_WHILE
+                     || TknType EQ TKT_CS_ANDIF
+                       );
+            }
+#endif
+
+            // If the IF/ELSEIF/UNTIL/WHILE/ANDIF arg is 0, ...
             if (aplLongestRht EQ 0)
             {
+                // Execute the stmt pointed to by the IF/ELSEIF/UNTIL/WHILE or last ANDIF token
+
                 // Loop through the ANDIF chain stopping at the first token
                 //   in the chain which is not ANDIF
                 while (tkNxt.tkFlags.TknType EQ TKT_CS_ANDIF)
                 {
                     // Get the TOKEN_DATA from the ANDIF token
-                    tdNxt = tkNxt.tkData;
+                    tdPrv = tkNxt.tkData;
 
                     // Get the contents of the token pointed to by
                     //   the ANDIF token
-                    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+                    CS_GetToken_NEXT (lpplLocalVars, &tdPrv, &tkNxt);
                 } // End WHILE
+
+                // tdPrv contains the TOKEN_DATA of the IF/ELSEIF/UNTIL/WHILE or last ANDIF token
+                // tkNxt contains the TOKEN pointed to by the tdPrv token
 
                 Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
                      || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
                      || tkNxt.tkFlags.TknType EQ TKT_CS_ENDIF
                      || tkNxt.tkFlags.TknType EQ TKT_CS_ENDWHILE
                      || tkNxt.tkFlags.TknType EQ TKT_CS_UNTIL
+                     || tkNxt.tkFlags.TknType EQ TKT_CS_REPEAT
                      || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
 
-                // If the next token is ELSEIF, execute that stmt
-                if (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF)
+                // If the next token is has an argument (ELSEIF/UNTIL/WHILE), execute that stmt
+                if (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
+                 || tkNxt.tkFlags.TknType EQ TKT_CS_UNTIL
+                 || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE)
                     // Tell the lexical analyzer to get the next token from
-                    //   the stmt at the token pointed to by the ELSEIF stmt
-                    CS_SetThisStmt (lpplLocalVars, &tdNxt);
+                    //   the start of the stmt pointed to by the ANDIF token
+                    //   (in this case the ELSEIF/UNTIL/WHILE token)
+                    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &tdPrv);
                 else
                     // Tell the lexical analyzer to get the next token from
-                    //   the stmt after the token pointed to by the ELSE/ENDIF stmt
-                    CS_SetNextStmt (lpplLocalVars, &tdNxt);
+                    //   the start of the stmt after the stmt pointed to by
+                    //   the ANDIF token
+                    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &tdPrv);
             } else
-                // Tell the lexical analyzer to get the next token from
-                //   the ANDIF stmt
-                CS_SetThisStmt (lpplLocalVars, &tdNxt);
+            // Split cases based upon the tdCur token type
+            switch (CS_GetTokenType_ORIG (lpplLocalVars, &tdCur))
+            {
+                case TKT_CS_UNTIL:
+                case TKT_CS_ANDIF:
+                    // Tell the lexical analyzer to get the next token from
+                    //   the start of the stmt pointed to by the ANDIF token
+                    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &tdCur);
+
+                    break;
+
+                default:
+                    // Tell the lexical analyzer to get the next token from
+                    //   the start of the stmt after the IF/ELSEIF token
+                    CS_SetNextStmtToStmtAfter_ORIG (lpplLocalVars, &tdCur);
+
+                    break;
+            } // End SWITCH
 
             // If we're not stopping execution, ...
             if (!lpplLocalVars->bStopExec)
@@ -791,30 +839,40 @@ UBOOL CS_IF_Stmt_EM
             break;
 
         case TKT_CS_ORIF:
-            // If the IF/... arg is 0, ...
-            if (aplLongestRht EQ 0)
-                // Tell the lexical analyzer to get the next token from
-                //   the ORIF stmt
-                CS_SetThisStmt (lpplLocalVars, &tdNxt);
-            else
+            //***************************************************************
+            // tdCur/tkNxt are chained as in
+            //   IF ...         ELSEIF ...      UNTIL ...   WHILE ...   ORIF ...
+            //   ORIF ...       ORIF ...        ORIF ...    ORIF ...    ORIF ...
+            //***************************************************************
+#ifdef DEBUG
             {
-                // Save as the previous token data
-                tdPrv = tdNxt;
+                TOKEN_TYPES TknType;
+
+                // Get the token type of the stmt which contains the tdCur token
+                TknType = CS_GetTokenType_ORIG (lpplLocalVars, &tdCur);
+                Assert (TknType EQ TKT_CS_IF
+                     || TknType EQ TKT_CS_ELSEIF
+                     || TknType EQ TKT_CS_UNTIL
+                     || TknType EQ TKT_CS_WHILE
+                     || TknType EQ TKT_CS_ORIF
+                       );
+            }
+#endif
+            // If the IF/ELSEIF/UNTIL/WHILE/ORIF arg is 1, ...
+            if (aplLongestRht EQ 1)
+            {
+                // Execute the stmt after the IF/ELSEIF/UNTIL/WHILE or last ORIF token
 
                 // Loop through the ORIF chain stopping at the first token
                 //   in the chain which is not ORIF
                 while (tkNxt.tkFlags.TknType EQ TKT_CS_ORIF)
                 {
                     // Get the TOKEN_DATA from the ORIF token
-                    tdNxt = tkNxt.tkData;
+                    tdPrv = tkNxt.tkData;
 
                     // Get the contents of the token pointed to by
                     //   the ORIF token
-                    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
-
-                    // Save the token data if the token is ORIF
-                    if (tkNxt.tkFlags.TknType EQ TKT_CS_ORIF)
-                        tdPrv = tdNxt;
+                    CS_GetToken_NEXT (lpplLocalVars, &tdPrv, &tkNxt);
                 } // End WHILE
 
                 Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
@@ -822,12 +880,32 @@ UBOOL CS_IF_Stmt_EM
                      || tkNxt.tkFlags.TknType EQ TKT_CS_ENDIF
                      || tkNxt.tkFlags.TknType EQ TKT_CS_ENDWHILE
                      || tkNxt.tkFlags.TknType EQ TKT_CS_UNTIL
+                     || tkNxt.tkFlags.TknType EQ TKT_CS_REPEAT
                      || tkNxt.tkFlags.TknType EQ TKT_CS_WHILE);
 
+                // tdPrv contains the TOKEN_DATA of the IF/ELSEIF/UNTIL/WHILE or last ORIF token
+                // tkNxt is unused
+
                 // Tell the lexical analyzer to get the next token from
-                //   the stmt after the last ORIF stmt
-                CS_SetNextStmt (lpplLocalVars, &tdPrv);
-            } // End IF/ELSE
+                //   the start of the stmt after the IF/ELSEIF/UNTIL/WHILE or last ORIF stmt
+                CS_SetNextStmtToStmtAfter_ORIG (lpplLocalVars, &tdPrv);
+            } else
+            // Split cases based upon the tdCur token type
+            switch (CS_GetTokenType_ORIG (lpplLocalVars, &tdCur))
+            {
+                case TKT_CS_UNTIL:
+                case TKT_CS_ORIF:
+                    // Tell the lexical analyzer to get the next token from
+                    //   the start of the stmt pointed to by the UNTIL/ORIF token
+                    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &tdCur);
+
+                    break;
+
+                default:
+                    // Tell the lexical analyzer to get the next token from
+                    //   the start of the stmt after the IF/ELSEIF token
+                    CS_SetNextStmtToStmtAfter_ORIG (lpplLocalVars, &tdCur);
+            } // End SWITCH
 
             // If we're not stopping execution, ...
             if (!lpplLocalVars->bStopExec)
@@ -837,13 +915,55 @@ UBOOL CS_IF_Stmt_EM
 
         case TKT_CS_ELSEIF:
         case TKT_CS_UNTIL:
-        case TKT_CS_WHILE:
-            // If the IF/... arg is bWhile, ...
-            if (aplLongestRht EQ bWhile)
+            //***************************************************************
+            // tdCur/tkNxt are chained as in
+            //   IF ...         ELSEIF ...  ANDIF ...   ORIF ...    WHILE ...
+            //   ELSEIF ...     ELSEIF ...  ELSEIF ...  ELSEIF ...  UNTIL ...
+            //***************************************************************
+#ifdef DEBUG
             {
-                // Tell the lexical analyzer to get the next token from
-                //   the stmt at the token pointed to by the ELSEIF stmt
-                CS_SetThisStmt (lpplLocalVars, &tdNxt);
+                TOKEN_TYPES TknType;
+
+                // Get the token type of the stmt which contains the tdCur token
+                TknType = CS_GetTokenType_ORIG (lpplLocalVars, &tdCur);
+                Assert (TknType EQ TKT_CS_IF
+                     || TknType EQ TKT_CS_ELSEIF
+                     || TknType EQ TKT_CS_ANDIF
+                     || TknType EQ TKT_CS_ORIF
+                     || TknType EQ TKT_CS_WHILE
+                       );
+            }
+#endif
+            // If the IF/ELSEIF/ANDIF/ORIF/WHILE arg is 0, ...
+            if (aplLongestRht EQ 0)
+            {
+                // If tdCur is WHILE, ...
+                if (CS_GetTokenType_ORIG (lpplLocalVars, &tdCur) EQ TKT_CS_WHILE)
+                {
+                    // Loop through the ANDIF/ORIF chain stopping at the first token
+                    //   in the chain which is not ANDIF/ORIF
+                    while (tkNxt.tkFlags.TknType EQ TKT_CS_UNTIL    // Needed for first time only, harmless later
+                        || tkNxt.tkFlags.TknType EQ TKT_CS_ANDIF
+                        || tkNxt.tkFlags.TknType EQ TKT_CS_ORIF)
+                    {
+                        // Get the TOKEN_DATA from the UNTIL/ANDIF/ORIF token
+                        tdPrv = tkNxt.tkData;
+
+                        // Get the contents of the token pointed to by
+                        //   the UNTIL/ANDIF/ORIF token
+                        CS_GetToken_NEXT (lpplLocalVars, &tdPrv, &tkNxt);
+                    } // End WHILE
+
+                    // tdPrv contains the TOKEN_DATA of the last UNTIL/ANDIF/ORIF token
+                    // tkNxt is unused
+
+                    // Tell the lexical analyzer to get the next token from
+                    //   the start of the stmt after the last UNTIL/ANDIF/ORIF token
+                    CS_SetNextStmtToStmtAfter_ORIG (lpplLocalVars, &tdPrv);
+                } else
+                    // Tell the lexical analyzer to get the next token from
+                    //   the stmt at the token pointed to by the IF/ELSEIF/ANDIF/ORIF/WHILE stmt
+                    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &tdCur);
 
                 // If we're not stopping execution, ...
                 if (!lpplLocalVars->bStopExec)
@@ -855,14 +975,88 @@ UBOOL CS_IF_Stmt_EM
 
         case TKT_CS_ELSE:
         case TKT_CS_ENDIF:
-        case TKT_CS_ENDWHILE:
-        case TKT_CS_REPEAT:
+            //***************************************************************
+            // tdCur/tkNxt are chained as in
+            //   IF ...         ELSEIF ...      ANDIF ...   ORIF ...
+            //   ELSE           ELSE            ELSE        ELSE
+            //
+            //   IF ...         ELSEIF ...      ANDIF ...   ORIF ...
+            //   ENDIF          ENDIF           ENDIF       ENDIF
+            //***************************************************************
+#ifdef DEBUG
+            {
+                TOKEN_TYPES TknType;
+
+                // Get the token type of the stmt which contains the tdCur token
+                TknType = CS_GetTokenType_ORIG (lpplLocalVars, &tdCur);
+                Assert (TknType EQ TKT_CS_IF
+                     || TknType EQ TKT_CS_ELSEIF
+                     || TknType EQ TKT_CS_ANDIF
+                     || TknType EQ TKT_CS_ORIF
+                       );
+            }
+#endif
             // If the IF/... arg is 0, ...
             if (aplLongestRht EQ 0)
             {
                 // Tell the lexical analyzer to get the next token from
-                //   the stmt after the token pointed to by the ELSE/ENDxxx stmt
-                CS_SetNextStmt (lpplLocalVars, &tdNxt);
+                //   the stmt after the token pointed to by the ELSE/ENDIF stmt
+                CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &tdCur);
+
+                // If we're not stopping execution, ...
+                if (!lpplLocalVars->bStopExec)
+                    // We're restarting
+                    lpplLocalVars->bRestart = TRUE;
+            } // End IF
+
+            break;
+
+        case TKT_CS_WHILE:
+        case TKT_CS_REPEAT:
+            //***************************************************************
+            // tdCur/tkNxt are chained as in
+            //   UNTIL ...      ANDIF ...       ORIF ...
+            //   WHILE ...      WHILE ...       WHILE ...
+            //
+            //   UNTIL ...      ANDIF ...       ORIF ...
+            //   REPEAT         REPEAT          REPEAT
+            //***************************************************************
+#ifdef DEBUG
+            {
+                TOKEN_TYPES TknType;
+
+                // Get the token type of the stmt which contains the tdCur token
+                TknType = CS_GetTokenType_ORIG (lpplLocalVars, &tdCur);
+                Assert (TknType EQ TKT_CS_UNTIL
+                     || TknType EQ TKT_CS_ANDIF
+                     || TknType EQ TKT_CS_ORIF
+                       );
+            }
+#endif
+            // If the UNTIL/ANDIF/ORIF arg is 0, ...
+            if (aplLongestRht EQ 0)
+            {
+                // Split cases based upon the tkNxt token type
+                switch (tkNxt.tkFlags.TknType)
+                {
+                    case TKT_CS_WHILE:      // It has an argument, so we execute it (At_NEXT)
+                        // Tell the lexical analyzer to get the next token from
+                        //   the stmt at the token pointed to by the UNTIL/ANDIF/ORIF stmt
+                        CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &tdCur);
+
+                        break;
+
+                    case TKT_CS_REPEAT:     // It doesn't have an argument, so we execute
+                                            //   the stmt after (After_NEXT)
+                        // Tell the lexical analyzer to get the next token from
+                        //   the stmt after the token pointed to by the UNTIL/ANDIF/ORIF stmt
+                        CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &tdCur);
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
 
                 // If we're not stopping execution, ...
                 if (!lpplLocalVars->bStopExec)
@@ -914,10 +1108,10 @@ UBOOL CS_LEAVE_Stmt
 
     // Tell the lexical analyzer to get the next token from
     //   the stmt after the token pointed to by the LEAVE stmt
-    CS_SetNextStmt (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
+    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYLeaveArg->tkToken.tkData.uLineNum NE lpplLocalVars->uLineNum)
+    if (lpYYLeaveArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -926,9 +1120,10 @@ UBOOL CS_LEAVE_Stmt
         // We're restarting
         lpplLocalVars->bRestart = TRUE;
 
-    // If the stmt pointed to by the LEAVE stmt is ENDFOR/ENDFORLCL, ...
-    TknType = CS_GetTokenType (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
+    // Get the token type of the stmt pointed to by the LEAVE stmt
+    TknType = CS_GetTokenType_NEXT (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
 
+    // If the stmt pointed to by the LEAVE stmt is ENDFOR/ENDFORLCL, ...
     if (TknType EQ TKT_CS_ENDFOR
      || TknType EQ TKT_CS_ENDFORLCL)
         // We're done with this FOR/FORLCL stmt
@@ -980,7 +1175,7 @@ UBOOL CS_SELECT_Stmt_EM
 
         // Get the contents of the token pointed to by
         //   the SELECT/CASE/CASELIST token
-        CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, &hGlbTknLine, &hGlbTxtLine);
+        CS_GetTokenGlb_NEXT (lpplLocalVars, &tdNxt, &tkNxt, &hGlbTknLine, &hGlbTxtLine);
 
         // Split cases based upon the token type
         switch (tkNxt.tkFlags.TknType)
@@ -990,23 +1185,26 @@ UBOOL CS_SELECT_Stmt_EM
             case TKT_CS_CASE:
             case TKT_CS_CASELIST:
                 // Copy token data to modify
-                tdSOS = tdNxt;
+                tdSOS = tkNxt.tkData;
+
+                // Copy the .Orig struc to .Next
+                CS_CopyOrigToNext (&tdSOS);
 
                 // Point to the SOS token
-                CS_PointToSOSToken (lpplLocalVars, &tdSOS);
+                CS_PointToSOSToken_NEXT (lpplLocalVars, &tdSOS);
 
                 // Execute the stmt and compare the result with lpYYRhtArg
 
                 // Fill the SIS struc, execute the line via ParseLine, and cleanup
                 exitType =
-                  PrimFnMonUpTackJotPLParse (lpMemPTD,          // Ptr to PerTabData global memory
-                                             hGlbTknLine,       // Tokenized line global memory handle
-                                             hGlbTxtLine,       // Text      ...
-                                             NULL,              // Ptr to text of line to execute
-                                             NULL,              // Ptr to Semaphore handle to signal (NULL if none)
-                                             tdSOS.uLineNum,    // Function line #
-                                             tdSOS.uTknNum,     // Starting token # in the above function line
-                                             TRUE);             // TRUE iff executing only one stmt
+                  PrimFnMonUpTackJotPLParse (lpMemPTD,              // Ptr to PerTabData global memory
+                                             hGlbTknLine,           // Tokenized line global memory handle
+                                             hGlbTxtLine,           // Text      ...
+                                             NULL,                  // Ptr to text of line to execute
+                                             NULL,                  // Ptr to Semaphore handle to signal (NULL if none)
+                                             tdSOS.Next.uLineNum,   // Function line #
+                                             tdSOS.Next.uTknNum,    // Starting token # in the above function line
+                                             TRUE);                 // TRUE iff executing only one stmt
                 // Split cases based upon the exit type
                 switch (exitType)
                 {
@@ -1063,7 +1261,7 @@ UBOOL CS_SELECT_Stmt_EM
                         {
                             // Tell the lexical analyzer to get the next token from
                             //   the stmt after the token pointed to by the CASE stmt
-                            CS_SetNextStmt (lpplLocalVars, &tdNxt);
+                            CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &tdNxt);
 
                             return TRUE;
                         } // End IF
@@ -1094,7 +1292,7 @@ UBOOL CS_SELECT_Stmt_EM
             case TKT_CS_ENDSELECT:
                 // Tell the lexical analyzer to get the next token from
                 //   the stmt after the token pointed to by the ELSE stmt
-                CS_SetNextStmt (lpplLocalVars, &tdNxt);
+                CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &tdNxt);
 
                 // If we're not stopping execution, ...
                 if (!lpplLocalVars->bStopExec)
@@ -1128,7 +1326,7 @@ UBOOL CS_SKIPCASE_Stmt
 
     // Get the contents of the (CASE/CASELIST) token pointed to by
     //   the SKIPCASE token
-    CS_GetNextToken (lpplLocalVars, &lpYYSkipCaseArg->tkToken.tkData, &tkNxt, NULL, NULL);
+    CS_GetToken_NEXT (lpplLocalVars, &lpYYSkipCaseArg->tkToken.tkData, &tkNxt);
 
     Assert (tkNxt.tkFlags.TknType EQ TKT_CS_CASE
          || tkNxt.tkFlags.TknType EQ TKT_CS_CASELIST);
@@ -1140,7 +1338,7 @@ UBOOL CS_SKIPCASE_Stmt
 
         // Get the contents of the token pointed to by
         //   the previous token
-        CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+        CS_GetToken_NEXT (lpplLocalVars, &tdNxt, &tkNxt);
     } while (tkNxt.tkFlags.TknType EQ TKT_CS_CASE
           || tkNxt.tkFlags.TknType EQ TKT_CS_CASELIST
           || tkNxt.tkFlags.TknType EQ TKT_CS_ELSE);
@@ -1149,10 +1347,10 @@ UBOOL CS_SKIPCASE_Stmt
 
     // Tell the lexical analyzer to get the next token from
     //   the stmt after the token pointed to by the ENDSELECT stmt
-    CS_SetNextStmt (lpplLocalVars, &tdNxt);
+    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &tdNxt);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (tkNxt.tkData.uLineNum NE lpplLocalVars->uLineNum)
+    if (tkNxt.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -1176,7 +1374,7 @@ UBOOL CS_SKIPEND_Stmt
 
     // Get the contents of the (ELSEIF) token pointed to by
     //   the SKIPEND token
-    CS_GetNextToken (lpplLocalVars, &lpYYSkipEndArg->tkToken.tkData, &tkNxt, NULL, NULL);
+    CS_GetToken_NEXT (lpplLocalVars, &lpYYSkipEndArg->tkToken.tkData, &tkNxt);
 
     Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF);
 
@@ -1187,7 +1385,7 @@ UBOOL CS_SKIPEND_Stmt
 
         // Get the contents of the token pointed to by
         //   the previous token
-        CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+        CS_GetToken_NEXT (lpplLocalVars, &tdNxt, &tkNxt);
     } while (tkNxt.tkFlags.TknType EQ TKT_CS_ANDIF
           || tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF
           || tkNxt.tkFlags.TknType EQ TKT_CS_ELSE
@@ -1201,14 +1399,14 @@ UBOOL CS_SKIPEND_Stmt
     if (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF)
         // Tell the lexical analyzer to get the next token from
         //   the stmt at the token pointed to by the ELSEIF stmt
-        CS_SetThisStmt (lpplLocalVars, &tdNxt);
+        CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &tdNxt);
     else
         // Tell the lexical analyzer to get the next token from
         //   the stmt after the token pointed to by the ELSE/ENDIF stmt
-        CS_SetNextStmt (lpplLocalVars, &tdNxt);
+        CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &tdNxt);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (tkNxt.tkData.uLineNum NE lpplLocalVars->uLineNum)
+    if (tkNxt.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -1217,15 +1415,69 @@ UBOOL CS_SKIPEND_Stmt
 
 
 //***************************************************************************
-//  $CS_GetNextToken
+//  $CS_GetToken_ORIG
+//
+//  Get the contents of a given token (pl_yyparse)
+//***************************************************************************
+
+void CS_GetToken_ORIG
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPTOKEN_DATA  lptdArg,             // Ptr to arg TOKEN_DATA
+     LPTOKEN       lptkRes)             // Ptr to result token
+
+{
+    // Call common routine with Orig.c arg
+    CS_GetToken_COM (lpplLocalVars, &lptdArg->Orig.c, lptkRes, NULL, NULL);
+} // End CS_GetToken_ORIG
+
+
+//***************************************************************************
+//  $CS_GetToken_NEXT
 //
 //  Get the contents of the token pointed to by
 //    a given token (pl_yyparse)
 //***************************************************************************
 
-void CS_GetNextToken
+void CS_GetToken_NEXT
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1,            // Ptr to arg TOKEN_DATA
+     LPTOKEN_DATA  lptdArg,             // Ptr to arg TOKEN_DATA
+     LPTOKEN       lptkRes)             // Ptr to result token
+
+{
+    // Call common routine with Next arg
+    CS_GetToken_COM (lpplLocalVars, &lptdArg->Next, lptkRes, NULL, NULL);
+} // End CS_GetToken_NEXT
+
+
+//***************************************************************************
+//  $CS_GetTokenGlb_NEXT
+//
+//  Get the contents of the token pointed to by
+//    a given token (pl_yyparse)
+//***************************************************************************
+
+void CS_GetTokenGlb_NEXT
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPTOKEN_DATA  lptdArg,             // Ptr to arg TOKEN_DATA
+     LPTOKEN       lptkRes,             // Ptr to result token
+     HGLOBAL      *lphGlbTknLine,       // Ptr to result tokenized line global memory handle (may be NULL)
+     HGLOBAL      *lphGlbTxtLine)       // Ptr to result text      ...
+
+{
+    // Call common routine with Next arg
+    CS_GetToken_COM (lpplLocalVars, &lptdArg->Next, lptkRes, lphGlbTknLine, lphGlbTxtLine);
+} // End CS_GetTokenGlb_NEXT
+
+
+//***************************************************************************
+//  $CS_GetToken_COM
+//
+//  Get the contents of the token (pl_yyparse)
+//***************************************************************************
+
+void CS_GetToken_COM
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPCLOCATION   lpLoc,               // Ptr to arg CLOCATION
      LPTOKEN       lptkRes,             // Ptr to result token
      HGLOBAL      *lphGlbTknLine,       // Ptr to result tokenized line global memory handle (may be NULL)
      HGLOBAL      *lphGlbTxtLine)       // Ptr to result text      ...
@@ -1238,11 +1490,13 @@ void CS_GetNextToken
                  hGlbDfnHdr;            // User-defined function/operator ...
     LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
 
+    Assert (lpLoc->uLineNum NE 0);
+
     // If the stmts are on the same line, ...
-    if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
+    if (lpLoc->uLineNum EQ lpplLocalVars->uLineNum)
     {
         // Get the token
-        *lptkRes = lpplLocalVars->lptkStart[lptdArg1->uTknNum];
+        *lptkRes = lpplLocalVars->lptkStart[lpLoc->uTknNum];
 
         // Copy the tokenized line's global memory handle
         hGlbTknLine = lpplLocalVars->hGlbTknLine;
@@ -1251,7 +1505,7 @@ void CS_GetNextToken
         hGlbTxtLine = lpplLocalVars->hGlbTxtLine;
     } else
     {
-        // Get the corresponding user-defined function/operator flobal memory handle
+        // Get the corresponding user-defined function/operator global memory handle
         hGlbDfnHdr = GetDfnHdrHandle (lpplLocalVars);
 
         // Lock the memory to get a ptr to it
@@ -1260,13 +1514,13 @@ void CS_GetNextToken
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lptdArg1->uLineNum > 0);
+        Assert (lpLoc->uLineNum > 0);
 
         // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTknLine;
+        hGlbTknLine = lpFcnLines[lpLoc->uLineNum - 1].hGlbTknLine;
 
         // Copy the text line's global memory handle
-        hGlbTxtLine = lpFcnLines[lptdArg1->uLineNum - 1].hGlbTxtLine;
+        hGlbTxtLine = lpFcnLines[lpLoc->uLineNum - 1].hGlbTxtLine;
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -1278,7 +1532,7 @@ void CS_GetNextToken
         lpMemTknLine = TokenBaseToStart (lpMemTknLine);
 
         // Get the given token
-        *lptkRes = lpMemTknLine[lptdArg1->uTknNum];
+        *lptkRes = lpMemTknLine[lpLoc->uTknNum];
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
@@ -1291,7 +1545,7 @@ void CS_GetNextToken
     // If the caller wants the text line's global memory handle, ...
     if (lphGlbTxtLine)
         *lphGlbTxtLine = hGlbTxtLine;
-} // End CS_GetNextToken
+} // End CS_GetToken_COM
 
 
 //***************************************************************************
@@ -1329,68 +1583,219 @@ HGLOBAL GetDfnHdrHandle
 
 
 //***************************************************************************
-//  $CS_PointToSOSToken
+//  $CS_CopyOrigToNext
+//
+//  Copy the .Orig struc to the .Next struc
+//***************************************************************************
+
+void CS_CopyOrigToNext
+    (LPTOKEN_DATA lptdArg)              // Ptr to arg TOKEN_DATA
+
+{
+    // Copy original values so we can change them
+    lptdArg->Next.uLineNum = lptdArg->Orig.c.uLineNum;
+    lptdArg->Next.uStmtNum = lptdArg->Orig.c.uStmtNum;
+    lptdArg->Next.uTknNum  = lptdArg->Orig.c.uTknNum;
+} // End CS_CopyOrigToNext
+
+
+//***************************************************************************
+//  $CS_PointToSOSToken_NEXT
 //
 //  Set the next token # of the SOS token of the stmt which contains
 //    a given token.
 //***************************************************************************
 
-void CS_PointToSOSToken
+void CS_PointToSOSToken_NEXT
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
-    // The Arg1 token is at the start of the stmt, so backing up
+    Assert (lptdArg->Next.uTknNum NE 0);
+
+    // The Arg token is at the start of the stmt, so backing up
     //   by one points to the preceding EOS/EOL stmt which contains the
     //   stmt length.
-    Assert (lptdArg->uTknNum > 0);
-    lptdArg->uTknNum--;
+    lptdArg->Next.uTknNum--;
 
     // Skip to the end of the Arg1 stmt less one to address the SOS token
-    lptdArg->uTknNum += CS_GetEOSTokenLen (lpplLocalVars, lptdArg) - 1;
-} // End CS_PointToSOSToken
+    lptdArg->Next.uTknNum += CS_GetEOSTokenLen_NEXT (lpplLocalVars, lptdArg) - 1;
+
+    Assert (CS_GetTokenType_NEXT (lpplLocalVars, lptdArg) EQ TKT_SOS);
+} // End CS_PointToSOSToken_NEXT
+
+
+//// //***************************************************************************
+//// //  $CS_SetNextStmtToStmtAt_ORIG
+//// //
+//// //  Set the next token to the beginning of the stmt
+//// //    at the given token (pl_yyparse)
+//// //***************************************************************************
+////
+//// void CS_SetNextStmtToStmtAt_ORIG
+////     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+////      LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
+////
+//// {
+////     TOKEN_DATA tdArg;                   // Next TOKEN_DATA
+////
+////     Assert (lptdArg->Orig.c.uLineNum NE 0);
+////
+////     // Copy the token contents to modify
+////     tdArg = *lptdArg;
+////
+////     // Copy the .Orig struc to .Next
+////     CS_CopyOrigToNext (&tdArg);
+////
+////     // Point to the SOS token
+////     CS_PointToSOSToken_NEXT (lpplLocalVars, &tdArg);
+////
+////     // Tell the lexical analyzer to get the next token from
+////     //   the preceding EOS token
+////     CS_SetNextToken_NEXT (lpplLocalVars, &tdArg);
+//// } // End CS_SetNextStmtToStmtAt_ORIG
 
 
 //***************************************************************************
-//  $CS_SetThisStmt
+//  $CS_SetNextStmtToStmtAt_NEXT
 //
 //  Set the next token to the beginning of the stmt
 //    at the token pointed to by the given token (pl_yyparse)
 //***************************************************************************
 
-void CS_SetThisStmt
+void CS_SetNextStmtToStmtAt_NEXT
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1)            // Ptr to arg TOKEN_DATA
+     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
     TOKEN_DATA tdArg;                   // Next TOKEN_DATA
 
-        // Copy the token contents to modify
-    tdArg = *lptdArg1;
+    Assert (lptdArg->Next.uLineNum NE 0);
+
+    // Copy the token contents to modify
+    tdArg = *lptdArg;
 
     // Point to the SOS token
-    CS_PointToSOSToken (lpplLocalVars, &tdArg);
+    CS_PointToSOSToken_NEXT (lpplLocalVars, &tdArg);
 
     // Tell the lexical analyzer to get the next token from
     //   the preceding EOS token
-    CS_SetNextToken (lpplLocalVars, &tdArg);
-} // End CS_SetThisStmt
+    CS_SetNextToken_NEXT (lpplLocalVars, &tdArg);
+} // End CS_SetNextStmtToStmtAt_NEXT
 
 
 //***************************************************************************
-//  $CS_SetNextStmt
+//  $CS_SetNextStmtToStmtAfter_ORIG
+//
+//  Set the next token to the stmt after
+//    a given token (pl_yyparse)
+//***************************************************************************
+
+void CS_SetNextStmtToStmtAfter_ORIG
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
+
+{
+    TOKEN       tkCur;                  // Current TOKEN
+    TOKEN_DATA  tdCur;                  // Current TOKEN_DATA
+
+    Assert (lptdArg->Orig.c.uLineNum NE 0);
+
+    // The lptdArg token is at the start of the stmt, i.e.
+    //   one token after EOS/EOL/LABELSEP.
+
+    // Copy the target address (Line & Token #s)
+    tdCur = *lptdArg;
+
+    // Back up to the preceding EOS/EOL/LABELSEP
+    Assert (lptdArg->Orig.c.uTknNum NE 0);
+    tdCur.Orig.d.uTknNum--;
+
+#ifdef DEBUG
+    {
+        TOKEN_TYPES TknType;
+
+        // Get the token type of the stmt pointed to by the tdCur stmt
+        TknType = CS_GetTokenType_ORIG (lpplLocalVars, &tdCur);
+        Assert (TknType EQ TKT_EOS
+             || TknType EQ TKT_EOL
+             || TknType EQ TKT_LABELSEP);
+    }
+#endif
+
+    // Get the contents of the token tdCur
+    CS_GetToken_ORIG (lpplLocalVars, &tdCur, &tkCur);
+
+    // Split cases based upon the pointed to token type
+    switch (tkCur.tkFlags.TknType)
+    {
+        case TKT_EOL:
+        case TKT_EOS:
+            break;
+
+        case TKT_LABELSEP:
+            // Back up to the preceding EOS/EOL
+            tdCur.Orig.d.uTknNum -= 2;
+
+            // Get the contents of the token tdCur
+            CS_GetToken_ORIG (lpplLocalVars, &tdCur, &tkCur);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Split cases based upon the token type
+    switch (tkCur.tkFlags.TknType)
+    {
+        case TKT_EOL:
+            // Skip to the next line #, token #0
+            tdCur.Orig.d.uLineNum++;
+            tdCur.Orig.d.uTknNum = 0;
+
+            break;
+
+        case TKT_EOS:
+            // Skip over this stmt
+            tdCur.Orig.d.uTknNum += tkCur.tkData.tkIndex;
+
+            // Get the contents of the token tdCur
+            CS_GetToken_ORIG (lpplLocalVars, &tdCur, &tkCur);
+
+            // Skip over this stmt, backing off to the SOS
+            tdCur.Orig.d.uTknNum += tkCur.tkData.tkIndex - 1;
+
+            // We're restarting
+            lpplLocalVars->bRestart = TRUE;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Tell the lexical analyzer to get the next token from tdCur
+    CS_SetNextToken_ORIG (lpplLocalVars, &tdCur);
+} // End CS_SetNextStmtToStmtAfter_ORIG
+
+
+//***************************************************************************
+//  $CS_SetNextStmtToStmtAfter_NEXT
 //
 //  Set the next token to the stmt after
 //    where a given token points (pl_yyparse)
 //***************************************************************************
 
-void CS_SetNextStmt
+void CS_SetNextStmtToStmtAfter_NEXT
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
     TOKEN       tkNxt;                  // Next TOKEN
     TOKEN_DATA  tdNxt;                  // Next TOKEN_DATA
+
+    Assert (lptdArg->Next.uLineNum NE 0);
 
     // The lptdArg token is at the start of the stmt, i.e.
     //   one token after EOS/EOL/LABELSEP.
@@ -1399,10 +1804,23 @@ void CS_SetNextStmt
     tdNxt = *lptdArg;
 
     // Back up to the preceding EOS/EOL/LABELSEP
-    tdNxt.uTknNum--;
+    Assert (lptdArg->Next.uTknNum NE 0);
+    tdNxt.Next.uTknNum--;
+
+#ifdef DEBUG
+    {
+        TOKEN_TYPES TknType;
+
+        // Get the token type of the stmt pointed to by the tdNxt stmt
+        TknType = CS_GetTokenType_NEXT (lpplLocalVars, &tdNxt);
+        Assert (TknType EQ TKT_EOS
+             || TknType EQ TKT_EOL
+             || TknType EQ TKT_LABELSEP);
+    }
+#endif
 
     // Get the contents of the token pointed to by tdNxt
-    CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+    CS_GetToken_NEXT (lpplLocalVars, &tdNxt, &tkNxt);
 
     // Split cases based upon the pointed to token type
     switch (tkNxt.tkFlags.TknType)
@@ -1413,10 +1831,10 @@ void CS_SetNextStmt
 
         case TKT_LABELSEP:
             // Back up to the preceding EOS/EOL
-            tdNxt.uTknNum -= 2;
+            tdNxt.Next.uTknNum -= 2;
 
             // Get the contents of the token pointed to by tdNxt
-            CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+            CS_GetToken_NEXT (lpplLocalVars, &tdNxt, &tkNxt);
 
             break;
 
@@ -1429,20 +1847,20 @@ void CS_SetNextStmt
     {
         case TKT_EOL:
             // Skip to the next line #, token #0
-            tdNxt.uLineNum++;
-            tdNxt.uTknNum = 0;
+            tdNxt.Next.uLineNum++;
+            tdNxt.Next.uTknNum = 0;
 
             break;
 
         case TKT_EOS:
             // Skip over this stmt
-            tdNxt.uTknNum += tkNxt.tkData.tkIndex;
+            tdNxt.Next.uTknNum += tkNxt.tkData.tkIndex;
 
             // Get the contents of the token pointed to by tdNxt
-            CS_GetNextToken (lpplLocalVars, &tdNxt, &tkNxt, NULL, NULL);
+            CS_GetToken_NEXT (lpplLocalVars, &tdNxt, &tkNxt);
 
             // Skip over this stmt, backing off to the SOS
-            tdNxt.uTknNum += tkNxt.tkData.tkIndex - 1;
+            tdNxt.Next.uTknNum += tkNxt.tkData.tkIndex - 1;
 
             // We're restarting
             lpplLocalVars->bRestart = TRUE;
@@ -1453,87 +1871,148 @@ void CS_SetNextStmt
             break;
     } // End SWITCH
 
-    // Tell the lexical analyzer to get the next token from tdNxt
-    CS_SetNextToken (lpplLocalVars, &tdNxt);
-} // End CS_SetNextStmt
+    // Tell the lexical analyzer to get the next token from
+    //   the stmt pointed to by tdNxt
+    CS_SetNextToken_NEXT (lpplLocalVars, &tdNxt);
+} // End CS_SetNextStmtToStmtAfter_NEXT
 
 
 //***************************************************************************
-//  $CS_SetNextToken
+//  $CS_SetNextToken_ORIG
+//
+//  Set the next token to a given token (pl_yyparse)
+//***************************************************************************
+
+void CS_SetNextToken_ORIG
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
+
+{
+    // Call common routine with Orig.c arg
+    CS_SetNextToken_COM (lpplLocalVars, &lptdArg->Orig.c);
+} // End CS_SetNextToken_ORIG
+
+
+//***************************************************************************
+//  $CS_SetNextToken_NEXT
 //
 //  Set the next token to where a given token points (pl_yyparse)
 //***************************************************************************
 
-void CS_SetNextToken
+void CS_SetNextToken_NEXT
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg1)            // Ptr to arg TOKEN_DATA
+     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    // Call common routine with Next arg
+    CS_SetNextToken_COM (lpplLocalVars, &lptdArg->Next);
+} // End CS_SetNextToken_NEXT
 
-    // Get ptr to PerTabData global memory
-    lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+//***************************************************************************
+//  $CS_SetNextToken_COM
+//
+//  Set the next token (pl_yyparse)
+//***************************************************************************
+
+void CS_SetNextToken_COM
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPCLOCATION   lpLoc)               // Ptr to arg CLOCATION
+
+{
+    Assert (lpLoc->uLineNum NE 0);
 
     // If the stmts are on the same line, ...
-    if (lptdArg1->uLineNum EQ lpplLocalVars->uLineNum)
+    if (lpLoc->uLineNum EQ lpplLocalVars->uLineNum)
         // Set the next token to parse
         lpplLocalVars->lptkNext =
-          &lpplLocalVars->lptkStart[lptdArg1->uTknNum];
+          &lpplLocalVars->lptkStart[lpLoc->uTknNum];
     else
     {
-            // Save as the next line & token #
-        lpMemPTD->lpSISCur->NxtLineNum = lptdArg1->uLineNum;
-        lpMemPTD->lpSISCur->NxtTknNum  = lptdArg1->uTknNum;
+        LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+        // Save as the next line & token #
+        lpMemPTD->lpSISCur->NxtLineNum = lpLoc->uLineNum;
+        lpMemPTD->lpSISCur->NxtTknNum  = lpLoc->uTknNum;
 
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
     } // End IF/ELSE
-} // End CS_SetNextToken
+} // End CS_SetNextToken_COM
 
 
 //***************************************************************************
-//  $CS_GetTokenType
+//  $CS_GetTokenType_ORIG
 //
 //  Return the token type of a given token identified by line and token #
 //    (pl_yyparse)
 //***************************************************************************
 
-TOKEN_TYPES CS_GetTokenType
+TOKEN_TYPES CS_GetTokenType_ORIG
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
     TOKEN tkNxt;                        // Next token
 
-    // Get the contents of the token
-    CS_GetNextToken (lpplLocalVars, lptdArg, &tkNxt, NULL, NULL);
+    // Get the contents of the token lptdArg
+    CS_GetToken_ORIG (lpplLocalVars, lptdArg, &tkNxt);
 
     return tkNxt.tkFlags.TknType;
-} // End CS_GetTokenType
+} // End CS_GetTokenType_ORIG
 
 
 //***************************************************************************
-//  $CS_GetEOSTokenLen
+//  $CS_GetTokenType_NEXT
+//
+//  Return the token type of the token pointed to by a given token
+//    identified by line and token #
+//    (pl_yyparse)
+//***************************************************************************
+
+TOKEN_TYPES CS_GetTokenType_NEXT
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
+
+{
+    TOKEN tkNxt;                        // Next token
+
+    Assert (lptdArg->Next.uLineNum NE 0);
+
+    // Get the contents of the token pointed to by lptdArg
+    CS_GetToken_NEXT (lpplLocalVars, lptdArg, &tkNxt);
+
+    return tkNxt.tkFlags.TknType;
+} // End CS_GetTokenType_NEXT
+
+
+//***************************************************************************
+//  $CS_GetEOSTokenLen_NEXT
 //
 //  Return the length of the EOS token which precedes a given token
 //    (pl_yyparse)
 //***************************************************************************
 
-UINT CS_GetEOSTokenLen
+UINT CS_GetEOSTokenLen_NEXT
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPTOKEN_DATA  lptdArg)             // Ptr to arg TOKEN_DATA
 
 {
     TOKEN tkNxt;                        // Next token
 
+    Assert (lptdArg->Next.uLineNum NE 0);
+
     // Get the contents of the token
-    CS_GetNextToken (lpplLocalVars, lptdArg, &tkNxt, NULL, NULL);
+    CS_GetToken_NEXT (lpplLocalVars, lptdArg, &tkNxt);
 
     Assert (tkNxt.tkFlags.TknType EQ TKT_EOS
          || tkNxt.tkFlags.TknType EQ TKT_EOL);
 
     return tkNxt.tkData.tkIndex;
-} // End CS_GetEOSTokenLen
+} // End CS_GetEOSTokenLen_NEXT
 
 
 //***************************************************************************

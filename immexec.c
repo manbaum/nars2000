@@ -460,8 +460,8 @@ DWORD WINAPI ImmExecStmtInThread
             // Format the error message
             wsprintfW (wszTemp,
                        L"CS SYNTAX ERROR -- Line %d statement %d",
-                       csLocalVars.tkCSErr.tkData.uLineNum,
-                       csLocalVars.tkCSErr.tkData.uStmtNum + 1);
+                       csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
+                       csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1);
             // Set the error message
             ErrorMessageDirect (wszTemp,                            // Ptr to error message text
                                 lpwszCompLine,                      // Ptr to the line which generated the error

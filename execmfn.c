@@ -655,8 +655,8 @@ HGLOBAL Init1MagicFunction
             wsprintfW (wszTemp,
                        L"CS SYNTAX ERROR in %s -- Line %d statement %d position %d",
                        lpwszName,
-                       csLocalVars.tkCSErr.tkData.uLineNum,
-                       csLocalVars.tkCSErr.tkData.uStmtNum + 1,
+                       csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
+                       csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1,
                        csLocalVars.tkCSErr.tkCharIndex);
             MBW (wszTemp);
 

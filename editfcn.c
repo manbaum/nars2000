@@ -2115,7 +2115,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 case VK_F12:
                     // If our parent is not MF, ...
                     if (lpMemPTD)
-                        PostMessageW (hWndParent, MYWM_KEYDOWN, wParam, lParam);
+                        PostMessageW (lpMemPTD->hWndSM, MYWM_KEYDOWN, wParam, lParam);
 
                     return FALSE;
 

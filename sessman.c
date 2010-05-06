@@ -1580,7 +1580,8 @@ NORMAL_EXIT:
 #define nVirtKey    ((int) wParam)
 #define uLineNum    ((UINT) lParam)
         case MYWM_KEYDOWN:          // nVirtKey = (int) wParam;     // Virtual-key code
-                                    // uLineNum = lParam;           // Line #   // lKeyData = lParam;           // Key data
+                                    // uLineNum = lParam;           // Line #
+                                    // lKeyData = lParam;           // Key data
         {
             UINT uLineLen,
                  uLineCnt;

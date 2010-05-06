@@ -24,6 +24,10 @@
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>
+#ifndef _WIN64
+  #define _USE_32BIT_TIME_T
+#endif
+#include <io.h>
 #include "headers.h"
 
 
@@ -169,6 +173,12 @@ UBOOL LoadWorkspace_EM
     LPAPLLONGEST lpaplLongestObj;       // Ptr to ...
     LPSYMENTRY   lpSymLink = NULL;      // Ptr to anchor of SYMENTRY links for [Globals] values
                                         //   so we may delete them easily
+    struct _wfinddata_t
+                 ws_file;               // Workspace filename struc
+    long         hFile;                 // File handle
+    WCHAR        wszDir  [_MAX_DIR],
+                 wszDrive[_MAX_DRIVE],
+                 wszDPFE [_MAX_PATH] = {WC_EOS};
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -199,9 +209,23 @@ UBOOL LoadWorkspace_EM
     // We no longer need this handle
     fclose (fStream); fStream = NULL;
 
+    // Find the actual (case-sensitive) filename.ext of this file
+    hFile = _wfindfirst (lpwszDPFE, &ws_file);
+    Assert (hFile NE -1L);
+    _findclose (hFile); hFile = 0;
+
+    // Split out the components of the original DPFE
+    _wsplitpath (lpwszDPFE, wszDrive, wszDir, NULL, NULL);
+
+    // Recombine using the actual (case-sensitive) workspace filename.ext
+    _wmakepath (wszDPFE, wszDrive, wszDir, ws_file.name, NULL);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
+
     // Make a backup copy of the workspace
     if (OptionFlags.bBackupOnLoad)
-        MakeWorkspaceBackup (lpwszDPFE, LOADBAK_EXT);
+        MakeWorkspaceBackup (wszDPFE, LOADBAK_EXT);
 
     // Get the version #
     GetPrivateProfileStringW (SECTNAME_GENERAL,         // Ptr to the section name
@@ -209,7 +233,7 @@ UBOOL LoadWorkspace_EM
                               L"",                      // Ptr to the default value
                               wszVersion,               // Ptr to the output buffer
                               countof (wszVersion),     // Byte size of the output buffer
-                              lpwszDPFE);               // Ptr to the file name
+                              wszDPFE);                 // Ptr to the file name
     // Compare the version #s
     if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
     {
@@ -227,7 +251,7 @@ UBOOL LoadWorkspace_EM
       GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
                              KEYNAME_SILEVEL,           // Ptr to the key name
                              0,                         // Default value if not found
-                             lpwszDPFE);                // Ptr to the file name
+                             wszDPFE);                  // Ptr to the file name
     __try
     {
         // Mark as suspended to handle the initial case
@@ -278,7 +302,7 @@ UBOOL LoadWorkspace_EM
                                           L"",                  // Ptr to the default value
                                           lpwSrc,               // Ptr to the output buffer
                                           uMaxSize,             // Byte size of the output buffer
-                                          lpwszDPFE);           // Ptr to the file name
+                                          wszDPFE);             // Ptr to the file name
                 // Copy as ptr to function name or Quad
                 lpwFcnName = lpwSrc;
 
@@ -377,7 +401,7 @@ UBOOL LoadWorkspace_EM
               GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
                                      KEYNAME_COUNT,             // Ptr to the key name
                                      0,                         // Default value if not found
-                                     lpwszDPFE);                // Ptr to the file name
+                                     wszDPFE);                  // Ptr to the file name
             // Loop through the [Vars.sss] section where sss is the SI level
             for (uCnt = 0; uCnt < uSymVar; uCnt++)
             {
@@ -401,7 +425,7 @@ UBOOL LoadWorkspace_EM
                                           L"",                  // Ptr to the default value
                                           lpwSrc,               // Ptr to the output buffer
                                           uMaxSize,             // Byte size of the output buffer
-                                          lpwszDPFE);           // Ptr to the file name
+                                          wszDPFE);             // Ptr to the file name
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
                     continue;
@@ -468,7 +492,7 @@ UBOOL LoadWorkspace_EM
                                       hWndEC,           // Edit Ctrl window handle
                                      &lpSymLink,        // Ptr to ptr to SYMENTRY link
                                       wszVersion,       // Workspace version text
-                                      lpwszDPFE,        // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                      wszDPFE,          // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                      &lpwErrMsg);       // Ptr to ptr to (constant error message text
                 if (lpwSrc EQ NULL)
                     goto ERRMSG_EXIT;
@@ -524,7 +548,7 @@ UBOOL LoadWorkspace_EM
               GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
                                      KEYNAME_COUNT,             // Ptr to the key name
                                      0,                         // Default value if not found
-                                     lpwszDPFE);                // Ptr to the file name
+                                     wszDPFE);                  // Ptr to the file name
             // Loop through the [Fcns.sss] section where sss is the SI level
             for (uCnt = 0; uCnt < uSymFcn; uCnt++)
             {
@@ -549,7 +573,7 @@ UBOOL LoadWorkspace_EM
                                           L"",                  // Ptr to the default value
                                           lpwSrc,               // Ptr to the output buffer
                                           uMaxSize,             // Byte size of the output buffer
-                                          lpwszDPFE);           // Ptr to the file name
+                                          wszDPFE);             // Ptr to the file name
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
                     continue;
@@ -605,7 +629,7 @@ UBOOL LoadWorkspace_EM
                                          hWndEC,        // Edit Ctrl window handle
                                         &lpSymLink,     // Ptr to ptr to SYMENTRY link
                                          wszVersion,    // Workspace version text
-                                         lpwszDPFE,     // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                         wszDPFE,       // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                         &lpwErrMsg))    // Ptr to ptr to (constant) error message text
                     goto ERRMSG_EXIT;
             } // End FOR
@@ -622,15 +646,15 @@ UBOOL LoadWorkspace_EM
       GetPrivateProfileIntW (SECTNAME_GLOBALS,          // Ptr to the section name
                              KEYNAME_COUNT,             // Ptr to the key name
                              0,                         // Default value if not found
-                             lpwszDPFE);                // Ptr to the file name
+                             wszDPFE);                  // Ptr to the file name
     // Delete the symbol table entries for vars/fcns we allocated of the form FMTSTR_GLBCNT
     DeleteGlobalLinks (lpSymLink);
 
     // Display the workspace timestamp
-    DisplayWorkspaceStamp (lpwszDPFE);
+    DisplayWorkspaceStamp (wszDPFE);
 WSID_EXIT:
-    // Set the value of the new []WSID as lpwszDPFE
-    bRet = SaveNewWsid_EM (lpwszDPFE);
+    // Set the value of the new []WSID as wszDPFE
+    bRet = SaveNewWsid_EM (wszDPFE);
 
     goto NORMAL_EXIT;
 
@@ -838,7 +862,7 @@ LPWCHAR ParseSavedWsVar_EM
     APLSTYPE     aplTypeObj;            // Object storage type
     HGLOBAL      hGlbObj;               // Object global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+    LPWCHAR      lpwszFormat;           // Ptr to formatting save area
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();

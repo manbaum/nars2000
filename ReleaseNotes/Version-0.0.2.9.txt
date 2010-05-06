@@ -1,6 +1,20 @@
 Version 0.0.2.9 consists of the following Builds:
 
 
+Build #640 -- Version 0.0.2.9
+-----------------------------
+
+* Use Case of Saved Workspace Name When Loading
+
+Directory trunk:
+
+SC_LOAD.C:
+  When loading a workspace, ensure the workspace name
+    used in []WSID and the Workspace Tab has the same case
+    as the saved name instead of the name used in the
+    )LOAD/)XLOAD command.
+
+
 Build #639 -- Version 0.0.2.9
 -----------------------------
 

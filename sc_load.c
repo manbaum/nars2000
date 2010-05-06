@@ -175,7 +175,7 @@ UBOOL LoadWorkspace_EM
                                         //   so we may delete them easily
     struct _wfinddata_t
                  ws_file;               // Workspace filename struc
-    long         hFile;                 // File handle
+    APLI3264     hFile;                 // File handle
     WCHAR        wszDir  [_MAX_DIR],
                  wszDrive[_MAX_DRIVE],
                  wszDPFE [_MAX_PATH] = {WC_EOS};

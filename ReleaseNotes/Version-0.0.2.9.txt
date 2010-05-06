@@ -1,6 +1,17 @@
 Version 0.0.2.9 consists of the following Builds:
 
 
+Build #641 -- Version 0.0.2.9
+-----------------------------
+
+* 64-bit Issues
+
+Directory trunk:
+
+SC_LOAD.C:
+  Use proper declaration for handle in 64-bit environment.
+
+
 Build #640 -- Version 0.0.2.9
 -----------------------------
 

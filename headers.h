@@ -20,6 +20,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#ifdef _WIN64
+  #pragma pack(push,8)
+#else
+  #pragma pack(push,4)
+#endif
 
 #include "macros.h"
 #include "enums.h"
@@ -59,6 +64,7 @@
 #include "qf.h"
 #include "fmtspec.h"
 
+#pragma pack(pop)
 
 #ifndef __ATTR_SAL
  /* used for msvc code analysis */

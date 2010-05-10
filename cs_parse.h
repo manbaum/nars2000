@@ -54,14 +54,14 @@ typedef struct tagCSLOCALVARS       // Control Structure Local Vars
     LPTOKEN      lptkCSBeg,         // 08:  First available entry after the header
                  lptkCSNxt,         // 0C:  Next  ...
                  lptkCSLink;        // 10:  Ptr to CS stack Stmt link (NULL = none)
-    TOKEN        tkCSErr;           // 14:  Error token (16 bytes)
-    UINT         DisplayErr:1;      // 24:  00000001:  TRUE iff we should display error messages
+    TOKEN        tkCSErr;           // 14:  Error token (24 bytes)
+    UINT         DisplayErr:1;      // 2C:  00000001:  TRUE iff we should display error messages
                                     //      FFFFFFFE:  Available bits
-    HGLOBAL      hGlbDfnHdr,        // 28:  Defined function/operator global memory handle
+    HGLOBAL      hGlbDfnHdr,        // 30:  Defined function/operator global memory handle
                                     //      (NULL = hGlbImmExec is valid)
-                 hGlbImmExec;       // 2C:  Immediate execution tokenized line global memory habndle
+                 hGlbImmExec;       // 34:  Immediate execution tokenized line global memory habndle
                                     //      (NULL = hGlbDfnHdr is valid)
-                                    // 30:  Length
+                                    // 38:  Length
 } CSLOCALVARS, *LPCSLOCALVARS;
 
 

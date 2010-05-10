@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
     //   because when we pass it as an argument to an LPPRIMFNS
     //   we might need it to be an LPPL_YYSTYPE (for a function strand)
     //   or an LPTOKEN (single function).
-    TOKEN   tkToken;                // 00:  Token info
-    UINT    TknCount;               // 10:  Token count
-    UINT    YYInuse:1,              // 14:  00000001:  This entry is in use
+    TOKEN   tkToken;                // 00:  Token info (24 bytes)
+    UINT    TknCount;               // 18:  Token count
+    UINT    YYInuse:1,              // 1C:  00000001:  This entry is in use
             YYIndirect:1,           //      00000002:  Arg is indirect
             YYCopyArray:1,          //      00000004:  it's been copied, so it needs to be freed
 #ifdef DEBUG
@@ -39,17 +39,17 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
             :29;                    //      FFFFFFF8:  Available bits
 #endif
     struct tagPL_YYSTYPE
-           *lpYYFcnBase,            // 18:  Ptr to base function/operator
+           *lpYYFcnBase,            // 20:  Ptr to base function/operator
                                     //      Not valid outside the enclosing
                                     //        invocation of ParseLine
-           *lpYYStrandBase;         // 1C:  Ptr to this token's strand base
+           *lpYYStrandBase;         // 24:  Ptr to this token's strand base
 #ifdef DEBUG
-    UINT    SILevel;                // 20:  SI Level (needed for YYResIsEmpty)
-    LPCHAR  lpFileName;             // 24:  Ptr to filename where allocated
-    UINT    uLineNum;               // 28:  Line # where allocated
-                                    // 2C:  Length
+    UINT    SILevel;                // 28:  SI Level (needed for YYResIsEmpty)
+    LPCHAR  lpFileName;             // 2C:  Ptr to filename where allocated
+    UINT    uLineNum;               // 30:  Line # where allocated
+                                    // 34:  Length
 #else
-                                    // 20:  Length
+                                    // 28:  Length
 #endif
 } PL_YYSTYPE, *LPPL_YYSTYPE;        // Data type of yacc stack
 
@@ -115,8 +115,8 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     UINT         uLineNum,          // A0:  Function line # (1 for execute or immexec)
                  uTokenCnt;         // A4:  # tokens in the function line
     HGLOBAL      hGlbDfnHdr;        // A8:  User-defined functio/operator global memory handle (NULL = execute/immexec)
-    TOKEN        tkSelSpec;         // AC:  TOKEN for Selective Specification (16 bytes)
-                                    // BC:  Length
+    TOKEN        tkSelSpec;         // AC:  TOKEN for Selective Specification (24 bytes)
+                                    // C4:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

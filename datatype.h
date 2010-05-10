@@ -273,10 +273,10 @@ typedef struct tagVARARRAY_HEADER
                      :19;               //      FFFFE000:  Available bits
 #endif
     UINT             RefCnt;            // 08:  Reference count
-    APLNELM          NELM;              // 0C:  # elements in the array
-    APLRANK          Rank;              // 10:  The rank of the array
+    APLNELM          NELM;              // 0C:  # elements in the array (8 bytes)
+    APLRANK          Rank;              // 14:  The rank of the array (8 bytes)
                                         //      followed by the dimensions
-                                        // 14:  Length
+                                        // 1C:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
 
 // List array header

@@ -1,6 +1,3 @@
-Version 0.0.2.10 consists of the following Builds:
-
-
 Build #644 -- Version 0.0.2.10
 ------------------------------
 
@@ -28,17 +25,3 @@ PL_PARSE.H:
 TOKENS.H:
   Update copyright year.
   Correct item lengths in LOCATION, TOKEN_DATA, and TOKEN strucs.
-
-
-Build #643 -- Version 0.0.2.10
-------------------------------
-
-* Fix Bug:  Missing Control Structure Case
-
-Directory trunk:
-
-CS_PROC.C:
-  Include WHILE/ENDWHILE case.
-
-VERSION.RC:
-  Increment version to 0.0.2.10.

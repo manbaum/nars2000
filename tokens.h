@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,9 +180,9 @@ typedef struct tagTKFLAGS
 typedef struct tagLOCATION
 {
     USHORT uLineNum,            // 00:  Line #      (origin-1)
-           uStmtNum,            // 04:  Statement # (origin-0)
-           uTknNum;             // 08:  Token #     (origin-0)
-                                // 0C:  Length
+           uStmtNum,            // 02:  Statement # (origin-0)
+           uTknNum;             // 04:  Token #     (origin-0)
+                                // 06:  Length
 } LOCATION, *LPLOCATION;
 
 typedef const LOCATION CLOCATION, *LPCLOCATION;
@@ -191,14 +191,15 @@ typedef union tagULOCATION
 {
     const LOCATION c;           // 00:  Constant LOCATION
           LOCATION d;           // 00:  Dynamic  ...
+                                // 06:  Length
 } ULOCATION, *LPULOCATION;
 
 #define ANON_CTRL_STRUC             \
   struct {ULOCATION Orig;           \
            LOCATION Next;           \
-           USHORT   uCLIndex:15,    \
-                    bSOS:1;         \
-           USHORT   :16;            \
+           USHORT   uCLIndex;       \
+           USHORT   bSOS:1,         \
+                    :15;            \
          }
 
 typedef union tagTOKEN_DATA
@@ -216,15 +217,15 @@ typedef union tagTOKEN_DATA
     APLFLOAT   tkFloat;             // 00:  ...     a floating point number
     APLCHAR    tkChar;              // 00:  ...     an APLCHAR
     LPVOID     tkVoid;              // 00:  ...     an abritrary ptr
-    APLLONGEST tkLongest;           // 00:  Longest datatype (so we can copy the entire data)
-    ANON_CTRL_STRUC tkCtrlStruc;    // 00:  Longest Ctrl Struc
+    APLLONGEST tkLongest;           // 00:  Longest datatype (8 bytes) (so we can copy the entire data)
+    ANON_CTRL_STRUC tkCtrlStruc;    // 00:  Longest Ctrl Struc (16 bytes)
                                     // 10:  Length
 } TOKEN_DATA, *LPTOKEN_DATA;
 
 typedef struct tagTOKEN
 {
     TKFLAGS          tkFlags;       // 00:  The flags part
-    TOKEN_DATA       tkData;        // 04:  The data part (8 bytes)
+    TOKEN_DATA       tkData;        // 04:  The data part (16 bytes)
     int              tkCharIndex;   // 14:  Index into the input line of this token
                                     // 18:  Length
 } TOKEN, *LPTOKEN;

@@ -35,7 +35,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="$(MSVC)bin\nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="$(MSVC)bin\nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;$(MSVC)bin\nmake /f makefile.pro.parse O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -139,7 +139,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="$(MSVC)bin\nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="$(MSVC)bin\nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;$(MSVC)bin\nmake /f makefile.pro.parse O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"

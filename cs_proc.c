@@ -975,6 +975,7 @@ UBOOL CS_IF_Stmt_EM
 
         case TKT_CS_ELSE:
         case TKT_CS_ENDIF:
+        case TKT_CS_ENDWHILE:
             //***************************************************************
             // tdCur/tkNxt are chained as in
             //   IF ...         ELSEIF ...      ANDIF ...   ORIF ...
@@ -982,6 +983,9 @@ UBOOL CS_IF_Stmt_EM
             //
             //   IF ...         ELSEIF ...      ANDIF ...   ORIF ...
             //   ENDIF          ENDIF           ENDIF       ENDIF
+            //
+            //   WHILE ...
+            //   ENDWHILE ...
             //***************************************************************
 #ifdef DEBUG
             {
@@ -991,6 +995,7 @@ UBOOL CS_IF_Stmt_EM
                 TknType = CS_GetTokenType_ORIG (lpplLocalVars, &tdCur);
                 Assert (TknType EQ TKT_CS_IF
                      || TknType EQ TKT_CS_ELSEIF
+                     || TknType EQ TKT_CS_WHILE
                      || TknType EQ TKT_CS_ANDIF
                      || TknType EQ TKT_CS_ORIF
                        );
@@ -1000,7 +1005,7 @@ UBOOL CS_IF_Stmt_EM
             if (aplLongestRht EQ 0)
             {
                 // Tell the lexical analyzer to get the next token from
-                //   the stmt after the token pointed to by the ELSE/ENDIF stmt
+                //   the stmt after the token pointed to by the ELSE/ENDIF/ENDWHILE stmt
                 CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &tdCur);
 
                 // If we're not stopping execution, ...

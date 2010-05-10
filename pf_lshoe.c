@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1158,8 +1158,7 @@ UBOOL PrimFnMonLeftShoeProto_EM
 
 {
     APLUINT ByteRes;                // # bytes in the result
-////APLUINT uRes;                   // Result loop counter
-    LPVOID lpMemProto;              // Ptr to prototype global memory
+    LPVOID  lpMemProto;             // Ptr to prototype global memory
 
     // If the subarray is empty, the result is zilde
     if (IsEmpty (aplNELMSub))
@@ -1169,7 +1168,7 @@ UBOOL PrimFnMonLeftShoeProto_EM
         // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeProto, aplNELMSub, aplNELMAxis);
 
-        // N.B.:  Conversion from APLUINT to UINT.
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
         *lphGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
@@ -1196,9 +1195,11 @@ UBOOL PrimFnMonLeftShoeProto_EM
         // skip over the header and dimension to the data
         lpMemProto = VarArrayBaseToData (lpMemProto, aplNELMAxis);
 
+        // Check for overflow
+        if (aplNELMSub NE (APLU3264) aplNELMSub)
+            goto WSFULL_EXIT;
+
         // Fill in the values if character
-        // N.B.:  Conversion from APLUINT to UINT
-        Assert (aplNELMSub EQ (APLU3264) aplNELMSub);
         if (IsSimpleChar (aplType))
             FillMemoryW (lpMemProto, (APLU3264) aplNELMSub, L' ');
         // We no longer need this ptr
@@ -1210,8 +1211,20 @@ UBOOL PrimFnMonLeftShoeProto_EM
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    if (*lphGlbProto)
+    {
+        if (lpMemProto)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (*lphGlbProto); lpMemProto = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        MyGlobalFree (*lphGlbProto); *lphGlbProto = NULL;
+    } // End IF
+
     return FALSE;
-} // End PrimFnMonLeftShoe_EM
+} // End PrimFnMonLeftShoeProto_EM
 #undef  APPEND_NAME
 
 
@@ -1431,7 +1444,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         aplAxis = max (0, (APLINT) aplRankRht - 1);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplTypeLft))
+    if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for RIGHT RANK ERROR
@@ -1564,8 +1577,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         aplNELMRes = 0;
     else
     for (uCnt = 0, aplNELMRes = aplNELMAxis; uCnt < aplRankRht; uCnt++)
-    if (uCnt NE aplAxis             // Not the function axis
-     || hGlbLft EQ NULL)            //   or left arg is scalar extended (hence unused)
+    if (uCnt NE aplAxis)            // Not the function axis
         aplNELMRes *= ((LPAPLDIM) lpMemRht)[uCnt];
 
     // Fill in the result storage type & rank
@@ -1602,8 +1614,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
     // Fill in the dimensions
     for (uCnt = 0; uCnt < aplRankRes; uCnt++)
-    if (uCnt NE aplAxis             // Not the function axis
-     || hGlbLft EQ NULL)            //   or left arg is scalar extended (hence unused)
+    if (uCnt NE aplAxis)            // Not the function axis
         *((LPAPLDIM) lpMemRes)++ = ((LPAPLDIM) lpMemRht)[uCnt];
     else
         *((LPAPLDIM) lpMemRes)++ = aplNELMAxis;
@@ -1673,6 +1684,15 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     //***************************************************************
     // The result is non-empty
     //***************************************************************
+
+    // If the left arg is a singleton, ...
+    if (IsSingleton (aplNELMLft))
+    {
+        // Save the entire right arg as the item in the result
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbDirAsGlb (hGlbRht);
+
+        goto YYALLOC_EXIT;
+    } // End IF
 
     // Run through the left arg again
     for (uCnt = 0,

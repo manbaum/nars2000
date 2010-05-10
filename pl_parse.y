@@ -9864,32 +9864,34 @@ void pl_yyerror                     // Called for Bison syntax error
         else
             lpplLocalVars->tkLACharIndex = lpplLocalVars->lptkNext[1].tkCharIndex;
         lpplLocalVars->ExitType = EXITTYPE_ERROR;
+    } else
+    // If we've not already encountered an error, ...
+    if (lpplLocalVars->ExitType NE EXITTYPE_ERROR)
+    {
+        // Set the caret ptr and exit type
+        if (lpplLocalVars->tkLACharIndex NE NEG1U)
+            lpplLocalVars->tkErrorCharIndex = lpplLocalVars->tkLACharIndex;
+        else
+        if (lpplLocalVars->lptkEnd <= &lpplLocalVars->lptkNext[1])
+            lpplLocalVars->tkErrorCharIndex = NEG1U;
+        else
+            lpplLocalVars->tkErrorCharIndex = lpplLocalVars->lptkNext[1].tkCharIndex;
 
-        return;
-    } // End IF
+        lpplLocalVars->ExitType = EXITTYPE_ERROR;
 
-    // Set the caret ptr and exit type
-    if (lpplLocalVars->tkLACharIndex NE NEG1U)
-        lpplLocalVars->tkErrorCharIndex = lpplLocalVars->tkLACharIndex;
-    else
-    if (lpplLocalVars->lptkEnd <= &lpplLocalVars->lptkNext[1])
-        lpplLocalVars->tkErrorCharIndex = NEG1U;
-    else
-        lpplLocalVars->tkErrorCharIndex = lpplLocalVars->lptkNext[1].tkCharIndex;
-    lpplLocalVars->ExitType = EXITTYPE_ERROR;
-
-    // Check for SYNTAX ERROR
+        // Check for SYNTAX ERROR
 #define ERR     "syntax error"
-    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
-    if (lstrcmp (szTemp, ERR) EQ 0)
-        ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+        if (lstrcmp (szTemp, ERR) EQ 0)
+            ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 #undef  ERR
-    else
+        else
 #define ERR     "memory exhausted"
-    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
-    if (lstrcmp (szTemp, ERR) EQ 0)
-        ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+        if (lstrcmp (szTemp, ERR) EQ 0)
+            ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
 #undef  ERR
+    } // End IF/ELSE/IF
 } // End pl_yyerror
 #undef  APPEND_NAME
 

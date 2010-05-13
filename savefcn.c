@@ -752,7 +752,7 @@ void SF_LastModTimeLW
 //***************************************************************************
 
 HGLOBAL SF_UndoBufferCom
-    (HWND        hWndEC,            // Edit Cnotrol window handle
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPVOID      lpVoid)            // Ptr to common struc
 
 {
@@ -769,7 +769,7 @@ HGLOBAL SF_UndoBufferCom
 //***************************************************************************
 
 HGLOBAL SF_UndoBufferFE
-    (HWND        hWndEC,            // Edit Cnotrol window handle
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPVOID      lpVoid)            // Ptr to common struc
 
 {
@@ -798,10 +798,13 @@ HGLOBAL SF_UndoBufferFE
             hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
             if (!hGlbUndoBuff)
             {
-                MessageBox (hWndEC,
-                            "Insufficient memory to save Undo buffer!!",
-                            lpszAppName,
-                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                // Display the error message
+                MessageBoxW (hWndEC,
+                             L"Insufficient memory to save Undo buffer!!",
+                             lpwszAppName,
+                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                SetFocus (GetParent (hWndEC));
+
                 return NULL;
             } // End IF
 
@@ -828,7 +831,7 @@ HGLOBAL SF_UndoBufferFE
 //***************************************************************************
 
 HGLOBAL SF_UndoBufferLW
-    (HWND        hWndEC,            // Edit Cnotrol window handle
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPLW_PARAMS lpLW_Params)       // Ptr to common struc
 
 {
@@ -857,10 +860,13 @@ HGLOBAL SF_UndoBufferLW
     hGlbUndoBuff = DbgGlobalAlloc (GHND, uUndoCount * sizeof (UNDO_BUF));
     if (!hGlbUndoBuff)
     {
-        MessageBox (hWndEC,
-                    "Insufficient memory to save Undo buffer!!",
-                    lpszAppName,
-                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        // Display the error message
+        MessageBoxW (hWndEC,
+                     L"Insufficient memory to save Undo buffer!!",
+                     lpwszAppName,
+                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        SetFocus (GetParent (hWndEC));
+
         return NULL;
     } // End IF
 
@@ -1028,7 +1034,7 @@ UBOOL SaveFunctionCom
      LPSF_FCNS lpSF_Fcns)                   // Ptr to common struc
 
 {
-    HWND           hWndEC = NULL;           // Window handle to Edit Ctrl
+    HWND           hWndEC = NULL;           // Edit Ctrl Window handle (FE only)
     UINT           uLineLen;                // Line length
     HGLOBAL        hGlbTxtHdr = NULL,       // Header text global memory handle
                    hGlbTknHdr = NULL,       // Tokenized header text ...
@@ -1069,18 +1075,22 @@ UBOOL SaveFunctionCom
     //   might have been called from the Master Frame
     //   via a system command, in which case there is
     //   no PTD for that thread.
-    hGlbTxtHdr = MyGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
+    hGlbTxtHdr =
+      MyGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (!hGlbTxtHdr)
     {
         // Mark the line in error
         lpSF_Fcns->uErrLine = 0;
 
         if (hWndFE)
-            MessageBox (hWndEC,
-                        "Insufficient memory to save the function header text!!",
-                        lpszAppName,
-                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-        else
+        {
+            // Display the error message
+            MessageBoxW (hWndEC,
+                         L"Insufficient memory to save the function header text!!",
+                         lpwszAppName,
+                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            SetFocus (GetParent (hWndEC));
+        } else
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                        lpSF_Fcns->lptkFunc);
         goto ERROR_EXIT;
@@ -1134,6 +1144,7 @@ UBOOL SaveFunctionCom
                         wszTemp,
                         lpwszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            SetFocus (GetParent (hWndEC));
         } else
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
                                        lpSF_Fcns->lptkFunc);
@@ -1153,11 +1164,14 @@ UBOOL SaveFunctionCom
     if (!lclMemVirtStr[0].IniAddr)
     {
         if (hWndFE)
-            MessageBox (hWndEC,
-                        "Insufficient memory to save the function header strand stack!!",
-                        lpszAppName,
-                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-        else
+        {
+            // Display the error message
+            MessageBoxW (hWndEC,
+                         L"Insufficient memory to save the function header strand stack!!",
+                         lpwszAppName,
+                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            SetFocus (GetParent (hWndEC));
+        } else
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                        lpSF_Fcns->lptkFunc);
         goto ERROR_EXIT;        // Mark as failed
@@ -1225,24 +1239,50 @@ UBOOL SaveFunctionCom
                  lpSISCur = lpSISCur->lpSISPrv)
             if (lpSISCur->hGlbDfnHdr EQ hGlbOldDfn)
             {
-                // Signal SI Damage
-                MessageBox (hWndEC,
-                            "SI Damage in pending function:  changes to this function NOT saved",
-                            lpszAppName,
-                           MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                SetFocus (GetParent (hWndEC));
-
+                if (hWndFE)
+                {
+                    // Display the error message
+                    MessageBoxW (hWndEC,
+                                 L"SI Damage in pending function:  changes to this function NOT saved",
+                                 lpwszAppName,
+                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                    SetFocus (GetParent (hWndEC));
+                } else
+                    ErrorMessageIndirectToken (ERRMSG_SI_DAMAGE APPEND_NAME,
+                                               lpSF_Fcns->lptkFunc);
                 goto ERROR_EXIT;
             } // End FOR/IF
 
-            // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbOldDfn);
+            // Ensure it's a UDFO
+            if (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbOldDfn)))
+            {
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (hGlbOldDfn);
 
-            // Get the creation time
-            ftCreation = lpMemDfnHdr->ftCreation;
+                // Get the creation time
+                ftCreation = lpMemDfnHdr->ftCreation;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOldDfn); lpMemDfnHdr = NULL;
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbOldDfn); lpMemDfnHdr = NULL;
+            } else
+            {
+                if (hWndFE)
+                {
+                    // Format the error message
+                    wsprintfW (wszTemp,
+                               L"New object name is <%s>, not a user-defined function/operator:  changes to this function NOT saved",
+                               lpwNameTypeStr[lpSymName->stFlags.stNameType]);
+                    // Display the error message
+                    MessageBoxW (hWndEC,
+                                 wszTemp,
+                                 lpwszAppName,
+                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                    SetFocus (GetParent (hWndEC));
+                } else
+                    ErrorMessageIndirectToken (ERRMSG_NOT_SAVED_FILE_ERROR APPEND_NAME,
+                                               lpSF_Fcns->lptkFunc);
+                goto ERROR_EXIT;
+            } // End IF/ELSE
         } else
             (*lpSF_Fcns->SF_CreationTime) (lpSF_Fcns->LclParams, &systemTime, &ftCreation);
 
@@ -1279,20 +1319,24 @@ UBOOL SaveFunctionCom
 
         // Allocate global memory for the function header
         lpSF_Fcns->hGlbDfnHdr =
-        hGlbDfnHdr = DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
-                                         + sizeof (LPSYMENTRY) * (numResultSTE
-                                                                + numLftArgSTE
-                                                                + numRhtArgSTE
-                                                                + numLocalsSTE)
-                                         + sizeof (FCNLINE) * numFcnLines);
+        hGlbDfnHdr =
+          DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
+                              + sizeof (LPSYMENTRY) * (numResultSTE
+                                                     + numLftArgSTE
+                                                     + numRhtArgSTE
+                                                     + numLocalsSTE)
+                              + sizeof (FCNLINE) * numFcnLines);
         if (!hGlbDfnHdr)
         {
             if (hWndFE)
-                MessageBox (hWndEC,
-                            "Insufficient memory to save the function header!!",
-                            lpszAppName,
-                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-            else
+            {
+                // Display the error message
+                MessageBoxW (hWndEC,
+                             L"Insufficient memory to save the function header!!",
+                             lpwszAppName,
+                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                SetFocus (GetParent (hWndEC));
+            } else
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                            lpSF_Fcns->lptkFunc);
             goto ERROR_EXIT;
@@ -1439,11 +1483,14 @@ UBOOL SaveFunctionCom
             if (!hGlbTxtLine)
             {
                 if (hWndFE)
-                    MessageBox (hWndEC,
-                                "Insufficient memory to save a function line!!",
-                                lpszAppName,
-                                MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                else
+                {
+                    // Display the error message
+                    MessageBoxW (hWndEC,
+                                 L"Insufficient memory to save a function line!!",
+                                 lpwszAppName,
+                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                    SetFocus (GetParent (hWndEC));
+                } else
                     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                                lpSF_Fcns->lptkFunc);
                 goto ERROR_EXIT;
@@ -1508,9 +1555,10 @@ UBOOL SaveFunctionCom
                                lpMemPTD->uCaret);
                     // Display the error message
                     MessageBoxW (hWndEC,
-                                wszTemp,
-                                lpwszAppName,
-                                MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                                 wszTemp,
+                                 lpwszAppName,
+                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                    SetFocus (GetParent (hWndEC));
                 } else
                     // Save the line # in error (origin-0)
                     lpSF_Fcns->uErrLine = uLineNum + 1;
@@ -1548,9 +1596,10 @@ UBOOL SaveFunctionCom
                            lpMemPTD->uCaret);
                 // Display the error message
                 MessageBoxW (hWndEC,
-                            wszTemp,
-                            lpwszAppName,
-                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                             wszTemp,
+                             lpwszAppName,
+                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                SetFocus (GetParent (hWndEC));
             } else
                 // Save the line # in error (origin-0)
                 lpSF_Fcns->uErrLine = uLineNum + 1;
@@ -1559,7 +1608,7 @@ UBOOL SaveFunctionCom
         } // End IF
 
         // Check for special labels ([]IDENTITY, etc.)
-        if (!GetSpecialLabelNums (lpMemDfnHdr, hWndFE NE NULL))
+        if (!GetSpecialLabelNums (lpMemDfnHdr, hWndEC, hWndFE NE NULL))
             goto ERROR_EXIT;
 
         // If there was a previous function, ...
@@ -1770,6 +1819,7 @@ UBOOL IsLineEmpty
 
 UBOOL GetSpecialLabelNums
     (LPDFN_HEADER  lpMemDfnHdr,     // Ptr to user-defined function/operator header
+     HWND          hWndEC,          // Edit Ctrl window handle (FE only)
      UBOOL         bDispErrMsg)     // TRUE iff we may display error messages
 
 {
@@ -1873,9 +1923,11 @@ ERROR_EXIT:
                    uLineNum + 1);
         // Display the error message
         MessageBoxW (NULL,
-                    wszTemp,
-                    lpwszAppName,
-                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                     wszTemp,
+                     lpwszAppName,
+                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        if (hWndEC)
+            SetFocus (GetParent (hWndEC));
     } // End IF
 
     // Mark as in error

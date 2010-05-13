@@ -664,7 +664,7 @@ HGLOBAL Init1MagicFunction
         } // End IF
 
         // Check for special labels ([]IDENTITY, etc.)
-        if (!GetSpecialLabelNums (lpMemDfnHdr, TRUE))
+        if (!GetSpecialLabelNums (lpMemDfnHdr, NULL, TRUE))
             goto ERROR_EXIT;
 
         // Get the function/operator LPSYMENTRY

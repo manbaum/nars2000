@@ -1,6 +1,24 @@
 Version 0.0.2.11 consists of the following Builds:
 
 
+Build #649 -- Version 0.0.2.11
+------------------------------
+
+* Before Saving a Function Ensure The Old Object Is Also A Function
+
+Directory trunk:
+
+DEFINES.H:
+  Update copyright year in initial copyright notice.
+
+PF_LSHOE.C:
+  Fix Bug:  In Partitioned Enclose, the case of 2 1 1 2 1 ... was
+    missed because when the second 2 was parsed the previous value
+    was still 2, so it didn't trigger a new item in the result.
+  In <PrimFnDydLeftShoeGlb_EM>, factor out common code and omit
+    incorrect DEBUG-only assertion.
+
+
 Build #648 -- Version 0.0.2.11
 ------------------------------
 
@@ -20,7 +38,7 @@ SAVEFCN.C:
   Improve comments.
   Convert <MessageBox> calls to Unicode.
   After displaying a Message Box, set the focus to the parent
-    to the Edit Ctrl window.
+    of the Edit Ctrl window.
   Before displaying a Message Box, split cases depending upon
     whether or not we're not called from the Master Frame.
   Before saving a function, check to see if the old object is

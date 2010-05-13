@@ -1523,42 +1523,32 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                         // Count in another item in the result
                         aplNELMAxis++;
 
-                        // Save the last left arg value
-                        aplLongestLast = aplLongestLft;
-                        bLastValid = TRUE;
-
                         // Save as the starting index
                         uStartCnt = uCnt;
                     } // End IF
                 } else
                 {
-                    // Save the last left arg value
-                    aplLongestLast = aplLongestLft;
+                    // Mark <aplLongestLast> as valid
                     bLastValid = TRUE;
 
                     // Save as the starting index
                     uStartCnt = uCnt;
                 } // End IF/ELSE
+
+                // Save the last left arg value
+                aplLongestLast = aplLongestLft;
             } else
-            if (bLastValid
-             && uStartCnt < uCnt)
             {
-                // Count in another item in the result
-                aplNELMAxis++;
+                if (uStartCnt < uCnt)
+                    // Count in another item in the result
+                    aplNELMAxis++;
 
                 // Clear the last left arg value
                 bLastValid = FALSE;
 
                 // Save as starting index
                 uStartCnt = uCnt + 1;
-            } else
-            {
-                // Clear the last left arg value
-                bLastValid = FALSE;
-
-                // Save as starting index
-                uStartCnt = uCnt + 1;
-            } // End IF/ELSE/...
+            } // End IF/ELSE
         } // End FOR
 
         // If there's a leftover item, ...
@@ -1737,57 +1727,44 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                                                      lptkFunc))     // Ptr to function token
                         goto ERROR_EXIT;
 
-                    // Save the last left arg value
-                    aplLongestLast = aplLongestLft;
-                    bLastValid = TRUE;
-
                     // Save as the starting index
                     uStartCnt = uCnt;
                 } // End IF
             } else
             {
-                // Save the last left arg value
-                aplLongestLast = aplLongestLft;
+                // Mark <aplLongestLast> as valid
                 bLastValid = TRUE;
 
                 // Save as the starting index
                 uStartCnt = uCnt;
             } // End IF/ELSE
+
+            // Save the last left arg value
+            aplLongestLast = aplLongestLft;
         } else
-        if (bLastValid
-         && uStartCnt < uCnt)
         {
-            // This element ends the previous item
-            if (!PrimFnDydLeftShoeAppend_EM (lpMemRht,      // Ptr to right arg global memory
-                                             aplTypeRht,    // Right arg storage type
-                                             uDimAxRht,     // Right arg axis length
-                                             uStartCnt,     // Starting index into right arg along axis dimension
-                                             uCnt,          // Ending ...
-                            (LPAPLNESTED *) &lpMemRes,      // Ptr to ptr to result global memory
-                                             uDimHi,        // Product of length of dimensions above axis
-                                             aplNELMAxis,   // Length of result axis dimension
-                                             uDimLo,        // Product of length of dimensions below axis
-                                             uAxis++,       // Current index into result axis dimension
-                                             lptkFunc))     // Ptr to function token
-                goto ERROR_EXIT;
+            if (uStartCnt < uCnt)
+                // This element ends the previous item
+                if (!PrimFnDydLeftShoeAppend_EM (lpMemRht,      // Ptr to right arg global memory
+                                                 aplTypeRht,    // Right arg storage type
+                                                 uDimAxRht,     // Right arg axis length
+                                                 uStartCnt,     // Starting index into right arg along axis dimension
+                                                 uCnt,          // Ending ...
+                                (LPAPLNESTED *) &lpMemRes,      // Ptr to ptr to result global memory
+                                                 uDimHi,        // Product of length of dimensions above axis
+                                                 aplNELMAxis,   // Length of result axis dimension
+                                                 uDimLo,        // Product of length of dimensions below axis
+                                                 uAxis++,       // Current index into result axis dimension
+                                                 lptkFunc))     // Ptr to function token
+                    goto ERROR_EXIT;
 
             // Clear the last left arg value
             bLastValid = FALSE;
 
             // Save as starting index
             uStartCnt = uCnt + 1;
-        } else
-        {
-            // Clear the last left arg value
-            bLastValid = FALSE;
-
-            // Save as starting index
-            uStartCnt = uCnt + 1;
-        } // End IF/ELSE/...
+        } // End IF/ELSE
     } // End FOR
-
-    // Because the empty case has already been handled
-    Assert (bLastValid);
 
     // If there's a leftover item, ...
     if (uStartCnt < uCnt)

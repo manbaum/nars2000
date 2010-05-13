@@ -17,7 +17,7 @@ SAVEFCN.C:
   Improve comments.
   Convert <MessageBox> calls to Unicode.
   After displaying a Message Box, set the focus to the parent
-    to the Edit Ctrl window.
+    of the Edit Ctrl window.
   Before displaying a Message Box, split cases depending upon
     whether or not we're not called from the Master Frame.
   Before saving a function, check to see if the old object is

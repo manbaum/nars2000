@@ -481,8 +481,10 @@ UBOOL DisplayGlbArr_EM
             ZeroMemory (lpaplChar, (APLU3264) max (aplNELMRes, 1) * sizeof (APLCHAR));
         else
         {
+            if (aplNELMRes NE (APLU3264) aplNELMRes)
+                goto WSFULL_EXIT;
+
             // Fill the output area with all blanks
-            Assert (aplNELMRes EQ (APLU3264) aplNELMRes);
             FillMemoryW (lpaplChar, (APLU3264) aplNELMRes, L' ');
         } // End IF/ELSE
 #endif
@@ -637,6 +639,11 @@ EMPTY_EXIT:
     bRet = TRUE;
 
     goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 LIMIT_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,

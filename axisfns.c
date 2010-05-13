@@ -108,10 +108,12 @@ UBOOL CheckAxisImm
         //   returning a zero ptr, so we max aplRankCmp with 1.
         ByteAxis = sizeof (APLUINT) * 2 * max (aplRankCmp, 1);
 
-        // Allocate storage for the axis vector
-        // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteAxis EQ (APLU3264) ByteAxis);
+        // Check for overflow
+        if (ByteAxis NE (APLU3264) ByteAxis)
+            goto ERROR_EXIT;
+
         *lphGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteAxis);
+        // Allocate storage for the axis vector
         if (!*lphGlbAxis)
             goto ERROR_EXIT;
 
@@ -290,10 +292,11 @@ UBOOL CheckAxisGlb
         //   returning a zero ptr, so we max aplRankCmp with 1.
         ByteAxis = sizeof (APLUINT) * 2 * max (aplRankCmp, 1);
 
-        // Allocate storage for the axis vector
-        // N.B. Conversion from APLUINT to UINT.
+        // Check for overflow
         if (ByteAxis NE (APLU3264) ByteAxis)
             goto WSFULL_EXIT;
+
+        // Allocate storage for the axis vector
         *lphGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteAxis);
         if (!*lphGlbAxis)
             goto WSFULL_EXIT;
@@ -311,10 +314,11 @@ UBOOL CheckAxisGlb
     //   returning a zero ptr, so we max aplRankCmp with 1.
     ByteDup = RoundUpBitsToBytes (max (aplRankCmp, 1));
 
-    // Allocate global memory bit vector to test for duplicates
-    // N.B.  Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteDup NE (APLU3264) ByteDup)
         goto WSFULL_EXIT;
+
+    // Allocate global memory bit vector to test for duplicates
     hGlbDup = DbgGlobalAlloc (GHND, (APLU3264) ByteDup);
     if (!hGlbDup)
         goto WSFULL_EXIT;
@@ -734,11 +738,14 @@ UBOOL CheckAxis_EM
         ByteAxis = sizeof (APLUINT) * 2 * max (aplRankCmp, 1);
 
         //***************************************************************
-        // Allocate storage for the axis vector
-        // N.B. Conversion from APLUINT to UINT.
+        // Check for overflow
         //***************************************************************
         if (ByteAxis NE (APLU3264) ByteAxis)
             goto WSFULL_EXIT;
+
+        //***************************************************************
+        // Allocate storage for the axis vector
+        //***************************************************************
         *lphGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteAxis);
         if (!*lphGlbAxis)
             goto WSFULL_EXIT;

@@ -376,10 +376,11 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    // Allocate space for the result.
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -468,14 +469,17 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         ((LPAPLCHAR) lpMemRes)[uRes] = L' ';
 
+    // Calculate space needed for the weighting vector
+    ByteRes = aplRankRes * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the right arg weighting vector which is
     //   {times}{backscan}1{drop}({rho}R),1
-    // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
-    ByteRes = aplRankRes * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbWVecRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRht)
         goto WSFULL_EXIT;
@@ -497,14 +501,17 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         uRes *= lpMemDimRht[iRht];
     } // End IF/FOR
 
+    // Calculate space needed for the odometer array
+    ByteRes = aplRankRes * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the right arg odometer array, one value per dimension
     //   in the right arg.
-    // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
-    ByteRes = aplRankRes * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRht)
         goto WSFULL_EXIT;
@@ -515,14 +522,17 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // Initialize the right arg odometer array
     CopyMemory (lpMemOdoRht, lpMemLoHiRht, (APLU3264) aplRankRes * sizeof (APLUINT));
 
+    // Calculate space needed for the weighting vector
+    ByteRes = aplRankRes * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the result weighting vector which is
     //   {times}{backscan}1{drop}({rho}Z),1
-    // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
-    ByteRes = aplRankRes * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbWVecRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRes)
         goto WSFULL_EXIT;
@@ -543,14 +553,17 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         uRes *= lpMemDimRes[iRht];
     } // End IF/FOR
 
+    // Calculate space needed for the odometer array
+    ByteRes = aplRankRes * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the result odometer array, one value per dimension
     //   in the result.
-    // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
-    ByteRes = aplRankRes * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbOdoRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRes)
         goto WSFULL_EXIT;

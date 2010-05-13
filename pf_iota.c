@@ -189,8 +189,11 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_APA, abs64 (aplLongestRht), 1);
+
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
     // Allocate space for an APA
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
@@ -303,8 +306,11 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
     {
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Allocate space for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
@@ -503,12 +509,13 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     //***************************************************************
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRht, aplRankRht);
 
-    //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLUINT to UINT.
-    //***************************************************************
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -1628,8 +1635,11 @@ UBOOL PrimFnDydIotaPvN_EM
 
     // Calculate space needed for the result
     ByteRes = aplNELMLft * sizeof (APLUINT);
+
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
     // Allocate a temporary array to hold the inverse indices
     hGlbInv = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbInv)

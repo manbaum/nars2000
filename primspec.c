@@ -956,10 +956,11 @@ RESTART_EXCEPTION:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
 
-    // Allocate space for the result.
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -1927,14 +1928,17 @@ UBOOL PrimFnDydSimpNest_EM
     // Handle axis if present
     if (aplNELMAxis NE aplRankRes)
     {
+        // Calculate space needed for the weighting vector
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteAlloc NE (APLU3264) ByteAlloc)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the weighting vector which is
         //   {times}{backscan}1{drop}({rho}Z),1
-        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteAlloc = aplRankRes * sizeof (APLUINT);
-        if (ByteAlloc NE (APLU3264) ByteAlloc)
-            goto WSFULL_EXIT;
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
@@ -1954,14 +1958,17 @@ UBOOL PrimFnDydSimpNest_EM
             uRes *= lpMemDimRes[iDim];
         } // End FOR
 
+        // Calculate space needed for the odometer array
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteAlloc NE (APLU3264) ByteAlloc)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the odometer array, one value per dimension
         //   in the right arg, with values initially all zero (thanks to GHND).
-        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteAlloc = aplRankRes * sizeof (APLUINT);
-        if (ByteAlloc NE (APLU3264) ByteAlloc)
-            goto WSFULL_EXIT;
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
@@ -2291,14 +2298,17 @@ UBOOL PrimFnDydNestSimp_EM
     // Handle axis if present
     if (aplNELMAxis NE aplRankRes)
     {
+        // Calculate space needed for the weighting vector
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteAlloc NE (APLU3264) ByteAlloc)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the weighting vector which is
         //   {times}{backscan}1{drop}({rho}Z),1
-        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteAlloc = aplRankRes * sizeof (APLUINT);
-        if (ByteAlloc NE (APLU3264) ByteAlloc)
-            goto WSFULL_EXIT;
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
@@ -2318,14 +2328,17 @@ UBOOL PrimFnDydNestSimp_EM
             uRes *= lpMemDimRes[iDim];
         } // End FOR
 
+        // Calculate space needed for the odometer array
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteAlloc NE (APLU3264) ByteAlloc)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the odometer array, one value per dimension
         //   in the right arg, with values initially all zero (thanks to GHND).
-        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteAlloc = aplRankRes * sizeof (APLUINT);
-        if (ByteAlloc NE (APLU3264) ByteAlloc)
-            goto WSFULL_EXIT;
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
@@ -6124,6 +6137,13 @@ RESTART_EXCEPTION_SINGLETON:
         // If the axis is significant, ...
         if (lpMemAxisHead && aplNELMAxis NE aplRankRes)
         {
+            // Calculate space needed for the weighting vector
+            ByteRes = aplRankRes * sizeof (APLUINT);
+
+            // Check for overflow
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
+
             //***************************************************************
             // Allocate space for the weighting vector which is
             //
@@ -6131,11 +6151,7 @@ RESTART_EXCEPTION_SINGLETON:
             //
             //   where Ax contains the specified axes, and
             //   Cx contains the remaining axes.
-            // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
-            ByteRes = aplRankRes * sizeof (APLUINT);
-            if (ByteRes NE (APLU3264) ByteRes)
-                goto WSFULL_EXIT;
             hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbWVec)
                 goto WSFULL_EXIT;
@@ -6155,14 +6171,17 @@ RESTART_EXCEPTION_SINGLETON:
                 uRes *= lpMemDimRes[lpMemAxisHead[iRht]];
             } // End FOR
 
+            // Calculate space needed for the odometer array
+            ByteRes = aplRankRes * sizeof (APLUINT);
+
+            // Check for overflow
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
+
             //***************************************************************
             // Allocate space for the odometer array, one value per dimension
             //   in the right arg, with values initially all zero (thanks to GHND).
-            // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
-            ByteRes = aplRankRes * sizeof (APLUINT);
-            if (ByteRes NE (APLU3264) ByteRes)
-                goto WSFULL_EXIT;
             hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbOdo)
                 goto WSFULL_EXIT;

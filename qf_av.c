@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,13 +96,13 @@ void MakeQuadAV
     // Calculate # bytes in the result
     ByteRes = CalcArraySize (ARRAY_CHAR, QUADAV_LEN, 1);
 
-    // Create []AV
-    // N.B.:  Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
     {
         DbgStop ();         // We should never get here
     } // End IF
 
+    // Create []AV
     hGlbQuadAV = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbQuadAV)
     {

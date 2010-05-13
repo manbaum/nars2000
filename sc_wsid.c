@@ -87,16 +87,13 @@ UBOOL CmdWsid_EM
         // Calculate space needed for the WSID
         ByteWSID = CalcArraySize (ARRAY_CHAR, uLen, 1);
 
+        if (ByteWSID NE (APLU3264) ByteWSID)
+            goto WSFULL_EXIT;
+
         // Allocate space for the WSID
-        // N.B. Conversion from APLUINT to UINT.
-        Assert (ByteWSID EQ (APLU3264) ByteWSID);
         hGlbWSID = DbgGlobalAlloc (GHND, (APLU3264) ByteWSID);
         if (!hGlbWSID)
-        {
-            ReplaceLastLineCRPmt (ERRMSG_WS_FULL APPEND_NAME);
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemWSID = MyGlobalLock (hGlbWSID);
@@ -178,7 +175,16 @@ UBOOL CmdWsid_EM
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ReplaceLastLineCRPmt (ERRMSG_WS_FULL APPEND_NAME);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     return bRet;
 } // End CmdWsid_EM
 #undef  APPEND_NAME

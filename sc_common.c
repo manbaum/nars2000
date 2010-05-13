@@ -293,10 +293,11 @@ UBOOL SaveNewWsid_EM
         // Calculate space needed for the new WSID
         ByteWSID = CalcArraySize (ARRAY_CHAR, iLen2, 1);
 
-        // Allocate space for the new WSID
-        // N.B. Conversion from APLUINT to UINT.
+        // Check for overflow
         if (ByteWSID NE (APLU3264) ByteWSID)
             goto WSFULL_EXIT;
+
+        // Allocate space for the new WSID
         hGlbWSID = DbgGlobalAlloc (GHND, (APLU3264) ByteWSID);
         if (!hGlbWSID)
             goto WSFULL_EXIT;

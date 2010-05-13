@@ -74,10 +74,11 @@ void BreakMessage
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
 
-    // Allocate space for the result
-    // N.B.  Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -321,6 +322,7 @@ void ErrorMessageDirect
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_DM_EXIT;
+
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
@@ -411,9 +413,11 @@ void ErrorMessageDirect
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_CHAR, 3 * uMaxLen, 2);
 
-        // Allocate space for the result
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EM_EXIT;
+
+        // Allocate space for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EM_EXIT;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -203,10 +203,11 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     // Calculate space needed for the result (a one-element vector)
     ByteRes = CalcArraySize (aplTypeRes, 1, 1);
 
-    // Allocate space for the result
-    // N.B.: Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -333,10 +334,11 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, 1);
 
-    // Allocate space for the result
-    // N.B.: Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -586,10 +588,13 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     //   so just copy the data if it's aligned
                     if (*lpuBitIndex EQ 0)
                     {
-                        // N.B.: Conversion from APLUINT to UINT.
+                        // Calculate space needd for the result
                         ByteRes = sizeof (APLBOOL) * RoundUpBitsToBytes (aplNELMRht);
+
+                        // Check for overflow
                         if (ByteRes NE (APLU3264) ByteRes)
                             goto WSFULL_EXIT;
+
                         CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
 
                         // Unless the right arg is a multiple of NBIB bits,
@@ -731,10 +736,13 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_INT:                     // Res = INT   , Rht = INT
                     // The result's and right arg's storage type are the same,
                     //   so just copy the data
-                    // N.B.: Conversion from APLUINT to UINT.
+                    // Calculate space needed for the result
                     ByteRes = sizeof (APLINT) * aplNELMRht;
+
+                    // Check for overflow
                     if (ByteRes NE (APLU3264) ByteRes)
                         goto WSFULL_EXIT;
+
                     CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
                     ((LPAPLINT) *lplpMemRes) += aplNELMRht;
 
@@ -858,10 +866,13 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_FLOAT:                   // Res = FLOAT , Rht = FLOAT
                     // The result's and right arg's storage type are the same,
                     //   so just copy the data
-                    // N.B.: Conversion from APLUINT to UINT.
+                    // Calculate space needed for the result
                     ByteRes = sizeof (APLFLOAT) * aplNELMRht;
+
+                    // Check for overflow
                     if (ByteRes NE (APLU3264) ByteRes)
                         goto WSFULL_EXIT;
+
                     CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
                     ((LPAPLFLOAT) *lplpMemRes) += aplNELMRht;
 
@@ -952,10 +963,13 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_CHAR:                    // Res = CHAR  , Rht = CHAR
                     // The result's and right arg's storage type are the same,
                     //   so just copy the data
-                    // N.B.: Conversion from APLUINT to UINT.
+                    // Calculate space needed for the result
                     ByteRes = sizeof (APLCHAR) * aplNELMRht;
+
+                    // Check for overflow
                     if (ByteRes NE (APLU3264) ByteRes)
                         goto WSFULL_EXIT;
+
                     CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
                     ((LPAPLCHAR) *lplpMemRes) += aplNELMRht;
 
@@ -1136,10 +1150,13 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                 case ARRAY_HETERO:                  // Res = HETERO, Rht = HETERO
                     // The result's and right arg's storage type are the same,
                     //   so just copy the data
-                    // N.B.: Conversion from APLUINT to UINT.
+                    // Calculate space needed for the result
                     ByteRes = sizeof (APLHETERO) * aplNELMRht;
+
+                    // Check for overflow
                     if (ByteRes NE (APLU3264) ByteRes)
                         goto WSFULL_EXIT;
+
                     CopyMemory (*lplpMemRes, lpMemRht, (APLU3264) ByteRes);
                     ((LPAPLHETERO) *lplpMemRes) += aplNELMRht;
 
@@ -1329,11 +1346,14 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMLft, aplRankLft);
 
     //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLUINT to UINT.
+    // Check for overflow
     //***************************************************************
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -2515,12 +2535,13 @@ UBOOL PrimFnDydEpsilonCvC_EM
     // Calculate # bytes in the TT at one bit per 16-bit index (APLCHAR)
     ByteTT = RoundUpBitsToBytes (APLCHAR_SIZE);
 
+    // Check for overflow
+    if (ByteTT NE (APLU3264) ByteTT)
+        goto WSFULL_EXIT;
+
     // Allocate space for a ByteTT Translate Table
     // Note that this allocation is GPTR (GMEM_FIXED | GMEM_ZEROINIT)
     //   because we'll use it quickly and then free it.
-    // N.B.:  Conversion from APLUINT to UINT
-    if (ByteTT NE (APLU3264) ByteTT)
-        goto WSFULL_EXIT;
     lpMemTT = MyGlobalAlloc (GPTR, (APLU3264) ByteTT);
     if (!lpMemTT)
         goto WSFULL_EXIT;

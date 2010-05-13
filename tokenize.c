@@ -2671,17 +2671,19 @@ UBOOL fnQuoDoneSub
         // Calculate space needed for the string vector
         ByteRes = CalcArraySize (ARRAY_CHAR, lptkLocalVars->iStrLen, 1);
 
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate global memory for the array header,
         //   one dimension (it's a vector), and the string
         //   excluding the terminating zero.
-        // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EXIT;
         hGlb = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlb)
             goto WSFULL_EXIT;
+
         // Lock the memory to get a ptr to it
         lpwsz = MyGlobalLock (hGlb);
 
@@ -3150,12 +3152,15 @@ UBOOL MergeNumbers
             // Calculate space needed for the numeric vector
             ByteRes = CalcArraySize (aplTypeRes, aplNELMPrv + 1, 1);
 
-            // Allocate global memory for the array
+            // Check for overflow
             if (ByteRes NE (APLU3264) ByteRes)
                 goto WSFULL_EXIT;
+
+            // Allocate global memory for the array
             hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;
+
             // Lock the memory to get a ptr to it
             lpMemRes = MyGlobalLock (hGlbRes);
 

@@ -450,12 +450,13 @@ __try
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, aplRankRes);
 
-    //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLUINT to UINT.
-    //***************************************************************
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -497,8 +498,11 @@ __try
 
     // lpMemRes now points to the result's data
 #ifdef PREFILL
+    // Check for overflow
+    if (aplNELMRes NE (APLU3264) aplNELMRes)
+        goto WSFULL_EXIT;
+
     // Fill it with all blanks
-    Assert (aplNELMRes EQ (APLU3264) aplNELMRes);
     FillMemoryW (lpMemRes, (APLU3264) aplNELMRes, L' ');
 #endif
     // Output the result at appropriate widths
@@ -3040,11 +3044,14 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Allocate temp storage for the normalized left arg
-    // N.B.: Conversion from APLUINT to UINT
+    // Calculate space needed for the result
     ByteRes = aplColsRht * sizeof (WIDPRC);
+
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate temp storage for the normalized left arg
     hGlbWidPrc = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWidPrc)
         goto WSFULL_EXIT;
@@ -3532,9 +3539,11 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     // Calculate the space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, aplRankRes);
 
-    // Allocate space for the result
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

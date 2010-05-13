@@ -226,10 +226,11 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, aplRowsRes * aplColsRes, 2);
 
-    // Allocate space for the result
-    // N.B.:  Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -563,10 +564,11 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMRes, 1);
 
-    // Allocate space for the result
-    // N.B.:  Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

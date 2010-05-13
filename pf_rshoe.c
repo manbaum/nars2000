@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -395,10 +395,11 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     //   that simple request.
     ByteRes = max (1, ByteRes);
 
-    // Allocate space for the max shape of the items
-    // N.B.:  Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the max shape of the items
     hGlbDimCom = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbDimCom)
         goto WSFULL_EXIT;
@@ -478,12 +479,13 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLUINT to UINT.
-    //***************************************************************
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -1318,10 +1320,11 @@ NORMAL_EXIT:
         // Calculate space needed for left arg
         ByteRes = CalcArraySize (ARRAY_INT, aplRankRes, 1);
 
-        // Allocate space for the max shape of the items
-        // N.B.:  Conversion from APLUINT to UINT.
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
+        // Allocate space for the max shape of the items
         hGlbLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbLft)
             goto WSFULL_EXIT;

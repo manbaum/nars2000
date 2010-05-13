@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -221,10 +221,14 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMRht, aplRankRht);
 
     //***************************************************************
-    // Now we can allocate the storage for the result
+    // Check for overflow
     //***************************************************************
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -301,12 +305,16 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         //   same length as that of the right arg so we can
         //   use it in a call to IncrOdometer.
 
+        // Calculate space needed for the result
+        ByteRes = aplRankRht * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the temporary left arg dimension vector
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLUINT);
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EXIT;
         hGlbDimTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbDimTmp)
             goto WSFULL_EXIT;
@@ -335,12 +343,16 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     // Lock the memory to get a ptr to it
     lpMemKmpNext = MyGlobalLock (hGlbKmpNext);
 
+    // Calculate space needed for the result
+    ByteRes = aplRankRht * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the dimension difference vector
     //***************************************************************
-    ByteRes = aplRankRht * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbDimDiff = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbDimDiff)
         goto WSFULL_EXIT;
@@ -358,15 +370,19 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     for (iDim = aplRankRht - aplRankLft - 1; iDim >= 0; iDim--)
         lpMemDimDiff[iDim] = lpMemDimRht[iDim] - 1;
 
+    // Calculate space needed for the result
+    ByteRes = aplRankRht * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the right arg weighting vector which is
     //   {times}{backscan}{rho}R
     // Note we do not weigh the columns as they are looped though
     //   separately.
     //***************************************************************
-    ByteRes = aplRankRht * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbWVecRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRht)
         goto WSFULL_EXIT;
@@ -387,13 +403,17 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         uRes *= lpMemDimRht[iDim];
     } // End FOR
 
+    // Calculate space needed for the result
+    ByteRes = aplRankRht * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the right arg odometer array, one value per
     //   dimension in the right arg.
     //***************************************************************
-    ByteRes = aplRankRht * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRht)
         goto WSFULL_EXIT;
@@ -401,15 +421,19 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     // Lock the memory to get a ptr to it
     lpMemOdoRht = MyGlobalLock (hGlbOdoRht);
 
+    // Calculate space needed for the result
+    ByteRes = aplRankRht * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the test arg weighting vector which is
     //   {times}{backscan}{rho}R
     // Note we do not weigh the columns as they are looped though
     //   separately.
     //***************************************************************
-    ByteRes = aplRankRht * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbWVecTst = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecTst)
         goto WSFULL_EXIT;
@@ -420,13 +444,17 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     // Copy the right arg weighting vector
     CopyMemory (lpMemWVecTst, lpMemWVecRht, (APLU3264) ByteRes);
 
+    // Calculate space needed for the result
+    ByteRes = aplRankRht * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the test arg odometer array, one value per
     //   dimension in the right arg.
     //***************************************************************
-    ByteRes = aplRankRht * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbOdoTst = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoTst)
         goto WSFULL_EXIT;

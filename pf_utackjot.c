@@ -282,8 +282,10 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     // Skip over the header and dimension
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
+    if (aplNELMRht NE (APLU3264) aplNELMRht)
+        goto WSFULL_EXIT;
+
     // Allocate space for the global value
-    Assert (aplNELMRht EQ (APLU3264) aplNELMRht);
     lpwszCompLine =
       MyVirtualAlloc (NULL,         // Any address (FIXED SIZE)
                       (DWORD) (aplNELMRht + 1) * sizeof (APLCHAR),   // "+ 1" for the terminating zero
@@ -292,8 +294,11 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     if (!lpwszCompLine)
         goto WSFULL_EXIT;
 
+    // Check for overflow
+    if (aplNELMRht NE (APLU3264) aplNELMRht)
+        goto WSFULL_EXIT;
+
     // Copy the chars into the line
-    Assert (aplNELMRht EQ (APLU3264) aplNELMRht);
     CopyMemoryW (lpwszCompLine, lpMemRht, (APLU3264) aplNELMRht);
     lpwszCompLine[aplNELMRht] = WC_EOS;
 

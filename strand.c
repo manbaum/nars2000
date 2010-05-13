@@ -699,10 +699,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, iLen, 1);
 
-    // Allocate global memory for a length <iLen> vector of type <aplTypeRes>.
-    // N.B.: Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate global memory for a length <iLen> vector of type <aplTypeRes>.
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
         goto WSFULL_EXIT;
@@ -1361,6 +1362,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
     // Allocate global memory for the function array
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
@@ -2182,10 +2184,11 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     ByteRes = sizeof (VARNAMED_HEADER)          // For the header
             + sizeof (lpYYStrand[0]) * iLen;    // For the data
 
-    // Allocate global memory for a length <iLen> vector of type <cState>
-    // N.B.: Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate global memory for a length <iLen> vector of type <cState>
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbStr)
         goto WSFULL_EXIT;
@@ -2461,10 +2464,11 @@ LPPL_YYSTYPE MakeList_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_LIST, iLen, 1);
 
-    // Allocate global memory for a length <iLen> vector
-    // N.B.: Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate global memory for a length <iLen> vector
     hGlbLst = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbLst)
         goto WSFULL_EXIT;

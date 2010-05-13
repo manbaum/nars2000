@@ -376,12 +376,13 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRes, aplRankRes);
 
-    //***************************************************************
-    // Now we can allocate the storage for the result.
-    // N.B.:  Conversion from APLUINT to UINT.
-    //***************************************************************
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result.
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -474,9 +475,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         // Calculate space needed for the result
                         ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMSub, aplNELMAxis);
 
-                        // N.B.:  Conversion from APLUINT to UINT.
+                        // Check for overflow
                         if (ByteRes NE (APLU3264) ByteRes)
                             goto WSFULL_EXIT;
+
+                        // Allocate space for the prototype
                         hSymGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                         if (!hSymGlbProto)
                             goto WSFULL_EXIT;
@@ -589,14 +592,17 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             goto NORMAL_EXIT;
         } // End IF
 
+        // Calculate space needed for the weighting vector
+        ByteRes = aplRankRht * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the weighting vector which is
         //   {times}{backscan}1{drop}({rho}R),1
-        // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLUINT);
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EXIT;
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
@@ -616,14 +622,17 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             uRes *= lpMemDimRht[iRht];
         } // End FOR
 
+        // Calculate space needed for the odometer array
+        ByteRes = aplRankRht * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the odometer array, one value per dimension
         //   in the right arg, with values initially all zero (thanks to GHND).
-        // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLUINT);
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EXIT;
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
@@ -1171,6 +1180,8 @@ UBOOL PrimFnMonLeftShoeProto_EM
         // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
+        // Allocate space for the prototype result
         *lphGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!*lphGlbProto)
             goto WSFULL_EXIT;
@@ -1257,12 +1268,13 @@ UBOOL PrimFnMonLeftShoeGlbSub_EM
 {
     APLINT uRht;
 
-    //***************************************************************
-    // Allocate storage for this subarray.
-    // N.B.:  Conversion from APLUINT to UINT.
-    //***************************************************************
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Allocate storage for this subarray.
+    //***************************************************************
     *lphGlbSub = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!*lphGlbSub)
         goto WSFULL_EXIT;
@@ -1577,10 +1589,11 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    // Allocate space for the result.
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -1923,12 +1936,13 @@ UBOOL PrimFnDydLeftShoeAppend_EM
         // Calculate space needed for the item
         ByteItm = CalcArraySize (aplTypeItm, aplNELMItm, aplRankItm);
 
-        //***************************************************************
-        // Now we can allocate the storage for the item.
-        // N.B.:  Conversion from APLUINT to UINT.
-        //***************************************************************
+        // Check for overflow
         if (ByteItm NE (APLU3264) ByteItm)
             goto WSFULL_EXIT;
+
+        //***************************************************************
+        // Now we can allocate the storage for the item.
+        //***************************************************************
         hGlbItm = DbgGlobalAlloc (GHND, (APLU3264) ByteItm);
         if (!hGlbItm)
             goto WSFULL_EXIT;

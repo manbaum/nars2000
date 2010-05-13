@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -191,10 +191,11 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
 
-    // Allocate space for the result
-    // N.B.:  Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

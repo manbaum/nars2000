@@ -1060,10 +1060,11 @@ NEXTLINE:
             // Calculate space needed for the result
             ByteRes = CalcArraySize (ARRAY_NESTED, numResultSTE, 1);
 
-            // Allocate space for the result
-            // N.B.: Conversion from APLUINT to UINT.
+            // Check for overflow
             if (ByteRes NE (APLU3264) ByteRes)
                 goto WSFULL_EXIT;
+
+            // Allocate space for the result
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;
@@ -1923,10 +1924,11 @@ UBOOL InitFcnSTEs
             // Calculate space needed for the result
             ByteRes = CalcFcnSize (TknCount);
 
-            // Allocate global memory for the function array
-            // N.B.: Conversion from APLUINT to UINT.
+            // Check for overflow
             if (ByteRes NE (APLU3264) ByteRes)
                 goto WSFULL_EXIT;
+
+            // Allocate global memory for the function array
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;

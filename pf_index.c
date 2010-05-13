@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -237,8 +237,11 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
             // Calculate space needed for the result
             ByteRes = CalcArraySize (aplTypeRes, aplNELMSub, aplRankSub);
+
+            // Check for overflow
             if (ByteRes NE (APLU3264) ByteRes)
                 goto WSFULL_EXIT;
+
             // Allocate space for the result
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
@@ -691,8 +694,11 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
 
         // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeRes, 1, aplRankRes);
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Allocate space for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
@@ -822,8 +828,11 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMLst, aplRankLst);
+
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
@@ -1099,8 +1108,11 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeNam, aplNELMRes, aplRankLst);
+
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
@@ -1364,8 +1376,11 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
     {
         // Calculate bytes needed for the new list arg
         ByteRes = CalcArraySize (ARRAY_LIST, uCount, 1);
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Allocate space for the new list arg
         hGlbLstNew = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbLstNew)
@@ -1418,8 +1433,11 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
 
         // Calculate space needed for the axis operator
         ByteRes = CalcArraySize (ARRAY_INT, uCount, 1);
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Allocate space for the axis operator
         hGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbAxis)
@@ -1946,8 +1964,11 @@ UBOOL ArrayIndexSetNamScalar_EM
     {
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Wrap the global in a scalar
         hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
@@ -3326,8 +3347,11 @@ UBOOL ArrayIndexSetRect_EM
     {
         // Calculate bytes needed for the new list arg
         ByteRes = CalcArraySize (ARRAY_LIST, uCount, 1);
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Allocate space for the new list arg
         hGlbLstNew = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbLstNew)
@@ -3380,8 +3404,11 @@ UBOOL ArrayIndexSetRect_EM
 
         // Calculate space needed for the axis operator
         ByteRes = CalcArraySize (ARRAY_INT, uCount, 1);
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Allocate space for the axis operator
         hGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbAxis)

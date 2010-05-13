@@ -769,10 +769,11 @@ UBOOL TransferInverseChr1_EM
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, aplRankRes);
 
-        // Now we can allocate the storage for the result
-        // N.B.:  Conversion from APLUINT to UINT.
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
+        // Now we can allocate the storage for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;

@@ -242,10 +242,11 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
 
-    // Allocate space for the result
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -1028,14 +1029,17 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     // Handle axis if present
     if (aplNELMAxis NE aplRankRes)
     {
+        // Calculate space needed for the weighting vector
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteAlloc NE (APLU3264) ByteAlloc)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the weighting vector which is
         //   {times}{backscan}1{drop}({rho}Z),1
-        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteAlloc = aplRankRes * sizeof (APLUINT);
-        if (ByteAlloc NE (APLU3264) ByteAlloc)
-            goto WSFULL_EXIT;
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
@@ -1055,14 +1059,17 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
             uRes *= lpMemDimRes[lpMemAxisHead[iDim]];
         } // End FOR
 
+        // Calculate space needed for the odometer array
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteAlloc NE (APLU3264) ByteAlloc)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the odometer array, one value per dimension
         //   in the right arg, with values initially all zero (thanks to GHND).
-        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteAlloc = aplRankRes * sizeof (APLUINT);
-        if (ByteAlloc NE (APLU3264) ByteAlloc)
-            goto WSFULL_EXIT;
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
         if (!hGlbOdo)
             goto WSFULL_EXIT;

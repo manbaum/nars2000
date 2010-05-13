@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -313,10 +313,11 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
 
-    // Allocate space for the result.
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -461,10 +462,11 @@ HGLOBAL MakeEncloseZilde
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
 
-    // Allocate space for the result.
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         return NULL;
+
+    // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         return NULL;
@@ -815,10 +817,13 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Calcualte space needed for the TTs
+    // Calculate space needed for the TT handles
     ByteRes = aplRankLft * sizeof (TT_HANDLES);
+
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
     // Allocate an array to hold the HGLOBALs of the translate tables
     hGlbTTHandles = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbTTHandles)
@@ -831,9 +836,13 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     //   one per left arg dimension
     for (uDim = 0; uDim < aplRankLft; uDim++)
     {
+        // Calculate space needed for the TTs
         ByteRes = APLCHAR_SIZE * sizeof (APLCHAR);
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Allocate space for the TT -- note we don't use GHND (which includes GMEM_ZEROINIT)
         //    as we'll initialize it ourselves
         lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, (APLU3264) ByteRes);
@@ -921,10 +930,11 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
 
-    // Allocate space for the result.
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

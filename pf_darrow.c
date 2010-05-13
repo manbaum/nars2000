@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -313,10 +313,11 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    // Allocate space for the result.
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -406,14 +407,17 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         goto YYALLOC_EXIT;
     } // End IF
 
+    // Calculate space needed for the result
+    ByteRes = aplRankRes * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the right arg weighting vector which is
     //   {times}{backscan}1{drop}({rho}R),1
-    // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
-    ByteRes = aplRankRes * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbWVecRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVecRht)
         goto WSFULL_EXIT;
@@ -435,14 +439,17 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         uRes *= lpMemDimRht[iRht];
     } // End IF/FOR
 
+    // Calculate space needed for the result
+    ByteRes = aplRankRes * sizeof (APLUINT);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
     //***************************************************************
     // Allocate space for the right arg odometer array, one value per dimension
     //   in the right arg.
-    // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
-    ByteRes = aplRankRes * sizeof (APLUINT);
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
     hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdoRht)
         goto WSFULL_EXIT;
@@ -744,12 +751,13 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     // Calculate space for a normalized left arg
     ByteRes = (5 - bDownArrow * 2) * aplRankRes * sizeof (APLINT);
 
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        return NULL;
+
     // Allocate space for a normalized left arg
     // Three copies for DownArrow (TmpLft, LoRht, HiRht),
     //   five for UpArrow (TmpLft, LoRht, HiRht, LoRes, HiRes)
-    // N.B.:  Conversion from APLUINT to UINT
-    if (ByteRes NE (APLU3264) ByteRes)
-        return NULL;
     hGlbTmpLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbTmpLft)
         return NULL;

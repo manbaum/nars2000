@@ -438,9 +438,11 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    // Allocate space for the result
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -2396,8 +2398,11 @@ UBOOL PrimOpDydSlashInsertDim_EM
 
         // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeRes, 1, 1); // One-element vector
+
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
         // Allocate space for the result
         hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbTmp)
@@ -2479,8 +2484,11 @@ UBOOL PrimOpDydSlashInsertDim_EM
     // Get the size of the temporary global memory
     //   plus a new dimension
     ByteRes = MyGlobalSize (hGlbTmp) + sizeof (APLDIM);
+
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
     // Resize the global memory to include a new dimension
     *lphGlbRes = MyGlobalReAlloc (hGlbTmp,
                                   (APLU3264) ByteRes,
@@ -2560,9 +2568,11 @@ UBOOL PrimOpDydSlashAllocate_EM
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    // Allocate space for the result
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     *lphGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!*lphGlbRes)
         goto WSFULL_EXIT;

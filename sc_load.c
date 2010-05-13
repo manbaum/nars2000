@@ -1213,11 +1213,14 @@ HGLOBAL LoadWorkspaceGlobal_EM
             ByteObj = CalcArraySize (aplTypeObj, aplNELMObj, aplRankObj);
 
             //***************************************************************
-            // Now we can allocate the storage for the result
-            // N.B.:  Conversion from APLUINT to UINT.
+            // Check for overflow
             //***************************************************************
             if (ByteObj NE (APLU3264) ByteObj)
                 goto WSFULL_EXIT;
+
+            //***************************************************************
+            // Now we can allocate the storage for the result
+            //***************************************************************
             hGlbObj = MyGlobalAlloc (GHND, (APLU3264) ByteObj);
             if (!hGlbObj)
                 goto WSFULL_EXIT;

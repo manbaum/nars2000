@@ -546,10 +546,11 @@ void FormatQQuadInput
     //        takes up one APLCHAR (WORD) at the start of the buffer.
     ByteRes = CalcArraySize (ARRAY_CHAR, max (uLineLen, 1), 1);
 
-    // Allocate space for the result
-    // N.B.:  Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

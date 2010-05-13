@@ -194,10 +194,11 @@ UBOOL CmdSave_EM
     // Calculate space needed for the two counters
     ByteRes = 2 * sizeof (UINT) * (lpMemPTD->SILevel + 1);
 
-    // Allocate space for two counters (Vars & Fcns) per SI level
-    // N.B.:  Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for two counters (Vars & Fcns) per SI level
     hGlbCnt = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbCnt)
         goto WSFULL_EXIT;

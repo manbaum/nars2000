@@ -297,10 +297,11 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     // Calculate space needed for the result
                     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-                    // Allocate space for the result
-                    // N.B.:  Conversion from APLUINT to UINT
+                    // Check for overflow
                     if (ByteRes NE (APLU3264) ByteRes)
                         goto WSFULL_EXIT;
+
+                    // Allocate space for the result
                     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbRes)
                         goto WSFULL_EXIT;
@@ -479,10 +480,11 @@ LPVOID SysFnCR_Copy_EM
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_CHAR, lpMemTxtLine->U, 1);
 
-        // Allocate space for the result.
-        // N.B. Conversion from APLUINT to UINT.
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
+        // Allocate space for the result.
         hGlbCpy = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbCpy)
             goto WSFULL_EXIT;
@@ -589,10 +591,11 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    // Allocate space for the result
-    // N.B.:  Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

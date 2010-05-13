@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -138,10 +138,11 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     // Calculate space needed for the left arg
     ByteRes = CalcArraySize (ARRAY_APA, aplRankRht, 1);
 
-    // Allocate storage for the left argument
-    // N.B.:  Conversion from APLUINT to UINT
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate storage for the left argument
     hGlbLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbLft)
         goto WSFULL_EXIT;
@@ -405,10 +406,11 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    // Allocate space for the result
-    // N.B. Conversion from APLUINT to UINT.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -462,11 +464,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
         goto PROTO_EXIT;
     } // End IF
 
-    //***************************************************************
-    // Allocate space for the weighting vector which is
-    //   {times}{backscan}1{drop}({rho}R),1
-    // N.B.  Conversion from APLUINT to UINT.
-    //***************************************************************
+    // Calculate space needed for the result
     ByteRes = aplRankRht * sizeof (APLUINT);
 
     // In case the result is a scalar, allocate at least
@@ -474,8 +472,14 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   doesn't handle the empty case well.
     ByteRes = max (ByteRes, 1);
 
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Allocate space for the weighting vector which is
+    //   {times}{backscan}1{drop}({rho}R),1
+    //***************************************************************
     hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbWVec)
         goto WSFULL_EXIT;
@@ -495,11 +499,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
         uRes *= lpMemDimRht[iDim];
     } // End FOR
 
-    //***************************************************************
-    // Allocate space for the odometer array, one value per dimension
-    //   in the result, with values initially all zero (thanks to GHND).
-    // N.B.  Conversion from APLUINT to UINT.
-    //***************************************************************
+    // Calculate space needed for the result
     ByteRes = aplRankRes * sizeof (APLUINT);
 
     // In case the result is a scalar, allocate at least
@@ -507,8 +507,14 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   doesn't handle the empty case well.
     ByteRes = max (ByteRes, 1);
 
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Allocate space for the odometer array, one value per dimension
+    //   in the result, with values initially all zero (thanks to GHND).
+    //***************************************************************
     hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdo)
         goto WSFULL_EXIT;

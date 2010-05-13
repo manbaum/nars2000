@@ -184,10 +184,11 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
         // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeRht, aplNELMRes, 1);
 
-        // Allocate space for the result.
-        // N.B. Conversion from APLUINT to UINT.
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
+        // Allocate space for the result.
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
@@ -297,10 +298,11 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             // Calculate space needed for the result
             ByteRes = CalcArraySize (aplTypeRht, aplNELMRes, 1);
 
-            // Allocate space for the result.
-            // N.B. Conversion from APLUINT to UINT.
+            // Check for overflow
             if (ByteRes NE (APLU3264) ByteRes)
                 goto WSFULL_EXIT;
+
+            // Allocate space for the result.
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;
@@ -476,10 +478,11 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             // Calculate space needed for a temp
             ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
 
-            // Allocate space for the temp
-            // N.B. Conversion from APLUINT to UINT.
+            // Check for overflow
             if (ByteRes NE (APLU3264) ByteRes)
                 goto WSFULL_EXIT;
+
+            // Allocate space for the temp
             hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbTmp)
                 goto WSFULL_EXIT;
@@ -551,10 +554,11 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             // Calculate space needed for the result
             ByteRes = CalcArraySize (aplTypeRht, aplNELMRes, 1);
 
-            // Allocate space for the result.
-            // N.B. Conversion from APLUINT to UINT.
+            // Check for overflow
             if (ByteRes NE (APLU3264) ByteRes)
                 goto WSFULL_EXIT;
+
+            // Allocate space for the result.
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
             if (!hGlbRes)
                 goto WSFULL_EXIT;

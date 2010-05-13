@@ -550,9 +550,11 @@ UBOOL PrimScalarFnDydAllocate_EM
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, *lpaplRankRes);
 
-    // Allocate space for the result.
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result.
     *lphGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!*lphGlbRes)
         goto WSFULL_EXIT;
@@ -755,9 +757,11 @@ HGLOBAL MakeMonPrototype_EM_PTB
                     // Calculate space needed for the result
                     ByteRes = CalcArraySize (ARRAY_BOOL, aplNELM, aplRank);
 
-                    // Allocate space for the result.
+                    // Check for overflow
                     if (ByteRes NE (APLU3264) ByteRes)
                         goto WSFULL_EXIT;
+
+                    // Allocate space for the result.
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbTmp)
                         goto WSFULL_EXIT;
@@ -799,8 +803,11 @@ HGLOBAL MakeMonPrototype_EM_PTB
                     break;
             } // End SWITCH
 
+            // Check for overflow
+            if (aplNELM NE (APLU3264) aplNELM)
+                goto WSFULL_EXIT;
+
             // Convert the chars to blanks
-            Assert (aplNELM EQ (APLU3264) aplNELM);
             FillMemoryW (lpMemArr, (APLU3264) aplNELM, L' ');
 
             break;
@@ -1128,9 +1135,11 @@ HGLOBAL MakeDydPrototype_EM_PTB
         // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-        // Allocate space for the result.
+        // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
+        // Allocate space for the result.
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
@@ -1243,13 +1252,17 @@ HGLOBAL MakeDydPrototype_EM_PTB
             // Handle axis if present
             if (aplNELMAxis NE aplRankRes)
             {
+                // Calculate space needed for the weighting vector
+                ByteRes = aplRankRes * sizeof (APLUINT);
+
+                // Check for overflow
+                if (ByteRes NE (APLU3264) ByteRes)
+                    goto WSFULL_EXIT;
+
                 //***************************************************************
                 // Allocate space for the weighting vector which is
                 //   {times}{backscan}1{drop}({rho}Z),1
                 //***************************************************************
-                ByteRes = aplRankRes * sizeof (APLUINT);
-                if (ByteRes NE (APLU3264) ByteRes)
-                    goto WSFULL_EXIT;
                 hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                 if (!hGlbWVec)
                     goto WSFULL_EXIT;
@@ -1269,13 +1282,17 @@ HGLOBAL MakeDydPrototype_EM_PTB
                     uRes *= lpMemDimRes[iDim];
                 } // End FOR
 
+                // Calculate space needed for the odometer array
+                ByteRes = aplRankRes * sizeof (APLUINT);
+
+                // Check for overflow
+                if (ByteRes NE (APLU3264) ByteRes)
+                    goto WSFULL_EXIT;
+
                 //***************************************************************
                 // Allocate space for the odometer array, one value per dimension
                 //   in the right arg, with values initially all zero (thanks to GHND).
                 //***************************************************************
-                ByteRes = aplRankRes * sizeof (APLUINT);
-                if (ByteRes NE (APLU3264) ByteRes)
-                    goto WSFULL_EXIT;
                 hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                 if (!hGlbOdo)
                     goto WSFULL_EXIT;
@@ -1880,9 +1897,11 @@ HGLOBAL CopyGlbAsType_EM
     // Calculate space for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMArg, aplRankArg);
 
-    // Allocate space for the result
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -517,11 +517,14 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
         //***************************************************************
-        // Now we can allocate the storage for the result
-        // N.B.:  Conversion from APLUINT to UINT.
+        // Check for overflow
         //***************************************************************
         if (ByteRes NE (APLU3264) ByteRes)
             goto WSFULL_EXIT;
+
+        //***************************************************************
+        // Now we can allocate the storage for the result
+        //***************************************************************
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
@@ -573,11 +576,14 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     ByteRes = aplRankRht * sizeof (APLUINT) * 2;
 
     //***************************************************************
-    // Now we can allocate the storage for the odometer & limit vectors
-    // N.B.:  Conversion from APLUINT to UINT.
+    // Check for overflow
     //***************************************************************
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the odometer & limit vectors
+    //***************************************************************
     hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbOdo)
         goto WSFULL_EXIT;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -248,11 +248,14 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     ByteRes = CalcArraySize (aplTypeRes, 1, aplRankRes);
 
     //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLUINT to UINT.
+    // Check for overflow
     //***************************************************************
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -538,12 +541,13 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                 + sizeof (APLDIM) * (aplRankRes - aplRankRht);
     } // End IF/ELSE
 
-    //***************************************************************
-    // Now we can allocate the storage for the result.
-    // N.B.:  Conversion from APLUINT to UINT.
-    //***************************************************************
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result.
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -659,14 +663,17 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 #undef  lpAPA
         } // End IF
 
+        // Calculate space needed for the result
+        ByteRes = aplRankRht * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the weighting vector which is
         //   {times}{backscan}1{drop}({rho}R),1
-        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLUINT);
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EXIT;
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbWVec)
             goto WSFULL_EXIT;
@@ -686,14 +693,17 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             uRes *= lpMemDimRht[iRht];
         } // End FOR
 
+        // Calculate space needed for the result
+        ByteRes = aplRankRht * sizeof (APLUINT);
+
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
         //***************************************************************
         // Allocate space for the odometer array, one value per dimension
         //   in the right arg, with values initially all zero (thanks to GHND).
-        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLUINT);
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EXIT;
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbOdo)
             goto WSFULL_EXIT;
@@ -1323,12 +1333,13 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-    //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLUINT to UINT
-    //***************************************************************
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;

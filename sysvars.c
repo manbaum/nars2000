@@ -1972,12 +1972,16 @@ MAKE_VECTOR:
     // Calculate space needed for the result
     //   (an integer vector)
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
+
+    // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
+
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 

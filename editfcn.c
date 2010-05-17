@@ -1306,8 +1306,9 @@ int LclECPaintHook
     // If we're syntax coloring, ...
     if (hGlbClr)
     {
-        UINT     uClr;                      // Loop counter
+        UINT     uAlignPrev;                // Previous value for TextAlign
         COLORREF clrBackDef;                // Default background color
+        LPWCHAR  lpwCur;                    // Ptr to current character
 
         // Get the default background color for this DC
         clrBackDef = GetBkColor (hDC);
@@ -1315,30 +1316,45 @@ int LclECPaintHook
         // Select the current font into the DC
         SelectObject (hDC, GetCurrentObject (hDC, OBJ_FONT));
 
+        // Set the initial position
+        MoveToEx (hDC,
+                  rcAct.left,
+                  rcAct.top,
+                  NULL);
+        // Set the TextAlign state
+        uAlignPrev = SetTextAlign (hDC, TA_UPDATECP | GetTextAlign (hDC));
+
+        // Get a ptr to the current char
+        lpwCur = &lpwsz[uCol];
+
         // Loop through the characters
-        for (uClr = 0; uClr < uLen; uClr++)
+        while (uLen--)
         {
             // Set the foreground color
-            SetTextColor (hDC, lpMemClrIni[uCol + uClr].syntClr.crFore);
+            SetTextColor (hDC, lpMemClrIni[uCol].syntClr.crFore);
 
             // Set the background color
-            if (lpMemClrIni[uCol + uClr].syntClr.crBack EQ DEF_SCN_TRANSPARENT)
+            if (lpMemClrIni[uCol].syntClr.crBack EQ DEF_SCN_TRANSPARENT)
                 SetBkColor (hDC, clrBackDef);
             else
-                SetBkColor (hDC, lpMemClrIni[uCol + uClr].syntClr.crBack);
+                SetBkColor (hDC, lpMemClrIni[uCol].syntClr.crBack);
 
             // Draw the line for real
             DrawTextW (hDC,
-                      &lpwsz[uCol + uClr],
+                       lpwCur,
                        1,
                       &rcAct,
                        0
                      | DT_SINGLELINE
                      | DT_NOPREFIX
                      | DT_NOCLIP);
-            // Advance the left edge of the rectangle
-            rcAct.left += cxAveChar;
-        } // End FOR
+            // Skip to the next char
+            lpwCur = CharNextW (lpwCur);
+            uCol++;
+        } // End WHILE
+
+        // Restore TextAlign state
+        SetTextAlign (hDC, uAlignPrev);
     } else
         // Draw the line for real
         DrawTextW (hDC,

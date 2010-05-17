@@ -1217,6 +1217,9 @@ UBOOL PrimFnMonLeftShoeProto_EM
         MyGlobalUnlock (*lphGlbProto); lpMemProto = NULL;
     } // End IF/ELSE
 
+    // Set the type bits
+    *lphGlbProto = MakePtrTypeGlb (*lphGlbProto);
+
     return TRUE;
 
 WSFULL_EXIT:

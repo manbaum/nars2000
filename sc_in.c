@@ -381,39 +381,55 @@ UBOOL TransferInverseArr2_EM
     // ***FIXME*** -- Ensure we change the global not local value
     // ***FIXME*** -- Ensure we don't change []DM/[]ES
 
-    // Exceute the statement starting with lpwName
+    // Restore the zapped char
+    *lpwNameEnd = wch;
+
+    // Execute the statement starting with lpwName
     exitType =
       PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
                                    lpMemPTD,    // Ptr to PerTabData global memory
                                    lpwName,     // Ptr to text of line to execute
                                    NULL);       // Ptr to function token
-    // Restore the zapped char
-    *lpwNameEnd = wch;
-
-    Assert (exitType EQ EXITTYPE_NODISPLAY
-         || exitType EQ EXITTYPE_ERROR);
-    if (exitType EQ EXITTYPE_ERROR)
+    // Split cases based upon the exit type
+    switch (exitType)
     {
-        if (!lptkFunc)
-        {
-            // Display the leading part of the error message
-            AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);
+        case EXITTYPE_NODISPLAY:
+            // If the Execute/Quad result is present, free it
+            if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+            {
+                // Free it
+                FreeResult (&lpMemPTD->YYResExec.tkToken);
 
-            // Ensure the name is properly terminated
-            *lpwNameEnd = WC_EOS;
+                // We no longer need these values
+                ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+            } // End IF
 
-            // Format the trailing part of the error message
-            wsprintfW (lpwszFormat,
-                       L"  Error in .atf file, lines %u-%u (origin-1), type-2 variable:  %s.",
-                       uOldRecNo,
-                       uRecNo,
-                       lpwName);
-            // Display the trailing part of the error message
-            AppendLine (lpwszFormat, TRUE, TRUE);
-        } // End IF
+            break;
 
-        goto ERROR_EXIT;
-    } // End IF
+        case EXITTYPE_ERROR:
+            if (!lptkFunc)
+            {
+                // Display the leading part of the error message
+                AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);
+
+                // Ensure the name is properly terminated
+                *lpwNameEnd = WC_EOS;
+
+                // Format the trailing part of the error message
+                wsprintfW (lpwszFormat,
+                           L"  Error in .atf file, lines %u-%u (origin-1), type-2 variable:  %s.",
+                           uOldRecNo,
+                           uRecNo,
+                           lpwName);
+                // Display the trailing part of the error message
+                AppendLine (lpwszFormat, TRUE, TRUE);
+            } // End IF
+
+            goto ERROR_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // Mark as successful
     bRet = TRUE;
@@ -1037,7 +1053,7 @@ UBOOL TransferInverseNum1_EM
         // ***FIXME*** -- Ensure we change the global not local value
         // ***FIXME*** -- Ensure we don't change []DM/[]ES
 
-        // Exceute the statement starting with lpwName
+        // Execute the statement starting with lpwName
         exitType =
           PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
                                        lpMemPTD,    // Ptr to PerTabData global memory

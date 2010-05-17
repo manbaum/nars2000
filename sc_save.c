@@ -633,7 +633,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $CleanupAfterSave
 //
-//  Exceute cleanup code after a )SAVE (successfull or not)
+//  Execute cleanup code after a )SAVE (successfull or not)
 //***************************************************************************
 
 void CleanupAfterSave

@@ -9225,7 +9225,6 @@ PL_YYLEX_START:
                     // If the prev token is a monadic or dyadic op, ...
                     if (LookbehindOp (lpplLocalVars, &lpplLocalVars->lptkNext[1]))
                         return OP1NAMEVAR;
-                    else
 
 ////////////////////// Call this one TKT_VARNAMED
 ////////////////////lpYYLval->tkToken.tkFlags.TknType = TKT_VARNAMED;   // Already set

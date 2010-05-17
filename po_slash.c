@@ -1233,7 +1233,7 @@ UBOOL UdfoRedIdentFcn_EM
         AttrsOfToken (&lpYYRes->tkToken, &aplTypeIdn, NULL, NULL, NULL);
 
         // If the result is empty, ...
-        if (aplNELMRes)
+        if (IsEmpty (aplNELMRes))
         {
             // Convert the immediate into a prototype
             if (IsSimpleChar (aplTypeIdn))

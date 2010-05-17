@@ -1086,7 +1086,12 @@ UBOOL fnAlpha
 
                 // If the STE is available, ...
                 if (lpSymEntry)
-                    stFlags = lpSymEntry->stFlags;
+                {
+                    // If it's not []Z or we're fixing a function via []TF, ...
+                    if (lpSymEntry NE lpMemPTD->htsPTD.lpSymQuad[SYSVAR_Z]
+                     || lpMemPTD->bInTF)
+                        stFlags = lpSymEntry->stFlags;
+                } // End IF
 
                 // Split cases based upon the nametype
                 switch (stFlags.stNameType)
@@ -1223,6 +1228,10 @@ UBOOL fnAlpDone
                                             &stFlags);
         // If it's not found, ...
         if (!lpSymEntry)
+            goto SYNTAX_EXIT;
+        // If it's []Z and we're not fixing a function via []TF, ...
+        if (lpSymEntry EQ lpMemPTD->htsPTD.lpSymQuad[SYSVAR_Z]
+         && !lpMemPTD->bInTF)
             goto SYNTAX_EXIT;
     } else
         // Lookup in or append to the symbol table

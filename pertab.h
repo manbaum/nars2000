@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,7 +66,8 @@ typedef struct tagPERTABDATA
     UINT         bTabTextState:1,   // 24+HTS:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
                  bExecLX:1,         //          00000002:  TRUE iff execute []LX after successful load
                  bExecuting:1,      //          00000004:  TRUE iff we're waiting for an execution to complete
-                 :29;               //          FFFFFFF8:  Available bits
+                 bInTF:1,           //          00000008:  TRUE if we're fixing a function via []TF
+                 :28;               //          FFFFFFF0:  Available bits
     HGLOBAL      hGlbCurLine;       // 28+HTS:  Current line global memory handle
     LPWCHAR      lpwszErrorMessage; // 2C+HTS:  Ptr to error message to signal
     LPWCHAR      lpwszQuadErrorMsg; // 30+HTS   Used for []ERROR/[]ES messages

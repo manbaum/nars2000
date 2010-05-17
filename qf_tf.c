@@ -863,6 +863,14 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
     STFLAGS       stFlags;                  // ST flags for name lookup
     LPSYMENTRY    lpSymEntry;               // Ptr to SYMENTRY for name lookup
     SYMENTRY      steQuadZ;                 // STE for []Z
+    LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
+    UBOOL         bOldInTF;                 // Previous value of bInTF
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Save the previous value of InTF
+    bOldInTF = lpMemPTD->bInTF;
 
     // Translate the name/data from APL2 charset to NARS
     if (bTranslateAPL2)
@@ -998,6 +1006,9 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
 
             lpwszTemp[2] = UTF16_LEFTARROW;
 
+            // Mark as fixing a function via []TF
+            lpMemPTD->bInTF = TRUE;
+
             if (!TransferInverseFcn2_EM (lpwszTemp, 0, 0, lptkFunc, NULL, FALSE))
             {
                 // If the old value is a global, free it
@@ -1122,6 +1133,9 @@ NORMAL_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
+
+    // Restore previous value of bInTF
+    lpMemPTD->bInTF = bOldInTF;
 
     return lpYYRes;
 } // End SysFnDydTF2_EM_YY

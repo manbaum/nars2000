@@ -52,14 +52,14 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
 
     Assert (GetSignatureGlb_PTB (hGlbProto) EQ DFN_HEADER_SIGNATURE);
 
-    // Execute the user-defined function/operator on the arg using the []PROTOTYPE entry point
+    // Execute the user-defined function/operator on the arg using the []PRO entry point
     lpYYRes2 =
       ExecDfnGlb_EM_YY (hGlbProto,              // User-defined function/operator global memory handle
                         lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
          (LPPL_YYSTYPE) lptkFcnStr,             // Ptr to function strand
                         NULL,                   // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                         lptkRhtArg,             // Ptr to right arg token
-                        LINENUM_PROTOTYPE);     // Starting line # (see LINE_NUMS)
+                        LINENUM_PRO);           // Starting line # (see LINE_NUMS)
     // If the result is valid, ...
     if (lpYYRes2)
     {
@@ -216,12 +216,12 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
     // If there's no left arg token and this function requires a left arg,
-    //   and we're not entering at LINENUM_IDENTITY,
+    //   and we're not entering at LINENUM_ID,
     //   signal a VALENCE ERROR
     if (lptkLftArg EQ NULL
      && lpMemDfnHdr->FcnValence NE FCNVALENCE_AMB
      && lpMemDfnHdr->numLftArgSTE NE 0
-     && startLineType NE LINENUM_IDENTITY)
+     && startLineType NE LINENUM_ID)
         goto VALENCE_EXIT;
 
     // If there's a left arg token and this function has no left arg,
@@ -279,23 +279,23 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
             break;
 
-        case LINENUM_IDENTITY:
-            startLineNum = lpMemDfnHdr->nIdentityLine;
+        case LINENUM_ID:
+            startLineNum = lpMemDfnHdr->nSysLblId;
 
             break;
 
-        case LINENUM_INVERSE:
-            startLineNum = lpMemDfnHdr->nInverseLine;
+        case LINENUM_INV:
+            startLineNum = lpMemDfnHdr->nSysLblInv;
 
             break;
 
-        case LINENUM_PROTOTYPE:
-            startLineNum = lpMemDfnHdr->nPrototypeLine;
+        case LINENUM_PRO:
+            startLineNum = lpMemDfnHdr->nSysLblPro;
 
             break;
 
-        case LINENUM_SINGLETON:
-            startLineNum = lpMemDfnHdr->nSingletonLine;
+        case LINENUM_SGL:
+            startLineNum = lpMemDfnHdr->nSysLblSgl;
 
             break;
 

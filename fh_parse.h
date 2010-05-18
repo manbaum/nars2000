@@ -74,6 +74,20 @@ typedef enum tagFCN_VALENCES        // User-Defined Function/Operator Valence
                                     // 05-07:  Available entries (3 bits)
 } FCN_VALENCES;
 
+typedef enum tagSYSLBL_CON
+{
+    SYSLBL_CON_ID = 0,                  // 00:  System Label Context:  []ID
+    SYSLBL_CON_PRO,                     // 01:  ...                    []PRO
+    SYSLBL_CON_SGL,                     // 02:  ...                    []SGL
+    SYSLBL_CON_LENGTH                   // 03:  # entries in this enum
+} SYSLBL_CON, *LPSYSLBL_CON;
+
+typedef enum tagSYSLBL_VAR              // System Label Variant
+{
+    SYSLBL_VAR_INV,                     // 00:  System Label Variant:  []INV
+    SYSLBL_VAR_LENGTH                   // 01:  # entries in this enum
+} SYSLBL_VAR, *LPSYSLBL_VAR;
+
 // User-defined function/operator header signature
 #define DFN_HEADER_SIGNATURE   'SNFD'
 
@@ -94,32 +108,34 @@ typedef struct tagDFN_HEADER            // Function header structure
                      SkipRefCntIncr:1,  //      00008000:  Skip the next RefCnt increment
                      :16;               //      FFFF0000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
-                     nInverseLine,      // 10:  Line # of the []IDENTITY label (0 if not present)
-                     nIdentityLine,     // 14:  Line # of the []INVERSE label (0 if not present)
-                     nPrototypeLine,    // 18:  Line # of the []PROTOTYPE label (0 if not present)
-                     nSingletonLine,    // 1C:  Line # of the []SINGLETON label (0 if not present)
-                     numResultSTE,      // 20:  # result STEs (may be zero if no result)
-                     offResultSTE,      // 24:  Offset to result STEs (ignored if numResultSTE is zero)
-                     numLftArgSTE,      // 28:  # left arg STEs (may be zero if niladic/monadic)
-                     offLftArgSTE,      // 2C:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
-                     numRhtArgSTE,      // 30:  # right arg STEs (may be zero if niladic)
-                     offRhtArgSTE,      // 34   Offset to right arg STEs (ignored if numRhtArgSTE is zero)
-                     numLocalsSTE,      // 38:  # right arg STEs (may be zero if niladic)
-                     offLocalsSTE,      // 3C:  Offset to start of function lines (FCNLINE[nLines])
-                     numFcnLines,       // 40:  # lines in the function (not counting the header)
-                     offFcnLines;       // 44:  Offset to start of function lines (FCNLINE[nLines])
-    LPSYMENTRY       steLftOpr,         // 48:  Left operand STE (may be NULL if not an operator)
-                     steFcnName,        // 4C:  Function name STE
-                     steAxisOpr,        // 50:  Axis operator STE
-                     steRhtOpr;         // 54:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,        // 58:  Text of function header (APLCHAR) global memory handle
-                     hGlbTknHdr,        // 5C:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff,      // 60:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-                     hGlbMonInfo;       // 64:  Function line monitor info (MONINFO)
-    FILETIME         ftCreation,        // 68:  Time of creation (8 bytes)
-                     ftLastMod;         // 70:  Time of last modification (8 bytes)
-                                        // 78:  Length
-                                        // 78:  Array of function line structures (FCNLINE[nLines])
+                     nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
+                     nSysLblId,         // 14:  Line # of the []INV label (0 if not present)
+                     nSysLblPro,        // 18:  Line # of the []PRO label (0 if not present)
+                     nSysLblSgl,        // 1C:  Line # of the []SGL label (0 if not present)
+                     nSysLblPair        // 20:  Line # of the System Label pairs (Context vs. Variant) (12 bytes)
+                       [SYSLBL_CON_LENGTH][SYSLBL_VAR_LENGTH],
+                     numResultSTE,      // 2C:  # result STEs (may be zero if no result)
+                     offResultSTE,      // 30:  Offset to result STEs (ignored if numResultSTE is zero)
+                     numLftArgSTE,      // 34:  # left arg STEs (may be zero if niladic/monadic)
+                     offLftArgSTE,      // 38:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
+                     numRhtArgSTE,      // 3C:  # right arg STEs (may be zero if niladic)
+                     offRhtArgSTE,      // 40   Offset to right arg STEs (ignored if numRhtArgSTE is zero)
+                     numLocalsSTE,      // 44:  # right arg STEs (may be zero if niladic)
+                     offLocalsSTE,      // 48:  Offset to start of function lines (FCNLINE[nLines])
+                     numFcnLines,       // 4C:  # lines in the function (not counting the header)
+                     offFcnLines;       // 50:  Offset to start of function lines (FCNLINE[nLines])
+    LPSYMENTRY       steLftOpr,         // 54:  Left operand STE (may be NULL if not an operator)
+                     steFcnName,        // 58:  Function name STE
+                     steAxisOpr,        // 5C:  Axis operator STE
+                     steRhtOpr;         // 60:  Right operand STE (may be NULL if monadic operator or not an operator)
+    HGLOBAL          hGlbTxtHdr,        // 64:  Text of function header (APLCHAR) global memory handle
+                     hGlbTknHdr,        // 68:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff,      // 6C:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo;       // 70:  Function line monitor info (MONINFO)
+    FILETIME         ftCreation,        // 74:  Time of creation (8 bytes)
+                     ftLastMod;         // 7C:  Time of last modification (8 bytes)
+                                        // 84:  Length
+                                        // 84:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a

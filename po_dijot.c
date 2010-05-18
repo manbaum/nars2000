@@ -257,7 +257,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                                   hGlbMFO1,                 // Magic function/operator global memory handle
                                   NULL,                     // Ptr to HSHTAB struc (may be NULL)
                                   bPrototyping
-                                ? LINENUM_PROTOTYPE
+                                ? LINENUM_PRO
                                 : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
     // If the result is valid, finish the process with Conforming Disclose
     if (lpYYRes && !IsTknImmed (&lpYYRes->tkToken))
@@ -441,7 +441,7 @@ static APLCHAR MonLine4[] =
   $DIAMOND $GOTO L"0";
 
 static APLCHAR MonLine5[] =
-  $QUAD_PROTOTYPE L":"
+  $QUAD_PRO L":"
 //L"Z" $IS $DISCLOSE $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
   L"Z" $IS           $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
 
@@ -549,7 +549,7 @@ static APLCHAR DydLine4[] =
   $DIAMOND $GOTO L"0";
 
 static APLCHAR DydLine5[] =
-  $QUAD_PROTOTYPE L":"
+  $QUAD_PRO L":"
   L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE L"Y]" $EACH L"0" $RHO $ENCLOSE L"L)LO" $EACH $EACH
                           $ENCLOSE L"[" $IOTA L"-1" $DROP L"Y]" $EACH L"0" $RHO $ENCLOSE L"R";
 

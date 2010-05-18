@@ -85,7 +85,7 @@ typedef enum tagIC_INDICES
     ICNDX_0LOG1,            // 0D:  0 {log} 1
     ICNDX_1LOG0,            // 0E:  1 {log} 0
     ICNDX_1LOG1,            // 0F:  1 {log} 1
-    ICNDX_LENGTH,           // 10:  Length
+    ICNDX_LENGTH,           // 10:  # entries in this enum
 } IC_INDICES;
 
 // N.B.:  Whenever changing the above enum (IC_INDICES),
@@ -487,7 +487,7 @@ typedef enum tagFASTBOOLTRANS   // Enum for last column of FastBoolTrans
     FBT_BITSUM,                 // 2
     FBT_NESCAN,                 // 3
     FBT_EQSCAN,                 // 4
-    FBT_LENGTH                  // 5 = # values in the enum
+    FBT_LENGTH                  // 5:  # entries in this enum
 } FASTBOOLTRANS;
 
 // A two-element array to allow indexing a choice between
@@ -813,7 +813,7 @@ typedef enum tagSTATUSPARTS
     SP_INS,                 // 03:  Ins/Ovr state
     SP_NUM,                 // 04:  NumLock state
     SP_CAPS,                // 05:  CapsLock state
-    SP_LENGTH               // 06:  Length
+    SP_LENGTH               // 06:  # entries in this enum
 } STATUSPARTS, *LPSTATUSPARTS;
 
 EXTERN
@@ -1113,7 +1113,7 @@ typedef enum tagMEMVIRTENUM
 {
     MEMVIRT_WSZGLBTEMP = 0,             // 00:  lpwszGlbTemp
     MEMVIRT_GLBHSHTAB,                  // 01:  Global HshTab for {symbol} names & values
-    MEMVIRT_LENGTH                      // 02:  # entries
+    MEMVIRT_LENGTH                      // 02:  # entries in this enum
 } MEMVIRTENUM;
 
 #define MVS     struct tagMEMVIRTSTR
@@ -1798,7 +1798,7 @@ typedef enum tagFONTENUM
     FONTENUM_LW,                        // 05:  Language Bar
     FONTENUM_VE,                        // 06:  Vector Editor
     FONTENUM_ME,                        // 07:  Matrix Editor
-    FONTENUM_LENGTH,                    // 08:  Length
+    FONTENUM_LENGTH,                    // 08:  # entries in this enum
 } FONTENUM, *LPFONTENUM;
 
 EXTERN
@@ -1974,10 +1974,10 @@ typedef enum tagERROR_CODES
 typedef enum tagLINE_NUMS   // Starting line #s
 {
     LINENUM_ONE = 0,        // 00:  Line #1
-    LINENUM_IDENTITY,       // 01:  Line []IDENTITY
-    LINENUM_INVERSE,        // 02:  Line []INVERSE
-    LINENUM_PROTOTYPE,      // 03:  Line []PROTOTYPE
-    LINENUM_SINGLETON,      // 04:  Line []SINGLETON
+    LINENUM_ID,             // 01:  Line []ID
+    LINENUM_INV,            // 02:  Line []INV
+    LINENUM_PRO,            // 03:  Line []PRO
+    LINENUM_SGL,            // 04:  Line []SGL
 } LINE_NUMS;
 
 typedef enum tagFLT_DISP_FMT    // Floating Point Display Formats
@@ -1987,7 +1987,7 @@ typedef enum tagFLT_DISP_FMT    // Floating Point Display Formats
     FLTDISPFMT_RAWINT,          // 02:  Raw integer format to nDigits significant digits
     FLTDISPFMT_RAWFLT,          // 03:  Raw float format to nDigits significant digits -- switch
                                 //      to E-format if more than []PP digits required
-    FLTDISPFMT_LENGTH,          // 04:  Length
+    FLTDISPFMT_LENGTH,          // 04:  # entries in this enum
 } FLTDISPFMT, *LPFLTDISPFMT;
 
 // N.B.:  Whenever changing the above enum (FLT_DISP_FMT),

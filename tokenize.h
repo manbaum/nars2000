@@ -114,7 +114,7 @@ typedef enum tagSC_NAMETYPE
     SC_NAMETYPE_SYSUNK,             // 05:  ...     ...    unknown
     SC_NAMETYPE_PRIMITIVE,          // 06:  ...     a primitive (Quad/QuoteQuad)
     SC_NAMETYPE_UNK,                // 07:  ...     unknown
-                                    // 08:  Length
+                                    // 08:  # entries in this enum
 } SCNAMETYPE, *LPSCNAMETYPE;
 
 typedef struct tagCLR_COL

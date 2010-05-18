@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ typedef enum tagFC_INDICES
     FCNDX_OVERFLOW_FILL,    // 03:  Format-by-example overflow fill (L'0')
     FCNDX_BLANK_FILL,       // 04:  Blank fill (L'_') (cannot be L",.0123456789")
     FCNDX_OVERBAR,          // 05:  Overbar (WS_UTF16_OVERBAR)
-    FCNDX_LENGTH,           // 06:  Length
+    FCNDX_LENGTH,           // 06:  # entries in this enum
 } FC_INDICES;
 
 
@@ -122,7 +122,7 @@ typedef enum tagSYS_VARS
     SYSVAR_SA     ,             // 0C:  []SA
     SYSVAR_WSID   ,             // 0D:  []WSID
     SYSVAR_Z      ,             // 0E:  []Z
-    SYSVAR_LENGTH               // 0F:  # entries in the enum
+    SYSVAR_LENGTH               // 0F:  # entries in this enum
                                 // 10-1F:  Available entries (5 bits)
 } SYS_VARS, *LPSYS_VARS;
 
@@ -135,6 +135,14 @@ typedef struct tagSYSNAME
     LPPRIMFNS   lpNameFcn;      // Ptr to execution routine
     SYS_VARS    sysVarIndex;    // Value of each System Var (0 = Unknown)
 } SYSNAME, *LPSYSNAME;
+
+
+// Names of System Labels (MUST all be lowercase)
+#define SYSLBL_ID       L"id"
+#define SYSLBL_INV      L"inv"
+#define SYSLBL_MS       L"ms"
+#define SYSLBL_PRO      L"pro"
+#define SYSLBL_SGL      L"sgl"
 
 
 //***************************************************************************

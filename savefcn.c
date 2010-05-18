@@ -1607,7 +1607,7 @@ UBOOL SaveFunctionCom
             goto ERROR_EXIT;
         } // End IF
 
-        // Check for special labels ([]IDENTITY, etc.)
+        // Check for special labels ([]ID, etc.)
         if (!GetSpecialLabelNums (lpMemDfnHdr, hWndEC, hWndFE NE NULL))
             goto ERROR_EXIT;
 
@@ -1872,29 +1872,29 @@ UBOOL GetSpecialLabelNums
                 // Lock the memory to get a ptr to it
                 lpMemName = MyGlobalLock (hGlbName);
 
-                if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"identity") EQ 0)
+                if (lstrcmpiW (lpMemName, $QUAD_ID ) EQ 0)
                 {
-                    if (lpMemDfnHdr->nIdentityLine)
+                    if (lpMemDfnHdr->nSysLblId )
                         goto ERROR_EXIT;
-                    lpMemDfnHdr->nIdentityLine  = uLineNum + 1;
+                    lpMemDfnHdr->nSysLblId  = uLineNum + 1;
                 } else
-                if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"inverse") EQ 0)
+                if (lstrcmpiW (lpMemName, $QUAD_INV) EQ 0)
                 {
-                    if (lpMemDfnHdr->nInverseLine)
+                    if (lpMemDfnHdr->nSysLblInv)
                         goto ERROR_EXIT;
-                    lpMemDfnHdr->nInverseLine   = uLineNum + 1;
+                    lpMemDfnHdr->nSysLblInv = uLineNum + 1;
                 } else
-                if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"prototype") EQ 0)
+                if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
                 {
-                    if (lpMemDfnHdr->nPrototypeLine)
+                    if (lpMemDfnHdr->nSysLblPro)
                         goto ERROR_EXIT;
-                    lpMemDfnHdr->nPrototypeLine = uLineNum + 1;
+                    lpMemDfnHdr->nSysLblPro = uLineNum + 1;
                 } else
-                if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"singleton") EQ 0)
+                if (lstrcmpiW (lpMemName, $QUAD_SGL) EQ 0)
                 {
-                    if (lpMemDfnHdr->nSingletonLine)
+                    if (lpMemDfnHdr->nSysLblSgl)
                         goto ERROR_EXIT;
-                    lpMemDfnHdr->nSingletonLine = uLineNum + 1;
+                    lpMemDfnHdr->nSysLblSgl = uLineNum + 1;
                 } // End IF/ELSE/...
 
                 // We no longer need this ptr

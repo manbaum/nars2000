@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -183,7 +183,7 @@ typedef enum tagSYM_SUB             // Symbol Substitution enum
     SYMSUB_Z_CHAR,                  // 05:  Z (G-format pattern char)
     SYMSUB_9_CHAR,                  // 06:  9 (G-format pattern char)
     SYMSUB_EXPONENT_SEP,            // 07:  E (Exponent separator)
-    SYMSUB_LENGTH,                  // 08:  Length
+    SYMSUB_LENGTH,                  // 08:  # entries in this enum
 } SYMSUB, *LPSYMSUB;
 
 

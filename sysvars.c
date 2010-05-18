@@ -84,11 +84,11 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL              , SYSVAR_SA  },  // Stop Action
     {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL              , SYSVAR_WSID},  // Workspace Identifier
     {WS_UTF16_QUAD L"z"        , SYSVAR,      TRUE , NULL              , SYSVAR_Z   },  // Temporary result used in 2 []TF
-    {WS_UTF16_QUAD L"identity" , SYSLBL,      TRUE , NULL              , 0          },  // User-defined function/operator entry point for []identity
-    {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []inverse
-    {WS_UTF16_QUAD L"multiset" , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []multiset
-    {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []prototype
-    {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []singleton
+    {WS_UTF16_QUAD SYSLBL_ID   , SYSLBL,      TRUE , NULL              , 0          },  // User-defined function/operator entry point for []ID  = identity
+    {WS_UTF16_QUAD SYSLBL_INV  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []INV = inverse
+    {WS_UTF16_QUAD SYSLBL_MS   , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []MS  = multiset
+    {WS_UTF16_QUAD SYSLBL_PRO  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []PRO = prototype
+    {WS_UTF16_QUAD SYSLBL_SGL  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []SGL = singleton
 
 // Niladic system functions
     {WS_UTF16_QUAD L"a"        ,      0,      FALSE, SysFnA_EM_YY      , 0          },  // Alphabet

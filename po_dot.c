@@ -884,7 +884,7 @@ RESTART_INNERPROD_RES:
                                  lpYYFcnStrLft,         // Ptr to left operand function strand
                                 &lpYYRes->tkToken,      // Ptr to right arg token
                                  NULL,                  // Ptr to axis token (may be NULL)
-                                 LINENUM_IDENTITY);     // Starting line # (see LINE_NUMS)
+                                 LINENUM_ID);           // Starting line # (see LINE_NUMS)
 #ifdef DEBUG
         // Restore the SI level of lpYYRes
         lpYYRes->SILevel++;

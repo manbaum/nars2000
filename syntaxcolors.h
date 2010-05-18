@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ typedef enum tagSC_TYPE
     SC_UNNESTED,        // 14:  Improperly Nested Grouping Symbols [] () {}
     SC_UNK,             // 15:  Unknown symbol
     SC_WINTEXT,         // 16:  Window text
-    SC_LENGTH           // 17:  Length
+    SC_LENGTH           // 17:  # entries in this enum
                         //      Because this enum is origin-0, this value is the # valid columns.
 } SCTYPE, *LPSCTYPE;
 

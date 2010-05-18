@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ typedef enum tagMFO
     MFOE_MonFMT     ,           // 07:  Monadic []FMT
     MFOE_Box        ,           // 08:  Box (for monadic []FMT)
     MFOE_MonVR      ,           // 09:  Monadic []VR
-    MFOE_LENGTH                 // 0A:  Length (# entries)
+    MFOE_LENGTH                 // 0A:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -83,10 +83,14 @@ typedef enum tagMFO
 #define $NEG            WS_UTF16_OVERBAR
 #define $NOTEQUAL       WS_UTF16_NOTEQUAL
 #define $QUAD           WS_UTF16_QUAD
-#define $QUAD_PROTOTYPE WS_UTF16_QUAD L"PROTOTYPE"
 #define $QUAD_ERROR     WS_UTF16_QUAD L"ERROR"
-#define $QUAD_NC        WS_UTF16_QUAD L"NC"
+#define $QUAD_ID        WS_UTF16_QUAD SYSLBL_ID
+#define $QUAD_INV       WS_UTF16_QUAD SYSLBL_INV
 #define $QUAD_IO        WS_UTF16_QUAD L"IO"
+#define $QUAD_MS        WS_UTF16_QUAD SYSLBL_MS
+#define $QUAD_NC        WS_UTF16_QUAD L"NC"
+#define $QUAD_PRO       WS_UTF16_QUAD SYSLBL_PRO
+#define $QUAD_SGL       WS_UTF16_QUAD SYSLBL_SGL
 #define $RANK           WS_UTF16_DIERESISJOT
 #define $REVERSE        WS_UTF16_CIRCLESTILE
 #define $ROTATE         WS_UTF16_CIRCLESTILE

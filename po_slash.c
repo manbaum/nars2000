@@ -1208,7 +1208,7 @@ UBOOL UdfoRedIdentFcn_EM
                              lpYYFcnStrLft,     // Ptr to left operand function strand
                             &tkProto,           // Ptr to right arg token
                              NULL,              // Ptr to axis token (may be NULL)
-                             LINENUM_IDENTITY); // Starting line # (see LINE_NUMS)
+                             LINENUM_ID);       // Starting line # (see LINE_NUMS)
     // If it failed, ...
     if (!lpYYRes)
         goto ERROR_EXIT;

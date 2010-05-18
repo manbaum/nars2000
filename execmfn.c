@@ -663,7 +663,7 @@ HGLOBAL Init1MagicFunction
             goto ERROR_EXIT;
         } // End IF
 
-        // Check for special labels ([]IDENTITY, etc.)
+        // Check for special labels ([]ID, etc.)
         if (!GetSpecialLabelNums (lpMemDfnHdr, NULL, TRUE))
             goto ERROR_EXIT;
 

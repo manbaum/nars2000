@@ -100,38 +100,38 @@ var cmdMgr = GetCurrentCommandManager ();
 var KeyboardNARS2000 =
 [                       // charCode
         0,              // 32 =
-        0,              // 33 =
-        0,              // 34 =
-        0,              // 35 =
-        0,              // 36 =
-        0,              // 37 =
-        0,              // 38 =
-['\u2355',        0],   // 39 = Alt-'\'' Alt-'"'    down-tack-jot
-        0,              // 40 =
-        0,              // 41 =
-        0,              // 42 =
-        0,              // 43 =
-['\u235D',        0],   // 44 = Alt-','  Alt-'<'    lamp
-['\u00D7', '\u0021'],   // 45 = Alt-'-'  Alt-'_'    times                   quote-dot
-['\u2340',        0],   // 46 = Alt-'.'  Alt-'>'    slope-bar
-['\u233F',        0],   // 47 = Alt-'/'  Alt-'?'    slash-bar
-['\u2227', '\u2372'],   // 48 = Alt-'0'  Alt-')'    up-caret                up-caret-tilde
-['\u00A8', '\u2261'],   // 49 = Alt-'1'  Alt-'!'    dieresis                equal-underbar
-['\u00AF', '\u2299'],   // 50 = Alt-'2'  Alt-'@'    overbar                 circle-middle-dot
-['\u003C', '\u2352'],   // 51 = Alt-'3'  Alt-'#'    left-caret              del-stile
-['\u2264', '\u234B'],   // 52 = Alt-'4'  Alt-'$'    left-caret-underbar     delta-stile
-['\u003D', '\u233D'],   // 53 = Alt-'5'  Alt-'%'    equal                   circle-stile
-['\u2265', '\u2349'],   // 54 = Alt-'6'  Alt-'^'    right-caret-underbar    circle-slope
-['\u003E', '\u2296'],   // 55 = Alt-'7'  Alt-'&'    right-caret             circle-bar
-['\u2260', '\u235F'],   // 56 = Alt-'8'  Alt-'*'    notequal                circle-star
-['\u2228', '\u2371'],   // 57 = Alt-'9'  Alt-'('    down-caret              down-caret-tilde
-        0,              // 58 =
-['\u234E',        0],   // 59 = Alt-';'  Alt-':'    up-tack-jot
-        0,              // 60 =
-['\u00F7', '\u2339'],   // 61 = Alt-'='  Alt-'+'    colon-bar               quad-divide
-        0,              // 62 =
-        0,              // 63 =
-        0,              // 64 =
+ '\u2261',              // 33 = Alt-'!'             equal-underbar
+        0,              // 34 = Alt-'"'
+ '\u2352',              // 35 = Alt-'#'             del-stile
+ '\u234B',              // 36 = Alt-'$'             delta-stile
+ '\u233D',              // 37 = Alt-'%'             circle-stile
+ '\u2296',              // 38 = Alt-'&'             circle-bar
+ '\u2355',              // 39 = Alt-'\''            down-tack-jot
+ '\u2371',              // 40 = Alt-'('             down-caret-tilde
+ '\u2372',              // 41 = Alt-')'             up-caret-tilde
+ '\u235F',              // 42 = Alt-'*'             circle-star
+ '\u2339',              // 43 = Alt-'+'             quad-divide
+ '\u235D',              // 44 = Alt-','             lamp
+ '\u00D7',              // 45 = Alt-'-'             times
+ '\u2340',              // 46 = Alt-'.'             slope-bar
+ '\u233F',              // 47 = Alt-'/'             slash-bar
+ '\u2227',              // 48 = Alt-'0'             up-caret
+ '\u00A8',              // 49 = Alt-'1'             dieresis
+ '\u00AF',              // 50 = Alt-'2'             overbar
+ '\u003C',              // 51 = Alt-'3'             left-caret
+ '\u2264',              // 52 = Alt-'4'             left-caret-underbar
+ '\u003D',              // 53 = Alt-'5'             equal
+ '\u2265',              // 54 = Alt-'6'             right-caret-underbar
+ '\u003E',              // 55 = Alt-'7'             right-caret
+ '\u2260',              // 56 = Alt-'8'             notequal
+ '\u2228',              // 57 = Alt-'9'             down-caret
+        0,              // 58 = Alt-':'
+ '\u234E',              // 59 = Alt-';'             up-tack-jot
+        0,              // 60 = Alt-'<'
+ '\u00F7',              // 61 = Alt-'='             colon-bar
+        0,              // 62 = Alt-'>'
+        0,              // 63 = Alt-'?'
+ '\u2299',              // 64 = Alt-'@'             circle-middle-dot
         0,              // 65 = Alt-'A'
         0,              // 66 = Alt-'B'
         0,              // 67 = Alt-'C'
@@ -158,12 +158,12 @@ var KeyboardNARS2000 =
         0,              // 88 = Alt-'X'
         0,              // 89 = Alt-'Y'
         0,              // 90 = Alt-'Z'
-['\u2190', '\u235E'],   // 91 = Alt-'['  Alt-'{'    left-arrow              quote-quad
-['\u22A3', '\u22A2'],   // 92 = Alt-'\\' Alt-'|'    left-tack               right-tack
-['\u2192', '\u236C'],   // 93 = Alt-']'  Alt-'}'    right-arrow             zilde
-        0,              // 94 =
-        0,              // 95 =
-['\u22C4', '\u236A'],   // 96 = Alt-'`'  Alt-'~'    diamond                 commabar
+ '\u2190',              // 91 = Alt-'['             left-arrow
+ '\u22A3',              // 92 = Alt-'\\'            left-tack
+ '\u2192',              // 93 = Alt-']'             right-arrow
+ '\u2349',              // 94 = Alt-'^'             circle-slope
+ '\u0021',              // 95 = Alt-'_'             quote-dot
+ '\u22C4',              // 96 = Alt-'`'             diamond
  '\u237A',              // 97 = Alt-'a'
  '\u22A5',              // 98 = Alt-'b'
  '\u2229',              // 99 = Alt-'c'
@@ -189,8 +189,33 @@ var KeyboardNARS2000 =
  '\u2375',              //119 = Alt-'w'
  '\u2283',              //120 = Alt-'x'
  '\u2191',              //121 = Alt-'y'
- '\u2282'               //122 = Alt-'z'
+ '\u2282',              //122 = Alt-'z'
+ '\u235E',              //123 = Alt-'{'             quote-quad
+ '\u22A2',              //124 = Alt-'|'             right-tack
+ '\u236C',              //125 = Alt-'}'             zilde
+ '\u236A',              //126 = Alt-'~'             commabar
 ];
+
+// ['\u2355',        0],   // 39 = Alt-'\'' Alt-'"'    down-tack-jot
+// ['\u235D',        0],   // 44 = Alt-','  Alt-'<'    lamp
+// ['\u00D7', '\u0021'],   // 45 = Alt-'-'  Alt-'_'    times                   quote-dot
+// ['\u2340',        0],   // 46 = Alt-'.'  Alt-'>'    slope-bar
+// ['\u233F',        0],   // 47 = Alt-'/'  Alt-'?'    slash-bar
+// ['\u2227', '\u2372'],   // 48 = Alt-'0'  Alt-')'    up-caret                up-caret-tilde
+// ['\u00A8', '\u2261'],   // 49 = Alt-'1'  Alt-'!'    dieresis                equal-underbar
+// ['\u00AF', '\u2299'],   // 50 = Alt-'2'  Alt-'@'    overbar                 circle-middle-dot
+// ['\u003C', '\u2352'],   // 51 = Alt-'3'  Alt-'#'    left-caret              del-stile
+// ['\u2264', '\u234B'],   // 52 = Alt-'4'  Alt-'$'    left-caret-underbar     delta-stile
+// ['\u003D', '\u233D'],   // 53 = Alt-'5'  Alt-'%'    equal                   circle-stile
+// ['\u2265', '\u2349'],   // 54 = Alt-'6'  Alt-'^'    right-caret-underbar    circle-slope
+// ['\u003E', '\u2296'],   // 55 = Alt-'7'  Alt-'&'    right-caret             circle-bar
+// ['\u2260', '\u235F'],   // 56 = Alt-'8'  Alt-'*'    notequal                circle-star
+// ['\u2228', '\u2371'],   // 57 = Alt-'9'  Alt-'('    down-caret              down-caret-tilde
+// ['\u00F7', '\u2339'],   // 61 = Alt-'='  Alt-'+'    colon-bar               quad-divide
+// ['\u2190', '\u235E'],   // 91 = Alt-'['  Alt-'{'    left-arrow              quote-quad
+// ['\u22A3', '\u22A2'],   // 92 = Alt-'\\' Alt-'|'    left-tack               right-tack
+// ['\u2192', '\u236C'],   // 93 = Alt-']'  Alt-'}'    right-arrow             zilde
+// ['\u22C4', '\u236A'],   // 96 = Alt-'`'  Alt-'~'    diamond                 commabar
 
 // Make a copy of the NARS2000 keyboard layout so
 //   it's not the same variable.
@@ -246,9 +271,9 @@ function onInputAPLKeyPress (aEvent)
 ////    myDump ('aEvent.charCode = ' + aEvent.charCode + ', typeof = ' + (typeof (aplchar)) + ', CodeToAPL = ' + CodeToAPL[aEvent.charCode - 32]);
         if (typeof (aplchar) == "object")
         {
-            if (aEvent.shiftKey)
-                aplchar = aplchar[1];
-            else
+////////////if (aEvent.shiftKey)
+////////////    aplchar = aplchar[1];
+////////////else
                 aplchar = aplchar[0];
         } // End IF
 

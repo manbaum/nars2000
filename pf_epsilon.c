@@ -1895,11 +1895,11 @@ UBOOL PrimFnDydEpsilonNvA_EM
         } // End IF/ELSE
 
         // Determine if the left arg value is in the right arg
-        if (!bRet
-         && apaMinRht <= aplIntegerLft
-         &&              aplIntegerLft <= apaMaxRht
-         && (0 EQ apaMulRht
-          || 0 EQ (aplIntegerLft - apaOffRht) % apaMulRht))
+        if (bRet                                            //     L is an integer
+         && apaMinRht <= aplIntegerLft                      // AND L is at or above the minimum
+         &&              aplIntegerLft <= apaMaxRht         // AND L is at or below the maximum
+         && (0 EQ apaMulRht                                 // AND (R is a constant
+          || 0 EQ (aplIntegerLft - apaOffRht) % apaMulRht)) //   OR L is in the APA)
             // Save in the result
             lpMemRes[iLft >> LOG2NBIB] |=
               1 << (MASKLOG2NBIB & (UINT) iLft);

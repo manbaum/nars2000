@@ -1,19 +1,6 @@
 Version 0.0.2.12 consists of the following Builds:
 
 
-Build #656 -- Version 0.0.2.12
-------------------------------
-
-* Fix Bug:  MemberOf with APA Right Arg Returns Wrong Result
-
-Directory trunk:
-
-PF_EPSILON.C:
-  Fix Bug:  In <PrimFnDydEpsilonNvA_EM> (that is dyadic epsilon Numeric v.
-    APA), a wayward not sign slipped into the code causing it to return an
-    incorrect result.
-
-
 Build #655 -- Version 0.0.2.12
 ------------------------------
 
@@ -97,4 +84,4 @@ EDITFCN.C:
     Unicode.
 
 VERSION.RC:
-  Increment version to 0.0.2.11.
+  Increment version to 0.0.2.12.

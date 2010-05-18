@@ -28,6 +28,7 @@
 #include <windowsx.h>
 //#include <multimon.h>   // Multiple monitor support
 #include <wininet.h>
+#include <stdio.h>
 
 #define DEFINE_VARS
 #define DEFINE_VALUES
@@ -3264,37 +3265,46 @@ UBOOL CALLBACK UpdatesDlgProc
     {
         case WM_INITDIALOG:
         {
-            WCHAR wszTemp[512];
+            WCHAR     wszTemp[512],
+                     *lpwStr;
+            UINT      uWebVer[4],
+                      uFilVer[4];
+            ULONGLONG ulWebVer,
+                      ulFilVer;
 
 #define lpUpdatesDlgStr     ((LPUPDATESDLGSTR) lParam)
-            // Compare the two strings
-            switch (lstrcmpW (lpUpdatesDlgStr->lpWebVer, lpUpdatesDlgStr->lpFileVer))
-            {
-                case -1:            // Actual version is later (must be running an unreleased version)
-                    // Format the text
-                    wsprintfW (wszTemp,
-                               L"The version you are running (%s) is newer than the most current version (%s) on the website and there is no need to update your version.",
-                               lpUpdatesDlgStr->lpFileVer,
-                               lpUpdatesDlgStr->lpWebVer);
-                    break;
+            // Split apart the Web version information
+            swscanf (lpUpdatesDlgStr->lpWebVer,
+                     L"%u.%u.%u.%u",
+                    &uWebVer[0],
+                    &uWebVer[1],
+                    &uWebVer[2],
+                    &uWebVer[3]);
+            // Split apart the File version information
+            swscanf (lpUpdatesDlgStr->lpFileVer,
+                     L"%u.%u.%u.%u",
+                    &uFilVer[0],
+                    &uFilVer[1],
+                    &uFilVer[2],
+                    &uFilVer[3]);
+            // Combine the version info into a single number (note this limits us to three digits per field)
+            ulWebVer = (uWebVer[3] + 1000 * (uWebVer[2] + 1000 * (uWebVer[1] + 1000 * uWebVer[0])));
+            ulFilVer = (uFilVer[3] + 1000 * (uFilVer[2] + 1000 * (uFilVer[1] + 1000 * uFilVer[0])));
 
-                case 0:             // Same version (nothing to do)
-                    wsprintfW (wszTemp,
-                               L"The version you are running (%s) is the same as the most current version (%s) on the website and there is no need to update your version.",
-                               lpUpdatesDlgStr->lpFileVer,
-                               lpUpdatesDlgStr->lpWebVer);
-                    break;
+            // Compare the two versions
+            if (ulFilVer < ulWebVer)    // New version is available for download
+                lpwStr = L"The version you are running (%s) is the older than the most current version (%s) on the website -- please download the latest version from ...";
+            else
+            if (ulFilVer EQ ulWebVer)   // Same version (nothing to do)
+                lpwStr = L"The version you are running (%s) is the same as the most current version (%s) on the website and there is no need to update your version.";
+            else                        // Actual version is later (must be running an unreleased version)
+                lpwStr = L"The version you are running (%s) is newer than the most current version (%s) on the website and there is no need to update your version.";
 
-                case 1:             // New version is available for download
-                    wsprintfW (wszTemp,
-                               L"The version you are running (%s) is the older than the most current version (%s) on the website -- please download the latest version from ...",
-                               lpUpdatesDlgStr->lpFileVer,
-                               lpUpdatesDlgStr->lpWebVer);
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
+            // Format the text
+            wsprintfW (wszTemp,
+                       lpwStr,
+                       lpUpdatesDlgStr->lpFileVer,
+                       lpUpdatesDlgStr->lpWebVer);
 #undef  lpUpdatesDlgStr
 
             // Write out the file & web version strings

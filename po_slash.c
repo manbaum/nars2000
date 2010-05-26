@@ -319,6 +319,10 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
       || IsZeroDim (uDimAxRht))
      && IsTknUsrDfn (&lpYYFcnStrLft->tkToken))
     {
+        // If we're also prototyping, ...
+        if (bPrototyping)
+            goto NONCE_EXIT;
+
         // The result is nested
         aplTypeRes = ARRAY_NESTED;
 
@@ -1112,6 +1116,11 @@ LEFT_NONCE_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 

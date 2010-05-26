@@ -1639,11 +1639,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                             gSyntClrBGTrans[uCnt] = IsDlgButtonChecked (hWndProp, IDC_SYNTCLR_XB_TRANS1 + uCnt);
 
                             // Copy the local Foreground/Background Colors to the global var
-                            gSyntaxColorText = lclSyntaxColors[uCnt];
+                            gSyntaxColorName[uCnt].syntClr = lclSyntaxColors[uCnt];
 
                             // If the background is transparent, change it
                             if (gSyntClrBGTrans[uCnt])
-                                gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorText.crBack;
+                                gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorName[uCnt].syntClr.crBack;
                         } // End IF
 
                         // Copy the state of the "Enable ... Coloring" checkboxes to the OptionFlags

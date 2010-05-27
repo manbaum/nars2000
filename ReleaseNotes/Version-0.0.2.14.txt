@@ -1,6 +1,19 @@
 Version 0.0.2.14 consists of the following Builds:
 
 
+Build #664 -- Version 0.0.2.14
+------------------------------
+
+* Rename Internal Variables To Reflect Non-ASCIIZ Nature
+
+Directory trunk:
+
+SYMTAB.C:
+  In <SymTabLookupNameLength>, rename "lpwsz" prefixed-names
+    to "lpw" as the names aren't zero-terminated.
+  Improve comments.
+
+
 Build #663 -- Version 0.0.2.14
 ------------------------------
 

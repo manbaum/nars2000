@@ -1701,7 +1701,7 @@ uint32_t hashlittleConv
 //***************************************************************************
 
 LPSYMENTRY SymTabLookupNameLength
-    (LPWCHAR   lpwszString,         // Ptr to the name to lookup
+    (LPWCHAR   lpwString,           // Ptr to the name to lookup (not necessarily zero-terminated)
      APLU3264  iLen,                // Length of the name
      LPSTFLAGS lpstFlags)           // Ptr to flags filter
 
@@ -1712,7 +1712,7 @@ LPSYMENTRY SymTabLookupNameLength
     LPSYMENTRY   lpSymEntry = NULL;
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        sysName[32];       // Temp storage for sysnames in lowercase
-    LPWCHAR      lpwszName;         // Ptr to name
+    LPWCHAR      lpwName;           // Ptr to name (not necessarily zero-terminated)
     LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
@@ -1722,7 +1722,7 @@ LPSYMENTRY SymTabLookupNameLength
     lpHTS = &lpMemPTD->htsPTD;
 
     // If the name is of a Magic Function/Operator, ...
-    if (IsMFOName (lpwszString))
+    if (IsMFOName (lpwString))
     {
         // Peel back the HshTabStrs so we lookup
         //   the name in the top level HshTabStr
@@ -1731,38 +1731,39 @@ LPSYMENTRY SymTabLookupNameLength
     } // End IF
 
     // Skip over trailing white space
-    while (iLen && lpwszString[iLen - 1] EQ L' ')
+    while (iLen && lpwString[iLen - 1] EQ L' ')
         iLen--;
 
     if (iLen EQ 0)
         goto ERROR_EXIT;
 
     // If this is a sysname, ...
-    if (IsSysName (lpwszString))
+    if (IsSysName (lpwString))
     {
         // Copy the sysname to local storage
-        CopyMemoryW (sysName, lpwszString, iLen);
+        CopyMemoryW (sysName, lpwString, iLen);
 
         // Convert it to lowercase
         CharLowerBuffW (sysName, (UINT) iLen);
 
-        lpwszName = sysName;
+        // Point to it
+        lpwName = sysName;
     } else
-        lpwszName = lpwszString;
+        lpwName = lpwString;
 
     // Hash the name
     uHash = hashlittleConv
-            (lpwszName,                     // A ptr to the name to hash
-             iLen,                          // The # bytes pointed to
+            (lpwName,                       // A ptr to the name to hash
+             iLen,                          // The # WCHARs pointed to
              0);                            // Initial value or previous hash
     // If the caller hasn't set this field, set it ourselves
     if (lpstFlags->ObjName EQ OBJNAME_NONE)
     {
         // Set the flags of the entry we're looking for
-        if (IsSysName (lpwszName))
+        if (IsSysName (lpwName))
             lpstFlags->ObjName = OBJNAME_SYS;
         else
-        if (IsMFOName (lpwszName))
+        if (IsMFOName (lpwName))
             lpstFlags->ObjName = OBJNAME_MFO;
         else
             lpstFlags->ObjName = OBJNAME_USR;
@@ -1801,7 +1802,7 @@ LPSYMENTRY SymTabLookupNameLength
 
                 // Compare sensitive to case
                 for (iCnt = iCmp = 0; iCnt < iLen; iCnt++)
-                if (ToLowerUnd (lpwGlbName[iCnt]) NE ToLowerUnd (lpwszName[iCnt]))
+                if (ToLowerUnd (lpwGlbName[iCnt]) NE ToLowerUnd (lpwName[iCnt]))
                 {
                     iCmp = 1;
 
@@ -2358,7 +2359,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     // Hash the name
     uHash =
       hashlittleConv (lpwszString,      // A ptr to the name to hash
-                      iLen,             // The # bytes pointed to
+                      iLen,             // The # WCHARs pointed to
                       0);               // Initial value or previous hash
     // This name isn't in the ST -- find the next free entry
     //   in the hash table, split if necessary

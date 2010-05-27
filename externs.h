@@ -322,8 +322,9 @@ DWORD dwTlsType,                        // Thread type (e.g.
       dwTlsFhLocalVars,                 // Ptr to lpfhLocalVars for SM and PL threads
       dwTlsPerTabData;                  // Ptr to PerTabData    for TC, SM, and PL threads
 
+
 //***************************************************************************
-// Temporary storage
+//  Temporary storage
 //***************************************************************************
 
 EXTERN
@@ -1199,9 +1200,9 @@ SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
    {{DEF_SC_PRIMFCN    }, L"Primitive Function"           },  // 03:  Primitive Function
    {{DEF_SC_PRIMOP1    }, L"Primitive Monadic Operator"   },  // 04:  Primitive Monadic Operator
    {{DEF_SC_PRIMOP2    }, L"Primitive Dyadic Operator"    },  // 05:  Primitive Dyadic Operator
-   {{DEF_SC_SYSFCN     }, L"System Fcn"                   },  // 06:  System Function
-   {{DEF_SC_GLBSYSVAR  }, L"Global System Var"            },  // 07:  Global System Variable
-   {{DEF_SC_LCLSYSVAR  }, L"Local System Var"             },  // 08:  Local  ...
+   {{DEF_SC_SYSFCN     }, L"System Function"              },  // 06:  System Function
+   {{DEF_SC_GLBSYSVAR  }, L"Global System Variable"       },  // 07:  Global System Variable
+   {{DEF_SC_LCLSYSVAR  }, L"Local System Variable"        },  // 08:  Local  ...
    {{DEF_SC_CTRLSTRUC  }, L"Control Structure"            },  // 09:  Control Structure
    {{DEF_SC_NUMCONST   }, L"Numeric Constant"             },  // 0A:  Numeric constant
    {{DEF_SC_CHRCONST   }, L"Character Constant"           },  // 0B:  Character constant

@@ -404,161 +404,161 @@ BEGIN
     GROUPBOX        "Foreground"                , IDC_STATIC            , 95, 10, 48,242
     GROUPBOX        "Background"                , IDC_STATIC            ,150, 10, 48,242
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT1       ,  5, 20, 75,  9    // "Global Name"
+    LTEXT           ""                          , IDC_SYNTCLR_LT1       ,  5, 20, 90,  9    // "Global Name"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK1 , 97, 20,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR1 ,105, 20, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK1 ,152, 20,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR1 ,160, 20, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS1 ,215, 20,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT2       ,  5, 30, 75,  9    // "Local Name"
+    LTEXT           ""                          , IDC_SYNTCLR_LT2       ,  5, 30, 90,  9    // "Local Name"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK2 , 97, 30,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR2 ,105, 30, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK2 ,152, 30,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR2 ,160, 30, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS2 ,215, 30,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT3       ,  5, 40, 75,  9    // "Label"
+    LTEXT           ""                          , IDC_SYNTCLR_LT3       ,  5, 40, 90,  9    // "Label"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK3 , 97, 40,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR3 ,105, 40, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK3 ,152, 40,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR3 ,160, 40, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS3 ,215, 40,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT4       ,  5, 50, 75,  9    // "Primitive Function"
+    LTEXT           ""                          , IDC_SYNTCLR_LT4       ,  5, 50, 90,  9    // "Primitive Function"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK4 , 97, 50,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR4 ,105, 50, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK4 ,152, 50,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR4 ,160, 50, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS4 ,215, 50,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT5       ,  5, 60, 75,  9    // "Primitve Monadic Operator"
+    LTEXT           ""                          , IDC_SYNTCLR_LT5       ,  5, 60, 90,  9    // "Primitve Monadic Operator"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK5 , 97, 60,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR5 ,105, 60, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK5 ,152, 60,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR5 ,160, 60, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS5 ,215, 60,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT6       ,  5, 70, 75,  9    // "Primitve Dyadic Operator"
+    LTEXT           ""                          , IDC_SYNTCLR_LT6       ,  5, 70, 90,  9    // "Primitve Dyadic Operator"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK6 , 97, 70,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR6 ,105, 70, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK6 ,152, 70,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR6 ,160, 70, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS6 ,215, 70,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT7       ,  5, 80, 75,  9    // "System Function"
+    LTEXT           ""                          , IDC_SYNTCLR_LT7       ,  5, 80, 90,  9    // "System Function"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK7 , 97, 80,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR7 ,105, 80, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK7 ,152, 80,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR7 ,160, 80, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS7 ,215, 80,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT8       ,  5, 90, 75,  9    // "Global System Var"
+    LTEXT           ""                          , IDC_SYNTCLR_LT8       ,  5, 90, 90,  9    // "Global System Var"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK8 , 97, 90,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR8 ,105, 90, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK8 ,152, 90,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR8 ,160, 90, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS8 ,215, 90,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT9       ,  5,100, 75,  9    // "Local System Var"
+    LTEXT           ""                          , IDC_SYNTCLR_LT9       ,  5,100, 90,  9    // "Local System Var"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK9 , 97,100,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR9 ,105,100, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK9 ,152,100,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR9 ,160,100, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS9 ,215,100,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT10      ,  5,110, 75,  9    // "Control Structure"
+    LTEXT           ""                          , IDC_SYNTCLR_LT10      ,  5,110, 90,  9    // "Control Structure"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK10, 97,110,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR10,105,110, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK10,152,110,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR10,160,110, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS10,215,110,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT11      ,  5,120, 75,  9    // "Numeric Constant"
+    LTEXT           ""                          , IDC_SYNTCLR_LT11      ,  5,120, 90,  9    // "Numeric Constant"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK11, 97,120,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR11,105,120, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK11,152,120,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR11,160,120, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS11,215,120,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT12      ,  5,130, 75,  9    // "Character Constant"
+    LTEXT           ""                          , IDC_SYNTCLR_LT12      ,  5,130, 90,  9    // "Character Constant"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK12, 97,130,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR12,105,130, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK12,152,130,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR12,160,130, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS12,215,130,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT13      ,  5,140, 75,  9    // "Comment"
+    LTEXT           ""                          , IDC_SYNTCLR_LT13      ,  5,140, 90,  9    // "Comment"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK13, 97,140,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR13,105,140, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK13,152,140,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR13,160,140, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS13,215,140,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT14      ,  5,150, 75,  9    // "Line Drawing Chars"
+    LTEXT           ""                          , IDC_SYNTCLR_LT14      ,  5,150, 90,  9    // "Line Drawing Chars"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK14, 97,150,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR14,105,150, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK14,152,150,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR14,160,150, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS14,215,150,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT15      ,  5,160, 75,  9    // "Function Line Numbers"
+    LTEXT           ""                          , IDC_SYNTCLR_LT15      ,  5,160, 90,  9    // "Function Line Numbers"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK15, 97,160,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR15,105,160, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK15,152,160,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR15,160,160, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS15,215,160,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT16      ,  5,170, 75,  9    // "Matched Group Level 1"
+    LTEXT           ""                          , IDC_SYNTCLR_LT16      ,  5,170, 90,  9    // "Matched Group Level 1"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK16, 97,170,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR16,105,170, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK16,152,170,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR16,160,170, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS16,215,170,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT17      ,  5,180, 75,  9    // "Matched Group Level 2"
+    LTEXT           ""                          , IDC_SYNTCLR_LT17      ,  5,180, 90,  9    // "Matched Group Level 2"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK17, 97,180,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR17,105,180, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK17,152,180,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR17,160,180, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS17,215,180,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT18      ,  5,190, 75,  9    // "Matched Group Level 3"
+    LTEXT           ""                          , IDC_SYNTCLR_LT18      ,  5,190, 90,  9    // "Matched Group Level 3"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK18, 97,190,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR18,105,190, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK18,152,190,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR18,160,190, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS18,215,190,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT19      ,  5,200, 75,  9    // "Matched Group Level 4"
+    LTEXT           ""                          , IDC_SYNTCLR_LT19      ,  5,200, 90,  9    // "Matched Group Level 4"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK19, 97,200,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR19,105,200, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK19,152,200,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR19,160,200, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS19,215,200,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT20      ,  5,210, 75,  9    // "Unmatched Group"
+    LTEXT           ""                          , IDC_SYNTCLR_LT20      ,  5,210, 90,  9    // "Unmatched Group"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK20, 97,210,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR20,105,210, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK20,152,210,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR20,160,210, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS20,215,210,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT21      ,  5,220, 75,  9    // "Improper Nesting"
+    LTEXT           ""                          , IDC_SYNTCLR_LT21      ,  5,220, 90,  9    // "Improper Nesting"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK21, 97,220,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR21,105,220, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK21,152,220,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR21,160,220, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS21,215,220,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT22      ,  5,230, 75,  9    // "Unknown Symbols"
+    LTEXT           ""                          , IDC_SYNTCLR_LT22      ,  5,230, 90,  9    // "Unknown Symbols"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK22, 97,230,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR22,105,230, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK22,152,230,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR22,160,230, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS22,215,230,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT23      ,  5,240, 75,  9    // "Window Text"
+    LTEXT           ""                          , IDC_SYNTCLR_LT23      ,  5,240, 90,  9    // "Window Text"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK23, 97,240,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR23,105,240, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK23,152,240,  8,  8, SS_BITMAP

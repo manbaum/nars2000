@@ -4759,6 +4759,7 @@ TKCOLINDICES CharTransTK
              || CtrlStrucCmpi (lptkLocalVars, L":endif"    , TKT_CS_ENDIF    )
              || CtrlStrucCmpi (lptkLocalVars, L":endrepeat", TKT_CS_ENDREPEAT)
              || CtrlStrucCmpi (lptkLocalVars, L":endselect", TKT_CS_ENDSELECT)
+             || CtrlStrucCmpi (lptkLocalVars, L":endswitch", TKT_CS_ENDSELECT)
              || CtrlStrucCmpi (lptkLocalVars, L":endwhile" , TKT_CS_ENDWHILE )
              || CtrlStrucCmpi (lptkLocalVars, L":for"      , TKT_CS_FOR      )
              || CtrlStrucCmpi (lptkLocalVars, L":forlcl"   , TKT_CS_FORLCL   )
@@ -4770,6 +4771,7 @@ TKCOLINDICES CharTransTK
              || CtrlStrucCmpi (lptkLocalVars, L":repeat"   , TKT_CS_REPEAT   )
              || CtrlStrucCmpi (lptkLocalVars, L":return"   , TKT_CS_RETURN   )
              || CtrlStrucCmpi (lptkLocalVars, L":select"   , TKT_CS_SELECT   )
+             || CtrlStrucCmpi (lptkLocalVars, L":switch"   , TKT_CS_SELECT   )
              || CtrlStrucCmpi (lptkLocalVars, L":until"    , TKT_CS_UNTIL    )
              || CtrlStrucCmpi (lptkLocalVars, L":while"    , TKT_CS_WHILE    ))
                 return TKCOL_CTRLSTRUC;

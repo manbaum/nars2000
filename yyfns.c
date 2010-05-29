@@ -462,7 +462,8 @@ LPPL_YYSTYPE YYCopyFcn
     (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
      LPPL_YYSTYPE  lpYYArg,             // Ptr to function arg
      LPPL_YYSTYPE *lplpYYBase,          // Ptr to ptr to YY base address
-     LPINT         lpTknCount)          // Ptr to resulting token count
+     LPINT         lpTknCount,          // Ptr to resulting token count
+     UBOOL         bTopLvl)             // TRUE iff called at the top level
 
 {
     int               i,                    // Loop counter
@@ -509,7 +510,7 @@ LPPL_YYSTYPE YYCopyFcn
             lpYYMem1 = lpYYMem;
 
             TknCount = 0;   // Initialize as it is incremented in YYCopyFcn
-            lpYYMem = YYCopyFcn (lpYYMem, lpYYArg[i].lpYYFcnBase, lplpYYBase, &TknCount);
+            lpYYMem = YYCopyFcn (lpYYMem, lpYYArg[i].lpYYFcnBase, lplpYYBase, &TknCount, FALSE);
 
             Assert (TknCount EQ (lpYYMem - lpYYMem1));
 
@@ -617,10 +618,17 @@ LPPL_YYSTYPE YYCopyFcn
                 // If the token type is a var or axis array, ...
                 if (lpToken->tkFlags.TknType EQ TKT_VARARRAY
                  || lpToken->tkFlags.TknType EQ TKT_AXISARRAY)
-                    // Don't increment the refcnt as that was done
-                    //   when the var array was created in MakeVarStrand
-                    lpYYCopy = CopyPL_YYSTYPE_YY (&lpYYArg[i]);
-                else
+                {
+                    // If called at the top level, ...
+                    if (bTopLvl)
+                        // Don't increment the refcnt as that was done
+                        //   when the var array was created in MakeVarStrand
+                        lpYYCopy = CopyPL_YYSTYPE_YY (&lpYYArg[i]);
+                    else
+                        // Increment the RefCnt as we're not at the top
+                        //   level so it wasn't incremented in MakeVarStrand
+                        lpYYCopy = CopyPL_YYSTYPE_EM_YY (&lpYYArg[i], FALSE);
+                } else
                     lpYYCopy = CopyPL_YYSTYPE_EM_YY (&lpYYArg[i], FALSE);
                 if (lpYYMem->YYInuse)
                     YYCopy (lpYYMem++, lpYYCopy);
@@ -725,7 +733,7 @@ LPPL_YYSTYPE YYCopyFcn
                                 TknCount++;
                             } else
                                 // Recurse down through this function array item
-                                lpYYMem = YYCopyFcn (lpYYMem, lpMemFcn, lplpYYBase, &TknCount);
+                                lpYYMem = YYCopyFcn (lpYYMem, lpMemFcn, lplpYYBase, &TknCount, FALSE);
                             // Mark as not using YYFcn
                             bYYFcn = FALSE;
                         } // End IF/ELSE

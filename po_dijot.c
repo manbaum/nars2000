@@ -294,6 +294,9 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
             uMinRank = NEG1A;
             uMaxRank = 0;
 
+            // In case it's empty, we need to process the prototype
+            aplNELMRes = max (aplNELMRes, 1);
+
             // Loop through the result looking for the minimum/maximum rank items
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
@@ -442,6 +445,16 @@ static APLCHAR MonLine4[] =
 
 static APLCHAR MonLine5[] =
   $QUAD_PRO L":"
+  L"Y" $IS L"1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y";
+
+static APLCHAR MonLine6[] =
+  L"O" $IS $RHO $RHO L"R";
+
+static APLCHAR MonLine7[] =
+  L"Y" $IS L"(-" L"O" L")" $MAX L"O" $MIN L"Y";
+
+
+static APLCHAR MonLine8[] =
 //L"Z" $IS $DISCLOSE $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
   L"Z" $IS           $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
 
@@ -451,6 +464,9 @@ static LPAPLCHAR MonBody[] =
  MonLine3,
  MonLine4,
  MonLine5,
+ MonLine6,
+ MonLine7,
+ MonLine8,
 };
 
 MAGIC_FCNOPR MFO_MonRank =
@@ -550,6 +566,15 @@ static APLCHAR DydLine4[] =
 
 static APLCHAR DydLine5[] =
   $QUAD_PRO L":"
+  L"Y" $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y";
+
+static APLCHAR DydLine6[] =
+  L"O" $IS L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
+
+static APLCHAR DydLine7[] =
+  L"Y" $IS L"(-O)" $MAX L"O" $MIN L"Y";
+
+static APLCHAR DydLine8[] =
   L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE L"Y]" $EACH L"0" $RHO $ENCLOSE L"L)LO" $EACH $EACH
                           $ENCLOSE L"[" $IOTA L"-1" $DROP L"Y]" $EACH L"0" $RHO $ENCLOSE L"R";
 
@@ -559,6 +584,9 @@ static LPAPLCHAR DydBody[] =
  DydLine3,
  DydLine4,
  DydLine5,
+ DydLine6,
+ DydLine7,
+ DydLine8,
 };
 
 MAGIC_FCNOPR MFO_DydRank =

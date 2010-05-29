@@ -1639,12 +1639,24 @@ HGLOBAL CopyArray_EM
         // Split cases based upon the array type
         switch (GetSignatureMem (lpMemDst))
         {
+#ifdef DEBUG
+            VFOHDRPTRS vfoHdrPtrs;
+#endif
             case VARARRAY_HEADER_SIGNATURE:
                 // Set the reference count in case it was a TKT_VARNAMED
 #ifdef DEBUG_REFCNT
                 dprintfWL0 (L"##RefCnt=1 in " APPEND_NAME L":        %p(res=1) (%S#%d)", hGlbDst, FNLN);
 #endif
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
+
+#ifdef DEBUG
+                vfoHdrPtrs.lpMemVar = lpMemDst;
+  #define lpHeader vfoHdrPtrs.lpMemVar
+#else
+  #define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
+#endif
+                // Clear the SkipRefCnt flag
+                lpHeader->SkipRefCntIncr = FALSE;
+
                 // Clear the PermNdx flags
                 lpHeader->PermNdx = PERMNDX_NONE;
 
@@ -3093,6 +3105,7 @@ UBOOL IsTknTypeVar
         case TKT_NUMSTRAND:
         case TKT_VARIMMED:
         case TKT_VARARRAY:
+        case TKT_AXISARRAY:
             return TRUE;
 
         default:

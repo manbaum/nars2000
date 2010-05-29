@@ -74,8 +74,16 @@ int ChangeRefCntDir_PTB
             // Split cases based upon the array signature
             switch (GetSignatureMem (lpSig))
             {
+#ifdef DEBUG
+                VFOHDRPTRS vfoHdrPtrs;
+#endif
                 case VARARRAY_HEADER_SIGNATURE:
-#define lpHeader        ((LPVARARRAY_HEADER) lpSig)
+#ifdef DEBUG
+                        vfoHdrPtrs.lpMemVar = lpSig;
+  #define lpHeader      vfoHdrPtrs.lpMemVar
+#else
+  #define lpHeader      ((LPVARARRAY_HEADER) lpSig)
+#endif
                     // Don't change the reference count on Perms
                     if (lpHeader->PermNdx NE PERMNDX_NONE)
                     {
@@ -83,6 +91,12 @@ int ChangeRefCntDir_PTB
                         dprintfWL0 (L"  RefCntNC in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt, FNLN);
 #endif
                         RefCnt = NEG1U;
+
+                        // If we're to skip this RefCnt increment, ...
+                        if (iIncr EQ 1
+                         && lpHeader->SkipRefCntIncr)
+                            // Clear the flag
+                            lpHeader->SkipRefCntIncr = FALSE;
 
                         break;
                     } // End IF

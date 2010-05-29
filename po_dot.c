@@ -62,7 +62,7 @@ LPPL_YYSTYPE PrimProtoOpDot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
+     LPTOKEN      lptkAxis)             // Ptr to axis token (always NULL)
 
 {
     Assert (lptkAxis EQ NULL);
@@ -200,7 +200,9 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                   lpYYRes2,                 // Ptr to secondary result
                   lpYYFcnStrLft,            // Ptr to left operand function strand
                   lpYYFcnStrRht;            // Ptr to right ...
-    LPTOKEN       lptkAxis;                 // Ptr to axis token (may be NULL)
+    LPTOKEN       lptkAxisOpr,              // Ptr to operator axis token (may be NULL)
+                  lptkAxisLft,              // ...    left operand axis token (may be NULL)
+                  lptkAxisRht;              // ...    right ...
     LPPRIMFNS     lpPrimProtoLft = NULL,    // Ptr to left operand prototype function
                   lpPrimProtoRht = NULL;    // Ptr to right ...
     TOKEN         tkItmLft = {0},           // Left arg item token
@@ -228,19 +230,19 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // Get the ptr to the Ctrl-Break flag
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    // Check for operator axis token
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive to
     //   the axis operator, so signal a syntax error if present
     //***************************************************************
-    if (lptkAxis NE NULL)
+    if (lptkAxisOpr NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
     lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
     // Ensure the left operand is a function
@@ -252,6 +254,12 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
         goto RIGHT_SYNTAX_EXIT;
+
+    // Check for left operand axis operator
+    lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
+
+    // Check for right operand axis operator
+    lptkAxisRht = CheckAxisOper (lpYYFcnStrRht);
 
     // Get a ptr to the left & right prototype function
     if (bPrototyping)
@@ -396,9 +404,11 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         bCatIdent = TRUE;
     } else
     // If the comparison function is scalar dyadic, and
+    //   and there's no right operand axis,
     //   both args are simple non-hetero, and
     //   the reduction function is scalar dyadic, ...
     if (lpPrimFlagsRht->DydScalar
+     && lptkAxisRht EQ NULL
      && IsSimpleNH (aplTypeLft)
      && IsSimpleNH (aplTypeRht)
      && lpPrimFlagsLft->DydScalar)
@@ -728,7 +738,7 @@ RESTART_INNERPROD_RES:
         lpYYRes = (*lpPrimProtoRht) (&tkItmLft,         // Ptr to left arg token
                             (LPTOKEN) lpYYFcnStrRht,    // Ptr to right operand function strand
                                      &tkItmRht,         // Ptr to right arg token
-                                      lptkAxis);        // Ptr to axis token (may be NULL)
+                                      lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
         // Free the left & right arg tokens
         FreeResult (&tkItmLft);
         FreeResult (&tkItmRht);
@@ -845,6 +855,7 @@ RESTART_INNERPROD_RES:
         if (!CatRedIdentFcn_EM (lpMemRes,       // Ptr to result global memory
                                 aplNELMRes,     // Result NELM
                                 lpYYFcnStrLft,  // Ptr to left operand PL_YYSTYPE
+                                lptkAxisLft,    // Ptr to left operand axis token (may be NULL)
                                 hGlbPro,        // Prototype global memory handle
                                 immTypePro))    // Prototype immediate type
             goto ERROR_EXIT;
@@ -1336,13 +1347,13 @@ RESTART_INNERPROD_RES:
                       (*lpPrimProtoRht) (&tkItmLft,         // Ptr to left arg token
                                 (LPTOKEN) lpYYFcnStrRht,    // Ptr to right operand function strand
                                          &tkItmRht,         // Ptr to right arg token
-                                          lptkAxis);        // Ptr to axis token (may be NULL)
+                                          lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
                 else
                     lpYYRes =
                       ExecFuncStr_EM_YY (&tkItmLft,         // Ptr to left arg token
                                           lpYYFcnStrRht,    // Ptr to right operand function strand
                                          &tkItmRht,         // Ptr to right arg token
-                                          lptkAxis);        // Ptr to axis token (may be NULL)
+                                          lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
                 // Free the left & right arg tokens
                 FreeResult (&tkItmLft);
                 FreeResult (&tkItmRht);
@@ -1379,13 +1390,13 @@ RESTART_INNERPROD_RES:
                               (*lpPrimProtoLft) (&lpYYRes->tkToken, // Ptr to left arg token
                                         (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
                                                  &tkItmRed,         // Ptr to right arg token
-                                                  lptkAxis);        // Ptr to axis token (may be NULL)
+                                                  lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
                         else
                             lpYYRes2 =
                               ExecFuncStr_EM_YY (&lpYYRes->tkToken, // Ptr to left arg token
                                                   lpYYFcnStrLft,    // Ptr to left operand function strand
                                                  &tkItmRed,         // Ptr to right arg token
-                                                  lptkAxis);        // Ptr to axis token (may be NULL)
+                                                  lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
                         // Free the result item & reduction tokens
                         FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
                         FreeResult (&tkItmRed);
@@ -1460,7 +1471,7 @@ YYALLOC_EXIT:
 
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
+                               lptkAxisOpr);
     goto ERROR_EXIT;
 
 LEFT_SYNTAX_EXIT:
@@ -1559,12 +1570,12 @@ UBOOL CatRedIdentFcn_EM
     (LPVOID       lpMemRes,         // Ptr to result global memory
      APLNELM      aplNELMRes,       // Result NELM
      LPPL_YYSTYPE lpYYFcnStrLft,    // Ptr to left operand PL_YYSTYPE
+     LPTOKEN      lptkAxisLft,      // Ptr to left operand (catenate) axis token
      HGLOBAL      hGlbPro,          // Prototype global memory handle
      IMM_TYPES    immTypePro)       // Prototype immediate type
 
 {
     UBOOL     bCalcPro;             // TRUE iff we need to calculate the prototype
-    LPTOKEN   lptkAxis2;            // Ptr to secondary (catenate) axis token
     APLRANK   aplRankPro;           // Prototype rank
     APLUINT   uRes;                 // Result loop counter
 
@@ -1590,13 +1601,12 @@ UBOOL CatRedIdentFcn_EM
         aplRankPro = 1;
     } // End IF
 
-    // Check for axis operator
-    lptkAxis2 = CheckAxisOper (lpYYFcnStrLft);
-    if (lptkAxis2)
+    // Check for left operand axis operator
+    if (lptkAxisLft)
     {
         // Catentate allows integer axis values only
         // Note that there is no identity element for laminate reduction
-        if (!CheckAxis_EM (lptkAxis2,       // The axis token
+        if (!CheckAxis_EM (lptkAxisLft,     // The left operand axis token
                            aplRankPro,      // All values less than this
                            TRUE,            // TRUE iff scalar or one-element vector only
                            FALSE,           // TRUE iff want sorted axes
@@ -1640,7 +1650,7 @@ UBOOL CatRedIdentFcn_EM
           PrimFnDydSlash_EM_YY (&tkLft,             // Ptr to left arg token
                                 &tkFcn,             // Ptr to function token
                                 &tkRht,             // Ptr to right arg token
-                                 lptkAxis2);        // Ptr to axis token (may be NULL)
+                                 lptkAxisLft);      // Ptr to left operand axis token (may be NULL)
         if (lpYYPro EQ NULL)
             goto ERROR_EXIT;
         Assert (lpYYPro->tkToken.tkFlags.TknType EQ TKT_VARARRAY);

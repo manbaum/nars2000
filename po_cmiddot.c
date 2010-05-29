@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,22 +127,22 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
 {
     LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to function strand
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
-    LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
+    LPTOKEN      lptkAxisOpr;           // Ptr to operator axis token (may be NULL)
 
     // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive
     //   to the axis operator, so signal a syntax error if present
     //***************************************************************
 
-    if (lptkAxis NE NULL)
+    if (lptkAxisOpr NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -165,16 +165,16 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
         return (*lpPrimProtoLft) (NULL,             // Ptr to left arg token
                         (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand fnuction strand
                                   lptkRhtArg,       // Ptr to right arg token
-                                  lptkAxis);        // Ptr to axis token
+                                  lptkAxisOpr);     // Ptr to operator axis token
     } else
         // Execute the function monadically on the right arg
         return ExecFuncStr_EM_YY (NULL,             // Ptr to left arg token
                                   lpYYFcnStrLft,    // Ptr to left operand function strand
                                   lptkRhtArg,       // Ptr to right arg token
-                                  lptkAxis);        // Ptr to axis token (may be NULL)
+                                  lptkAxisOpr);     // Ptr to operator axis token
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
+                               lptkAxisOpr);
     return NULL;
 
 LEFT_SYNTAX_EXIT:
@@ -230,14 +230,14 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
 {
     LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
-    LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
+    LPTOKEN      lptkAxisOpr;           // Ptr to operator axis token (may be NULL)
 
     // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -260,13 +260,13 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
         return (*lpPrimProtoLft) (lptkLftArg,       // Ptr to left arg token
                         (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
                                   lptkRhtArg,       // Ptr to right arg token
-                                  lptkAxis);        // Ptr to axis token
+                                  lptkAxisOpr);     // Ptr to operator axis token
     } else
         // Execute the function dyadically between the two args
         return ExecFuncStr_EM_YY (lptkLftArg,   // Ptr to left arg token
                                   lpYYFcnStrLft,// Ptr to left operand function strand
                                   lptkRhtArg,   // Ptr to right arg token
-                                  lptkAxis);    // Ptr to axis token (may be NULL)
+                                  lptkAxisOpr);     // Ptr to operator axis token
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);

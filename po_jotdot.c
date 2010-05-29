@@ -192,7 +192,8 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     LPPL_YYSTYPE  lpYYFcnStrRht,        // Ptr to right operand function strand
                   lpYYRes = NULL;       // Ptr to the result
     LPPRIMFNS     lpPrimProtoRht;       // Ptr to right operand prototype function
-    LPTOKEN       lptkAxis;             // Ptr to axis token (may be NULL)
+    LPTOKEN       lptkAxisOpr,          // Ptr to operator axis token (may be NULL)
+                  lptkAxisRht;          // Ptr to right operand axis token (may be NULL)
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     LPPRIMSPEC    lpPrimSpec;           // Ptr to local PRIMSPEC
@@ -209,19 +210,19 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    // Check for operator axis token
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive to
     //   the axis operator, so signal a syntax error if present
     //***************************************************************
-    if (lptkAxis NE NULL)
+    if (lptkAxisOpr NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to right operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+    lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
@@ -232,6 +233,9 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     aplNELMRes = _imul64 (aplNELMLft, aplNELMRht, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
+
+    // Check for right operand axis token
+    lptkAxisRht = CheckAxisOper (lpYYFcnStrRht);
 
     // Handle prototypes separately
     if (IsEmpty (aplNELMRes)
@@ -255,8 +259,10 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     aplRankRes = aplRankLft + aplRankRht;
 
     // If the function is scalar dyadic,
+    //   and there's no right operand axis,
     //   and both args are simple non-hetero, ...
     if (lpPrimFlagsRht->DydScalar
+     && lptkAxisRht EQ NULL
      && IsSimpleNH (aplTypeLft)
      && IsSimpleNH (aplTypeRht))
     {
@@ -423,8 +429,10 @@ RESTART_JOTDOT:
             goto ERROR_EXIT;
     } else
     // If the function is scalar dyadic,
+    //   and there's no right operand axis,
     //   and both args are simple non-hetero, ...
     if (lpPrimFlagsRht->DydScalar
+     && lptkAxisRht EQ NULL
      && IsSimpleNH (aplTypeLft)
      && IsSimpleNH (aplTypeRht))
     {
@@ -638,7 +646,7 @@ RESTART_JOTDOT:
                               &tkLftArg,            // Ptr to left arg token
                                lpYYFcnStrRht,       // Ptr to function strand
                               &tkRhtArg,            // Ptr to right arg token
-                               NULL,                // Ptr to axis token
+                               lptkAxisRht,         // Ptr to right operand axis token (may be NULL)
                                lpPrimProtoRht);     // Ptr to right operand prototype function
         // Free the left & right arg tokens
         if (lpMemLft)
@@ -670,7 +678,7 @@ RESTART_JOTDOT:
 
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
+                               lptkAxisOpr);
     goto ERROR_EXIT;
 
 RIGHT_SYNTAX_EXIT:

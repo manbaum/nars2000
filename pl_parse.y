@@ -2146,9 +2146,7 @@ ArrExpr:
     | error   LeftMonOper               {DbgMsgWP (L"%%ArrExpr:  LeftMonOper error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             // If this is not a named function/operator, ...
-                                             if (!IsTknTypeNamedFcnOpr ($2.tkToken.tkFlags.TknType))
-                                                 FreeResult (&$2.tkToken);
+                                             FreeResNNU (&$2.tkToken);
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -2288,9 +2286,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             // If this is not a named function/operator, ...
-                                             if (!IsTknTypeNamedFcnOpr ($2.tkToken.tkFlags.TknType))
-                                                 FreeResult (&$2.tkToken);
+                                             FreeResNNU (&$2.tkToken);
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -2298,9 +2294,7 @@ ArrExpr:
     | error   LeftOper StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst LeftOper error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             // If this is not a named function/operator, ...
-                                             if (!IsTknTypeNamedFcnOpr ($2.tkToken.tkFlags.TknType))
-                                                 FreeResult (&$2.tkToken);
+                                             FreeResNNU (&$2.tkToken);
                                              FreeResult (&$3.tkToken);
                                              YYERROR3
                                          } else
@@ -2754,7 +2748,7 @@ StrandOp1:
                                              $$ = $1;
                                          } // End IF
                                         }
-    |     OP1NAMEVAR                    {DbgMsgWP (L"%%StransOp1:  OP1NAMEVAR");
+    |     OP1NAMEVAR                    {DbgMsgWP (L"%%StrandOp1:  OP1NAMEVAR");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
@@ -3519,7 +3513,7 @@ SimpExpr:
     | error   ASSIGN LeftOper  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$3.tkToken);
+                                             FreeResNNU (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$4.tkToken);               // Validation only
                                              YYERROR3
                                          } else
@@ -3636,7 +3630,7 @@ SimpExpr:
                                         {DbgMsgWP (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$3.tkToken);
+                                             FreeResNNU (&$3.tkToken);
                                              FreeResult (&$5.tkToken);
                                              YYERROR3
                                          } else
@@ -3646,7 +3640,7 @@ SimpExpr:
                                         {DbgMsgWP (L"%%SimpExpr:  (error) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$1.tkToken);
+                                             FreeResNNU (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
                                              YYERROR3
                                          } else
@@ -3789,7 +3783,7 @@ SimpExpr:
                                         {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$3.tkToken);
+                                             FreeResNNU (&$3.tkToken);
                                              FreeResult (&$4.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              YYERROR3
@@ -3866,9 +3860,7 @@ SimpExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             // If this is not a named function/operator, ...
-                                             if (!IsTknTypeNamedFcnOpr ($3.tkToken.tkFlags.TknType))
-                                                 FreeResult (&$3.tkToken);
+                                             FreeResNNU (&$3.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              YYERROR3
                                          } else
@@ -3879,7 +3871,7 @@ SimpExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);
+                                             FreeResNNU (&$4.tkToken);
 /////////////////////////////////////////////FreeResult (&$5.tkToken);               // Validation only
                                              YYERROR3
                                          } else
@@ -4103,9 +4095,7 @@ SelectSpec:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
-                                             // If this is not a named function/operator, ...
-                                             if (!IsTknTypeNamedFcnOpr ($2.tkToken.tkFlags.TknType))
-                                                 FreeResult (&$2.tkToken);
+                                             FreeResNNU (&$2.tkToken);
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -4464,7 +4454,7 @@ Drv1Func:
       RightOper DydOp error             {DbgMsgWP (L"%%Drv1Func:  error DydOp RightOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$1.tkToken);
+                                             FreeResNNU (&$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$2.tkToken);       // Don't free named fcn/opr on error
                                              YYERROR3
                                          } else
@@ -4571,7 +4561,7 @@ Drv1Func:
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
@@ -4584,7 +4574,7 @@ Drv1Func:
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -4612,7 +4602,7 @@ Drv1Func:
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
@@ -4625,7 +4615,7 @@ Drv1Func:
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -4699,7 +4689,7 @@ Drv1Func:
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
@@ -4712,7 +4702,7 @@ Drv1Func:
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -4817,7 +4807,7 @@ Drv2Func:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 /////////////////////////////////////////////FreeResult (&$2.tkToken);       // Don't free named fcn/opr on error
-                                             FreeResult (&$3.tkToken);
+                                             FreeResNNU (&$3.tkToken);
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -4878,7 +4868,7 @@ Drv2Func:
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$3.tkToken);
+                                                 FreeResNNU (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5080,7 +5070,7 @@ Drv3Func:
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$3.tkToken);
+                                                 FreeResNNU (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5422,7 +5412,7 @@ ParenFunc:
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$3.tkToken);
+                                                 FreeResNNU (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5470,7 +5460,7 @@ LeftMonOper:
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$2.tkToken);
+                                                 FreeResNNU (&$2.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5558,7 +5548,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5586,7 +5576,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5678,7 +5668,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5804,7 +5794,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$2.tkToken);
+                                                 FreeResNNU (&$2.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5868,7 +5858,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$2.tkToken);
+                                                 FreeResNNU (&$2.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -5898,7 +5888,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
@@ -5912,7 +5902,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -5923,7 +5913,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -5953,7 +5943,7 @@ LeftOper:
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$3.tkToken);
+                                                 FreeResNNU (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -6065,8 +6055,8 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$3.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
+                                                 FreeResNNU (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -6078,7 +6068,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -6108,7 +6098,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeResult (&$3.tkToken);
                                                  YYERROR3
                                              } // End IF
@@ -6121,7 +6111,7 @@ LeftOper:
 
                                              if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -6183,7 +6173,7 @@ Train:
                                              // Initialize the function strand (Train) base
                                              $1.lpYYStrandBase = $1.lpYYFcnBase;
 
-                                             FreeResult (&$1.tkToken);
+                                             FreeResNNU (&$1.tkToken);
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -6300,7 +6290,7 @@ Train:
                                               || !lpplLocalVars->lpYYMak)
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
+                                                 FreeResNNU (&$2.tkToken);
 
                                                  if (lpplLocalVars->lpYYLft)
                                                  {
@@ -6376,7 +6366,7 @@ Train:
                                               || !lpplLocalVars->lpYYRht
                                               || !lpplLocalVars->lpYYMak)
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  FreeResult (&$2.tkToken);
 
                                                  if (lpplLocalVars->lpYYLft)
@@ -6453,8 +6443,8 @@ Train:
                                               || !lpplLocalVars->lpYYRht
                                               || !lpplLocalVars->lpYYMak)
                                              {
-                                                 FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
+                                                 FreeResNNU (&$2.tkToken);
 
                                                  if (lpplLocalVars->lpYYLft)
                                                  {
@@ -6545,7 +6535,7 @@ Train:
                                                  } // End IF
 
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
+                                                 FreeResNNU (&$2.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -6567,7 +6557,7 @@ Train:
                                                  } // End IF
 
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$2.tkToken);
+                                                 FreeResNNU (&$2.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -6719,7 +6709,7 @@ RightOper:
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  YYERROR3
                                              } // End IF
 
@@ -6747,7 +6737,7 @@ RightOper:
 
                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&$1.tkToken);
+                                                 FreeResNNU (&$1.tkToken);
                                                  YYERROR3
                                              } // End IF
 

@@ -43,7 +43,7 @@ void FreeResultName
 {
     DBGENTER;
 
-    FreeResultSub (lptkRes, TRUE);
+    FreeResultSub (lptkRes, TRUE, FALSE);
 
     DBGLEAVE;
 } // End FreeResultName
@@ -68,10 +68,36 @@ void FreeResult
 {
     DBGENTER;
 
-    FreeResultSub (lptkRes, FALSE);
+    FreeResultSub (lptkRes, FALSE, FALSE);
 
     DBGLEAVE;
 } // End FreeResult
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $FreeResNNU
+//
+//  Free the HGLOBALs and LPSYMENTRYs in a result
+//    only if it's not a named UDFO
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FreeResNNU"
+#else
+#define APPEND_NAME
+#endif
+
+void FreeResNNU
+    (LPTOKEN lptkRes)
+
+{
+    DBGENTER;
+
+    FreeResultSub (lptkRes, FALSE, TRUE);
+
+    DBGLEAVE;
+} // End FreeResNNU
 #undef  APPEND_NAME
 
 
@@ -89,7 +115,8 @@ void FreeResult
 
 void FreeResultSub
     (LPTOKEN lptkRes,
-     UBOOL   bFreeName)
+     UBOOL   bFreeName,
+     UBOOL   bNoFreeDfn)
 
 {
     STFLAGS stMaskFlags = {0};              // STE mask flags
@@ -118,6 +145,11 @@ void FreeResultSub
                 //   or user-defined function/operator
                 Assert (IsGlbTypeFcnDir_PTB (hGlbData)
                      || IsGlbTypeDfnDir_PTB (hGlbData));
+
+                // If we're not allowed to free a named UDFO and it's a named UDFO, ...
+                if (bNoFreeDfn
+                 && IsGlbTypeDfnDir_PTB (hGlbData))
+                    break;
 
                 if (FreeResultGlobalDFLV (hGlbData))
                 {
@@ -169,6 +201,11 @@ void FreeResultSub
                 Assert (IsGlbTypeVarDir_PTB (hGlbData)
                      || IsGlbTypeFcnDir_PTB (hGlbData)
                      || IsGlbTypeDfnDir_PTB (hGlbData));
+
+                // If we're not allowed to free a named UDFO and it's a named UDFO, ...
+                if (bNoFreeDfn
+                 && IsGlbTypeDfnDir_PTB (hGlbData))
+                    break;
 
                 // The call to FreeResult after ArrayDisplay_EM needs the
                 //   following if-statement.
@@ -277,22 +314,14 @@ UBOOL FreeResultGlobalDFLV
         case DFN_HEADER_SIGNATURE:
             return FreeResultGlobalDfn (hGlbData);
 
-            break;
-
         case FCNARRAY_HEADER_SIGNATURE:
             return FreeResultGlobalFcn (hGlbData);
-
-            break;
 
         case LSTARRAY_HEADER_SIGNATURE:
             return FreeResultGlobalLst (hGlbData);
 
-            break;
-
         case VARARRAY_HEADER_SIGNATURE:
             return FreeResultGlobalVar (hGlbData);
-
-            break;
 
         defstop
             return FALSE;

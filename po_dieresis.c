@@ -232,7 +232,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
             lpYYRes = PrimFnMonLeftShoe_EM_YY (&lpYYFcnStrLft->tkToken,     // Ptr to function token
                                                &lpYYRes2->tkToken,          // Ptr to right arg token
                                                 NULL);                      // Ptr to LPPRIMSPEC
-            FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+            FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
         } else
             lpYYRes = NULL;
 
@@ -371,7 +371,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                        lptkAxisLft,         // Ptr to left operand axis token
                                        lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                 // Free the arg token
-                FreeResult (&tkRhtArg);
+                FreeResultTkn (&tkRhtArg);
 
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -574,7 +574,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                            lptkAxisLft,         // Ptr to left operand axis token
                                            lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                     // Free the arg token
-                    FreeResult (&tkRhtArg);
+                    FreeResultTkn (&tkRhtArg);
 
                     if (!bRet)
                         goto ERROR_EXIT;
@@ -743,7 +743,7 @@ UBOOL ExecFuncOnToken_EM
         } // End SWITCH
 
         // Free the result of the function execution
-        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
         return TRUE;
     } // End IF
@@ -759,7 +759,7 @@ ERROR_EXIT:
     if (lpYYRes)
     {
         // Free the result of the function execution
-        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
     } // End IF
 
     return FALSE;
@@ -1146,9 +1146,9 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                lpPrimProtoLft);     // Ptr to left operand prototype function
         // Free the left & right arg tokens
         if (lpMemLft)
-            FreeResult (&tkLftArg);
+            FreeResultTkn (&tkLftArg);
         if (lpMemRht)
-            FreeResult (&tkRhtArg);
+            FreeResultTkn (&tkRhtArg);
         if (!bRet)
             goto ERROR_EXIT;
     } // End FOR

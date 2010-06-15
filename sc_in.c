@@ -398,7 +398,7 @@ UBOOL TransferInverseArr2_EM
             if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
             {
                 // Free it
-                FreeResult (&lpMemPTD->YYResExec.tkToken);
+                FreeResult (&lpMemPTD->YYResExec);
 
                 // We no longer need these values
                 ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));

@@ -364,7 +364,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                 lpYYRes->SILevel++;
 #endif
                 // Free the first YYRes
-                FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+                FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
                 // Copy secondary result as primary result
                 lpYYRes = lpYYRes2; lpYYRes2 = NULL;
@@ -376,7 +376,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                                         &lpYYRes->tkToken,          // Ptr to right arg token
                                          lptkAxis);                 // Ptr to axis token
             // Free the first YYRes
-            FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+            FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
             // Copy secondary result as primary result
             lpYYRes = lpYYRes2;
@@ -414,7 +414,7 @@ ERROR_EXIT:
     if (lpYYRes)
     {
         // Free the first YYRes
-        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
     } // End IF
 NORMAL_EXIT:
     return lpYYRes;

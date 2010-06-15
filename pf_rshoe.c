@@ -1385,8 +1385,8 @@ NORMAL_EXIT:
                                                &lpYYRes->tkToken,   // Ptr to right arg token
                                                 NULL);              // Ptr to axis token (may be NULL)
         // We no longer need this storage
-        FreeResult (&lpYYRes->tkToken);  YYFree (lpYYRes);  lpYYRes  = NULL;
-        FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL; // N.B.:  This frees hGlbLft, too.
+        FreeResult (lpYYRes);  YYFree (lpYYRes);  lpYYRes  = NULL;
+        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL; // N.B.:  This frees hGlbLft, too.
 
         // Copy to result var
         lpYYRes = lpYYRes3; lpYYRes3 = NULL;

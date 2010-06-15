@@ -748,13 +748,13 @@ NORMAL_EXIT:
     if (lpYYRes1)
     {
         // Free the previous result
-        FreeResult (&lpYYRes1->tkToken); YYFree (lpYYRes1); lpYYRes1 = NULL;
+        FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
     } // End IF
 
     if (lpYYRes2)
     {
         // Free the previous result
-        FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
     } // End IF
 
     return lpYYRes;

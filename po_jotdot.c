@@ -650,9 +650,9 @@ RESTART_JOTDOT:
                                lpPrimProtoRht);     // Ptr to right operand prototype function
         // Free the left & right arg tokens
         if (lpMemLft)
-            FreeResult (&tkRhtArg);
+            FreeResultTkn (&tkRhtArg);
         if (lpMemRht)
-            FreeResult (&tkLftArg);
+            FreeResultTkn (&tkLftArg);
         // If it failed, ...
         if (!bRet)
             goto ERROR_EXIT;
@@ -795,7 +795,7 @@ UBOOL PrimOpDydJotDotProto_EM
 
 ERROR_EXIT:
     if (lpYYRes)
-        FreeResult (&lpYYRes->tkToken);
+        FreeResult (lpYYRes);
 
     // Mark as in error
     bRet = FALSE;

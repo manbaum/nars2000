@@ -191,7 +191,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
                                             lptkRhtArg,         // Ptr to right arg token
                                             lptkAxis);          // Ptr to axis token (may be NULL)
     // We no longer need this storage
-    FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
     return lpYYRes2;
 

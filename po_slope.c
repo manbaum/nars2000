@@ -590,8 +590,8 @@ RESTART_EXCEPTION:
                                                      &tkRhtArg,         // Ptr to right arg token
                                                       lptkAxis);        // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens
-                    FreeResult (&tkRhtArg);
-                    FreeResult (&tkLftArg);
+                    FreeResultTkn (&tkRhtArg);
+                    FreeResultTkn (&tkLftArg);
 
                     // If it succeeded, ...
                     if (lpYYRes)
@@ -745,8 +745,8 @@ RESTART_EXCEPTION:
                                                      &tkRhtArg,         // Ptr to right arg token
                                                       lptkAxis);        // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens
-                    FreeResult (&tkRhtArg);
-                    FreeResult (&tkLftArg);
+                    FreeResultTkn (&tkRhtArg);
+                    FreeResultTkn (&tkLftArg);
 
                     // If it succeeded, ...
                     if (lpYYRes)

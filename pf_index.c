@@ -433,7 +433,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                                  NULL);
                             if (lpYYItm2)
                             {
-                                FreeResult (&lpYYItm->tkToken); YYFree (lpYYItm); lpYYItm = NULL;
+                                FreeResult (lpYYItm); YYFree (lpYYItm); lpYYItm = NULL;
                                 lpYYItm = lpYYItm2;
                             } // End IF
                         } // End IF
@@ -2267,7 +2267,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
                                     lptkRhtArg,             // Ptr to right arg token
                                     NULL);                  // Ptr to axis token
     // Free the first result
-    FreeResult (&lpYYRes1->tkToken); YYFree (lpYYRes1); lpYYRes1 = NULL;
+    FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
 
     if (!lpYYRes2)
         goto ERROR_EXIT;
@@ -3659,7 +3659,7 @@ UBOOL ArrayIndexFcnSet_EM
                                    lpYYFcnStr,          // Ptr to function strand
                                    lptkRhtArg,          // Ptr to right arg token
                                    NULL);               // Ptr to axis token (may be NULL)
-    FreeResult (&lpYYRes1->tkToken); YYFree (lpYYRes1); lpYYRes1 = NULL;
+    FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
     if (!lpYYRes2)
         return FALSE;
 
@@ -3667,7 +3667,7 @@ UBOOL ArrayIndexFcnSet_EM
     bRet = ArrayIndexSet_EM (lptkNamArg,
                              lptkLstArg,
                             &lpYYRes2->tkToken);
-    FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+    FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
 
     return bRet;
 } // End ArrayIndexFcnSet_EM

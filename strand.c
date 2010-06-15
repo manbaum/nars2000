@@ -1486,10 +1486,8 @@ NORMAL_EXIT:
     DisplayStrand (STRAND_FCN);
 #endif
 
-    // If the arg was CopyArray'ed, ...
-    if (IsSingleton (uIniLen) && lpYYArg->YYCopyArray)
-        // Free the storage
-        FreeResult (&lpYYArg->tkToken);
+    // If any element of the arg was YYCopyArray'ed, ...
+    YYFreeArray (lpYYArg->lpYYFcnBase);
 
     // Strip the tokens on this portion of the strand stack
     StripStrand (lpplLocalVars, lpYYRes, STRAND_FCN);
@@ -1799,6 +1797,9 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
     LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to named function header
     LPPL_YYSTYPE      lpMemFcn;         // Ptr to named function data
 
+    // tkData is LPSYMENTRY
+    Assert (GetPtrTypeDir (lpYYFcnOpr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
     // If the SYMENTRY is an immediate, ...
     if (lpYYFcnOpr->tkToken.tkData.tkSym->stFlags.Imm)
     {
@@ -1894,6 +1895,9 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbData); lpMemHdrFcn = NULL; lpMemFcn = NULL;
+
+            // Save back so it may be freed
+            *lpYYFcnOpr = *lpYYRes;
         } else
             lpYYRes = CopyPL_YYSTYPE_YY (lpYYFcnOpr);
     } // End IF/ELSE
@@ -2296,7 +2300,7 @@ LPPL_YYSTYPE InitList1_YY
 
     // Push an item onto the list
     lpYYLst = PushList_YY (lpYYRes, lpYYArg);
-    FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
     return lpYYLst;
 } // End InitList1_YY

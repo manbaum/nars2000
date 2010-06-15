@@ -214,7 +214,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                                                  lpYYFcnStrLft,         // Ptr to left operand function strand
                                                 &lpYYRes2->tkToken,     // Ptr to right arg token
                                                  lptkAxisLft);          // Ptr to left operand axis token (may be NULL)
-                FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+                FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
             } else
                 lpYYRes = NULL;
 

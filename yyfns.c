@@ -744,16 +744,6 @@ LPPL_YYSTYPE YYCopyFcn
                         // In case this is a Train with SRCIFlag set, ...
                         FreeResultGlobalDFLV (hGlbFcn);
 
-                        // If the arg was YYCopyArrayed, ...
-                        if (lpYYArg[i].YYCopyArray)
-                        {
-                            // Clear the flag
-                            lpYYArg[i].YYCopyArray = FALSE;
-
-                            // Free the arg
-                            FreeResult (&lpYYArg[i].tkToken);
-                        } // End IF
-
                         break;
                     } // End FCNARRAY_HEADER_SIGNATURE
 
@@ -795,6 +785,117 @@ LPPL_YYSTYPE YYCopyFcn
     return lpYYMem;
 } // End YYCopyFcn
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $YYFreeArray
+//
+//  Free YYCopyArray'ed elements recursively
+//***************************************************************************
+
+void YYFreeArray
+    (LPPL_YYSTYPE lpYYArg)
+
+{
+    UINT    uLen,                   // Token count in this function strand
+            uCnt;                   // Loop counter
+    HGLOBAL hGlbFcn;                // Function array global memory handle
+
+    // Get the token count in this function strand
+    uLen = lpYYArg->TknCount;
+
+    // Loop through the elements
+    for (uCnt = 0; uCnt < uLen; uCnt++)
+    {
+        // If the function is indirect, recurse
+        if (lpYYArg[uCnt].YYIndirect)
+            YYFreeArray (lpYYArg[uCnt].lpYYFcnBase);
+        else
+        if (lpYYArg[uCnt].tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+        {
+            // tkData is an HGLOBAL
+            Assert (GetPtrTypeDir (lpYYArg[uCnt].tkToken.tkData.tkVoid) EQ PTRTYPE_HGLOBAL);
+
+            // Get the global memory handle or function address if direct
+            hGlbFcn = lpYYArg[uCnt].tkToken.tkData.tkGlbData;
+
+            // stData is a valid HGLOBAL function array
+            //   or user-defined function/operator
+            Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
+                 || IsGlbTypeDfnDir_PTB (hGlbFcn));
+
+            // Recurse through the function array
+            YYFreeGlbFcn (hGlbFcn);
+        } // End IF
+
+        if (lpYYArg[uCnt].YYCopyArray
+         && !lpYYArg[uCnt].YYIndirect)
+            // Free the storage
+            FreeResult (&lpYYArg[uCnt]);
+    } // End FOR
+} // End YYFreeArray
+
+
+//***************************************************************************
+//  $YYFreeGlbFcn
+//
+//  Free YYCopyArray'ed elements recursively
+//***************************************************************************
+
+void YYFreeGlbFcn
+    (HGLOBAL hGlbFcn)                   // Function global memory handle
+
+{
+    UINT              uLen,             // # tokens in the array
+                      uCnt;             // Loop counter
+    LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to function array header global memory
+    LPPL_YYSTYPE      lpMemFcn;         // Ptr to function array global memory
+
+    // Split cases based upon the function signature
+    switch (GetSignatureGlb_PTB (hGlbFcn))
+    {
+        case DFN_HEADER_SIGNATURE:
+        case VARARRAY_HEADER_SIGNATURE:
+            break;
+
+        case FCNARRAY_HEADER_SIGNATURE:
+            // Clear the ptr type bits
+            hGlbFcn = ClrPtrTypeDir (hGlbFcn);
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrFcn = MyGlobalLock (hGlbFcn);
+
+            // Get the token count
+            uLen = lpMemHdrFcn->tknNELM;
+
+            // Skip over the header to the data
+            lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
+
+            // If this function array is not a Train, ...
+            if (lpMemHdrFcn->fnNameType NE NAMETYPE_TRN)
+            // Loop through the function array
+            for (uCnt = 0; uCnt < uLen; uCnt++, lpMemFcn++)
+            {
+                // Split off immediates so as not to double count TKT_OP1IMMED/INDEX_OPTRAINs
+                if (!IsTknImmed (&lpMemFcn->tkToken))
+                    // Recurse down through this function array item
+                    YYFreeGlbFcn (lpMemFcn->tkToken.tkData.tkGlbData);
+
+                if (lpMemFcn->YYCopyArray
+                 && !lpMemFcn->YYIndirect)
+                    // Free the storage
+                    FreeResult (lpMemFcn);
+            } // End IF/FOR
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL; lpMemFcn = NULL;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End YYFreeGlbFcn
 
 
 #if 0

@@ -740,8 +740,8 @@ RESTART_INNERPROD_RES:
                                      &tkItmRht,         // Ptr to right arg token
                                       lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
         // Free the left & right arg tokens
-        FreeResult (&tkItmLft);
-        FreeResult (&tkItmRht);
+        FreeResultTkn (&tkItmLft);
+        FreeResultTkn (&tkItmRht);
 
         // If it succeeded, ...
         if (lpYYRes)
@@ -774,7 +774,7 @@ RESTART_INNERPROD_RES:
             } // End IF
 
             // Free the result item
-            FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+            FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
         } else
             goto ERROR_EXIT;
 
@@ -901,7 +901,7 @@ RESTART_INNERPROD_RES:
         lpYYRes->SILevel++;
 #endif
         // Free the YYRes (and the storage)
-        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
         // If it failed, ...
         if (!lpYYRes2)
@@ -925,7 +925,7 @@ RESTART_INNERPROD_RES:
         } // End IF/ELSE
 
         // Free the YYRes (and the storage)
-        FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
 
         if (!hSymGlbIdn)
             goto ERROR_EXIT;
@@ -1355,8 +1355,8 @@ RESTART_INNERPROD_RES:
                                          &tkItmRht,         // Ptr to right arg token
                                           lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
                 // Free the left & right arg tokens
-                FreeResult (&tkItmLft);
-                FreeResult (&tkItmRht);
+                FreeResultTkn (&tkItmLft);
+                FreeResultTkn (&tkItmRht);
 
                 // If it succeeded, ...
                 if (lpYYRes)
@@ -1398,8 +1398,8 @@ RESTART_INNERPROD_RES:
                                                  &tkItmRed,         // Ptr to right arg token
                                                   lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
                         // Free the result item & reduction tokens
-                        FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
-                        FreeResult (&tkItmRed);
+                        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+                        FreeResultTkn (&tkItmRed);
 
                         // If it succeeded, ...
                         if (lpYYRes2)
@@ -1425,7 +1425,7 @@ RESTART_INNERPROD_RES:
                 {
                     // If this is not the first time, free the reduction result
                     if (iInnMax NE (APLINT) (aplInnrMax - 1))
-                        FreeResult (&tkItmRed);
+                        FreeResultTkn (&tkItmRed);
 
                     goto ERROR_EXIT;
                 } // End IF/ELSE
@@ -1447,7 +1447,7 @@ RESTART_INNERPROD_RES:
                 *((LPAPLNESTED) lpMemRes)++ =
                   CopySymGlbDir_PTB (tkItmRed.tkData.tkGlbData);
             // Free the accumulated reduction token
-            FreeResult (&tkItmRed);
+            FreeResultTkn (&tkItmRed);
         } // End FOR/FOR
     } // End IF/ELSE/...
 YYALLOC_EXIT:
@@ -1770,8 +1770,8 @@ UBOOL ExecDydProto_EM
                          &tkProRht,         // Ptr to right arg token
                           NULL);            // Ptr to axis token (may be NULL)
     // Free the left & right arg tokens
-    FreeResult (&tkProLft);
-    FreeResult (&tkProRht);
+    FreeResultTkn (&tkProLft);
+    FreeResultTkn (&tkProRht);
 
     // Return TRUE if it worked, FALSE otherwise
     return (*lplpYYRes NE NULL);

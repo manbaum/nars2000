@@ -971,8 +971,8 @@ RESTART_EXCEPTION:
                                                      &tkRhtArg,     // Ptr to right arg token
                                                       NULL);        // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens
-                    FreeResult (&tkLftArg);
-                    FreeResult (&tkRhtArg);
+                    FreeResultTkn (&tkLftArg);
+                    FreeResultTkn (&tkRhtArg);
 
                     // If it succeeded, ...
                     if (lpYYRes)
@@ -1270,7 +1270,7 @@ UBOOL UdfoRedIdentFcn_EM
     } // End IF/ELSE
 
     // Free the YYRes (and the storage)
-    FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
     if (!hSymGlbIdn)
         goto ERROR_EXIT;
@@ -1835,7 +1835,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             lpYYRes->SILevel++;
 #endif
             // Free the YYRes (and the storage)
-            FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+            FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
             if (lpYYRes2 EQ NULL)
                 goto ERROR_EXIT;
@@ -1853,7 +1853,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             lpYYRes2->SILevel++;
 #endif
             // Free the YYRes (and the storage)
-            FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+            FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
 
             if (lpYYRes EQ NULL)
                 goto ERROR_EXIT;
@@ -1877,7 +1877,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             } // End IF/ELSE
 
             // Free the YYRes (and the storage)
-            FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+            FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
             if (!hSymGlbIdn)
                 goto ERROR_EXIT;
@@ -1973,7 +1973,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                                              &lpYYRes2->tkToken,    // Ptr to right arg
                                               bPrototyping);        // TRUE iff prototyping
         // Free the result of the function execution
-        FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
 
         // Insert a unit dimension into the result
         if (!PrimOpDydSlashInsertDim_EM (lpYYRes,       // Ptr to the result
@@ -2107,8 +2107,8 @@ RESTART_EXCEPTION:
                                                          &tkRhtArg,         // Ptr to right arg token
                                                           lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
                         // Free the left & right arg tokens
-                        FreeResult (&tkRhtArg);
-                        FreeResult (&tkLftArg);
+                        FreeResultTkn (&tkRhtArg);
+                        FreeResultTkn (&tkLftArg);
 
                         // If it succeeded, ...
                         if (lpYYRes)
@@ -2175,8 +2175,8 @@ RESTART_EXCEPTION:
                                                          &tkRhtArg,         // Ptr to right arg token
                                                           lptkAxisOpr);     // Ptr to operator axis token (may be NULL)
                         // Free the left & right arg tokens
-                        FreeResult (&tkRhtArg);
-                        FreeResult (&tkLftArg);
+                        FreeResultTkn (&tkRhtArg);
+                        FreeResultTkn (&tkLftArg);
 
                         // If it succeeded, ...
                         if (lpYYRes)

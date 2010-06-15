@@ -63,6 +63,38 @@ void FreeResultName
 #endif
 
 void FreeResult
+    (LPPL_YYSTYPE lpYYRes)
+
+{
+    DBGENTER;
+
+#ifdef DEBUG
+    // If the arg was YYCopyArray'ed, ...
+    if (lpYYRes->YYCopyArray)
+#endif
+        // Clear the flag
+        lpYYRes->YYCopyArray = FALSE;
+
+    FreeResultSub (&lpYYRes->tkToken, FALSE, FALSE);
+
+    DBGLEAVE;
+} // End FreeResult
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $FreeResultTkn
+//
+//  Free the HGLOBALs and LPSYMENTRYs in a result
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FreeResultTkn"
+#else
+#define APPEND_NAME
+#endif
+
+void FreeResultTkn
     (LPTOKEN lptkRes)
 
 {
@@ -71,7 +103,7 @@ void FreeResult
     FreeResultSub (lptkRes, FALSE, FALSE);
 
     DBGLEAVE;
-} // End FreeResult
+} // End FreeResultTkn
 #undef  APPEND_NAME
 
 
@@ -89,12 +121,19 @@ void FreeResult
 #endif
 
 void FreeResNNU
-    (LPTOKEN lptkRes)
+    (LPPL_YYSTYPE lpYYRes)
 
 {
     DBGENTER;
 
-    FreeResultSub (lptkRes, FALSE, TRUE);
+#ifdef DEBUG
+    // If the arg was YYCopyArray'ed, ...
+    if (lpYYRes->YYCopyArray)
+#endif
+        // Clear the flag
+        lpYYRes->YYCopyArray = FALSE;
+
+    FreeResultSub (&lpYYRes->tkToken, FALSE, TRUE);
 
     DBGLEAVE;
 } // End FreeResNNU
@@ -957,7 +996,7 @@ void FreeResultGlobalDfnStruc
 ////
 ////     for (u = 0; u < uCnt; u++)
 ////     {
-////         FreeResult (&lpYYFcn[u].tkToken); YYFree (&lpYYFcn[u]);
+////         FreeResult (&lpYYFcn[u]); YYFree (&lpYYFcn[u]);
 ////     } // End FOR
 //// } // End FreeYYFcn
 
@@ -974,7 +1013,7 @@ void FreeYYFcn1
 {
     Assert (!IsTknFcnOpr (&lpYYFcn->tkToken) || lpYYFcn->TknCount NE 0);
 
-    FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn);
+    FreeResult (lpYYFcn); YYFree (lpYYFcn);
 } // End FreeYYFcn1
 
 

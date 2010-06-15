@@ -77,7 +77,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
           SysFnMonTYPE_EM_YY (lptkFcnStr,           // Ptr to function token
                              &lpYYRes2->tkToken,    // Ptr to right arg token
                               NULL);                // Ptr to axis token (may be NULL)
-        FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
+        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
     } else
         lpYYRes = lpYYRes2;
 
@@ -1449,13 +1449,13 @@ void UnlocalizeSTEs
              lpForStmtNext++)
         {
             // We're done -- free the global in the token (if any)
-            FreeResult (&lpForStmtNext->tkForArr);
+            FreeResultTkn (&lpForStmtNext->tkForArr);
 
             // If this is :FORLCL, ...
             if (lpForStmtNext->symForI.stFlags.Inuse)
             {
                 // Free the value of the :IN var
-                FreeResult (&lpForStmtNext->tkForI);
+                FreeResultTkn (&lpForStmtNext->tkForI);
 
                 // Restore the original :IN var
                 *lpForStmtNext->tkForI.tkData.tkSym = lpForStmtNext->symForI;
@@ -1961,7 +1961,31 @@ UBOOL InitFcnSTEs
             // Split cases based upon the token type
             switch (lpYYArg->tkToken.tkFlags.TknType)
             {
+                case TKT_FCNARRAY:
+                case TKT_VARARRAY:
+                case TKT_NUMSTRAND:
+                case TKT_CHRSTRAND:
+                case TKT_AXISARRAY:
+                    // Increment the RefCnt
+                    DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
+
+                    break;
+
+                case TKT_AXISIMMED:
+                case TKT_VARIMMED:
+                case TKT_FCNIMMED:
+                case TKT_OP1IMMED:
+                case TKT_OP2IMMED:
+                case TKT_OP3IMMED:
+                case TKT_OPJOTDOT:
+                case TKT_FILLJOT:
+                    break;
+
+                case TKT_VARNAMED:
                 case TKT_FCNNAMED:
+                case TKT_OP1NAMED:
+                case TKT_OP2NAMED:
+                case TKT_OP3NAMED:
                     // If it's not an immediate, ...
                     if (!lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
                         // Increment the RefCnt
@@ -1969,13 +1993,7 @@ UBOOL InitFcnSTEs
 
                     break;
 
-                case TKT_FCNARRAY:
-                    // Increment the RefCnt
-                    DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
-
-                    break;
-
-                default:
+                defstop
                     break;
             } // End FOR/SWITCH
 

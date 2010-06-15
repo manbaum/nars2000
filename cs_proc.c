@@ -504,7 +504,7 @@ void CS_DoneFOR
     lpForStmtNext = --lpMemPTD->lpSISCur->lpForStmtNext;
 
     // We're done -- free the global in the token (if any)
-    FreeResult (&lpForStmtNext->tkForArr);
+    FreeResultTkn (&lpForStmtNext->tkForArr);
 
     if (bFORLCL)
     {
@@ -1260,6 +1260,9 @@ UBOOL CS_SELECT_Stmt_EM
                                 YYFree (lpYYTmp); lpYYTmp = NULL;
                             } // End FOR
                         } // End IF/ELSE
+
+                        // Free the CASE/CASELIST result
+                        FreeResult (&lpMemPTD->YYCaseExec); ZeroMemory (&lpMemPTD->YYCaseExec, sizeof (lpMemPTD->YYCaseExec));
 
                         // If the two are equal, ...
                         if (bCmp)

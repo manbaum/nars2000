@@ -250,7 +250,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_ANDIF                  {DbgMsgWP (L"%%StmtSing:  CS_ANDIF ArrExpr");
+    | ArrValu CS_ANDIF                  {DbgMsgWP (L"%%StmtSing:  CS_ANDIF ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle ANDIF statement
@@ -276,7 +276,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE ArrExpr");
+    | ArrValu CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle CASE/CASELIST statement
@@ -302,7 +302,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST ArrExpr");
+    | ArrValu CS_CASELIST               {DbgMsgWP (L"%%StmtSing:  CS_CASELIST ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle CASE/CASELIST statement
@@ -404,7 +404,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF ArrExpr");
+    | ArrValu CS_ELSEIF                 {DbgMsgWP (L"%%StmtSing:  CS_ELSEIF ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle ELSEIF statement
@@ -462,7 +462,7 @@ StmtSing:
                                              // No return value needed
                                          } // End IF
                                         }
-    | ArrExpr CS_IN NameAnyVar CS_FOR   {DbgMsgWP (L"%%StmtSing:  CS_FOR NameAnyVar CS_IN ArrExpr");
+    | ArrValu CS_IN NameAnyVar CS_FOR   {DbgMsgWP (L"%%StmtSing:  CS_FOR NameAnyVar CS_IN ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle FOR statement
@@ -482,7 +482,7 @@ StmtSing:
                                              // No return value needed
                                          } // End IF
                                         }
-    | ArrExpr CS_IN NameAnyVar CS_FORLCL{DbgMsgWP (L"%%StmtSing:  CS_FORLCL NameAnyVar CS_IN ArrExpr");
+    | ArrValu CS_IN NameAnyVar CS_FORLCL{DbgMsgWP (L"%%StmtSing:  CS_FORLCL NameAnyVar CS_IN ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle FORLCL statement
@@ -508,7 +508,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF ArrExpr");
+    | ArrValu CS_IF                     {DbgMsgWP (L"%%StmtSing:  CS_IF ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle IF statement
@@ -553,7 +553,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF ArrExpr");
+    | ArrValu CS_ORIF                   {DbgMsgWP (L"%%StmtSing:  CS_ORIF ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle ORIF statement
@@ -579,7 +579,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT ArrExpr");
+    | ArrValu CS_SELECT                 {DbgMsgWP (L"%%StmtSing:  CS_SELECT ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle SELECT statement
@@ -643,7 +643,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL ArrExpr");
+    | ArrValu CS_UNTIL                  {DbgMsgWP (L"%%StmtSing:  CS_UNTIL ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle UNTIL statement
@@ -669,7 +669,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE ArrExpr");
+    | ArrValu CS_WHILE                  {DbgMsgWP (L"%%StmtSing:  CS_WHILE ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Handle WHILE statement
@@ -751,7 +751,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"ArrExpr");
+    | ArrValu GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -850,7 +850,7 @@ StmtSing:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN                    {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -2132,6 +2132,19 @@ Op3Spec:
                                         }
     ;
 
+// Array expression w/value
+ArrValu:
+      ArrExpr                           {DbgMsgWP (L"%%ArrValu:  ArrExpr");
+                                             if (IsTokenNoValue (&$1.tkToken))
+                                             {
+                                                 PrimFnValueError_EM (&$1.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             $$ = $1;
+                                        }
+    ;
+
 // Array expression
 ArrExpr:
 //////error                             //--Conflicts
@@ -2184,7 +2197,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF/ELSE/...
                                         }
-    | ArrExpr LeftMonOper               {DbgMsgWP (L"%%ArrExpr:  LeftMonOper ArrExpr");
+    | ArrValu LeftMonOper               {DbgMsgWP (L"%%ArrExpr:  LeftMonOper ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2215,7 +2228,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF/ELSE/...
                                         }
-    | ArrExpr LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper ArrExpr");
+    | ArrValu LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2255,7 +2268,7 @@ ArrExpr:
                                              YYERROR2
                                         }
 ////| ArrExpr error                     //--Conflicts
-    | ArrExpr AxisFunc                  {DbgMsgWP (L"%%ArrExpr:  AxisFunc ArrExpr");
+    | ArrValu AxisFunc                  {DbgMsgWP (L"%%ArrExpr:  AxisFunc ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2282,7 +2295,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr LeftOper error            {DbgMsgWP (L"%%ArrExpr:  error LeftOper ArrExpr");
+    | ArrValu LeftOper error            {DbgMsgWP (L"%%ArrExpr:  error LeftOper ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2300,9 +2313,9 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-////| ArrExpr LeftOper error            //--Conflicts
-////| ArrExpr error    StrandInst       //--Conflicts
-    | ArrExpr LeftOper StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst LeftOper ArrExpr");
+////| ArrValu LeftOper error            //--Conflicts
+////| ArrValu error    StrandInst       //--Conflicts
+    | ArrValu LeftOper StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst LeftOper ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2330,7 +2343,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AmbOpX   error            {DbgMsgWP (L"%%ArrExpr:  error AmbOpX ArrExpr");
+    | ArrValu AmbOpX   error            {DbgMsgWP (L"%%ArrExpr:  error AmbOpX ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2357,7 +2370,7 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr AmbOpX NAMEOP3ASSIGN      {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOpX ArrExpr");
+    | ArrValu AmbOpX NAMEOP3ASSIGN      {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOpX ArrValu");
                                          DbgBrk ();     // ***FIXME*** -- Can we ever get here??
 
 
@@ -2372,7 +2385,7 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr AmbOpX OP3ASSIGN          {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOpX ArrExpr");
+    | ArrValu AmbOpX OP3ASSIGN          {DbgMsgWP (L"%%ArrExpr:  OP3ASSIGN AmbOpX ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2444,7 +2457,7 @@ ArrExpr:
                                          } // End IF
                                         }
 
-    | ArrExpr AmbOpX AmbOpX StrandOp1   {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX AmbOpX ArrExpr");
+    | ArrValu AmbOpX AmbOpX StrandOp1   {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX AmbOpX ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2514,7 +2527,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AmbOpX StrandOp1          {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX ArrExpr");
+    | ArrValu AmbOpX StrandOp1          {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2564,7 +2577,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AmbOpX StrandInst         {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOpX ArrExpr");
+    | ArrValu AmbOpX StrandInst         {DbgMsgWP (L"%%ArrExpr:  StrandInst AmbOpX ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2618,7 +2631,7 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr Drv5Func    error         {DbgMsgWP (L"%%ArrExpr:  error Drv5Func ArrExpr");       // Also Drv3Func
+    | ArrValu Drv5Func    error         {DbgMsgWP (L"%%ArrExpr:  error Drv5Func ArrValu");       // Also Drv3Func
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2627,7 +2640,7 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr Drv5Func    StrandOp1     {DbgMsgWP (L"%%ArrExpr:  StrandOp1 Drv5Func ArrExpr");  // Also Drv3Func
+    | ArrValu Drv5Func    StrandOp1     {DbgMsgWP (L"%%ArrExpr:  StrandOp1 Drv5Func ArrValu");   // Also Drv3Func
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2660,7 +2673,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr Drv5Func    StrandInst    {DbgMsgWP (L"%%ArrExpr:  StrandInst Drv5Func ArrExpr");  // Also Drv3Func
+    | ArrValu Drv5Func    StrandInst    {DbgMsgWP (L"%%ArrExpr:  StrandInst Drv5Func ArrValu");  // Also Drv3Func
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2688,7 +2701,7 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrExpr AxisFunc error            {DbgMsgWP (L"%%ArrExpr:  error AxisFunc ArrExpr");
+    | ArrValu AxisFunc error            {DbgMsgWP (L"%%ArrExpr:  error AxisFunc ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -2706,9 +2719,9 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-////| ArrExpr AxisFunc error            //--Conflicts
-////| ArrExpr error    StrandInst       //--Conflicts
-    | ArrExpr AxisFunc StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst AxisFunc ArrExpr");
+////| ArrValu AxisFunc error            //--Conflicts
+////| ArrValu error    StrandInst       //--Conflicts
+    | ArrValu AxisFunc StrandInst       {DbgMsgWP (L"%%ArrExpr:  StrandInst AxisFunc ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2974,6 +2987,13 @@ IndexVarBR:
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             if (IsTokenNoValue (&$2.tkToken))
+                                             {
+                                                 PrimFnValueError_EM (&$2.tkToken);
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR3
+                                             } // End IF
+
                                              InitVarStrand (&$2);
 
                                              lpplLocalVars->lpYYRes =
@@ -3175,7 +3195,7 @@ SimpExpr:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN       QUAD         {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN       QUAD         {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3204,7 +3224,7 @@ SimpExpr:
                                          else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN       QUOTEQUAD    {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN       QUOTEQUAD    {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Mark as NOT already displayed
@@ -3234,7 +3254,7 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAnyVar" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN       NameAnyVar   {DbgMsgWP (L"%%SimpExpr:  NameAnyVar" WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3269,8 +3289,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN IndexListBR NAMEVAR
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN IndexListBR NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR" WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3298,8 +3318,8 @@ SimpExpr:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN error        NAMEVAR
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN error        NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3318,8 +3338,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN IndexListBR  NAMEUNK
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN IndexListBR  NAMEUNK
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEUNK IndexListBR" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
@@ -3331,7 +3351,7 @@ SimpExpr:
                                              YYERROR3
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN error      NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN error      NAMEUNK {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3352,7 +3372,7 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN   ')' error    '(' {DbgMsgWP (L"%%SimpExpr:  (error)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN   ')' error    '(' {DbgMsgWP (L"%%SimpExpr:  (error)" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Mark as no longer doing Selective Specification
@@ -3363,8 +3383,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN   ')' SelectSpec '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN   ')' SelectSpec '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (SelectSpec)" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Copy as temporary var in case it's named
@@ -3424,8 +3444,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN   ')' IndexListBR NAMEVAR '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN   ')' IndexListBR NAMEVAR '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR IndexListBR)" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Copy as temporary var in case it's named
@@ -3455,8 +3475,8 @@ SimpExpr:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN   ')' error NAMEVAR '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR error)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN   ')' error NAMEVAR '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEVAR error)" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Mark as no longer doing Selective Specification
@@ -3481,8 +3501,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN   ')' IndexListBR NAMEUNK '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN   ')' IndexListBR NAMEUNK '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK IndexListBR)" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Mark as no longer doing Selective Specification
@@ -3497,8 +3517,8 @@ SimpExpr:
                                              YYERROR3
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN   ')' error       NAMEUNK '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK error)" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN   ')' error       NAMEUNK '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NAMEUNK error)" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Mark as no longer doing Selective Specification
@@ -3519,8 +3539,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-////| ArrExpr ASSIGN error     NAMEVAR  //--Conflicts
-    | ArrExpr ASSIGN LeftOper  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+////| ArrValu ASSIGN error     NAMEVAR  //--Conflicts
+    | ArrValu ASSIGN LeftOper  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3577,8 +3597,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-////| ArrExpr ASSIGN error     NAMEVAR  //--Conflicts
-    | ArrExpr ASSIGN AxisFunc  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+////| ArrValu ASSIGN error     NAMEVAR  //--Conflicts
+    | ArrValu ASSIGN AxisFunc  NAMEVAR  {DbgMsgWP (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3636,8 +3656,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN LeftOper ')' error '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (error) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN LeftOper ')' error '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (error) LeftOper" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResNNU (&$1.tkToken);
@@ -3646,8 +3666,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN error    ')' NameVals '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN error    ')' NameVals '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) error" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3656,8 +3676,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN LeftOper ')' NameVals '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN LeftOper ')' NameVals '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) LeftOper" WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3717,8 +3737,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN AxisFunc ')' error '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (error) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN AxisFunc ')' error '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (error) AxisFunc" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3727,9 +3747,9 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-////| ArrExpr ASSIGN error    ')' NameVals '(' //--Conflicts
-    | ArrExpr ASSIGN AxisFunc ')' NameVals '('
-                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+////| ArrValu ASSIGN error    ')' NameVals '(' //--Conflicts
+    | ArrValu ASSIGN AxisFunc ')' NameVals '('
+                                        {DbgMsgWP (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3790,8 +3810,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN error    IndexListBR NAMEVAR
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR error" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN error    IndexListBR NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR error" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3801,8 +3821,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN LeftOper IndexListBR NAMEVAR
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN LeftOper IndexListBR NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR LeftOper" WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3842,8 +3862,8 @@ SimpExpr:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN LeftOper error NAMEVAR
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN LeftOper error NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error LeftOper" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3855,8 +3875,8 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrExpr ASSIGN LeftOper error NAMEUNK
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error LeftOper" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN LeftOper error NAMEUNK
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEUNK error LeftOper" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -3877,9 +3897,9 @@ SimpExpr:
                                          } else
                                              YYERROR2
                                         }
-////| ArrExpr ASSIGN error    IndexListBR NAMEVAR //-- Conflicts:  redundant
-    | ArrExpr ASSIGN AxisFunc IndexListBR NAMEVAR
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+////| ArrValu ASSIGN error    IndexListBR NAMEVAR //-- Conflicts:  redundant
+    | ArrValu ASSIGN AxisFunc IndexListBR NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR IndexListBR AxisFunc" WS_UTF16_LEFTARROW L"ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3919,8 +3939,8 @@ SimpExpr:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-    | ArrExpr ASSIGN AxisFunc error NAMEVAR
-                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
+    | ArrValu ASSIGN AxisFunc error NAMEVAR
+                                        {DbgMsgWP (L"%%SimpExpr:  NAMEVAR error AxisFunc" WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -4446,7 +4466,7 @@ NameVars:
     ;
 
 // Derived left function expression, Type 1
-//   valid in ArrExpr:      ArrExpr Drv1Func
+//   valid in ArrExpr:      ArrValu Drv1Func
 //            FcnSpec:      ...
 //            ParenFunc:    (Drv1Func)
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
@@ -5001,7 +5021,7 @@ Drv2Func:
 
 // Derived left function expression, Type 3
 //   valid in FcnSpec:      ...
-//            ArrExpr:      ArrExpr Drv3Func
+//            ArrExpr:      ArrValu Drv3Func
 //   because the Strand on the right is bound to the DydOp)
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 Drv3Func:
@@ -5147,7 +5167,7 @@ Drv3Func:
 
 // Derived left function expression, Type 4
 //    valid in FcnSpec:     ...
-//             ArrExpr:     ArrExpr Drv4Func
+//             ArrExpr:     ArrValu Drv4Func
 //             LeftOper:    MonOp Drv4Func
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 Drv4Func:
@@ -5239,7 +5259,7 @@ Drv4Func:
     ;
 
 // Derived left function expression, Type 5
-//    valid in ArrExpr:     ArrExpr Drv5Func StrandInst
+//    valid in ArrExpr:     ArrValu Drv5Func StrandInst
 //             ParenFunc:   (Drv5Func)
 Drv5Func:
       MonOp AmbOpX                      {DbgMsgWP (L"%%Drv5Func:  AmbOpX MonOp");
@@ -6844,7 +6864,7 @@ AxisFunc:
                                          } else
                                              YYERROR2
                                         }
-    | '}' ArrExpr '['  PRIMFCN SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS PRIMFCN[ArrExpr]");
+    | '}' ArrValu '['  PRIMFCN SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS PRIMFCN[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -6896,7 +6916,7 @@ AxisFunc:
                                              $$.tkToken.tkFlags.SysNSLvl = $5.tkToken.tkFlags.SysNSLvl;
                                          } // End IF
                                         }
-    | '}' ArrExpr '['  PRIMFCN          {DbgMsgWP (L"%%AxisFunc:  PRIMFCN[ArrExpr]");
+    | '}' ArrValu '['  PRIMFCN          {DbgMsgWP (L"%%AxisFunc:  PRIMFCN[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -6961,7 +6981,7 @@ AxisFunc:
                                          } else
                                              YYERROR2
                                         }
-    | '}' ArrExpr '['  NAMEFCN SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS NAMEFCN[ArrExpr]");
+    | '}' ArrValu '['  NAMEFCN SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS NAMEFCN[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7013,7 +7033,7 @@ AxisFunc:
                                              $$.tkToken.tkFlags.SysNSLvl = $5.tkToken.tkFlags.SysNSLvl;
                                          } // End IF
                                         }
-    | '}' ArrExpr '['  NAMEFCN          {DbgMsgWP (L"%%AxisFunc:  NAMEFCN[ArrExpr]");
+    | '}' ArrValu '['  NAMEFCN          {DbgMsgWP (L"%%AxisFunc:  NAMEFCN[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7078,7 +7098,7 @@ AxisFunc:
                                          } else
                                              YYERROR2
                                         }
-    | '}' ArrExpr '['  SYSFN12 SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS SYSFN12[ArrExpr]");
+    | '}' ArrValu '['  SYSFN12 SYSNS    {DbgMsgWP (L"%%AxisFunc:  SYSNS SYSFN12[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7130,7 +7150,7 @@ AxisFunc:
                                              $$.tkToken.tkFlags.SysNSLvl = $5.tkToken.tkFlags.SysNSLvl;
                                          } // End IF
                                         }
-    | '}' ArrExpr '['  SYSFN12          {DbgMsgWP (L"%%AxisFunc:  SYSFN12[ArrExpr]");
+    | '}' ArrValu '['  SYSFN12          {DbgMsgWP (L"%%AxisFunc:  SYSFN12[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7187,7 +7207,7 @@ AxisFunc:
                                          } else
                                              YYERROR2
                                         }
-    | '}' ArrExpr '['  ParenFunc        {DbgMsgWP (L"%%AxisFunc:  ParenFunc[ArrExpr]");
+    | '}' ArrValu '['  ParenFunc        {DbgMsgWP (L"%%AxisFunc:  ParenFunc[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7309,7 +7329,7 @@ AmbOpAxis:
                                          } else
                                              YYERROR2
                                         }
-    | '}' ArrExpr '['  AmbOp            {DbgMsgWP (L"%%AmbOpAxis:  AmbOp[ArrExpr]");
+    | '}' ArrValu '['  AmbOp            {DbgMsgWP (L"%%AmbOpAxis:  AmbOp[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7470,7 +7490,7 @@ MonOpAxis:
                                          } else
                                              YYERROR2
                                         }
-    | '}' ArrExpr '['  MonOp            {DbgMsgWP (L"%%MonOpAxis:  MonOp[ArrExpr]");
+    | '}' ArrValu '['  MonOp            {DbgMsgWP (L"%%MonOpAxis:  MonOp[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7597,7 +7617,7 @@ DydOpAxis:
                                          } else
                                              YYERROR2
                                         }
-    | '?' ArrExpr '['  DydOp            {DbgMsgWP (L"%%DydOpAxis:  DydOp[ArrExpr]");
+    | '?' ArrValu '['  DydOp            {DbgMsgWP (L"%%DydOpAxis:  DydOp[ArrValu]");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7722,7 +7742,7 @@ IndexListBR:
                                         }
     ;
 
-// Index list, with empties (meaning no ArrExpr between semicolons)
+// Index list, with empties (meaning no ArrValu between semicolons)
 // Skip Ctrl-Break checking here so the List processing isn't interrupted
 IndexListWE:
       IndexListWE1                      {DbgMsgWP (L"%%IndexListWE:  IndexListWE1");
@@ -7766,7 +7786,7 @@ IndexListWE1:
                                          else
                                              YYERROR2
                                         }
-    |              ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE1:  ArrExpr;");
+    |              ';' ArrValu          {DbgMsgWP (L"%%IndexListWE1:  ArrValu;");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7819,7 +7839,7 @@ IndexListWE1:
                                          } else
                                              YYERROR2
                                         }
-    | IndexListWE1 ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE1:  ArrExpr;IndexListWE1");
+    | IndexListWE1 ';' ArrValu          {DbgMsgWP (L"%%IndexListWE1:  ArrValu;IndexListWE1");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7842,7 +7862,7 @@ IndexListWE1:
 
 // Index list, with empties, starting with an array expr
 IndexListWE2:
-                       ArrExpr          {DbgMsgWP (L"%%IndexListWE2:  ArrExpr");
+                       ArrValu          {DbgMsgWP (L"%%IndexListWE2:  ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -7887,7 +7907,7 @@ IndexListWE2:
                                          } else
                                              YYERROR2
                                         }
-    | IndexListWE2 ';' ArrExpr          {DbgMsgWP (L"%%IndexListWE2:  ArrExpr;IndexListWE2");
+    | IndexListWE2 ';' ArrValu          {DbgMsgWP (L"%%IndexListWE2:  ArrValu;IndexListWE2");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -8267,9 +8287,10 @@ EXIT_TYPES ParseLine
         for (lpSISCur = lpMemPTD->lpSISCur;
              lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt;
              lpSISCur = lpSISCur->lpSISPrv)
-        if (lpSISCur->DfnType EQ DFNTYPE_OP1
-         || lpSISCur->DfnType EQ DFNTYPE_OP2
-         || lpSISCur->DfnType EQ DFNTYPE_FCN)
+        if (!lpSISCur->PermFn
+         && (lpSISCur->DfnType EQ DFNTYPE_OP1
+          || lpSISCur->DfnType EQ DFNTYPE_OP2
+          || lpSISCur->DfnType EQ DFNTYPE_FCN))
             break;
 
         // If called from a user-defined function/operator, ...

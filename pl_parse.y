@@ -8964,7 +8964,21 @@ UBOOL LookaheadDyadicOp
             goto NORMAL_EXIT;
 
         case TKT_OP2IMMED:
+            if (lptkNext->tkData.tkChar EQ UTF16_JOT)
+                bRet = !LookaheadDyadicOp (lpplLocalVars, lptkNext - 1);
+            else
+                bRet = TRUE;
+
+            goto NORMAL_EXIT;
+
         case TKT_OP2NAMED:
+            if (lptkNext->tkData.tkSym->stData.stChar EQ UTF16_JOT)
+                bRet = !LookaheadDyadicOp (lpplLocalVars, lptkNext - 1);
+            else
+                bRet = TRUE;
+
+            goto NORMAL_EXIT;
+
         case TKT_OPJOTDOT:
             bRet = TRUE;
 

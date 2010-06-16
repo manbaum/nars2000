@@ -37,10 +37,40 @@ UBOOL CmdLib_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
+    return CmdLibCom_EM (lpwszTail, FALSE);
+} // End CmdLib_EM
+
+
+//***************************************************************************
+//  $CmdUlib_EM
+//
+//  Execute the system command:  )ULIB [dir] [[first][-][last]]
+//***************************************************************************
+
+UBOOL CmdUlib_EM
+    (LPWCHAR lpwszTail)                 // Ptr to command line tail
+
+{
+    return CmdLibCom_EM (lpwszTail, TRUE);
+} // End CmdUlib_EM
+
+
+//***************************************************************************
+//  $CmdLibCom_EM
+//
+//  Execute the system command:  )LIB [dir] [[first][-][last]]
+//***************************************************************************
+
+UBOOL CmdLibCom_EM
+    (LPWCHAR lpwszTail,                 // Ptr to command line tail
+     UBOOL   bUniqWs)                   // TRUE iff listing unique workspaces only
+
+{
     LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
     HANDLE           hFind;             // Handle to FindData
     WIN32_FIND_DATAW FindData;          // FindFirstFile return data struc
-    UINT             uExtLen;           // Length of workspace extension
+    UINT             uExtLen,           // Length of workspace extension
+                     uWsLen;            // Length of the workspace name
     LPWCHAR          lpw,               // Temporary ptr
                      lpwszTemp,         // Ptr to temporary storage
                      lpwszFormat;       // ...
@@ -121,20 +151,42 @@ UBOOL CmdLib_EM
 
     if (hFind NE INVALID_HANDLE_VALUE)
     {
-        // Delete the workspace extension
-        FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = WC_EOS;
+        // Get the length of the workspace name
+        uWsLen = lstrlenW (FindData.cFileName);
 
-        // Display the workspace name
-        AppendLine (FindData.cFileName, FALSE, TRUE);
+        // Delete the workspace extension
+        FindData.cFileName[uWsLen - uExtLen] = WC_EOS;
+
+        // Account for it
+        uWsLen -= uExtLen;
+
+#define WS_BAKEXT   L".bak"
+
+        // Omit ".bak" workspace names
+        if (!(bUniqWs
+          && uWsLen > strcountof (WS_BAKEXT)
+          && lstrcmpW (WS_BAKEXT, &FindData.cFileName[uWsLen - strcountof (WS_BAKEXT)]) EQ 0))
+            // Display the workspace name
+            AppendLine (FindData.cFileName, FALSE, TRUE);
 
         // Continue looking
         while (FindNextFileW (hFind, &FindData))
         {
-            // Delete the workspace extension
-            FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = WC_EOS;
+            // Get the length of the workspace name
+            uWsLen = lstrlenW (FindData.cFileName);
 
-            // Display the workspace name
-            AppendLine (FindData.cFileName, FALSE, TRUE);
+            // Delete the workspace extension
+            FindData.cFileName[uWsLen - uExtLen] = WC_EOS;
+
+            // Account for it
+            uWsLen -= uExtLen;
+
+            // Omit ".bak" workspace names
+            if (!(bUniqWs
+              && uWsLen > strcountof (WS_BAKEXT)
+              && lstrcmpW (WS_BAKEXT, &FindData.cFileName[uWsLen - strcountof (WS_BAKEXT)]) EQ 0))
+                // Display the workspace name
+                AppendLine (FindData.cFileName, FALSE, TRUE);
         } // End WHILE
 
         // Close the find handle
@@ -143,7 +195,7 @@ UBOOL CmdLib_EM
         return TRUE;
     } else
         return FALSE;
-} // End CmdLib_EM
+} // End CmdLibCom_EM
 
 
 //***************************************************************************

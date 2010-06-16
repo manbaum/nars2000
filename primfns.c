@@ -1629,6 +1629,12 @@ HGLOBAL CopyArray_EM
     hGlbDst = DbgGlobalAlloc (GHND, dwSize);
     if (hGlbDst)
     {
+#ifdef DEBUG
+        VFOHDRPTRS vfoHdrPtrs;
+#endif
+#ifdef DEBUG
+        vfoHdrPtrs.lpMemVar =
+#endif
         // Lock both memory blocks
         lpMemDst = MyGlobalLock (hGlbDst);
         lpMemSrc = MyGlobalLock (hGlbSrc);
@@ -1639,17 +1645,12 @@ HGLOBAL CopyArray_EM
         // Split cases based upon the array type
         switch (GetSignatureMem (lpMemDst))
         {
-#ifdef DEBUG
-            VFOHDRPTRS vfoHdrPtrs;
-#endif
             case VARARRAY_HEADER_SIGNATURE:
                 // Set the reference count in case it was a TKT_VARNAMED
 #ifdef DEBUG_REFCNT
                 dprintfWL0 (L"##RefCnt=1 in " APPEND_NAME L":        %p(res=1) (%S#%d)", hGlbDst, FNLN);
 #endif
-
 #ifdef DEBUG
-                vfoHdrPtrs.lpMemVar = lpMemDst;
   #define lpHeader vfoHdrPtrs.lpMemVar
 #else
   #define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
@@ -1672,7 +1673,6 @@ HGLOBAL CopyArray_EM
                 aplNELM = lpHeader->NELM;
                 aplRank = lpHeader->Rank;
 #undef  lpHeader
-
                 lpMemDstBase = lpMemDst = VarArrayBaseToData (lpMemDst, aplRank);
                 lpMemSrcBase = lpMemSrc = VarArrayBaseToData (lpMemSrc, aplRank);
 
@@ -1753,7 +1753,11 @@ HGLOBAL CopyArray_EM
                 break;
 
             case FCNARRAY_HEADER_SIGNATURE:
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMemDst)
+#ifdef DEBUG
+  #define lpHeader vfoHdrPtrs.lpMemFcn
+#else
+  #define lpHeader    ((LPFCNARRAY_HEADER) lpMemDst)
+#endif
                 // Set the RefCnt
                 lpHeader->RefCnt = 1;
 
@@ -1770,7 +1774,7 @@ HGLOBAL CopyArray_EM
                 lpMemFcn = FcnArrayBaseToData (lpMemDst);
 
                 // Loop through the items
-                for (u = 0; u < aplNELM; u++, lpMemFcn++)
+                for (u = 0; bRet && u < aplNELM; u++, lpMemFcn++)
                 // Split cases based upon the token type
                 switch (lpMemFcn->tkToken.tkFlags.TknType)
                 {
@@ -1778,6 +1782,7 @@ HGLOBAL CopyArray_EM
                     case TKT_VARARRAY:
                     case TKT_NUMSTRAND:
                     case TKT_CHRSTRAND:
+                    case TKT_AXISARRAY:
                         // Get the item global memory handle
                         hGlbItm = lpMemFcn->tkToken.tkData.tkGlbData;
 
@@ -1806,7 +1811,36 @@ HGLOBAL CopyArray_EM
                     case TKT_FILLJOT:
                         break;
 
+                    case TKT_VARNAMED:
+                        // tkData is a LPSYMENTRY
+                        Assert (GetPtrTypeDir (lpMemFcn->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                        // If the named var is not immediate, ...
+                        if (!lpMemFcn->tkToken.tkData.tkSym->stFlags.Imm)
+                        {
+                            // Get the item global memory handle
+                            hGlbItm = lpMemFcn->tkToken.tkData.tkSym->stData.stGlbData;
+
+                            // Copy the array
+                            hGlbItm = CopyArray_EM (hGlbItm,
+                                                    lptkFunc);
+                            if (hGlbItm)
+                            {
+                                // Save back into the destin
+                                lpMemFcn->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                                lpMemFcn->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
+                                lpMemFcn->tkToken.tkFlags.NoDisplay = FALSE;
+                                lpMemFcn->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbItm);
+                            } else
+                                bRet = FALSE;
+                        } // End IF/ELSE
+
+                        break;
+
                     case TKT_FCNNAMED:
+                    case TKT_OP1NAMED:
+                    case TKT_OP2NAMED:
+                    case TKT_OP3NAMED:
                         // Get the item global memory handle
                         hGlbItm = lpMemFcn->tkToken.tkData.tkSym->stData.stGlbData;
 
@@ -3183,6 +3217,7 @@ UBOOL IsTknImmed
         case TKT_AXISIMMED:
         case TKT_LSTIMMED:
         case TKT_OPJOTDOT:
+        case TKT_FILLJOT:
             return TRUE;
 
         case TKT_VARNAMED:

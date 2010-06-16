@@ -3147,44 +3147,6 @@ StrandInst:
                                              YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
                                          } // End IF
                                         }
-    | CONSTANT   ':'                    {DbgMsgWP (L"%%StrandInst:  :CONSTANT");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             HGLOBAL            hGlbObj;                 // Object global memory handle
-                                             LPPERTABDATA       lpMemPTD;                // Ptr to PerTabData global memory
-                                             LPLOADWSGLBVARCONV lpLoadWsGlbVarConv;      // Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
-                                             LPLOADWSGLBVARPARM lpLoadWsGlbVarParm;      // Extra parms for LoadWsGlbVarConv
-
-                                             // Get ptr to PerTabData global memory
-                                             lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-
-                                             // Get the LoadWsGlbVarXXX ptrs
-                                             lpLoadWsGlbVarConv = lpMemPTD->lpLoadWsGlbVarConv;
-                                             lpLoadWsGlbVarParm = lpMemPTD->lpLoadWsGlbVarParm;
-
-                                             // If we're converting, ...
-                                             if (lpLoadWsGlbVarConv)
-                                             {
-                                                 // Convert the constant to an HGLOBAL
-                                                 hGlbObj =
-                                                   (*lpLoadWsGlbVarConv) ((UINT) $1.tkToken.tkData.tkInteger,
-                                                                          lpLoadWsGlbVarParm);
-                                                 // Fill in the result token
-                                                 $$ = $1;                               // Set common fields
-                                                 $$.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                                                 $$.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
-                                                 $$.tkToken.tkFlags.NoDisplay = FALSE;
-                                                 $$.tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbObj);
-/////////////////////////////////////////////////$$.tkToken.tkCharIndex       =         // Set in $$ = $1 above
-                                             } else
-                                             {
-                                                 // Signal an error
-                                                 if (!lpplLocalVars->bYYERROR)
-                                                     PrimFnSyntaxError_EM (&$2.tkToken);
-                                                 YYERROR3
-                                             } // End IF/ELSE
-                                         } // End IF
-                                        }
     ;
 
 // Simple array expression

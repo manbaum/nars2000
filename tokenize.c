@@ -44,8 +44,6 @@ functions, etc. as necessary.
 
  */
 
-UBOOL gbInUse = FALSE;
-
 #define DEF_TOKEN_SIZE  1024    // Default initial amount of memory
                                 //   allocated for the tokenized line
 #define DEF_TOKEN_RESIZE 512    // Default increment when GlobalRealloc'ing
@@ -3107,6 +3105,96 @@ UBOOL MergeNumbers
     // Get a ptr to the previous token (if any)
     lptkPrv = &lptkLocalVars->lptkNext[-1];
 
+    // Check for :CONSTANT during )COPY/)LOAD
+    if (lptkLocalVars->t2.lpHeader->TokenCnt
+     && lptkPrv->tkFlags.TknType EQ TKT_COLON
+     && lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv)
+    {
+        HGLOBAL      hGlbObj;           // Object global memory handle
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+        // Convert the :CONSTANT to an HGLOBAL
+        hGlbObj =
+          (*lpMemPTD->lpLoadWsGlbVarConv) ((UINT) lppnLocalVars->aplInteger,
+                                           lpMemPTD->lpLoadWsGlbVarParm);
+        // Split cases based upon the global memory signature
+        switch (GetSignatureGlb (hGlbObj))
+        {
+            case VARARRAY_HEADER_SIGNATURE:
+                // Fill in the result token
+                lptkPrv->tkFlags.TknType   = TKT_VARARRAY;
+////////////////lptkPrv->tkFlags.ImmType   =        // Same as for TKT_COLON
+                lptkPrv->tkFlags.NoDisplay = FALSE;
+                lptkPrv->tkData.tkGlbData  = MakePtrTypeGlb (hGlbObj);
+////////////////lptkPrv->tkCharIndex       =        // Same as for TKT_COLON
+
+                break;
+
+            case FCNARRAY_HEADER_SIGNATURE:
+                DbgStop ();
+
+                break;
+
+            case DFN_HEADER_SIGNATURE:
+            {
+                LPDFN_HEADER lpMemDfnHdr;
+
+                // Clear the ptr type bits
+                hGlbObj = ClrPtrTypeDir (hGlbObj);
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (hGlbObj);
+
+                // Split cases based upon the Dfn type
+                switch (lpMemDfnHdr->DfnType)
+                {
+                    case DFNTYPE_OP1:
+                        // Fill in the result token
+                        lptkPrv->tkFlags.TknType   = TKT_OP1NAMED;
+
+                        break;
+
+                    case DFNTYPE_OP2:
+                        // Fill in the result token
+                        lptkPrv->tkFlags.TknType   = TKT_OP2NAMED;
+
+                        break;
+
+                    case DFNTYPE_FCN:
+                        // Fill in the result token
+                        lptkPrv->tkFlags.TknType   = TKT_FCNNAMED;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Fill in the result token
+////////////////lptkPrv->tkFlags.ImmType   =        // Same as for TKT_COLON
+                lptkPrv->tkFlags.NoDisplay = FALSE;
+                lptkPrv->tkData.tkGlbData  = lpMemDfnHdr->steFcnName;
+////////////////lptkPrv->tkCharIndex       =        // Same as for TKT_COLON
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbObj); lpMemDfnHdr = NULL;
+
+                break;
+            } // End DFN_HEADER_SIGNATURE
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Count in another reference to this object
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbObj));
+
+        // Mark as succcessfully merged
+        bMerge = TRUE;
+    } else
     // See if we can merge this with the previous token
     if (lptkLocalVars->t2.lpHeader->TokenCnt
      && (lptkPrv->tkFlags.TknType EQ TKT_VARIMMED
@@ -3614,12 +3702,6 @@ HGLOBAL Tokenize_EM
 
 ////LCLODS ("Entering <Tokenize_EM>\r\n");
 
-    // Check for re-entrant
-    if (gbInUse)
-        DbgBrk ();
-    else
-        gbInUse = TRUE;
-
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
@@ -3927,8 +4009,6 @@ FREED_EXIT:
     if (tkLocalVars.iNumLen NE 0)
         DbgBrk ();
 #endif
-    // Mark as no longer in use
-    gbInUse = FALSE;
 ////LCLODS ("Exiting  <Tokenize_EM>\r\n");
 
     // Release the Critical Section

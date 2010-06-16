@@ -30,12 +30,12 @@
                         IntermediateDirectory="$(ConfigurationName)"
                         ConfigurationType="1"
                         CharacterSet="2"
-                        DeleteExtensionsOnClean="*.output;*.pro;*.obj;*.ilk;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.pgc;*.pgd;*.meta;$(TargetPath)"
+                        DeleteExtensionsOnClean="*.output;*.pro;*.obj;*.ilk;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.pgc;*.pgd;*.meta;??_parse.c;$(TargetPath)"
                         >
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="$(MSVC)bin\nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;$(MSVC)bin\nmake /f makefile.pro.parse O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -134,12 +134,12 @@
                         IntermediateDirectory="$(ConfigurationName)"
                         ConfigurationType="1"
                         CharacterSet="2"
-                        DeleteExtensionsOnClean="*.output;*.pro;*.obj;*.ilk;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.pgc;*.pgd;*.meta;$(TargetPath)"
+                        DeleteExtensionsOnClean="*.output;*.pro;*.obj;*.ilk;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.pgc;*.pgd;*.meta;??_parse.c;$(TargetPath)"
                         >
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="$(MSVC)bin\nmake /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;$(MSVC)bin\nmake /f makefile.pro.parse O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"

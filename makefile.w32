@@ -36,10 +36,10 @@ WIN=32
 I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
 L98=$(SDK)LIB;$(MSVC)LIB;$(QDEBUG)
 
-LD=$(MSVC)bin\link.exe
-CC=$(MSVC)bin\cl.exe
-RC=$(SDK)Bin\rc.exe
-ML=$(MSVC)bin\ml.exe
+LD="$(MSVC)bin\link.exe"
+CC="$(MSVC)bin\cl.exe"
+RC="$(SDK)Bin\rc.exe"
+ML="$(MSVC)bin\ml.exe"
 
 ASMOPTS=/coff /DIS_32
 

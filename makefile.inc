@@ -45,6 +45,7 @@ MV=makever
 
 ## Set the following to 1 to debug linker error 0x460 as in
 ##   mkn "LINKDEBUG=1"
+## N.B.:  The double quote marks in the above line are necessary.
 LINKDEBUG=0
 
 !if "$(DEBUG)" == "1"

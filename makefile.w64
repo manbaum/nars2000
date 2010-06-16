@@ -36,10 +36,10 @@ WIN=64
 I98=.\;$(SDK)Include;$(MSVC)include;$(GSLINC);$(QDEBUG)
 L98=$(SDK)Lib\x64;$(MSVC)lib\amd64;$(QDEBUG)
 
-LD=$(MSVC)bin\amd64\link.exe
-CC=$(MSVC)bin\amd64\cl.exe
-RC=$(SDK)Bin\x64\rc.exe
-ML=$(MSVC)bin\amd64\ml64.exe
+LD="$(MSVC)bin\amd64\link.exe"
+CC="$(MSVC)bin\amd64\cl.exe"
+RC="$(SDK)Bin\x64\rc.exe"
+ML="$(MSVC)bin\amd64\ml64.exe"
 
 ASMOPTS=/DIS_64
 

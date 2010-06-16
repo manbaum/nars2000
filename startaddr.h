@@ -211,6 +211,25 @@ typedef struct tagSTART_ADDRESSES
     // fastbool.c
     "FastBoolScan"              , (LPUCHAR) &FastBoolScan               ,
 
+    // fmtspec.c
+    "fnFmtExit"                 , (LPUCHAR) &fnFmtExit                  ,
+    "fnFmtDone"                 , (LPUCHAR) &fnFmtDone                  ,
+    "fnDnLvl"                   , (LPUCHAR) &fnDnLvl                    ,
+    "InitFmtSpecStr"            , (LPUCHAR) &InitFmtSpecStr             ,
+    "fnUpLvl"                   , (LPUCHAR) &fnUpLvl                    ,
+    "fnSetText"                 , (LPUCHAR) &fnSetText                  ,
+    "SaveText"                  , (LPUCHAR) &SaveText                   ,
+    "fnRepAcc"                  , (LPUCHAR) &fnRepAcc                   ,
+    "ScanNumberFS"              , (LPUCHAR) &ScanNumberFS               ,
+    "fnSetModO"                 , (LPUCHAR) &fnSetModO                  ,
+    "fnSetQual"                 , (LPUCHAR) &fnSetQual                  ,
+    "fnError"                   , (LPUCHAR) &fnError                    ,
+    "FmtSpec_EM"                , (LPUCHAR) &FmtSpec_EM                 ,
+    "CharTransFS"               , (LPUCHAR) &CharTransFS                ,
+  #ifdef DEBUG
+    "InitFsaTabFS"              , (LPUCHAR) &InitFsaTabFS               ,
+  #endif
+
     // free.c
     "FreeResultName"            , (LPUCHAR) &FreeResultName             ,
 
@@ -559,12 +578,20 @@ typedef struct tagSTART_ADDRESSES
     "YYCopy"                    , (LPUCHAR) &YYCopy                     ,
     "YYCopyFreeDst"             , (LPUCHAR) &YYCopyFreeDst              ,
     "YYFree"                    , (LPUCHAR) &YYFree                     ,
-    "YYCountFcnStr"             , (LPUCHAR) &YYCountFcnStr              ,
-    "YYIsFcnStrAxis"            , (LPUCHAR) &YYIsFcnStrAxis             ,
   #ifdef DEBUG
     "YYResIsEmpty"              , (LPUCHAR) YYResIsEmpty                ,
   #endif
+    "YYCountFcnStr"             , (LPUCHAR) &YYCountFcnStr              ,
+    "YYCountFcnGlb"             , (LPUCHAR) &YYCountFcnGlb              ,
+    "YYIsFcnStrAxis"            , (LPUCHAR) &YYIsFcnStrAxis             ,
     "YYCopyFcn"                 , (LPUCHAR) YYCopyFcn                   ,
+    "YYCopyGlbFcn"              , (LPUCHAR) YYCopyGlbFcn                ,
+    "YYFreeArray"               , (LPUCHAR) YYFreeArray                 ,
+    "YYFreeGlbFcn"              , (LPUCHAR) YYFreeGlbFcn                ,
+  #if 0
+    "IncrFcnTkn"                , (LPUCHAR) IncrFcnTkn                  ,
+    "IncrFcnMem"                , (LPUCHAR) IncrFcnMem                  ,
+  #endif
   #ifdef DEBUG
     "YYCheckInuse"              , (LPUCHAR) YYCheckInuse                ,
   #endif

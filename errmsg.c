@@ -57,7 +57,7 @@ void BreakMessage
     lpMemPTD = GetMemPTD ();
 
     // Mark as suspended
-    lpMemPTD->lpSISCur->Suspended = TRUE;
+    lpSISCur->Suspended = TRUE;
 
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);

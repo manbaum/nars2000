@@ -49,8 +49,11 @@ int ChangeRefCntDir_PTB
      int     iIncr)             // Increment/decrement amount
 
 {
-    LPVOID lpSig;               // Ptr to signature
-    UINT   RefCnt;              // Reference count
+    LPVOID     lpSig;           // Ptr to signature
+    UINT       RefCnt;          // Reference count
+#ifdef DEBUG
+    VFOHDRPTRS vfoHdrPtrs;      // Union of VFO Hdr ptrs
+#endif
 
     // Split cases based upon the ptr type
     switch (GetPtrTypeDir (hGlb))
@@ -69,17 +72,16 @@ int ChangeRefCntDir_PTB
                 DbgBrk ();
 #endif
             // Lock the memory to get a ptr to it
+#ifdef DEBUG
+            vfoHdrPtrs.lpMemVar =
+#endif
             lpSig = MyGlobalLock (hGlb);
 
             // Split cases based upon the array signature
             switch (GetSignatureMem (lpSig))
             {
-#ifdef DEBUG
-                VFOHDRPTRS vfoHdrPtrs;
-#endif
                 case VARARRAY_HEADER_SIGNATURE:
 #ifdef DEBUG
-                        vfoHdrPtrs.lpMemVar = lpSig;
   #define lpHeader      vfoHdrPtrs.lpMemVar
 #else
   #define lpHeader      ((LPVARARRAY_HEADER) lpSig)
@@ -131,7 +133,11 @@ int ChangeRefCntDir_PTB
                     break;
 
                 case FCNARRAY_HEADER_SIGNATURE:
-#define lpHeader        ((LPFCNARRAY_HEADER) lpSig)
+#ifdef DEBUG
+  #define lpHeader      vfoHdrPtrs.lpMemFcn
+#else
+  #define lpHeader      ((LPFCNARRAY_HEADER) lpSig)
+#endif
                     // Change the reference count
 #ifdef DEBUG_REFCNT
                     if (iIncr EQ 1)
@@ -162,7 +168,11 @@ int ChangeRefCntDir_PTB
                     break;
 
                 case DFN_HEADER_SIGNATURE:
-#define lpHeader        ((LPDFN_HEADER) lpSig)
+#ifdef DEBUG
+  #define lpHeader      vfoHdrPtrs.lpMemDfn
+#else
+  #define lpHeader      ((LPDFN_HEADER) lpSig)
+#endif
 
                     // Don't change the reference count on permanent functions (i.e. Magic Functions/Operators)
                     if (lpHeader->PermFn)

@@ -402,6 +402,9 @@ NAME_TYPES GetNameType
     // Split cases based upon the token type
     switch (lptkFunc->tkFlags.TknType)
     {
+        case TKT_VARIMMED:
+            return NAMETYPE_VAR;
+
         case TKT_VARNAMED:
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY

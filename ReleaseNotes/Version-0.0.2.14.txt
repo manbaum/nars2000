@@ -1,6 +1,18 @@
 Version 0.0.2.14 consists of the following Builds:
 
 
+Build #679 -- Version 0.0.2.14
+------------------------------
+
+* Terminate Output Line From )FNS/)VARS/)OPS/NMS
+
+Directory trunk:
+
+SC_FNOV.C:
+  Terminate the output line from these system commands
+    so as to avoid displaying trailing junk.
+
+
 Build #678 -- Version 0.0.2.14
 ------------------------------
 

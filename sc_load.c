@@ -475,61 +475,67 @@ UBOOL LoadWorkspace_EM
                     lpSymEntry->stFlags.Imm        = TRUE;
                 } // End IF
 
-                // Clear so we save a clean value
-                aplLongestObj = 0;
-
-                // Set this value as lpaplLongestObj is incremented by ParseSavedWsVar_EM
-                lpaplLongestObj = &aplLongestObj;
-
-                // Parse the value into aplLongestObj and aplTypeObj
-                lpwSrc =
-                  ParseSavedWsVar_EM (lpwSrc,           // Ptr to input buffer
-                                      uMaxSize,         // Maximum size of lpwSrc
-                                     &lpaplLongestObj,  // Ptr to ptr to output element
-                                     &aplTypeObj,       // Ptr to storage type (may be NULL)
-                                     &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
-                                      FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
-                                      hWndEC,           // Edit Ctrl window handle
-                                     &lpSymLink,        // Ptr to ptr to SYMENTRY link
-                                      wszVersion,       // Workspace version text
-                                      wszDPFE,          // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-                                     &lpwErrMsg);       // Ptr to ptr to (constant error message text
-                if (lpwSrc EQ NULL)
-                    goto ERRMSG_EXIT;
-
-                // If it's []DM, handle it specially
-                if (lstrcmpiW (lpwSrcStart, WS_UTF16_QUAD L"dm") EQ 0)
+                // If the entry has already been loaded and isn't a system name, ...
+                // This can happen if a previous Function Array included it as a global (:nnn).
+                if (!lpSymEntry->stFlags.Value
+                 || lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
                 {
-                    Assert (!bImmed);
-                    Assert (IsSimpleChar (aplTypeObj));
+                    // Clear so we save a clean value
+                    aplLongestObj = 0;
 
-                    // Out with the old
-                    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
+                    // Set this value as lpaplLongestObj is incremented by ParseSavedWsVar_EM
+                    lpaplLongestObj = &aplLongestObj;
 
-                    // In with the new
-                    lpMemPTD->hGlbQuadDM = ClrPtrTypeDir ((HGLOBAL) aplLongestObj);
-                } else
-                {
-                    // Out with the old
-                    // Release the current value of the STE
-                    //   if it's a global and has a value
-                    if (!lpSymEntry->stFlags.Imm
-                     &&  lpSymEntry->stFlags.Value)
+                    // Parse the value into aplLongestObj and aplTypeObj
+                    lpwSrc =
+                      ParseSavedWsVar_EM (lpwSrc,           // Ptr to input buffer
+                                          uMaxSize,         // Maximum size of lpwSrc
+                                         &lpaplLongestObj,  // Ptr to ptr to output element
+                                         &aplTypeObj,       // Ptr to storage type (may be NULL)
+                                         &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
+                                          FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
+                                          hWndEC,           // Edit Ctrl window handle
+                                         &lpSymLink,        // Ptr to ptr to SYMENTRY link
+                                          wszVersion,       // Workspace version text
+                                          wszDPFE,          // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                         &lpwErrMsg);       // Ptr to ptr to (constant error message text)
+                    if (lpwSrc EQ NULL)
+                        goto ERRMSG_EXIT;
+
+                    // If it's []DM, handle it specially
+                    if (lstrcmpiW (lpwSrcStart, WS_UTF16_QUAD L"dm") EQ 0)
                     {
-                        FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
-                    } // End IF
+                        Assert (!bImmed);
+                        Assert (IsSimpleChar (aplTypeObj));
 
-                    // In with the new
-                    if (bImmed)
-                        lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
-                    else
-                        lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
-                    // Set the common values
-                    lpSymEntry->stFlags.Imm        = bImmed;
-                    lpSymEntry->stFlags.Value      = TRUE;
-                    lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
-                    lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
-                    lpSymEntry->stData.stLongest   = aplLongestObj;
+                        // Out with the old
+                        FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
+
+                        // In with the new
+                        lpMemPTD->hGlbQuadDM = ClrPtrTypeDir ((HGLOBAL) aplLongestObj);
+                    } else
+                    {
+                        // Out with the old
+                        // Release the current value of the STE
+                        //   if it's a global and has a value
+                        if (!lpSymEntry->stFlags.Imm
+                         &&  lpSymEntry->stFlags.Value)
+                        {
+                            FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
+                        } // End IF
+
+                        // In with the new
+                        if (bImmed)
+                            lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
+                        else
+                            lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
+                        // Set the common values
+                        lpSymEntry->stFlags.Imm        = bImmed;
+                        lpSymEntry->stFlags.Value      = TRUE;
+                        lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
+                        lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+                        lpSymEntry->stData.stLongest   = aplLongestObj;
+                    } // End IF
                 } // End IF
 
                 // Restore the original value
@@ -621,17 +627,21 @@ UBOOL LoadWorkspace_EM
 ////////////////////lpSymEntry->stFlags.stNameType = nameType;          // Set in ParseSavedWsFcn_EM
                 } // End IF
 
-                // Parse the line into lpSymEntry->stData
-                if (!ParseSavedWsFcn_EM (lpwSrc,        // Ptr to input buffer
-                                         uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
-                                         lpSymEntry,    // Ptr to STE for the object
-                                         nameType,      // Function name type (see NAME_TYPES)
-                                         hWndEC,        // Edit Ctrl window handle
-                                        &lpSymLink,     // Ptr to ptr to SYMENTRY link
-                                         wszVersion,    // Workspace version text
-                                         wszDPFE,       // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-                                        &lpwErrMsg))    // Ptr to ptr to (constant) error message text
-                    goto ERRMSG_EXIT;
+                // If the entry has already been loaded and isn't a system name, ...
+                // This can happen if a previous Function Array included it as a global (:nnn).
+                if (!lpSymEntry->stFlags.Value
+                 || lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
+                    // Parse the line into lpSymEntry->stData
+                    if (!ParseSavedWsFcn_EM (lpwSrc,        // Ptr to input buffer
+                                             uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
+                                             lpSymEntry,    // Ptr to STE for the object
+                                             nameType,      // Function name type (see NAME_TYPES)
+                                             hWndEC,        // Edit Ctrl window handle
+                                            &lpSymLink,     // Ptr to ptr to SYMENTRY link
+                                             wszVersion,    // Workspace version text
+                                             wszDPFE,       // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                            &lpwErrMsg))    // Ptr to ptr to (constant) error message text
+                        goto ERRMSG_EXIT;
             } // End FOR
         } // End FOR
     } __except (CheckVirtAlloc (GetExceptionInformation (),
@@ -1491,7 +1501,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             lpwSectName = lpwSrc;
 
             // Get a ptr to the function name
-            lpwFcnName = strchrW (lpwSectName, L'.') + 1;
+            lpwFcnName = SkipPastCharW (lpwSectName, L'.');
 
             // Skip past the section name and its terminating zero
             lpwSrc = &lpwSectName[lstrlenW (lpwSectName) + 1];
@@ -1677,7 +1687,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 (void) ConvertNameInPlace (lpwSrc);
 
                 // Fill in the extra parms
-                LoadWsGlbVarParm.lpwSrc        = lpwSrc;
+                LoadWsGlbVarParm.lpwSrc        = &lpwSrc[lstrlenW (lpwSrc) + 1];    // "+ 1" to skip over WC_EOS
                 LoadWsGlbVarParm.uMaxSize      = (UINT) (uMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart)); // Maximum size of lpwSrc
                 LoadWsGlbVarParm.hWndEC        = hWndEC;
                 LoadWsGlbVarParm.lplpSymLink   = lplpSymLink;
@@ -1693,8 +1703,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 lpMemPTD->lpLoadWsGlbVarConv = &LoadWsGlbVarConv;
 
                 // Protect lpMemPTD->lpwszTemp
-                lpwszOldTemp = lpMemPTD->lpwszTemp;
-                lpMemPTD->lpwszTemp = &lpwSrc[lstrlenW (lpwSrc)];
+                lpwszOldTemp        = lpMemPTD->lpwszTemp;
+                lpMemPTD->lpwszTemp = LoadWsGlbVarParm.lpwSrc;
 
                 // Execute the statement
 #ifdef DEBUG

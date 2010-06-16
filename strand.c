@@ -1547,7 +1547,9 @@ void MakeTxtLine
                      lpHeader->tknNELM,     // Token NELM
                      lpHeader->fnNameType,  // Function array name type
                      NULL,                  // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
-                     NULL);                 // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                     NULL,                  // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                     NULL,                  // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                     NULL);                 // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
     // Get the line length
     uLineLen = (UINT) (lpMemTxtEnd - lpMemTxtSrc);
 

@@ -1931,6 +1931,8 @@ LPWCHAR DisplayTransferFcn2
                              lpSymEntry->stData.stGlbData,
                              FALSE,
                              NULL,
+                             NULL,
+                             NULL,
                              NULL);
     } // End IF/ELSE
 

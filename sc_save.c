@@ -432,7 +432,7 @@ UBOOL CmdSave_EM
                         // Format the function section name as F nnn.Name where nnn is the count
                         wsprintfW (lpwszFormat,
                                    L"F %d.%s",
-                                   uGlbCnt,
+                                   uGlbCnt++,
                                    lpwszTemp);
                         // Append separator
                         *lpaplChar++ = L'=';
@@ -461,12 +461,13 @@ UBOOL CmdSave_EM
                         } else
                             // Convert the function/operator in global memory to saved ws form
                             lpaplChar =
-                              SavedWsFormGlbFcn (lpaplChar,
-                                                 lpwszFormat,
-                                                 lpSymEntry->stData.stGlbData,
-                                                 lpMemSaveWSID,
-                                                &uGlbCnt,
-                                                 lpSymEntry);
+                              SavedWsFormGlbFcn (lpaplChar,                     // Ptr to output save area
+                                                 lpwszFormat,                   // Ptr to the function section name as F nnn.Name where nnn is the count
+                                                 lpwszTemp,                     // Ptr to the function name (for FCNARRAY_HEADER only)
+                                                 lpSymEntry->stData.stGlbData,  // WS object global memory handle
+                                                 lpMemSaveWSID,                 // Ptr to saved WS file DPFE
+                                                &uGlbCnt,                       // Ptr to [Globals] count
+                                                 lpSymEntry);                   // Ptr to this global's SYMENTRY
                         // Format the counter
                         wsprintfW (wszCount, L"%d", lpMemCnt[1 + 2 * lpSymEntry->stSILevel]++);
 
@@ -710,12 +711,13 @@ void CleanupAfterSave
 //***************************************************************************
 
 LPAPLCHAR SavedWsFormGlbFcn
-    (LPAPLCHAR   lpaplChar,                     // Ptr to output save area
-     LPAPLCHAR   lpwszFcnTypeName,              // Ptr to the function section name as F nnn.Name where nnn is the count
-     HGLOBAL     hGlbObj,                       // WS object global memory handle
-     LPAPLCHAR   lpMemSaveWSID,                 // Ptr to saved WS file DPFE
-     LPUINT      lpGlbCnt,                      // Ptr to [Globals] count
-     LPSYMENTRY  lpSymEntry)                    // Ptr to this global's SYMENTRY
+    (LPAPLCHAR   lpaplChar,             // Ptr to output save area
+     LPAPLCHAR   lpwszFcnTypeName,      // Ptr to the function section name as F nnn.Name where nnn is the count
+     LPAPLCHAR   lpwszFcnName,          // Ptr to the function name (for FCNARRAY_HEADER only)
+     HGLOBAL     hGlbObj,               // WS object global memory handle
+     LPAPLCHAR   lpMemSaveWSID,         // Ptr to saved WS file DPFE
+     LPUINT      lpuGlbCnt,             // Ptr to [Globals] count
+     LPSYMENTRY  lpSymEntry)            // Ptr to this global's SYMENTRY
 
 {
     LPVOID            lpMemObj = NULL;          // Ptr to WS object ...
@@ -725,19 +727,18 @@ LPAPLCHAR SavedWsFormGlbFcn
                       lpwszSectName;            // Ptr to the section name as nnn.Name where nnn is the count
     UINT              uLine,                    // Function line loop counter
                       uCnt,                     // Loop counter
-                      uLen;                     // Loop length
+                      uLen,                     // Loop length
+                      uGlbCnt;                  // # entries in [Globals] section
     FILETIME          ftCreation,               // Object creation time
                       ftLastMod;                // ...    last modification time
     WCHAR             wszGlbObj[1 + 16 + 1],    // Save area for formatted hGlbObj
                                                 //   (room for FMTCHR_LEAD, 64-bit ptr, and terminating zero)
-                      wszGlbCnt[8 + 1];         // Save area for formatted *lpGlbCnt
+                      wszGlbCnt[8 + 1];         // Save area for formatted *lpuGlbCnt
     SAVEDWSGLBVARPARM SavedWsGlbVarParm;        // Extra parms for SavedWsGlbVarConv
+    SAVEDWSGLBFCNPARM SavedWsGlbFcnParm;        // Extra parms for SavedWsGlbFcnConv
 
     Assert (IsGlbTypeFcnDir_PTB (hGlbObj)
          || IsGlbTypeDfnDir_PTB (hGlbObj));
-
-    // Skip over the 'F ' to point to the section name
-    lpwszSectName = &lpwszFcnTypeName[2];
 
     // Save ptr to start of buffer
     lpaplCharStart = lpaplChar;
@@ -762,6 +763,10 @@ LPAPLCHAR SavedWsFormGlbFcn
                                   lpMemSaveWSID))               // Ptr to the file name
         goto NORMAL_EXIT;
 
+    // Get the current count as we might define several functions here
+    //   and count in another entry
+    uGlbCnt = (*lpuGlbCnt)++;
+
     // Lock the memory to get a ptr to it
     lpMemObj = MyGlobalLock (hGlbObj);
 
@@ -769,11 +774,21 @@ LPAPLCHAR SavedWsFormGlbFcn
     switch (GetSignatureMem (lpMemObj))
     {
         case FCNARRAY_HEADER_SIGNATURE:
+#define lpMemFcnHdr     ((LPFCNARRAY_HEADER) lpMemObj)
+            // Skip over the 'F ' to point to the section name
+            lpwszSectName = &lpwszFcnTypeName[2];
+
             // Fill in the extra parms
-            SavedWsGlbVarParm.lpMemSaveWSID = lpMemSaveWSID;
-            SavedWsGlbVarParm.lpGlbCnt      = lpGlbCnt;
-            SavedWsGlbVarParm.lpSymEntry    = lpSymEntry;
-            SavedWsGlbVarParm.lplpSymLink   = NULL;
+            SavedWsGlbVarParm.lpMemSaveWSID    = lpMemSaveWSID;
+            SavedWsGlbVarParm.lpuGlbCnt        = lpuGlbCnt;
+            SavedWsGlbVarParm.lpSymEntry       = lpSymEntry;
+            SavedWsGlbVarParm.lplpSymLink      = NULL;
+
+            SavedWsGlbFcnParm.lpMemSaveWSID    = lpMemSaveWSID;
+            SavedWsGlbFcnParm.lpwszFcnTypeName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName) + 1];
+            SavedWsGlbFcnParm.lpuGlbCnt        = lpuGlbCnt;
+            SavedWsGlbFcnParm.lpSymEntry       = lpSymEntry;
+            SavedWsGlbFcnParm.lplpSymLink      = NULL;
 
             // Call the common function display function
             lpaplChar =
@@ -781,7 +796,9 @@ LPAPLCHAR SavedWsFormGlbFcn
                              hGlbObj,               // Function array global memory handle
                              FALSE,                 // TRUE iff we're to display the header
                             &SavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to {{nnn}} (may be NULL)
-                            &SavedWsGlbVarParm);    // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                            &SavedWsGlbVarParm,     // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                            &SavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL to {{nnn}} (may be NULL)
+                            &SavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
             // Ensure properly terminated
             *lpaplChar++ = WC_EOS;
 
@@ -820,11 +837,40 @@ LPAPLCHAR SavedWsFormGlbFcn
                                         L"0",               // Ptr to the key value
                                         lpMemSaveWSID);     // Ptr to the file name
             break;
+#undef  lpMemFcnHdr
 
         case DFN_HEADER_SIGNATURE:
         {
             UINT      numFcnLines;
             LPFCNLINE lpFcnLines;       // Ptr to array of function line structs (FCNLINE[numFcnLines])
+
+#define lpMemDfnHdr     ((LPDFN_HEADER) lpMemObj)
+            // Format the function section name as F nnn.Name where nnn is the count
+            wsprintfW (lpwszFcnTypeName,
+                       L"F %d.",
+                       uGlbCnt);
+            // Skip over the leading part
+            lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
+
+            // Copy the function name from the STE
+            lpwszFcnName =
+              CopySteName (lpwszFcnName,            // Ptr to output area
+                           lpMemDfnHdr->steFcnName, // Ptr to function STE
+                           NULL);                   // Ptr to name length (may be NULL)
+            // Ensure properly terminated
+            *lpwszFcnName = WC_EOS;
+
+            // Append separator
+            *lpaplChar++ = L'=';
+
+            // Append the name type
+            *lpaplChar++ = L'0' + lpMemDfnHdr->steFcnName->stFlags.stNameType;
+
+            // Append separator
+            *lpaplChar++ = L'=';
+
+            // Skip over the 'F ' to point to the section name
+            lpwszSectName = &lpwszFcnTypeName[2];
 
             // Put the function definition in a separate
             //   section named [nnn.Name] with each line
@@ -833,8 +879,7 @@ LPAPLCHAR SavedWsFormGlbFcn
             //   1 = <First Line>, etc.
             //   CreationTime = xxxxxxxxxxxxxxxx (64-bit hex number)
 
-
-#define lpMemDfnHdr     ((LPDFN_HEADER) lpMemObj)
+            // Save the # function lines
             numFcnLines = lpMemDfnHdr->numFcnLines;
 
             // Get ptr to array of function line structs (FCNLINE[numFcnLines])
@@ -1058,10 +1103,7 @@ LPAPLCHAR SavedWsFormGlbFcn
     // Format the global count
     wsprintfW (wszGlbCnt,
                FMTSTR_GLBCNT,
-              *lpGlbCnt);
-    // Count in another entry
-    (*lpGlbCnt)++;
-
+               uGlbCnt);
     // Write out the entry in the [Globals] section
     WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
                                 wszGlbCnt,                      // Ptr to the key value
@@ -1140,7 +1182,7 @@ LPAPLCHAR SavedWsFormGlbVar
     (LPAPLCHAR   lpaplChar,             // Ptr to output save area
      HGLOBAL     hGlbObj,               // WS object global memory handle
      LPAPLCHAR   lpMemSaveWSID,         // Ptr to saved WS file DPFE
-     LPUINT      lpGlbCnt,              // Ptr to [Globals] count
+     LPUINT      lpuGlbCnt,             // Ptr to [Globals] count
      LPSYMENTRY  lpSymEntry)            // Ptr to this global's SYMENTRY
 
 {
@@ -1160,7 +1202,7 @@ LPAPLCHAR SavedWsFormGlbVar
     STFLAGS      stFlags;               // Object SymTab flags
     WCHAR        wszGlbObj[1 + 16 + 1], // Save area for formatted hGlbObj
                                         //   (room for FMTCHR_LEAD, 64-bit ptr, and terminating zero)
-                 wszGlbCnt[8 + 1];      // Save area for formatted *lpGlbCnt
+                 wszGlbCnt[8 + 1];      // Save area for formatted *lpuGlbCnt
     UBOOL        bUsrDfn;               // TRUE iff the object is a user-defined function/operator
 
     // Get ptr to PerTabData global memory
@@ -1198,6 +1240,7 @@ LPAPLCHAR SavedWsFormGlbVar
             // Copy the STE name instead as we don't use :nnn convention in
             //   function arrays
 #define lpHeader        ((LPDFN_HEADER) lpMemObj)
+            // ***FIXME*** -- We certainly use :nnn in function arrays as in Z{is}(L{jot}lmx)MonPower 2
             lpaplChar =
               CopySteName (lpaplChar,               // Ptr to output area
                            lpHeader->steFcnName,    // Ptr to function STE
@@ -1430,7 +1473,7 @@ LPAPLCHAR SavedWsFormGlbVar
                           SavedWsFormGlbVar (lpaplChar,
                                              hGlbSub,
                                              lpMemSaveWSID,
-                                             lpGlbCnt,
+                                             lpuGlbCnt,
                                              lpSymEntry);
                         // Ensure there's a trailing blank
                         if (lpaplChar[-1] NE L' ')
@@ -1464,9 +1507,9 @@ LPAPLCHAR SavedWsFormGlbVar
     // Format the global count
     wsprintfW (wszGlbCnt,
                FMTSTR_GLBCNT,
-              *lpGlbCnt);
+              *lpuGlbCnt);
     // Count in another entry
-    (*lpGlbCnt)++;
+    (*lpuGlbCnt)++;
 
     // Write out the entry in the [Globals] section
     WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
@@ -1575,7 +1618,7 @@ LPAPLCHAR AppendArrayHeader
 //***************************************************************************
 //  $SavedWsGlbVarConv
 //
-//  Callback function for DisplayFcnGlb to format a global
+//  Callback function for DisplayFcnGlb to format a global variable
 //***************************************************************************
 
 LPAPLCHAR SavedWsGlbVarConv
@@ -1584,19 +1627,46 @@ LPAPLCHAR SavedWsGlbVarConv
      LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)       // Ptr to extra parameters for lpSavedWsGlbVarConv
 
 {
-
     // Convert the variable in global memory to saved ws form
     lpaplChar =
       SavedWsFormGlbVar (lpaplChar,
                          hGlbObj,
                          lpSavedWsGlbVarParm->lpMemSaveWSID,
-                         lpSavedWsGlbVarParm->lpGlbCnt,
+                         lpSavedWsGlbVarParm->lpuGlbCnt,
                          lpSavedWsGlbVarParm->lpSymEntry);
     // Include a trailing blank
     *lpaplChar++ = L' ';
 
     return lpaplChar;
 } // End SavedWsGlbVarConv
+
+
+//***************************************************************************
+//  $SavedWsGlbFcnConv
+//
+//  Callback function for DisplayFcnGlb to format a global function
+//***************************************************************************
+
+LPAPLCHAR SavedWsGlbFcnConv
+    (LPAPLCHAR           lpaplChar,                 // Ptr to output save area
+     HGLOBAL             hGlbObj,                   // Object global memory handle
+     LPSAVEDWSGLBFCNPARM lpSavedWsGlbFcnParm)       // Ptr to extra parameters for lpSavedWsGlbVarConv
+
+{
+    // Convert the function in global memory to saved ws form
+    lpaplChar =
+      SavedWsFormGlbFcn (lpaplChar,                             // Ptr to output save area
+                         lpSavedWsGlbFcnParm->lpwszFcnTypeName, // Ptr to the function section name as F nnn.Name where nnn is the count
+                         NULL,                                  // Ptr to the function name (for FCNARRAY_HEADER only)
+                         hGlbObj,                               // WS object global memory handle
+                         lpSavedWsGlbFcnParm->lpMemSaveWSID,    // Ptr to saved WS file DPFE
+                         lpSavedWsGlbFcnParm->lpuGlbCnt,        // Ptr to [Globals] count
+                         lpSavedWsGlbFcnParm->lpSymEntry);      // Ptr to this global's SYMENTRY
+    // Include a trailing blank
+    *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End SavedWsGlbFcnConv
 
 
 //***************************************************************************

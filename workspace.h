@@ -70,7 +70,7 @@
 typedef struct tagSAVEDWSGLBVARPARM
 {
     LPAPLCHAR   lpMemSaveWSID;          // Ptr to saved WS file DPFE
-    LPUINT      lpGlbCnt;               // Ptr to [Globals] count
+    LPUINT      lpuGlbCnt;              // Ptr to [Globals] count
     LPSYMENTRY  lpSymEntry;             // Ptr to this global's SYMENTRY
     LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
 } SAVEDWSGLBVARPARM, *LPSAVEDWSGLBVARPARM;
@@ -90,6 +90,18 @@ typedef struct tagLOADWSGLBVARPARM
 } LOADWSGLBVARPARM, *LPLOADWSGLBVARPARM;
 
 typedef HGLOBAL (*LPLOADWSGLBVARCONV) (UINT, LPLOADWSGLBVARPARM);
+
+
+typedef struct tagSAVEDWSGLBFCNPARM
+{
+    LPAPLCHAR   lpMemSaveWSID;          // Ptr to saved WS file DPFE
+    LPAPLCHAR   lpwszFcnTypeName;       // Ptr to the function section name as F nnn.Name where nnn is the count
+    LPUINT      lpuGlbCnt;              // Ptr to [Globals] count
+    LPSYMENTRY  lpSymEntry;             // Ptr to this global's SYMENTRY
+    LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
+} SAVEDWSGLBFCNPARM, *LPSAVEDWSGLBFCNPARM;
+
+typedef LPAPLCHAR (*LPSAVEDWSGLBFCNCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBFCNPARM);
 
 
 //***************************************************************************

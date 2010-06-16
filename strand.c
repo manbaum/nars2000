@@ -1430,7 +1430,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         TknCount = 0;
 
         // Copy the PL_YYSTYPEs to the global memory object
-        lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, TRUE);
+        lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount);
     } // End IF/ELSE
 
     // Calculate the actual length

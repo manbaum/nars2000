@@ -1917,10 +1917,20 @@ UBOOL InitFcnSTEs
             LPVOID            lpMemRes;         // Ptr to result global memory
             UINT              uFcn;             // Loop counter
             LPFCNARRAY_HEADER lpHeader;         // Ptr to function array header
+#ifdef DEBUG
+            // If the token is a global, ...
+            if (!IsTknImmed (&lpYYArg->tkToken))
+            // Split cases based upon the signature
+            switch (GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkSym))
+            {
+                case FCNARRAY_HEADER_SIGNATURE:
+                case DFN_HEADER_SIGNATURE:
+                    break;
 
-            Assert (IsTknImmed (&lpYYArg->tkToken)
-                 || GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkSym) EQ FCNARRAY_HEADER_SIGNATURE);
-
+                defstop
+                    break;
+            } // End IF/SWITCH
+#endif
             // Calculate space needed for the result
             ByteRes = CalcFcnSize (TknCount);
 

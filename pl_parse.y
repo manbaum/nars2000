@@ -2361,11 +2361,11 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | error   AmbOpX StrandOp1          {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX error");
+    | error   AmbOpX LftOpVal           {DbgMsgWP (L"%%ArrExpr:  LftOpVal AmbOpX error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2);
-/////////////////////////////////////////////FreeResult (&$3);           // DO NOT FREE:  RefCnt not incremented in StrandOp1
+/////////////////////////////////////////////FreeResult (&$3);           // DO NOT FREE:  RefCnt not incremented in LftOpVal
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -2457,11 +2457,11 @@ ArrExpr:
                                          } // End IF
                                         }
 
-    | ArrValu AmbOpX AmbOpX StrandOp1   {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX AmbOpX ArrValu");
+    | ArrValu AmbOpX AmbOpX LftOpVal    {DbgMsgWP (L"%%ArrExpr:  LftOpVal AmbOpX AmbOpX ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             // Increment the RefCnt because StrandOp1 doesn't
+                                             // Increment the RefCnt because LftOpVal doesn't
                                              //   go through MakeFcnStrand_EM_YY as this is a
                                              //   function not an operator.
                                              DbgIncrRefCntTkn (&$4.tkToken);
@@ -2527,11 +2527,11 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ArrValu AmbOpX StrandOp1          {DbgMsgWP (L"%%ArrExpr:  StrandOp1 AmbOpX ArrValu");
+    | ArrValu AmbOpX LftOpVal           {DbgMsgWP (L"%%ArrExpr:  LftOpVal AmbOpX ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             // Increment the RefCnt because StrandOp1 doesn't
+                                             // Increment the RefCnt because LftOpVal doesn't
                                              //   go through MakeFcnStrand_EM_YY as this is a
                                              //   function not an operator.
                                              DbgIncrRefCntTkn (&$3.tkToken);
@@ -2640,11 +2640,11 @@ ArrExpr:
                                          } else
                                              YYERROR2
                                         }
-    | ArrValu Drv5Func    StrandOp1     {DbgMsgWP (L"%%ArrExpr:  StrandOp1 Drv5Func ArrValu");   // Also Drv3Func
+    | ArrValu Drv5Func    LftOpVal      {DbgMsgWP (L"%%ArrExpr:  LftOpVal Drv5Func ArrValu");   // Also Drv3Func
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             // Increment the RefCnt because StrandOp1 doesn't
+                                             // Increment the RefCnt because LftOpVal doesn't
                                              //   go through MakeFcnStrand_EM_YY as this is a
                                              //   function not an operator.
                                              DbgIncrRefCntTkn (&$3.tkToken);
@@ -4440,7 +4440,7 @@ Drv1Func:
                                          } else
                                              YYERROR2
                                         }
-    | FILLJOT   DydOp StrandOp1         {DbgMsgWP (L"%%Drv1Func:  StrandOp1 DydOp FILLJOT");
+    | FILLJOT   DydOp LftOpVal          {DbgMsgWP (L"%%Drv1Func:  LftOpVal DydOp FILLJOT");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -4532,7 +4532,7 @@ Drv1Func:
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
-    | RightOper DydOp StrandOp1         {DbgMsgWP (L"%%Drv1Func:  StrandOp1 DydOp RightOper");
+    | RightOper DydOp LftOpVal          {DbgMsgWP (L"%%Drv1Func:  LftOpVal DydOp RightOper");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -4709,7 +4709,7 @@ Drv1Func:
                                          } else
                                              YYERROR2
                                         }
-    |           MonOp StrandOp1         {DbgMsgWP (L"%%Drv1Func:  StrandOp1 MonOp");
+    |           MonOp LftOpVal          {DbgMsgWP (L"%%Drv1Func:  LftOpVal MonOp");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -4985,7 +4985,7 @@ Drv2Func:
 //   because the Strand on the right is bound to the DydOp)
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 Drv3Func:
-      StrandOp2  DydOp error            {DbgMsgWP (L"%%Drv3Func:  error DydOp StrandOp2");
+      RhtOpVal   DydOp error            {DbgMsgWP (L"%%Drv3Func:  error DydOp RhtOpVal");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$1);
@@ -4994,7 +4994,7 @@ Drv3Func:
                                          } else
                                              YYERROR2
                                         }
-    | StrandOp2  DydOp FILLJOT          {DbgMsgWP (L"%%Drv3Func:  FILLJOT DydOp StrandOp2");
+    | RhtOpVal   DydOp FILLJOT          {DbgMsgWP (L"%%Drv3Func:  FILLJOT DydOp RhtOpVal");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5040,7 +5040,7 @@ Drv3Func:
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
-    | StrandOp2  DydOp LeftOper         {DbgMsgWP (L"%%Drv3Func:  LeftOper DydOp StrandOp2");
+    | RhtOpVal   DydOp LeftOper         {DbgMsgWP (L"%%Drv3Func:  LeftOper DydOp RhtOpVal");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5081,7 +5081,7 @@ Drv3Func:
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
-    | StrandOp2  DydOp AxisFunc         {DbgMsgWP (L"%%Drv3Func:  AxisFunc DydOp StrandOp2");
+    | RhtOpVal   DydOp AxisFunc         {DbgMsgWP (L"%%Drv3Func:  AxisFunc DydOp RhtOpVal");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5132,7 +5132,7 @@ Drv3Func:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 Drv4Func:
 ////| StrandInst DydOp error            --See above
-      StrandOp2  DydOp StrandOp1        {DbgMsgWP (L"%%Drv4Func:  StrandOp1 DydOp StrandOp2");
+      RhtOpVal   DydOp LftOpVal         {DbgMsgWP (L"%%Drv4Func:  LftOpVal DydOp RhtOpVal");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5174,7 +5174,7 @@ Drv4Func:
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
-    | StrandOp2  DydOp Drv1Func         {DbgMsgWP (L"%%Drv4Func:  Drv1Func DydOp StrandOp2");
+    | RhtOpVal   DydOp Drv1Func         {DbgMsgWP (L"%%Drv4Func:  Drv1Func DydOp RhtOpVal");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5216,7 +5216,7 @@ Drv4Func:
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
-    | StrandOp2  DydOp StrandInst       {DbgMsgWP (L"%%Drv4Func:  StrandInst DydOp StrandOp2");
+    | RhtOpVal   DydOp StrandInst       {DbgMsgWP (L"%%Drv4Func:  StrandInst DydOp RhtOpVal");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -5257,6 +5257,26 @@ Drv4Func:
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
+                                        }
+    ;
+
+// Right operand values
+RhtOpVal:
+      StrandOp2                         {DbgMsgWP (L"%%RhtOpVal:  StrandOp2");
+                                             $$ = $1;
+                                        }
+    | '^' ArrValu '('                   {DbgMsgWP (L"%%RhtOpVal:  (ArrValu)");
+                                             $$ = $2;
+                                        }
+    ;
+
+// Left operand values
+LftOpVal:
+      StrandOp1                         {DbgMsgWP (L"%%LftOpVal:  StrandOp1");
+                                             $$ = $1;
+                                        }
+    | '*' ArrValu '('                   {DbgMsgWP (L"%%LftOpVal:  (ArrValu)");
+                                             $$ = $2;
                                         }
     ;
 
@@ -8658,7 +8678,7 @@ char LookaheadAdjacent
 
     // Each right grouping symbol has the index of the matching
     //   left grouping symbol in its tkData.tkIndex.
-    // Get a ptr to the token adjacent to ("-1") the matching left
+    // Get a ptr to the token adjacent to ("- 1") the matching left
     //   grouping symbol.
     if (bSkipBrackets)
         plLocalVars.lptkNext = &plLocalVars.lptkStart[plLocalVars.lptkNext->tkData.tkIndex - 1];
@@ -8768,7 +8788,7 @@ char LookaheadAdjacent
         case TKT_RIGHTBRACKET:
             // Each right grouping symbol has the index of the matching
             //   left grouping symbol in its tkData.tkIndex
-            // Get a ptr to the token adjacent to ("-1") the matching left
+            // Get a ptr to the token adjacent to ("- 1") the matching left
             //   grouping symbol.
             plLocalVars.lptkNext = &plLocalVars.lptkStart[plLocalVars.lptkNext->tkData.tkIndex - 1];
 
@@ -9002,7 +9022,7 @@ UBOOL LookaheadDyadicOp
         case TKT_RIGHTBRACKET:
             // Each right grouping symbol has the index of the matching
             //   left grouping symbol in its tkData.tkIndex
-            // Get a ptr to the token adjacent to ("-1") the matching left
+            // Get a ptr to the token adjacent to ("- 1") the matching left
             //   grouping symbol.
             lptkNext = &lpplLocalVars->lptkStart[lptkNext->tkData.tkIndex - 1];
 
@@ -9119,9 +9139,13 @@ UBOOL LookbehindOp
         case TKT_OP1NAMED:
         case TKT_OP2IMMED:
         case TKT_OP2NAMED:
+            bRet = TRUE;
+
+            goto NORMAL_EXIT;
+
         case TKT_OP3IMMED:
         case TKT_OP3NAMED:
-            bRet = TRUE;
+            bRet = FALSE;
 
             goto NORMAL_EXIT;
 
@@ -9578,7 +9602,7 @@ PL_YYLEX_START:
             //   a dyadic operator              (return '#'), or
             //   a function or monadic operator (return '>'), or
             //   a train                        (return '%'), or
-            //   a variable or niladic function (return ')')
+            //   a variable or niladic function (return ')' or '^' or '*')
 
             // Split cases based upon the lookahead result
             switch (LookaheadSurround (lpplLocalVars))
@@ -9594,6 +9618,28 @@ PL_YYLEX_START:
                 case 'V':               // Variable
                 case '0':               // Niladic function
                 case 'L':               // List
+                    // Lookbehind to see if the previous token is a monadic or
+                    //   dyadic op in which case the object which these parens
+                    //   surround is absorbed as the left operand of the op.
+                    // If the prev token is a monadic or dyadic op, ...
+                    if (LookbehindOp (lpplLocalVars, &lpplLocalVars->lptkNext[1]))
+                        return '*';     // Variable as left operand
+
+                    // Lookahead to see if the next token after the matching
+                    //   right paren is a dyadic op in which case the object
+                    //   which these parens surround is absorbed as the right
+                    //   operand of the dyadic op.
+
+                    // Each right grouping symbol has the index of the matching
+                    //   left grouping symbol in its tkData.tkIndex
+                    // Get a ptr to the token adjacent to ("- 1") the matching left
+                    //   grouping symbol.
+
+                    // If the token after the matching left paren is a dyadic op, ...
+                    if (LookaheadDyadicOp (lpplLocalVars,
+                                          &lpplLocalVars->lptkStart[lpplLocalVars->lptkNext->tkData.tkIndex - 1]))
+                        return '^';     // Variable as right operand
+
                     return ')';
 
                 case 'T':               // Train

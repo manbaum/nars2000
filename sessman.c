@@ -487,6 +487,16 @@ void DisplayPrompt
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
 
+#ifdef DEBUG
+    // If we're at the top of the SI level, ensure that
+    //   lpwszBaseTemp and lpwszTemp are the same
+    if (lpMemPTD->lpSISCur EQ NULL)
+    {
+        if (lpMemPTD->lpwszBaseTemp NE lpMemPTD->lpwszTemp)
+            DbgBrk ();
+    } // End IF
+#endif
+
     PERFMON
 ////PERFMONSHOW
 } // End DisplayPrompt

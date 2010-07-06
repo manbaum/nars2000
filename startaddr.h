@@ -438,6 +438,18 @@ typedef struct tagSTART_ADDRESSES
     // qf_cr.c
     "CopySteName"               , (LPUCHAR) &CopySteName                ,
 
+    // qf_fmt.c
+    "SysFnFMT_EM_YY"            , (LPUCHAR) &SysFnFMT_EM_YY             ,
+    "SysFnMonFMT_EM_YY"         , (LPUCHAR) &SysFnMonFMT_EM_YY          ,
+    "SysFnDydFMT_EM_YY"         , (LPUCHAR) &SysFnDydFMT_EM_YY          ,
+    "SysFnDydFMTSimp"           , (LPUCHAR) &SysFnDydFMTSimp            ,
+    "QFMT_CommonG"              , (LPUCHAR) &QFMT_CommonG               ,
+    "QFMT_CommonEFI"            , (LPUCHAR) &QFMT_CommonEFI             ,
+    "QFMT_ZeroFill"             , (LPUCHAR) &QFMT_ZeroFill              ,
+    "QFMT_ThousandSep"          , (LPUCHAR) &QFMT_ThousandsSep          ,
+    "QFMT_FillBg"               , (LPUCHAR) &QFMT_FillBg                ,
+    "QFMT_SubstValue"           , (LPUCHAR) &QFMT_SubstValue            ,
+
     // qf_tf.c
     "SysFnTF_EM_YY"             , (LPUCHAR) &SysFnTF_EM_YY              ,
     "SysFnMonTF_EM_YY"          , (LPUCHAR) &SysFnMonTF_EM_YY           ,

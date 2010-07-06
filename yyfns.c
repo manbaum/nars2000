@@ -490,7 +490,7 @@ LPPL_YYSTYPE YYCopyFcn
                       lpYYMem1,             // ...
                       lpYYCopy;             // ...
     UBOOL             bYYFcn,               // TRUE iff we're using YYFcn
-                      bGlbFcn;              // TRUE iff we're using hGlbFcn
+                      bGlbTkn;              // TRUE iff we're using lpToken
 
     // Get the token count in this function strand
     iLen = lpYYArg->TknCount;
@@ -537,8 +537,8 @@ LPPL_YYSTYPE YYCopyFcn
             // Assume it's a single token
             TknCount = 1;
 
-            // Assume we're not using hGlbFcn
-            bGlbFcn = FALSE;
+            // Assume we're not using lpToken
+            bGlbTkn = FALSE;
 
             // Special case for named functions/operators
             if (lpToken->tkFlags.TknType EQ TKT_FCNNAMED
@@ -585,8 +585,8 @@ LPPL_YYSTYPE YYCopyFcn
                     Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
                          || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
-                    // Mark as using hGlbFcn
-                    bGlbFcn = TRUE;
+                    // Mark as using lpToken
+                    bGlbTkn = TRUE;
 
                     // Mark as not using YYFcn
                     bYYFcn = FALSE;
@@ -622,8 +622,8 @@ LPPL_YYSTYPE YYCopyFcn
                 Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
                      || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
-                // Mark as using hGlbFcn
-                bGlbFcn = TRUE;
+                // Mark as using lpToken
+                bGlbTkn = TRUE;
             } else
             {
                 // If the token type is a var or axis array, ...
@@ -642,13 +642,13 @@ LPPL_YYSTYPE YYCopyFcn
                 YYFree (lpYYCopy); lpYYCopy = NULL;
             } // End IF/ELSE
 
-            // If we used hGlbFcn, ...
-            if (bGlbFcn)
+            // If we used lpToken, ...
+            if (bGlbTkn)
             {
                 // Initialize as it is incremented in YYCopyGlbFcn_PTB
                 TknCount = 0;
 
-                lpYYMem = YYCopyGlbFcn_PTB (lpYYMem, hGlbFcn, &lpYYArg[i], &TknCount);
+                lpYYMem = YYCopyGlbFcn_PTB (lpYYMem, lpToken, &lpYYArg[i], &TknCount);
             } // End IF
         } // End IF/ELSE
 
@@ -676,16 +676,20 @@ LPPL_YYSTYPE YYCopyFcn
 
 LPPL_YYSTYPE YYCopyGlbFcn_PTB
     (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
-     HGLOBAL       hGlbFcn,             // Function global memory handle
+     LPTOKEN       lpToken,             // Ptr to function token
      LPPL_YYSTYPE  lpYYArgI,            // Ptr to function arg
      LPINT         lpTknCount)          // Ptr to resulting token count
 
 {
+    HGLOBAL           hGlbFcn;          // Function global memory handle
     PL_YYSTYPE        YYFcn = {0};      // Temporary YYSTYPE
     UBOOL             bYYFcn;           // TRUE iff we're using YYFcn
     LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to function array header global memory
     LPPL_YYSTYPE      lpMemFcn;         // Ptr to function array global memory
     int               TknCount = 1;     // # tokens added for this element of the function strand
+
+    // Get the global memory handle
+    hGlbFcn = MakePtrTypeGlb (GetGlbHandle (lpToken));
 
     // Split cases based upon the function signature
     switch (GetSignatureGlb_PTB (hGlbFcn))
@@ -779,7 +783,7 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
                     TknCount++;
                 } else
                     // Recurse down through this function array item
-                    lpYYMem = YYCopyGlbFcn_PTB (lpYYMem, MakePtrTypeGlb (GetGlbHandle (&lpMemFcn->tkToken)), lpYYArgI, &TknCount);
+                    lpYYMem = YYCopyGlbFcn_PTB (lpYYMem, &lpMemFcn->tkToken, lpYYArgI, &TknCount);
                 // Mark as not using YYFcn
                 bYYFcn = FALSE;
             } // End IF/ELSE
@@ -798,7 +802,7 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
             DbgIncrRefCntDir_PTB (hGlbFcn);
 
             // Fill in the token
-            YYFcn.tkToken.tkFlags.TknType   = TKT_VARARRAY;
+            YYFcn.tkToken.tkFlags.TknType   = lpToken->tkFlags.TknType;
 ////////////YYFcn.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
 ////////////YYFcn.tkToken.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
             YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;

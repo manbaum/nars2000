@@ -910,7 +910,7 @@ LPAPLCHAR CompileArrFloat
             lpaplChar =
               FormatFloat (lpwszOut = lpaplChar,    // Ptr to output save area
                            *((LPAPLFLOAT) lpMem)++, // The floating point value
-                           0);                      // Use default precision
+                           0);                      // Use default significant digits
             // Zap the trailing blank
             lpaplChar[-1] = WC_EOS;
 

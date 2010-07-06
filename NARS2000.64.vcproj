@@ -35,7 +35,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -62,7 +62,7 @@
                         <Tool
                                 Name="VCCLCompilerTool"
                                 Optimization="0"
-                                AdditionalIncludeDirectories=".\;$(OutDir)"
+                                AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;"
                                 PreprocessorDefinitions="DEBUG;RESDEBUG=1;_CRT_SECURE_NO_WARNINGS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=0x0701;_AMD64_;_M_AMD64;_WIN64"
                                 StringPooling="false"
                                 MinimalRebuild="false"
@@ -125,7 +125,7 @@
                         <Tool
                                 Name="VCPostBuildEventTool"
                                 Description="Copy default APL font"
-                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                 </Configuration>
                 <Configuration
@@ -139,7 +139,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=$(OutDir)\&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=$(OutDir)\&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -167,7 +167,7 @@
                                 Name="VCCLCompilerTool"
                                 Optimization="1"
                                 FavorSizeOrSpeed="2"
-                                AdditionalIncludeDirectories=".\;$(OutDir)"
+                                AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;"
                                 PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=0x0701;_AMD64_;_M_AMD64;_WIN64"
                                 StringPooling="false"
                                 MinimalRebuild="false"
@@ -230,7 +230,7 @@
                         <Tool
                                 Name="VCPostBuildEventTool"
                                 Description="Copy default APL font"
-                                CommandLine="if not exist $(OutDir)\SImPL-Medium.ttf copy SImPL-Medium.ttf $(OutDir)\ &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
                         />
                 </Configuration>
         </Configurations>
@@ -267,7 +267,7 @@
                                 >
                         </File>
                         <File
-                                RelativePath="$(OutDir)\cs_parse.c"
+                                RelativePath="&quot;$(OutDir)\cs_parse.c&quot;"
                                 >
                         </File>
                         <File
@@ -393,7 +393,7 @@
                                 >
                         </File>
                         <File
-                                RelativePath="$(OutDir)\fh_parse.c"
+                                RelativePath="&quot;$(OutDir)\fh_parse.c&quot;"
                                 >
                         </File>
                         <File
@@ -649,7 +649,7 @@
                                 >
                         </File>
                         <File
-                                RelativePath="$(OutDir)\pl_parse.c"
+                                RelativePath="&quot;$(OutDir)\pl_parse.c&quot;"
                                 >
                         </File>
                         <File
@@ -673,7 +673,7 @@
                                 </FileConfiguration>
                         </File>
                         <File
-                                RelativePath="$(OutDir)\pn_parse.c"
+                                RelativePath="&quot;$(OutDir)\pn_parse.c&quot;"
                                 >
                         </File>
                         <File

@@ -585,7 +585,7 @@ typedef struct tagSTART_ADDRESSES
     "YYCountFcnGlb"             , (LPUCHAR) &YYCountFcnGlb              ,
     "YYIsFcnStrAxis"            , (LPUCHAR) &YYIsFcnStrAxis             ,
     "YYCopyFcn"                 , (LPUCHAR) YYCopyFcn                   ,
-    "YYCopyGlbFcn"              , (LPUCHAR) YYCopyGlbFcn                ,
+    "YYCopyGlbFcn_PTB"          , (LPUCHAR) YYCopyGlbFcn_PTB            ,
     "YYFreeArray"               , (LPUCHAR) YYFreeArray                 ,
     "YYFreeGlbFcn"              , (LPUCHAR) YYFreeGlbFcn                ,
   #if 0

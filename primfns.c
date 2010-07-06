@@ -1821,18 +1821,8 @@ HGLOBAL CopyArray_EM
                             // Get the item global memory handle
                             hGlbItm = lpMemFcn->tkToken.tkData.tkSym->stData.stGlbData;
 
-                            // Copy the array
-                            hGlbItm = CopyArray_EM (hGlbItm,
-                                                    lptkFunc);
-                            if (hGlbItm)
-                            {
-                                // Save back into the destin
-                                lpMemFcn->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                                lpMemFcn->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
-                                lpMemFcn->tkToken.tkFlags.NoDisplay = FALSE;
-                                lpMemFcn->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbItm);
-                            } else
-                                bRet = FALSE;
+                            // It's a var, so just increment the RefCnt
+                            DbgIncrRefCntDir_PTB (hGlbItm);
                         } // End IF/ELSE
 
                         break;

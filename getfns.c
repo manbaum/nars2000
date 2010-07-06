@@ -1465,12 +1465,15 @@ HGLOBAL GetGlbHandle
     (LPTOKEN lpToken)           // Ptr to token
 
 {
-    HGLOBAL hGlb;
-
-    // Get the global handle w/o locking it
-    GetGlbPtrs_LOCK (lpToken, &hGlb, NULL);
-
-    return hGlb;
+    // If it's an immediate object, ...
+    if (IsTknImmed (lpToken))
+        return NULL;
+    else
+    // If it's a named object, ...
+    if (IsTknTypeNamed (lpToken->tkFlags.TknType))
+        return ClrPtrTypeDir (lpToken->tkData.tkSym->stData.stGlbData);
+    else
+        return ClrPtrTypeDir (lpToken->tkData.tkGlbData);
 } // End GetGlbHandle
 
 

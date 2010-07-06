@@ -301,7 +301,7 @@ UINT YYCountFcnStr
             } else
             if (tknType EQ TKT_FCNARRAY)
                 // Recurse down through this function array item
-                TknCount += YYCountFcnGlb (lpToken->tkData.tkGlbData);
+                TknCount += YYCountFcnGlb (GetGlbHandle (lpToken));
             else
                 TknCount++;
         } // End IF/ELSE
@@ -364,7 +364,7 @@ UINT YYCountFcnGlb
                     TknCount++;
                 else
                     // Recurse down through this function array item
-                    TknCount += YYCountFcnGlb (lpMemFcn->tkToken.tkData.tkGlbData);
+                    TknCount += YYCountFcnGlb (GetGlbHandle (&lpMemFcn->tkToken));
             } // End IF/ELSE
 
             break;
@@ -645,10 +645,10 @@ LPPL_YYSTYPE YYCopyFcn
             // If we used hGlbFcn, ...
             if (bGlbFcn)
             {
-                // Initialize as it is incremented in YYCopyGlbFcn
+                // Initialize as it is incremented in YYCopyGlbFcn_PTB
                 TknCount = 0;
 
-                lpYYMem = YYCopyGlbFcn (lpYYMem, hGlbFcn, &lpYYArg[i], &TknCount);
+                lpYYMem = YYCopyGlbFcn_PTB (lpYYMem, hGlbFcn, &lpYYArg[i], &TknCount);
             } // End IF
         } // End IF/ELSE
 
@@ -669,12 +669,12 @@ LPPL_YYSTYPE YYCopyFcn
 
 
 //***************************************************************************
-//  $YYCopyGlbFcn
+//  $YYCopyGlbFcn_PTB
 //
 //  Copy an HGLOBAL to a memory object
 //***************************************************************************
 
-LPPL_YYSTYPE YYCopyGlbFcn
+LPPL_YYSTYPE YYCopyGlbFcn_PTB
     (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
      HGLOBAL       hGlbFcn,             // Function global memory handle
      LPPL_YYSTYPE  lpYYArgI,            // Ptr to function arg
@@ -703,7 +703,7 @@ LPPL_YYSTYPE YYCopyGlbFcn
             YYFcn.TknCount                  = TknCount;
 ////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)
 ////////////YYFcn.YYIndirect                = FALSE;            // Already zero from = {0}
-            YYFcn.YYCopyArray               = lpYYArgI->YYCopyArray;
+////////////YYFcn.YYCopyArray               = 0;                // Already zero from = {0}
 ////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
 ////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
 ////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
@@ -755,7 +755,7 @@ LPPL_YYSTYPE YYCopyGlbFcn
                 YYFcn.TknCount                  = TknCount;
 ////////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)
 ////////////////YYFcn.YYIndirect                = FALSE;            // Already zero from = {0}
-                YYFcn.YYCopyArray               = lpYYArgI->YYCopyArray;
+////////////////YYFcn.YYCopyArray               = 0;                // Already zero from = {0}
 ////////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
 ////////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
 ////////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
@@ -779,7 +779,7 @@ LPPL_YYSTYPE YYCopyGlbFcn
                     TknCount++;
                 } else
                     // Recurse down through this function array item
-                    lpYYMem = YYCopyGlbFcn (lpYYMem, lpMemFcn->tkToken.tkData.tkGlbData, lpYYArgI, &TknCount);
+                    lpYYMem = YYCopyGlbFcn_PTB (lpYYMem, MakePtrTypeGlb (GetGlbHandle (&lpMemFcn->tkToken)), lpYYArgI, &TknCount);
                 // Mark as not using YYFcn
                 bYYFcn = FALSE;
             } // End IF/ELSE
@@ -806,7 +806,7 @@ LPPL_YYSTYPE YYCopyGlbFcn
             YYFcn.TknCount                  = TknCount;
 ////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)
 ////////////YYFcn.YYIndirect                = FALSE;            // Already zero from = {0}
-            YYFcn.YYCopyArray               = lpYYArgI->YYCopyArray;
+////////////YYFcn.YYCopyArray               = 0;                // Already zero from = {0}
 ////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
 ////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
 ////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
@@ -843,7 +843,7 @@ LPPL_YYSTYPE YYCopyGlbFcn
     *lpTknCount += TknCount;
 
     return lpYYMem;
-} // End YYCopyGlbFcn
+} // End YYCopyGlbFcn_PTB
 
 
 //***************************************************************************

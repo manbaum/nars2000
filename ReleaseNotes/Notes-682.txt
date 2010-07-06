@@ -1,7 +1,7 @@
 Build #682 -- Version 0.0.2.14
 ------------------------------
 
-* Fix Bug:  Avoid  Duplicate Counting When Copying A Function Array
+* Fix Bug:  Avoid Duplicate Counting When Copying A Function Array
 
 Directory trunk:
 

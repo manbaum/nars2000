@@ -386,6 +386,7 @@ default:        \
 #define MYWM_CLEARCHAR      (WM_APP +18)    // LW_FW (Clear highlight around any previously outlined char)
 #define MYWM_CREATEFCN      (WM_APP +19)    // SM (Create a new function)
 #define MYWM_LPMEMPTD       (WM_APP +20)    // MF (Pass lpMemPTD for TLS)
+#define MYWM_PROMPT         (WM_APP +21)    // MF (Display the prompt)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB

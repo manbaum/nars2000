@@ -2506,17 +2506,12 @@ LRESULT APIENTRY MFWndProc
                                           | OFN_ENABLESIZING
                                           | OFN_EXPLORER
                                           | OFN_HIDEREADONLY
-                                          | OFN_FILEMUSTEXIST
+                                          | ((idCtl EQ IDM_SAVE_AS_WS) ? 0 : OFN_FILEMUSTEXIST)
                                             ;
 ////////////////////ofn.nFileOffset       =                 // Set on output
 ////////////////////ofn.nFileExtension    =                 // Set on output
                     ofn.lpstrDefExt       = WS_WKSEXT + 1;  // Skipping over the leading dot
-                    ofn.lCustData         = (LPARAM) ((idCtl EQ IDM_LOAD_WS    ) ? L"Open"
-                                                    : (idCtl EQ IDM_XLOAD_WS   ) ? L"XOpen"
-                                                    : (idCtl EQ IDM_COPY_WS    ) ? L"Copy"
-                                                    : (idCtl EQ IDM_DROP_WS    ) ? L"Delete"
-                                                    : (idCtl EQ IDM_SAVE_AS_WS ) ? L"Save As"
-                                                    :                              L"");
+                    ofn.lCustData         = (LPARAM) idCtl;
                     ofn.lpfnHook          = OFNHookProc;
 ////////////////////ofn.lpTemplateName    =                 // Used only w/OFN_ENABLETEMPLATE
 ////////////////////ofn.pvReserved        = NULL;           // Already zero from ZeroMemory
@@ -2551,9 +2546,18 @@ LRESULT APIENTRY MFWndProc
 
                                 break;
 
+                            case IDM_SAVE_AS_WS:
+                                // Save the workspace
+                                CmdSave_EM (lpwszOpenFile);
+
+                                break;
+
                             defstop
                                 break;
                         } // End SWITCH
+
+                        // Call common prompt display code
+                        PostMessageW (hWnd, MYWM_PROMPT, 0, 0);
                     } // End IF
 
                     return FALSE;   // We handled the msg
@@ -2573,33 +2577,14 @@ LRESULT APIENTRY MFWndProc
                     lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC)); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
                     if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
                         return FALSE;
-
                     // Get this tab's SM window handle
                     hWndSM = lpMemPTD->hWndSM;
 
                     // Tell the SM to save the ws
                     SendMessageW (hWndSM, MYWM_SAVE_WS, 0, (LPARAM) L"");
 
-                    // If it's Quad input, and we're not resetting, ...
-                    if (lpMemPTD->lpSISCur
-                     && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
-                     && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
-                        // Tell the SM to display the Quad Input Prompt
-                        PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 100);
-                    else
-                    // If no SIS layer or not Quad input and not reset all, ...
-                    if (lpMemPTD->lpSISCur EQ NULL
-                     || (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD
-                      && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_ALL))
-                    {
-                        HWND hWndEC;
-
-                        // Get the handle to the Edit Ctrl
-                        hWndEC = (HWND) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
-
-                        // Display the default prompt
-                        DisplayPrompt (hWndEC, 9);
-                    } // End IF/ELSE/...
+                    // Call common prompt display code
+                    PostMessageW (hWnd, MYWM_PROMPT, 0, 0);
 
                     return FALSE;   // We handled the msg
 
@@ -2800,6 +2785,38 @@ LRESULT APIENTRY MFWndProc
 #endif
         } // End WM_COMMAND
 
+        case MYWM_PROMPT:
+            // Get ptr to PerTabData global memory
+            lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC)); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+            if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
+                return FALSE;
+
+            // Get this tab's SM window handle
+            hWndSM = lpMemPTD->hWndSM;
+
+            // If it's Quad input, and we're not resetting, ...
+            if (lpMemPTD->lpSISCur
+             && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
+             && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                // Tell the SM to display the Quad Input Prompt
+                PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 100);
+            else
+            // If no SIS layer or not Quad input and not reset all, ...
+            if (lpMemPTD->lpSISCur EQ NULL
+             || (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD
+              && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_ALL))
+            {
+                HWND hWndEC;
+
+                // Get the handle to the Edit Ctrl
+                hWndEC = (HWND) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
+
+                // Display the default prompt
+                DisplayPrompt (hWndEC, 9);
+            } // End IF/ELSE/...
+
+            return FALSE;           // We handled the msg
+
         case WM_ERASEBKGND:
             // In order to reduce screen flicker, we handle erase background
             // in the WM_PAINT message for the child windows.
@@ -2951,14 +2968,70 @@ UINT_PTR CALLBACK OFNHookProc
     // Split cases based upon the message
     switch (message)
     {
+        static UINT     idCtl;
         LPOPENFILENAMEW lpofn;
 
         case WM_INITDIALOG:         // lpofn = (LPOPENFILENAMEW) lParam;
             // Address the arguments
             lpofn = (LPOPENFILENAMEW) lParam;
 
-            // Set the window text for the Open button
-            SetWindowTextW (GetDlgItem (GetParent (hDlg), IDOK), (LPWSTR) lpofn->lCustData);
+            // Save the idCtl in a static var
+            idCtl = (UINT) lpofn->lCustData;
+
+            break;
+
+        case WM_NOTIFY:             // idCtrl = (int) wParam;
+                                    // pnmh = (LPNMHDR) lParam;
+            // Split cases based upon the notification code
+#define lpnmh   (*(LPNMHDR *) &lParam)
+            switch (lpnmh->code)
+#undef  lpnmh
+            {
+                LPWCHAR lpwszBtnTitle;
+
+                case CDN_INITDONE:
+                    // Split cases based upon the message ID
+                    switch (idCtl)
+                    {
+                        case IDM_LOAD_WS:
+                            lpwszBtnTitle = L"Open";
+
+                            break;
+
+                        case IDM_XLOAD_WS:
+                            lpwszBtnTitle = L"XOpen";
+
+                            break;
+
+                        case IDM_COPY_WS:
+                            lpwszBtnTitle = L"Copy";
+
+                            break;
+
+                        case IDM_DROP_WS:
+                            lpwszBtnTitle = L"Delete";
+
+                            break;
+
+                        case IDM_SAVE_AS_WS:
+                            lpwszBtnTitle = L"Save As";
+
+                            break;
+
+                        default:
+                            lpwszBtnTitle = L"Open";
+
+                            break;
+                    } // End SWITCH
+
+                    // Set the text for the Open button
+                    SendMessageW (GetParent (hDlg), CDM_SETCONTROLTEXT, IDOK, (LPARAM) lpwszBtnTitle);
+
+                    break;
+
+                default:
+                    break;
+            } // End SWITCH
 
             break;
 

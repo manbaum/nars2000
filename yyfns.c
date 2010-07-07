@@ -801,11 +801,35 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
             // Increment the reference count in global memory
             DbgIncrRefCntDir_PTB (hGlbFcn);
 
+            // Split cases based upon the token type
+            switch (lpToken->tkFlags.TknType)
+            {
+                case TKT_VARNAMED:
+                    // Fill in the token
+                    YYFcn.tkToken.tkFlags.TknType   = lpToken->tkFlags.TknType;
+                    YYFcn.tkToken.tkData.tkSym      = lpToken->tkData.tkSym;
+
+                    break;
+
+                case TKT_CHRSTRAND:
+                case TKT_NUMSTRAND:
+                case TKT_VARARRAY:
+                case TKT_AXISARRAY:
+                    // Fill in the token
+                    YYFcn.tkToken.tkFlags.TknType   = lpToken->tkFlags.TknType;
+                    YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
             // Fill in the token
-            YYFcn.tkToken.tkFlags.TknType   = lpToken->tkFlags.TknType;
+////////////YYFcn.tkToken.tkFlags.TknType   =                   // Done in above SWITCH stmt
 ////////////YYFcn.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
 ////////////YYFcn.tkToken.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
-            YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;
+////////////YYFcn.tkToken.tkData.tkGlbData  =                   // Done in above SWITCH stmt
             YYFcn.tkToken.tkCharIndex       = lpYYArgI->tkToken.tkCharIndex;
             YYFcn.TknCount                  = TknCount;
 ////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)

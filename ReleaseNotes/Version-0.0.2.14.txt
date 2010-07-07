@@ -1,6 +1,17 @@
 Version 0.0.2.14 consists of the following Builds:
 
 
+Build #690 -- Version 0.0.2.14
+------------------------------
+
+* Insert DEBUG Code To Check For Re-entrancy
+
+Directory trunk:
+
+TOKENIZE.C:
+  In <Tokenize_EM>, insert DEBUG code to check for re-entrancy.
+
+
 Build #689 -- Version 0.0.2.14
 ------------------------------
 

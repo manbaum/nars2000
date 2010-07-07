@@ -44,6 +44,8 @@ functions, etc. as necessary.
 
  */
 
+UINT gInUse = 0;
+
 #define DEF_TOKEN_SIZE  1024    // Default initial amount of memory
                                 //   allocated for the tokenized line
 #define DEF_TOKEN_RESIZE 512    // Default increment when GlobalRealloc'ing
@@ -3702,6 +3704,13 @@ HGLOBAL Tokenize_EM
 
 ////LCLODS ("Entering <Tokenize_EM>\r\n");
 
+#ifdef DEBUG
+    // Check for re-entrant
+    if (gInUse)
+        DbgBrk ();
+    else
+        gInUse++;
+#endif
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
@@ -4008,7 +4017,10 @@ FREED_EXIT:
     // Ensure numeric length has been reset
     if (tkLocalVars.iNumLen NE 0)
         DbgBrk ();
+    // Mark as no longer in use
+    gInUse--;
 #endif
+
 ////LCLODS ("Exiting  <Tokenize_EM>\r\n");
 
     // Release the Critical Section

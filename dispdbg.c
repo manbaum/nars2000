@@ -1783,7 +1783,7 @@ LPWCHAR DisplayVarSub
                         // If the char is a double quote, double it
                         if (((LPAPLCHAR) lpMemData)[uCnt] EQ WC_DQ)
                             *lpaplChar++ = WC_DQ;
-                        *lpaplChar++ = *(LPAPLCHAR) lpMemData;
+                        *lpaplChar++ = ((LPAPLCHAR) lpMemData)[uCnt];
                     } // End FOR
 
                     // Append a trailing quote marker

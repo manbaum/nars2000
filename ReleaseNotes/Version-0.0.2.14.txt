@@ -1,6 +1,18 @@
 Version 0.0.2.14 consists of the following Builds:
 
 
+Build #688 -- Version 0.0.2.14
+------------------------------
+
+* Fix Bug:  Display Of Char Var In Function Strand Incorrect
+
+Directory trunk:
+
+DISPDBG.C:
+  In <DisplayVarSub>, the display of character vars doesn't
+    use the incremented counter.
+
+
 Build #687 -- Version 0.0.2.14
 ------------------------------
 

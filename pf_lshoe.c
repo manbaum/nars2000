@@ -1638,7 +1638,9 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     //***************************************************************
     if (IsEmpty (aplNELMRes))
     {
-        HGLOBAL hSymGlbProto;
+        HGLOBAL hSymGlbProto,
+                hGlbPro;
+        LPVOID  lpMemPro;
 
         // With  L{is}{rho}R
         //       L[K]{is}0
@@ -1651,20 +1653,20 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
             case ARRAY_INT:
             case ARRAY_FLOAT:
             case ARRAY_APA:
-                hSymGlbProto = MakePtrTypeGlb (hGlbZilde);
+                hGlbPro = hGlbZilde;
 
                 break;
 
             case ARRAY_CHAR:
-                hSymGlbProto = MakePtrTypeGlb (hGlbV0Char);
+                hGlbPro = hGlbV0Char;
 
                 break;
 
             case ARRAY_HETERO:
                 if (IsImmChr ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType))
-                    hSymGlbProto = MakePtrTypeGlb (hGlbV0Char);
+                    hGlbPro = hGlbV0Char;
                 else
-                    hSymGlbProto = MakePtrTypeGlb (hGlbZilde);
+                    hGlbPro = hGlbZilde;
                 break;
 
             case ARRAY_NESTED:
@@ -1675,6 +1677,68 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                                            MP_CHARS);               // CHARs allowed
                 if (!hSymGlbProto)
                     goto WSFULL_EXIT;
+
+                //***************************************************************
+                // Nest this prototype inside an empty vector
+                //   unless it's an LPSYMENTRY in which case
+                //   use the appropriate simple empty vector.
+                //***************************************************************
+
+                // Split cases based upon the ptr type bits
+                switch (GetPtrTypeDir (hSymGlbProto))
+                {
+                    case PTRTYPE_STCONST:
+                        // Split cases based upon the numeric vs. char type
+                        if (IsImmChr (((LPSYMENTRY) hSymGlbProto)->stFlags.ImmType))
+                            hGlbPro = hGlbV0Char;
+                        else
+                            hGlbPro = hGlbZilde;
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        // Calculate space needed for the empty vector
+                        ByteRes = CalcArraySize (ARRAY_NESTED, 0, 1);
+
+                        // Check for overflow
+                        if (ByteRes NE (APLU3264) ByteRes)
+                            goto WSFULL_EXIT;
+
+                        // Allocate space for the result.
+                        hGlbPro = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                        if (!hGlbPro)
+                            goto WSFULL_EXIT;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemPro = MyGlobalLock (hGlbPro);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemPro)
+                        // Fill in the header
+                        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                        lpHeader->ArrType    = ARRAY_NESTED;
+////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                        lpHeader->RefCnt     = 1;
+////////////////////////lpHeader->NELM       = 0;               // Already zero from GHND
+                        lpHeader->Rank       = 1;
+#undef  lpHeader
+                        // Skip over the header to the dimensions
+                        lpMemPro = VarArrayBaseToDim (lpMemPro);
+
+                        // Fill in the dimension
+                        *((LPAPLDIM) lpMemPro)++ = 0;
+
+                        // lpMemPro now points to its data
+                        *((LPAPLNESTED) lpMemPro) = hSymGlbProto;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbPro); lpMemPro = NULL;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
                 break;
 
             defstop
@@ -1682,7 +1746,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         } // End SWITCH
 
         // Save as the nested array prototype
-        *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
+        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbPro);
 
         goto YYALLOC_EXIT;
     } // End IF

@@ -4910,6 +4910,11 @@ RhtOpVal:
                                         }
     | '^' ArrValu '('                   {DbgMsgWP (L"%%RhtOpVal:  (ArrValu)");
                                              $$ = $2;
+
+                                             // Because there's no matching DecrRefCnt to the IncrRefCnt
+                                             //   in MakeVarStrand_EM_YY, we mark this array as skipping
+                                             //   the next IncrRefCnt.
+                                             SetVFOArraySRCIFlag (&$$.tkToken);
                                         }
     ;
 

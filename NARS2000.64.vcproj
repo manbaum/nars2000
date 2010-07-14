@@ -35,7 +35,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -125,7 +125,7 @@
                         <Tool
                                 Name="VCPostBuildEventTool"
                                 Description="Copy default APL font"
-                                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
                         />
                 </Configuration>
                 <Configuration
@@ -139,7 +139,7 @@
                         <Tool
                                 Name="VCPreBuildEventTool"
                                 Description="Generate Prototypes"
-                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
                         />
                         <Tool
                                 Name="Bison Rule"
@@ -230,7 +230,7 @@
                         <Tool
                                 Name="VCPostBuildEventTool"
                                 Description="Copy default APL font"
-                                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)"
+                                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
                         />
                 </Configuration>
         </Configurations>

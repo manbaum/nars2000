@@ -1573,8 +1573,14 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
             aplNELMAxis++;
     } else
     {
+        // Point the left arg to the simple scalar value
         lpMemLft = &aplLongestLft;
-        aplNELMAxis = (aplLongestLft NE 0);
+
+        // Scalar extension of the left arg means that the simple scalar value
+        //   is replicated ({rho}R)[X] times.  This yields one element in the
+        //   result along the axis if L and ({rho}R)[X] are both non-zero, and
+        //   zero elements if either is zero.
+        aplNELMAxis = (aplLongestLft NE 0) && (((LPAPLDIM) lpMemRht)[aplAxis] NE 0);
     } // End IF/ELSE
 
     // Calculate the result NELM
@@ -1631,7 +1637,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     // Skip over the dimensions to the data
     lpMemRht = VarArrayDimToData (lpMemRht, aplRankRht);
 
-     // lpMemRes and lpMemRht now point to their data
+    // lpMemRes and lpMemRht now point to their data
 
     //***************************************************************
     // Handle empty results

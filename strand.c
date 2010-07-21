@@ -2257,7 +2257,7 @@ ERROR_EXIT:
 //***************************************************************************
 
 LPPL_YYSTYPE InitList0_YY
-    (void)
+    (LPPL_YYSTYPE lpYYArg)          // Ptr to incoming token
 
 {
     LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
@@ -2274,7 +2274,7 @@ LPPL_YYSTYPE InitList0_YY
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U;         // Debug value
-    lpYYRes->tkToken.tkCharIndex       = NEG1U;
+    lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     // Set the base of this strand to the next available location
     lpYYRes->lpYYStrandBase                   =
@@ -2298,7 +2298,7 @@ LPPL_YYSTYPE InitList1_YY
                   lpYYLst;          // Ptr to the list
 
     // Initialize the list
-    lpYYRes = InitList0_YY ();
+    lpYYRes = InitList0_YY (lpYYArg);
 
     // Push an item onto the list
     lpYYLst = PushList_YY (lpYYRes, lpYYArg);

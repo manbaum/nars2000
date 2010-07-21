@@ -7325,7 +7325,7 @@ IndexListBR:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYLst =
-                                               InitList0_YY ();
+                                               InitList0_YY (&$1);
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                                  YYERROR3
 
@@ -7423,7 +7423,7 @@ IndexListWE1:
                                          {
                                              // Initialize the list with an empty item
                                              lpplLocalVars->lpYYLst =
-                                               InitList1_YY (NULL);
+                                               InitList1_YY (&$1);
 
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -7452,7 +7452,7 @@ IndexListWE1:
                                          {
                                              // Initialize the list with an empty item
                                              lpplLocalVars->lpYYLst =
-                                               InitList1_YY (NULL);
+                                               InitList1_YY (&$2);
 
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                              {

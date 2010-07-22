@@ -2170,16 +2170,50 @@ UBOOL ParseCtrlStruc_EM
         //   0 = success
         //   1 = YYABORT or APL error
         //   2 = memory exhausted
-        bRet = cs_yyparse (lpcsLocalVars) EQ 0;
+        switch (cs_yyparse (lpcsLocalVars))
+        {
+            case 0:
+                lpcsLocalVars->lpwszErrMsg = NULL;
+                bRet = TRUE;
 
+                break;
+
+            case 1:
+                lpcsLocalVars->lpwszErrMsg = L"CS " ERRMSG_SYNTAX_ERROR;
+                bRet = FALSE;
+
+                break;
+
+            case 2:
+                lpcsLocalVars->lpwszErrMsg = L"CS " ERRMSG_WS_FULL;
+                bRet = FALSE;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 #if YYDEBUG
         // Disable debugging
         yydebug = FALSE;
 #endif
     } __except (CheckException (GetExceptionInformation (), L"ParseCtrlStruc"))
     {
-        // Display message for unhandled exception
-        DisplayException ();
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
+        {
+            case EXCEPTION_STACK_OVERFLOW:
+                // Set the error message
+                lpcsLocalVars->lpwszErrMsg = L"CS " ERRMSG_STACK_OVERFLOW;
+
+                break;
+
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+        } // End SWITCH
 
         // Mark as in error
         bRet = FALSE;

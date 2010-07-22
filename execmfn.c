@@ -653,7 +653,8 @@ HGLOBAL Init1MagicFunction
 
             // Format the error message
             wsprintfW (wszTemp,
-                       L"CS SYNTAX ERROR in %s -- Line %d statement %d position %d",
+                       L"%s in %s -- Line %d statement %d position %d",
+                       csLocalVars.lpwszErrMsg,
                        lpwszName,
                        csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
                        csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1,

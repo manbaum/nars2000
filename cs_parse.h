@@ -61,7 +61,8 @@ typedef struct tagCSLOCALVARS       // Control Structure Local Vars
                                     //      (NULL = hGlbImmExec is valid)
                  hGlbImmExec;       // 34:  Immediate execution tokenized line global memory habndle
                                     //      (NULL = hGlbDfnHdr is valid)
-                                    // 38:  Length
+    LPWCHAR      lpwszErrMsg;       // 38:  Ptr to error message (e.g. L"CS_SYNTAX ERROR")
+                                    // 3C:  Length
 } CSLOCALVARS, *LPCSLOCALVARS;
 
 

@@ -1590,7 +1590,8 @@ UBOOL SaveFunctionCom
             {
                 // Format the error message
                 wsprintfW (wszTemp,
-                           L"SYNTAX ERROR on line # %d, statement #%d, position %d -- function not saved",
+                           L"%s on line # %d, statement #%d, position %d -- function not saved",
+                           csLocalVars.lpwszErrMsg,
                            csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
                            csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1,
                            lpMemPTD->uCaret);

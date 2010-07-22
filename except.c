@@ -592,14 +592,14 @@ void DisplayException
     NewMsg (L"== REGISTERS ==");
     wsprintfW (wszTemp,
 #ifdef _WIN64
-               L"RAX = %016X RBX = %016X RCX = %016X RDX = %016X RIP = %016X",
+               L"RAX = %p RBX = %p RCX = %p RDX = %p RIP = %p",
                gContextRecord.Rax,
                gContextRecord.Rbx,
                gContextRecord.Rcx,
                gContextRecord.Rdx,
                gContextRecord.Rip
 #elif defined (_WIN32)
-               L"EAX = %08X EBX = %08X ECX = %08X EDX = %08X EIP = %08X",
+               L"EAX = %p EBX = %p ECX = %p EDX = %p EIP = %p",
                gContextRecord.Eax,
                gContextRecord.Ebx,
                gContextRecord.Ecx,
@@ -613,13 +613,13 @@ void DisplayException
 
     wsprintfW (wszTemp,
 #ifdef _WIN64
-               L"RSI = %016X RDI = %016X RBP = %016X RSP = %016X EFL = %08X",
+               L"RSI = %p RDI = %p RBP = %p RSP = %p EFL = %08X",
                gContextRecord.Rsi,
                gContextRecord.Rdi,
                gContextRecord.Rbp,
                gContextRecord.Rsp,
 #elif defined (_WIN32)
-               L"ESI = %08X EDI = %08X EBP = %08X ESP = %08X EFL = %08X",
+               L"ESI = %p EDI = %p EBP = %p ESP = %p EFL = %08X",
                gContextRecord.Esi,
                gContextRecord.Edi,
                gContextRecord.Ebp,
@@ -632,9 +632,9 @@ void DisplayException
 
     wsprintfW (wszTemp,
 #ifdef _WIN64
-               L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X CR2 = %016X",
+               L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X CR2 = %p",
 #elif defined (_WIN32)
-               L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X CR2 = %08X",
+               L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X CR2 = %p",
 #else
   #error Need code for this architecture.
 #endif
@@ -652,15 +652,13 @@ void DisplayException
     NewMsg (L"== INSTRUCTIONS ==");
 
     // Get the instruction pointer
-    regEIP =
 #ifdef _WIN64
-    gContextRecord.Rip
+    regEIP = gContextRecord.Rip;
 #elif defined (_WIN32)
-    gContextRecord.Eip
+    regEIP = gContextRecord.Eip;
 #else
   #error Need code for this architecture.
 #endif
-    ;
 
     // Start instruction display three rows before the actual fault instruction
     regEIP -= 3 * 16;
@@ -670,15 +668,8 @@ void DisplayException
         for (uCnt = 0; uCnt < 7; uCnt++, regEIP += 16)
         {
             wsprintfW (wszTemp,
-#ifdef _WIN64
-                       L"%016X: ",
-#elif defined (_WIN32)
-                       L"%08X: ",
-#else
-  #error Need code for this architecture.
-#endif
+                       L"%p: ",
                        regEIP);
-
             for (uMem = 0; uMem < 16; uMem++)
                 wsprintfW (&wszTemp[lstrlenW (wszTemp)],
                            L" %02X",
@@ -996,25 +987,13 @@ void DoStackWalk
         if (nearAddress > 0x00100000)
             // Format the addresses
             wsprintfW (wszTemp,
-#ifdef _WIN64
-                       L"%p -- EBP = %016X",
-#elif defined (_WIN32)
-                       L"%p -- EBP = %08X",
-#else
-  #error Need code for this architecture.
-#endif
+                       L"%p -- EBP = %p",
                        caller,
                        stackFrame.AddrFrame.Offset);
         else
             // Format the addresses
             wsprintfW (wszTemp,
-#ifdef _WIN64
-                       L"%p (%S + %p) -- EBP = %016X",
-#elif defined (_WIN32)
-                       L"%p (%S + %p) -- EBP = %08X",
-#else
-  #error Need code for this architecture.
-#endif
+                       L"%p (%S + %p) -- EBP = %p",
                        caller,
                        StartAddresses[nearIndex].StartAddressName,
                        nearAddress,

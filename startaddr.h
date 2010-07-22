@@ -20,6 +20,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#ifdef _WIN64
+  extern void __chkstk (void);
+#else
+  extern void  _chkstk (void);
+#endif
+
 typedef struct tagSTART_ADDRESSES
 {
     char   *StartAddressName;
@@ -612,8 +618,13 @@ typedef struct tagSTART_ADDRESSES
     "memset"                    , (LPUCHAR) &memset                     ,
 ////"_aulldiv"                  , (LPUCHAR) &_aulldiv                   ,
     "memmove"                   , (LPUCHAR) &memmove                    ,
-
-
+    "lstrlenA"                  , (LPUCHAR) &lstrlenA                   ,
+    "lstrlenW"                  , (LPUCHAR) &lstrlenW                   ,
+#ifdef _WIN64
+    "__chkstk"                  , (LPUCHAR) &__chkstk                   ,
+#else
+    "_chkstk"                   , (LPUCHAR) &_chkstk                    ,
+#endif
 
 
     // trailer

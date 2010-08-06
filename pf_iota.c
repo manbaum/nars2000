@@ -836,9 +836,11 @@ UBOOL PrimFnDydIotaBvB
         if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
+        // Get the index of the next occurrence of uBit
         uTmp = FastBoolTrans[lpMemLft[uLft]][fbtFirst[uBit]];
         Index[uBit] += uTmp;
 
+        // If the bit is found, ...
         if (uTmp < NBIB)
         {
             Found[uBit] = TRUE;
@@ -850,8 +852,15 @@ UBOOL PrimFnDydIotaBvB
     // If we didn't find uBit, check the last byte (may be short)
     if (!Found[uBit])
     {
+        // Get the index of the next occurrence of uBit
         uTmp = FastBoolTrans[lpMemLft[uLft]][fbtFirst[uBit]];
-        Index[uBit] += uTmp;
+
+        // If the bit is not found, ...
+        if (uTmp EQ NBIB)
+            // Use the NotFound value
+            Index[uBit]  = NotFound;
+        else
+            Index[uBit] += uTmp;
     } // End IF
 
     // Initialize the bit mask
@@ -935,9 +944,15 @@ UBOOL PrimFnDydIotaBvN
     // Search the left arg for uBit
     for (Found[uBit] = FALSE, Index[uBit] = bQuadIO, uLft = 0; uLft < (BytesInLftBits - 1); uLft++)
     {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
+        // Get the index of the next occurrence of uBit
         uTmp = FastBoolTrans[lpMemLft[uLft]][fbtFirst[uBit]];
         Index[uBit] += uTmp;
 
+        // If the bit is found, ...
         if (uTmp < NBIB)
         {
             Found[uBit] = TRUE;
@@ -949,8 +964,15 @@ UBOOL PrimFnDydIotaBvN
     // If we didn't find uBit, check the last byte (may be short)
     if (!Found[uBit])
     {
+        // Get the index of the next occurrence of uBit
         uTmp = FastBoolTrans[lpMemLft[uLft]][fbtFirst[uBit]];
-        Index[uBit] += uTmp;
+
+        // If the bit is not found, ...
+        if (uTmp EQ NBIB)
+            // Use the NotFound value
+            Index[uBit]  = NotFound;
+        else
+            Index[uBit] += uTmp;
     } // End IF
 
     // If the right arg is APA, get its parameters

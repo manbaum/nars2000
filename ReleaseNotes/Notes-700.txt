@@ -5,7 +5,7 @@ Build #700 -- Version 0.0.2.15
 
 Directory trunk:
 
-DOMINO.C:
+PF_DOMINO.C:
   Both monadic and dyadic domino call <gsl_linalg_SV_decomp> which
     doesn't handle empty arrays well (another good reason to use APL),
     so we check for that case up front and handle it ourselves.

@@ -286,6 +286,10 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
+    // Check for no rows as gsl_linalg_SV_decomp doesn't handle it well
+    if (uNumRows EQ 0)
+        goto YYALLOC_EXIT;
+
     // No aborting on error!
     gsl_set_error_handler_off ();
 
@@ -462,15 +466,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
 #undef  lpMemData
     } // End FOR
-
-    // Free the GSL vectors
-    gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
-    gsl_vector_free (lpGslVectorS); lpGslVectorS = NULL;
-
-    // Free the GSL matrices
-    gsl_matrix_free (lpGslMatrixV); lpGslMatrixV = NULL;
-    gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -515,7 +511,7 @@ ERROR_EXIT:
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
-
+NORMAL_EXIT:
     if (lpGslVectorI)
     {
         // We no longer need this storage and ptr
@@ -545,7 +541,7 @@ ERROR_EXIT:
         // We no longer need this storage and ptr
         gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
     } // End IF
-NORMAL_EXIT:
+
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
@@ -776,6 +772,10 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     if (!IsScalar (aplRankRes))
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+
+    // Check for no rows as gsl_linalg_SV_decomp doesn't handle it well
+    if (uNumRowsRht EQ 0)
+        goto YYALLOC_EXIT;
 
     // No aborting on error!
     gsl_set_error_handler_off ();
@@ -1023,16 +1023,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
 #undef  lpMemData
     } // End FOR
-
-    // Free the GSL vectors
-    gsl_vector_free (lpGslVectorB); lpGslVectorB = NULL;
-    gsl_vector_free (lpGslVectorX); lpGslVectorX = NULL;
-    gsl_vector_free (lpGslVectorS); lpGslVectorS = NULL;
-
-    // Free the GSL matrices
-    gsl_matrix_free (lpGslMatrixV); lpGslMatrixV = NULL;
-    gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -1078,7 +1069,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     // Mark as in error
     bRet = FALSE;
-
+NORMAL_EXIT:
     if (lpGslVectorB)
     {
         // We no longer need this storage and ptr
@@ -1114,7 +1105,7 @@ ERROR_EXIT:
         // We no longer need this storage and ptr
         gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
     } // End IF
-NORMAL_EXIT:
+
     if (hGlbRes)
     {
         if (lpMemRes)

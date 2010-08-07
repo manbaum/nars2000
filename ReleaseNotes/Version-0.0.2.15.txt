@@ -1,6 +1,27 @@
 Version 0.0.2.15 consists of the following Builds:
 
 
+Build #704 -- Version 0.0.2.15
+------------------------------
+
+* Miscellaneous Text Changes
+
+Directory trunk:
+
+EXTERNS.H:
+  Re-order the list of available keystrokes.
+  Spell shriek correctly.
+  Omit Alt-'f' from duplicated symbols as it's used for infinity.
+
+MAIN32.DEF:
+MAIN64.DEF:
+  Increase the heap and stack sizes to 4MB.
+
+TOKENIZE.C:
+UNITRANSTAB.H:
+  Spell shriek correctly.
+
+
 Build #703 -- Version 0.0.2.15
 ------------------------------
 

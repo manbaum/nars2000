@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -196,7 +196,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
 //  {0x00A6,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // broken stile
 //  {0x00BF,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // upside down query
 //  {0x00F8,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // 0 slash
-//  {0x00A1,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // upside down shreik
+//  {0x00A1,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // upside down shriek
 //  {0x00AB,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // Left chevron
 //  {0x00BB,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // right chevron
 //  {0x00DF,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_                  }, // Beta

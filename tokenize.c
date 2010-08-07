@@ -4762,7 +4762,7 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_ZILDE:               // Alt-'}' - zilde (TKCOL_PRIM_FN0)
         case UTF16_COMMABAR:            // Alt-'~' - comma-bar
         case UTF16_TILDE2:              //     '~' - tilde
-////////case UTF16_QUOTEDOT:            //     '!' - shreik
+////////case UTF16_QUOTEDOT:            //     '!' - shriek
         case UTF16_CIRCUMFLEX:          //     '^' - up caret
 ////////case UTF16_STAR:                //     '*' - star
         case UTF16_BAR:                 //     '-' - bar

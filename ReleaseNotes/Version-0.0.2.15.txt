@@ -1,6 +1,18 @@
 Version 0.0.2.15 consists of the following Builds:
 
 
+Build #703 -- Version 0.0.2.15
+------------------------------
+
+* Fix Bug:  Prototype Function For Find Missing From Table
+
+Directory trunk:
+
+INITDATA.C:
+  The entry for the prototype function for Find used the old
+    filler rather than the actual function.
+
+
 Build #702 -- Version 0.0.2.15
 ------------------------------
 

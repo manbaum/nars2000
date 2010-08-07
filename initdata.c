@@ -384,10 +384,6 @@ LPPL_YYSTYPE PrimFn_EM
 #define PrimProtoFnUpShoe_EM_YY                 PrimProtoFn_EM
 
 
-// Primitive functions TO DO
-#define PrimProtoFnEpsilonUnderbar_EM_YY        PrimProtoFn_EM
-
-
 // Monadic operators TO DO
 #define PrimProtoOpStileTilde_EM_YY             PrimProtoOp_EM
 
@@ -434,6 +430,7 @@ LPPL_YYSTYPE PrimFn_EM
 /////// PrimProtoFnDownTack_EM_YY
 /////// PrimProtoFnDownTackJot_EM_YY
 /////// PrimProtoFnEpsilon_EM_YY
+/////// PrimProtoFnEpsilonUnderbar_EM_YY
 /////// PrimProtoFnEqualUnderbar_EM_YY
 /////// PrimProtoFnIota_EM_YY
 /////// PrimProtoFnLeftShoe_EM_YY

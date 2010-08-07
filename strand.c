@@ -2291,17 +2291,18 @@ LPPL_YYSTYPE InitList0_YY
 //***************************************************************************
 
 LPPL_YYSTYPE InitList1_YY
-    (LPPL_YYSTYPE lpYYArg)          // Ptr to incoming token
+    (LPPL_YYSTYPE lpYYArg,          // Ptr to incoming token
+     LPPL_YYSTYPE lpYYChar)         // Ptr to tkCharIndex token
 
 {
     LPPL_YYSTYPE  lpYYRes,          // Ptr to the result
                   lpYYLst;          // Ptr to the list
 
     // Initialize the list
-    lpYYRes = InitList0_YY (lpYYArg);
+    lpYYRes = InitList0_YY (lpYYChar);
 
     // Push an item onto the list
-    lpYYLst = PushList_YY (lpYYRes, lpYYArg);
+    lpYYLst = PushList_YY (lpYYRes, lpYYArg, lpYYChar);
     FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
     return lpYYLst;
@@ -2316,7 +2317,8 @@ LPPL_YYSTYPE InitList1_YY
 
 LPPL_YYSTYPE PushList_YY
     (LPPL_YYSTYPE lpYYStrand,       // Ptr to base of strand
-     LPPL_YYSTYPE lpYYArg)          // Ptr to incoming token (may be NULL)
+     LPPL_YYSTYPE lpYYArg,          // Ptr to incoming token (may be NULL)
+     LPPL_YYSTYPE lpYYChar)         // Ptr to tkCharIndex token
 
 {
     LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
@@ -2339,7 +2341,7 @@ LPPL_YYSTYPE PushList_YY
 ////////YYTmp.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
 ////////YYTmp.tkToken.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
         YYTmp.tkToken.tkData.tkLongest  = NEG1U;            // Debug value
-        YYTmp.tkToken.tkCharIndex       = NEG1U;            // ...
+        YYTmp.tkToken.tkCharIndex       = lpYYChar->tkToken.tkCharIndex;
 ////////YYTmp.TknCount                  = 0;    // Already zero from = {0}
 ////////YYTmp.YYInuse                   = FALSE;// Already zero from = {0}
 ////////YYTmp.Indirect                  = FALSE;// Already zero from = {0}

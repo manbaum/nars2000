@@ -7423,14 +7423,14 @@ IndexListWE1:
                                          {
                                              // Initialize the list with an empty item
                                              lpplLocalVars->lpYYLst =
-                                               InitList1_YY (&$1);
+                                               InitList1_YY (NULL, &$1);
 
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                                  YYERROR3
 
                                              // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
-                                               PushList_YY (lpplLocalVars->lpYYLst, NULL);
+                                               PushList_YY (lpplLocalVars->lpYYLst, NULL, &$1);
                                              FreeYYFcn1 (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -7452,7 +7452,7 @@ IndexListWE1:
                                          {
                                              // Initialize the list with an empty item
                                              lpplLocalVars->lpYYLst =
-                                               InitList1_YY (&$2);
+                                               InitList1_YY (NULL, &$2);
 
                                              if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                              {
@@ -7462,7 +7462,7 @@ IndexListWE1:
 
                                              // Push an item onto the list
                                              lpplLocalVars->lpYYRes =
-                                               PushList_YY (lpplLocalVars->lpYYLst, &$2);
+                                               PushList_YY (lpplLocalVars->lpYYLst, &$2, &$2);
 /////////////////////////////////////////////FreeResult (&$2);                       // Copied w/o IncrRefCnt in PushList_YY
                                              FreeYYFcn1 (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
@@ -7479,7 +7479,7 @@ IndexListWE1:
                                          {
                                              // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
-                                               PushList_YY (&$1, NULL);
+                                               PushList_YY (&$1, NULL, &$2);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
@@ -7504,7 +7504,7 @@ IndexListWE1:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
-                                               PushList_YY (&$1, &$3);
+                                               PushList_YY (&$1, &$3, &$3);
 /////////////////////////////////////////////FreeResult (&$3);                       // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -7528,7 +7528,7 @@ IndexListWE2:
                                          {
                                              // Initialize the list with the arg
                                              lpplLocalVars->lpYYRes =
-                                               InitList1_YY (&$1);
+                                               InitList1_YY (&$1, &$1);
 /////////////////////////////////////////////FreeResult (&$1);                       // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -7547,7 +7547,7 @@ IndexListWE2:
                                          {
                                              // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
-                                               PushList_YY (&$1, NULL);
+                                               PushList_YY (&$1, NULL, &$2);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
@@ -7573,7 +7573,7 @@ IndexListWE2:
                                          {
                                              // Push an item onto the list
                                              lpplLocalVars->lpYYRes =
-                                               PushList_YY (&$1, &$3);
+                                               PushList_YY (&$1, &$3, &$3);
 /////////////////////////////////////////////FreeResult (&$3);                       // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR

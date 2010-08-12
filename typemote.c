@@ -148,6 +148,7 @@ void TypeDemote
      && IsScalar (aplRankRht))
     {
         APLLONGEST aplLongestRht;
+        IMM_TYPES  immTypeRht;
 
         // Get the immediate value, making sure we don't
         //   overextend beyond the bounds of the right arg
@@ -156,28 +157,66 @@ void TypeDemote
         {
             case ARRAY_BOOL:
                 aplLongestRht = BIT0 & *(LPAPLBOOL) lpMemRht;
+                immTypeRht    = IMMTYPE_BOOL;
 
                 break;
 
             case ARRAY_INT:
                 aplLongestRht = *(LPAPLINT)     lpMemRht;
+                immTypeRht    = IMMTYPE_INT;
 
                 break;
 
             case ARRAY_FLOAT:
                 aplLongestRht = *(LPAPLLONGEST) lpMemRht;
+                immTypeRht    = IMMTYPE_FLOAT;
 
                 break;
 
             case ARRAY_CHAR:
                 aplLongestRht = *(LPAPLCHAR)    lpMemRht;
+                immTypeRht    = IMMTYPE_CHAR;
 
                 break;
 
             case ARRAY_APA:
 #define lpAPA           ((LPAPLAPA) lpMemRht)
                 aplLongestRht = lpAPA->Off;
+                immTypeRht    = IMMTYPE_INT;
 #undef  lpAPA
+                break;
+
+            case ARRAY_HETERO:
+                switch ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)
+                {
+                    case IMMTYPE_BOOL:
+                        aplLongestRht = BIT0 & (*(LPSYMENTRY *) lpMemRht)->stData.stBoolean;
+                        immTypeRht    = IMMTYPE_BOOL;
+
+                        break;
+
+                    case IMMTYPE_INT:
+                        aplLongestRht = (*(LPSYMENTRY *) lpMemRht)->stData.stInteger;
+                        immTypeRht    = IMMTYPE_INT;
+
+                        break;
+
+                    case IMMTYPE_FLOAT:
+                        aplLongestRht = *(LPAPLLONGEST) &(*(LPSYMENTRY *) lpMemRht)->stData.stFloat;
+                        immTypeRht    = IMMTYPE_FLOAT;
+
+                        break;
+
+                    case IMMTYPE_CHAR:
+                        aplLongestRht = (*(LPSYMENTRY *) lpMemRht)->stData.stChar;
+                        immTypeRht    = IMMTYPE_CHAR;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
                 break;
 
             defstop
@@ -190,7 +229,7 @@ void TypeDemote
             case TKT_VARNAMED:
                 // Fill in the result token
                 lptkRhtArg->tkData.tkSym->stFlags.Imm      = TRUE;
-                lptkRhtArg->tkData.tkSym->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+                lptkRhtArg->tkData.tkSym->stFlags.ImmType  = immTypeRht;
                 lptkRhtArg->tkData.tkSym->stData.stLongest = aplLongestRht;
 
                 break;
@@ -198,7 +237,7 @@ void TypeDemote
             case TKT_VARARRAY:
                 // Fill in the result token
                 lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
-                lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+                lptkRhtArg->tkFlags.ImmType  = immTypeRht;
                 lptkRhtArg->tkData.tkLongest = aplLongestRht;
 
                 break;

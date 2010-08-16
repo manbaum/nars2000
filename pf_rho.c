@@ -354,13 +354,6 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     aplTypeRes = aplTypeRht;
 
     //***************************************************************
-    // Check for non-zero result NELM and zero right arg NELM
-    //***************************************************************
-    if (!IsEmpty (aplNELMRes)
-     && IsEmpty (aplNELMRht))
-        goto LENGTH_EXIT;
-
-    //***************************************************************
     // If there are no elements in the result,
     //   and the result is a nested array,
     //   make room for a prototype.  Also,
@@ -595,11 +588,6 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         return lpYYRes;
     } // End IF
 
-    goto ERROR_EXIT;
-
-LENGTH_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
     goto ERROR_EXIT;
 
 WSFULL_EXIT:
@@ -1577,6 +1565,30 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
     aplNELMRht = lpHeader->NELM;
     lpMemRhtNext = lpMemRhtData = VarArrayBaseToData (lpMemRhtBase, lpHeader->Rank);
 
+    // Check for empty right arg
+    if (IsEmpty (aplNELMRht))
+    {
+        // If the result (right arg) is simple numeric, ...
+        if (IsSimpleNum (aplTypeRes))
+        {
+////////////// Fill the result with zeros (already done by GND)
+////////////ZeroMemory (lpDataRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes));
+
+            goto NORMAL_EXIT;
+        } else
+        // If the result is char, ...
+        if (IsSimpleChar (aplTypeRes))
+        {
+            // Fill the result with chars
+            FillMemoryW (lpDataRes, (APLU3264) aplNELMRes, L' ');
+
+            goto NORMAL_EXIT;
+        } // End IF
+
+        // The result must be nested
+        Assert (IsNested (aplTypeRes));
+    } // End IF
+
     // Split cases based upon the right arg's array type
     switch (lpHeader->ArrType)
     {
@@ -1737,8 +1749,10 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                         break;
                 } // End SWITCH
 
-                // Skip to next element in right arg
-                ((LPAPLNESTED) lpMemRhtNext)++;
+                // If the right arg is not empty, ...
+                if (!IsEmpty (aplNELMRht))
+                    // Skip to next element in right arg
+                    ((LPAPLNESTED) lpMemRhtNext)++;
             } // End FOR
 
             break;
@@ -1789,9 +1803,9 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
         defstop
             break;
     } // End SWITCH
-
 #undef  lpHeader
 
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRhtBase = lpMemRhtNext = lpMemRhtData = NULL;
 

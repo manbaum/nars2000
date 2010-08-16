@@ -103,11 +103,19 @@ void IncorrectCommand
 //***************************************************************************
 
 UBOOL ExecSysCmd
-    (LPWCHAR lpwszLine)
+    (LPWCHAR lpwszLine,         // Ptr to system command line to execute
+     HWND    hWndEC)            // Edit Ctrl window handle
 
 {
     int     i;
     LPWCHAR wp, wpEnd;
+
+    // Set the cursor to indicate the new state
+    ForceSendCursorMsg (hWndEC, TRUE);
+
+    // As this command might take a while, update the EC window so as
+    //   to avoid it looking like we're frozen
+    UpdateWindow (hWndEC);
 
     // Skip over the leading ')' and any following spaces
     while (*++lpwszLine EQ L' ');

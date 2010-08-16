@@ -531,6 +531,7 @@ UBOOL TransferInverseFcn2_EM
                                    lpwData,     // Ptr to text of line to execute
                                    NULL);       // Ptr to function token
     Assert (exitType EQ EXITTYPE_NODISPLAY
+         || exitType EQ EXITTYPE_NOVALUE
          || exitType EQ EXITTYPE_ERROR);
     // Copy the ptr to the name end
     //   and skip over it

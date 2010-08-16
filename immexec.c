@@ -168,7 +168,7 @@ void ImmExecLine
     {
         case L')':          // System commands
             // Execute the command (ignore the result)
-            ExecSysCmd (lpwszLine);
+            ExecSysCmd (lpwszLine, hWndEC);
 
             // If it's Quad input, and we're not resetting, ...
             if (lpMemPTD->lpSISCur

@@ -177,7 +177,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     // Calculate the # rows & cols in the result
     switch (aplRankRht)
     {
-        case 0:
+        case 0:                 // 1x1 matrix
             uNumRows =
             uNumCols = 1;
             GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
@@ -190,7 +190,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                                 NULL);          // Ptr to array type ...
             break;
 
-        case 1:
+        case 1:                 // 1-col matrix
             uNumRows = *VarArrayBaseToDim (lpMemRht);
             uNumCols = 1;
 
@@ -643,7 +643,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     // Calculate the # rows & cols in the right arg
     switch (aplRankRht)
     {
-        case 0:
+        case 0:                 // 1x1 matrix
             uNumRowsRht =
             uNumColsRht = 1;
             GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
@@ -656,7 +656,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                                 NULL);          // Ptr to array type ...
             break;
 
-        case 1:
+        case 1:                 // 1-col matrix
             uNumRowsRht = *VarArrayBaseToDim (lpMemRht);
             uNumColsRht = 1;
 
@@ -675,7 +675,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     // Calculate the # rows & cols in the left arg
     switch (aplRankLft)
     {
-        case 0:
+        case 0:                 // 1x1 matrix
             uNumRowsLft =
             uNumColsLft = 1;
             GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
@@ -688,7 +688,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                                 NULL);          // Ptr to array type ...
             break;
 
-        case 1:
+        case 1:                 // 1-col matrix
             uNumRowsLft = *VarArrayBaseToDim (lpMemLft);
             uNumColsLft = 1;
 

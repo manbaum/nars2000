@@ -10001,7 +10001,9 @@ void ArrExprCheckCaller
           ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
 
     // Save the Execute/Quad result
-    lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
+    //   unless the current line starts with a "sink"
+    if (lpplLocalVars->lpwszLine[0] NE UTF16_LEFTARROW)
+        lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
 
     // If it's not NoValue, ...
     if (!IsTokenNoValue (&lpYYArg->tkToken))

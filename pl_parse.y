@@ -4901,6 +4901,48 @@ Drv4Func:
                                              YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
                                          } // End IF
                                         }
+    | RhtOpVal   DydOp Drv4Func         {DbgMsgWP (L"%%Drv4Func:  Drv4Func DydOp RhtOpVal");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$2, 3, INDIRECT);  // Dyadic operator (Indirect)
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1);
+                                                 FreeResult (&$3);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+
+                                             lpplLocalVars->lpYYLft =
+                                               PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
+
+                                             if (!lpplLocalVars->lpYYLft)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1);
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYRht =
+                                               PushFcnStrand_YY (&$1, 1, DIRECT);    // Right operand (Direct)
+
+                                             if (!lpplLocalVars->lpYYRht)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                                 YYERROR3
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
+                                             YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
     | RhtOpVal   DydOp StrandInst       {DbgMsgWP (L"%%Drv4Func:  StrandInst DydOp RhtOpVal");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
@@ -5066,43 +5108,43 @@ Drv5Func:
 // Parenthesized function expression
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 ParenFunc:
-      '>' error    '('                  {DbgMsgWP (L"%%ParenFunc:  (error)");
+      '>' error            '('          {DbgMsgWP (L"%%ParenFunc:  (error)");
                                          if (!lpplLocalVars->bLookAhead)
                                              YYERROR3
                                          else
                                              YYERROR2
                                         }
-    | '>' Drv1Func '('                  {DbgMsgWP (L"%%ParenFunc:  (Drv1Func)");
+    | '>' Drv1Func         '('          {DbgMsgWP (L"%%ParenFunc:  (Drv1Func)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
                                         }
-    | '>' Drv2Func '('                  {DbgMsgWP (L"%%ParenFunc:  (Drv2Func)");
+    | '>' Drv2Func         '('          {DbgMsgWP (L"%%ParenFunc:  (Drv2Func)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
                                         }
-    | '>' Drv4Func '('                  {DbgMsgWP (L"%%ParenFunc:  (Drv4Func)");
+    | '>' Drv4Func         '('          {DbgMsgWP (L"%%ParenFunc:  (Drv4Func)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
                                         }
-    | '>' Drv5Func '('                  {DbgMsgWP (L"%%ParenFunc:  (Drv5Func)");
+    | '>' Drv5Func         '('          {DbgMsgWP (L"%%ParenFunc:  (Drv5Func)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
                                         }
-    | '>' LeftOper '('                  {DbgMsgWP (L"%%ParenFunc:  (LeftOper)");
+    | '>' LeftOper         '('          {DbgMsgWP (L"%%ParenFunc:  (LeftOper)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
                                         }
-    | '>' AxisFunc '('                  {DbgMsgWP (L"%%ParenFunc:  (AxisFunc)");
+    | '>' AxisFunc         '('          {DbgMsgWP (L"%%ParenFunc:  (AxisFunc)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $2;
                                         }
-    | '>' FcnSpec '('                   {DbgMsgWP (L"%%ParenFunc:  (FcnSpec)");
+    | '>' FcnSpec          '('          {DbgMsgWP (L"%%ParenFunc:  (FcnSpec)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {

@@ -122,9 +122,9 @@ Welcome to NARS2000</h1>
           <span class="APL">{del} {(Z<sub>1</sub> Z<sub>2</sub>)}{is}FOO R</span> may be used to mark
           the result as non-displayable</li>
         <li>User-defined function/operator prototype entry point
-          (<span class="APL">{quad}PROTOTYPE:</span>)</li>
+          (<span class="APL">{quad}PRO:</span>)</li>
         <li>User-defined function/operator identity element entry point
-          (<span class="APL">{quad}IDENTITY:</span>)</li>
+          (<span class="APL">{quad}ID:</span>)</li>
         <li>Monadic operator null (<span class="APL"><i>f</i>{circlemiddledot}</span>) to aid in
           resolving ambiguities with slash/slope as function/operator
           (e.g., use <span class="APL">(/{circlemiddledot})/3 4</span>
@@ -169,6 +169,8 @@ Welcome to NARS2000</h1>
           function that calculates the average of a numeric vector</li>
         <li>Partitioned Enclose:  dyadic left shoe (<span class="APL">L{leftshoe}R</span>)</li>
         <li>Primitive dyadic function epsilon underbar (<span class="APL">L{epsilon_}R</span>) (Find)</li>
+        <li>Reshape (<span class="APL">L{rho}R</span>) is extended to allow a non-empty Reshape of an empty in which case the right argument
+          fill element is used, e.g., <span class="APL">2 3{rho}{zilde}</span></li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
@@ -248,9 +250,9 @@ Welcome to NARS2000</h1>
   <h3>Wish List of Language Features</h3>
   <ul>
     <li>User-defined function/operator inverse entry point
-      (<span class="APL">{quad}INVERSE:</span>)</li>
+      (<span class="APL">{quad}INV:</span>)</li>
     <li>User-defined function/operator singleton entry point
-      (<span class="APL">{quad}SINGLETON:</span>)</li>
+      (<span class="APL">{quad}SGL:</span>)</li>
     <li>Dynamic functions (e.g.,
       <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
     <li>Primitive functions and operators user extensible via user-defined APL functions</li>
@@ -264,6 +266,7 @@ Welcome to NARS2000</h1>
     <li>Primitive dyadic operator dieresis-downtack (<span class="APL"><i>f</i>{downtackdieresis}<i>g</i></span>) (Convolution)</li>
     <li>Primitive dyadic operator stile-tilde (<span class="APL"><i>f</i>{stiletilde}</span>) (Partition)</li>
     <li>Selective assignment (e.g., <span class="APL">(1 1{transpose}M){is}0</span>)</li>
+    <li>Primitive monadic operator (<span class="APL"><i>f</i>$</span>) (Multiset)</li>
   </ul>
 </div>
 

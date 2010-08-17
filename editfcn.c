@@ -429,8 +429,13 @@ LRESULT APIENTRY FEWndProc
                 // Lock the memory to get a ptr to it
                 lpMemUndo = MyGlobalLock (hGlbUndoBuff);
 
-                // Copy the previous Undo Buffer contents
-                CopyMemory (lpUndoBeg, lpMemUndo, uUndoSize);
+                __try
+                {
+                    // Copy the previous Undo Buffer contents
+                    CopyMemory (lpUndoBeg, lpMemUndo, uUndoSize);
+                } __except (CheckVirtAlloc (GetExceptionInformation (),
+                                            L"FEWndProc/WM_CREATE"))
+                {} // End __try/__except
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbUndoBuff); lpMemUndo = NULL;

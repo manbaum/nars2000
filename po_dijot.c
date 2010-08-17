@@ -424,6 +424,10 @@ NORMAL_EXIT:
 
 //***************************************************************************
 //  Magic function/operator for monadic derived function from the rank dyadic operator
+//
+//  This function is based upon code found in the paper by J. Philip Benkhard,
+//    "Extending structure, type, and expression in APL2", ACM SIGAPL APL Quote Quad,
+//    v.21 n.4, p.20-38, Aug. 1991.
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
@@ -452,7 +456,6 @@ static APLCHAR MonLine6[] =
 
 static APLCHAR MonLine7[] =
   L"Y" $IS L"(-" L"O" L")" $MAX L"O" $MIN L"Y";
-
 
 static APLCHAR MonLine8[] =
 //L"Z" $IS $DISCLOSE $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
@@ -545,6 +548,10 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 
 //***************************************************************************
 //  Magic function/operator for dyadic derived function from the rank dyadic operator
+//
+//  This function is based upon code found in the paper by J. Philip Benkhard,
+//    "Extending structure, type, and expression in APL2", ACM SIGAPL APL Quote Quad,
+//    v.21 n.4, p.20-38, Aug. 1991.
 //***************************************************************************
 
 static APLCHAR DydHeader[] =

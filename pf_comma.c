@@ -473,6 +473,19 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     else
         aplRankRes = aplRankRht + 1 - aplNELMAxis;
 
+    //***************************************************************
+    // Optimize ravel of a vector
+    //***************************************************************
+
+    if (IsVector (aplRankRht)       // If the right arg is a vector
+     && IsVector (aplRankRes))      //   and the result is a vector, ...
+    {
+        // Increment the right arg reference count
+        hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
+
+        goto YYALLOC_EXIT;
+    } // End IF
+
     // Lock the memory to get a ptr to it
     lpMemRht = lpMemHdrRht = MyGlobalLock (hGlbRht);
 
@@ -889,7 +902,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                 break;
         } // End SWITCH
     } // End IF/ELSE
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 

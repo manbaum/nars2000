@@ -496,7 +496,7 @@ int CopyWsVars
                 goto ERRMSG_EXIT;
 
             // If it's []DM, handle it specially
-            if (lstrcmpiW (lpwNameInWrk, WS_UTF16_QUAD L"dm") EQ 0)
+            if (lstrcmpiW (lpwNameInWrk, WS_QUADDM) EQ 0)
             {
                 LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
 

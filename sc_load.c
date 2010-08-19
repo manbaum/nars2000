@@ -503,7 +503,7 @@ UBOOL LoadWorkspace_EM
                         goto ERRMSG_EXIT;
 
                     // If it's []DM, handle it specially
-                    if (lstrcmpiW (lpwSrcStart, WS_UTF16_QUAD L"dm") EQ 0)
+                    if (lstrcmpiW (lpwSrcStart, WS_QUADDM) EQ 0)
                     {
                         Assert (!bImmed);
                         Assert (IsSimpleChar (aplTypeObj));

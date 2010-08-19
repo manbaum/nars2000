@@ -361,17 +361,36 @@ APLBOOL ExpungeName
     (LPSYMENTRY lpSymEntry)         // Ptr to the Symbol Table Entry
 
 {
+    UBOOL bQuadDM;
+
     // Check for eraseability
-    if (!EraseableName (lpSymEntry))
+    if (!EraseableName (lpSymEntry, &bQuadDM))
         return 0;
 
-    // If the STE is not immediate and has a value, free the global memory handle
-    if (!lpSymEntry->stFlags.Imm && lpSymEntry->stFlags.Value)
-        FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData);
+    // If it's []DM, ...
+    if (bQuadDM)
+    {
+        LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
 
-    // Erase the Symbol Table Entry
-    //   unless it's a []var
-    EraseSTE (lpSymEntry, FALSE);
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // Out with the old
+        FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
+
+        // In with the new
+        lpMemPTD->hGlbQuadDM = ClrPtrTypeDir (hGlbV0Char);
+    } else
+    {
+        // If the STE is not immediate and has a value, ...
+        if (!lpSymEntry->stFlags.Imm && lpSymEntry->stFlags.Value)
+            // Free the global memory handle
+            FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData);
+
+        // Erase the Symbol Table Entry
+        //   unless it's a []var
+        EraseSTE (lpSymEntry, FALSE);
+    } // End IF/ELSE
 
     return 1;
 } // End ExpungeName
@@ -413,12 +432,16 @@ void EraseSTE
 //***************************************************************************
 
 APLBOOL EraseableName
-    (LPSYMENTRY lpSymEntry)
+    (LPSYMENTRY lpSymEntry,     // Ptr to SYMENTRY of name
+     LPUBOOL    lpbQuadDM)      // Ptr to return flag of TRUE iff the name if []DM
 
 {
     HGLOBAL   htGlbName;        // Name global memory handle
     LPAPLCHAR lpMemName;        // Ptr to name global memory
     APLBOOL   bRet;             // TRUE iff eraseable name
+
+    // Initialize the return value for []DM
+    *lpbQuadDM = FALSE;
 
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.stNameType)
@@ -443,8 +466,17 @@ APLBOOL EraseableName
             // Izit a valid name?
             bRet = IsValidName (lpMemName, lstrlenW (lpMemName));
 
-            // Not if it's a system name
-            bRet &= !IsSysName (lpMemName);
+            // If it's a valid name, ...
+            if (bRet)
+            {
+                // Save flag of whether or not the name is []DM
+                *lpbQuadDM = lstrcmpiW (lpMemName, WS_QUADDM) EQ 0;
+
+                // Not if it's a system name
+                //   but []DM is ok
+                bRet = (*lpbQuadDM
+                     || !IsSysName (lpMemName));
+            } // End IF
 
             // We no longer need this ptr
             MyGlobalUnlock (htGlbName); lpMemName = NULL;

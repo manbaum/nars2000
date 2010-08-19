@@ -119,7 +119,7 @@ void BreakMessage
 
 WSFULL_EXIT:
     MessageBoxW (hWndSM,
-                 L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
+                 L"Unable to allocate space for " WS_QUADDM,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
     return;
@@ -490,7 +490,7 @@ void ErrorMessageDirect
 
 WSFULL_DM_EXIT:
     MessageBoxW (hWndMF,
-                 L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
+                 L"Unable to allocate space for " WS_QUADDM,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
     return;

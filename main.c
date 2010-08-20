@@ -108,6 +108,7 @@ char pszNoRegPMWndClass[]   = "Unable to register window class <" PMWNDCLASS ">.
 char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateTCWnd[]     = "Unable to create Tab Control window",
      pszNoCreateTTWnd[]     = "Unable to create ToolTip window",
+     pszNoCreateSTWnd[]     = "Unable to create Status window",
      pszNoCreateCCWnd[]     = "Unable to create Crash Control window";
 
 int glbStatusPartsWidth[SP_LENGTH] = {0};
@@ -1373,6 +1374,12 @@ UBOOL CreateChildWindows
                            wszStatusIdle,   // Initial text
                            hWndParent,      // Parent window
                            IDWC_MF_ST);     // Window ID
+    if (hWndStatus EQ NULL)
+    {
+        MB (pszNoCreateSTWnd);
+        return FALSE;
+    } // End IF
+
     // Get the width of the borders of the Status Window
     SendStatusMsg (SB_GETBORDERS, 0, (LPARAM) glbStatusBorders);
 

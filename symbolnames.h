@@ -36,7 +36,6 @@ SYMBOLNAMES aSymbolNames[]
 {
 // No keystroke equivalents for these as yet
   {UTF16_DIERESISDOT          , L"{dieresisdot}"        },
-  {UTF16_NOTEQUALUNDERBAR     , L"{notequalunderbar}"   },
   {UTF16_IBEAM                , L"{ibeam}"              },
   {UTF16_QUADJOT              , L"{quadjot}"            },
   {UTF16_QUADSLOPE            , L"{quadslope}"          },
@@ -45,33 +44,64 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_QUADUPARROW          , L"{quaduparrow}"        },
   {UTF16_QUADDOWNARROW        , L"{quaddownarrow}"      },
 
+//***************************************************************
+//  Note that identical UTF16_xxx names MUST appear adjacently
+//    and only the first one is appended to the symbol table.
+//***************************************************************
+
 // _alpbahet_ characters
   {UTF16_A_                   , L"{A underbar}"         },
+  {UTF16_A_                   , L"{A_}"                 },
   {UTF16_B_                   , L"{B underbar}"         },
+  {UTF16_B_                   , L"{B_}"                 },
   {UTF16_C_                   , L"{C underbar}"         },
+  {UTF16_C_                   , L"{C_}"                 },
   {UTF16_D_                   , L"{D underbar}"         },
+  {UTF16_D_                   , L"{D_}"                 },
   {UTF16_E_                   , L"{E underbar}"         },
+  {UTF16_E_                   , L"{E_}"                 },
   {UTF16_F_                   , L"{F underbar}"         },
+  {UTF16_F_                   , L"{F_}"                 },
   {UTF16_G_                   , L"{G underbar}"         },
+  {UTF16_G_                   , L"{G_}"                 },
   {UTF16_H_                   , L"{H underbar}"         },
+  {UTF16_H_                   , L"{H_}"                 },
   {UTF16_I_                   , L"{I underbar}"         },
+  {UTF16_I_                   , L"{I_}"                 },
   {UTF16_J_                   , L"{J underbar}"         },
+  {UTF16_J_                   , L"{J_}"                 },
   {UTF16_K_                   , L"{K underbar}"         },
+  {UTF16_K_                   , L"{K_}"                 },
   {UTF16_L_                   , L"{L underbar}"         },
+  {UTF16_L_                   , L"{L_}"                 },
   {UTF16_M_                   , L"{M underbar}"         },
+  {UTF16_M_                   , L"{M_}"                 },
   {UTF16_N_                   , L"{N underbar}"         },
+  {UTF16_N_                   , L"{N_}"                 },
   {UTF16_O_                   , L"{O underbar}"         },
+  {UTF16_O_                   , L"{O_}"                 },
   {UTF16_P_                   , L"{P underbar}"         },
+  {UTF16_P_                   , L"{P_}"                 },
   {UTF16_Q_                   , L"{Q underbar}"         },
+  {UTF16_Q_                   , L"{Q_}"                 },
   {UTF16_R_                   , L"{R underbar}"         },
+  {UTF16_R_                   , L"{R_}"                 },
   {UTF16_S_                   , L"{S underbar}"         },
+  {UTF16_S_                   , L"{S_}"                 },
   {UTF16_T_                   , L"{T underbar}"         },
+  {UTF16_T_                   , L"{T_}"                 },
   {UTF16_U_                   , L"{U underbar}"         },
+  {UTF16_U_                   , L"{U_}"                 },
   {UTF16_V_                   , L"{V underbar}"         },
+  {UTF16_V_                   , L"{V_}"                 },
   {UTF16_W_                   , L"{W underbar}"         },
+  {UTF16_W_                   , L"{W_}"                 },
   {UTF16_X_                   , L"{X underbar}"         },
+  {UTF16_X_                   , L"{X_}"                 },
   {UTF16_Y_                   , L"{Y underbar}"         },
+  {UTF16_Y_                   , L"{Y_}"                 },
   {UTF16_Z_                   , L"{Z underbar}"         },
+  {UTF16_Z_                   , L"{Z_}"                 },
 
 // The alphabet, unshifted
   {UTF16_ALPHA                , L"{alpha}"              },  // Alt-'a' - alpha
@@ -124,11 +154,14 @@ SYMBOLNAMES aSymbolNames[]
 //{UTF16_                     ,                         },  // Alt-'C' - (none)
 //{UTF16_                     ,                         },  // Alt-'D' - (none)
   {UTF16_EPSILONUNDERBAR      , L"{epsilonunderbar}"    },  // Alt-'E' - epsilon-underbar
+  {UTF16_EPSILONUNDERBAR      , L"{epsilon_}"           },  // ...
   {UTF16_EPSILONUNDERBAR      , L"{find}"               },  // ...
 //{UTF16_                     ,                         },  // Alt-'F' - (none)
   {UTF16_DIERESISDEL          , L"{dieresisdel}"        },  // Alt-'G' - Dual operator        (frog)
   {UTF16_DELTAUNDERBAR        , L"{deltaunderbar}"      },  // Alt-'H' - delta-underbar
+  {UTF16_DELTAUNDERBAR        , L"{delta_}"             },  // ...
   {UTF16_IOTAUNDERBAR         , L"{iotaunderbar}"       },  // Alt-'I' - iota-underbar
+  {UTF16_IOTAUNDERBAR         , L"{iota_}"              },  // ...
   {UTF16_DIERESISJOT          , L"{dieresisjot}"        },  // Alt-'J' - Rank operator        (hoot)
   {UTF16_DIERESISJOT          , L"{hoot}"               },  // ...
   {UTF16_DIERESISJOT          , L"{paw}"                },  // ...
@@ -160,9 +193,11 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_OVERBAR              , L"{neg}"                },  // ...
   {UTF16_LEFTCARET            , L"{leftcaret}"          },  // Alt-'3' - less
   {UTF16_LEFTCARETUNDERBAR    , L"{leftcaretunderbar}"  },  // Alt-'4' - not more
+  {UTF16_LEFTCARETUNDERBAR    , L"{leftcaret_}"         },  // ...
   {UTF16_LEFTCARETUNDERBAR    , L"{<=}"                 },  // ...
   {UTF16_EQUAL                , L"{equal}"              },  // Alt-'5' - equal
   {UTF16_RIGHTCARETUNDERBAR   , L"{rightcaretunderbar}" },  // Alt-'6' - not less
+  {UTF16_RIGHTCARETUNDERBAR   , L"{rightcaret_}"        },  // ...
   {UTF16_RIGHTCARETUNDERBAR   , L"{>=}"                 },  // ...
   {UTF16_RIGHTCARET           , L"{rightcaret}"         },  // Alt-'7' - more
   {UTF16_NOTEQUAL             , L"{notequal}"           },  // Alt-'8' - not equal
@@ -179,8 +214,11 @@ SYMBOLNAMES aSymbolNames[]
 // Top row, shifted
   {UTF16_COMMABAR             , L"{commabar}"           },  // Alt-'~' - comma-bar
   {UTF16_EQUALUNDERBAR        , L"{equalunderbar}"      },  // Alt-'!' - match
+  {UTF16_EQUALUNDERBAR        , L"{equal_}"             },  // ...
   {UTF16_EQUALUNDERBAR        , L"{match}"              },  // ...
-  {UTF16_CIRCLEMIDDLEDOT      , L"{circlemiddledot}"    },  // Alt-'@' - circle-middle-dot
+  {UTF16_NOTEQUALUNDERBAR     , L"{notequalunderbar}"   },  // Alt-'@' - mismatch
+  {UTF16_NOTEQUALUNDERBAR     , L"{notequal_}"          },  // ...
+  {UTF16_NOTEQUALUNDERBAR     , L"{mismatch}"           },  // ...
   {UTF16_DELSTILE             , L"{delstile}"           },  // Alt-'#' - grade-down
   {UTF16_DELSTILE             , L"{gradedown}"          },  // ...
   {UTF16_DELTASTILE           , L"{deltastile}"         },  // Alt-'$' - grade-up
@@ -236,7 +274,7 @@ SYMBOLNAMES aSymbolNames[]
 // Fourth row, shifted
 //{UTF16_                     ,                         },  // Alt-'<' - (none)
 //{UTF16_                     ,                         },  // Alt-'>' - (none)
-//{UTF16_                     ,                         },  // Alt-'?' - (none)
+  {UTF16_CIRCLEMIDDLEDOT      , L"{circlemiddledot}"    },  // Alt-'?' - circle-middle-dot
 
   {L' '                       , L"{space}"              },
 

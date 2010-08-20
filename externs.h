@@ -1467,7 +1467,6 @@ typedef struct
 //     Alt-'Z'
 //     Alt-'<'
 //     Alt-'>'
-//     Alt-'?'
 //     Alt-':'
 //     Alt-'"'
 //
@@ -1524,8 +1523,8 @@ CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
 {'<', 0                       },  // Less              60
 {'=', UTF16_COLONBAR          },  // Equal             61
 {'>', 0                       },  // More              62
-{'?', 0                       },  // Query             63
-{'@', UTF16_CIRCLEMIDDLEDOT   },  // At sign           64
+{'?', UTF16_CIRCLEMIDDLEDOT   },  // Query             63
+{'@', UTF16_NOTEQUALUNDERBAR  },  // At sign           64
 {'A', 0                       },  // A                 65
 {'B', 0                       },  // B                 66
 {'C', 0                       },  // C                 67

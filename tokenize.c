@@ -4723,8 +4723,8 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_                     // Alt-'<' - (none)
         case UTF16_COLONBAR:            // Alt-'=' - divide
 ////////case UTF16_                     // Alt-'>' - (none)
-////////case UTF16_                     // Alt-'?' - (none)
-////////case UTF16_CIRCLEMIDDLEDOT      // Alt-'@' - circle-middle-dot (TKCOL_PRIM_OP1)
+////////case UTF16_CIRCLEMIDDLEDOT:     // Alt-'?' - circle-middle-dot (TKCOL_PRIM_OP1)
+        case UTF16_NOTEQUALUNDERBAR:    // Alt-'@' - mismatch
 ////////case UTF16_                     // Alt-'A' - (none)
 ////////case UTF16_                     // Alt-'B' - (none)
 ////////case UTF16_                     // Alt-'C' - (none)
@@ -4782,7 +4782,7 @@ TKCOLINDICES CharTransTK
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
         case UTF16_STILETILDE:          // Alt-'M' - partition (dagger)
         case UTF16_DIERESISTILDE:       // Alt-'T' - commute/duplicate
-        case UTF16_CIRCLEMIDDLEDOT:     // Alt-'@' - circle-middle-dot
+        case UTF16_CIRCLEMIDDLEDOT:     // Alt-'?' - circle-middle-dot
             return TKCOL_PRIM_OP1;
 
         case UTF16_DIERESISDEL:         // Alt-'G' - dual

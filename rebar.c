@@ -1627,7 +1627,10 @@ typedef struct tagLANGCHARS
                                          L"Match:  L" WS_UTF16_EQUALUNDERBAR L"R\n\n"
                                          L"Keyboard:  Alt-'!'  or  Alt-Shift-'1'\n\n"
                                          L"Unicode:  0x2261 or 8801"},
-////////{UTF16_NOTEQUALUNDERBAR   , {0}, L""},       // Uncomment when implemented
+        {UTF16_NOTEQUALUNDERBAR   , {0}, L"NotEqualUnderbar",
+                                         L"Mismatch:  L" WS_UTF16_NOTEQUALUNDERBAR L"R\n\n"
+                                         L"Keyboard:  Alt-'@'  or  Alt-Shift-'2'\n\n"
+                                         L"Unicode:  0x2262 or 8802"},
         LANGCHARS_SEPARATOR
         {UTF16_DOWNCARET          , {0}, L"DownCaret",
                                          L"Or:  L" WS_UTF16_DOWNCARET L"R  or  L" WS_UTF16_DOWNCARET L"[X] R\n\n"
@@ -1735,7 +1738,7 @@ typedef struct tagLANGCHARS
         {UTF16_CIRCLEMIDDLEDOT    , {0}, L"CircleMiddleDot",
                                          L"Null Operator:    f" WS_UTF16_CIRCLEMIDDLEDOT L"R\n"
                                          L"                L f" WS_UTF16_CIRCLEMIDDLEDOT L"R\n\n"
-                                         L"Keyboard:  Alt-'@' or Alt-Shift-'2'\n\n"
+                                         L"Keyboard:  Alt-'?' or Alt-Shift-'/'\n\n"
                                          L"Unicode:  0x2299 or 8857"},
         LANGCHARS_SEPARATOR
         {UTF16_COMMA              , {0}, L"Comma",

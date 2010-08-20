@@ -40,7 +40,6 @@
 
 // No keystroke equivalents for these as yet
 #define UTF16_DIERESISDOT        0x2235         //
-#define UTF16_NOTEQUALUNDERBAR   0x2262         // Mismatch function
 #define UTF16_IBEAM              0x2336         //
 #define UTF16_QUADJOT            0x233B         //
 #define UTF16_QUADSLOPE          0x2342         //
@@ -140,7 +139,7 @@
 // Top row, shifted
 #define UTF16_COMMABAR           0x236A         // Alt-'~' - comma-bar
 #define UTF16_EQUALUNDERBAR      0x2261         // Alt-'!' - match
-#define UTF16_CIRCLEMIDDLEDOT    0x2299         // Alt-'@' - circle-middle-dot
+#define UTF16_NOTEQUALUNDERBAR   0x2262         // Alt-'@' - mismatch
 #define UTF16_DELSTILE           0x2352         // Alt-'#' - grade-down
 #define UTF16_DELTASTILE         0x234B         // Alt-'$' - grade-up
 #define UTF16_CIRCLESTILE        0x233D         // Alt-'%' - rotate
@@ -178,7 +177,7 @@
 // Fourth row, shifted
 //efine UTF16_                                  // Alt-'<' - (none)
 //efine UTF16_                                  // Alt-'>' - (none)
-//efine UTF16_                                  // Alt-'?' - (none)
+#define UTF16_CIRCLEMIDDLEDOT    0x2299         // Alt-'?' - circle-middle-dot
 
 // Non-Alt key equivalents
 #define UTF16_JOTDOT             0x0001         // Pseudo-symbol for {jot}{dot} digraph
@@ -242,7 +241,6 @@
 
 // No keystroke equivalents for these as yet
 #define WS_UTF16_DIERESISDOT        L"\x2235"   //
-#define WS_UTF16_NOTEQUALUNDERBAR   L"\x2262"   // Mismatch function
 #define WS_UTF16_IBEAM              L"\x2336"   //
 #define WS_UTF16_QUADJOT            L"\x233B"   //
 #define WS_UTF16_QUADSLOPE          L"\x2342"   //
@@ -340,7 +338,7 @@
 // Top row, shifted
 #define WS_UTF16_COMMABAR           L"\x236A"   // Alt-'~' - comma-bar
 #define WS_UTF16_EQUALUNDERBAR      L"\x2261"   // Alt-'!' - match
-#define WS_UTF16_CIRCLEMIDDLEDOT    L"\x2299"   // Alt-'@' - circle-middle-dot
+#define WS_UTF16_NOTEQUALUNDERBAR   L"\x2262"   // Alt-'@' - mismatch
 #define WS_UTF16_DELSTILE           L"\x2352"   // Alt-'#' - grade-down
 #define WS_UTF16_DELTASTILE         L"\x234B"   // Alt-'$' - grade-up
 #define WS_UTF16_CIRCLESTILE        L"\x233D"   // Alt-'%' - rotate
@@ -378,7 +376,7 @@
 // Fourth row, shifted
 //efine WS_UTF16_                               // Alt-'<' - (none)
 //efine WS_UTF16_                               // Alt-'>' - (none)
-//efine WS_UTF16_                               // Alt-'?' - (none)
+#define WS_UTF16_CIRCLEMIDDLEDOT    L"\x2299"   // Alt-'?' - circle-middle-dot
 
 // Non-Alt key equivalents
 #define WS_UTF16_JOTDOT             L"\x0001"   // Pseudo-symbol for {jot}{dot} digraph

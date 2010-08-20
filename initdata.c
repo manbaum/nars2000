@@ -93,9 +93,10 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnIota_EM_YY                            // Mixed            Mixed
 /////// PrimFnLeftCaret_EM_YY                       // ERROR            Scalar
 /////// PrimFnLeftCaretUnderbar_EM_YY               // ERROR            Scalar
-/////// PrimFnLeftShoe_EM_YY                        // Mixed            Mixed (*)
+/////// PrimFnLeftShoe_EM_YY                        // Mixed            Mixed
 /////// PrimFnLeftTack_EM_YY                        // ERROR            Mixed
 /////// PrimFnNotEqual_EM_YY                        // ERROR            Scalar
+/////// PrimFnNotEqualUnderbar_EM_YY                // ERROR            Mixed
 /////// PrimFnPlus_EM_YY                            // Scalar           Scalar
 /////// PrimFnQuoteDot_EM_YY                        // Scalar           Scalar
 /////// PrimFnQuery_EM_YY                           // Scalar           Mixed
@@ -282,8 +283,8 @@ void InitPrimFns
 ////                                                                        // Alt-'<' - (none)
     InitPrimFn (UTF16_COLONBAR          , &PrimFnColonBar_EM_YY          ); // Alt-'=' - divide
 ////                                                                        // Alt-'>' - (none)
-////                                                                        // Alt-'?' - (none)
-    InitPrimFn (UTF16_CIRCLEMIDDLEDOT   , (LPPRIMFNS) -1                 ); // Alt-'@' - circle-middle-dot
+    InitPrimFn (UTF16_CIRCLEMIDDLEDOT   , (LPPRIMFNS) -1                 ); // Alt-'?' - circle-middle-dot
+    InitPrimFn (UTF16_NOTEQUALUNDERBAR  , &PrimFnNotEqualUnderbar_EM_YY  ); // Alt-'@' - mismatch
 ////                                                                        // Alt-'A' - (none)
 ////                                                                        // Alt-'B' - (none)
 ////                                                                        // Alt-'C' - (none)
@@ -435,6 +436,7 @@ LPPL_YYSTYPE PrimFn_EM
 /////// PrimProtoFnIota_EM_YY
 /////// PrimProtoFnLeftShoe_EM_YY
 /////// PrimProtoFnLeftTack_EM_YY
+/////// PrimProtoFnNotEqualUnderbar_EM_YY
 /////// PrimProtoFnQuery_EM_YY
 /////// PrimProtoFnRho_EM_YY
 /////// PrimProtoFnRightShoe_EM_YY
@@ -547,8 +549,8 @@ void InitPrimProtoFns
 ////                                                                                    // Alt-'<' - (none)
     InitPrimProtoFn (UTF16_COLONBAR          , &PrimProtoFnColonBar_EM_YY          );   // Alt-'=' - divide
 ////                                                                                    // Alt-'>' - (none)
-////                                                                                    // Alt-'?' - (none)
-    InitPrimProtoOp (UTF16_CIRCLEMIDDLEDOT   , &PrimProtoOpCircleMiddleDot_EM_YY   );   // Alt-'@' - circle-middle-dot
+    InitPrimProtoOp (UTF16_CIRCLEMIDDLEDOT   , &PrimProtoOpCircleMiddleDot_EM_YY   );   // Alt-'?' - circle-middle-dot
+    InitPrimProtoFn (UTF16_NOTEQUALUNDERBAR  , &PrimProtoFnNotEqualUnderbar_EM_YY  );   // Alt-'@' - mismatch
 ////                                                                                    // Alt-'A' - (none)
 ////                                                                                    // Alt-'B' - (none)
 ////                                                                                    // Alt-'C' - (none)

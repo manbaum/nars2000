@@ -73,7 +73,7 @@ void MakeWorkspaceNameCanonical
     if (uLen >= WS_WKSEXT_LEN
      && lstrcmpiW (&wszOut[uLen - WS_WKSEXT_LEN], WS_WKSEXT) EQ 0)
         wszOut[uLen - WS_WKSEXT_LEN] = WC_EOS;
-} //  End MakeWorkspaceNameCanonical
+} // End MakeWorkspaceNameCanonical
 
 
 //***************************************************************************
@@ -83,14 +83,11 @@ void MakeWorkspaceNameCanonical
 //***************************************************************************
 
 void DisplayWorkspaceStamp
-    (LPWCHAR lpwszDPFE)                 // Workspace filenam
+    (LPWCHAR lpwszDPFE)                 // Workspace filename
 
 {
-#define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss"
-
     WCHAR      wszTimeStamp[16 + 1],    // Output save area for time stamp
-               wszTimeStamp2[16 + 1],   // Output save area for time stamp
-               wszTemp[1 + countof (TIMESTAMP_FMT)];
+               wszTimeStamp2[16 + 1];   // Output save area for time stamp
     FILETIME   ftCreation,              // Function creation time in UTC
                ftLocalTime;             // ...                       localtime
     SYSTEMTIME systemTime;              // Current system (UTC) time
@@ -125,6 +122,27 @@ void DisplayWorkspaceStamp
     // Convert the creation time to system time so we can display it
     FileTimeToSystemTime (&ftLocalTime, &systemTime);
 
+    // Display the "SAVED ..." message
+    DisplaySavedMsg (systemTime, OptionFlags.bUseLocalTime);
+} // End DisplayWorkspaceStamp
+
+
+//***************************************************************************
+//  DisplaySavedMsg
+//
+//  Display the "SAVED ..." message
+//***************************************************************************
+
+void DisplaySavedMsg
+    (SYSTEMTIME systemTime,
+     UBOOL      bUseLocalTime)
+
+{
+#define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss (GMT)"
+
+    // "+ 1" for the trailing zero
+    WCHAR wszTemp[strcountof (TIMESTAMP_FMT) + 1];
+
     lstrcpyW (wszTemp, L"SAVED ");
 
     // Format it
@@ -136,10 +154,10 @@ void DisplayWorkspaceStamp
                systemTime.wHour,
                systemTime.wMinute,
                systemTime.wSecond,
-               OptionFlags.bUseLocalTime ? L"" : L" (GMT)");
+               bUseLocalTime ? L"" : L" (GMT)");
     // Display it
     AppendLine (wszTemp, FALSE, TRUE);
-} // End DisplayWorkspaceStamp
+} // End DisplaySavedMsg
 
 
 //***************************************************************************

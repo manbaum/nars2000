@@ -31,6 +31,18 @@
 #include "headers.h"
 
 
+// System Time Stamp for "1 CLEANSPACE"
+// SAVED 1966-11-27 18.53.59 (GMT-4)
+SYSTEMTIME cleanspaceTime = {1966,      // Year
+                               11,      // Month           (1=Jan)
+                                0,      // Day of the week (0=Sun)
+                               27,      // Day             (1-31)
+                               22,      // Hour            (0-23)
+                               53,      // Minute          (0-59)
+                               59,      // Second          (0-59)
+                                0};     // Millisecond     (0-999)
+
+
 //***************************************************************************
 //  $CmdLoad_EM
 //
@@ -82,42 +94,48 @@ UBOOL CmdLoadCom_EM
     int          iTabIndex;             // Tab index
     FILE        *fStream;               // Ptr to file stream for the plain text workspace file
 
-    // Skip to the next blank
-    lpw = SkipToCharDQW (lpwszTail, L' ');
-
-    // Zap it in case there are trailing blanks
-    *lpw = WC_EOS;
-
-    // If there's no WSID, that's an error
-    if (lpwszTail[0] EQ WC_EOS)
-    {
-        IncorrectCommand ();
-
-        return FALSE;
-    } // End IF
-
-    // Convert the given workspace name into a canonical form (without WS_WKSEXT)
-    MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
-
-    // Append the common workspace extension
-    lstrcatW (wszTailDPFE, WS_WKSEXT);
-
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
+    // Check for "1 CLEANSPACE"
+    if (lstrcmpiW (lpwszTail, L"1 CLEANSPACE") NE 0)
+    {
+        // Skip to the next blank
+        lpw = SkipToCharDQW (lpwszTail, L' ');
+
+        // Zap it in case there are trailing blanks
+        *lpw = WC_EOS;
+
+        // If there's no WSID, that's an error
+        if (lpwszTail[0] EQ WC_EOS)
+        {
+            IncorrectCommand ();
+
+            return FALSE;
+        } // End IF
+
+        // Convert the given workspace name into a canonical form (without WS_WKSEXT)
+        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
+
+        // Append the common workspace extension
+        lstrcatW (wszTailDPFE, WS_WKSEXT);
+
+        // Handle WS NOT FOUND messages here
+        // Attempt to open the workspace
+        fStream = _wfopen (wszTailDPFE, L"r");
+
+        // If the workspace doesn't exist, ...
+        if (fStream EQ NULL)
+            goto WSNOTFOUND_EXIT;
+
+        // We no longer need this handle
+        fclose (fStream); fStream = NULL;
+    } else
+        // Copy the name to the expected var
+        lstrcpyW (wszTailDPFE, lpwszTail);
+
     // Get the tab index from which this command was issued
     iTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
-
-    // Handle WS NOT FOUND messages here
-    // Attempt to open the workspace
-    fStream = _wfopen (wszTailDPFE, L"r");
-
-    // If the workspace doesn't exist, ...
-    if (fStream EQ NULL)
-        goto WSNOTFOUND_EXIT;
-
-    // We no longer need this handle
-    fclose (fStream); fStream = NULL;
 
     return
       CreateNewTab (hWndMF,             // Parent window handle
@@ -198,6 +216,15 @@ UBOOL LoadWorkspace_EM
     // Check for CLEAR WS
     if (lpwszDPFE[0] EQ WC_EOS)
         goto WSID_EXIT;
+
+    // Check for "1 CLEANSPACE"
+    if (lstrcmpiW (lpwszDPFE, L"1 CLEANSPACE") EQ 0)
+    {
+        // Display the workspace timestamp
+        DisplaySavedMsg (cleanspaceTime, FALSE);
+
+        goto WSID_EXIT;
+    } // End IF
 
     // Attempt to open the workspace
     fStream = _wfopen (lpwszDPFE, L"r");

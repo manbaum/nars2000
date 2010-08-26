@@ -38,6 +38,10 @@
 !error Environment variable SDK= not defined.
 !endif
 
+!ifndef NARSROOT
+!error Environment variable NARSROOT= not defined.
+!endif
+
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
@@ -61,7 +65,7 @@ CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"
 ## Load all source file names
 !include makefile.src
 
-GSL_LIB = gsl\libgsl$(WIN)-double.lib
+GSL_LIB = $(NARSROOT)gsl\libgsl$(WIN)-double.lib
 
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
 CFLAGS_WEXE = /nologo /GA /W3 /WX $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS

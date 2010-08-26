@@ -28,7 +28,7 @@ A=Images\                       # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
 OLDPATH=$(PATH)                 # Save the current path
-GSLINC=gsl\include\             # Directory of GSL includes
+GSLINC=$(NARSROOT)gsl\include\  # Directory of GSL includes
 QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 
 WIN=64

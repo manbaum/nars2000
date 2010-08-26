@@ -1066,12 +1066,19 @@ LPAPLCHAR FormatFloatFC
                  sign;                  // TRUE iff the number is negative
         UBOOL    bPowerOfTwo;           // TRUE iff the # is a power of two
 
-        // 0 = shortest string
-        // 2 = nDigits significant digits
-        // 3 = nDigits past decimal point
-
         // Get the corresponding DTOA mode
-        dtoaMode = gDTOA_Mode[fltDispFmt];
+        // DTOAMODE_SHORT_RND = 0,              // 0 = shortest string with rounding, e.g., 1e23
+        // DTOAMODE_SHORT_NORND,                // 1 = shortest string without rounding. e.g., 9.999999999999999e22
+        // DTOAMODE_SIGDIGS,                    // 2 = # significant digits
+        // DTOAMODE_FRACTDIGS,                  // 3 = # fractional digits (past decimal point)
+
+        // If this is raw float formatting, ...
+        if (nDigits EQ 0 && fltDispFmt EQ FLTDISPFMT_RAWFLT)
+        {
+            nDigits  = GetQuadPP ();            // []PP
+            dtoaMode = DTOAMODE_SIGDIGS;        // Display up to []PP digits
+        } else
+            dtoaMode = gDTOA_Mode[fltDispFmt];
 
         // If this is RAWINT, ...
         if (fltDispFmt EQ FLTDISPFMT_RAWINT)

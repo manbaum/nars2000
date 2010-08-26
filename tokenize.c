@@ -135,7 +135,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Overbar
   {TKROW_INIT    , fnPointDone , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , fnPointDone , fnSysInit   },     // Quad
-  {TKROW_INIT    , NULL        , fnUnkDone   },     // Underbar
+  {TKROW_INIT    , fnPointDone , fnUnkDone   },     // Underbar
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Infinity
   {TKROW_INIT    , fnPointDone , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , fnPointDone , fnLstDone   },     // Semicolon  ...

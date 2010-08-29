@@ -1769,6 +1769,11 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // If the result is valid, ...
+    if (lpYYRes)
+        // Fill in the character index
+        lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
+
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr

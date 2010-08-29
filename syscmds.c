@@ -29,8 +29,9 @@ typedef SYSCMD *LPSYSCMD;
 
 typedef struct tagSYSCMDSTAB
 {
-    LPWCHAR  lpszName;
-    LPSYSCMD lpSysCmd_EM;
+    LPWCHAR      lpszName;
+    LPSYSCMD     lpSysCmd_EM;
+    SYSCMDS_ENUM sysCmdEnum;
 } SYSCMDSTAB, *LPSYSCMDSTAB;
 
 // The lookup table for all system commands
@@ -38,35 +39,35 @@ SYSCMDSTAB SysCmdsTab[]
 #ifndef PROTO
  =
 {
-    {L"clear"     ,     &CmdClear_EM    },
-    {L"close"     ,     &CmdClose_EM    },
-    {L"copy"      ,     &CmdCopy_EM     },
-    {L"drop"      ,     &CmdDrop_EM     },
-    {L"edit"      ,     &CmdEdit_EM     },
-    {L"erase"     ,     &CmdErase_EM    },
-    {L"exit"      ,     &CmdExit_EM     },
-    {L"fns"       ,     &CmdFns_EM      },
-    {L"in"        ,     &CmdIn_EM       },
-    {L"inascii"   ,     &CmdInAscii_EM  },
-    {L"lib"       ,     &CmdLib_EM      },
-    {L"laod"      ,     &CmdLoad_EM     },
-    {L"load"      ,     &CmdLoad_EM     },
-    {L"newtab"    ,     &CmdNewTab_EM   },
-    {L"nms"       ,     &CmdNms_EM      },
-    {L"off"       ,     &CmdExit_EM     },
-    {L"open"      ,     &CmdLoad_EM     },
-    {L"ops"       ,     &CmdOps_EM      },
-    {L"out"       ,     &CmdOut_EM      },
-    {L"reset"     ,     &CmdReset_EM    },
-    {L"save"      ,     &CmdSave_EM     },
-    {L"svae"      ,     &CmdSave_EM     },
-    {L"si"        ,     &CmdSi_EM       },
-    {L"sic"       ,     &CmdReset_EM    },
-    {L"sinl"      ,     &CmdSinl_EM     },
-    {L"ulib"      ,     &CmdUlib_EM     },
-    {L"vars"      ,     &CmdVars_EM     },
-    {L"xload"     ,     &CmdXload_EM    },
-    {L"wsid"      ,     &CmdWsid_EM     },
+    {L"clear"     ,     &CmdClear_EM    , SYSCMD_CLEAR   },
+    {L"close"     ,     &CmdClose_EM    , SYSCMD_CLOSE   },
+    {L"copy"      ,     &CmdCopy_EM     , SYSCMD_COPY    },
+    {L"drop"      ,     &CmdDrop_EM     , SYSCMD_DROP    },
+    {L"edit"      ,     &CmdEdit_EM     , SYSCMD_EDIT    },
+    {L"erase"     ,     &CmdErase_EM    , SYSCMD_ERASE   },
+    {L"exit"      ,     &CmdExit_EM     , SYSCMD_EXIT    },
+    {L"fns"       ,     &CmdFns_EM      , SYSCMD_FNS     },
+    {L"in"        ,     &CmdIn_EM       , SYSCMD_IN      },
+    {L"inascii"   ,     &CmdInAscii_EM  , SYSCMD_INASCII },
+    {L"lib"       ,     &CmdLib_EM      , SYSCMD_LIB     },
+    {L"laod"      ,     &CmdLoad_EM     , SYSCMD_LOAD    },
+    {L"load"      ,     &CmdLoad_EM     , SYSCMD_LOAD    },
+    {L"newtab"    ,     &CmdNewTab_EM   , SYSCMD_NEWTAB  },
+    {L"nms"       ,     &CmdNms_EM      , SYSCMD_NMS     },
+    {L"off"       ,     &CmdExit_EM     , SYSCMD_EXIT    },
+    {L"open"      ,     &CmdLoad_EM     , SYSCMD_LOAD    },
+    {L"ops"       ,     &CmdOps_EM      , SYSCMD_OPS     },
+    {L"out"       ,     &CmdOut_EM      , SYSCMD_OUT     },
+    {L"reset"     ,     &CmdReset_EM    , SYSCMD_RESET   },
+    {L"save"      ,     &CmdSave_EM     , SYSCMD_SAVE    },
+    {L"svae"      ,     &CmdSave_EM     , SYSCMD_SAVE    },
+    {L"si"        ,     &CmdSi_EM       , SYSCMD_SI      },
+    {L"sic"       ,     &CmdReset_EM    , SYSCMD_RESET   },
+    {L"sinl"      ,     &CmdSinl_EM     , SYSCMD_SINL    },
+    {L"ulib"      ,     &CmdUlib_EM     , SYSCMD_ULIB    },
+    {L"vars"      ,     &CmdVars_EM     , SYSCMD_VARS    },
+    {L"xload"     ,     &CmdXload_EM    , SYSCMD_XLOAD   },
+    {L"wsid"      ,     &CmdWsid_EM     , SYSCMD_WSID    },
 }
 #endif
 ;
@@ -102,7 +103,7 @@ void IncorrectCommand
 //  Execute a system command
 //***************************************************************************
 
-UBOOL ExecSysCmd
+SYSCMDS_ENUM ExecSysCmd
     (LPWCHAR lpwszLine,         // Ptr to system command line to execute
      HWND    hWndEC)            // Edit Ctrl window handle
 
@@ -146,11 +147,17 @@ UBOOL ExecSysCmd
     // Search for this command in the table
     for (i = 0; i < SYSCMDSTAB_NROWS; i++)
     if (lstrcmpiW (SysCmdsTab[i].lpszName, lpwszLine) EQ 0)
-        return (*SysCmdsTab[i].lpSysCmd_EM) (wp);
+    {
+        // Execute the system command
+        (*SysCmdsTab[i].lpSysCmd_EM) (wp);
+
+        // Return the type of system command
+        return SysCmdsTab[i].sysCmdEnum;
+    } // End IF/FOR
 
     IncorrectCommand ();
 
-    return FALSE;
+    return SYSCMD_None;
 } // End ExecSysCmd
 
 

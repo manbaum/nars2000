@@ -112,15 +112,16 @@ VOID CALLBACK WaitForImmExecStmt
 #endif
 
 void ImmExecLine
-    (UINT uLineNum,             // Line #
-     HWND hWndEC)               // Handle of Edit Ctrl window
+    (UINT uLineNum,                         // Line #
+     HWND hWndEC)                           // Handle of Edit Ctrl window
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPWCHAR      lpwszCompLine, // Ptr to complete line
-                 lpwszLine;     // Ptr to line following leading blanks
-    UINT         uLinePos,      // Char position of start of line
-                 uLineLen;      // Line length
+    LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
+    LPWCHAR      lpwszCompLine,             // Ptr to complete line
+                 lpwszLine;                 // Ptr to line following leading blanks
+    UINT         uLinePos,                  // Char position of start of line
+                 uLineLen;                  // Line length
+    SYSCMDS_ENUM sysCmdEnum = SYSCMD_None;  // Type of system command (if any)
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -168,7 +169,8 @@ void ImmExecLine
     {
         case L')':          // System commands
             // Execute the command (ignore the result)
-            ExecSysCmd (lpwszLine, hWndEC);
+            sysCmdEnum =
+              ExecSysCmd (lpwszLine, hWndEC);
 
             // If it's Quad input, and we're not resetting, ...
             if (lpMemPTD->lpSISCur
@@ -218,9 +220,10 @@ void ImmExecLine
     } // End SWITCH
 
     // If no SIS layer or not Quad input and not reset all, ...
-    if (lpMemPTD->lpSISCur EQ NULL
-     || (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD
-      && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_ALL))
+    if (sysCmdEnum NE SYSCMD_RESET
+     && (lpMemPTD->lpSISCur EQ NULL
+      || (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD
+       && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_ALL)))
         // Display the default prompt
         DisplayPrompt (hWndEC, 4);
 

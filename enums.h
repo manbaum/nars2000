@@ -94,6 +94,36 @@ typedef enum tagWINDOWCLASS     // Window Classes
 } WINDOWCLASS, *LPWINDOWCLASS;
 
 
+typedef enum tagSYSCMDS_ENUM    // System Commands
+{
+    SYSCMD_None = 0 ,           // 00:  <invalid result>
+    SYSCMD_CLEAR    ,           // 01:  )CLEAR
+    SYSCMD_CLOSE    ,           // 02:  )CLOSE
+    SYSCMD_COPY     ,           // 03:  )COPY
+    SYSCMD_DROP     ,           // 04:  )DROP
+    SYSCMD_EDIT     ,           // 05:  )EDIT
+    SYSCMD_ERASE    ,           // 06:  )ERASE
+    SYSCMD_EXIT     ,           // 07:  )EXIT
+    SYSCMD_FNS      ,           // 08:  )FNS
+    SYSCMD_IN       ,           // 09:  )IN
+    SYSCMD_INASCII  ,           // 0A:  )INASCII
+    SYSCMD_LIB      ,           // 0B:  )LIB
+    SYSCMD_LOAD     ,           // 0C:  )LOAD
+    SYSCMD_NEWTAB   ,           // 0D:  )NEWTAB
+    SYSCMD_NMS      ,           // 0E:  )NMS
+    SYSCMD_OPS      ,           // 0F:  )OPS
+    SYSCMD_OUT      ,           // 10:  )OUT
+    SYSCMD_RESET    ,           // 11:  )RESET
+    SYSCMD_SAVE     ,           // 12:  )SAVE
+    SYSCMD_SI       ,           // 13:  )SI
+    SYSCMD_SINL     ,           // 14:  )SINL
+    SYSCMD_ULIB     ,           // 15:  )ULIB
+    SYSCMD_VARS     ,           // 16:  )VARS
+    SYSCMD_XLOAD    ,           // 17:  )XLOAD
+    SYSCMD_WSID     ,           // 18:  )WSID
+} SYSCMDS_ENUM, *LPSYSCMDS_ENUM;
+
+
 //***************************************************************************
 //  End of File: enums.h
 //***************************************************************************

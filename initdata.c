@@ -54,7 +54,6 @@ extern PRIMSPEC PrimSpecUpStile;
 
 // Symbols for which there is no definition            Monadic          Dyadic
 #define PrimFnAlpha_EM_YY           PrimFn_EM       // ERROR            ERROR
-#define PrimFnIotaUnderbar_EM_YY    PrimFn_EM       // ERROR            ERROR
 #define PrimFnOmega_EM_YY           PrimFn_EM       // ERROR            ERROR
 #define PrimFnUpShoe_EM_YY          PrimFn_EM       // ERROR            ERROR
 
@@ -91,6 +90,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnEqual_EM_YY                           // ERROR            Scalar
 /////// PrimFnEqualUnderbar_EM_YY                   // Mixed            Mixed
 /////// PrimFnIota_EM_YY                            // Mixed            Mixed
+/////// PrimFnIotaUnderbar_EM_YY                    // Mixed            ERROR
 /////// PrimFnLeftCaret_EM_YY                       // ERROR            Scalar
 /////// PrimFnLeftCaretUnderbar_EM_YY               // ERROR            Scalar
 /////// PrimFnLeftShoe_EM_YY                        // Mixed            Mixed
@@ -380,7 +380,6 @@ LPPL_YYSTYPE PrimFn_EM
 
 // Symbols for which there is no definition as a primitive
 #define PrimProtoFnAlpha_EM_YY                  PrimProtoFn_EM
-#define PrimProtoFnIotaUnderbar_EM_YY           PrimProtoFn_EM
 #define PrimProtoFnOmega_EM_YY                  PrimProtoFn_EM
 #define PrimProtoFnUpShoe_EM_YY                 PrimProtoFn_EM
 
@@ -434,6 +433,7 @@ LPPL_YYSTYPE PrimFn_EM
 /////// PrimProtoFnEpsilonUnderbar_EM_YY
 /////// PrimProtoFnEqualUnderbar_EM_YY
 /////// PrimProtoFnIota_EM_YY
+/////// PrimProtoFnIotaUnderbar_EM_YY
 /////// PrimProtoFnLeftShoe_EM_YY
 /////// PrimProtoFnLeftTack_EM_YY
 /////// PrimProtoFnNotEqualUnderbar_EM_YY

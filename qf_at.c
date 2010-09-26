@@ -191,8 +191,8 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
             break;
 
         case 4:                     // Object size
-            aplColsRes = 2;         // [1] = []SIZE
-                                    // [2] = []SIZE
+            aplColsRes = 2;         // [1] = Header and Data
+                                    // [2] = Data only
             break;
 
         default:

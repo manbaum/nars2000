@@ -2230,6 +2230,33 @@ HGLOBAL CopyGlbAsType_EM
 
                 case ARRAY_HETERO:
                 case ARRAY_NESTED:
+                    // Loop through the arg elements
+                    for (uArg = 0; uArg < aplNELMArg; uArg++)
+                    // Split cases based upon the ptr type bits
+                    switch (GetPtrTypeDir (((LPAPLNESTED) lpMemArg)[uArg]))
+                    {
+                        case PTRTYPE_STCONST:
+                            // Copy over the LPSYMENTRY
+                            *((LPAPLNESTED) lpMemRes)++ = ((LPAPLNESTED) lpMemArg)[uArg];
+
+                            break;
+
+                        case PTRTYPE_HGLOBAL:
+                            // Copy over the HGLOBAL
+                            *((LPAPLNESTED) lpMemRes)++ = ((LPAPLNESTED) lpMemArg)[uArg];
+
+                            // Because we just made a copy, we need to increment the RefCnt
+                            // Increment the reference count in global memory
+                            DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemArg)[uArg]);
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End FOR/SWITCH
+
+                    break;
+
                 defstop
                     break;
             } // End SWITCH

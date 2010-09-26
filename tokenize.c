@@ -4739,7 +4739,7 @@ TKCOLINDICES CharTransTK
         case UTF16_SQUAD:               // Alt-'L' - squad
 ////////case UTF16_                     // Alt-'M' - (none)
 ////////case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution (TKCOL_PRIM_OP2)
-////////case UTF16_DIERESISCIRCLE:      // Alt-'O' - ??? (holler)
+////////case UTF16_DIERESISCIRCLE:      // Alt-'O' - compose (TKCOL_PRIM_OP2)
 ////////case UTF16_DIERESISSTAR:        // Alt-'P' - power  (TKCOL_PRIM_OP2)
 ////////case UTF16_                     // Alt-'Q' - (none)
 ////////case UTF16_                     // Alt-'R' - (none)
@@ -4788,6 +4788,7 @@ TKCOLINDICES CharTransTK
         case UTF16_DIERESISDEL:         // Alt-'G' - dual
         case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot)
         case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution
+        case UTF16_DIERESISCIRCLE:      // Alt-'O' - compose (holler)
         case UTF16_DIERESISSTAR:        // Alt-'P' - power
             return TKCOL_PRIM_OP2;
 
@@ -4899,7 +4900,6 @@ TKCOLINDICES CharTransTK
                 return TKCOL_UNK;
 
         case UTF16_DEL:                 // Alt-'g' - del
-        case UTF16_DIERESISCIRCLE:      // Alt-'O' - ??? (holler)
         case L'`':
         case L'@':
         case L'$':

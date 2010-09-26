@@ -705,6 +705,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\po_dicircle.c"
+				>
+			</File>
+			<File
 				RelativePath=".\po_dieresis.c"
 				>
 			</File>

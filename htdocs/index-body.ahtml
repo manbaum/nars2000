@@ -175,6 +175,7 @@ Welcome to NARS2000</h1>
         <li>Primitive monadic function right caret (<span class="APL">&gt;R</span>) (Tally)</li>
         <li>Primitive dyadic function not equal underbar (<span class="APL">L{mismatch}R</span>) (Mismatch)</li>
         <li>Primitive monadic function down tack (<span class="APL">{downtack}R</span>) (Type)</li>
+        <li>Primitive dyadic operator dieresis circle (<span class="APL">L f{circledieresis}g R</span>) (Compose)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>

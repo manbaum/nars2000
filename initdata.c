@@ -66,75 +66,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimOpDieresisDowntack_EM_YY                // ERROR            Convolution (*)
 /////// PrimOpDieresisStar_EM_YY                    // ERROR            Power (*)
 
-// Primitive Functions DONE                            Monadic          Dyadic
-/////// PrimFnBar_EM_YY                             // Scalar           Scalar
-/////// PrimFnCircle_EM_YY                          // Scalar           Scalar
-/////// PrimFnCircleBar_EM_YY                       // Mixed            Mixed
-/////// PrimFnCircleSlope_EM_YY                     // Mixed            Mixed
-/////// PrimFnCircleStar_EM_YY                      // Scalar           Scalar
-/////// PrimFnCircleStile_EM_YY                     // Mixed            Mixed
-/////// PrimFnComma_EM_YY                           // Mixed            Mixed
-/////// PrimFnCommaBar_EM_YY                        // Mixed            Mixed
-/////// PrimFnColonBar_EM_YY                        // Scalar           Scalar
-/////// PrimFnDelStile_EM_YY                        // Mixed            Mixed
-/////// PrimFnDeltaStile_EM_YY                      // Mixed            Mixed
-/////// PrimFnDomino_EM_YY                          // Mixed            Mixed
-/////// PrimFnDownArrow_EM_YY                       // ERROR            Mixed
-/////// PrimFnDownCaret_EM_YY                       // ERROR            Scalar
-/////// PrimFnDownCaretTilde_EM_YY                  // ERROR            Scalar
-/////// PrimFnDownShoe_EM_YY                        // Mixed            ERROR
-/////// PrimFnDownStile_EM_YY                       // Scalar           Scalar
-/////// PrimFnDownTack_EM_YY                        // ERROR            Mixed
-/////// PrimFnDownTackJot_EM_YY                     // Mixed            Mixed
-/////// PrimFnEpsilon_EM_YY                         // Mixed            Mixed
-/////// PrimFnEqual_EM_YY                           // ERROR            Scalar
-/////// PrimFnEqualUnderbar_EM_YY                   // Mixed            Mixed
-/////// PrimFnIota_EM_YY                            // Mixed            Mixed
-/////// PrimFnIotaUnderbar_EM_YY                    // Mixed            ERROR
-/////// PrimFnLeftCaret_EM_YY                       // ERROR            Scalar
-/////// PrimFnLeftCaretUnderbar_EM_YY               // ERROR            Scalar
-/////// PrimFnLeftShoe_EM_YY                        // Mixed            Mixed
-/////// PrimFnLeftTack_EM_YY                        // ERROR            Mixed
-/////// PrimFnNotEqual_EM_YY                        // ERROR            Scalar
-/////// PrimFnNotEqualUnderbar_EM_YY                // ERROR            Mixed
-/////// PrimFnPlus_EM_YY                            // Scalar           Scalar
-/////// PrimFnQuoteDot_EM_YY                        // Scalar           Scalar
-/////// PrimFnQuery_EM_YY                           // Scalar           Mixed
-/////// PrimFnRightCaret_EM_YY                      // ERROR            Scalar
-/////// PrimFnRightCaretUnderbar_EM_YY              // ERROR            Scalar
-/////// PrimFnRightShoe_EM_YY                       // Mixed            Mixed
-/////// PrimFnRightTack_EM_YY                       // ERROR            Mixed
-/////// PrimFnRho_EM_YY                             // Mixed            Mixed
-/////// PrimFnSlash_EM_YY                           // ERROR            Mixed
-/////// PrimFnSlashBar_EM_YY                        // ERROR            Mixed
-/////// PrimFnSlope_EM_YY                           // ERROR            Mixed
-/////// PrimFnSlopeBar_EM_YY                        // ERROR            Mixed
-/////// PrimFnSquad_EM_YY                           // ERROR            Mixed
-/////// PrimFnStar_EM_YY                            // Scalar           Scalar
-/////// PrimFnStile_EM_YY                           // Scalar           Scalar
-/////// PrimFnTilde_EM_YY                           // Scalar           Mixed
-/////// PrimFnTimes_EM_YY                           // Scalar           Scalar
-/////// PrimFnUpArrow_EM_YY                         // Mixed            Mixed
-/////// PrimFnUpCaret_EM_YY                         // ERROR            Scalar
-/////// PrimFnUpCaretTilde_EM_YY                    // ERROR            Scalar
-/////// PrimFnUpStile_EM_YY                         // Scalar           Scalar
-/////// PrimFnUpTack_EM_YY                          // ERROR            Mixed
-/////// PrimFnUpTackJot_EM_YY                       // Mixed            ERROR
-
 // (*) = Unfinished
-
-
-// Primitive Operators DONE                            Monadic          Dyadic
-/////// PrimOpDieresis_EM_YY                        // Each             Each
-/////// PrimOpDieresisJot_EM_YY                     // Rank             Rank
-/////// PrimOpDieresisTilde_EM_YY                   // Duplicate        Commute
-/////// PrimOpDot_EM_YY                             // Determinant (*)  Inner product
-/////// PrimOpJot_EM_YY                             // Composition      Composition
-/////// PrimOpJotDot_EM_YY                          // ERROR            Outer Product
-/////// PrimOpSlash_EM_YY                           // Reduction        N-wise reduction
-/////// PrimOpSlope_EM_YY                           // Scan             ERROR
-/////// PrimOpCircleMiddleDot_EM_YY                 // Null Op          Null Op
-
 
 // First coordinate functions handled by common function
 #define PrimFnCircleBar_EM_YY   PrimFnCircleStile_EM_YY
@@ -299,7 +231,7 @@ void InitPrimFns
     InitPrimFn (UTF16_SQUAD             , &PrimFnSquad_EM_YY             ); // Alt-'L' - squad
     InitPrimFn (UTF16_STILETILDE        , (LPPRIMFNS) -1                 ); // Alt-'M' - stile-tilde (partition)
     InitPrimFn (UTF16_DIERESISDOWNTACK  , (LPPRIMFNS) -1                 ); // Alt-'N' - dieresis-downtack (convolution)
-////                                                                     ); // Alt-'O' - (none)
+    InitPrimFn (UTF16_DIERESISCIRCLE    , (LPPRIMFNS) -1                 ); // Alt-'O' - dieresis-circle (compose)
     InitPrimFn (UTF16_DIERESISSTAR      , (LPPRIMFNS) -1                 ); // Alt-'P' - dieresis-star (power)
 ////                                                                        // Alt-'Q' - (none)
 ////                                                                        // Alt-'R' - (none)
@@ -417,50 +349,6 @@ LPPL_YYSTYPE PrimFn_EM
 #define PrimProtoFnUpStile_EM_YY                PrimProtoFnScalar_EM_YY
 
 
-// Primitive mixed functions DONE
-/////// PrimProtoFnComma_EM_YY
-/////// PrimProtoFnDelStile_EM_YY
-/////// PrimProtoFnDeltaStile_EM_YY
-/////// PrimProtoFnDomino_EM_YY
-/////// PrimProtoFnDownArrow_EM_YY
-/////// PrimProtoFnDownTack_EM_YY
-/////// PrimProtoFnCircleSlope_EM_YY
-/////// PrimProtoFnCircleStile_EM_YY
-/////// PrimProtoFnDomino_EM_YY
-/////// PrimProtoFnDownTack_EM_YY
-/////// PrimProtoFnDownTackJot_EM_YY
-/////// PrimProtoFnEpsilon_EM_YY
-/////// PrimProtoFnEpsilonUnderbar_EM_YY
-/////// PrimProtoFnEqualUnderbar_EM_YY
-/////// PrimProtoFnIota_EM_YY
-/////// PrimProtoFnIotaUnderbar_EM_YY
-/////// PrimProtoFnLeftShoe_EM_YY
-/////// PrimProtoFnLeftTack_EM_YY
-/////// PrimProtoFnNotEqualUnderbar_EM_YY
-/////// PrimProtoFnQuery_EM_YY
-/////// PrimProtoFnRho_EM_YY
-/////// PrimProtoFnRightShoe_EM_YY
-/////// PrimProtoFnRightTack_EM_YY
-/////// PrimProtoFnSlash_EM_YY
-/////// PrimProtoFnSlope_EM_YY
-/////// PrimProtoFnSquad_EM_YY
-/////// PrimProtoFnTilde_EM_YY
-/////// PrimProtoFnUpArrow_EM_YY
-/////// PrimProtoFnUpTack_EM_YY
-/////// PrimProtoFnUpTackJot_EM_YY
-
-
-// Primitive operators DONE
-/////// PrimProtoOpDieresis_EM_YY
-/////// PrimProtoOpDieresisJot_EM_YY
-/////// PrimProtoOpDieresisTilde_EM_YY
-/////// PrimProtoOpDot_EM_YY
-/////// PrimProtoOpJot_EM_YY
-/////// PrimProtoOpJotDot_EM_YY
-/////// PrimProtoOpSlash_EM_YY
-/////// PrimProtoOpSlope_EM_YY
-
-
 // First coordinate functions handled by common function
 #define PrimProtoFnCircleBar_EM_YY   PrimProtoFnCircleStile_EM_YY
 #define PrimProtoFnCommaBar_EM_YY    PrimProtoFnComma_EM_YY
@@ -565,7 +453,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_SQUAD             , &PrimProtoFnSquad_EM_YY             );   // Alt-'L' - squad
     InitPrimProtoOp (UTF16_STILETILDE        , &PrimProtoOpStileTilde_EM_YY        );   // Alt-'M' - stile-tilde (partition)
     InitPrimProtoOp (UTF16_DIERESISDOWNTACK  , &PrimProtoOpDieresisDownTack_EM_YY  );   // Alt-'N' - dieresis-downtack (convolution)
-////                                                                                    // Alt-'O' - (none)
+    InitPrimProtoOp (UTF16_DIERESISCIRCLE    , &PrimProtoOpDieresisCircle_EM_YY    );   // Alt-'O' - dieresis-circle (compose)
     InitPrimProtoOp (UTF16_DIERESISSTAR      , &PrimProtoOpDieresisStar_EM_YY      );   // Alt-'P' - dieresis-star (power)
 ////                                                                                    // Alt-'Q' - (none)
 ////                                                                                    // Alt-'R' - (none)

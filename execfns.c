@@ -1067,6 +1067,10 @@ LPPL_YYSTYPE ExecOp2_EM_YY
             return PrimOpJot_EM_YY    (lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
                                        lpYYFcnStrOpr,       // Ptr to operator function strand
                                        lptkRhtArg);         // Ptr to right arg token
+        case UTF16_DIERESISCIRCLE:  // Compose
+            return PrimOpDieresisCircle_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                               lpYYFcnStrOpr,   // Ptr to operator function strand
+                                               lptkRhtArg);     // Ptr to right arg token
         case UTF16_DIERESISDEL:     // Dual
             return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
 

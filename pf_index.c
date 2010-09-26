@@ -800,18 +800,21 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
      LPTOKEN    lptkFunc)               // Ptr to function token
 
 {
-    HGLOBAL       hGlbSub,              // Name arg item global memory handle
-                  hGlbRes = NULL;       // Result global memory handle
-    LPVOID        lpMemLst = NULL,      // Ptr to list arg global memory
-                  lpMemRes = NULL;      // Ptr to result    ...
-    UBOOL         bRet,                 // TRUE iff result is valid
-                  bQuadIO;              // []IO
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
-    APLUINT       ByteRes,              // # bytes in the result
-                  uLst;                 // Loop counter
-    UINT          uBitIndex;            // Bit index when looping through Booleans
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    HGLOBAL           hGlbSub,          // Name arg item global memory handle
+                      hGlbRes = NULL;   // Result global memory handle
+    LPVOID            lpMemLst = NULL,  // Ptr to list arg global memory
+                      lpMemNam = NULL,  // Ptr to name arg global memory
+                      lpMemRes = NULL;  // Ptr to result    ...
+    LPVARARRAY_HEADER lpMemHdrLst,      // Ptr to list arg header
+                      lpMemHdrNam;      // ...    name ...
+    UBOOL             bRet,             // TRUE iff result is valid
+                      bQuadIO;          // []IO
+    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
+    APLUINT           ByteRes,          // # bytes in the result
+                      uLst;             // Loop counter
+    UINT              uBitIndex;        // Bit index when looping through Booleans
+    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -839,8 +842,11 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
-    lpMemLst = MyGlobalLock (hGlbLst);
+    lpMemRes    = MyGlobalLock (hGlbRes);
+    lpMemHdrLst =
+    lpMemLst    = MyGlobalLock (hGlbLst);
+    lpMemHdrNam =
+    lpMemNam    = MyGlobalLock (hGlbNam);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -848,6 +854,15 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+
+    if ((aplNELMNam EQ aplNELMLst)
+     && (lpMemHdrLst->PV0 && (bQuadIO EQ 0)
+      || lpMemHdrLst->PV1 && (bQuadIO EQ 1)))
+    {
+        lpHeader->PV0    = lpMemHdrNam->PV0;
+        lpHeader->PV1    = lpMemHdrNam->PV1;
+    } // End IF
+
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMLst;
     lpHeader->Rank       = aplRankLst;
@@ -880,11 +895,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     if (IsEmpty (aplNELMLst)
      && IsNested (aplTypeRes))
     {
-        LPAPLNESTED lpMemNam;           // Ptr to name arg global memory
         HGLOBAL     hSymGlbProto;       // Prototype global memory handle
-
-        // Lock the memory to get a ptr to it
-        lpMemNam = MyGlobalLock (hGlbNam);
 
         // Skip over the header and dimensions to the data
         lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
@@ -894,9 +905,6 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
           MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemNam, // Proto arg handle
                                    lptkFunc,                // Ptr to function token
                                    MP_CHARS);               // CHARs allowed
-        // We no longer this ptr
-        MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
-
         if (!hSymGlbProto)
             goto WSFULL_EXIT;
 
@@ -1040,6 +1048,12 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    if (hGlbNam && lpMemNam)
+    {
+        // We no longer this ptr
+        MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
+    } // End IF
+
     if (hGlbLst && lpMemLst)
     {
         // We no longer need this ptr

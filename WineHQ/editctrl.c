@@ -5215,6 +5215,10 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         result = 1;
         break;
 #endif
+    case MYWM_LINE_HEIGHT:
+        result = es->line_height;
+        break;
+
     case MYWM_SELECTALL:
     case EM_SETSEL:
         EDIT_EM_SetSel(es, wParam, lParam, FALSE);

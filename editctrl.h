@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ typedef PAINTHOOK *LPPAINTHOOK;
 #define MYWM_COPY_APL       (WM_APP + 105)
 #define MYWM_LOCALIZE       (WM_APP + 106)
 #define MYWM_UNLOCALIZE     (WM_APP + 107)
+#define MYWM_LINE_HEIGHT    (WM_APP + 108)
 
 #define FCN_INDENT  6
 

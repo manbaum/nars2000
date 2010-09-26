@@ -30,8 +30,6 @@
 // ToDo
 /*
  * Redo
- * Toolbar
- * Line #s optional
  * Move Undo Code into EDITCTRL.C
  * Allow external editor
  *
@@ -4428,7 +4426,8 @@ void DrawLineNumsFE
     UINT    uLen,           // Length of string
             uLineCnt,       // # lines in the Edit Ctrl
             uLineTop,       // # of topmost visible line
-            uCnt;           // Counter
+            uCnt,           // Counter
+            line_height;    // The line height
     WCHAR   wszLineNum[FCN_INDENT + 1];  // Line # (e.g. L"[0000]\0"
     HWND    hWndParent;     // Window handle of the parent (i.e. hWndFE)
     HBRUSH  hBrush;         // Brush for background color
@@ -4482,6 +4481,9 @@ void DrawLineNumsFE
     // Get the # of the topmost visible line
     uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
+    // Get the line height
+    line_height = (UINT) SendMessageW (hWndEC, MYWM_LINE_HEIGHT, 0, 0);
+
     // Less the top index
     uLineCnt -= uLineTop;
 
@@ -4509,8 +4511,8 @@ void DrawLineNumsFE
                  | DT_CALCRECT
                  | DT_NOPREFIX);
         // Move the rectangle down
-        rcPaint.top    += uCnt * GetFSIndAveCharSize (FONTENUM_FE)->cy;
-        rcPaint.bottom += uCnt * GetFSIndAveCharSize (FONTENUM_FE)->cy;
+        rcPaint.top    += uCnt * line_height;
+        rcPaint.bottom += uCnt * line_height;
 
         // Draw the line #s
         DrawTextW (hDCMem,

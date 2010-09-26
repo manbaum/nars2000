@@ -74,9 +74,9 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
 
         // Convert the result into a prototype
         lpYYRes =
-          SysFnMonTYPE_EM_YY (lptkFcnStr,           // Ptr to function token
-                             &lpYYRes2->tkToken,    // Ptr to right arg token
-                              NULL);                // Ptr to axis token (may be NULL)
+          PrimFnMonDownTack_EM_YY (lptkFcnStr,          // Ptr to function token
+                                  &lpYYRes2->tkToken,   // Ptr to right arg token
+                                   NULL);               // Ptr to axis token (may be NULL)
         FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
     } else
         lpYYRes = lpYYRes2;

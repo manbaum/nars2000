@@ -146,7 +146,6 @@
   #include "qf_tc.pro"
   #include "qf_tf.pro"
   #include "qf_ts.pro"
-  #include "qf_type.pro"
   #include "qf_ucs.pro"
   #include "qf_vr.pro"
   #include "qf_wa.pro"

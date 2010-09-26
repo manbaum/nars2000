@@ -99,6 +99,7 @@ typedef enum tagMFO
 #define $TILDE          WS_UTF16_TILDE
 #define $TIMES          WS_UTF16_TIMES
 #define $TRANSPOSE      WS_UTF16_CIRCLESLOPE
+#define $TYPE           WS_UTF16_DOWNTACK
 #define $ZILDE          WS_UTF16_ZILDE
 
 

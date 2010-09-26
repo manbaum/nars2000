@@ -154,7 +154,7 @@ static APLCHAR MonLineFMT9[] =
   L"  :endif";
 
 static APLCHAR MonLineFMT10[] =
-  L"  Type" $IS L"(0 ' '" $EPSILON $QUAD L"type Proto)/'~" $LDC_LT_HORZ $NEG L"'[0,1+0"
+  L"  Type" $IS L"(0 ' '" $EPSILON $TYPE L"Proto)/'~" $LDC_LT_HORZ $NEG L"'[0,1+0"
   $EPSILON $RHO L"R]";
 
 static APLCHAR MonLineFMT11[] =

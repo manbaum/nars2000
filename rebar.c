@@ -1584,6 +1584,7 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'b'\n\n"
                                          L"Unicode:  0x22A5 or 8869"},
         {UTF16_DOWNTACK           , {0}, L"DownTack",
+                                         L"Type:             " WS_UTF16_DOWNTACK L"R\n"
                                          L"Representation:  L" WS_UTF16_DOWNTACK L"R\n\n"
                                          L"Keyboard:  Alt-'n'\n\n"
                                          L"Unicode:  0x22A4 or 8868"},
@@ -1615,6 +1616,7 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  '<' or Shift-',' or Alt-'6'\n\n"
                                          L"Unicode:  0x003C or 60"},
         {UTF16_RIGHTCARET         , {0}, L"RightCaret",
+                                         L"Tally:          " WS_UTF16_RIGHTCARET L"R\n"
                                          L"Greater Than:  L" WS_UTF16_RIGHTCARET L"R  or  L" WS_UTF16_RIGHTCARET L"[X] R\n\n"
                                          L"Keyboard:  '>' or Shift-'.' or Alt-'7'\n\n"
                                          L"Unicode:  0x003E or 62"},
@@ -1693,7 +1695,10 @@ typedef struct tagLANGCHARS
                                          L"Member Of:  L"  WS_UTF16_EPSILON L"R\n\n"
                                          L"Keyboard:  Alt-'e'\n\n"
                                          L"Unicode:  0x220A or 8714"},
-////////{UTF16_IOTAUNDERBAR       , {0}, L""},       // Uncomment when implemented
+        {UTF16_IOTAUNDERBAR       , {0}, L"IotaUnderbar",
+                                         L"Indices:  " WS_UTF16_IOTAUNDERBAR L"R\n\n"
+                                         L"Keyboard:  Alt-'I' or Alt-Shift-'i'\n\n"
+                                         L"Unicode:  0x2378 or 9080"},
         {UTF16_EPSILONUNDERBAR    , {0}, L"EpsilonUnderbar",
                                          L"Find:  L" WS_UTF16_EPSILONUNDERBAR L"R\n\n"
                                          L"Keyboard:  Alt-'E' or Alt-Shift-'e'\n\n"

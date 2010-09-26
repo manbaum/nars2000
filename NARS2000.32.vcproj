@@ -845,10 +845,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\qf_type.c"
-				>
-			</File>
-			<File
 				RelativePath=".\qf_ucs.c"
 				>
 			</File>

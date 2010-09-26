@@ -122,7 +122,131 @@ LPPL_YYSTYPE PrimFnMonDownTack_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc);
+    HGLOBAL      hGlbRht,           // Right arg global memory handle
+                 hSymGlbRes;        // Result    ...
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Split cases based upon the token type
+    switch (lptkRhtArg->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, it's an HGLOBAL
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
+            {
+                hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
+
+                break;      // Continue with HGLOBAL case
+            } // End IF
+
+            // Handle the immediate case
+
+            lpYYRes->tkToken.tkFlags.TknType = TKT_VARIMMED;
+            lpYYRes->tkToken.tkFlags.ImmType = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
+
+            // Split cases based upon the token's immediate type
+            switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                    lpYYRes->tkToken.tkData.tkBoolean = FALSE;
+
+                    break;
+
+                case IMMTYPE_INT:
+                    lpYYRes->tkToken.tkData.tkInteger = 0;
+
+                    break;
+
+                case IMMTYPE_FLOAT:
+                    lpYYRes->tkToken.tkData.tkFloat   = 0;
+
+                    break;
+
+                case IMMTYPE_CHAR:
+                    lpYYRes->tkToken.tkData.tkChar    = L' ';
+
+                    break;
+
+                defstop
+                    YYFree (lpYYRes); lpYYRes = NULL;
+
+                    break;
+            } // End SWITCH
+
+            return lpYYRes;
+
+        case TKT_VARIMMED:
+            lpYYRes->tkToken.tkFlags.TknType = TKT_VARIMMED;
+            lpYYRes->tkToken.tkFlags.ImmType = lptkRhtArg->tkFlags.ImmType;
+
+            // Split cases based upon the token's immediate type
+            switch (lptkRhtArg->tkFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                    lpYYRes->tkToken.tkData.tkBoolean = FALSE;
+
+                    break;
+
+                case IMMTYPE_INT:
+                    lpYYRes->tkToken.tkData.tkInteger = 0;
+
+                    break;
+
+                case IMMTYPE_FLOAT:
+                    lpYYRes->tkToken.tkData.tkFloat   = 0;
+
+                    break;
+
+                case IMMTYPE_CHAR:
+                    lpYYRes->tkToken.tkData.tkChar    = L' ';
+
+                    break;
+
+                defstop
+                    YYFree (lpYYRes); lpYYRes = NULL;
+
+                    break;
+            } // End SWITCH
+
+            return lpYYRes;
+
+        case TKT_VARARRAY:
+            hGlbRht = lptkRhtArg->tkData.tkGlbData;
+
+            break;      // Continue with HGLOBAL case
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // HGLOBAL case
+
+    // tk/stData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
+
+    // Make the prototype
+    hSymGlbRes =
+      MakeMonPrototype_EM_PTB (hGlbRht,     // Proto arg handle
+                               lptkFunc,    // Ptr to function token
+                               MP_CHARS);   // CHARs allowed
+    if (!hSymGlbRes)
+        return NULL;
+
+    Assert (GetPtrTypeDir (hSymGlbRes) EQ PTRTYPE_HGLOBAL);
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = hSymGlbRes;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End PrimFnMonDownTack_EM_YY
 #undef  APPEND_NAME
 

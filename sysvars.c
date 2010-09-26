@@ -59,7 +59,6 @@
 #define SysFnTCNUL_EM_YY    NULL
 #define SysFnTF_EM_YY       NULL
 #define SysFnTS_EM_YY       NULL
-#define SysFnTYPE_EM_YY     NULL
 #define SysFnUCS_EM_YY      NULL
 #define SysFnVR_EM_YY       NULL
 #define SysFnWA_EM_YY       NULL
@@ -142,7 +141,6 @@ SYSNAME aSystemNames[] =
 ////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM_YY   , 0          },  // Manage Stop Points
     {WS_UTF16_QUAD L"tf"       ,      1,      FALSE, SysFnTF_EM_YY     , 0          },  // Transfer Form
 ////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, SysFnTRACE_EM_YY  , 0          },  // Manage Trace Points
-    {WS_UTF16_QUAD L"type"     ,      1,      FALSE, SysFnTYPE_EM_YY   , 0          },  // Manage Trace Points
     {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, SysFnUCS_EM_YY    , 0          },  // Universal Character Set
 ////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, StsFnVI_EM        , 0          },  // Verify Items
     {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM_YY     , 0          },  // Vector Representation of a Function

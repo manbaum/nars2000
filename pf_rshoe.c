@@ -39,7 +39,7 @@ LPPL_YYSTYPE PrimFnRightShoe_EM_YY
 
 {
     // Ensure not an overflow function
-
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTSHOE);
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
@@ -256,6 +256,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                   uSub;                 // ...
     APLSTYPE      aplTypeRht,           // Right arg storage type
                   aplTypeSub,           // Right arg item storage type
+                  aplType1SS,           // First simple scalar storage type
                   aplTypeRes;           // Result    ...
     LPPL_YYSTYPE  lpYYRes;              // Ptr to the result
     LPSYMENTRY    lpSymProto,           // Right arg item prototype as Symbol Table Entry
@@ -408,7 +409,9 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     lpMemDimCom = MyGlobalLock (hGlbDimCom);
 
     // Initialize the result storage type
+    //   and type of first simple scalar
     aplTypeRes = ARRAY_INIT;
+    aplType1SS = ARRAY_ERROR;
 
     // Trundle through the right arg calculating the shape and type
     //   of the common item
@@ -424,6 +427,9 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
             case PTRTYPE_STCONST:   // Ignore (simple) scalar items
                 aplTypeSub = TranslateImmTypeToArrayType (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType);
 
+                // Keep track of the type of the first simple scalar
+                if (aplType1SS EQ ARRAY_ERROR)
+                    aplType1SS = aplTypeSub;
                 break;
 
             case PTRTYPE_HGLOBAL:
@@ -475,6 +481,12 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
     // Calculate the result NELM
     aplNELMRes = aplNELMCom * aplNELMRht;
+
+    // If the result is empty, convert type Hetero to type Boolean or Character
+    //   depending upon the type of the first simple scalar
+    if (IsEmpty (aplNELMRes)
+     && IsSimpleHet (aplTypeRes))
+        aplTypeRes = (IsSimpleChar (aplType1SS)) ? ARRAY_CHAR : ARRAY_BOOL;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);

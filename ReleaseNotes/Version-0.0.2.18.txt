@@ -1,6 +1,18 @@
 Version 0.0.2.18 consists of the following Builds:
 
 
+Build #732 -- Version 0.0.2.18
+------------------------------
+
+* Change ChooseFont Dialog Sample text To Something More APL-Like
+
+Directory trunk:
+
+MAIN.C:
+  Change the ChooseFont dialog's sample text to something
+    more APL-like.
+
+
 Build #731 -- Version 0.0.2.18
 ------------------------------
 

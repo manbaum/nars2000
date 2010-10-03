@@ -562,6 +562,11 @@ UINT_PTR APIENTRY MyChooseFontHook
             // Set the window title
             SetWindowTextW (hDlg, (LPWCHAR) ((LPCHOOSEFONT) lParam)->lCustData);
 
+#define SampleText      L"(" WS_UTF16_IOTA L"V)" WS_UTF16_EQUALUNDERBAR WS_UTF16_RIGHTSHOE WS_UTF16_JOT L".,/" WS_UTF16_IOTA WS_UTF16_DIERESIS L"V"
+
+            // Set the sample text
+            SetWindowTextW (GetDlgItem (hDlg, stc5), SampleText);
+
             return FALSE;               // Pass msg to standard dialog
 
         default:

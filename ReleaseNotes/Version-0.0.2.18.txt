@@ -1,6 +1,20 @@
 Version 0.0.2.18 consists of the following Builds:
 
 
+Build #731 -- Version 0.0.2.18
+------------------------------
+
+* Fix Bug:  Enlist of 'cat' (0 0{rho}0) 'dog' Crashes
+
+Directory trunk:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCopy_EM>, remove special treatment
+    for empty nested as they don't contribute to the result.
+  In <PrimFnMonEpsilonGlbCopy_EM>, skip processing empties as
+    as they don't contribute to the result.
+
+
 Build #730 -- Version 0.0.2.18
 ------------------------------
 
@@ -12,7 +26,7 @@ PF_RSHOE.C:
   Include missing Assertion on the incoming function.
   Handle {disclose}'x' ({zilde}) 3 differently from
          {disclose} 3  ({zilde}) 'x' in that while they
-    are both 0 by 3 matrices, their prototyped differ.
+    are both 3 by 0 matrices, their prototypes differ.
   Fix Bug:  If the result is empty heterogeneous, change
     it to either char or numeric depending upon the first
     non-empty (simple scalar) item.

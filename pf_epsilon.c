@@ -529,8 +529,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
 {
     APLSTYPE      aplTypeRht;       // Right arg storage type
-    APLNELM       aplNELMRht,       // Right arg NELM
-                  aplNELMNst;       // ...            in case nested
+    APLNELM       aplNELMRht;       // Right arg NELM
     APLRANK       aplRankRht;       // Right arg rank
     LPVOID        lpMemRht;         // Ptr to right arg global memory
     UINT          uBitMask = BIT0;  // Bit mask for marching through Booleans
@@ -560,9 +559,6 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
     aplRankRht = lpHeader->Rank;
 #undef  lpHeader
 
-    // Include the prototype element in the right arg in case it's empty nested
-    aplNELMNst = max (aplNELMRht, 1);
-
     // Skip past the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
@@ -576,6 +572,8 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 #undef  lpAPA
     } // End IF
 
+    // If the item is non-empty, ...
+    if (aplNELMRht)
     // Split cases based upon the result's storage type
     switch (aplTypeRes)
     {
@@ -641,7 +639,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = BOOL  , Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -763,7 +761,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = INT   , Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -893,7 +891,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = FLOAT , Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -977,7 +975,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = CHAR  , Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -1164,7 +1162,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 
                 case ARRAY_NESTED:                  // Res = HETERO, Rht = NESTED
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMNst; uRht++, ((LPAPLNESTED) lpMemRht)++)
+                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))

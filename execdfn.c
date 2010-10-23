@@ -976,7 +976,7 @@ NEXTLINE:
     DisplayFcnLine (NULL, lpMemPTD, NEG1U);
 #endif
     // Close the semaphore handle as it isn't used anymore
-    CloseHandle (hSemaphore); hSemaphore = NULL;
+    CloseHandle (hSemaphore); hSemaphore = lpMemPTD->lpSISCur->hSemaphore = NULL;
 
     // If we're initially resetting through []ERROR/[]ES,
     //   convert to execute resetting

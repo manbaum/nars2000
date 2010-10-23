@@ -863,8 +863,8 @@ LRESULT WINAPI LclTabCtrlWndProc
 #ifdef DEBUG
                     dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
 #endif
-                    // Clear the semaphore
-                    lpMemPTD->hExitphore = NULL;
+                    // Close the semaphore handle as it isn't used anymore
+                    CloseHandle (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
                 } // End IF
 
                 // Get a ptr to the HTS

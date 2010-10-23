@@ -190,11 +190,20 @@ function ProcessFile ($FileName, $OutFile)
     // Strip out #define .* lines
     $FileNew = preg_replace ('/#\s*define .*?\r\n/', '', $FileNew);
 
-    // Strip out typedef .* lines
-    $FileNew = preg_replace ('/typedef .*?\r\n/', '', $FileNew);
+    // Strip out typedef {.*}; lines
+    $FileNew = preg_replace ('/typedef .*?{.*?};\r\n/s', '', $FileNew);
+
+    // Strip out typedef .*; lines
+    $FileNew = preg_replace ('/typedef .*?;\r\n/s', '', $FileNew);
 
     // Strip out #undef .* lines
     $FileNew = preg_replace ('/#\s*undef .*?\r\n/', '', $FileNew);
+
+    // Strip out static .*?; lines
+    $FileNew = preg_replace ('/static.*?;\r\n/', '', $FileNew);
+
+    // Strip out static (.*) lines
+    $FileNew = preg_replace ('/static.*?\(.*?\)\r\n/ms', '', $FileNew);
 
     // Strip out blank lines
     $FileNew = StripBlankLines ($FileNew);

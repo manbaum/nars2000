@@ -382,6 +382,7 @@ DWORD WINAPI ImmExecStmtInThread
     RESET_FLAGS   resetFlag;            // Reset flag (see RESET_FLAGS)
     UBOOL         bFreeLine,            // TRUE iff we should free lpszCompLine on completion
                   bWaitUntilFini,       // TRUE iff wait until finished
+                  bResetAll = FALSE,    // TRUE iff )RESET about to finish
                   bActOnErrors;         // TRUE iff errors are acted upon
     EXIT_TYPES    exitType;             // Return code from ParseLine
     LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
@@ -625,7 +626,12 @@ DWORD WINAPI ImmExecStmtInThread
                 // If there are no more SI layers, ...
                 if (lpSISPrv EQ NULL
                  && bActOnErrors)
+                {
+                    // Set the ResetAll flag for later use
+                    bResetAll = TRUE;
+
                     break;
+                } // End IF
 
                 // Fall through to common code
 
@@ -679,6 +685,11 @@ ERROR_EXIT:
         {
             MyVirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
         } // End IF
+
+        // If there's an hExitphore pending from a )RESET, release it
+        if (bResetAll && lpMemPTD->hExitphore)
+            // Start executing at the Tab Delete code
+            ReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
 
         return exitType;
     } __except (CheckException (GetExceptionInformation (), L"ImmExecStmtInThread"))

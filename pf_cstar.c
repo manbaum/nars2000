@@ -69,6 +69,10 @@ PRIMSPEC PrimSpecCircleStar =
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircleStar};
 #endif
 
+IC_INDICES icndxLog[2][2] =
+{{ICNDX_0LOG0, ICNDX_0LOG1},
+ {ICNDX_1LOG0, ICNDX_1LOG1}};
+
 
 //***************************************************************************
 //  $PrimFnCircleStar_EM_YY
@@ -226,28 +230,25 @@ APLFLOAT PrimFnDydCircleStarFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    APLFLOAT    aplFloatRes;
+
     // Check for indeterminates:  B {log} B
     if (IsBooleanValue (aplIntegerLft)
      && IsBooleanValue (aplIntegerRht))
-    switch (2 * aplIntegerLft + 1 * aplIntegerRht)
-    {
-        case 2 * 0 + 1 * 0:
-            return TranslateQuadICIndex (ICNDX_0LOG0);
+        return TranslateQuadICIndex (icndxLog[aplIntegerLft][aplIntegerRht]);
 
-        case 2 * 0 + 1 * 1:
-            return TranslateQuadICIndex (ICNDX_0LOG1);
+    // The EAS says "If A and B are equal, return one."
+    if (aplIntegerLft EQ aplIntegerRht)
+        return 1;
 
-        case 2 * 1 + 1 * 0:
-            return TranslateQuadICIndex (ICNDX_1LOG0);
+    // Calculate the log
+    aplFloatRes = log ((APLFLOAT) aplIntegerRht) / log ((APLFLOAT) aplIntegerLft);
 
-        case 2 * 1 + 1 * 1:
-            return TranslateQuadICIndex (ICNDX_1LOG1);
+    // Check for ± infinity result (both args are finite)
+    if (!_finite (aplFloatRes))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-        defstop
-            break;
-    } // End SWITCH
-
-    return log ((APLFLOAT) aplIntegerRht) / log ((APLFLOAT) aplIntegerLft);
+    return aplFloatRes;
 } // End PrimFnDydCircleStarFisIvI
 
 
@@ -264,15 +265,15 @@ APLFLOAT PrimFnDydCircleStarFisFvF
 
 {
     APLFLOAT    aplFloatRes;
-    static UINT icndxLog[] = {ICNDX_0LOG0,
-                              ICNDX_0LOG1,
-                              ICNDX_1LOG0,
-                              ICNDX_1LOG1};
 
     // Check for indeterminates:  B {log} B
     if (IsBooleanValue (aplFloatLft)
      && IsBooleanValue (aplFloatRht))
-        return TranslateQuadICIndex (icndxLog[(UINT) (2 * aplFloatLft + 1 * aplFloatRht)]);
+        return TranslateQuadICIndex (icndxLog[(UINT) aplFloatLft][(UINT) aplFloatRht]);
+
+    // The EAS says "If A and B are equal, return one."
+    if (aplFloatLft EQ aplFloatRht)
+        return 1;
 
     // Calculate the log
     aplFloatRes = log (aplFloatRht) / log (aplFloatLft);

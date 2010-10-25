@@ -95,22 +95,22 @@ typedef enum tagIC_INDICES
 EXTERN
 APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
 #ifdef DEFINE_VALUES
- = {ICVAL_POS_INFINITY,     // 00:    {div} 0
-    ICVAL_NEG_INFINITY,     // 01:    {log} 0
-    ICVAL_DOMAIN_ERROR,     // 02:      ! {neg}1
-    ICVAL_DOMAIN_ERROR,     // 03:  0 {times} _
-    ICVAL_DOMAIN_ERROR,     // 04:  0 {times} {neg}_
-    ICVAL_ONE,              // 05:  0 {div} 0
-    ICVAL_DOMAIN_ERROR,     // 06:  _ {div} _   (same sign)
-    ICVAL_DOMAIN_ERROR,     // 07:  _ {div} _   (different sign)
-    ICVAL_DOMAIN_ERROR,     // 08:  _ - _ or _ + -_ or ...
-    ICVAL_DOMAIN_ERROR,     // 09:  L   |   ±Inf
-    ICVAL_ONE,              // 0A:  0   *   0
-    ICVAL_DOMAIN_ERROR,     // 0B:  L   *   _ for L <= -1
-    ICVAL_DOMAIN_ERROR,     // 0C:  0 {log} 0
-    ICVAL_DOMAIN_ERROR,     // 0D:  0 {log} 1
-    ICVAL_DOMAIN_ERROR,     // 0E:  1 {log} 0
-    ICVAL_ONE,              // 0F:  1 {log} 1
+ = {ICVAL_POS_INFINITY ,    // 00:    {div} 0
+    ICVAL_NEG_INFINITY ,    // 01:    {log} 0
+    ICVAL_DOMAIN_ERROR ,    // 02:      ! {neg}1
+    ICVAL_DOMAIN_ERROR ,    // 03:  0 {times} _
+    ICVAL_DOMAIN_ERROR ,    // 04:  0 {times} {neg}_
+    ICVAL_ONE          ,    // 05:  0 {div} 0
+    ICVAL_DOMAIN_ERROR ,    // 06:  _ {div} _   (same sign)
+    ICVAL_DOMAIN_ERROR ,    // 07:  _ {div} _   (different sign)
+    ICVAL_DOMAIN_ERROR ,    // 08:  _ - _ or _ + -_ or ...
+    ICVAL_DOMAIN_ERROR ,    // 09:  L   |   ±Inf
+    ICVAL_ONE          ,    // 0A:  0   *   0
+    ICVAL_DOMAIN_ERROR ,    // 0B:  L   *   _ for L <= -1
+    ICVAL_ONE          ,    // 0C:  0 {log} 0
+    ICVAL_DOMAIN_ERROR ,    // 0D:  0 {log} 1
+    ICVAL_DOMAIN_ERROR ,    // 0E:  1 {log} 0
+    ICVAL_ONE          ,    // 0F:  1 {log} 1
    }
 #endif
 ;

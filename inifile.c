@@ -37,6 +37,7 @@
 #define SECTNAME_SAMEFONTAS             L"SameFontAs"
 #define SECTNAME_COLORS                 L"Colors"
 #define SECTNAME_TOOLBARS               L"Toolbars"
+#define SECTNAME_MIGRATION              L"Migration"
 
 // Key names
 #define KEYNAME_VERSION                 L"Version"
@@ -47,6 +48,8 @@
 #define KEYNAME_YSIZE                   L"ySize"
 #define KEYNAME_INITIALCAT              L"InitialCategory"
 #define KEYNAME_COUNT                   L"Count"
+
+#define KEYNAME_IC0LOG0                 L"IC0LOG0"
 
 #define KEYNAME_QUADALX                 L"QuadALX"
 #define KEYNAME_QUADCT                  L"QuadCT"
@@ -167,6 +170,16 @@ LPWCHAR aToolbarNames[] =
  KEYNAME_TOOLBAR_FW,            // SM Font
  KEYNAME_TOOLBAR_LW,            // Language
 };
+
+// Migration level struc
+typedef struct tagMIGRATION
+{
+    UINT IC0LOG0:2,
+                :31;
+} MIGRATION, *LPMIGRATION;
+
+// Default migration levels
+MIGRATION uMigration = {0};
 
 
 //***************************************************************************
@@ -618,6 +631,33 @@ void ReadIniFileGlb
                                 DEF_QUADIC_GLB,     // HGLOBAL of the result
                                 ICNDX_LENGTH,       // Length of the default integer vector
                                 lpwszIniFile);      // Ptr to the file name
+    // Read in uMigration.IC0LOG0
+    uMigration.IC0LOG0 =
+      GetPrivateProfileIntW (SECTNAME_MIGRATION,    // Ptr to the section name
+                             KEYNAME_IC0LOG0,       // Ptr to the key name
+                             0,                     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // If it's unfixed, ...
+    if (uMigration.IC0LOG0 EQ 0)
+    {
+        LPAPLINT lpMemQuadIC;
+
+        // Lock the memory to get a ptr to it
+        lpMemQuadIC = MyGlobalLock (hGlbQuadIC_CWS);
+
+        // Skip over the header and dimensions to the data
+        lpMemQuadIC = VarArrayBaseToData (lpMemQuadIC, 1);
+
+        // Set the new value
+        lpMemQuadIC[ICNDX_0LOG0] = aplDefaultIC[ICNDX_0LOG0];
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbQuadIC_CWS); lpMemQuadIC = NULL;
+
+        // Increment the migration level for IC0LOG0
+        uMigration.IC0LOG0++;
+    } // End IF
+
     // Read in []IO
     bQuadIO_CWS = (APLBOOL)
       GetPrivateProfileIntW (SECTNAME_SYSVARS,      // Ptr to the section name
@@ -1412,6 +1452,20 @@ void SaveIniFile
     // Write out the initial category
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_INITIALCAT,         // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+
+    //*********************************************************
+    // Write out [Migration] section entries
+    //*********************************************************
+
+    //******************* IC0LOG0 *****************************
+    wszTemp[0] = L'0' + uMigration.IC0LOG0;
+    wszTemp[1] = WC_EOS;
+
+    // Write out IC0LOG0
+    WritePrivateProfileStringW (SECTNAME_MIGRATION,         // Ptr to the section name
+                                KEYNAME_IC0LOG0,            // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
 
